@@ -1,0 +1,17 @@
+package com.google.android.gms.measurement.internal;
+
+import android.content.Context;
+import android.os.Looper;
+
+/* JADX INFO: compiled from: com.google.android.gms:play-services-measurement-impl@@21.6.1 */
+/* JADX INFO: loaded from: classes3.dex */
+public final class zzad {
+    private final boolean zza = false;
+
+    zzad(Context context) {
+    }
+
+    public static boolean zza() {
+        return Looper.myLooper() == Looper.getMainLooper();
+    }
+}

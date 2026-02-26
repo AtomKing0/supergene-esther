@@ -1,0 +1,29 @@
+package androidx.compose.material.internal;
+
+import androidx.compose.ui.layout.Placeable;
+import h9.l;
+import kotlin.jvm.internal.t;
+import kotlin.jvm.internal.v;
+import org.jetbrains.annotations.NotNull;
+import v8.k0;
+
+/* JADX INFO: compiled from: ExposedDropdownMenuPopup.kt */
+/* JADX INFO: loaded from: classes.dex */
+public final class ExposedDropdownMenuPopupKt$SimpleStack$1$measure$1 extends v implements l<Placeable.PlacementScope, k0> {
+    public static final ExposedDropdownMenuPopupKt$SimpleStack$1$measure$1 INSTANCE = new ExposedDropdownMenuPopupKt$SimpleStack$1$measure$1();
+
+    public ExposedDropdownMenuPopupKt$SimpleStack$1$measure$1() {
+        super(1);
+    }
+
+    /* JADX INFO: renamed from: invoke, reason: avoid collision after fix types in other method */
+    public final void invoke2(@NotNull Placeable.PlacementScope layout) {
+        t.i(layout, "$this$layout");
+    }
+
+    @Override // h9.l
+    public /* bridge */ /* synthetic */ k0 invoke(Placeable.PlacementScope placementScope) {
+        invoke2(placementScope);
+        return k0.f35197a;
+    }
+}

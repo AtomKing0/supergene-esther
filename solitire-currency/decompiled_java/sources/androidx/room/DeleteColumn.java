@@ -1,0 +1,26 @@
+package androidx.room;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/* JADX INFO: compiled from: DeleteColumn.kt */
+/* JADX INFO: loaded from: classes2.dex */
+@Target({ElementType.TYPE})
+@Repeatable(Entries.class)
+@Retention(RetentionPolicy.CLASS)
+public @interface DeleteColumn {
+
+    /* JADX INFO: compiled from: DeleteColumn.kt */
+    @Target({ElementType.TYPE})
+    @Retention(RetentionPolicy.CLASS)
+    public @interface Entries {
+        DeleteColumn[] value();
+    }
+
+    String columnName();
+
+    String tableName();
+}

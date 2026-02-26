@@ -1,0 +1,20 @@
+package com.google.android.gms.ads.internal.util;
+
+import com.google.android.gms.internal.ads.zzcgp;
+import com.google.android.gms.internal.ads.zzhfc;
+import com.google.android.gms.internal.ads.zzhfu;
+
+/* JADX INFO: compiled from: com.google.android.gms:play-services-ads@@23.3.0 */
+/* JADX INFO: loaded from: classes3.dex */
+public final class zzcc implements zzhfc {
+    private final zzhfu zza;
+
+    public zzcc(zzhfu zzhfuVar) {
+        this.zza = zzhfuVar;
+    }
+
+    @Override // com.google.android.gms.internal.ads.zzhfu, com.google.android.gms.internal.ads.zzhft
+    public final /* bridge */ /* synthetic */ Object zzb() {
+        return new zzcb(((zzcgp) this.zza).zza());
+    }
+}

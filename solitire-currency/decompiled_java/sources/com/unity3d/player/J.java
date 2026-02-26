@@ -1,0 +1,38 @@
+package com.unity3d.player;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.PixelCopy;
+import android.view.SurfaceView;
+import android.view.View;
+import androidx.core.view.ViewCompat;
+
+/* JADX INFO: loaded from: classes4.dex */
+final class J extends View implements PixelCopy.OnPixelCopyFinishedListener {
+
+    /* JADX INFO: renamed from: a, reason: collision with root package name */
+    Bitmap f23948a;
+
+    J(Context context) {
+        super(context);
+    }
+
+    public final void a(SurfaceView surfaceView) {
+        Bitmap bitmapCreateBitmap = Bitmap.createBitmap(surfaceView.getWidth(), surfaceView.getHeight(), Bitmap.Config.ARGB_8888);
+        this.f23948a = bitmapCreateBitmap;
+        PixelCopy.request(surfaceView, bitmapCreateBitmap, this, new Handler(Looper.getMainLooper()));
+    }
+
+    @Override // android.view.PixelCopy.OnPixelCopyFinishedListener
+    public final void onPixelCopyFinished(int i10) {
+        if (i10 == 0) {
+            setBackground(new LayerDrawable(new Drawable[]{new ColorDrawable(ViewCompat.MEASURED_STATE_MASK), new BitmapDrawable(getResources(), this.f23948a)}));
+        }
+    }
+}

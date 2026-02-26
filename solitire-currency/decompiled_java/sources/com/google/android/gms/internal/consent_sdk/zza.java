@@ -1,0 +1,30 @@
+package com.google.android.gms.internal.consent_sdk;
+
+import android.app.Application;
+import android.content.Context;
+import androidx.annotation.GuardedBy;
+
+/* JADX INFO: compiled from: com.google.android.ump:user-messaging-platform@@3.0.0 */
+/* JADX INFO: loaded from: classes3.dex */
+public abstract class zza {
+
+    @GuardedBy("AppComponent.class")
+    private static zza zza;
+
+    public static zza zza(Context context) {
+        zza zzaVar;
+        synchronized (zza.class) {
+            if (zza == null) {
+                zzai zzaiVar = new zzai(null);
+                zzaiVar.zzb((Application) context.getApplicationContext());
+                zza = zzaiVar.zza();
+            }
+            zzaVar = zza;
+        }
+        return zzaVar;
+    }
+
+    public abstract zzj zzb();
+
+    public abstract zzbn zzc();
+}

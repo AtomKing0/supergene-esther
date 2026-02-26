@@ -1,0 +1,6 @@
+package com.braze.events;
+
+/* JADX INFO: loaded from: classes2.dex */
+public interface IEventSubscriber<T> {
+    void trigger(T t10);
+}

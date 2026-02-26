@@ -1,0 +1,6 @@
+package com.facebook.ads;
+
+/* JADX INFO: compiled from: RewardedInterstitialAd.java */
+/* JADX INFO: loaded from: classes2.dex */
+public final /* synthetic */ class f {
+}

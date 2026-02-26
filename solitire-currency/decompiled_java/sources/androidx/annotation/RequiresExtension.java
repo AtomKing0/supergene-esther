@@ -1,0 +1,28 @@
+package androidx.annotation;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/* JADX INFO: compiled from: RequiresExtension.kt */
+/* JADX INFO: loaded from: classes.dex */
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.PACKAGE})
+@Documented
+@Repeatable(Container.class)
+@Retention(RetentionPolicy.CLASS)
+public @interface RequiresExtension {
+
+    /* JADX INFO: compiled from: RequiresExtension.kt */
+    @Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.ANNOTATION_TYPE})
+    @Retention(RetentionPolicy.CLASS)
+    public @interface Container {
+        RequiresExtension[] value();
+    }
+
+    int extension();
+
+    int version();
+}

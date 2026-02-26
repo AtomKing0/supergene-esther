@@ -1,0 +1,18 @@
+package com.google.android.gms.internal.ads;
+
+import android.graphics.drawable.Drawable;
+import androidx.annotation.Nullable;
+
+/* JADX INFO: compiled from: com.google.android.gms:play-services-ads@@23.3.0 */
+/* JADX INFO: loaded from: classes3.dex */
+abstract class zzecz {
+    zzecz() {
+    }
+
+    @Nullable
+    abstract Drawable zza();
+
+    abstract String zzb();
+
+    abstract String zzc();
+}

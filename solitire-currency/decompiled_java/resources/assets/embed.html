@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8"/>
+
+    <script type="text/javascript">
+        function onLoadHandler() {
+           AdaAndroid.onLoadCallback();
+        }
+
+        function initializeEmbed(handle, cluster, greetings, styles, language, metaFields, sensitiveMetaFields){
+         adaEmbed.start({
+                handle: handle,
+                language: language,
+                parentElement: "content_frame",
+                cluster: cluster,
+                greeting: greetings,
+                styles: styles,
+                metaFields: {
+                    ...metaFields,
+                    sdkType: "ANDROID",
+                    sdkSupportsDownloadLink: true,
+                },
+                sensitiveMetaFields: {
+                ...sensitiveMetaFields
+                },
+                onAdaEmbedLoaded: () => {
+                    adaEmbed.subscribeEvent("ada:chat_frame_timeout", (data, context) => {
+                        AdaAndroid.chatFrameTimeoutCallback()
+                    });
+                },
+                adaReadyCallback: function() {
+                    AdaAndroid.onInitializeCallback()
+                },
+                zdChatterAuthCallback: function(passAuthToken) {
+                    const token = AdaAndroid.requestToken();
+                    if(token !== undefined){
+                        passAuthToken(token)
+                    } else {
+                        passAuthToken(null)
+                    }
+                },
+                eventCallbacks: {
+                    "*": function(event) {
+                        AdaAndroid.eventCallback(JSON.stringify(event))
+                    }
+                }
+            });
+        }
+
+        function setMetaFields(metaFields){
+            adaEmbed.setMetaFields(metaFields)
+        }
+
+        function setSensitiveMetaFields(sensitiveMetaFields){
+            adaEmbed.setSensitiveMetaFields(sensitiveMetaFields)
+        }
+
+        function deleteHistory(){
+            adaEmbed.deleteHistory();
+        }
+
+        function reset(resetSettings) {
+            if (resetSettings !== undefined) {
+                adaEmbed.reset(resetSettings);
+            } else {
+                adaEmbed.reset();
+            }
+        }
+
+        function setDeviceToken(token) {
+            adaEmbed.setDeviceToken(token);
+        }
+
+        function triggerAnswer(answerId) {
+            adaEmbed.triggerAnswer(answerId);
+        }
+
+        function setLanguage(language) {
+            adaEmbed.setLanguage(language);
+        }
+
+        function handleNotification(payload) {
+            adaEmbed.handleNotification(payload);
+        }
+    </script>
+
+    <script async id="__ada" src="https://static.ada.support/embed2.js" data-lazy onload="onLoadHandler()">
+    </script>
+</head>
+
+<body style="position: absolute; bottom: 0px; top: 0px; left: 0px; right: 0px; margin: 0; padding: 0;">
+<div id="content_frame" style="height: 100%; width: 100%" />
+</body>
+
+</html>
