@@ -61,14 +61,25 @@ solitaire-maps/
 ### 맵 높이(height) 측정
 CC_DATA 파일에서 맵의 세로 길이 = `max(Tableau[].Position.z) - min(Tableau[].Position.z)`
 
-**CC_DATA/level_data 전체 높이 분포 (3,950개 기준):**
-- 평균 높이: 15.85
+**CC_DATA/level_data 전체 높이 분포 (3,950개 기준, 센터링 적용 후):**
+- 평균 높이: 15.68
 - 분포 피크: 15~17 범위 (전체의 약 45%)
-- 범위: 0.0 ~ 22.63
+- 최대: 18.99 (높이 >= 19 맵은 스케줄에서 제거됨)
 
 **높이 기준 맵 운영 정책:**
 - `높이 < 19`: 스케줄에 사용 가능
 - `높이 >= 19`: 너무 길어서 스케줄에서 제외 → 대체 맵으로 교체
+
+### 수직 센터링 (2026-03-03 적용)
+모든 맵 데이터의 수직 위치를 y=0 (또는 z=0) 기준으로 중앙 정렬:
+
+| 파일 형식 | 대상 축 | 적용 방법 | 대상 파일 |
+|---|---|---|---|
+| CC_DATA (3D Unity) | z축 | `(min_z+max_z)/2`를 각 카드 z에서 차감 | CC_DATA/level_data/ 3,950개 |
+| Our 포맷 (2D pixel) | y축 | `round((min_y+max_y)/2)`를 각 카드 y에서 차감 | converted/schedule/ 2,391개 |
+| Our 포맷 (2D pixel) | y축 | 동일 | converted/level_data/ 3,933개 |
+
+센터링 후 schedule 최대 center 오차: ±0.5px (카드 간격 35px 대비 무시 가능)
 
 ---
 
@@ -95,8 +106,24 @@ CC_DATA 파일에서 맵의 세로 길이 = `max(Tableau[].Position.z) - min(Tab
 |---|---|---|
 | `difficultys` | `boolean[3]` | 난이도별 플레이 가능 여부 — **[노말, 어려움, 아주어려움]** |
 | `stage.map` | `string` | 카드 배열을 JSON.stringify한 문자열 |
-| `clearRandomCardCount` | `number` | 클리어 시 드로우덱에서 가져와야 하는 카드 수 |
-| `randomCardCount` | `number` | 드로우덱에 배치하는 총 카드 수 |
+| `clearRandomCardCount` | `number` | 이 스테이지를 클리어하기 위해 드로우덱에서 필요한 카드 수 (작을수록 쉬움) |
+| `randomCardCount` | `number` | 게임 시작 시 드로우덱에 주어지는 총 카드 수 = CC_DATA `StockPileCount` |
+
+**⚠️ randomCardCount ≠ clearRandomCardCount** — 두 값이 같으면 모든 덱 카드를 소진해야 클리어 가능(최고 난이도)으로 잘못 설정된 것.
+
+**설정 규칙 (2026-03-03 확정):**
+- `randomCardCount` = CC_DATA 파일의 `StockPileCount` 값 그대로 사용
+- `clearRandomCardCount` = `randomCardCount` × 난이도별 비율 (반올림, 최소 1)
+
+| 난이도 | 비율 | 예시 (deck=15) |
+|---|---|---|
+| Tutorial (0) | 35% | clear=5 |
+| VeryEasy (1) | 35% | clear=5 |
+| Easy (2) | 50% | clear=8 |
+| Normal (3) | 65% | clear=10 |
+| Hard (4) | 75% | clear=11 |
+| VeryHard (5) | 85% | clear=13 |
+| Special (6) | 65% | clear=10 |
 
 ### 카드 1개 구조 (CardItemData)
 
