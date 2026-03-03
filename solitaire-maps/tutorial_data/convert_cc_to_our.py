@@ -22,6 +22,7 @@ import json
 import os
 import glob
 import random
+from collections import defaultdict
 
 # 좌표 변환 스케일 (CC→Our)
 # SCALE_X: 13.75 → 15.0 (카드 가로 겹침 방지, 7unit 간격 96px→105px)
@@ -42,6 +43,46 @@ def difficulty_to_array(cc_difficulty: int) -> list:
         6: [False, True, True],     # Special   → 어려움 + 아주어려움
     }
     return mapping.get(cc_difficulty, [True, False, False])
+
+
+def recompute_depths(cards: list) -> list:
+    """필드 카드의 depth를 y-position 기준으로 재계산.
+
+    CC Layer 값은 z-position 순서와 일치하지 않는 경우가 있어
+    시각적 레이어 꼬임이 발생함. y-position(화면 세로 위치)을 기준으로
+    depth를 재계산하여 레이어를 정렬.
+
+    - 낮은 y → 낮은 depth (플레이어 쪽, 뒤에 렌더링)
+    - 높은 y → 높은 depth (화면 위쪽, 앞에 렌더링)
+    - 같은 위치의 스택 카드: 원래 depth 상대 순서 유지
+    - depth 값을 연속 정수(0,1,2,...)로 압축
+    """
+    field = [c for c in cards if not c.get("isDrawCard", False)]
+    if not field:
+        return cards
+
+    pos_groups: dict = defaultdict(list)
+    for c in field:
+        key = (c["position"]["x"], c["position"]["y"])
+        pos_groups[key].append(c)
+
+    unique_ys = sorted(set(pos[1] for pos in pos_groups))
+    y_to_rank = {y: rank for rank, y in enumerate(unique_ys)}
+    max_stack = max(len(g) for g in pos_groups.values())
+
+    for pos, group in pos_groups.items():
+        y_rank = y_to_rank[pos[1]]
+        group.sort(key=lambda c: c["depth"])
+        for sub_rank, card in enumerate(group):
+            card["depth"] = y_rank * (max_stack + 1) + sub_rank
+
+    # 연속 정수로 압축 (빈 레이어 노드 낭비 방지)
+    used = sorted(set(c["depth"] for c in field))
+    remap = {old: new for new, old in enumerate(used)}
+    for c in field:
+        c["depth"] = remap[c["depth"]]
+
+    return cards
 
 
 def convert_tableau_card(cc_card: dict, force_face_down: bool = False) -> dict:
@@ -138,6 +179,9 @@ def convert_level(cc_data: dict, force_face_down: bool = False) -> dict:
     # 리깅된 드로우 카드 추가 (isDrawCard=true)
     for rigged in rigged_cards:
         cards.append(convert_rigged_card(rigged))
+
+    # y-position 기준으로 depth 재계산 (CC Layer 순서 불일치 보정)
+    cards = recompute_depths(cards)
 
     # stage.map은 카드 배열을 JSON 문자열로 직렬화
     map_string = json.dumps(cards, separators=(",", ":"), ensure_ascii=False)
