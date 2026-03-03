@@ -9,14 +9,26 @@ CC 게임의 맵 데이터를 우리 게임(solitaire-tripeaks-client) 포맷으
 ```
 solitaire-maps/
 ├── CC_DATA/
-│   ├── level_data/       # CC 게임 일반 레벨 JSON (3,950개)
+│   ├── level_data/       # CC 게임 일반 레벨 JSON (3,950개) — 3D Unity 포맷
 │   └── tutorial_data/    # CC 게임 튜토리얼 레벨 JSON (37개)
 ├── GH_DATA/              # Solitaire Grand Harvest Unity AssetBundle (참고용)
 └── tutorial_data/        # 작업 디렉토리
     ├── convert_cc_to_our.py          # CC → Our 포맷 변환 스크립트
     ├── converted/
     │   ├── tutorial_data/            # 변환 결과 (36개)
-    │   └── level_data/               # 변환 결과 (3,950개)
+    │   ├── level_data/               # 변환 결과 (3,950개)
+    │   │   ├── VeryEasy/             # 난이도별 분류 폴더
+    │   │   ├── Easy/
+    │   │   ├── Normal/
+    │   │   ├── Hard/
+    │   │   ├── VeryHard/
+    │   │   ├── Special/
+    │   │   ├── Tutorial/
+    │   │   └── _excluded/            # 교체 풀에서 제외된 맵 (VeryEasy~VeryHard)
+    │   └── schedule/                 # 주차별 튜토리얼 스케줄 (39개 week 폴더)
+    │       ├── week_00_launch/       # 출시 주차 (60개 파일)
+    │       ├── week_01/ ~ week_37/   # 이후 주차
+    │       └── week_bf_launch/       # 출시 전 주차 (구 week_38, 50개 파일)
     └── GH_map1_levels/               # GH Map1 추출 레벨 (186개)
 ```
 
@@ -32,7 +44,7 @@ solitaire-maps/
 |---|---|
 | `Difficulty` | 0=Tutorial, 1=VeryEasy, 2=Easy, 3=Normal, 4=Hard, 5=VeryHard, 6=Special |
 | `Tableau[]` | 필드 카드 배열 |
-| `Tableau[].Position` | 3D 좌표 `{x, y, z}` — z가 화면 세로축 |
+| `Tableau[].Position` | 3D 좌표 `{x, y, z}` — **x=가로축, z=세로축(높이), y≈상수(레이어)** |
 | `Tableau[].Rotation` | 카드 회전각 (degrees) |
 | `Tableau[].Layer` | 레이어 깊이 (0=맨 아래) |
 | `Tableau[].Definition.suit` | 문양 (0=없음/랜덤, 1~4=일반, 9·10=특수덱) |
@@ -45,6 +57,18 @@ solitaire-maps/
 ### CC suit 특이사항
 - `suit=0`: 문양 미지정 (랜덤)
 - `suit=9, 10`: CC 전용 특수 덱 → 우리 게임에서 사용 불가
+
+### 맵 높이(height) 측정
+CC_DATA 파일에서 맵의 세로 길이 = `max(Tableau[].Position.z) - min(Tableau[].Position.z)`
+
+**CC_DATA/level_data 전체 높이 분포 (3,950개 기준):**
+- 평균 높이: 15.85
+- 분포 피크: 15~17 범위 (전체의 약 45%)
+- 범위: 0.0 ~ 22.63
+
+**높이 기준 맵 운영 정책:**
+- `높이 < 19`: 스케줄에 사용 가능
+- `높이 >= 19`: 너무 길어서 스케줄에서 제외 → 대체 맵으로 교체
 
 ---
 
@@ -182,3 +206,39 @@ python3 convert_cc_to_our.py
 
 또는 MapEditor에서 직접 테스트:
 - 게임 브라우저 콘솔에서 `window.drawMap(변환된JSON객체)` 호출
+
+---
+
+## 스케줄 관리
+
+### 스케줄 폴더 구조
+- `converted/schedule/week_XX/` — 주차별 맵 목록 (각 60개 파일)
+- **파일명 형식:** `{Difficulty}_obj_{ID}_{ID}.json`
+- **week 명칭:** `week_00_launch`(출시), `week_01`~`week_37`, `week_bf_launch`(출시 전, 구 week_38)
+
+### 스케줄 파일과 CC_DATA 파일 연결
+스케줄 파일은 우리 게임 포맷(2D 픽셀 좌표)이고, 높이 정보는 CC_DATA에 있음.
+높이를 구하려면 파일명에서 `{Difficulty}` 접두사를 제거해 `obj_{ID}_{ID}.json`으로 CC_DATA 파일을 조회.
+
+```python
+# 스케줄 파일 → CC_DATA 파일 연결 패턴
+schedule_name = "Easy_obj_-123_-123.json"
+cc_name = schedule_name.split("_", 1)[1]  # "obj_-123_-123.json"
+cc_path = f"CC_DATA/level_data/{cc_name}"
+```
+
+### 높이 기준 맵 교체 절차
+높이 >= 19인 맵을 스케줄에서 제거하고 대체 맵으로 교체:
+1. CC_DATA/level_data/ 전체 z-range 캐시 생성
+2. 스케줄에 있는 파일명 세트 구축 (중복 방지용)
+3. 높이 >= 19인 맵 식별 (스케줄 파일명 → CC_DATA 조회)
+4. 난이도별 대체 풀 구성:
+   - 1순위: `converted/level_data/{Difficulty}/` (스케줄 미포함, 높이 < 19)
+   - 2순위: `converted/level_data/_excluded/{Difficulty}/` (Normal 등 풀 부족 시)
+5. 대체 맵 복사 (같은 난이도, 높이 < 19, 스케줄 미포함)
+
+**교체 결과 (2026-03-03 기준):** 72개 교체 완료, 스케줄 최대 높이 18.99, 평균 15.68
+
+### `_excluded/` 폴더
+`converted/level_data/_excluded/{Difficulty}/` — 기본 풀에서 제외했으나 비상 대체용으로 보관.
+Normal 난이도 대체 풀이 부족할 때 여기서 보충 (111개 이상 보유).
