@@ -208,13 +208,82 @@ our_y = round(cc_z * 16 + (-170))
 ## 변환 스크립트 실행
 
 ```bash
-cd /Users/estherpark/solitaire-maps/tutorial_data
+cd /Users/estherpark/esther_solitaire/solitaire-esther-1/solitaire-maps/tutorial_data
 python3 convert_cc_to_our.py
 ```
 
 출력:
 - `converted/tutorial_data/` — 36개 파일
 - `converted/level_data/` — 3,950개 파일
+
+### depth 규칙 (2026-03-03 적용)
+변환 시 CC `Layer` 값을 그대로 사용하지 않고, **y-position 기준으로 depth 재계산**:
+- 낮은 y → 낮은 depth (화면 아래, 플레이어 쪽, 뒤에 렌더링)
+- 높은 y → 높은 depth (화면 위, 원거리, 앞에 렌더링)
+- 같은 위치의 스택 카드: 원래 CC Layer 상대 순서 유지
+- depth 값은 0, 1, 2, ... 연속 정수로 압축
+
+`convert_level()` 내부의 `recompute_depths()` 에서 자동 적용됨.
+
+---
+
+## 전체 재변환 절차
+
+CC_DATA 수정 후 converted/ 전체를 최신 상태로 재생성하는 순서:
+
+```bash
+cd /Users/estherpark/esther_solitaire/solitaire-esther-1/solitaire-maps/tutorial_data
+
+# 1. tutorial_data + level_data 재변환 (convert_cc_to_our.py)
+python3 convert_cc_to_our.py
+
+# 2. _excluded 재변환 (CC_DATA → converted/level_data/_excluded/)
+python3 -c "
+import json, os, glob
+from convert_cc_to_our import convert_level, DIFFICULTY_PREFIX
+
+cc_dir = '../CC_DATA/level_data'
+excluded_dir = 'converted/level_data/_excluded'
+
+for diff in os.listdir(excluded_dir):
+    diff_path = os.path.join(excluded_dir, diff)
+    if not os.path.isdir(diff_path): continue
+    for fname in os.listdir(diff_path):
+        if not fname.endswith('.json'): continue
+        cc_path = os.path.join(cc_dir, fname.split('_', 1)[1])
+        if not os.path.exists(cc_path): continue
+        with open(cc_path, encoding='utf-8') as f:
+            cc_data = json.load(f)
+        our_data = convert_level(cc_data, force_face_down=True)
+        with open(os.path.join(diff_path, fname), 'w', encoding='utf-8') as f:
+            json.dump(our_data, f, indent=2, ensure_ascii=False)
+print('_excluded 재변환 완료')
+"
+
+# 3. schedule 업데이트 (level_data 재변환본으로 덮어쓰기)
+python3 -c "
+import os, shutil
+
+base = 'converted'
+schedule_dir = os.path.join(base, 'schedule')
+level_dir = os.path.join(base, 'level_data')
+
+updated = 0
+for week in os.listdir(schedule_dir):
+    week_path = os.path.join(schedule_dir, week)
+    if not os.path.isdir(week_path): continue
+    for fname in os.listdir(week_path):
+        if not fname.endswith('.json'): continue
+        difficulty = fname.split('_')[0]
+        level_file = os.path.join(level_dir, difficulty, fname)
+        if os.path.exists(level_file):
+            shutil.copy2(level_file, os.path.join(week_path, fname))
+            updated += 1
+print(f'schedule 업데이트: {updated}개')
+"
+```
+
+**주의:** schedule 파일 중 `_excluded/`에서 가져온 교체 맵은 step 3에서 덮어쓰이지 않음 (level_data에 없으므로). 해당 파일은 step 2에서 `_excluded` 재변환 시 이미 최신화됨.
 
 ---
 
