@@ -106,6 +106,9 @@ def convert_tableau_card(cc_card: dict, force_face_down: bool = False) -> dict:
     # 랜덤 카드가 아닌데 symbol이 1~4 범위 밖이면 (0, 9, 10 등) → 1~4 랜덤 배정
     if not is_random and symbol not in (1, 2, 3, 4):
         symbol = random.randint(1, 4)
+    # symbol은 유효한데 value=0이면 1~13 랜덤 배정
+    if not is_random and value == 0:
+        value = random.randint(1, 13)
 
     return {
         "type": 0,
@@ -153,6 +156,9 @@ def convert_rigged_card(rigged: dict) -> dict:
     # Suit가 1~4 범위 밖이면 (0, 9, 10 등) → suit를 1~4 중 랜덤 배정
     if suit not in (1, 2, 3, 4):
         suit = random.randint(1, 4)
+    # suit는 유효한데 rank=0이면 1~13 랜덤 배정
+    if rank == 0:
+        rank = random.randint(1, 13)
 
     return {
         "type": 0,
