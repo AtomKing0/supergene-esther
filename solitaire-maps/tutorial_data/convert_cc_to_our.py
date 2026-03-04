@@ -87,6 +87,15 @@ def normalize_depths(cards: list) -> list:
     for c in field:
         c["depth"] = remap[c["depth"]]
 
+    # Scattered 맵(회전 카드 포함) 처리: depth 역전
+    # 게임 엔진은 depth 높을수록 앞(front)으로 렌더링.
+    # CC Layer 0 = 최상위(front)이므로 역전 필요.
+    is_scattered = any(c.get("angle", 0) != 0 for c in field)
+    if is_scattered:
+        max_d = max(c["depth"] for c in field)
+        for c in field:
+            c["depth"] = max_d - c["depth"]
+
     return cards
 
 
