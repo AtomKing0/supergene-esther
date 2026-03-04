@@ -216,14 +216,14 @@ python3 convert_cc_to_our.py
 - `converted/tutorial_data/` — 36개 파일
 - `converted/level_data/` — 3,950개 파일
 
-### depth 규칙 (2026-03-03 적용)
-변환 시 CC `Layer` 값을 그대로 사용하지 않고, **y-position 기준으로 depth 재계산**:
-- 낮은 y → 낮은 depth (화면 아래, 플레이어 쪽, 뒤에 렌더링)
-- 높은 y → 높은 depth (화면 위, 원거리, 앞에 렌더링)
-- 같은 위치의 스택 카드: 원래 CC Layer 상대 순서 유지
-- depth 값은 0, 1, 2, ... 연속 정수로 압축
+### depth 규칙 (2026-03-04 수정)
+CC `Layer` 값을 depth로 그대로 사용. 연속 정수(0,1,2,...)로만 압축.
 
-`convert_level()` 내부의 `recompute_depths()` 에서 자동 적용됨.
+- CC 디자이너가 지정한 레이어 구조 완전 보존
+- y-position 기반 재배열 없음 (레이어 구조가 무너질 수 있어 금지)
+- depth 값은 0, 1, 2, ... 연속 정수로 압축 (빈 번호 압축만 허용)
+
+`convert_level()` 내부의 `normalize_depths()` 에서 자동 적용됨.
 
 ---
 
