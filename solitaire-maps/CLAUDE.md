@@ -338,3 +338,47 @@ cc_path = f"CC_DATA/level_data/{cc_name}"
 ### `_excluded/` 폴더
 `converted/level_data/_excluded/{Difficulty}/` — 기본 풀에서 제외했으나 비상 대체용으로 보관.
 Normal 난이도 대체 풀이 부족할 때 여기서 보충 (111개 이상 보유).
+
+---
+
+## 데이터 현황 및 알려진 이슈 (2026-03-04 기준)
+
+### 전체 파일 통계
+
+| 위치 | 파일 수 | 상태 |
+|---|---|---|
+| `converted/level_data/` (committed) | 3,950개 | 정상 3,948개, y-centering 실패 2개 |
+| `converted/schedule/` | 2,391개 | 정상 (45개 교체 완료) |
+| `converted/tutorial_data/` | 36개 | 정상 |
+| 미추적 파일 (orphan) | 342개 | 정리 필요 |
+
+### 2026-03-04 수정 완료 이슈
+
+**P0: 45개 스케줄 파일 — clearRandomCardCount 및 y-centering 오류**
+- 증상: `clearRandomCardCount >= randomCardCount` 또는 `center = -170` (센터링 미적용)
+- 원인: 구버전 변환 로직으로 생성된 파일이 schedule에 남아있었음
+- 해결: `converted/level_data/_excluded/`의 정상 버전으로 교체 (44개) + 1개 재변환
+- 영향 범위: 28개 주차에 걸쳐 분포 (week_00_launch ~ week_37)
+
+**Week 07 엣지 케이스 (P0)**
+- 파일: `Easy_obj_-3931822055258974236_-3931822055258974236.json`
+- 증상: 드로우덱 1장짜리 맵에서 `clearRandomCardCount = randomCardCount = 1`로 게임 불가능
+- 원인: 비율 공식에서 `round(1 × 0.5) = 1` → cr = rc 발생
+- 해결: `_excluded/`의 정상 버전으로 교체 (cr=7, rc=11, center=0)
+
+### 잔존 알려진 이슈
+
+**P1: Tutorial y-centering 실패 2개**
+- 파일: `converted/level_data/Tutorial/` 내 2개 파일
+- 증상: y-centering offset이 0이 아님
+- 원인: 초기 변환 시 `SCALE_Z_OFFSET ≈ -35.5` 사용 (현재 -170과 다름)
+- 조치: 우선순위 낮음 — Tutorial 파일은 스케줄에 배치되지 않음
+
+### depth 규칙 변경 이력
+
+| 날짜 | 변경 내용 |
+|---|---|
+| 2026-03-03 | y-position 기반 depth 재계산 로직 도입 |
+| 2026-03-04 | **y-position 기반 depth 폐지** — CC Layer 값 직접 사용으로 복원 (commit: fc2b2826) |
+
+**이유:** y-position 기반 재배열이 CC 디자이너 의도(카드 앞/뒤 관계)를 무너뜨리는 것 확인.
