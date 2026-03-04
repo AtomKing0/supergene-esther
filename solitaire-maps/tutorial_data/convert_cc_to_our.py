@@ -30,6 +30,17 @@ SCALE_X = 15.0
 SCALE_Z_MULT = 16
 SCALE_Z_OFFSET = -170
 
+# clearRandomCardCount 비율 (난이도별)
+CLEAR_RANDOM_RATIO = {
+    0: 0.35,  # Tutorial
+    1: 0.35,  # VeryEasy
+    2: 0.50,  # Easy
+    3: 0.65,  # Normal
+    4: 0.75,  # Hard
+    5: 0.85,  # VeryHard
+    6: 0.65,  # Special
+}
+
 
 def difficulty_to_array(cc_difficulty: int) -> list:
     """CC Difficulty 값을 our format의 difficultys 배열로 변환 [노말, 어려움, 아주어려움]"""
@@ -43,6 +54,23 @@ def difficulty_to_array(cc_difficulty: int) -> list:
         6: [False, True, True],     # Special   → 어려움 + 아주어려움
     }
     return mapping.get(cc_difficulty, [True, False, False])
+
+
+def center_y(cards: list) -> list:
+    """필드 카드의 y 좌표를 중앙 정렬.
+
+    (min_y + max_y) / 2 를 모든 필드 카드 y에서 차감하여
+    맵이 화면 중앙(y=0)에 배치되도록 함.
+    드로우 카드(isDrawCard=true)는 position이 {0,0}이므로 제외.
+    """
+    field = [c for c in cards if not c.get("isDrawCard", False)]
+    if not field:
+        return cards
+    ys = [c["position"]["y"] for c in field]
+    offset = round((min(ys) + max(ys)) / 2)
+    for c in field:
+        c["position"]["y"] -= offset
+    return cards
 
 
 def recompute_depths(cards: list) -> list:
@@ -183,15 +211,22 @@ def convert_level(cc_data: dict, force_face_down: bool = False) -> dict:
     # y-position 기준으로 depth 재계산 (CC Layer 순서 불일치 보정)
     cards = recompute_depths(cards)
 
+    # y-centering: 맵을 화면 중앙(y=0)에 정렬
+    cards = center_y(cards)
+
     # stage.map은 카드 배열을 JSON 문자열로 직렬화
     map_string = json.dumps(cards, separators=(",", ":"), ensure_ascii=False)
+
+    # clearRandomCardCount: 난이도별 비율 적용 (최소 1)
+    ratio = CLEAR_RANDOM_RATIO.get(difficulty, 0.50)
+    clear_count = max(1, round(stock_pile_count * ratio))
 
     return {
         "difficultys": difficulty_to_array(difficulty),
         "stage": {
             "map": map_string,
         },
-        "clearRandomCardCount": stock_pile_count,
+        "clearRandomCardCount": clear_count,
         "randomCardCount": stock_pile_count,
     }
 
