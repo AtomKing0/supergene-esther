@@ -341,36 +341,64 @@ Normal 난이도 대체 풀이 부족할 때 여기서 보충 (111개 이상 보
 
 ---
 
-## 데이터 현황 및 알려진 이슈 (2026-03-04 기준)
+## 필드 카드 수 분포 (2026-03-05 기준, level_data 3,823개)
+
+| 구간 | 개수 | 비율 |
+|---|---|---|
+| ~15장 | 38 | 1.0% |
+| 16~20장 | 664 | 17.4% |
+| 21~25장 | 506 | 13.2% |
+| 26~30장 | 1,944 | 50.9% |
+| 31~35장 | 541 | 14.2% |
+| 36~39장 | 130 | 3.4% |
+
+| 난이도 | 맵수 | 평균 | 중앙값 |
+|---|---|---|---|
+| VeryEasy | 166 | 24.7 | 24 |
+| Easy | 671 | 26.0 | 27 |
+| Normal | 1,377 | 27.6 | 29 |
+| Hard | 805 | 27.7 | 29 |
+| VeryHard | 732 | 26.9 | 29 |
+| Special | 36 | 36.5 | 37 |
+| Tutorial | 36 | 11.5 | 11 |
+
+**운영 정책:** 필드 카드 40장 이상 맵은 `_excluded/`로 분류 (Special 포함 127개 이동, 2026-03-05)
+
+---
+
+## 데이터 현황 및 알려진 이슈 (2026-03-05 기준)
 
 ### 전체 파일 통계
 
 | 위치 | 파일 수 | 상태 |
 |---|---|---|
-| `converted/level_data/` (committed) | 3,950개 | 정상 3,948개, y-centering 실패 2개 |
-| `converted/schedule/` | 2,391개 | 정상 (45개 교체 완료) |
+| `converted/level_data/` | 3,823개 | 정상 (40장↑ 맵 제외 후) |
+| `converted/level_data/_excluded/` | ~469개 | 비상 대체용 풀 |
+| `converted/schedule/` | 2,400개 | 정상 |
 | `converted/tutorial_data/` | 36개 | 정상 |
-| 미추적 파일 (orphan) | 342개 | 정리 필요 |
 
-### 2026-03-04 수정 완료 이슈
+### 2026-03-05 수정 완료 이슈
 
-**P0: 45개 스케줄 파일 — clearRandomCardCount 및 y-centering 오류**
-- 증상: `clearRandomCardCount >= randomCardCount` 또는 `center = -170` (센터링 미적용)
-- 원인: 구버전 변환 로직으로 생성된 파일이 schedule에 남아있었음
-- 해결: `converted/level_data/_excluded/`의 정상 버전으로 교체 (44개) + 1개 재변환
-- 영향 범위: 28개 주차에 걸쳐 분포 (week_00_launch ~ week_37)
+**필드 카드 40장 이상 맵 제외 (commit: 7eef566d)**
+- 127개를 `level_data/` → `level_data/_excluded/`로 이동 (Easy 1, Hard 1, Normal 1, Special 123, VeryHard 1)
+- 해당 맵을 참조하던 스케줄 44개 교체 완료
 
-**Week 07 엣지 케이스 (P0)**
-- 파일: `Easy_obj_-3931822055258974236_-3931822055258974236.json`
-- 증상: 드로우덱 1장짜리 맵에서 `clearRandomCardCount = randomCardCount = 1`로 게임 불가능
-- 원인: 비율 공식에서 `round(1 × 0.5) = 1` → cr = rc 발생
-- 해결: `_excluded/`의 정상 버전으로 교체 (cr=7, rc=11, center=0)
+**같은 depth·컬럼 카드 경계 겹침 수정 (commit: 15e7ab9a)**
+- 같은 depth, 같은 x컬럼 내 비회전 카드가 y 간격 < 150px(카드 높이)인 맵 66개
+- 수정 방법: `scale_factor = 155 / min_gap`으로 맵 전체 y 좌표 비례 스케일링 후 y-centering 재적용
+- 스케줄 42개 동기화
 
 ### 잔존 알려진 이슈
 
+**P0: SCALE_X 블로킹 버그 (미수정, 다음 작업 대상)**
+- 증상: 카드 1개 제거 시 2-3개가 페이스업 되어야 하나 1개만 뒤집힘
+- 원인: `SCALE_X=15` 과대 설정 → CC 피라미드 블로킹 쌍 간격 7 CC units × 15 = 105px > 카드폭 100px → 게임 엔진 블로킹 미감지
+- 레퍼런스(GH) 기준: 7 CC units = 96px → SCALE_X ≈ 13.71
+- 수정 방향: `SCALE_X=14` (7×14=98px < 100px → 블로킹 ✓)로 변경 후 전체 재변환
+- 검증 필요: CC VeryEasy 단순 피라미드 맵의 블로킹 쌍 실제 x-거리 측정
+
 **P1: Tutorial y-centering 실패 2개**
 - 파일: `converted/level_data/Tutorial/` 내 2개 파일
-- 증상: y-centering offset이 0이 아님
 - 원인: 초기 변환 시 `SCALE_Z_OFFSET ≈ -35.5` 사용 (현재 -170과 다름)
 - 조치: 우선순위 낮음 — Tutorial 파일은 스케줄에 배치되지 않음
 
