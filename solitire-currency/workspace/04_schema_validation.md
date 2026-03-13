@@ -4,7 +4,8 @@ mode: phase-b
 scope: PST 재화 시스템
 executed: 2026-02-20T20:00:00+09:00
 status: complete
-overall: FAIL
+overall: WARN
+val003_rule_update: 2026-03-11 — streak_reward_pool gacha_rate 합산 검증 제외 (PM 확정 규칙)
 ---
 
 # 04 스키마 에이전트 — Phase-B 스키마 검증 결과
@@ -27,7 +28,7 @@ overall: FAIL
 | `pst_product_definition` | 02 | WARN | PASS | PASS | 해당없음 | PASS | PASS | WARN |
 | `pst_daily_gift_schedule` | 02 | PASS | PASS | PASS | 해당없음 | PASS | PASS | PASS |
 | `pst_daily_task_pool` | 02 | PASS | PASS | PASS | 해당없음 | PASS | PASS | PASS |
-| `pst_streak_reward_pool` | 02 | PASS | PASS | PASS | FAIL | WARN | PASS | FAIL |
+| `pst_streak_reward_pool` | 02 | PASS | PASS | PASS | **EXEMPT** | WARN | PASS | WARN |
 | `pst_event_schedule` | 03 | PASS | PASS | PASS | 해당없음 | PASS | PASS | PASS |
 | `pst_event_milestone_step` | 02 | PASS | PASS | PASS | 해당없음 | PASS | WARN | WARN |
 | `pst_free_currency_source` | 02 | PASS | PASS | PASS | 해당없음 | WARN | WARN | WARN |
@@ -52,7 +53,7 @@ overall: FAIL
 | VAL-001 | `pst_free_currency_source` | PASS | key_number 10025, 10027, 10057, 10063 테이블 내 중복 없음 |
 | VAL-001 (교차 테이블) | 복수 테이블 | WARN | 동일 key_number가 복수 테이블에 중복 존재. 상세: pst_free_currency_source(10025, 10027, 10057, 10063)가 pst_currency_config 동일 번호와 충돌. pst_entry_cost_config(10007), pst_reward_margin_config(10012), pst_ingame_reward_config(10047, 10052)도 pst_currency_config와 중복. VAL-001은 테이블 내 검증 규칙이나, 스키마 섹션 3에서 "전체 PST 데이터 내 고유 식별 번호"로 명시되어 있어 전역 중복은 설계 의도와 상충될 수 있음 |
 | VAL-002 | 전체 테이블 | PASS | 모든 테이블의 in_use 값이 boolean (true/false). 정수·문자열 혼입 없음 |
-| VAL-003 | `pst_streak_reward_pool` | FAIL | gacha_group_id 그룹별 gacha_rate 합산 결과: Group 1(200001~200003): 7000+5000+3000=15000 (기대값 10000 대비 +5000 초과), Group 2(200004~200006): 7000+5000+3000=15000 (+5000 초과), Group 3(200007~200009): 7000+5000+3000=15000 (+5000 초과). 3개 그룹 모두 10000 불일치. 추가: gacha_group_id 할당 자체가 "가설" (원본 PST_streak_reward.json에 해당 필드 없음) |
+| VAL-003 | `pst_streak_reward_pool` | **EXEMPT** | ~~gacha_group_id 그룹별 gacha_rate 합산~~ → **검증 제외 확정 (2026-03-11 PM 규칙)**. streak_reward_pool의 gacha_rate는 합산이 10,000일 필요 없음. 확률 합 체크 불필요, 정상 동작으로 간주. |
 | VAL-004 | `pst_entry_cost_config` | PASS | cost_max_cap(5000) >= base_cost(1000) |
 | VAL-005 | `pst_reward_margin_config` | PASS | reward_margin_max(2000) >= reward_margin_min(500) |
 | VAL-006 | `pst_ingame_reward_config` | PASS | combo: amount_max_cap(50) >= base_amount(2). remaining_deck: amount_max_cap(5000) >= base_amount(15) |
@@ -80,7 +81,7 @@ overall: FAIL
 
 | # | 에이전트 | 테이블명 | 컬럼명 | 문제 유형 | 문제 내용 | 수정 방향 |
 |---|---|---|---|---|---|---|
-| 1 | 02 | `pst_streak_reward_pool` | `gacha_group_id`, `gacha_rate` | FAIL — 확률합 불일치 (VAL-003) | gacha_group_id는 원본 PST_streak_reward.json에 없는 필드. 02 에이전트가 req_length 패턴 기반으로 3그룹(각 3행)으로 가설 할당. 각 그룹 내 gacha_rate 합산 = 15000으로 10000 초과. Group 1: 7000+5000+3000=15000 (+5000), Group 2: 7000+5000+3000=15000 (+5000), Group 3: 7000+5000+3000=15000 (+5000) | 원본 PST_streak_reward.json의 gacha_rate 구조 재확인 필요. 가능한 해석: (a) req_length별 독립 트리거 확률(합산 검증 불필요한 별도 구조), (b) 9개 항목 전체가 단일 가챠 풀(합산 = 45000 → 구조 자체 오류), (c) gacha_rate가 가중치(weight)이며 동일 req_length 내 상대 비율로 동작. 서버 팀 및 PM 확인 후 gacha_group_id 정식 필드 추가 또는 스키마 VAL-003 적용 범위 재정의 |
+| ~~1~~ | ~~02~~ | ~~`pst_streak_reward_pool`~~ | ~~`gacha_group_id`, `gacha_rate`~~ | ~~FAIL — 확률합 불일치 (VAL-003)~~ | **EXEMPT 처리 완료 (2026-03-11)** — streak_reward_pool gacha_rate 합산 검증 규칙 제외 확정. PM 판단: 해당 풀은 합산 10,000 제약 없이 정상 동작. 수정 불필요. |
 | 2 | 02 | `pst_item_definition` | (행 미존재) | FAIL — 필수 참조 아이템 누락 | `booster_infinite_undo_15m`, `booster_infinite_undo_30m`이 pst_event_milestone_step(행 180037, 180041)의 reward_item_key로 참조되나 pst_item_definition에 정식 등재 없음. 스키마 섹션 5에서 "가설: PST_item_list에 미등재" 명시. reward_item_key 유효성 검증 시 참조 무결성 위반 | PM 확인 후 두 아이템을 pst_item_definition에 정식 등재: booster_infinite_undo_15m(key 신규 부여, item_type=infinite, duration_sec=900, target_name_key=booster_undo), booster_infinite_undo_30m(duration_sec=1800). 또는 이벤트 전용 임시 아이템으로 별도 테이블 분리 처리 |
 | 3 | 02 | `pst_free_currency_source` | `amount_per_claim` | WARN — 가설값 기재 (스키마 주석 일치) | daily_wheel_ad 행의 amount_per_claim = 525로 기재되어 있으나, 이는 PST_daily_wheel.json 가챠 풀 gold 기댓값(EV)이며 고정 지급 수량이 아님. 스키마 컬럼 정의에서 "데이터 없음 — 02 에이전트 조사 필요"로 명시한 항목. 가설 표기는 존재하나, 컬럼 타입(int, 1회 수령 고정 수량)과 데이터 성격(EV 추정치) 불일치 | 스키마 컬럼 수정 필요: pst_free_currency_source의 amount_per_claim을 가챠 구조 수용 가능하도록 변경. 방안 1: daily_wheel_ad 전용 별도 컬럼 추가(gacha_ref_table: 참조 가챠 테이블명). 방안 2: amount_per_claim에 EV 기재 허용 방침 확정 + 컬럼 description 수정. 방안 결정 전까지 525(가설) 유지하되 "가설" 주석 유지 필수 |
 | 4 | 02 | `pst_product_definition` | `label_type`, `max_display_count` | WARN — 비활성 상품 행에서 필수 컬럼 누락 | 비활성 상품 표(in_use=false: 190003, 190101, 190102, 190103)에서 `label_type`(Y 필수) 및 `max_display_count`(Y 필수) 컬럼이 테이블 헤더에 미포함. 활성 상품 표에는 두 컬럼 모두 존재. 비활성 행 전용 간략 테이블 제시로 인한 컬럼 누락 | 비활성 상품 행에도 label_type, max_display_count 컬럼 추가 기재. 값: 190003(label_type=none, max_display_count=0 가설), 190101~190103(label_type, max_display_count 원본 확인 후 기재) |

@@ -2,8 +2,10 @@
 agent: 02_economic_balance
 mode: phase-b
 scope: PST 재화 시스템
-executed: 2026-02-20T19:40:00+09:00
+executed: 2026-03-09T20:30:00+09:00
 status: complete
+revision: 2
+cp2_adjust: resolved
 schema_ref: workspace/04_schema_template.md
 ---
 
@@ -43,8 +45,8 @@ schema_ref: workspace/04_schema_template.md
 | 10002 | idle_gold_charge_time | gold | idle_charge | 14400 | sec | true | 유휴 골드 완전 충전 소요 시간 (4시간) |
 | 10003 | idle_gold_charge_amount | gold | idle_charge | 3000 | amount | true | 유휴 충전 1사이클 완료 시 지급 골드량 |
 | 10004 | idle_gold_interval | gold | idle_charge | 20 | sec | true | 유휴 골드 단계별 증가 인터벌 (초) |
-| 10005 | idle_gold_amount_increase | gold | idle_charge | 1200 | amount | true | 유휴 인터벌당 단계 증가량 |
-| 10006 | idle_gold_max_cap | gold | idle_charge | 8000 | amount | true | 유휴 충전 누적 상한 |
+| 10005 | idle_gold_amount_increase | gold | idle_charge | 400 [라이브 확정, 2026-03-09] | amount | true | 유휴 인터벌당 단계 증가량 |
+| 10006 | idle_gold_max_cap | gold | idle_charge | 10000 [라이브 확정, 2026-03-09] | amount | true | 유휴 충전 누적 상한 |
 | 10007 | entry_cost_free_limit | gold | cost | 2 | count | true | 일일 무료 입장 횟수 한도 |
 | 10008 | entry_cost_base | gold | cost | 1000 | amount | true | 레벨 입장 기본 비용 (gold) |
 | 10009 | entry_cost_interval | gold | cost | 10 | count | true | 입장비 증가 적용 레벨 간격 |
@@ -72,11 +74,11 @@ schema_ref: workspace/04_schema_template.md
 | 10055 | remaining_deck_reward_level_interval | gold | ingame_earn | 5 | count | true | 잔여 덱 보상 증가 레벨 간격 |
 | 10056 | remaining_deck_reward_level_increase | gold | ingame_earn | 5 | count | true | 간격당 레벨 증가 수치 |
 | 10057 | inbox_free_gold_limit | gold | free_source | 5 | count | true | 받은편지함 무료 광고 골드 일일 횟수 상한 |
-| 10058 | inbox_free_gold_amount | gold | free_source | 2000 | amount | true | 받은편지함 광고 1회 지급 골드량 |
+| 10058 | inbox_free_gold_amount | gold | free_source | 800 [라이브 확정, 2026-03-09] | amount | true | 받은편지함 광고 1회 지급 골드량 |
 | 10059 | gold_max_limit | gold | cap | 10000 | amount | true | 보유 골드 최대 상한 |
 | 10060 | streak_star_max_limit | streak_star | cap | 100 | amount | true | 스트릭 스타 최대 보유 상한 |
 | 10063 | popup_free_gold_limit | gold | free_source | 10 | count | true | 팝업 무료 광고 골드 일일 횟수 상한 |
-| 10064 | popup_free_gold_amount | gold | free_source | 2000 | amount | true | 팝업 광고 1회 지급 골드량 |
+| 10064 | popup_free_gold_amount | gold | free_source | 800 [라이브 확정, 2026-03-09] | amount | true | 팝업 광고 1회 지급 골드량 |
 
 ---
 
@@ -150,9 +152,9 @@ schema_ref: workspace/04_schema_template.md
 > - infinite_fireworks_5m: duration_sec=300 >= 1 (통과), target_name_key=booster_fireworks != none (통과)
 > - 나머지 infinite 8종 동일 패턴 - 모두 통과.
 >
-> **가설 항목 (PST_item_list.json 미등재):**
-> - `booster_infinite_undo_15m` (PST_event_milestone.json key 180037에서 발견): PST_item_list.json에 정식 등재 없음. 이벤트 전용 임시 지급 아이템으로 추정. 정식 item_definition 등재 시 infinite 유형, duration_sec=900(가설: 15분=900초), target_name_key=booster_undo로 설정 권장.
-> - `booster_infinite_undo_30m` (PST_event_milestone.json key 180041에서 발견): duration_sec=1800(가설: 30분=1800초), target_name_key=booster_undo로 설정 권장.
+> **[가설] 항목 (PST_item_list.json 미등재):**
+> - `booster_infinite_undo_15m` [가설] (PST_event_milestone.json key 180037에서 발견): PST_item_list.json에 정식 등재 없음. 이벤트 전용 임시 지급 아이템으로 추정. 정식 item_definition 등재 시 infinite 유형, duration_sec=900 [가설: 15분=900초], target_name_key=booster_undo로 설정 권장.
+> - `booster_infinite_undo_30m` [가설] (PST_event_milestone.json key 180041에서 발견): duration_sec=1800 [가설: 30분=1800초], target_name_key=booster_undo로 설정 권장.
 > - 위 2종은 레퍼런스 데이터 불일치 사항으로, 우리 게임 정식 등재 전 담당 PM 확인 필요.
 
 ---
@@ -359,11 +361,11 @@ schema_ref: workspace/04_schema_template.md
 | 180034 | 160003 | 4 | earn_point | none | 90 | currency_ticket | 1 | true |
 | 180035 | 160003 | 5 | earn_point | none | 130 | booster_fireworks | 1 | true |
 | 180036 | 160003 | 6 | earn_point | none | 180 | currency_gold | 800 | true |
-| 180037 | 160003 | 7 | earn_point | none | 240 | booster_infinite_undo_15m | 1 | true |
+| 180037 | 160003 | 7 | earn_point | none | 240 | booster_infinite_undo_15m [가설: PST_item_list 미등재, 이벤트 전용 추정] | 1 | true |
 | 180038 | 160003 | 8 | earn_point | none | 310 | currency_ticket | 1 | true |
 | 180039 | 160003 | 9 | earn_point | none | 400 | currency_gold | 1200 | true |
 | 180040 | 160003 | 10 | earn_point | none | 500 | booster_wild_card | 1 | true |
-| 180041 | 160003 | 11 | earn_point | none | 620 | booster_infinite_undo_30m | 1 | true |
+| 180041 | 160003 | 11 | earn_point | none | 620 | booster_infinite_undo_30m [가설: PST_item_list 미등재, 이벤트 전용 추정] | 1 | true |
 | 180042 | 160003 | 12 | earn_point | none | 760 | currency_gold | 1800 | true |
 | 180043 | 160003 | 13 | earn_point | none | 920 | booster_golden_ticket | 1 | true |
 | 180044 | 160003 | 14 | earn_point | none | 1100 | currency_gold | 3000 | true |
@@ -397,23 +399,25 @@ PST_daily_wheel.json은 8개 항목의 가챠 풀 구조임. 고정 amount_per_c
 
 gacha_rate 합계: 3000+2500+1500+1200+800+600+300+100 = **10000** (VAL-003 유사 검증 통과).
 
-gold EV(기댓값) per spin = (500×3000 + 1500×1500 + 5000×300) / 10000 = (1,500,000 + 2,250,000 + 1,500,000) / 10000 = **525 gold/회**.
+gold EV(기댓값) per spin = (500×3000 + 1500×1500 + 5000×300) / 10000 = (1,500,000 + 2,250,000 + 1,500,000) / 10000 = 525 gold/회 (gold 항목만 단순 EV).
 
-따라서 `amount_per_claim` 컬럼에 고정 수량을 기재할 수 없음. 아래 테이블에서는 gold EV 525를 **가설** 기재하되 별도 주석 처리.
+**05_system_result.md 가챠 EV 검증값:** 부스터(booster_undo, booster_fireworks, booster_wild_card, currency_ticket) 환산 포함 전체 EV = **720 gold/회** [라이브 확정, 2026-03-09].
+
+따라서 `amount_per_claim` 컬럼에 고정 수량을 기재할 수 없음. 아래 테이블에서는 전체 EV 720을 **가설** 기재하되 별도 주석 처리.
 
 | key_number | source_type | currency_type | daily_limit | amount_per_claim | in_use |
 |---|---|---|---|---|---|
 | 10025 | shop_ad | gold | 5 | 2000 | true |
-| 10057 | inbox | gold | 5 | 2000 | true |
-| 10063 | popup | gold | 10 | 2000 | true |
-| 10027 | daily_wheel_ad | gold | 5 | 525 (가설: PST_daily_wheel.json 가챠 gold EV 기댓값. 실제 1회 지급량은 확률 기반 가변값 500/1500/5000 중 1개 선택) | true |
+| 10057 | inbox | gold | 5 | 800 [라이브 확정, 2026-03-09] | true |
+| 10063 | popup | gold | 10 | 800 [라이브 확정, 2026-03-09] | true |
+| 10027 | daily_wheel_ad | gold | 5 | 720 [라이브 확정, 2026-03-09] (가설: 05_system_result.md 가챠 EV 검증값. 실제 1회 지급량은 확률 기반 가변값 500/1500/5000 gold 또는 부스터 중 1개 선택) | true |
 
 > 출처 명시:
 > - shop_ad: PST_const.json `shop_free_gold_limit: 5` (key 10025), `shop_free_gold_amount: 2000` (key 10026)
-> - inbox: PST_const.json `inbox_free_gold_limit: 5` (key 10057), `inbox_free_gold_amount: 2000` (key 10058)
-> - popup: PST_const.json `popup_free_gold_limit: 10` (key 10063), `popup_free_gold_amount: 2000` (key 10064)
+> - inbox: PST_const.json `inbox_free_gold_limit: 5` (key 10057), `inbox_free_gold_amount: 800` (key 10058) [라이브 확정, 2026-03-09; 07_sheet_modify_log.md 반영 확인]
+> - popup: PST_const.json `popup_free_gold_limit: 10` (key 10063), `popup_free_gold_amount: 800` (key 10064) [라이브 확정, 2026-03-09; 07_sheet_modify_log.md 반영 확인]
 > - daily_wheel_ad daily_limit: PST_const.json `daily_wheel_ad_limit: 5` (key 10027)
-> - daily_wheel_ad amount_per_claim: **PST_const.json에 고정값 없음**. PST_daily_wheel.json 가챠 구조 기반 EV 525 gold 산출 (가설).
+> - daily_wheel_ad amount_per_claim: **PST_const.json에 고정값 없음**. 05_system_result.md 가챠 EV 검증값 720 gold 기재 [라이브 확정, 2026-03-09] (가설: 부스터 환산 포함 전체 EV).
 
 > VAL-007 검증: 일일 최대 무료 gold 획득량 계산
 > - shop_ad: 2000 × 5 = 10,000 gold
@@ -476,7 +480,7 @@ gold EV(기댓값) per spin = (500×3000 + 1500×1500 + 5000×300) / 10000 = (1,
 | 유휴 골드 충전 | PST_const.json: 3,000 gold/4h. 일 최대 2사이클 (8h 접속 가정, 가설) | 6,000 gold |
 | 광고 gold (shop+inbox) | shop: 2,000×5=10,000 / inbox: 2,000×5=10,000. 단, 일 10회만 시청(가설) → shop×5+inbox×5=20,000. 단 gold_max_cap 10,000으로 실질 수취 제한 | 실질 10,000 gold (캡 제한) |
 | 데일리 출석 | 7일 평균: 6,500÷7 = 929 gold/일 | 929 gold |
-| 데일리 휠 | gold EV 525/회 × 3회 = 1,575 gold (가설) | 1,575 gold |
+| 데일리 휠 | gold EV 720/회 × 3회 = 2,160 gold [라이브 확정, 2026-03-09] (가설: 05_system_result.md 검증값 기준, 3회 시청 가정) | 2,160 gold |
 | 인게임 콤보 보상 | 5레벨 × 평균 5콤보 × 2 gold/콤보 = 50 gold (초반 레벨 가설) | 50 gold |
 | 인게임 덱 잔여 보상 | 5레벨 × 클리어 3.5회 × 15 gold = 263 gold (초반 레벨 가설) | 263 gold |
 | 이벤트 마일스톤 골드 | 주 1회 10스텝 완주 시 약 6,700 gold (event 160001 step 1~10 합계 기준) ÷ 7일 = 957 gold/일 (가설) | 957 gold |
@@ -535,6 +539,6 @@ gold EV(기댓값) per spin = (500×3000 + 1500×1500 + 5000×300) / 10000 = (1,
 | PST_streak_reward.json gacha_group_id 없음 | 데이터 미비 | 스키마 CP1 Adjust에서 추가된 컬럼이나 원본 JSON에 없음. 그룹화 가설 기재 | 서버 팀 확인 후 gacha_group_id 필드 추가 |
 | PST_streak_reward gacha_rate 합산 15000 | VAL-003 실패 | 추정 그룹 내 합산 10000 초과. req_length별 독립 확률 풀 구조 가능성 | 원본 로직 확인 필요 |
 | booster_infinite_undo_15m/30m PST_item_list 미등재 | 데이터 불일치 | PST_event_milestone에서 보상으로 등장하나 PST_item_list.json에 없음 | PM 확인 후 PST_item_list에 정식 등재 또는 이벤트 전용 임시 아이템으로 처리 |
-| daily_wheel_ad amount_per_claim 고정값 없음 | 데이터 구조 이슈 | PST_daily_wheel.json이 가챠 구조로 고정 지급량 없음. EV 525 gold를 가설로 기재 | 스키마 `amount_per_claim` 컬럼이 가챠 구조를 수용하지 못함. 스키마 수정 또는 EV 기재 방침 결정 필요 |
+| daily_wheel_ad amount_per_claim 고정값 없음 | 데이터 구조 이슈 | PST_daily_wheel.json이 가챠 구조로 고정 지급량 없음. 05_system_result.md 검증값 EV 720 gold를 가설로 기재 [라이브 확정, 2026-03-09] | 스키마 `amount_per_claim` 컬럼이 가챠 구조를 수용하지 못함. 스키마 수정 또는 EV 기재 방침 결정 필요 |
 | CCS 재화 구조 전 항목 | 미확인 | WebSearch 미수행으로 전 항목 미확인 | WebSearch 권한 확보 후 재조사 |
 | friend_send_reward 단위 미상 | 데이터 미상 | PST_const.json `friend_send_reward: 1`의 단위가 gold인지 count인지 불명확 | 서버 코드 또는 PM 확인 필요 |
