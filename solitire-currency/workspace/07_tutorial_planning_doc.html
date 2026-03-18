@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PST 튜토리얼 기획서</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #232735;
+    --border: #2e3345;
+    --text: #e4e6ed;
+    --text2: #9ba1b5;
+    --accent: #6c8cff;
+    --accent2: #4ecdc4;
+    --gold: #ffd700;
+    --green: #4caf50;
+    --red: #ff4444;
+    --orange: #ff9800;
+    --pink: #ff6b9d;
+    --purple: #b39ddb;
+    --cyan: #80deea;
+    --radius: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.7;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #1a1d27 0%, #1f2a4a 40%, #2a1f3d 70%, #1a2d3d 100%);
+    padding: 60px 40px 40px; border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -50%; right: -15%;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(108,140,255,0.1) 0%, transparent 60%);
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: -30%; left: 10%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(78,205,196,0.06) 0%, transparent 60%);
+  }
+  .hero h1 { font-size: 2.4rem; font-weight: 800; position: relative; letter-spacing: -0.5px; }
+  .hero h1 span { background: linear-gradient(135deg, #6c8cff, #4ecdc4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero .subtitle { color: var(--text2); font-size: 1rem; margin-top: 6px; position: relative; }
+  .hero .badges { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; position: relative; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+  .badge-teal { background: rgba(78,205,196,0.15); color: var(--accent2); border: 1px solid rgba(78,205,196,0.3); }
+  .badge-blue { background: rgba(108,140,255,0.15); color: var(--accent); border: 1px solid rgba(108,140,255,0.3); }
+  .badge-gold { background: rgba(255,215,0,0.12); color: var(--gold); border: 1px solid rgba(255,215,0,0.25); }
+  .badge-orange { background: rgba(255,152,0,0.15); color: var(--orange); border: 1px solid rgba(255,152,0,0.3); }
+
+  /* ===== NAV ===== */
+  .nav-sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 280px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 20px 0; z-index: 100;
+    transform: translateX(-100%); transition: transform 0.3s;
+  }
+  .nav-sidebar.open { transform: translateX(0); }
+  .nav-toggle {
+    position: fixed; left: 16px; top: 16px; z-index: 200;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    width: 42px; height: 42px; border-radius: 10px; cursor: pointer; font-size: 1.3rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-sidebar a {
+    display: block; padding: 7px 22px; color: var(--text2); text-decoration: none;
+    font-size: 0.82rem; transition: all 0.2s; border-left: 3px solid transparent;
+  }
+  .nav-sidebar a:hover { color: var(--text); background: var(--surface2); border-left-color: var(--accent); }
+  .nav-sidebar .nav-title {
+    padding: 14px 22px 6px; font-size: 0.68rem; font-weight: 700;
+    text-transform: uppercase; color: var(--accent); letter-spacing: 1.5px;
+  }
+
+  /* ===== LAYOUT ===== */
+  .container { max-width: 1300px; margin: 0 auto; padding: 0 28px; }
+  section { padding: 52px 0; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+  h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+  h2 .num {
+    background: var(--accent); color: #fff; width: 34px; height: 34px; border-radius: 9px;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; font-weight: 800;
+  }
+  h3 { font-size: 1.15rem; font-weight: 600; margin: 28px 0 14px; color: var(--accent2); }
+  h4 { font-size: 1rem; font-weight: 600; margin: 22px 0 10px; color: var(--gold); }
+
+  /* ===== TABLES ===== */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.85rem; }
+  th {
+    background: var(--surface2); padding: 10px 14px; text-align: left; font-weight: 600;
+    color: var(--accent); border-bottom: 2px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: rgba(108,140,255,0.04); }
+
+  /* ===== TAGS ===== */
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 5px; font-size: 0.73rem; font-weight: 600; }
+  .tag-phase { background: rgba(108,140,255,0.15); color: var(--accent); }
+  .tag-free { background: rgba(76,175,80,0.2); color: var(--green); }
+  .tag-repeat { background: rgba(255,107,157,0.15); color: var(--pink); }
+  .tag-lobby { background: rgba(78,205,196,0.15); color: var(--accent2); }
+  .tag-ingame { background: rgba(255,152,0,0.15); color: var(--orange); }
+  .tag-prelevel { background: rgba(179,157,219,0.2); color: var(--purple); }
+  .tag-trigger { background: rgba(128,222,234,0.15); color: var(--cyan); }
+  .tag-gimmick { background: rgba(255,215,0,0.15); color: var(--gold); }
+  .tag-system { background: rgba(108,140,255,0.12); color: #8aa8ff; }
+  .tag-booster { background: rgba(76,175,80,0.15); color: #81c784; }
+  .tag-event { background: rgba(255,107,157,0.12); color: var(--pink); }
+
+  /* ===== CARDS ===== */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin: 20px 0; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card .card-title { font-weight: 700; margin-bottom: 8px; font-size: 0.95rem; }
+  .card .card-sub { color: var(--text2); font-size: 0.82rem; }
+  .card .card-meta { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ===== TIMELINE ===== */
+  .timeline { position: relative; padding-left: 40px; margin: 24px 0; }
+  .timeline::before {
+    content: ''; position: absolute; left: 16px; top: 0; bottom: 0;
+    width: 2px; background: linear-gradient(180deg, var(--accent), var(--accent2), var(--gold), var(--pink));
+  }
+  .tl-item { position: relative; margin-bottom: 28px; }
+  .tl-item::before {
+    content: ''; position: absolute; left: -30px; top: 6px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--surface); border: 3px solid var(--accent);
+  }
+  .tl-item.phase-0::before { border-color: #6c8cff; }
+  .tl-item.phase-1::before { border-color: #4ecdc4; }
+  .tl-item.phase-2::before { border-color: #81c784; }
+  .tl-item.phase-3::before { border-color: #ffd700; }
+  .tl-item.phase-4::before { border-color: #ff9800; }
+  .tl-item.phase-5::before { border-color: #ff6b9d; }
+  .tl-item.phase-6::before { border-color: #b39ddb; }
+  .tl-level { font-size: 0.78rem; color: var(--text2); font-weight: 600; }
+  .tl-content {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 18px; margin-top: 6px;
+  }
+  .tl-content .tl-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+  .tl-content .tl-desc { font-size: 0.82rem; color: var(--text2); }
+
+  /* ===== FLOWCHART ===== */
+  .flow-container { display: flex; flex-direction: column; gap: 0; align-items: center; margin: 24px 0; }
+  .flow-box {
+    background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius);
+    padding: 16px 28px; text-align: center; min-width: 260px; position: relative;
+  }
+  .flow-box.active { border-color: var(--accent); box-shadow: 0 0 20px rgba(108,140,255,0.15); }
+  .flow-box .flow-label { font-weight: 700; font-size: 0.95rem; }
+  .flow-box .flow-sub { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+  .flow-arrow { color: var(--text2); font-size: 1.2rem; padding: 4px 0; }
+
+  /* ===== STAT CARDS ===== */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin: 20px 0; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px; text-align: center;
+  }
+  .stat-card .stat-value { font-size: 2rem; font-weight: 800; }
+  .stat-card .stat-label { font-size: 0.78rem; color: var(--text2); margin-top: 4px; }
+  .stat-card.teal .stat-value { color: var(--accent2); }
+  .stat-card.blue .stat-value { color: var(--accent); }
+  .stat-card.gold .stat-value { color: var(--gold); }
+  .stat-card.orange .stat-value { color: var(--orange); }
+  .stat-card.pink .stat-value { color: var(--pink); }
+  .stat-card.green .stat-value { color: var(--green); }
+
+  /* ===== PHASE PROGRESS ===== */
+  .phase-bar { display: flex; gap: 4px; margin: 20px 0; border-radius: 8px; overflow: hidden; }
+  .phase-seg {
+    flex: 1; padding: 12px 8px; text-align: center; font-size: 0.72rem; font-weight: 600;
+    cursor: default; transition: all 0.2s;
+  }
+  .phase-seg:hover { filter: brightness(1.2); }
+  .phase-seg.p0 { background: rgba(108,140,255,0.25); color: #8aa8ff; }
+  .phase-seg.p1 { background: rgba(78,205,196,0.25); color: #6dd5ca; }
+  .phase-seg.p2 { background: rgba(129,199,132,0.25); color: #81c784; }
+  .phase-seg.p3 { background: rgba(255,215,0,0.2); color: #ffd54f; }
+  .phase-seg.p4 { background: rgba(255,152,0,0.25); color: #ffb74d; }
+  .phase-seg.p5 { background: rgba(255,107,157,0.2); color: #ff80ab; }
+  .phase-seg.p6 { background: rgba(179,157,219,0.2); color: #b39ddb; }
+
+  /* ===== ARCHITECTURE DIAGRAM ===== */
+  .arch-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px; margin: 20px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem;
+    white-space: pre; overflow-x: auto; line-height: 1.5; color: var(--text2);
+  }
+  .arch-box .highlight { color: var(--accent); font-weight: 600; }
+  .arch-box .highlight2 { color: var(--accent2); font-weight: 600; }
+  .arch-box .highlight3 { color: var(--gold); font-weight: 600; }
+
+  /* ===== INFO BOX ===== */
+  .info-box {
+    background: rgba(108,140,255,0.08); border: 1px solid rgba(108,140,255,0.2);
+    border-radius: var(--radius); padding: 16px 20px; margin: 16px 0; font-size: 0.88rem;
+  }
+  .info-box.warn {
+    background: rgba(255,152,0,0.08); border-color: rgba(255,152,0,0.25);
+  }
+  .info-box.success {
+    background: rgba(76,175,80,0.08); border-color: rgba(76,175,80,0.2);
+  }
+  .info-box strong { color: var(--accent); }
+  .info-box.warn strong { color: var(--orange); }
+  .info-box.success strong { color: var(--green); }
+
+  /* ===== MISC ===== */
+  .divider { height: 1px; background: var(--border); margin: 32px 0; }
+  .mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85em; color: var(--accent2); }
+  .text-muted { color: var(--text2); }
+  .text-sm { font-size: 0.82rem; }
+  .mt-2 { margin-top: 16px; }
+  .mb-1 { margin-bottom: 8px; }
+  ul.check-list { list-style: none; padding: 0; }
+  ul.check-list li { padding: 4px 0; font-size: 0.88rem; }
+  ul.check-list li::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; }
+  ul.check-list li.done::before { background: var(--green); }
+  ul.check-list li.pending::before { background: var(--orange); }
+  ul.check-list li.gap::before { background: var(--pink); }
+</style>
+</head>
+<body>
+
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">&#9776;</button>
+
+<nav class="nav-sidebar">
+  <div class="nav-title">Overview</div>
+  <a href="#overview">설계 개요</a>
+  <a href="#stats">핵심 수치</a>
+  <a href="#architecture">시스템 아키텍처</a>
+  <div class="nav-title">Phase Flow</div>
+  <a href="#phase-progress">Phase 진행 흐름</a>
+  <a href="#phase0">Phase 0 (Lv 1~2)</a>
+  <a href="#phase1">Phase 2 (Lv 3~4)</a>
+  <a href="#phase3">Phase 3~4 (Lv 5~8)</a>
+  <a href="#phase5">Phase 5~6 (Lv 9~24)</a>
+  <div class="nav-title">Data</div>
+  <a href="#unlock-table">unlock 시트 (26행)</a>
+  <a href="#guide-table">tutorial_guide 시트 (28행)</a>
+  <a href="#trigger-types">trigger_type 정의</a>
+  <div class="nav-title">System</div>
+  <a href="#guide-components">가이드 컴포넌트</a>
+  <a href="#state-machine">상태 머신</a>
+  <a href="#transition">Tutorial → Normal 전환</a>
+  <div class="nav-title">Reference</div>
+  <a href="#design-principles">설계 원칙</a>
+  <a href="#kpi">KPI 연결</a>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="container">
+    <h1><span>PST 튜토리얼 기획서</span></h1>
+    <p class="subtitle">Puzzle Solitaire Tripeaks &mdash; NRU 진입부터 Lv 24 전체 해금까지</p>
+    <div class="badges">
+      <span class="badge badge-teal">Phase 0~6</span>
+      <span class="badge badge-blue">unlock 26항목</span>
+      <span class="badge badge-gold">tutorial_guide 28행</span>
+      <span class="badge badge-orange">Lv 1~24 구간</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ===== 1. OVERVIEW ===== -->
+<section id="overview">
+  <h2><span class="num">1</span> 설계 개요</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">즉시 플레이</div>
+      <div class="card-sub">NRU는 로비를 건너뛰고 바로 인게임 진입. 첫 판(Lv 1) 풀 가이드로 기본 메카닉 숙달.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">비간섭 가이드</div>
+      <div class="card-sub">올바른 행동 시 가이드 미노출. 5초 무행동 시에만 힌트 깜빡임. 플레이어 자율성 보장.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">단계적 복잡도</div>
+      <div class="card-sub">Lv 1~8 Tutorial 티어 (help_card_rate 80%). Lv 9부터 Normal/DDA 전환. 2레벨 이내 간격 해금.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">2-시트 아키텍처</div>
+      <div class="card-sub">unlock (해금 조건) / tutorial_guide (가이드 설정 + 맵 배정 통합)</div>
+    </div>
+  </div>
+  <div class="info-box">
+    <strong>레퍼런스:</strong> Candy Crush Solitaire (King, 2025). Tutorial 티어: help_card_rate 80%, pity_trigger 3회.
+    trigger_type 5종: <span class="mono">level_clear</span> / <span class="mono">first_appear</span> / <span class="mono">condition</span> / <span class="mono">tutorial_level</span> / <span class="mono">touch</span>
+    guide_type 2종: <span class="mono">focus_bubble</span>(딤+하이라이트+강제) / <span class="mono">floating</span>(딤 없이+비강제)
+  </div>
+</section>
+
+<!-- ===== 2. STATS ===== -->
+<section id="stats">
+  <h2><span class="num">2</span> 핵심 수치</h2>
+  <div class="stat-row">
+    <div class="stat-card blue"><div class="stat-value">26</div><div class="stat-label">unlock 항목</div></div>
+    <div class="stat-card teal"><div class="stat-value">28</div><div class="stat-label">tutorial_guide 가이드</div></div>
+    <div class="stat-card gold"><div class="stat-value">7</div><div class="stat-label">Phase (0~6)</div></div>
+    <div class="stat-card orange"><div class="stat-value">9</div><div class="stat-label">전용맵 (is_dedicated_map)</div></div>
+    <div class="stat-card pink"><div class="stat-value">5</div><div class="stat-label">trigger_type 종류</div></div>
+    <div class="stat-card green"><div class="stat-value">2</div><div class="stat-label">guide_type 유형</div></div>
+  </div>
+
+  <h3>Phase별 레벨 분포</h3>
+  <div class="phase-bar">
+    <div class="phase-seg p0">P0<br>Lv 1</div>
+    <div class="phase-seg p1">P1<br>Lv 2</div>
+    <div class="phase-seg p2">P2<br>Lv 3~4</div>
+    <div class="phase-seg p3">P3<br>Lv 5~7</div>
+    <div class="phase-seg p4">P4<br>Lv 8</div>
+    <div class="phase-seg p5">P5<br>Lv 9~14</div>
+    <div class="phase-seg p6">P6<br>Lv 15~24</div>
+  </div>
+</section>
+
+<!-- ===== 3. ARCHITECTURE ===== -->
+<section id="architecture">
+  <h2><span class="num">3</span> 시스템 아키텍처</h2>
+  <div class="arch-box"><span class="highlight">TutorialManager</span> (싱글턴, 전체 튜토리얼 상태 관리)
+├── <span class="highlight2">GuideSystem</span>        인게임 가이드 (딤+하이라이트+버블+화살표)
+│   └── GuideUI Components (4종: Bubble, Highlight, Arrow, Feedback)
+├── <span class="highlight2">UnlockSystem</span>       해금 팝업 (focus_bubble 단일 유형)
+│   └── UnlockPopup Factory
+├── <span class="highlight2">MapAssigner</span>        맵 배정 (tutorial_guide.is_dedicated_map 참조)
+│   └── tutorial_map_id (9건, TUTO_0001~0022)
+└── <span class="highlight3">TutorialStateStore</span> 로컬 저장 (FB setDataAsync / LocalStorage)
+    ├── completedPhases[]     ≤ 8개
+    ├── shownUnlockPopups[]   ≤ 26개
+    ├── freeBoostersGranted[] ≤ 3개
+    └── shownGimmickGuides[] ≤ 3개
+
+<span class="text-muted">의존 시트: unlock (26행) / tutorial_guide (27행) / const / difficulty_tier / string_code</span></div>
+
+  <h3>데이터 흐름</h3>
+  <div class="flow-container">
+    <div class="flow-box active"><div class="flow-label">앱 실행</div><div class="flow-sub">isNRU 판별</div></div>
+    <div class="flow-arrow">&#x25BC;</div>
+    <div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center;">
+      <div class="flow-box" style="border-color:var(--accent2)"><div class="flow-label">NRU (Yes)</div><div class="flow-sub">Phase 0 시작, 로비 스킵, 즉시 인게임</div></div>
+      <div class="flow-box" style="border-color:var(--orange)"><div class="flow-label">RU (No)</div><div class="flow-sub">userLevel 기반 unlock 체크</div></div>
+    </div>
+    <div class="flow-arrow">&#x25BC;</div>
+    <div class="flow-box"><div class="flow-label">Lv 1~8: Tutorial 티어</div><div class="flow-sub">help_card_rate 80%, tutorial_guide 전용맵, Phase 순차 진행</div></div>
+    <div class="flow-arrow">&#x25BC;</div>
+    <div class="flow-box" style="border-color:var(--gold)"><div class="flow-label">Lv 9+: Normal/DDA 전환</div><div class="flow-sub">해금 팝업만 계속 (show_tutorial 기반)</div></div>
+  </div>
+</section>
+
+<!-- ===== 4. PHASE PROGRESS ===== -->
+<section id="phase-progress">
+  <h2><span class="num">4</span> Phase 진행 흐름</h2>
+
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>레벨</th><th>학습 목표</th><th>가이드 방식</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="tag tag-phase">Phase 0</span></td><td>Lv 1</td><td>카드 매칭 (&#xB1;1), 드로우덱, 클리어, 로비 게임시작 강제</td><td>풀 가이드 (floating 말풍선) + lobby focus_bubble</td></tr>
+      <tr><td><span class="tag tag-phase">Phase 1</span></td><td>Lv 2</td><td>덱 뒤집기, 프리레벨 팝업</td><td>floating 말풍선 + focus_bubble</td></tr>
+      <tr><td><span class="tag tag-phase">Phase 2</span></td><td>Lv 3~4</td><td>상점, 방치골드, 플러스카드, 출석체크</td><td>focus_bubble (강제) + 인게임 가이드</td></tr>
+      <tr><td><span class="tag tag-phase">Phase 3</span></td><td>Lv 5~7</td><td>스트릭, 리더보드, 콜렉션, 와일드 FREE&times;3</td><td>해금 팝업 + floating 가이드</td></tr>
+      <tr><td><span class="tag tag-phase">Phase 4</span></td><td>Lv 8</td><td>파이어웍스 <span class="tag tag-free">FREE &times;3</span>, 언두 <span class="tag tag-free">FREE &times;3</span>(floating), 엑스트라덱(상황기반), 도시꾸미기 강제</td><td>해금 팝업 + floating 가이드</td></tr>
+      <tr><td><span class="tag tag-phase">Phase 5</span></td><td>Lv 9~14</td><td>DDA 시작, 베팅x2, 데일리휠, 이벤트 강제 터치, 러너카드</td><td>해금 팝업 + 강제 터치 유도</td></tr>
+      <tr><td><span class="tag tag-phase">Phase 6</span></td><td>Lv 15~24</td><td>베팅x4, 자물쇠+열쇠, 얼음카드, 골든티켓 <span class="tag tag-free">FREE &times;3</span></td><td>해금 팝업만 (자율 플레이)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===== PHASE 0 ===== -->
+<section id="phase0">
+  <h2><span class="num">5</span> Phase 0~1: 즉시 진입 + 로비 (Lv 1~2)</h2>
+
+  <div class="info-box">
+    <strong>230001 content_ingame_intro</strong> (floating, tutorial_level=1) &mdash; Lv 1 인게임 시작 시 카드 매칭 기본 안내. 플로팅 말풍선, 화면 탭 스킵 가능.<br>
+    <strong>230002 content_deck_draw</strong> (floating, tutorial_level=2) &mdash; Lv 2 인게임 시작 시 덱 뒤집기 안내. 플로팅 말풍선, 화면 탭 스킵 가능.
+  </div>
+
+  <div class="info-box warn">
+    <strong>Lv 1~3 제한:</strong> 정해진 카드만 터치 가능 (가이드가 지정한 카드 외 입력 차단). 다른 카드 터치 시 카드 흔들기(0.3초) + 올바른 카드 깜빡임 힌트 연출 재생.
+  </div>
+
+  <h3>Lv 1 인게임 가이드 스텝</h3>
+  <div class="timeline">
+    <div class="tl-item phase-0">
+      <div class="tl-level">S1-1 &mdash; 게임 화면 구성 소개</div>
+      <div class="tl-content">
+        <div class="tl-title">딤 배경 + 순차 하이라이트</div>
+        <div class="tl-desc">필드 카드 &rarr; 드로우 덱 &rarr; 오픈 카드 (0.8초 간격). 화면 아무 곳 탭으로 진행. 스킵 불가.</div>
+      </div>
+    </div>
+    <div class="tl-item phase-0">
+      <div class="tl-level">S1-2 &mdash; 카드 매칭 규칙 (&#xB1;1)</div>
+      <div class="tl-content">
+        <div class="tl-title">매칭 가능 카드 하이라이트 + 탭 유도 화살표</div>
+        <div class="tl-desc">최소 3회 매칭 성공 필요. 5초 무행동 시 힌트 깜빡임. 오류 시 카드 흔들기 + 올바른 카드 깜빡임 3회.</div>
+      </div>
+    </div>
+    <div class="tl-item phase-0">
+      <div class="tl-level">S1-3 &mdash; 클리어 연출</div>
+      <div class="tl-content">
+        <div class="tl-title">골드 1,000G + &alpha; + 해머 획득</div>
+        <div class="tl-desc">NRU 전용 강화 클리어 이펙트. 결과 화면 확인 &rarr; Phase 1 (로비) 진입.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <h3>Lv 1 클리어 후 로비</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">게임 시작 버튼 강제</div>
+      <div class="card-sub">Lv 1 클리어 후 로비 도달 시 게임 시작 버튼 Dim+Highlight. 반드시 버튼 터치하여 다음 레벨 진입.</div>
+      <div class="card-meta"><span class="tag tag-lobby">lobby</span><span class="tag tag-trigger">level_clear</span></div>
+    </div>
+  </div>
+
+  <h3>Lv 2 인게임 가이드 스텝</h3>
+  <div class="timeline">
+    <div class="tl-item phase-0">
+      <div class="tl-level">S2-1 &mdash; 드로우 덱 사용</div>
+      <div class="tl-content">
+        <div class="tl-title">이동 불가 시 드로우 덱 하이라이트</div>
+        <div class="tl-desc">이동 가능한 카드가 없을 때 덱에 포커스. 다른 카드 터치 거부. 드로우 후 카드 매칭 복귀.</div>
+      </div>
+    </div>
+    <div class="tl-item phase-0">
+      <div class="tl-level">S2-2 &mdash; 클리어 연출</div>
+      <div class="tl-content">
+        <div class="tl-title">골드 + 해머 획득</div>
+        <div class="tl-desc">클리어 후 로비 진입.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Lv 2 클리어 후 해금</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">프리레벨 팝업</div>
+      <div class="card-sub">Lv 2 클리어 후 프리레벨 팝업에서 참가비·보상·부스터 UI 요소 안내. 반드시 해당 요소 터치.</div>
+      <div class="card-meta"><span class="tag tag-system">핵심 시스템</span><span class="tag tag-prelevel">pre_level</span><span class="tag tag-trigger">level_clear</span></div>
+    </div>
+  </div>
+
+  <div class="info-box warn">
+    <strong>Lv 1~3 무조건 클리어:</strong> 튜토리얼 레벨은 실패 없이 반드시 클리어되도록 설계. 맵 구성과 가이드로 100% 클리어 보장.
+  </div>
+</section>
+
+<!-- ===== PHASE 1~2 ===== -->
+<section id="phase1">
+  <h2><span class="num">6</span> Phase 2: 핵심 시스템 (Lv 3~4)</h2>
+
+  <div class="info-box">
+    <strong>Lv 3부터 실제 입장료(골드) 차감 시작.</strong> Lv 1~2는 입장료 없이 플레이. 프리레벨 팝업에서 참가비·보상·부스터 UI를 처음 안내.
+  </div>
+
+  <div class="info-box warn">
+    <strong>Lv 3 강제 스테이지:</strong> Lv 1~2와 동일하게 정해진 카드만 터치 가능. 무조건 클리어되도록 설계. 맵 구성과 가이드로 100% 클리어 보장.
+  </div>
+
+  <h3>Lv 3 해금</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">상점</div>
+      <div class="card-sub">클리어 후 로비 도달 시 아이콘 포커스. 반드시 상점 아이콘 터치.</div>
+      <div class="card-meta"><span class="tag tag-system">핵심 시스템</span><span class="tag tag-lobby">lobby</span></div>
+    </div>
+  </div>
+
+  <h3>Lv 4 해금</h3>
+  <div class="info-box">
+    <strong>Lv 4 로비 순차 강제 플로우:</strong> Lv 3 클리어 &rarr; 로비 복귀 &rarr; ① 방치골드 해금+수령 강제(focus_bubble) &rarr; ② 출석체크 아이콘 강제 터치(focus_bubble). 모두 focus_bubble로 강제되며 순차 진행.
+  </div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">방치골드 (해금+수령)</div>
+      <div class="card-sub">클리어 후 로비 복귀 시 아이콘 focus_bubble 포커스 &rarr; 반드시 터치하여 수령까지 완료. 4h 타이머 시작.</div>
+      <div class="card-meta"><span class="tag tag-lobby">lobby</span><span class="tag tag-trigger">level_clear</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">출석체크</div>
+      <div class="card-sub">방치골드 수령 완료 후 출석체크 아이콘 focus_bubble 강제 터치. 반드시 출석체크 아이콘 터치.</div>
+      <div class="card-meta"><span class="tag tag-lobby">lobby</span><span class="tag tag-trigger">level_clear</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">플러스 카드</div>
+      <div class="card-sub">인게임에서 첫 등장 시 &#xB1;1 매칭 규칙 안내. 반드시 해당 카드 터치하여 매칭.</div>
+      <div class="card-meta"><span class="tag tag-ingame">ingame</span><span class="tag tag-trigger">first_appear</span><span class="tag tag-gimmick">기믹</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PHASE 3~4 ===== -->
+<section id="phase3">
+  <h2><span class="num">7</span> Phase 3~4: 부스터·컬렉션 (Lv 5~8)</h2>
+
+  <h3>Lv 5 해금</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">스트릭 미터</div>
+      <div class="card-sub">인게임 2연속 매칭 시 스트릭 미터 안내. 반드시 2콤보 달성.</div>
+      <div class="card-meta"><span class="tag tag-ingame">ingame</span><span class="tag tag-trigger">first_appear</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">스트릭 스타 + 리더보드</div>
+      <div class="card-sub">"스트릭 스타를 모으셨네요! 리더보드에서 다른 플레이어와 경쟁하는 데 쓰여요." 스트릭 스타 해금 안내 후 리더보드 아이콘 터치 유도까지 한 세트.</div>
+      <div class="card-meta"><span class="tag tag-lobby">lobby</span><span class="tag tag-trigger">level_clear</span></div>
+    </div>
+  </div>
+
+  <h3>Lv 6~7 해금</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">컬렉션 앨범 <span class="tag tag-phase">(업데이트 스펙)</span></div>
+      <div class="card-sub">Lv 6 클리어 후 해금 팝업 + 아이콘 터치 유도. 퍼즐 피스: x1=1장, x2=3장, x4=5장.</div>
+      <div class="card-meta"><span class="tag tag-lobby">lobby</span><span class="tag tag-trigger">level_clear</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">와일드 카드 <span class="tag tag-free">FREE&times;3</span></div>
+      <div class="card-sub">Lv 7 인게임 첫 등장 시 floating 가이드 (탭 스킵). 와일드 카드가 전용 위치에서 출현하여 모든 카드와 매칭 가능. FREE&times;3 무료 지급. 전용맵 <span class="mono">TUTO_0007</span>.</div>
+      <div class="card-meta"><span class="tag tag-ingame">ingame</span><span class="tag tag-trigger">first_appear</span></div>
+    </div>
+  </div>
+
+  <h3>Lv 8 해금 (Tutorial 클리어)</h3>
+  <div class="card-grid">
+    <div class="card" style="border-color: var(--green);">
+      <div class="card-title">파이어웍스 <span class="tag tag-free">FREE &times;3</span></div>
+      <div class="card-sub">클리어 후 프리레벨 팝업에서 해금. 앞줄 카드 전체 제거.</div>
+      <div class="card-meta"><span class="tag tag-prelevel">pre_level</span><span class="tag tag-trigger">level_clear</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">언두 가이드 <span class="tag tag-phase">floating</span> <span class="tag tag-free">FREE &times;3</span></div>
+      <div class="card-sub">인게임 첫 등장 시 <strong>floating</strong> 말풍선 (비강제, 탭 스킵 가능). Lv 3부터 UI에 보이기만 하며, <strong>Lv 8에서 FREE&times;3 무료 지급</strong>.</div>
+      <div class="card-meta"><span class="tag tag-ingame">ingame</span><span class="tag tag-trigger">first_appear</span></div>
+    </div>
+  </div>
+
+  <h4>상황 기반 가이드 (condition trigger)</h4>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">엑스트라 덱 <span class="tag tag-free">FREE &times;3</span></div>
+      <div class="card-sub"><strong>trigger: condition / deck_exhausted</strong> &mdash; 레벨 무관. 덱 모두 소진 + 매칭 불가 첫 발생 시 자동 발동. 무료 3개 지급. 반드시 엑스트라덱 아이콘 터치.</div>
+      <div class="card-meta"><span class="tag tag-ingame">ingame</span><span class="tag tag-trigger">condition</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">도시 꾸미기 강제 <span class="tag tag-repeat">반복</span></div>
+      <div class="card-sub"><strong>trigger: condition / hammer_ready</strong> &mdash; 진행 중인 도시의 망치가 충족되면 꾸미기 강제. 망치 충족 시마다 반복 발동.</div>
+      <div class="card-meta"><span class="tag tag-lobby">lobby</span><span class="tag tag-trigger">condition</span></div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ===== PHASE 5~6 ===== -->
+<section id="phase5">
+  <h2><span class="num">8</span> Phase 5~6: 점진적 해금 (Lv 9~24)</h2>
+
+  <div class="timeline">
+    <div class="tl-item phase-4">
+      <div class="tl-level">Lv 9</div>
+      <div class="tl-content">
+        <div class="tl-title">베팅 x2 + 데일리 휠</div>
+        <div class="tl-desc">베팅 x2 해금 팝업 &rarr; 데일리 휠 해금 팝업 &rarr; 데일리 휠 아이콘 터치 유도 (순차).</div>
+        <div class="card-meta" style="margin-top:8px;"><span class="tag tag-lobby">lobby</span><span class="tag tag-trigger">level_clear</span></div>
+      </div>
+    </div>
+    <div class="tl-item phase-4">
+      <div class="tl-level">Lv 11</div>
+      <div class="tl-content">
+        <div class="tl-title">IAP 스페셜 오퍼</div>
+        <div class="tl-desc">클리어 후 로비에서 IAP 팝업 노출 시작. 닫기 가능. DDA 시스템 활성화.</div>
+        <div class="card-meta" style="margin-top:8px;"><span class="tag tag-lobby">lobby</span><span class="tag tag-trigger">level_clear</span></div>
+      </div>
+    </div>
+    <div class="tl-item phase-4">
+      <div class="tl-level">Lv 12</div>
+      <div class="tl-content">
+        <div class="tl-title">이벤트 강제 터치 (level_clear)</div>
+        <div class="tl-desc">이벤트 3종(color/stamp/race) 동시 해금. 개별 팝업은 자동 노출. <strong>content_event_forced</strong>로 미참여 이벤트 아이콘 강제 터치 유도 (세션당 1회).</div>
+        <div class="card-meta" style="margin-top:8px;"><span class="tag tag-event">이벤트</span><span class="tag tag-trigger">level_clear</span></div>
+      </div>
+    </div>
+    <div class="tl-item phase-5">
+      <div class="tl-level">Lv 14</div>
+      <div class="tl-content">
+        <div class="tl-title">러너 카드</div>
+        <div class="tl-desc">인게임 첫 등장 시 기믹 매칭 규칙 안내.</div>
+        <div class="card-meta" style="margin-top:8px;"><span class="tag tag-ingame">ingame</span><span class="tag tag-gimmick">기믹</span><span class="tag tag-trigger">first_appear</span></div>
+      </div>
+    </div>
+    <div class="tl-item phase-5">
+      <div class="tl-level">Lv 17</div>
+      <div class="tl-content">
+        <div class="tl-title">베팅 x4</div>
+        <div class="tl-desc">클리어 후 로비 도달 시 해금 팝업.</div>
+        <div class="card-meta" style="margin-top:8px;"><span class="tag tag-lobby">lobby</span><span class="tag tag-trigger">level_clear</span></div>
+      </div>
+    </div>
+    <div class="tl-item phase-6">
+      <div class="tl-level">Lv 19</div>
+      <div class="tl-content">
+        <div class="tl-title">자물쇠+열쇠 카드</div>
+        <div class="tl-desc">인게임 첫 등장 시 기믹 매칭 규칙 안내.</div>
+        <div class="card-meta" style="margin-top:8px;"><span class="tag tag-ingame">ingame</span><span class="tag tag-gimmick">기믹</span><span class="tag tag-trigger">first_appear</span></div>
+      </div>
+    </div>
+    <div class="tl-item phase-6">
+      <div class="tl-level">Lv 22</div>
+      <div class="tl-content">
+        <div class="tl-title">얼음카드</div>
+        <div class="tl-desc">인게임 첫 등장 시 얼음 깨기 후 카드 획득 규칙 안내.</div>
+        <div class="card-meta" style="margin-top:8px;"><span class="tag tag-ingame">ingame</span><span class="tag tag-gimmick">기믹</span><span class="tag tag-trigger">first_appear</span></div>
+      </div>
+    </div>
+    <div class="tl-item phase-6">
+      <div class="tl-level">Lv 24 <span class="tag tag-free">FREE &times;3</span></div>
+      <div class="tl-content">
+        <div class="tl-title">골든 티켓 해금 <span class="tag tag-free">FREE &times;3</span></div>
+        <div class="tl-desc">클리어 후 로비 도달 시 해금 팝업. 골든 티켓 무료 3개 지급 (부스터 가치 체험). 랜덤 카드 1장 오픈.</div>
+        <div class="card-meta" style="margin-top:8px;"><span class="tag tag-lobby">lobby</span><span class="tag tag-booster">부스터</span><span class="tag tag-trigger">level_clear</span></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <h4>상시 터치 말풍선 (floating, 반복)</h4>
+  <div class="info-box warn">
+    <strong>230027 gimmick_lock_key_tip</strong> (trigger_type: touch / trigger_value: lock_card) &mdash; 키락 카드 터치 시 floating 말풍선 상시 노출. 비강제, 터치할 때마다 반복.<br>
+    <strong>230028 gimmick_rope_card_tip</strong> (trigger_type: touch / trigger_value: rope_card) &mdash; 얼음(밧줄) 카드 터치 시 floating 말풍선 상시 노출. 비강제, 터치할 때마다 반복.
+  </div>
+</section>
+
+<!-- ===== UNLOCK TABLE ===== -->
+<section id="unlock-table">
+  <h2><span class="num">9</span> unlock 시트 (26행)</h2>
+  <p class="text-sm text-muted mb-1">"언제, 어떤 조건으로 콘텐츠가 열리는가" &mdash; 튜토리얼 가이드 정보 없음. pre_unlock_visibility: TRUE=해금 전 잠금 표시, FALSE=해금 전 비표시</p>
+
+  <table>
+    <thead>
+      <tr><th>key</th><th>content_id</th><th>condition</th><th>val</th><th>visibility</th><th>show_tut</th><th>설명</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>50001</td><td>content_city_deco</td><td>level</td><td>1</td><td style="color:var(--red);">FALSE</td><td style="color:var(--green);">TRUE</td><td>도시 꾸미기</td></tr>
+      <tr><td>50002</td><td>content_tournament</td><td>level</td><td>1</td><td style="color:var(--red);">FALSE</td><td style="color:var(--red);">FALSE</td><td>토너먼트</td></tr>
+      <tr><td>50009</td><td>content_betting_1</td><td>level</td><td>1</td><td style="color:var(--red);">FALSE</td><td style="color:var(--red);">FALSE</td><td>베팅x1 기본 해금 (Lv1부터 사용 가능)</td></tr>
+      <tr><td>50003</td><td>content_shop</td><td>level</td><td>3</td><td style="color:var(--green);">TRUE</td><td style="color:var(--green);">TRUE</td><td>상점</td></tr>
+      <tr><td>50004</td><td>content_pre_level_popup</td><td>level</td><td>2</td><td style="color:var(--red);">FALSE</td><td style="color:var(--green);">TRUE</td><td>프리레벨 팝업 해금 (Lv2 클리어 후)</td></tr>
+      <tr><td>50005</td><td>content_idle_gold</td><td>level</td><td>4</td><td style="color:var(--green);">TRUE</td><td style="color:var(--green);">TRUE</td><td>방치골드</td></tr>
+      <tr><td>50006</td><td>gimmick_plus_card</td><td>level</td><td>4</td><td style="color:var(--red);">FALSE</td><td style="color:var(--green);">TRUE</td><td>플러스카드</td></tr>
+      <tr><td>50007</td><td>content_daily_check</td><td>level</td><td>4</td><td style="color:var(--green);">TRUE</td><td style="color:var(--green);">TRUE</td><td>출석체크</td></tr>
+      <tr><td>50008</td><td>content_streak</td><td>level</td><td>5</td><td style="color:var(--red);">FALSE</td><td style="color:var(--green);">TRUE</td><td>스트릭</td></tr>
+      <tr><td>50010</td><td>content_streak_star</td><td>level</td><td>5</td><td style="color:var(--green);">TRUE</td><td style="color:var(--green);">TRUE</td><td>스트릭 스타</td></tr>
+      <tr><td>50011</td><td>content_leaderboard</td><td>level</td><td>5</td><td style="color:var(--green);">TRUE</td><td style="color:var(--green);">TRUE</td><td>리더보드</td></tr>
+      <tr><td>50012</td><td>content_collection</td><td>level</td><td>6</td><td style="color:var(--green);">TRUE</td><td style="color:var(--green);">TRUE</td><td>콜렉션</td></tr>
+      <tr><td>50013</td><td>booster_wild_card</td><td>level</td><td>7</td><td style="color:var(--green);">TRUE</td><td style="color:var(--green);">TRUE</td><td>와일드 카드</td></tr>
+      <tr><td>50014</td><td>booster_fireworks</td><td>level</td><td>8</td><td style="color:var(--green);">TRUE</td><td style="color:var(--green);">TRUE</td><td>파이어웍스</td></tr>
+      <tr style="background:rgba(76,175,80,0.06);"><td>50015</td><td>booster_extra_deck</td><td style="color:var(--gold)">deck_exhausted</td><td>0</td><td style="color:var(--red);">FALSE</td><td style="color:var(--green);">TRUE</td><td>엑스트라 덱 (상황기반)</td></tr>
+      <tr><td>50016</td><td>content_betting_2</td><td>level</td><td>9</td><td style="color:var(--red);">FALSE</td><td style="color:var(--green);">TRUE</td><td>베팅 x2</td></tr>
+      <tr><td>50017</td><td>content_daily_wheel</td><td>level</td><td>9</td><td style="color:var(--green);">TRUE</td><td style="color:var(--green);">TRUE</td><td>데일리 휠</td></tr>
+      <tr><td>50018</td><td>content_iap_popup</td><td>level</td><td>11</td><td style="color:var(--red);">FALSE</td><td style="color:var(--red);">FALSE</td><td>IAP 팝업</td></tr>
+      <tr style="background:rgba(255,107,157,0.04);"><td>50019</td><td>content_event_color</td><td>level</td><td>12</td><td style="color:var(--green);">TRUE</td><td style="color:var(--red);">FALSE</td><td>이벤트 컬러밤</td></tr>
+      <tr style="background:rgba(255,107,157,0.04);"><td>50020</td><td>content_event_stamp</td><td>level</td><td>12</td><td style="color:var(--green);">TRUE</td><td style="color:var(--red);">FALSE</td><td>이벤트 스탬프</td></tr>
+      <tr style="background:rgba(255,107,157,0.04);"><td>50021</td><td>content_event_race</td><td>level</td><td>12</td><td style="color:var(--green);">TRUE</td><td style="color:var(--red);">FALSE</td><td>이벤트 레이스</td></tr>
+      <tr><td>50022</td><td>gimmick_runner_card</td><td>level</td><td>14</td><td style="color:var(--red);">FALSE</td><td style="color:var(--green);">TRUE</td><td>러너 카드</td></tr>
+      <tr><td>50023</td><td>content_betting_4</td><td>level</td><td>17</td><td style="color:var(--red);">FALSE</td><td style="color:var(--green);">TRUE</td><td>베팅 x4</td></tr>
+      <tr><td>50024</td><td>gimmick_lock_key</td><td>level</td><td>19</td><td style="color:var(--red);">FALSE</td><td style="color:var(--green);">TRUE</td><td>자물쇠+열쇠</td></tr>
+      <tr><td>50025</td><td>gimmick_rope_card</td><td>level</td><td>22</td><td style="color:var(--red);">FALSE</td><td style="color:var(--green);">TRUE</td><td>얼음카드</td></tr>
+      <tr><td>50026</td><td>booster_golden_ticket</td><td>level</td><td>24</td><td style="color:var(--green);">TRUE</td><td style="color:var(--green);">TRUE</td><td>골든 티켓</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box">
+    <strong>이벤트 3종(50019~50021):</strong> show_tutorial=FALSE &mdash; 개별 튜토리얼 없이 해금 시점에 자동 노출. content_event_forced(tutorial_guide 230020)가 미참여 이벤트 아이콘 강제 터치 유도 담당.
+  </div>
+</section>
+
+<!-- ===== GUIDE TABLE ===== -->
+<section id="guide-table">
+  <h2><span class="num">10</span> tutorial_guide 시트 (28행)</h2>
+  <p class="text-sm text-muted mb-1">"해금된 콘텐츠를 어떻게 가르치는가" &mdash; unlock_key로 FK 참조 (229xxx는 unlock_key=0). guide_type: focus_bubble(강제) / floating(비강제)</p>
+
+  <table>
+    <thead>
+      <tr><th>key</th><th>content_id</th><th>type</th><th>scene</th><th>trigger</th><th>value</th><th>forced</th><th>설명</th></tr>
+    </thead>
+    <tbody>
+      <tr style="background:rgba(108,140,255,0.06);"><td>230001</td><td>content_ingame_intro</td><td><span class="tag tag-phase">floating</span></td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(108,140,255,0.15);color:var(--accent);">tutorial_level</span></td><td>1</td><td><span style="color:var(--green);font-weight:700;">N</span></td><td>Lv1 카드 매칭 기본 안내. 정해진 카드에 포커스, 다른 카드 터치 거부</td></tr>
+      <tr style="background:rgba(108,140,255,0.06);"><td>230002</td><td>content_deck_draw</td><td><span class="tag tag-phase">floating</span></td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(108,140,255,0.15);color:var(--accent);">tutorial_level</span></td><td>2</td><td><span style="color:var(--green);font-weight:700;">N</span></td><td>Lv2 이동 불가 시 덱 뒤집기 안내. 덱에 포커스, 다른 카드 터치 거부</td></tr>
+      <tr><td>230003</td><td>content_lobby_play</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>1</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>Lv1 클리어 후 로비 게임 시작 버튼 강제</td></tr>
+      <tr><td>230004</td><td>content_shop</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>3</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>상점 아이콘 해금 안내</td></tr>
+      <tr><td>230005</td><td>content_pre_level_popup</td><td>focus</td><td><span class="tag tag-prelevel">pre_level</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>2</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>프리레벨 팝업 UI 안내 (Lv2 클리어 후)</td></tr>
+      <tr><td>230006</td><td>content_idle_gold</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>4</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>방치골드 해금+수령 강제</td></tr>
+      <tr><td>230007</td><td>gimmick_plus_card</td><td>focus</td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(255,152,0,0.15);color:var(--orange);">first_appear</span></td><td>4</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>플러스카드 &#xB1;1 매칭 규칙</td></tr>
+      <tr><td>230008</td><td>content_idle_gold_collect</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>4</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>방치골드 수령 터치 유도</td></tr>
+      <tr><td>230009</td><td>content_daily_check</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>4</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>출석체크 아이콘 터치 유도</td></tr>
+      <tr><td>230010</td><td>content_streak</td><td>focus</td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(255,152,0,0.15);color:var(--orange);">first_appear</span></td><td>5</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>스트릭 미터 안내</td></tr>
+      <tr><td>230011</td><td>content_leaderboard</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>5</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>리더보드 터치 유도</td></tr>
+      <tr><td>230012</td><td>content_collection</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>6</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>콜렉션 해금 + 터치 유도</td></tr>
+      <tr style="background:rgba(108,140,255,0.06);"><td>230013</td><td>booster_wild_card</td><td><span class="tag tag-phase">floating</span></td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(255,152,0,0.15);color:var(--orange);">first_appear</span></td><td>7</td><td><span style="color:var(--green);font-weight:700;">N</span></td><td>와일드 카드 <span class="tag tag-free">FREE&times;3</span> (비강제, 탭 스킵) 전용맵 <span class="mono">TUTO_0007</span></td></tr>
+      <tr><td>230014</td><td>booster_fireworks</td><td>focus</td><td><span class="tag tag-prelevel">pre_level</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>8</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>파이어웍스 <span class="tag tag-free">FREE&times;3</span></td></tr>
+      <tr style="background:rgba(108,140,255,0.06);"><td>230015</td><td>booster_undo</td><td><span class="tag tag-phase">floating</span></td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(255,152,0,0.15);color:var(--orange);">first_appear</span></td><td>8</td><td><span style="color:var(--green);font-weight:700;">N</span></td><td>언두 가이드 (비강제, 탭 스킵)</td></tr>
+      <tr style="background:rgba(108,140,255,0.06);"><td>230016</td><td>booster_extra_deck</td><td><span class="tag tag-phase">floating</span></td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(255,215,0,0.15);color:var(--gold);">condition</span></td><td style="color:var(--gold)">deck_exhausted</td><td><strong><span style="color:var(--green);">N</span></strong></td><td>엑스트라 덱 <span class="tag tag-free">FREE&times;3</span> (비강제, 탭 스킵)</td></tr>
+      <tr><td>230017</td><td>content_city_deco_grad</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>8</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>도시 꾸미기 강제</td></tr>
+      <tr><td>230018</td><td>content_betting_2</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>9</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>베팅 x2 해금</td></tr>
+      <tr><td>230019</td><td>content_daily_wheel</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>9</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>데일리 휠 터치 유도</td></tr>
+      <tr><td>230020</td><td>content_event_forced</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>12</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>이벤트 강제 터치 유도</td></tr>
+      <tr><td>230021</td><td>gimmick_runner_card</td><td>focus</td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(255,152,0,0.15);color:var(--orange);">first_appear</span></td><td>14</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>러너 카드 기믹</td></tr>
+      <tr><td>230022</td><td>content_betting_4</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>17</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>베팅 x4 해금</td></tr>
+      <tr><td>230023</td><td>gimmick_lock_key</td><td>focus</td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(255,152,0,0.15);color:var(--orange);">first_appear</span></td><td>19</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>자물쇠+열쇠 기믹</td></tr>
+      <tr><td>230024</td><td>gimmick_rope_card</td><td>focus</td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(255,152,0,0.15);color:var(--orange);">first_appear</span></td><td>22</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>얼음카드 기믹</td></tr>
+      <tr><td>230025</td><td>booster_golden_ticket</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(76,175,80,0.15);color:var(--green);">level_clear</span></td><td>24</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>골든 티켓 해금 <span class="tag tag-free">FREE&times;3</span></td></tr>
+      <tr style="background:rgba(255,107,157,0.04);"><td>230026</td><td>content_city_deco</td><td>focus</td><td><span class="tag tag-lobby">lobby</span></td><td><span class="tag tag-trigger" style="background:rgba(255,215,0,0.15);color:var(--gold);">condition</span></td><td style="color:var(--gold)">hammer_ready</td><td><span style="color:var(--red);font-weight:700;">Y</span></td><td>도시 꾸미기 강제 <span class="tag tag-repeat">반복</span></td></tr>
+      <tr style="background:rgba(108,140,255,0.06);"><td>230027</td><td>gimmick_lock_key_tip</td><td><span class="tag tag-phase">floating</span></td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(255,107,157,0.15);color:var(--pink);">touch</span></td><td style="color:var(--gold)">lock_card</td><td><span style="color:var(--green);font-weight:700;">N</span></td><td>키락 카드 터치 말풍선 <span class="tag tag-repeat">반복</span></td></tr>
+      <tr style="background:rgba(108,140,255,0.06);"><td>230028</td><td>gimmick_rope_card_tip</td><td><span class="tag tag-phase">floating</span></td><td><span class="tag tag-ingame">ingame</span></td><td><span class="tag tag-trigger" style="background:rgba(255,107,157,0.15);color:var(--pink);">touch</span></td><td style="color:var(--gold)">rope_card</td><td><span style="color:var(--green);font-weight:700;">N</span></td><td>얼음카드 터치 말풍선 <span class="tag tag-repeat">반복</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box">
+    <strong>guide_type 규칙:</strong> focus_bubble(21건) = 딤+하이라이트+캐릭터+말풍선, 강제(is_forced=TRUE), 반드시 터치 완료해야 진행. floating(7건) = 딤 없이 캐릭터+말풍선, 비강제(is_forced=FALSE), 화면 탭으로 스킵 가능.<br>
+      </div>
+</section>
+
+<!-- ===== TRIGGER TYPES ===== -->
+<section id="trigger-types">
+  <h2><span class="num">11</span> trigger_type 정의 (5종)</h2>
+  <table>
+    <thead>
+      <tr><th>trigger_type</th><th>정의</th><th>play_scene</th><th>trigger_value</th><th>사용 건수</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tag tag-trigger">level_clear</span></td>
+        <td>해당 레벨 클리어 후 로비/프리레벨 복귀 시 발동</td>
+        <td>lobby, pre_level</td>
+        <td>레벨 번호 (int)</td>
+        <td><strong>15건</strong></td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-trigger">first_appear</span></td>
+        <td>인게임에서 해당 기믹/콘텐츠 첫 등장 시 발동</td>
+        <td>ingame</td>
+        <td>레벨 번호 (int)</td>
+        <td><strong>7건</strong></td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-trigger">condition</span></td>
+        <td>특정 상황 조건 충족 시 발동 (레벨 무관)</td>
+        <td>ingame, lobby</td>
+        <td>조건 키워드 (deck_exhausted, hammer_ready)</td>
+        <td><strong>2건</strong></td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-trigger">tutorial_level</span></td>
+        <td>튜토리얼 레벨 진입 시 자동 발동 (Lv 1~2)</td>
+        <td>ingame</td>
+        <td>레벨 번호 (int)</td>
+        <td><strong>2건</strong></td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-trigger">touch</span></td>
+        <td>특정 카드/오브젝트 터치 시 말풍선 표시 (반복 가능)</td>
+        <td>ingame</td>
+        <td>대상 키워드 (lock_card, rope_card)</td>
+        <td><strong>2건</strong></td>
+      </tr>
+
+    </tbody>
+  </table>
+</section>
+
+<!-- ===== GUIDE COMPONENTS ===== -->
+<section id="guide-components">
+  <h2><span class="num">12</span> 가이드 컴포넌트 (5종)</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title" style="color:var(--accent);">Focus Bubble (포커스 버블)</div>
+      <div class="card-sub"><strong>딤+하이라이트</strong> 배경 + 대상 강조 + 캐릭터+말풍선. <strong>강제(is_forced=TRUE)</strong> &mdash; 반드시 터치 완료해야 진행. 20건.</div>
+      <div class="card-meta"><span class="tag tag-phase">새 메카닉/시스템 설명 + 행동 유도</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--accent2);">Floating (플로팅)</div>
+      <div class="card-sub"><strong>딤 없이</strong> 캐릭터+말풍선. <strong>비강제(is_forced=FALSE)</strong> &mdash; 화면 탭으로 스킵 가능. 7건 (230001, 230002, 230013, 230015, 230016, 230027, 230028).</div>
+      <div class="card-meta"><span class="tag tag-phase">보조 안내, 터치 팁</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--gold);">Highlight (하이라이트)</div>
+      <div class="card-sub">딤 배경 + 대상 UI 강조. alpha 0.4~0.7.</div>
+      <div class="card-meta"><span class="tag tag-phase">특정 행동 유도 (탭 대상)</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--green);">Arrow (화살표)</div>
+      <div class="card-sub">탭 유도 애니메이션 화살표. PULSE / BOUNCE 타입.</div>
+      <div class="card-meta"><span class="tag tag-phase">매칭 가능 카드, 드로우덱</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--red);">Feedback (피드백)</div>
+      <div class="card-sub">잘못된 행동 시 흔들기(0.3초) + 올바른 카드 깜빡임 3회.</div>
+      <div class="card-meta"><span class="tag tag-phase">오류 시 즉각 안내</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STATE MACHINE ===== -->
+<section id="state-machine">
+  <h2><span class="num">13</span> 상태 머신</h2>
+
+  <div class="arch-box"><span class="highlight">APP_INIT</span>
+    │
+    ├─ isNRU? ─Yes─→ <span class="highlight2">PHASE_0</span> (Lv 1)  ─ Lv1 클리어 ─→  <span class="highlight2">PHASE_1</span> (Lv 2)
+    │                                                       │
+    │                                                  Lv2 클리어
+    │                                                       │
+    │                              <span class="highlight2">PHASE_2</span> (Lv 3~4)  ←──┘  ─ Lv4 클리어 ─→  <span class="highlight2">PHASE_3</span> (Lv 5~7)
+    │                                                                                    │
+    │                                                                               Lv7 클리어
+    │                                                                                    │
+    │                              <span class="highlight3">PHASE_4</span> (Lv 8)  ←─────────────────────────────────┘
+    │                                  │
+    │                             Lv8 클리어 ──── <span class="text-muted">Tutorial 티어 클리어!</span>
+    │                                  │
+    │                              <span class="highlight3">PHASE_5</span> (Lv 9~14)  ──── <span class="text-muted">Normal/DDA 전환</span>
+    │                                  │
+    │                             Lv14 클리어
+    │                                  │
+    │                              <span class="highlight3">PHASE_6</span> (Lv 15~24)  ──── <span class="text-muted">해금 팝업만</span>
+    │                                  │
+    │                             Lv24 도달
+    │                                  │
+    └─ isNRU? ─No──→            <span class="highlight">COMPLETED</span>  ←──┘</div>
+
+  <h3>Phase 전환 레벨 임계값</h3>
+  <div class="info-box warn">
+    <strong>의도적 하드코딩:</strong> Phase 전환 임계값 (2, 3, 5, 8, 9, 15, 25)은 tutorial_guide(Lv 1~8 전용맵)와 unlock(Lv 9+) 두 시스템에 걸쳐 있어 단일 시트 컬럼으로 표현 불가. 변경 시 클라이언트 패치 필수.
+  </div>
+</section>
+
+
+<!-- ===== TRANSITION ===== -->
+<section id="transition">
+  <h2><span class="num">14</span> Tutorial &rarr; Normal 전환 (Lv 8 &rarr; Lv 9)</h2>
+
+  <table>
+    <thead>
+      <tr><th>항목</th><th>Lv 8 (Tutorial)</th><th>Lv 9 (Normal)</th><th>변화</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>difficulty_tier</td><td>Tutorial (tier_id=1)</td><td>Normal (tier_id=2)</td><td>티어 전환</td></tr>
+      <tr><td>help_card_rate</td><td style="color:var(--green);">8000 (80%)</td><td style="color:var(--orange);">5000 (50%)</td><td style="color:var(--red);font-weight:600;">-30%p</td></tr>
+      <tr><td>pity_trigger</td><td>3회</td><td>5회</td><td>+2회</td></tr>
+      <tr><td>streak_sustain</td><td>5회</td><td>4회</td><td>-1회</td></tr>
+      <tr><td>맵 풀</td><td>tutorial_guide 전용맵</td><td>일반 schedule</td><td>맵 전환</td></tr>
+      <tr><td>DDA</td><td>비활성</td><td>Lv 11부터 활성</td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box">
+    <strong>Lv 9~10 완충 구간:</strong> Normal 고정(dynamic_level 30002). DDA 없이 Normal만 제공하여 Tutorial &rarr; Normal 전환 충격 완화.
+  </div>
+</section>
+
+<!-- ===== DESIGN PRINCIPLES ===== -->
+<section id="design-principles">
+  <h2><span class="num">15</span> 설계 원칙</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">guide_type 이원화</div>
+      <div class="card-sub"><span class="mono">focus_bubble</span>(21건, 딤+하이라이트+강제) + <span class="mono">floating</span>(7건, 딤 없이+비강제). is_forced 컬럼으로 강제/비강제 구분. 강제 가이드는 반드시 완료해야 진행.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">FK 참조 원칙</div>
+      <div class="card-sub">tutorial_guide.unlock_key &rarr; unlock.key_number. 전 행 FK 참조 필수. 빈 값 없음. 부모 기능의 unlock 항목을 참조.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">수식 연결</div>
+      <div class="card-sub">content_id = unlock VLOOKUP, string_code_kr = string_code!ko VLOOKUP. 원본 변경 시 자동 반영.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">2-시트 관심사 분리</div>
+      <div class="card-sub">unlock: 해금 조건 / tutorial_guide: 가이드 설정 + 맵 배정 통합</div>
+    </div>
+  </div>
+
+  <h3>열 구조</h3>
+  <table>
+    <thead>
+      <tr><th>시트</th><th>열 구조</th><th>행 수</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>unlock</td><td>key_number | content_id | condition_type | condition_val | pre_unlock_visibility | show_tutorial | (빈) | description</td><td>26</td></tr>
+      <tr><td>tutorial_guide</td><td>key | unlock_key | content_id | show_tutorial | guide_type | play_scene | trigger_type | trigger_value | string_code_key | is_forced | is_repeatable | prefab_name | node_name | is_dedicated_map | tutorial_map_id | (빈) | description | string_code_kr</td><td>28</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===== KPI ===== -->
+<section id="kpi">
+  <h2><span class="num">16</span> KPI 연결</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title" style="color:var(--accent);">D1 리텐션</div>
+      <div class="card-sub">Lv 1 실패율 0% (help_card_rate 80% + NRU 구제). 방치골드 수령 focus_bubble 강제로 4h 재방문 유도.</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--accent2);">메타 참여율</div>
+      <div class="card-sub">도시 꾸미기 강제. 망치 충족 시 강제 꾸미기(반복). 콜렉션 focus_bubble 진입 유도.</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--gold);">수익화 전환</div>
+      <div class="card-sub">IAP 노출 Lv 11 시작. 베팅 x2(Lv 9)/x4(Lv 17) 단계적 해금. FREE 부스터: Lv 8 파이어웍스&times;3 + 언두&times;3(floating), Lv 24 골든티켓&times;3.</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--pink);">이벤트 참여율</div>
+      <div class="card-sub">Lv 12 이벤트 3종 동시 해금. content_event_forced로 미참여 이벤트 강제 터치 유도 (세션당 1회).</div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer style="text-align:center; padding:40px 20px; color:var(--text2); font-size:0.78rem; border-top:1px solid var(--border);">
+  PST Tutorial Planning Document &mdash; Last updated: 2026-03-18 (v7 시트 재키잉: 229xxx→230xxx, 230003 content_lobby_play 추가, Lv1~3 강제 클리어, trigger_type 5종) &mdash; Source: Google Sheets (unlock/tutorial_guide) + 05_tutorial_system_spec.md + 06_tutorial_ui_ux_spec.md
+</footer>
+
+<script>
+document.addEventListener('click', (e) => {
+  const nav = document.querySelector('.nav-sidebar');
+  const toggle = document.querySelector('.nav-toggle');
+  if (nav.classList.contains('open') && !nav.contains(e.target) && !toggle.contains(e.target)) {
+    nav.classList.remove('open');
+  }
+});
+</script>
+</body>
+</html>

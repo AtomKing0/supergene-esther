@@ -125,7 +125,8 @@ footer { text-align: center; padding: 22px; color: var(--muted); font-size: 11px
     <span class="chip chip-blue">6개 플레이어 유형</span>
     <span class="chip chip-green">목표 85 / 10 / 5</span>
     <span class="chip chip-green">fail_spiral P3 포함</span>
-    <span class="chip chip-gray">2026-03-12</span>
+    <span class="chip chip-yellow">difficulty_tier 스코어 범위 확장</span>
+    <span class="chip chip-gray">2026-03-17 (v2)</span>
   </div>
   <div class="hero-meta">
     <span><span class="dot"></span>시뮬레이션: 500명 × 6유형 × 200레벨</span>
@@ -530,9 +531,83 @@ footer { text-align: center; padding: 22px; color: var(--muted); font-size: 11px
   </div>
 </div>
 
-<!-- ⑨ 잔여 과제 -->
+<!-- ⑨ difficulty_tier 스코어 범위 확장 (2026-03-17) -->
 <div class="sec">
-  <div class="sec-hd"><span class="n">9</span> 잔여 과제</div>
+  <div class="sec-hd"><span class="n">9</span> difficulty_tier 스코어 범위 확장 <span class="rb rb-new" style="margin-left:6px;">v2 업데이트</span></div>
+  <div class="hlbox hlbox-blue" style="margin-bottom:16px; font-size:12px;">
+    <strong>배경</strong>: 기존 스코어 범위가 너무 좁아 기믹 가중값(gimmick_weight)을 맵 중간값에 부착할 경우 티어를 이탈하는 문제 발생.
+    기믹 조합 시뮬레이션 결과, Hard 범위(79점)에서 79.9%, SuperHard 범위(49점)에서 90.6%의 조합이 이탈.
+    범위 확장으로 100% 수용 달성.
+  </div>
+
+  <div class="g2" style="margin-bottom:16px;">
+    <div>
+      <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--red);">Before (기존)</div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Tier</th><th>score_min</th><th>score_max</th><th>범위</th><th>기믹 수용</th></tr></thead>
+          <tbody>
+            <tr><td>Tutorial</td><td>0</td><td>0</td><td class="dim">—</td><td class="dim">—</td></tr>
+            <tr><td>Normal</td><td>0</td><td>780</td><td>780</td><td class="ok">충분</td></tr>
+            <tr><td>Hard</td><td>781</td><td>860</td><td class="bad">79</td><td class="bad">79.9% 이탈</td></tr>
+            <tr><td>Super Hard</td><td>861</td><td>910</td><td class="bad">49</td><td class="bad">90.6% 이탈</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--green);">After (변경)</div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Tier</th><th>score_min</th><th>score_max</th><th>범위</th><th>기믹 수용</th></tr></thead>
+          <tbody>
+            <tr><td>Tutorial</td><td>0</td><td>0</td><td class="dim">—</td><td class="dim">—</td></tr>
+            <tr><td>Normal</td><td class="ok">1</td><td class="ok">700</td><td>699</td><td class="ok">충분</td></tr>
+            <tr><td>Hard</td><td class="ok">701</td><td class="ok">1000</td><td class="ok">299 (×3.8)</td><td class="ok">100% 수용</td></tr>
+            <tr><td>Super Hard</td><td class="ok">1001</td><td class="ok">1400</td><td class="ok">399 (×8.1)</td><td class="ok">100% 수용</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:12px; font-weight:600; margin-bottom:10px; color:var(--purple);">gimmick_weight 가중값 체계</div>
+  <div class="tw" style="margin-bottom:16px;">
+    <table>
+      <thead><tr><th>기믹</th><th>가중값/개</th><th>최대 수량</th><th>최대 기여</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr><td>plus_card</td><td class="ok">-10</td><td>5</td><td class="ok">-50</td><td class="dim">난이도 감소</td></tr>
+        <tr><td>lock_key</td><td class="warn">+20</td><td>5</td><td class="warn">+100</td><td class="dim">한 쌍 = 1개</td></tr>
+        <tr><td>rope_card (얼음)</td><td class="warn">+30</td><td>5</td><td class="warn">+150</td><td class="dim">난이도 증가</td></tr>
+        <tr><td>runner_card</td><td style="color:var(--red);">+40</td><td>5</td><td style="color:var(--red);">+200</td><td class="dim">최대 가중</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="g2">
+    <div class="ib">
+      <h4>기믹 조합 시뮬레이션 (149개 조합)</h4>
+      <div class="kv"><span class="kv-k">가중값 범위</span><span class="kv-v">-50 ~ +210</span></div>
+      <div class="kv"><span class="kv-k">Hard 중간값 기준</span><span class="kv-v">850 ± 가중값</span></div>
+      <div class="kv"><span class="kv-k">SH 중간값 기준</span><span class="kv-v">1200 ± 가중값</span></div>
+      <div class="kv"><span class="kv-k">이탈 조합 (변경 후)</span><span class="kv-v ok">0개 (100% 수용)</span></div>
+    </div>
+    <div class="ib">
+      <h4>운용 방식</h4>
+      <div style="font-size:12px; line-height:1.7; color:var(--muted);">
+        1. base_map_score = 맵 자체 난이도 점수<br>
+        2. final_score = base + Σ(gimmick_weight × count)<br>
+        3. final_score로 difficulty_tier 매칭<br>
+        4. DYNAMIC_LEVEL이 결정한 tier에 해당하는 맵 풀에서 선택<br>
+        <span style="color:var(--accent); font-weight:600;">→ 티어 중간값에 기믹 랜덤 부착 가능</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑩ 잔여 과제 -->
+<div class="sec">
+  <div class="sec-hd"><span class="n">10</span> 잔여 과제</div>
   <div class="tw">
     <table>
       <thead><tr><th>이슈</th><th>우선순위</th><th>비고</th></tr></thead>
@@ -560,6 +635,6 @@ footer { text-align: center; padding: 22px; color: var(--muted); font-size: 11px
 </div>
 
 </div>
-<footer>PST Dynamic Level System · Simulation Report · 2026-03-12 · Monte Carlo 1,790,000 레벨</footer>
+<footer>PST Dynamic Level System · Simulation Report · 2026-03-17 v2 · Monte Carlo 1,790,000 레벨 · difficulty_tier 스코어 범위 확장 반영</footer>
 </body>
 </html>

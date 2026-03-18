@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PST 튜토리얼 UI/UX 화면 명세</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #232735;
+    --border: #2e3345;
+    --text: #e4e6ed;
+    --text2: #9ba1b5;
+    --accent: #6c8cff;
+    --accent2: #4ecdc4;
+    --gold: #ffd700;
+    --green: #4caf50;
+    --red: #ff4444;
+    --orange: #ff9800;
+    --pink: #ff6b9d;
+    --dim: rgba(0,0,0,0.6);
+    --radius: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a1d27 0%, #2a1f3d 50%, #1a2d3d 100%);
+    padding: 60px 40px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(108,140,255,0.08) 0%, transparent 70%);
+  }
+  .hero h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 8px; position: relative; }
+  .hero .subtitle { color: var(--text2); font-size: 1rem; position: relative; }
+  .hero .badges { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; position: relative; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+  .badge.status { background: rgba(78,205,196,0.15); color: var(--accent2); border: 1px solid rgba(78,205,196,0.3); }
+  .badge.doc { background: rgba(108,140,255,0.15); color: var(--accent); border: 1px solid rgba(108,140,255,0.3); }
+  .badge.verdict { background: rgba(255,152,0,0.15); color: var(--orange); border: 1px solid rgba(255,152,0,0.3); }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  .nav-sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 260px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 16px 0; z-index: 100;
+    transform: translateX(-100%); transition: transform 0.3s;
+  }
+  .nav-sidebar.open { transform: translateX(0); }
+  .nav-toggle {
+    position: fixed; left: 16px; top: 16px; z-index: 200;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    width: 40px; height: 40px; border-radius: 8px; cursor: pointer; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-sidebar a {
+    display: block; padding: 6px 20px; color: var(--text2); text-decoration: none;
+    font-size: 0.82rem; transition: all 0.2s; border-left: 3px solid transparent;
+  }
+  .nav-sidebar a:hover { color: var(--text); background: var(--surface2); border-left-color: var(--accent); }
+  .nav-sidebar .nav-title {
+    padding: 12px 20px 6px; font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; color: var(--accent); letter-spacing: 1px;
+  }
+
+  section { padding: 48px 0; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+  h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+  h2 .num {
+    background: var(--accent); color: #fff; width: 32px; height: 32px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0;
+  }
+  h3 { font-size: 1.15rem; font-weight: 600; margin: 24px 0 12px; color: var(--accent2); }
+  h4 { font-size: 1rem; font-weight: 600; margin: 20px 0 10px; color: var(--gold); }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.88rem; }
+  th {
+    background: var(--surface2); padding: 10px 14px; text-align: left; font-weight: 600;
+    color: var(--accent); border-bottom: 2px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: rgba(108,140,255,0.04); }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .tag-phase { background: rgba(108,140,255,0.15); color: var(--accent); }
+  .tag-free { background: rgba(76,175,80,0.2); color: var(--green); }
+  .tag-repeat { background: rgba(255,107,157,0.15); color: var(--pink); }
+  .tag-once { background: rgba(155,161,181,0.15); color: var(--text2); }
+  .tag-warn { background: rgba(255,152,0,0.15); color: var(--orange); }
+
+  .comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin: 20px 0; }
+  .comp-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; transition: border-color 0.2s;
+  }
+  .comp-card:hover { border-color: var(--accent); }
+  .comp-card .comp-name { font-size: 1rem; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .comp-card .comp-name .icon {
+    width: 28px; height: 28px; border-radius: 6px; display: flex;
+    align-items: center; justify-content: center; font-size: 0.9rem;
+  }
+  .comp-card .comp-desc { color: var(--text2); font-size: 0.82rem; margin-top: 8px; }
+  .comp-card .comp-props { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .prop-chip {
+    background: var(--surface2); padding: 3px 10px; border-radius: 6px;
+    font-size: 0.75rem; color: var(--text2); border: 1px solid var(--border);
+  }
+
+  .wireframe { background: #12141c; border: 2px solid var(--border); border-radius: var(--radius); padding: 0; margin: 16px 0; overflow: hidden; }
+  .wf-header {
+    background: var(--surface2); padding: 8px 16px; display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border); font-size: 0.8rem; font-weight: 600; color: var(--text2);
+  }
+  .wf-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .wf-body { padding: 24px; position: relative; min-height: 280px; }
+  .wf-dim { position: absolute; inset: 0; background: rgba(0,0,0,0.5); border-radius: 0 0 10px 10px; pointer-events: none; }
+  .wf-dim.alpha7 { background: rgba(0,0,0,0.7); }
+  .wf-dim.alpha6 { background: rgba(0,0,0,0.6); }
+  .phone-frame {
+    width: 300px; margin: 0 auto; background: #1a1d27; border: 2px solid var(--border);
+    border-radius: 24px; overflow: hidden; position: relative;
+  }
+  .phone-notch { width: 120px; height: 20px; background: #0f1117; border-radius: 0 0 12px 12px; margin: 0 auto; }
+  .phone-screen { padding: 12px; min-height: 420px; position: relative; overflow: hidden; }
+  .phone-screen .dim-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 1; }
+
+  .wf-card {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 42px; height: 56px; border-radius: 6px; font-size: 1.1rem;
+    font-weight: 700; margin: 3px; position: relative;
+  }
+  .wf-card.face-up { background: #fff; color: #333; border: 2px solid #ddd; }
+  .wf-card.face-down { background: linear-gradient(135deg, #3a4a6b 0%, #2a3a5b 100%); color: transparent; border: 2px solid #4a5a7b; }
+  .wf-card.highlight { border-color: var(--gold); box-shadow: 0 0 12px rgba(255,215,0,0.4); z-index: 5; }
+  .wf-card.dimmed { opacity: 0.3; }
+  .wf-card.gimmick { background: linear-gradient(135deg, #4a2a6b 0%, #3a1a5b 100%); color: #fff; border-color: #8a6abf; }
+
+  .wf-bubble {
+    background: #fff; color: #333; border-radius: 12px; padding: 14px 18px;
+    position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10;
+    max-width: 260px; margin: 12px auto;
+  }
+  .wf-bubble::after {
+    content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+    border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 8px solid #fff;
+  }
+  .wf-bubble.tail-bottom::after { top: auto; bottom: -8px; border-bottom: none; border-top: 8px solid #fff; }
+  .wf-bubble .title { font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; }
+  .wf-bubble .desc { font-size: 0.78rem; color: #666; line-height: 1.4; }
+  .wf-bubble .tap-hint { text-align: right; font-size: 0.7rem; color: var(--accent); margin-top: 6px; }
+  .wf-bubble.celebration { background: linear-gradient(135deg, #fff9e6 0%, #fff 100%); border: 2px solid var(--gold); }
+
+  .wf-arrow { color: var(--gold); font-size: 1.5rem; text-align: center; animation: pulse 0.8s ease-in-out infinite; z-index: 10; position: relative; }
+  @keyframes pulse { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .anim-bounce { animation: bounce 0.6s ease-out infinite; }
+  .anim-blink { animation: blink 0.5s ease-in-out 3; }
+
+  .wf-highlight-box {
+    border: 2px solid var(--gold); border-radius: 8px; box-shadow: 0 0 16px rgba(255,215,0,0.3);
+    position: relative; z-index: 5; padding: 12px; background: rgba(255,215,0,0.05);
+  }
+  .wf-free-tag { background: var(--green); color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
+  .wf-btn {
+    background: var(--accent); color: #fff; border: none; padding: 10px 24px;
+    border-radius: 8px; font-weight: 700; font-size: 0.85rem; display: block; width: fit-content; margin: 8px auto;
+  }
+  .wf-btn.locked { background: #555; color: #888; }
+  .wf-hud {
+    display: flex; justify-content: space-between; padding: 8px 4px; font-size: 0.7rem;
+    color: var(--text2); opacity: 0.4; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+  }
+  .wf-section-label { font-size: 0.7rem; color: var(--accent); font-weight: 600; margin-bottom: 4px; letter-spacing: 0.5px; }
+
+  .scr-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin: 24px 0; overflow: hidden; }
+  .scr-card-header {
+    background: var(--surface2); padding: 16px 20px; display: flex; align-items: center;
+    justify-content: space-between; border-bottom: 1px solid var(--border);
+  }
+  .scr-card-header .scr-id { font-size: 0.8rem; font-weight: 700; color: var(--accent); background: rgba(108,140,255,0.15); padding: 3px 10px; border-radius: 6px; }
+  .scr-card-header .scr-title { font-weight: 700; font-size: 1.05rem; flex: 1; margin-left: 12px; }
+  .scr-card-body { padding: 20px; }
+  .scr-meta { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; font-size: 0.82rem; }
+  .scr-meta-item { display: flex; align-items: center; gap: 6px; }
+  .scr-meta-item .label { color: var(--text2); }
+  .scr-meta-item .value { color: var(--text); font-weight: 600; }
+
+  .flow-container { padding: 24px; overflow-x: auto; }
+  .flow-timeline { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 40px; }
+  .flow-node {
+    position: relative; padding: 12px 20px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; margin: 4px 0; max-width: 500px; transition: border-color 0.2s;
+  }
+  .flow-node:hover { border-color: var(--accent); }
+  .flow-node::before { content: ''; position: absolute; left: -28px; top: 50%; width: 16px; height: 2px; background: var(--border); }
+  .flow-line { position: absolute; left: 12px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .flow-node .flow-level { font-size: 0.7rem; color: var(--accent2); font-weight: 600; }
+  .flow-node .flow-scr { font-weight: 700; font-size: 0.9rem; }
+  .flow-node .flow-desc { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+  .flow-divider {
+    text-align: center; padding: 12px 0; font-weight: 700; font-size: 0.85rem;
+    color: var(--gold); position: relative; margin-left: -40px;
+  }
+  .flow-divider::before, .flow-divider::after { content: ''; position: absolute; top: 50%; height: 1px; width: 100px; background: var(--gold); opacity: 0.4; }
+  .flow-divider::before { left: 10%; }
+  .flow-divider::after { right: 10%; }
+
+  .mapping-table td:nth-child(1) { font-weight: 700; color: var(--accent); font-family: monospace; }
+  .mapping-table td:nth-child(2) { font-family: monospace; font-size: 0.8rem; }
+  .mapping-table td:nth-child(4) { font-weight: 600; }
+
+  .checklist { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; }
+  .check-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .check-item:last-child { border-bottom: none; }
+  .check-icon { width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; flex-shrink: 0; }
+  .check-icon.pass { background: rgba(76,175,80,0.2); color: var(--green); }
+  .check-icon.warn { background: rgba(255,152,0,0.2); color: var(--orange); }
+
+  .palette { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+  .swatch { text-align: center; }
+  .swatch-color { width: 56px; height: 56px; border-radius: 10px; border: 2px solid var(--border); margin-bottom: 4px; }
+  .swatch-label { font-size: 0.7rem; color: var(--text2); }
+  .swatch-hex { font-size: 0.7rem; font-family: monospace; color: var(--text); }
+
+  .seq-flow {
+    display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin: 16px 0; padding: 16px;
+    background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);
+  }
+  .seq-step { background: var(--surface2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+  .seq-step.active { border-color: var(--accent); background: rgba(108,140,255,0.15); color: var(--accent); }
+  .seq-arrow-r { color: var(--text2); font-size: 1rem; }
+
+  .step-info { background: var(--surface); border-left: 3px solid var(--accent); padding: 12px 16px; margin: 12px 0; border-radius: 0 8px 8px 0; font-size: 0.85rem; }
+  .step-info .si-label { font-weight: 700; color: var(--accent); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+
+  .anim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
+  .anim-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .anim-card .anim-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; }
+  .anim-card .anim-preview { width: 40px; height: 40px; margin: 8px auto; background: var(--accent); border-radius: 8px; }
+  .anim-card .anim-params { font-size: 0.75rem; color: var(--text2); margin-top: 8px; }
+  .anim-card .anim-preview.pulse-anim { animation: pulse 0.8s ease-in-out infinite; }
+  .anim-card .anim-preview.bounce-anim { animation: bounce 0.6s ease-out infinite; }
+  .anim-card .anim-preview.blink-anim { animation: blink 0.5s ease-in-out infinite; }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+  .anim-card .anim-preview.shake-anim { animation: shake 0.3s linear infinite; }
+
+  .note-box { background: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.82rem; margin: 12px 0; color: var(--orange); }
+  .note-box.info { background: rgba(108,140,255,0.08); border-color: rgba(108,140,255,0.2); color: var(--accent); }
+  .note-box.success { background: rgba(76,175,80,0.08); border-color: rgba(76,175,80,0.2); color: var(--green); }
+
+  .wf-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0; }
+  @media (max-width: 768px) {
+    .hero { padding: 40px 20px 30px; }
+    .hero h1 { font-size: 1.6rem; }
+    .comp-grid { grid-template-columns: 1fr; }
+    .phone-frame { width: 100%; }
+    table { font-size: 0.8rem; }
+    th, td { padding: 8px 10px; }
+    .scr-meta { flex-direction: column; gap: 8px; }
+    .wf-two-col { grid-template-columns: 1fr; }
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- 네비게이션 토글 -->
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">&#9776;</button>
+
+<!-- 사이드바 네비게이션 -->
+<nav class="nav-sidebar">
+  <div class="nav-title">컴포넌트</div>
+  <a href="#components">UI 컴포넌트 (6종)</a>
+  <a href="#summary">화면 요약표</a>
+  <div class="nav-title">화면 상세</div>
+  <a href="#scr01">SCR-01 Phase 0 가이드</a>
+  <a href="#scr02">SCR-02 로비 가이드</a>
+  <a href="#scr03">SCR-03 도시 꾸미기</a>
+  <a href="#scr04">SCR-04 프리레벨</a>
+  <a href="#scr05">SCR-05 기믹 가이드</a>
+  <a href="#scr06">SCR-06 스트릭 가이드</a>
+  <a href="#scr07">SCR-07 언두 튜토리얼</a>
+  <a href="#scr08">SCR-08 엑스트라 덱</a>
+  <a href="#scr09">SCR-09 해금 팝업</a>
+  <a href="#scr10">SCR-10 아이콘 터치</a>
+  <a href="#scr11">SCR-11 불꽃놀이</a>
+  <a href="#scr12">SCR-12 타임아웃 힌트</a>
+  <a href="#scr13">SCR-13 클리어</a>
+  <div class="nav-title">참조</div>
+  <a href="#flow">화면 전환 플로우</a>
+  <a href="#mapping">가이드 매핑표</a>
+  <a href="#assets">디자이너 에셋</a>
+</nav>
+
+<!-- 헤더 -->
+<header class="hero">
+  <div class="container">
+    <h1>튜토리얼 UI/UX 화면 명세</h1>
+    <div class="subtitle">PST Solitaire Tripeaks — NRU Lv 1 ~ Lv 24 튜토리얼 시스템</div>
+    <div class="badges">
+      <span class="badge status">CP1 수정 완료</span>
+      <span class="badge status" style="background:rgba(156,39,176,0.15);color:#CE93D8;">REF 개선 반영</span>
+      <span class="badge doc">13개 화면</span>
+      <span class="badge doc">6종 컴포넌트</span>
+      <span class="badge doc">25개 가이드 항목 (v1.2)</span>
+      <span class="badge verdict">PM 판정: Adjust (4/6 수정)</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ═══ 섹션 1: 컴포넌트 ═══ -->
+<section id="components">
+  <h2><span class="num">1</span> UI 컴포넌트</h2>
+  <p style="color:var(--text2);margin-bottom:16px;">모든 튜토리얼 화면은 아래 4종 핵심 + 2종 보조 컴포넌트로 구성된다. guide_type에 따라 조합이 달라진다.</p>
+
+  <!-- guide_type ↔ 컴포넌트 조합 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="border:1.5px solid var(--accent);border-radius:10px;padding:14px 16px;background:rgba(108,140,255,0.04);">
+      <div style="font-weight:700;color:var(--accent);margin-bottom:6px;">focus_bubble (20건) — 강제</div>
+      <div style="font-size:0.82rem;color:var(--text2);line-height:1.5;">
+        <strong>Dim+Highlight</strong> 배경 + 캐릭터+<strong>Bubble</strong> + Arrow(선택)<br>
+        is_forced=TRUE — 반드시 지정 영역(아이콘/카드/버튼) 터치해야 진행<br>
+        <span style="font-size:0.75rem;color:var(--text2);">예: 상점 아이콘 터치, 기믹 카드 매칭, 해금 팝업 확인</span>
+      </div>
+    </div>
+    <div style="border:1.5px solid var(--teal);border-radius:10px;padding:14px 16px;background:rgba(78,205,196,0.04);">
+      <div style="font-weight:700;color:var(--teal);margin-bottom:6px;">floating (7건) — 비강제</div>
+      <div style="font-size:0.82rem;color:var(--text2);line-height:1.5;">
+        <strong>딤 없이</strong> 캐릭터+<strong>Bubble</strong>(반투명) + Arrow(선택)<br>
+        is_forced=FALSE — 화면 아무 곳 탭으로 스킵 가능<br>
+        <span style="font-size:0.75rem;color:var(--text2);">예: 와일드카드/언두/엑스트라덱 안내, 기믹 터치 팁</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="comp-grid">
+    <!-- Bubble -->
+    <div class="comp-card">
+      <div class="comp-name">
+        <span class="icon" style="background:rgba(108,140,255,0.2);color:var(--accent);">&#128172;</span>
+        Bubble (말풍선)
+      </div>
+      <div class="comp-desc">캐릭터+말풍선. 제목, 설명, 탭하여 닫기(선택) 기능 포함. <strong style="color:var(--accent);">focus_bubble</strong>·<strong style="color:var(--teal);">floating</strong> 모두 사용.</div>
+      <div class="comp-props">
+        <span class="prop-chip">radius: 12px</span>
+        <span class="prop-chip">그림자</span>
+        <span class="prop-chip">꼬리: 대상 방향</span>
+        <span class="prop-chip">DEFAULT / CELEBRATION / WARNING</span>
+        <span class="prop-chip" style="background:rgba(156,39,176,0.15);color:#CE93D8;">mascotIcon: 48x48px</span>
+        <span class="prop-chip" style="background:rgba(156,39,176,0.15);color:#CE93D8;">mascotPosition: LEFT_TOP / RIGHT_TOP / NONE</span>
+      </div>
+      <table style="margin-top:12px;font-size:0.8rem;">
+        <tr><td style="color:var(--text2)">위치</td><td><code>BOTTOM_CENTER</code> <code>TOP_CENTER</code> <code>NEAR_TARGET</code> <code>CENTER</code></td></tr>
+        <tr><td style="color:var(--text2)">닫기</td><td>autoDismiss(ms) 또는 탭</td></tr>
+        <tr><td style="color:#CE93D8">마스코트</td><td>LEFT_TOP 기본. WARNING 스타일은 NONE (마스코트 미표시) <span style="font-size:0.7rem;color:var(--text2);">[REF-개선]</span></td></tr>
+      </table>
+    </div>
+    <!-- Highlight -->
+    <div class="comp-card">
+      <div class="comp-name">
+        <span class="icon" style="background:rgba(255,215,0,0.2);color:var(--gold);">&#10024;</span>
+        Highlight (하이라이트)
+      </div>
+      <div class="comp-desc">전체 화면 딤 + 대상 요소에 마스크 컷아웃 적용. <strong style="color:var(--accent);">focus_bubble 전용</strong> — floating에서는 사용하지 않음.</div>
+      <div class="comp-props">
+        <span class="prop-chip">rect / circle / auto</span>
+        <span class="prop-chip">padding: 8px</span>
+        <span class="prop-chip">외부 터치 차단</span>
+      </div>
+    </div>
+    <!-- Arrow -->
+    <div class="comp-card">
+      <div class="comp-name">
+        <span class="icon" style="background:rgba(255,215,0,0.2);color:var(--gold);">&#9757;</span>
+        Arrow (화살표)
+      </div>
+      <div class="comp-desc">손가락 아이콘 + 대상을 가리키는 화살표. 애니메이션 적용.</div>
+      <div class="comp-props">
+        <span class="prop-chip">48x48px</span>
+        <span class="prop-chip" style="color:var(--gold)">#FFD700</span>
+        <span class="prop-chip">PULSE (0.8s)</span>
+        <span class="prop-chip">BOUNCE (0.6s)</span>
+        <span class="prop-chip">STATIC</span>
+      </div>
+    </div>
+    <!-- Feedback -->
+    <div class="comp-card">
+      <div class="comp-name">
+        <span class="icon" style="background:rgba(255,68,68,0.2);color:var(--red);">&#9888;</span>
+        Feedback (피드백)
+      </div>
+      <div class="comp-desc">오류/주의 애니메이션. 요소에 직접 적용.</div>
+      <div class="comp-props">
+        <span class="prop-chip">SHAKE: +/-5px x3 0.3s</span>
+        <span class="prop-chip">BLINK: alpha x3 0.5s</span>
+        <span class="prop-chip">PULSE_RED: 테두리 깜빡임</span>
+      </div>
+    </div>
+    <!-- DimOverlay -->
+    <div class="comp-card">
+      <div class="comp-name">
+        <span class="icon" style="background:rgba(155,161,181,0.2);color:var(--text2);">&#9632;</span>
+        DimOverlay (딤 오버레이)
+      </div>
+      <div class="comp-desc">가변 투명도 블랙 오버레이. <strong style="color:var(--accent);">focus_bubble 전용</strong> — floating에서는 딤 없음. <span style="font-size:0.7rem;color:#CE93D8;">[REF-개선: 라이트 터치]</span></div>
+      <div class="comp-props">
+        <span class="prop-chip">#000000</span>
+        <span class="prop-chip" style="background:rgba(156,39,176,0.15);color:#CE93D8;">0.3 (일반)</span>
+        <span class="prop-chip" style="background:rgba(156,39,176,0.15);color:#CE93D8;">0.4 (로비)</span>
+        <span class="prop-chip" style="background:rgba(156,39,176,0.15);color:#CE93D8;">없음 (Phase 0 S1-1)</span>
+        <span class="prop-chip" style="text-decoration:line-through;opacity:0.4;">0.5 / 0.6 / 0.7</span>
+      </div>
+    </div>
+    <!-- FreeTag -->
+    <div class="comp-card">
+      <div class="comp-name">
+        <span class="icon" style="background:rgba(76,175,80,0.2);color:var(--green);">&#127873;</span>
+        FreeTag (무료 태그)
+      </div>
+      <div class="comp-desc">버튼 위에 무료 부스터 횟수를 표시하는 초록색 뱃지.</div>
+      <div class="comp-props">
+        <span class="prop-chip" style="color:var(--green)">FREE x3</span>
+        <span class="prop-chip">Undo (Lv8)</span>
+        <span class="prop-chip">Extra Deck</span>
+        <span class="prop-chip">Fireworks (Lv24)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 섹션 2: 요약표 ═══ -->
+<section id="summary">
+  <h2><span class="num">2</span> 화면 요약표</h2>
+  <div style="overflow-x:auto;">
+  <table>
+    <thead>
+      <tr><th>SCR</th><th>화면</th><th>발동 조건</th><th>Phase</th><th style="color:var(--accent);">guide_type</th><th>사용 컴포넌트</th><th>반복</th></tr>
+    </thead>
+    <tbody>
+      <tr style="background:rgba(156,39,176,0.04);"><td><span class="tag tag-phase">01</span></td><td>인게임 - Phase 0 가이드</td><td>NRU 최초 실행 (Lv 1)</td><td>0</td><td><span style="color:var(--teal);">floating</span></td><td><strong style="color:#4ecdc4;">딤 없이</strong> Sparkle+Bubble(마스코트)+Arrow+Feedback <span style="font-size:0.65rem;color:#CE93D8;">[REF]</span></td><td><span class="tag tag-once">1회</span></td></tr>
+      <tr style="background:rgba(156,39,176,0.04);"><td><span class="tag tag-phase">02</span></td><td>로비 - 최초 진입 가이드</td><td>Lv 1 클리어 후</td><td>1</td><td><span style="color:var(--teal);">floating</span></td><td><strong style="color:#4ecdc4;">딤 없이</strong> Sparkle+Bubble(마스코트) — 3단계 축소 <span style="font-size:0.65rem;color:#CE93D8;">[REF]</span></td><td><span class="tag tag-once">1회</span></td></tr>
+      <tr><td><span class="tag tag-phase">03</span></td><td>도시 꾸미기 - 강제 업그레이드</td><td>해머 존 도달</td><td>-</td><td><span style="color:var(--accent);">focus_bubble</span></td><td>Dim+Highlight+Bubble+Arrow</td><td><span class="tag tag-repeat">매 존</span></td></tr>
+      <tr><td><span class="tag tag-phase">04</span></td><td>프리레벨 - 최초 가이드</td><td>Lv 3 첫 프리레벨</td><td>2</td><td><span style="color:var(--accent);">focus_bubble</span></td><td>Dim+Highlight+Bubble</td><td><span class="tag tag-once">1회</span></td></tr>
+      <tr><td><span class="tag tag-phase">05</span></td><td>인게임 - 기믹 가이드</td><td>기믹 첫 등장</td><td>2~6</td><td><span style="color:var(--accent);">focus_bubble</span></td><td>Dim+Highlight+Bubble</td><td><span class="tag tag-once">기믹별 1회</span></td></tr>
+      <tr><td><span class="tag tag-phase">06</span></td><td>인게임 - 스트릭 가이드</td><td>Lv 5 첫 2-콤보</td><td>3</td><td><span style="color:var(--accent);">focus_bubble</span></td><td>Dim+Highlight+Bubble+Arrow</td><td><span class="tag tag-once">1회</span></td></tr>
+      <tr><td><span class="tag tag-phase">07</span></td><td>인게임 - 언두 튜토리얼 <strong style="color:#4ecdc4;">(비강제)</strong></td><td>Lv 8 (3턴 경과 / 실수)</td><td>4</td><td><span style="color:var(--teal);">floating</span></td><td><strong style="color:#4ecdc4;">딤 없이</strong> 캐릭터+Bubble+Arrow+FreeTag</td><td><span class="tag tag-once">1회</span></td></tr>
+      <tr><td><span class="tag tag-phase">08</span></td><td>인게임 - 엑스트라 덱 <strong style="color:#4ecdc4;">(비강제)</strong></td><td>덱 소진 + 매칭 불가</td><td>-</td><td><span style="color:var(--teal);">floating</span></td><td><strong style="color:#4ecdc4;">딤 없이</strong> 캐릭터+Bubble+Arrow+FreeTag</td><td><span class="tag tag-once">1회</span></td></tr>
+      <tr><td><span class="tag tag-phase">09</span></td><td>로비 - 해금 팝업</td><td>해금 레벨별</td><td>2~6</td><td>—</td><td>UnlockPopup (커스텀)</td><td><span class="tag tag-once">콘텐츠별 1회</span></td></tr>
+      <tr><td><span class="tag tag-phase">10</span></td><td>로비 - 아이콘 터치 유도</td><td>상점 / <strong style="color:#CE93D8;">스트릭스타(Lv5)</strong> / <strong style="color:#4ecdc4;">방치골드(Lv4+) / 콜렉션(Lv6) / 데일리휠(Lv9)</strong> / 이벤트</td><td>2~6</td><td><span style="color:var(--accent);">focus_bubble</span></td><td>Dim+Highlight+Bubble+Arrow</td><td><span class="tag tag-once">항목별 1회</span></td></tr>
+      <tr><td><span class="tag tag-phase">11</span></td><td>프리레벨 - 불꽃놀이</td><td>Lv 24 프리레벨</td><td>6</td><td><span style="color:var(--accent);">focus_bubble</span></td><td>Dim+Highlight+Bubble+FreeTag</td><td><span class="tag tag-once">1회</span></td></tr>
+      <tr><td><span class="tag tag-phase">12</span></td><td>인게임 - 타임아웃 힌트</td><td>Lv 1~8, 5초 대기</td><td>0~4</td><td>—</td><td>Blink (Feedback)</td><td><span class="tag tag-repeat">매번</span></td></tr>
+      <tr style="background:rgba(156,39,176,0.04);"><td><span class="tag tag-phase">13</span></td><td>결과 - 클리어</td><td>Lv 1 / Lv 8 클리어</td><td>0, 4</td><td>—</td><td>인게임 보상 수령 연출+마스코트+Collect 버튼 <span style="font-size:0.65rem;color:#CE93D8;">[REF]</span></td><td><span class="tag tag-once">1회</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ═══ SCR-01 ═══ -->
+<section id="scr01">
+  <div class="scr-card">
+    <div class="scr-card-header">
+      <span class="scr-id">SCR-01</span>
+      <span class="scr-title">인게임 - Phase 0 가이드 (Lv 1)</span>
+      <span class="tag tag-phase">Phase 0</span>
+    </div>
+    <div class="scr-card-body">
+      <div class="scr-meta">
+        <div class="scr-meta-item"><span class="label">씬:</span><span class="value">InGameScene</span></div>
+        <div class="scr-meta-item"><span class="label">맵:</span><span class="value">Tutorial_0351 (필드 6장, 드로우 3장)</span></div>
+        <div class="scr-meta-item"><span class="label">발동:</span><span class="value">NRU 최초 실행 (로비 건너뜀)</span></div>
+      </div>
+
+      <h4>스텝 시퀀스</h4>
+      <div class="seq-flow">
+        <span class="seq-step active">S1-1 화면 소개</span>
+        <span class="seq-arrow-r">&#8594;</span>
+        <span class="seq-step">S1-2 카드 매칭</span>
+        <span class="seq-arrow-r">&#8596;</span>
+        <span class="seq-step">S1-3 드로우 덱</span>
+        <span class="seq-arrow-r">&#8594;</span>
+        <span class="seq-step">S1-4 자유 플레이</span>
+        <span class="seq-arrow-r">&#8594;</span>
+        <span class="seq-step">S1-5 클리어</span>
+      </div>
+
+      <!-- S1-1 와이어프레임 -->
+      <h4>S1-1: 게임 화면 소개</h4>
+      <div class="wireframe">
+        <div class="wf-header">
+          <span class="wf-dot" style="background:#ff5f57"></span>
+          <span class="wf-dot" style="background:#ffbd2e"></span>
+          <span class="wf-dot" style="background:#28c840"></span>
+          InGameScene - 화면 소개
+        </div>
+        <div class="wf-body" style="background:#0a0c12;">
+          <!-- [REF-개선] 딤 제거 — 카드 딜링 애니메이션 + 마스코트 Bubble -->
+          <div style="position:relative;z-index:10;text-align:center;padding-top:20px;">
+            <div class="wf-section-label" style="color:#CE93D8;">CARD DEALING ANIMATION (1.5s) — 딤 없음 <span style="font-size:0.65rem;">[REF]</span></div>
+            <div style="display:inline-block;margin:8px auto;">
+              <div class="wf-card face-up highlight" style="box-shadow:0 0 8px rgba(255,215,0,0.3);">5</div>
+              <div class="wf-card face-up highlight" style="box-shadow:0 0 8px rgba(255,215,0,0.3);">3</div>
+              <div class="wf-card face-up highlight" style="box-shadow:0 0 8px rgba(255,215,0,0.3);">7</div>
+              <div class="wf-card face-up highlight" style="box-shadow:0 0 8px rgba(255,215,0,0.3);">K</div>
+              <div class="wf-card face-up highlight" style="box-shadow:0 0 8px rgba(255,215,0,0.3);">9</div>
+              <div class="wf-card face-up highlight" style="box-shadow:0 0 8px rgba(255,215,0,0.3);">2</div>
+            </div>
+            <div style="font-size:0.7rem;color:var(--gold);margin:4px 0;">&#10024; Sparkle effects on matchable cards</div>
+            <div style="display:flex;justify-content:center;gap:60px;margin-top:16px;">
+              <div style="text-align:center;">
+                <div class="wf-section-label">DRAW DECK</div>
+                <div class="wf-card face-down" style="margin:0 auto;"></div>
+              </div>
+              <div style="text-align:center;">
+                <div class="wf-section-label">OPEN CARD</div>
+                <div class="wf-card face-up" style="margin:0 auto;">4</div>
+              </div>
+            </div>
+            <div class="wf-bubble" style="margin-top:24px;">
+              <div style="float:left;width:32px;height:32px;background:rgba(156,39,176,0.2);border-radius:50%;margin-right:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">&#128062;</div>
+              <div class="title">&#128172; T_TUT_MATCH_TITLE</div>
+              <div class="desc">Match cards with +/-1 value! Tap matching cards to remove them.</div>
+              <div style="font-size:0.65rem;color:var(--text2);margin-top:4px;">autoDismiss: 3000ms</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-info" style="border-left-color:#CE93D8;">
+        <div class="si-label" style="color:#CE93D8;">딤 처리 [REF-개선]</div>
+        <strong>딤 없음</strong> — 카드 딜링 애니메이션(1.5s)으로 시각 포커스 유도. 매칭 가능 카드에 Sparkle 효과. 마스코트 아이콘 Bubble (autoDismiss 3000ms).
+        <div style="font-size:0.75rem;color:var(--text2);margin-top:4px;text-decoration:line-through;">이전: alpha 0.7 전체 딤 + 순차 하이라이트</div>
+      </div>
+
+      <!-- S1-2 와이어프레임 -->
+      <h4>S1-2: 카드 매칭 가이드 (+/-1)</h4>
+      <div class="wireframe">
+        <div class="wf-header">
+          <span class="wf-dot" style="background:#ff5f57"></span>
+          <span class="wf-dot" style="background:#ffbd2e"></span>
+          <span class="wf-dot" style="background:#28c840"></span>
+          InGameScene - 카드 매칭
+        </div>
+        <div class="wf-body" style="background:#0a0c12;">
+          <div class="wf-dim" style="opacity:0.3;"></div><!-- [REF-개선] alpha 0.5→0.3 -->
+          <div style="position:relative;z-index:10;text-align:center;padding-top:16px;">
+            <div style="display:flex;justify-content:center;gap:4px;flex-wrap:wrap;">
+              <div class="wf-card face-up highlight" style="box-shadow:0 0 12px rgba(255,215,0,0.6);">5</div>
+              <div class="wf-card face-up dimmed">K</div>
+              <div class="wf-card face-up dimmed">9</div>
+              <div class="wf-card face-up highlight" style="box-shadow:0 0 12px rgba(255,215,0,0.6);">3</div>
+            </div>
+            <div class="wf-arrow" style="margin-top:12px;">&#9757; &#8593;</div>
+            <div style="display:flex;justify-content:center;gap:60px;margin-top:8px;">
+              <div class="wf-card face-down dimmed"></div>
+              <div class="wf-card face-up" style="border-color:var(--accent);box-shadow:0 0 8px rgba(108,140,255,0.5);">4</div>
+            </div>
+            <div style="font-size:0.7rem;color:var(--text2);margin-top:8px;">하이라이트 = 매칭 가능 (3, 5). &#10024; Sparkle 효과 + PULSE 화살표. <span style="color:#CE93D8;">딤 alpha 0.3 [REF]</span></div>
+          </div>
+        </div>
+      </div>
+
+      <table>
+        <tr><th style="width:140px">타임아웃</th><td>5초 대기 &#8594; 매칭 가능 카드 Blink x3</td></tr>
+        <tr><th>오류 처리</th><td>잘못된 카드 탭 &#8594; SHAKE (0.3초) + 정답 카드 Blink x3</td></tr>
+        <tr><th>완료 조건</th><td>3회 성공 매칭</td></tr>
+      </table>
+
+      <!-- S1-3b 삭제: NRU 구제 드로우 — Lv1~2는 잘못된 카드 터치 차단(정답 카드만 선택 가능)이므로 덱 소진+매칭 불가 상황 자체가 발생하지 않음. 해당 엣지 케이스 제거. -->
+
+      <!-- S1-5 클리어 [REF-개선: 인게임 보상 수령 연출] -->
+      <h4>S1-5: 클리어 축하 <span style="font-size:0.75rem;color:#CE93D8;">[REF-개선: 인게임 보상 수령 연출]</span></h4>
+      <div class="wireframe">
+        <div class="wf-header">
+          <span class="wf-dot" style="background:#ff5f57"></span>
+          <span class="wf-dot" style="background:#ffbd2e"></span>
+          <span class="wf-dot" style="background:#28c840"></span>
+          InGameScene - 인게임 보상 수령 연출
+        </div>
+        <div class="wf-body" style="background:#0a0c12;text-align:center;padding:20px;">
+          <div style="font-size:0.7rem;color:var(--gold);margin-bottom:8px;">&#127902; 코인 파티클 30~50개 (2.0s ease-out) + &#127881; 컨페티 5~8색 (1.5s)</div>
+          <div style="display:flex;justify-content:center;gap:8px;margin:12px 0;">
+            <span style="font-size:1.5rem;">&#129689;</span>
+            <span style="font-size:1.5rem;">&#129689;</span>
+            <span style="font-size:1.5rem;">&#129689;</span>
+            <span style="font-size:1.5rem;">&#129689;</span>
+            <span style="font-size:1.5rem;">&#129689;</span>
+          </div>
+          <div style="font-size:1.8rem;font-weight:900;color:var(--gold);margin:8px 0;">+1,000g</div>
+          <div style="display:inline-block;width:48px;height:48px;background:rgba(156,39,176,0.2);border-radius:50%;margin:8px 0;line-height:48px;font-size:1.5rem;">&#128062;</div>
+          <div style="font-size:0.75rem;color:var(--text2);margin-bottom:12px;">마스코트 축하 포즈 (200x200px)</div>
+          <div class="wf-btn" style="background:var(--green);width:180px;margin:0 auto;">Collect</div>
+          <div style="font-size:0.7rem;color:var(--text2);opacity:0.5;margin-top:8px;">Tap to Skip (1s 후 표시)</div>
+        </div>
+      </div>
+      <div class="step-info">
+        <div class="si-label">보상</div>
+        골드 1,000g + 해머 x1 <span class="tag tag-warn">가설 — const 10065 라이브 확인 필요</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCR-07 ═══ -->
+<section id="scr07">
+  <div class="scr-card">
+    <div class="scr-card-header">
+      <span class="scr-id">SCR-07</span>
+      <span class="scr-title">인게임 - 언두 튜토리얼 (Lv 8)</span>
+      <span class="tag tag-free">FREE x3</span>
+    </div>
+    <div class="scr-card-body">
+      <div class="scr-meta">
+        <div class="scr-meta-item"><span class="label">발동 조건:</span><span class="value">3턴 경과 또는 첫 실수</span></div>
+        <div class="scr-meta-item"><span class="label">가이드 키:</span><span class="value" style="font-family:monospace;">230012</span></div>
+      </div>
+
+      <div class="wireframe">
+        <div class="wf-header">
+          <span class="wf-dot" style="background:#ff5f57"></span>
+          <span class="wf-dot" style="background:#ffbd2e"></span>
+          <span class="wf-dot" style="background:#28c840"></span>
+          InGameScene - 언두 부스터 튜토리얼
+        </div>
+        <div class="wf-body" style="background:#0a0c12;">
+          <div class="wf-dim"></div>
+          <div style="position:relative;z-index:10;text-align:center;padding-top:30px;">
+            <div style="color:var(--text2);font-size:0.75rem;margin-bottom:20px;">[필드 카드 - 딤 처리]</div>
+            <div class="wf-highlight-box" style="display:inline-block;padding:16px 24px;">
+              <div style="font-size:1.8rem;margin-bottom:4px;">&#8617;&#65039;</div>
+              <div style="font-weight:700;font-size:0.9rem;">UNDO</div>
+              <div class="wf-free-tag" style="margin-top:8px;">FREE x3</div>
+            </div>
+            <div class="wf-arrow anim-bounce" style="margin-top:8px;">&#9757;</div>
+            <div class="wf-bubble" style="margin-top:12px;">
+              <div class="title">&#128172; T_TUT_UNDO</div>
+              <div class="desc">Undo your last move! Free 3 uses granted!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <table>
+        <tr><th style="width:140px">유저 액션</th><td>언두 버튼 탭 &#8594; 무료 사용 (3회 중 1회 소모)</td></tr>
+        <tr><th>이후</th><td>남은 2회 무료 사용 가능</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCR-09 ═══ -->
+<section id="scr09">
+  <div class="scr-card">
+    <div class="scr-card-header">
+      <span class="scr-id">SCR-09</span>
+      <span class="scr-title">로비 - 해금 팝업 (공통)</span>
+      <span class="tag tag-phase">Phase 2~6</span>
+    </div>
+    <div class="scr-card-body">
+
+      <div class="wireframe">
+        <div class="wf-header">
+          <span class="wf-dot" style="background:#ff5f57"></span>
+          <span class="wf-dot" style="background:#ffbd2e"></span>
+          <span class="wf-dot" style="background:#28c840"></span>
+          LobbyScene - 해금 팝업
+        </div>
+        <div class="wf-body" style="background:#0a0c12;display:flex;align-items:center;justify-content:center;">
+          <div style="background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:24px;width:260px;text-align:center;position:relative;">
+            <div style="position:absolute;top:10px;right:14px;color:var(--text2);cursor:pointer;">&#10005;</div>
+            <div style="width:64px;height:64px;background:rgba(108,140,255,0.2);border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;">&#127381;</div>
+            <div style="font-weight:700;font-size:1rem;margin-bottom:6px;">Feature Unlocked!</div>
+            <div style="color:var(--text2);font-size:0.82rem;line-height:1.4;margin-bottom:16px;">string_code 기반 설명 텍스트 (최대 2줄)</div>
+            <div class="wf-btn">OK</div>
+          </div>
+        </div>
+      </div>
+
+      <h4>해금 팝업 발생 일람</h4>
+      <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>레벨</th><th>content_id</th><th>string_code</th><th>팝업 후 동작</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Lv 4</td><td><code>content_idle_gold</code></td><td>T_TUT_IDLE_GOLD</td><td>방치 골드 타이머 시작</td></tr>
+          <tr><td>Lv 4</td><td><code>content_daily_check</code></td><td>T_TUT_DAILY_CHECK</td><td>출석 아이콘 활성화</td></tr>
+          <tr><td>Lv 6</td><td><code>content_collection</code></td><td>T_TUT_COLLECTION</td><td>콜렉션 활성화 + 레드닷</td></tr>
+          <tr style="background:rgba(78,205,196,0.08);"><td>Lv 7</td><td><code>content_wild_card</code></td><td>T_TUT_WILD_CARD</td><td><strong style="color:#4ecdc4;">인게임 Floating 가이드로 변경 (비강제)</strong></td></tr>
+          <tr><td>Lv 8</td><td><code>content_fireworks</code></td><td>T_TUT_FIREWORKS</td><td>-</td></tr>
+          <tr><td>Lv 9</td><td><code>content_betting_2</code></td><td>T_TUT_BETTING_2</td><td>x2 베팅 활성화</td></tr>
+          <tr style="background:rgba(255,152,0,0.06);"><td><strong>Lv 11</strong></td><td><code>content_iap_popup</code></td><td>T_TUT_IAP_POPUP</td><td>IAP 팝업 첫 노출 <span class="tag tag-warn">CP1 수정</span></td></tr>
+          <tr><td>Lv 14</td><td><code>content_runner_card</code></td><td>T_TUT_RUNNER_CARD</td><td>-</td></tr>
+          <tr><td>Lv 17</td><td><code>content_betting_4</code></td><td>T_TUT_BETTING_4</td><td>x4 베팅 활성화</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="note-box info">
+        <strong>이벤트 튜토리얼 (Lv 12+):</strong> 이벤트별 별도 해금 팝업 없음. 각 이벤트는 활성화 시 <code>content_event_forced</code> (230018) 를 통해 자동 노출.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCR-11 ═══ -->
+<section id="scr11">
+  <div class="scr-card">
+    <div class="scr-card-header">
+      <span class="scr-id">SCR-11</span>
+      <span class="scr-title">프리레벨 - 불꽃놀이 무료 부스터 (Lv 24)</span>
+      <span class="tag tag-free">FREE x3</span>
+    </div>
+    <div class="scr-card-body">
+      <div class="scr-meta">
+        <div class="scr-meta-item"><span class="label">가이드 키:</span><span class="value" style="font-family:monospace;">230011 (content_fireworks)</span></div>
+      </div>
+      <div class="wireframe">
+        <div class="wf-header">
+          <span class="wf-dot" style="background:#ff5f57"></span>
+          <span class="wf-dot" style="background:#ffbd2e"></span>
+          <span class="wf-dot" style="background:#28c840"></span>
+          PreLevelPopup - 불꽃놀이 슬롯
+        </div>
+        <div class="wf-body" style="background:#0a0c12;display:flex;align-items:center;justify-content:center;">
+          <div style="background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:20px;width:280px;">
+            <div style="color:var(--text2);font-size:0.75rem;text-align:center;margin-bottom:8px;">[난이도 - 딤] [베팅 - 딤]</div>
+            <div style="text-align:center;margin:12px 0;">
+              <div class="wf-section-label">FREE BOOSTER SLOT</div>
+              <div class="wf-highlight-box" style="display:inline-block;padding:16px 24px;">
+                <div style="font-size:1.8rem;">&#127878;</div>
+                <div style="font-weight:700;font-size:0.85rem;margin-top:4px;">Fireworks</div>
+                <div class="wf-free-tag" style="margin-top:8px;">FREE x3</div>
+              </div>
+            </div>
+            <div class="wf-bubble" style="margin-top:12px;">
+              <div class="title">&#128172; Fireworks Unlocked!</div>
+              <div class="desc">Removes all front-row cards! Free 3 uses!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCR-13 ═══ -->
+<section id="scr13">
+  <div class="scr-card">
+    <div class="scr-card-header">
+      <span class="scr-id">SCR-13</span>
+      <span class="scr-title">결과 - 클리어 축하</span>
+    </div>
+    <div class="scr-card-body">
+      <div class="wf-two-col">
+        <div>
+          <h4>13a: Lv 1 클리어 — 인게임 보상 수령 연출 <span style="font-size:0.7rem;color:#CE93D8;">[REF-개선]</span></h4>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;">
+            <div style="font-size:0.7rem;color:var(--gold);margin-bottom:6px;">&#129689; 코인 파티클 30~50개 + &#127881; 컨페티</div>
+            <div style="font-size:1.8rem;font-weight:900;color:var(--gold);margin:8px 0;">+1,000g</div>
+            <div style="display:inline-block;width:40px;height:40px;background:rgba(156,39,176,0.2);border-radius:50%;line-height:40px;font-size:1.2rem;margin-bottom:8px;">&#128062;</div>
+            <div style="font-size:0.7rem;color:var(--text2);margin-bottom:8px;">마스코트 축하 포즈</div>
+            <div class="wf-btn" style="background:var(--green);width:140px;margin:0 auto;font-size:0.8rem;">Collect</div>
+            <div style="font-size:0.65rem;color:var(--text2);opacity:0.5;margin-top:6px;">Tap to Skip (1s delay)</div>
+            <div style="margin-top:8px;font-size:0.75rem;color:var(--text2);">
+              보상: <strong style="color:var(--gold);">1,000g</strong> + 해머 x1
+              <span class="tag tag-warn" style="margin-left:4px;">가설</span>
+            </div>
+          </div>
+          <div class="note-box" style="margin-top:8px;border-left-color:#CE93D8;">
+            <strong style="color:#CE93D8;">REF 적용:</strong> 모든 레벨 클리어에 인게임 보상 수령 연출 적용 (CCS 패턴).
+          </div>
+        </div>
+        <div>
+          <h4>13b: Lv 8 클리어 — 2단계 연출 <span style="font-size:0.7rem;color:#CE93D8;">[REF-개선]</span></h4>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;">
+            <div style="font-size:0.65rem;color:#CE93D8;margin-bottom:6px;">Stage 1: 인게임 보상 수령 연출 (위 13a와 동일)</div>
+            <div style="font-size:0.7rem;color:var(--gold);margin-bottom:4px;">&#129689;&#129689;&#129689; + &#127881;&#127881;&#127881;</div>
+            <div style="border-top:1px dashed var(--border);margin:10px 0;padding-top:10px;">
+              <div style="font-size:0.65rem;color:#CE93D8;margin-bottom:6px;">Stage 2: 클리어 마스코트 Bubble</div>
+              <div style="display:inline-block;width:40px;height:40px;background:rgba(156,39,176,0.2);border-radius:50%;line-height:40px;font-size:1.2rem;margin-bottom:6px;">&#128062;</div>
+              <div class="wf-bubble celebration" style="display:inline-block;margin:0;">
+                <div class="title">&#127891; T_TUT_GRADUATION</div>
+                <div class="desc">The real challenge begins now!</div>
+              </div>
+            </div>
+            <div style="margin-top:10px;font-size:0.8rem;">
+              <span style="color:var(--accent2);">autoDismiss: 3,000ms</span><br>
+              <span style="color:var(--text2);">Phase 5 전환, 튜토리얼 클리어 &#8594; 일반 티어</span>
+            </div>
+          </div>
+          <div class="note-box success" style="margin-top:8px;">
+            <strong>CP1 수정:</strong> <code>T_TUT_GRADUATION</code> string_code 참조 — 다국어 대응.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 화면 전환 플로우 ═══ -->
+<section id="flow">
+  <h2><span class="num">F</span> 화면 전환 플로우</h2>
+
+  <div class="flow-container">
+    <div class="flow-timeline">
+      <div class="flow-line"></div>
+
+      <!-- ── 플로우 가이드 범례 ── -->
+      <div style="margin:0 0 12px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;display:flex;gap:16px;flex-wrap:wrap;">
+        <span><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> 딤+하이라이트, 강제 터치</span>
+        <span><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(78,205,196,0.2);color:#4ecdc4;">floating</span> 딤 없이 캐릭터+말풍선, 탭 스킵</span>
+        <span style="color:#aaa;">표기: <code style="font-size:0.72rem;">키 · guide_type · play_scene · trigger_type = trigger_value</code></span>
+      </div>
+
+      <!-- ═══ Lv 1 ═══ -->
+      <div class="flow-node" style="border-left:3px solid var(--accent);">
+        <div class="flow-level">Lv 1 ─ NRU 앱 시작 (Tutorial_0351)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(78,205,196,0.2);color:#4ecdc4;">floating</span> <strong>229001</strong> 카드매칭 &middot; ingame &middot; tutorial_level = 1</div>
+        <div class="flow-desc">카드 매칭 기본 안내 (비강제, 딤 없이 캐릭터+말풍선, 탭 스킵) &middot; S1-1 ~ S1-5 인게임 스텝 &middot; 오답 터치 차단(NRU 보호)</div>
+      </div>
+
+      <!-- ═══ Lv 1 클리어 → 로비 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 1 클리어 ─ 인게임 보상 수령 연출 (SCR-13a) &#8594; 로비</div>
+        <div class="flow-desc">인게임 보상 수령 연출 &#8594; 로비 최초 진입 &#8594; 도시 꾸미기 가이드 (SCR-02) &#8594; 건물 업그레이드 (SCR-03)</div>
+      </div>
+
+      <!-- ═══ Lv 2 ═══ -->
+      <div class="flow-node" style="border-left:3px solid var(--accent);">
+        <div class="flow-level">Lv 2 ─ 덱 드로우 튜토리얼</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(78,205,196,0.2);color:#4ecdc4;">floating</span> <strong>229002</strong> 덱드로우 &middot; ingame &middot; tutorial_level = 2</div>
+        <div class="flow-desc">이동 불가 시 덱 뒤집기 안내 (비강제, 딤 없이, 탭 스킵) &middot; 오답 터치 차단(NRU 보호)</div>
+      </div>
+
+      <!-- ═══ Lv 2 클리어 → 프리레벨 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 2 클리어 후 ─ 프리레벨 팝업</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230002</strong> 프리레벨팝업 &middot; pre_level &middot; level_clear = 2</div>
+        <div class="flow-desc">참가비&middot;보상&middot;부스터 Dim+Highlight 안내 (강제, 반드시 해당 요소 터치)</div>
+      </div>
+
+      <!-- ═══ Lv 3 클리어 → 로비 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 3 클리어 후 ─ 로비</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230001</strong> 상점 &middot; lobby &middot; level_clear = 3</div>
+        <div class="flow-desc">상점 아이콘 Dim+Highlight 해금 안내 (강제, 반드시 상점 아이콘 터치)</div>
+      </div>
+
+      <!-- ═══ Lv 4 인게임 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 4 ─ 인게임 (플러스카드 첫 등장)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230004</strong> 플러스카드 &middot; ingame &middot; first_appear = 4</div>
+        <div class="flow-desc">플러스카드 &plusmn;1 매칭 규칙 Dim+Highlight (강제, 반드시 해당 카드 터치)</div>
+      </div>
+
+      <!-- ═══ Lv 4 클리어 → 로비 (3건) ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 4 클리어 후 ─ 로비 (3건 순차)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230003</strong> 방치골드 &middot; lobby &middot; level_clear = 4</div>
+        <div class="flow-desc">방치골드 아이콘 Dim+Highlight 해금 + 수령 강제</div>
+        <div class="flow-scr" style="margin-top:4px;"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230005</strong> 방치골드수령 &middot; lobby &middot; level_clear = 4</div>
+        <div class="flow-desc">방치골드 수령 아이콘 Dim+Highlight 터치 유도 (최초 1회)</div>
+        <div class="flow-scr" style="margin-top:4px;"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230006</strong> 출석체크 &middot; lobby &middot; level_clear = 4</div>
+        <div class="flow-desc">출석체크 아이콘 Dim+Highlight 해금 (강제, 반드시 터치 &#8594; 팝업)</div>
+      </div>
+
+      <!-- ═══ Lv 5 인게임 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 5 ─ 인게임 (첫 2-콤보)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230007</strong> 스트릭 &middot; ingame &middot; first_appear = 5</div>
+        <div class="flow-desc">스트릭미터 연속매칭 보너스 Dim+Highlight (강제, 2콤보 달성 후 터치)</div>
+      </div>
+
+      <!-- ═══ Lv 5 클리어 → 로비 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 5 클리어 후 ─ 로비</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230008</strong> 리더보드 &middot; lobby &middot; level_clear = 5</div>
+        <div class="flow-desc">리더보드 아이콘 Dim+Highlight (강제, 반드시 터치 &#8594; 팝업)</div>
+      </div>
+
+      <!-- ═══ Lv 6 클리어 → 로비 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 6 클리어 후 ─ 로비</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230009</strong> 콜렉션 &middot; lobby &middot; level_clear = 6</div>
+        <div class="flow-desc">콜렉션 Dim+Highlight 해금 (강제, 아이콘 터치 &#8594; 팝업)</div>
+      </div>
+
+      <!-- ═══ Lv 7 인게임 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 7 ─ 인게임 (전용맵 TUTO_0007)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(78,205,196,0.2);color:#4ecdc4;">floating</span> <strong>230010</strong> 와일드카드 &middot; ingame &middot; first_appear = 7</div>
+        <div class="flow-desc">와일드 카드 안내 (비강제, 딤 없이 캐릭터+말풍선, 탭 스킵) &middot; FREE&times;3</div>
+      </div>
+
+      <!-- ═══ Lv 8 인게임 ═══ -->
+      <div class="flow-node" style="border-left:3px solid var(--gold);">
+        <div class="flow-level">Lv 8 ─ 인게임 (3턴 경과 / 실수)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(78,205,196,0.2);color:#4ecdc4;">floating</span> <strong>230012</strong> 언두 &middot; ingame &middot; first_appear = 8</div>
+        <div class="flow-desc">언두 사용 안내 (비강제, 딤 없이, 탭 스킵) &middot; FREE&times;3</div>
+      </div>
+
+      <!-- ═══ Lv 8 클리어 후 (2건) ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 8 클리어 후 (2건)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230011</strong> 파이어웍스 &middot; pre_level &middot; level_clear = 8</div>
+        <div class="flow-desc">파이어웍스 부스터 Dim+Highlight 해금 (강제, 터치) &middot; FREE&times;3</div>
+        <div class="flow-scr" style="margin-top:4px;"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230014</strong> 도시꾸미기재유도 &middot; lobby &middot; level_clear = 8</div>
+        <div class="flow-desc">도시 꾸미기 영역 Dim+Highlight + 마스코트 재유도 (강제, 1회)</div>
+        <div class="flow-desc" style="margin-top:4px;font-size:0.78rem;color:#aaa;">인게임 보상 수령 연출 (SCR-13b) &#8594; 로비 복귀</div>
+      </div>
+
+      <div class="flow-divider">&#9733; 튜토리얼 클리어 (Lv 1~8) &#9733;</div>
+
+      <!-- ═══ Lv 9 (2건) ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 9 클리어 후 ─ 로비 (2건)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230015</strong> 베팅x2 &middot; lobby &middot; level_clear = 9</div>
+        <div class="flow-desc">베팅 &times;2 Dim+Highlight 해금 (강제, 해금 팝업 확인 터치)</div>
+        <div class="flow-scr" style="margin-top:4px;"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230016</strong> 데일리휠 &middot; lobby &middot; level_clear = 9</div>
+        <div class="flow-desc">데일리 휠 아이콘 Dim+Highlight (강제, 터치 &#8594; 팝업)</div>
+      </div>
+
+      <!-- ═══ Lv 11 (매핑표 등재, 시트 미등재) ═══ -->
+      <div class="flow-node" style="border-left:3px dashed rgba(255,255,255,0.2);">
+        <div class="flow-level">Lv 11 클리어 후 ─ 로비 <span class="tag tag-warn" style="font-size:0.65rem;">시트 미등재</span></div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230017</strong> IAP팝업 &middot; lobby &middot; level_clear = 11</div>
+        <div class="flow-desc">IAP 스페셜 오퍼 첫 노출 (매핑표 등재, tutorial_guide 시트 미확인)</div>
+      </div>
+
+      <!-- ═══ Lv 12+ 이벤트 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 12+ ─ 이벤트 활성 시 로비 (세션당 1회)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230018</strong> 이벤트강제 &middot; lobby &middot; level_clear = 12</div>
+        <div class="flow-desc">미참여 이벤트 아이콘 Dim+Highlight 강제 터치 (세션당 1회, Lv 12 이상 매 세션 반복)</div>
+      </div>
+
+      <!-- ═══ Lv 14 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 14 ─ 인게임 (러너카드 첫 등장)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230019</strong> 러너카드 &middot; ingame &middot; first_appear = 14</div>
+        <div class="flow-desc">러너 카드 기믹 Dim+Highlight 규칙 안내 (강제, 반드시 해당 카드 터치)</div>
+      </div>
+
+      <!-- ═══ Lv 17 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 17 클리어 후 ─ 로비</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230020</strong> 베팅x4 &middot; lobby &middot; level_clear = 17</div>
+        <div class="flow-desc">베팅 &times;4 Dim+Highlight 해금 (강제, 해금 팝업 확인 터치)</div>
+      </div>
+
+      <!-- ═══ Lv 19 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 19 ─ 인게임 (자물쇠+열쇠 첫 등장)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230021</strong> 자물쇠열쇠 &middot; ingame &middot; first_appear = 19</div>
+        <div class="flow-desc">열쇠&#8594;자물쇠 매칭 규칙 Dim+Highlight (강제, 반드시 해당 카드 터치)</div>
+      </div>
+
+      <!-- ═══ Lv 22 ═══ -->
+      <div class="flow-node">
+        <div class="flow-level">Lv 22 ─ 인게임 (얼음카드 첫 등장)</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230022</strong> 얼음카드 &middot; ingame &middot; first_appear = 22</div>
+        <div class="flow-desc">얼음(밧줄) 카드 기믹 Dim+Highlight 규칙 안내 (강제, 반드시 터치)</div>
+      </div>
+
+      <!-- ═══ Lv 23 (매핑표 등재, 시트 미등재) ═══ -->
+      <div class="flow-node" style="border-left:3px dashed rgba(255,255,255,0.2);">
+        <div class="flow-level">Lv 23 ─ 인게임 <span class="tag tag-warn" style="font-size:0.65rem;">시트 미등재</span></div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230023</strong> 키락심화 &middot; ingame &middot; first_appear = 23</div>
+        <div class="flow-desc">키락 2단계 심화 가이드 (매핑표 등재, tutorial_guide 시트 미확인)</div>
+      </div>
+
+      <!-- ═══ Lv 24 ═══ -->
+      <div class="flow-node" style="border-left:3px solid var(--green);">
+        <div class="flow-level">Lv 24 클리어 후 ─ 로비</div>
+        <div class="flow-scr"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span> <strong>230024</strong> 골든티켓 &middot; lobby &middot; level_clear = 24</div>
+        <div class="flow-desc">골든 티켓 Dim+Highlight 해금 (강제, 해금 팝업 확인 터치) &middot; 마지막 level_clear 트리거 가이드</div>
+      </div>
+    </div>
+
+    <!-- ── 상황 기반 트리거 ── -->
+    <div style="margin-top:24px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+      <h4 style="margin-top:0;">상황 기반 트리거 (레벨 무관)</h4>
+      <table style="margin:8px 0 0;width:100%;">
+        <thead style="font-size:0.75rem;color:#aaa;"><tr><td>키</td><td>guide_type</td><td>trigger</td><td>내용</td></tr></thead>
+        <tr>
+          <td><strong>230013</strong> 엑스트라덱</td>
+          <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(78,205,196,0.2);color:#4ecdc4;">floating</span></td>
+          <td>ingame &middot; condition = deck_exhausted</td>
+          <td>엑스트라 덱 (비강제, 딤 없이, 탭 스킵) &middot; FREE&times;3</td>
+        </tr>
+        <tr>
+          <td><strong>230025</strong> 도시꾸미기</td>
+          <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(206,147,216,0.2);color:#CE93D8;">focus_bubble</span></td>
+          <td>lobby &middot; condition = hammer_ready</td>
+          <td>해머존 도시 꾸미기 Dim+Highlight (강제, 도시별 1회 반복)</td>
+        </tr>
+        <tr>
+          <td><strong>230026</strong> 키락터치반복</td>
+          <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(78,205,196,0.2);color:#4ecdc4;">floating</span></td>
+          <td>ingame &middot; touch = lock_card</td>
+          <td>키락 카드 터치 시 floating 말풍선 (비강제, 터치할 때마다 반복)</td>
+        </tr>
+        <tr>
+          <td><strong>230027</strong> 얼음카드터치반복</td>
+          <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600;background:rgba(78,205,196,0.2);color:#4ecdc4;">floating</span></td>
+          <td>ingame &middot; touch = rope_card</td>
+          <td>얼음(밧줄) 카드 터치 시 floating 말풍선 (비강제, 터치할 때마다 반복)</td>
+        </tr>
+      </table>
+      <div style="margin-top:10px;font-size:0.78rem;color:#aaa;">
+        ※ 타임아웃 힌트 (Lv 1~8, 5초 대기, 매번 반복): tutorial_guide 항목 아님 — 별도 시스템 처리<br>
+        ※ 총 가이드 수: level/clear 기반 25건 + condition 2건 + touch 2건 = <strong style="color:var(--accent);">29건</strong> (시트 등재 27건 + 매핑표 전용 2건)
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 매핑표 ═══ -->
+<section id="mapping">
+  <h2><span class="num">M</span> tutorial_guide 시트 매핑표</h2>
+  <div style="overflow-x:auto;">
+  <table class="mapping-table">
+    <thead>
+      <tr><th>키</th><th>content_id</th><th>play_scene</th><th>trigger_type</th><th>SCR</th><th>레벨</th><th>비고</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>230001</td><td>content_shop</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">10a</span></td><td>Lv 3</td><td>상점 아이콘 해금 안내</td></tr>
+      <tr><td>230002</td><td>content_pre_level_popup</td><td>pre_level</td><td>level_clear</td><td><span class="tag tag-phase">04</span></td><td>Lv 3</td><td>pre-level 팝업(부스터 선택) 안내</td></tr>
+      <tr><td>230003</td><td>content_idle_gold</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">09</span></td><td>Lv 4</td><td>방치골드 아이콘 해금 팝업</td></tr>
+      <tr><td>230004</td><td>content_plus_card</td><td>ingame</td><td>first_appear</td><td><span class="tag tag-phase">05</span></td><td>Lv 4</td><td>플러스카드 ±1 매칭 규칙 안내</td></tr>
+      <tr><td>230005</td><td>content_idle_gold_collect</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">10f</span></td><td>Lv 4</td><td>방치골드 수령 터치 유도 (최초 1회)</td></tr>
+      <tr><td>230006</td><td>content_daily_check</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">09</span></td><td>Lv 4</td><td>출석체크 아이콘 해금 팝업</td></tr>
+      <tr><td>230007</td><td>content_streak</td><td>ingame</td><td>first_appear</td><td><span class="tag tag-phase">06</span></td><td>Lv 5</td><td>스트릭 미터 연속 매칭 보너스 안내</td></tr>
+      <tr><td>230008</td><td>content_leaderboard</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">10e</span></td><td>Lv 5</td><td>클리어 후 리더보드 터치 유도</td></tr>
+      <tr><td>230009</td><td>content_collection</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">09</span></td><td>Lv 6</td><td>콜렉션 해금 팝업 + 아이콘 터치 유도</td></tr>
+      <tr style="background:rgba(78,205,196,0.08);"><td>230010</td><td>content_wild_card</td><td><strong style="color:#4ecdc4;">ingame</strong></td><td><strong style="color:#4ecdc4;">first_appear</strong></td><td><span class="tag tag-free">05</span></td><td>Lv 7</td><td><strong style="color:#4ecdc4;">와일드 카드 Floating 가이드 (비강제, 전용맵 TUTO_0007)</strong></td></tr>
+      <tr><td>230011</td><td>content_fireworks</td><td>pre_level</td><td>level_clear</td><td><span class="tag tag-free">11</span></td><td>Lv 8</td><td>파이어웍스 부스터 해금 (FREE×3)</td></tr>
+      <tr><td>230012</td><td>content_undo</td><td>ingame</td><td>first_appear</td><td><span class="tag tag-free">07</span></td><td>Lv 8</td><td>언두 사용 가이드 (FREE×3)</td></tr>
+      <tr style="background:rgba(78,205,196,0.08);"><td>230013</td><td>content_extra_deck</td><td>ingame</td><td>condition</td><td><span class="tag tag-free">08</span></td><td>(상황)</td><td><strong style="color:#4ecdc4;">덱 소진 시 엑스트라 덱 (FREE×3, 비강제 — 탭 스킵 가능)</strong></td></tr>
+      <tr><td>230014</td><td>content_city_deco_grad</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">02확장</span></td><td>Lv 8</td><td>클리어 후 도시 꾸미기 마스코트 재유도 (1회)</td></tr>
+      <tr><td>230015</td><td>content_betting_2</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">09</span></td><td>Lv 9</td><td>베팅 x2 해금 팝업</td></tr>
+      <tr><td>230016</td><td>content_daily_wheel</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">10h</span></td><td>Lv 9</td><td>데일리 휠 해금+터치 유도</td></tr>
+      <tr><td>230017</td><td>content_iap_popup</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">09</span></td><td>Lv 11</td><td>IAP 스페셜 오퍼 첫 노출</td></tr>
+      <tr><td>230018</td><td>content_event_forced</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">10d</span></td><td>Lv 12+</td><td>클리어 후 미참여 이벤트 아이콘 강제 터치 유도 (개별 이벤트 튜토리얼 없음)</td></tr>
+      <tr><td>230019</td><td>content_runner_card</td><td>ingame</td><td>first_appear</td><td><span class="tag tag-phase">05</span></td><td>Lv 14</td><td>러너 카드 기믹 첫 등장 시 규칙 안내</td></tr>
+      <tr><td>230020</td><td>content_betting_4</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">09</span></td><td>Lv 17</td><td>베팅 x4 해금 팝업</td></tr>
+      <tr><td>230021</td><td>content_lock_key</td><td>ingame</td><td>first_appear</td><td><span class="tag tag-phase">05</span></td><td>Lv 19</td><td>자물쇠+열쇠 카드 기믹 규칙 안내</td></tr>
+      <tr><td>230022</td><td>content_rope_card</td><td>ingame</td><td>first_appear</td><td><span class="tag tag-phase">05</span></td><td>Lv 22</td><td>얼음카드 기믹 첫 등장 시 얼음 깨기 후 카드 획득 규칙 안내</td></tr>
+      <tr><td>230023</td><td>content_lock_key_adv</td><td>ingame</td><td>first_appear</td><td><span class="tag tag-phase">05확장</span></td><td>Lv 23</td><td>키락 2단계 심화 가이드</td></tr>
+      <tr><td>230024</td><td>content_golden_ticket</td><td>lobby</td><td>level_clear</td><td><span class="tag tag-phase">09</span></td><td>Lv 24</td><td>골든 티켓 해금 팝업</td></tr>
+      <tr><td>230025</td><td>content_city_deco</td><td>lobby</td><td>condition (hammer_ready)</td><td><span class="tag tag-repeat">03</span></td><td>Lv 1 (반복)</td><td>해머존 도달 시 도시 꾸미기 강제</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ═══ 에셋 ═══ -->
+<section id="assets">
+  <h2><span class="num">A</span> 디자이너 에셋 & 사양</h2>
+
+  <h3>색상 팔레트</h3>
+  <div class="palette">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#000;opacity:0.6;"></div>
+      <div class="swatch-label">딤</div>
+      <div class="swatch-hex">#000 a0.3~0.4 <span style="font-size:0.6rem;color:#CE93D8;">[REF]</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#FFD700;"></div>
+      <div class="swatch-label">화살표</div>
+      <div class="swatch-hex">#FFD700</div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#4CAF50;"></div>
+      <div class="swatch-label">FREE 태그</div>
+      <div class="swatch-hex">#4CAF50</div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#FF4444;"></div>
+      <div class="swatch-label">오류</div>
+      <div class="swatch-hex">#FF4444</div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#FFFFFF;border-color:#555;"></div>
+      <div class="swatch-label">말풍선 배경</div>
+      <div class="swatch-hex">#FFFFFF</div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#333333;"></div>
+      <div class="swatch-label">제목</div>
+      <div class="swatch-hex">#333333</div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#666666;"></div>
+      <div class="swatch-label">본문</div>
+      <div class="swatch-hex">#666666</div>
+    </div>
+  </div>
+
+  <h3>애니메이션</h3>
+  <div class="anim-grid">
+    <div class="anim-card">
+      <div class="anim-name">PULSE</div>
+      <div class="anim-preview pulse-anim" style="background:var(--gold);"></div>
+      <div class="anim-params">&plusmn;8px, 0.8s, easeInOut</div>
+    </div>
+    <div class="anim-card">
+      <div class="anim-name">BOUNCE</div>
+      <div class="anim-preview bounce-anim" style="background:var(--gold);"></div>
+      <div class="anim-params">&plusmn;12px, 0.6s, easeOutBounce</div>
+    </div>
+    <div class="anim-card">
+      <div class="anim-name">BLINK</div>
+      <div class="anim-preview blink-anim" style="background:var(--accent);"></div>
+      <div class="anim-params">alpha 1&#8594;0.3&#8594;1, x3, 0.5s</div>
+    </div>
+    <div class="anim-card">
+      <div class="anim-name">SHAKE</div>
+      <div class="anim-preview shake-anim" style="background:var(--red);"></div>
+      <div class="anim-params">&plusmn;5px, x3, 0.3s 합계</div>
+    </div>
+  </div>
+
+  <h3>필수 에셋 목록</h3>
+  <table>
+    <thead><tr><th>분류</th><th>에셋</th><th>크기</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>Bubble</td><td>말풍선 배경 (9-slice)</td><td>가변</td><td>흰색, radius 12px, 그림자</td></tr>
+      <tr><td>Bubble</td><td>꼬리 삼각형</td><td>16x12px</td><td>4방향</td></tr>
+      <tr><td>Arrow</td><td>손가락+화살표 아이콘</td><td>48x48px</td><td style="color:var(--gold);">#FFD700</td></tr>
+      <tr><td>FreeTag</td><td>"FREE" 뱃지 배경</td><td>가변</td><td style="color:var(--green);">초록색 라운드 뱃지</td></tr>
+      <tr><td>DimOverlay</td><td>반투명 블랙</td><td>전체 화면</td><td>Alpha 제어</td></tr>
+      <tr><td>UnlockPopup</td><td>팝업 프레임</td><td>가변</td><td>흰색, 그림자</td></tr>
+      <tr><td>UnlockPopup</td><td>OK 버튼</td><td>200x50px</td><td>프라이머리 색상</td></tr>
+      <tr><td>UnlockPopup</td><td>X 닫기 버튼</td><td>32x32px</td><td></td></tr>
+      <tr><td>아이콘</td><td>콘텐츠 아이콘</td><td>80x80px</td><td>23종 (해금별)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══ CP1 체크리스트 ═══ -->
+<section>
+  <h2><span class="num">&#10003;</span> CP1 검수 체크리스트</h2>
+  <div class="checklist">
+    <div class="check-item"><span class="check-icon pass">&#10003;</span> SCR-09 해금 팝업 일람에 <code>content_iap_popup</code> (Lv 11) 포함</div>
+    <div class="check-item"><span class="check-icon pass">&#10003;</span> SCR-13 클리어 텍스트에 <code>T_TUT_GRADUATION</code> string_code 참조 적용 (한국어 하드코딩 아님)</div>
+    <div class="check-item"><span class="check-icon pass">&#10003;</span> SCR-01 S1-5 보상에 가설 표기 (const 10065)</div>
+    <div class="check-item"><span class="check-icon" style="color:var(--text2);">&#10007;</span> <s>SCR-01 S1-3b NRU 구제 드로우</s> — 제거됨: Lv1~2 정답 카드만 선택 가능하여 해당 케이스 불발</div>
+    <div class="check-item"><span class="check-icon warn">&#9679;</span> SCR-02 Step 2/4 와이어프레임 (선택 - 낮은 우선순위)</div>
+    <div class="check-item"><span class="check-icon warn">&#9679;</span> trigger_type 분류 참조표 (선택 - 낮은 우선순위)</div>
+  </div>
+
+  <h3 style="margin-top:24px;color:#CE93D8;">REF 개선 체크리스트 (CCS 레퍼런스)</h3>
+  <div class="checklist">
+    <div class="check-item"><span class="check-icon pass" style="color:#CE93D8;">&#10003;</span> SCR-01 S1-1: 딤 제거 &#8594; 카드 딜링 애니메이션 + Sparkle + 마스코트 Bubble</div>
+    <div class="check-item"><span class="check-icon pass" style="color:#CE93D8;">&#10003;</span> SCR-01 S1-2: 딤 alpha 0.5 &#8594; 0.3 경량화</div>
+    <div class="check-item"><span class="check-icon pass" style="color:#CE93D8;">&#10003;</span> SCR-01 S1-5 / SCR-13: 인게임 보상 수령 연출 (파티클 + 컨페티 + 마스코트 + Collect 버튼)</div>
+    <div class="check-item"><span class="check-icon pass" style="color:#CE93D8;">&#10003;</span> SCR-02: 5단계 &#8594; 3단계 축소, Sparkle + 마스코트 Bubble</div>
+    <div class="check-item"><span class="check-icon pass" style="color:#CE93D8;">&#10003;</span> Bubble 컴포넌트: mascotIcon (48x48px) + mascotPosition 속성 추가</div>
+    <div class="check-item"><span class="check-icon pass" style="color:#CE93D8;">&#10003;</span> DimOverlay: alpha 0.5/0.6/0.7 &#8594; 0.3/0.4/없음 (라이트 터치)</div>
+  </div>
+</section>
+
+</div><!-- /.container -->
+
+<footer style="text-align:center;padding:40px 20px;color:var(--text2);font-size:0.8rem;border-top:1px solid var(--border);">
+  PST 튜토리얼 UI/UX 명세 v1.2 &mdash; CP1 수정 + REF 개선 반영 + 매핑 정리 (25항목) &mdash; 2026-03-16<br>
+  원본: <code>workspace/06_tutorial_ui_ux_spec.md</code> | 검수: <code>workspace/01_cp1_tutorial_ui_ux.md</code>
+</footer>
+
+<script>
+document.querySelectorAll('.nav-sidebar a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.querySelector('.nav-sidebar').classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>
