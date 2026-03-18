@@ -174,7 +174,7 @@ CC_DATA 파일에서 맵의 세로 길이 = `max(Tableau[].Position.z) - min(Tab
 our_x = round(cc_x * 15.0)
 our_y = round(cc_z * 16 + (-170))
 ```
-- `SCALE_X = 15.0` — 카드폭 100px 기준, 7unit 간격(96px)이 105px로 확보되도록 조정
+- `SCALE_X = 15.0` — 7 CC unit 간격 → 105px (카드폭 100px 기준)
 - CC의 x축 → our x축 (가로)
 - CC의 z축 → our y축 (세로, z 증가 = y 증가)
 
@@ -411,11 +411,12 @@ cc_path = f"CC_DATA/level_data/{cc_name}"
 
 ### 잔존 알려진 이슈
 
-**P0: SCALE_X 블로킹 버그 → 수정 완료 (2026-03-05)**
-- 원인: `SCALE_X=15` → 7 CC units × 15 = 105px > 카드폭 100px → 블로킹 미감지
-- 수정: x좌표 `round(x × 13.75/15)` 일괄 패치 (6,384개 파일)
-- 결과: 7 CC units → 96.25px, overlapX=3.75 > 2 → 블로킹 복구. 46개 맵 203개 블로킹 쌍 복원
-- **주의: SCALE_X < 14 이어야 함** (14×7=98, overlapX=2, 2>2 FALSE → 블로킹 미감지)
+**P0: SCALE_X 블로킹 버그 — 재활성 상태 (2026-03-16 재변환으로 패치 초기화)**
+- 원인: `SCALE_X=15` → 7 CC units × 15 = 105px > 98px → 블로킹 미감지
+- 2026-03-05에 `round(x × 13.75/15)` 패치 적용했으나, 2026-03-16 전체 재변환으로 초기화됨
+- **현재**: SCALE_X=15.0 기준 x좌표 → 블로킹 미감지 재발
+- **재수정 방법**: `convert_cc_to_our.py`의 `SCALE_X = 13.75`로 변경 후 재변환
+- **주의**: SCALE_X < 14 이어야 함 (14×7=98, overlapX=2, 2>2 FALSE → 블로킹 안됨)
 
 **P1: Tutorial y-centering 실패 2개**
 - 파일: `converted/level_data/Tutorial/` 내 2개 파일
