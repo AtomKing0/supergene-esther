@@ -101,6 +101,27 @@ for i, row in enumerate(all_data[2:], 3):
 
 ---
 
+## Git 브랜치 전략
+
+모든 작업은 토픽 브랜치에서 진행하고, 완료 후 main에 머지한다.
+
+| 브랜치 접두사 | 작업 범위 | 머지 시점 |
+|---|---|---|
+| `maps/*` | `solitaire-maps/` 맵 데이터 변환·수정 | QA 완료 후 |
+| `economy/*` | `solitire-currency/` 밸런스 분석·시뮬레이션 | PM 검수(CP) 통과 후 |
+| `locale/*` | `string_code/`, localization JSON | 시트 동기화 완료 후 |
+| `docs/*` | `docs/`, `workspace/` 문서·보고서 | 즉시 머지 가능 |
+
+### 규칙
+
+- **main 직접 커밋 금지** — 반드시 토픽 브랜치에서 작업 후 머지
+- **머지 방식**: `git merge --no-ff` (머지 커밋 생성하여 히스토리 보존)
+- **체리픽 금지** — SHA 중복·히스토리 꼬임 방지. 반드시 머지 사용
+- **브랜치명 예시**: `economy/gold-inflation`, `maps/schedule-week01`, `locale/ru-fix`
+- **복수 영역 동시 변경 시**: 주요 작업 기준으로 브랜치 선택 (예: 경제 분석 중 문서 생성 → `economy/*`)
+
+---
+
 ## Not-To-Do List
 
 ### 데이터 & 수치 생성
