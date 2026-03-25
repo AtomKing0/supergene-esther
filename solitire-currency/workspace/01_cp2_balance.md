@@ -1,153 +1,223 @@
 ---
 agent: 01_pm
 mode: cp2
-scope: PST 경제·게임 밸런스 검수
-executed: 2026-03-09T20:00:00+09:00
+scope: PST 골드 인플레이션 해소 론칭 확정안 (09_gold_inflation_report.html)
+executed: 2026-03-25T16:10:00+09:00
+live_verified: 2026-03-25T16:45:00+09:00
 status: complete
-verdict: Adjust
-adjust_targets: [02_economic_balance, 03_game_balance]
+verdict: Adjust (P0 확대 — 라이브 검증으로 추가 불일치 발견)
+adjust_targets: [02_economic_balance, 09_gold_inflation_report]
+input_docs:
+  - workspace/09_gold_inflation_report.html (론칭 확정안 v3)
+  - workspace/02_economic_result.md (경제 밸런스 Phase-B)
+  - workspace/03_balance_result.md (게임 밸런스 Phase-B)
+  - workspace/04_schema_validation.md (스키마 검증 결과)
+  - workspace/economy_simulation_result.md (경제 시뮬레이션 v3)
 ---
 
-# 01 PM 에이전트 — CHECKPOINT-2 밸런스 검수 보고서
+# 01 PM 에이전트 — CP2 밸런스 검수 (론칭 확정안)
 
----
+## 검수 대상
 
-## 검수 데이터 소스 상태 확인
-
-| 파일 | 상태 | 비고 |
-|---|---|---|
-| `workspace/02_economic_result.md` | complete | 검수 대상 (경제 밸런스) |
-| `workspace/03_balance_result.md` | complete | 검수 대상 (게임 밸런스) |
-| `workspace/04_schema_validation.md` | complete, overall=FAIL | 스키마 검증 결과 참조 |
-| `workspace/06_simulation_result.md` | complete | idle_increase=400 라이브 확정값 반영 |
-| `workspace/08_booster_analysis.md` | complete | 부스터 가격 구조 분석 |
-| `workspace/05_system_result.md` | complete | 시스템 명세 참조 |
-
-`status: error` 파일 없음. 전 파일 가용 데이터로 검수 진행.
+09_gold_inflation_report.html의 **론칭 확정안** (15개 파라미터 변경, D30 × 5 유저 프로필 시뮬레이션)
 
 ---
 
 ## 1. KPI 적합성 중간 체크
 
-> 기준값 근거: PST_const.json (레퍼런스 스냅샷), 시뮬레이션 v2 라이브 확정값.
-> 직접 측정값 없는 항목은 "가설" 표기.
-
-| KPI 항목 | 기준값(레퍼런스) | 02 제안값 | 03 제안값 | 판정 | 비고 |
-|---|---|---|---|---|---|
-| D1 리텐션 — NRU 초기 골드 지급 | PST: nru_start_gold=1,000g | 1,000g (PST 직접 채택) | 해당 없음 | PASS | 02가 PST 원본 수치 그대로 적용 |
-| D1 리텐션 — Tutorial 난이도 보호 | PST: tier_id=1, help_card_rate=8000 (Lv1-8 강제) | 해당 없음 | help_card_rate=8000, pity=3 (가설: 승률 70~80%) | PASS | 03 가설 근거 레퍼런스 파라미터 명시. Tutorial→Normal 전환 구간(Lv9-10) 완충 설계 확인 |
-| D1 리텐션 — 초반 이탈 유발 구간 여부 | PST: Lv1-2 entry_cost=0 (무료), Lv3~부터 1,000g | 02는 entry_cost 구간 테이블 제시 없음. 시스템5 확인: Lv1-2=0g, Lv3-9=1,000g | 03은 DDA 룰 구조 기반 난이도 설계. Lv1-8 Tutorial 강제 보호 | WARN | **02_economic_result.md에 level_entry_tier 전체 테이블 미포함.** Lv3-9 입장비 1,000g 설정이 NRU 1,000g 지급 후 즉시 소진 가능 구조. 05_system_result.md level_entry_tier에서 확인됨. 레퍼런스 PST 원본과 일치하나 D1 이탈 리스크 존재 (WARN) |
-| D7 리텐션 — 7일 출석 보상 | PST: 7일 누적 6,500g + 부스터 4개 + ticket 3개 | 동일 적용 (pst_daily_gift_schedule) | 해당 없음 | PASS | PST 원본 수치 직접 채택. VAL-009/010 PASS 확인 |
-| D7 리텐션 — 재방문 동기 구조 | PST: 데일리 휠 5회/일, 이벤트 주 3회 운영 | 데일리 휠 5회/일, 이벤트 3종 스케줄 채택 | 이벤트 스케줄 4종 운영, 요일별 중복 설계 | PASS | 이벤트 중복 운영(화/수: black+winning, 목: red+winning) 유저 참여 동기 강화 의도 확인. 가설 표기 포함 |
-| ARPDAU — 통화 수급·소비 구조 | PST 레퍼런스 기준: 비부스터 유저 골드 축적 구조 (인플레 경향) | 비부스터 전 유형 일 순공급 +10,928g~+29,551g (시뮬v2) | 해당 없음 | WARN | 골드 인플레이션 구조 지속 확인. idle_increase=400 적용 후에도 비부스터 평균 유저 +17,542g/일. IAP 전환 압력은 D60-90 구간 (가설). 수익화 흐름과 직접 충돌은 없으나 골드 가치 희석으로 인한 ARPDAU 장기 영향 주의 |
-| ARPDAU — IAP 패키지 구조 | PST: $1.99~$49.99, 5종 번들 | $1.99~$49.99 7종 활성 상품 (PST 동일) | 해당 없음 | PASS | 가격 구조 PST 원본 유지. 스페셜 오퍼 비활성(4종) 확인 |
-| 스키마 준수 | — | WARN×6, FAIL×2 | PASS (pst_event_schedule) | FAIL | 04_schema_validation.md 전체 판정 FAIL. FAIL 2건 수정 필수 |
-| 밸런스 정합성 | — | — | — | WARN | 섹션 2에서 상세 검토 |
-| 가설 표기 | — | 가설 항목에 표기 있음 (일부 행 누락) | 가설 항목 전반 표기 있음 | WARN | 04_schema_validation.md #8: pst_event_milestone_step 행 180037/180041 가설 표기 누락 확인 |
+| KPI 항목 | 기준값(레퍼런스) | 09 론칭안 제안값 | 판정 | 비고 |
+|---|---|---|---|---|
+| D1 리텐션 | ≥ 38% (09 성공기준) | 구조적 양호 — Casual Light D1 순수익 +681g, Average +279g | **적합** | NRU 시작 골드 + 방치골드 + AD = 초반 2일 흑자 유지. Tutorial 보호(DDA tier_id=1, help_card 80%) 정상 |
+| D7 리텐션 | ≥ 18% (09 성공기준) | 방치골드 4h 사이클 + 출석 7일 보상 유지 | **적합** | 방치골드 12,600g/일(Lv75) 유지. 출석 보상은 데이터 불일치 #1 확인 필요 |
+| ARPDAU | 광고 ARPDAU 유지 또는 상승 (09 성공기준) | shop 5→7회, popup 10 유지, inbox 5 유지 → 총 광고 기회 22회/일 (기존 20회) | **적합** | 단가 하락(700g 통일)을 횟수 확대로 보전 |
+| IAP 전환 구조 | ≥ 3% (09 성공기준) | Dedicated D1.4 골드소진, Hardcore 즉시 적자 → IAP 전환 압력 발생 | **적합** | IAP 체감가치 +31% 향상. $4.99 = 1.0일치 무료수입 (기존 0.7일) |
+| 인플레이션 해소 | Average D30 잔액 0~100,000g (09 성공기준) | Average D30: +10,356g | **적합** | v3 시뮬 457,593g → 론칭안 10,356g (−98% 개선) |
+| 게임플레이 EV | 모든 레벨에서 음수 유지 | 승리 마진 축소(max 2,000→1,200) → EV 더 음수화 | **적합** | 싱크 구조 강화 |
 
 ---
 
 ## 2. 경제·게임 밸런스 정합성 검토
 
-| 확인 항목 | 경제 밸런스 (02) 수치 | 게임 밸런스 (03) 수치 | 충돌 여부 | 조정 방향 |
+| 확인 항목 | 경제 밸런스 (02 + 09) | 게임 밸런스 (03) | 충돌 여부 | 조정 방향 |
 |---|---|---|---|---|
-| 일일 패시브 골드 공급 (Lv75) | 시뮬v2: 26,024g/일 (idle 12,600 + popup 8,000 + inbox 4,000 + 데일리휠 1,200 + 출석 224) | 03 문서에 골드 공급 수치 미기재 | 충돌 없음 (범위 비교 불가) | 03 문서는 재화 수치 비담당이나, 승률 가설(Normal 55~65%)이 게임 순소모(-112g/게임)와 연동되는 구조. 수치 충돌 없음 확인 |
-| 레벨 입장비 — 02 기준 | 02: base 1,000g, 10레벨마다 +100, 상한 5,000g (PST_const.json 10007~10011) | 03: 레벨별 DDA 티어 전환 조건에서 입장비 수치 직접 언급 없음 | 충돌 없음 | 05_system_result.md level_entry_tier 테이블로 교차 확인. Lv50-99=2,000g 확정 |
-| 레벨 입장비 — 05 실제 테이블 | 05: Lv3-9=1,000g, 10-24=1,500g, 25-49=1,800g, 50-99=2,000g … 1450+=5,000g | 해당 없음 | **02와 05 간 충돌 발견**: 02는 PST_const.json 기반 "기본 1,000g + 10레벨마다 +100 + 상한 5,000g" 단순 선형 구조를 기재. 05는 level_entry_tier 시트(라이브)에서 비선형 구간 테이블을 확인. 두 구조가 다름 | **02 수정 필요**: pst_entry_cost_config 테이블이 PST_const.json 스냅샷 기반 단순 선형 구조를 기재했으나, 라이브 시트 level_entry_tier는 구간별 비선형 입장비 테이블. 02의 pst_entry_cost_config를 level_entry_tier 구간 테이블로 교체 필요 |
-| 보상 마진 — 02 기준 | 02: reward_margin_min=500g, reward_margin_max=2,000g (PST_const.json 10012~10013) | 03: 해당 수치 미언급 | 충돌 없음 | 05 시스템명세에서 덱 보너스 20g/카드(Lv75), 스트릭 미터 80g 확인. 02 reward_margin 구조와 별개 구조로 병존 가능 |
-| 콤보 보상 — 02 vs 05 | 02: ingame_combo_reward_base=2g (const 10047, 스냅샷 기준) | 05: combo_reward_base=3g (Lv50-99, 라이브 level_entry_tier 기준) | **충돌**: 02가 PST_const.json 스냅샷 base=2g를 기재. 05의 라이브 시트에서 Lv50-99 구간 combo_reward_base=3g 확인 | **02 수정 필요**: pst_ingame_reward_config에서 combo base=2g(const 기반)와 라이브 level_entry_tier base=3g(Lv50+) 간 불일치. 02가 스냅샷 기반 단일 값으로 기재한 것이 원인. 레벨 구간별 테이블 참조 명시 또는 주석 추가 필요 |
-| 데일리 휠 gold EV — 02 vs 05 | 02: EV=525g/회 (PST_daily_wheel.json gacha 분석) | 05: EV=720g/회 (daily_wheel 라이브 시트 분석 — 800g×30% + 2,000g×15% + 6,000g×3%) | **충돌**: 02가 500/1,500/5,000 기준 EV 525g, 05가 800/2,000/6,000 기준 EV 720g. 골드 금액 단위 자체가 다름. 02는 PST_daily_wheel.json 스냅샷, 05는 라이브 시트 | **02 수정 필요**: pst_free_currency_source의 daily_wheel_ad amount_per_claim을 라이브 시트 기준 EV 720g(가설)으로 수정. 스냅샷-라이브 괴리 근거 명시 필요 |
-| 광고 보상 금액 — 02 vs 05 | 02: inbox=2,000g/회, popup=2,000g/회 (PST_const.json 스냅샷) | 05: inbox=800g/회, popup=800g/회 (라이브 시트 PM 승인값) | **충돌**: 02가 스냅샷 2,000g 기재. 05가 라이브 확정값 800g 기재. 일 공급량이 02 기준 최대 65,000g vs 05 기준 15,600g으로 2.5배 이상 차이 | **02 수정 필요**: pst_free_currency_source 및 pst_currency_config의 inbox/popup free_gold_amount를 라이브 확정값 800g으로 수정. "가설: PM 승인" 표기 필요 |
-| idle_gold_max_cap — 02 vs 05 | 02: idle_gold_max_cap=8,000g (PST_const.json key 10006 스냅샷) | 05: idle_gold_max_cap=10,000g (simulation v2 기준) | **충돌**: 02가 스냅샷값 8,000g 기재. 05가 라이브 기준 10,000g 기재 | **02 수정 필요**: pst_currency_config key 10006 값을 10,000g으로 수정. "가설: 라이브 시트 확정" 표기 필요. 다만 05에서도 "simulation v2 기준"으로 명시하여 원본 시트 재확인 권고 |
-| DDA — Normal 티어 fail_streak 복귀 | 해당 없음 (02는 DDA 미담당) | 03: fail_streak=2연패 즉시 Normal 복귀 (dynamic_level 30003). 예상 체류 비율 Normal 50~60% (가설) | 충돌 없음 | DDA 구조가 입장비/골드 소모 패턴과 간접 연동. Normal 티어(help_card=50%)에서 클리어율 가설 55~65%가 시뮬v2 85% 가정과 상이. 단, 시뮬v2는 Lv75 대표값, 03은 티어별 가설이므로 직접 충돌은 아님 |
-| 이벤트 스케줄 — 03 담당 | 02: 이벤트 마일스톤 스텝 45개 전체 기재 (event_id 160001~160003) | 03: pst_event_schedule 4종 스케줄 기재 (key 160001~160004) | 충돌 없음 | 02가 event_milestone, 03이 event_schedule 분리 담당. 두 테이블의 event_id 참조 일치(160001~160003 공통). clear_ranking(160004)은 milestone 연동 없음 확인 |
-| 메타 sink 규모 | 02: 02_research.md에서 직접 다루지 않음. 08_booster_analysis에서 총 283,600g 확인 | 03: 해당 없음 | 충돌 없음 | 시뮬v2 기준 메타 sink 60일(해머 gate). 골드 기여도 10.9일치(1.3%). 구조적 인플레이션 원인으로 진단됨 |
+| 난이도 티어 구조 | 09 변경 없음 | 03: Tutorial/Normal/Hard/SuperHard 4티어 | **없음** | — |
+| DDA 파라미터 | 09 미변경 | 03: 구버전 (fail_streak=2, hard_cooldown=5, hard_guarantee=15) | **충돌** | 03 문서 → 01 PM 확정값 (fail_spiral=5, hard_cooldown=3, hard_guarantee=7) 갱신 필요 |
+| 입장비 구조 | 09: increase 100→150, max_cap 5,000→7,000 | 03: 02 기반 (increase 100, max 5,000) | **충돌** | 03 승률/EV 가설 재계산 필요 |
+| 보상 마진 | 09: max 2,000→1,200 | 03: 마진 500~2,000 기준 승률 추정 | **충돌** | 03 승률 가설 마진 변경 반영 필요 |
+| 컬렉션 Sink | 09: album/deck collection 활성화 (+3,000g/일) | 03: 미언급 | **없음** | 03 범위 외 |
+| difficulty_tier score | 02: 구버전 (0~100/101~350/351~700/701~9999) | 03: 동일 구버전 | 01 PM v2 확정 (0/1~700/701~1000/1001~1400) 미반영 | 02/03 모두 갱신 필요 |
 
 ---
 
-## 3. 스키마 검증 결과 반영
+## 3. 스키마 검증 결과 반영 (04_schema_validation.md)
 
-`04_schema_validation.md` 전체 판정: **FAIL**
+### 미해결 FAIL/WARN 항목
 
-수정이 필요한 FAIL/WARN 항목:
-
-| # | 심각도 | 에이전트 | 테이블 | 문제 | CP2 조치 방향 |
-|---|---|---|---|---|---|
-| 1 | FAIL | 02 | `pst_streak_reward_pool` | gacha_group_id 가설 할당 + 각 그룹 gacha_rate 합산 15,000 (VAL-003 실패) | 서버 팀 원본 로직 확인 후 재기재. 확인 전까지 "가설" 표기 유지 필수. 합산 기준이 req_length별 독립 확률인 경우 VAL-003 적용 범위 재정의 필요 |
-| 2 | FAIL | 02 | `pst_item_definition` | booster_infinite_undo_15m/30m 미등재 (pst_event_milestone_step 180037/180041 참조) | pst_item_definition에 두 아이템 등재 또는 별도 이벤트 전용 아이템 테이블 처리. PM 확인 후 결정 |
-| 3 | WARN | 02 | `pst_free_currency_source` | daily_wheel_ad amount_per_claim=525(가설 EV). 실제 가챠 구조와 스키마 타입 불일치 | 라이브 시트 EV 720g으로 수정 + 스키마 컬럼 처리 방침 결정 (EV 기재 허용 또는 가챠 참조 컬럼 추가) |
-| 4 | WARN | 02 | `pst_product_definition` | 비활성 상품(190003, 190101~190103) 행에 label_type, max_display_count 컬럼 누락 | 비활성 행에 해당 컬럼 추가 기재 (none/0 기재 또는 원본 확인) |
-| 5 | WARN | 02 | `pst_currency_config` | key 10015 friend_send_reward 단위 미상 (unit=count 임시 기재) | 서버 코드 또는 PM 확인 후 단위 확정 |
-| 6 | WARN | 복수 | 복수 테이블 | 교차 테이블 key_number 중복 (VAL-001 교차) | 스키마 방침 확정: PST_const.json 원본 key 재사용 허용 여부 결정 후 명시 |
-| 7 | WARN | 02 | `pst_streak_reward_pool` | gacha_group_id 전체 값 가설 (원본 미존재) | 항목 #1과 연계하여 서버 팀 확인 후 정식 할당 |
-| 8 | WARN | 02 | `pst_event_milestone_step` | 행 180037/180041 reward_item_key에 가설 표기 누락 | 해당 두 행에 "(가설: PST_item_list.json 미등재 아이템)" 표기 추가 |
+| # | 04 문서 항목 | 현재 상태 | 09 론칭안 영향 | 필요 조치 |
+|---|---|---|---|---|
+| 1 | ~~FAIL-1: streak_reward gacha_rate 합산~~ | **EXEMPT** (2026-03-11) | 없음 | 해결됨 |
+| 2 | FAIL-2: booster_infinite_undo_15m/30m 미등재 | **미해결** | 없음 (범위 외) | PM 확인 후 item_definition 등재 필요 |
+| 3 | WARN: 교차 테이블 key_number 중복 | **미해결** | 없음 | 스키마 설계 방침 결정 필요 |
+| 4 | WARN: daily_wheel amount_per_claim 가설 EV | **미해결** | 09에서 최고상금 변경 → EV 재계산 필요 | 09 반영 후 EV 갱신 |
+| 5 | WARN: friend_send_reward 단위 미상 | **미해결** | 없음 | 서버 확인 필요 |
+| 6 | WARN: product_definition 비활성 행 컬럼 누락 | **미해결** | 없음 | 02 문서 갱신 |
+| 7 | WARN: event_milestone 가설 표기 누락 | **미해결** | 없음 | 02 문서 갱신 |
 
 ---
 
-## 4. 추가 CP2 발견 사항 — 스냅샷/라이브 괴리 (WARN)
+## 4. 데이터 소스 불일치 — Google Sheet 라이브 검증 결과 (2026-03-25)
 
-04_schema_validation.md에 미포함된 사항으로, 본 CP2 교차 검토에서 신규 발견.
+### 불일치 #1: daily_gift 전체 보상 구조
 
-| # | 에이전트 | 항목 | 스냅샷 값 (PST_const.json) | 라이브 확정값 (시트/시뮬v2) | 판정 | 조치 |
-|---|---|---|---|---|---|---|
-| A | 02 | `idle_gold_amount_increase` (key 10005) | 1,200g | **400g** (라이브 시트 PM 승인 확정) | FAIL | **02 수정 필수**: pst_currency_config key 10005 값을 400g으로 수정. "가설" 표기 포함 |
-| B | 02 | `idle_gold_max_cap` (key 10006) | 8,000g | 10,000g (시뮬v2 기준) | WARN | 02 수정 권고: 10,000g으로 수정. 원본 시트 재확인 후 확정 |
-| C | 02 | `inbox_free_gold_amount` (key 10058) | 2,000g | **800g** (라이브 시트 PM 승인 확정) | FAIL | **02 수정 필수**: pst_currency_config key 10058 및 pst_free_currency_source inbox 행 800g으로 수정 |
-| D | 02 | `popup_free_gold_amount` (key 10064) | 2,000g | **800g** (라이브 시트 PM 승인 확정) | FAIL | **02 수정 필수**: pst_currency_config key 10064 및 pst_free_currency_source popup 행 800g으로 수정 |
-| E | 02 | `daily_wheel_ad` 골드 금액 | EV 525g (스냅샷 500/1,500/5,000g 기반) | EV 720g (라이브 800/2,000/6,000g 기반) | WARN | 02 수정 권고: EV 525g → 720g(가설)으로 수정. 라이브 가챠 풀 금액 단위 변경 근거 명시 |
-| F | 02 | `pst_entry_cost_config` 구조 | PST_const.json 기반 선형 구조 (기본 1,000 + 10레벨마다 +100) | 라이브 level_entry_tier 비선형 구간 테이블 (Lv3-9=1,000g, 10-24=1,500g 등 12개 구간) | WARN | 02 수정 권고: pst_entry_cost_config를 구간별 테이블로 확장하거나 "가설: 라이브 시트와 구조 상이" 주석 추가 |
-
----
-
-## 5. KPI 연동 리스크 평가
-
-| KPI | 리스크 | 근거 | 심각도 |
+| Day | 09 보고서 (current_value) | 라이브 확정 (2026-03-25) | 차이 |
 |---|---|---|---|
-| D1 리텐션 | NRU 1,000g 지급 후 Lv3 첫 유료 입장(1,000g) 즉시 소진 가능. Tutorial Lv1-2는 무료이나 Lv3 진입 시 잔고 0 도달 위험 | level_entry_tier Lv1-2=0g, Lv3-9=1,000g. nru_start_gold=1,000g | WARN |
-| D7 리텐션 | 7일 출석 6,500g + 이벤트 보상 구조로 재방문 동기 충분. DDA Tutorial 보호(Lv1-8) 이탈 방지 설계 적절 | PST_daily_gift.json, dynamic_level 30001 | PASS |
-| ARPDAU | 비부스터 유저 골드 과잉 공급 구조(+17,542g/일 평균)로 골드 가치 희석. 부스터 집중 유저만 디플레(-29,058g/일). IAP 전환 압력 D60-90 (가설). 경제 건강도 B등급 | simulation v2 Table C, Section G | WARN |
-| 장기 리텐션 | 메타 60일 완주 후 골드 sink 소멸. 콜렉션 미활성(is_album/deck_collection_open=0). 60일 이후 이탈 트리거 잠재적 | simulation v2 Section E-4, PST_const.json 10061/10062 | WARN |
+| Day 0 | 500g | **1,000g** | +100% |
+| Day 2 | 1,000g | **2,000g** | +100% |
+| Day 4 | 2,000g | **3,000g** | +50% |
+| Day 6 | **3,000g** | **5,000g** | +67% |
+| 7일 합계 | 6,500g | **11,000g** | +69% |
+| 일평균 | 929g | **1,571g** | +642g/일 |
+
+**09 보고서의 daily_gift 현재값은 전 일차에서 스냅샷(구버전). 라이브와 2배 차이.**
+
+### 불일치 #2: daily_wheel 구조 변경 (Critical New Finding)
+
+| key | 09 보고서 가정 | 라이브 확정 (2026-03-25) |
+|---|---|---|
+| 140001~140004 | currency_gold 200~800g | 일치 (800g 30%, 200g 등) |
+| 140005 | currency_gold 2,000g (15%) | currency_gold **2,000g** (15%) ✓ |
+| **140007** | **currency_gold 5,000g** → 2,000g 변경 제안 | **booster_extra_deck** (골드 아님!) |
+
+**09 보고서의 "daily_wheel 5000g → 2000g" 변경안은 이미 해당 슬롯이 부스터로 교체됨. 적용 불가.**
+
+| 지표 | 09 보고서 가정 | 라이브 실측 |
+|---|---|---|
+| 골드 EV/스핀 | 720g | **540g** |
+| 5회/일 골드 | 3,600g | **2,700g** |
+| 차이 | — | **−900g/일** |
+
+### 불일치 #3: entry_cost 구조 (Structural Mismatch)
+
+09 보고서는 `entry_cost_increase=100 (→150)`, `entry_cost_max_cap=5,000 (→7,000)` 누진 모델 가정.
+
+**라이브 실제 구조: `level_entry_tier` 시트 — 레벨 구간별 고정값**
+
+| 레벨 구간 | 라이브 entry_cost | 09 모델(Lv75 기준) |
+|---|---|---|
+| 50~99 | **2,000** | 1,000+floor(75/10)×100 = **1,700** |
+| 100~199 | **2,200** | 1,000+floor(100/10)×100 = **2,000** |
+| 200~349 | **2,500** | 1,000+floor(200/10)×100 = **3,000** |
+| 1450+ | **5,000** | max_cap=5,000 |
+
+**const 시트에 key 10010(entry_cost_increase), 10011(entry_cost_max_cap), 10013(reward_margin_max) 존재하지 않음. 09 보고서가 참조한 key_number는 가상 키.**
+
+### 불일치 #4: shop_free_gold 구조
+
+| 항목 | 09 보고서 가정 | 라이브 확정 |
+|---|---|---|
+| 상점 광고 골드 | 2,000g/회 (key 10026) | product 시트 190001: **1,000g/회** |
+| 상점 광고 횟수 | 5회/일 → 7회 | product pay_limit = **1/일** |
+| const key 10025, 10026 | 참조 | **시트에 존재하지 않음** |
+
+**09 보고서의 shop_ads current = 2,000×5 = 10,000g/일 → 라이브 실제 = 1,000×1 = 1,000g/일. 10배 차이.**
+
+> ⚠️ 단, product 시트의 pay_limit=1이 실제 클라이언트 동작과 일치하는지 확인 필요. 게임 내에서 상점 광고가 1일 5회 이상 가능하다면, 빈도 제한이 서버 사이드 또는 별도 로직일 수 있음.
+
+### 불일치 #5: difficulty_tier score (02/03 문서)
+
+| 소스 | Normal | Hard | Super Hard |
+|---|---|---|---|
+| 02/03 문서 (구버전) | 101~350 | 351~700 | 701~9999 |
+| 라이브 확정 (2026-03-25) | **1~700** | **701~1000** | **1001~1400** |
+
+**PM v2 확정 범위와 라이브 완전 일치.**
 
 ---
 
-## 6. 수정 필요 에이전트별 항목
+## 5. 수정 필요 에이전트별 항목 (라이브 검증 후 갱신)
 
-| 에이전트 | 테이블명/항목 | 문제 | 수정 방향 |
+| 에이전트 | 대상 | 문제 | 수정 방향 | 우선순위 |
+|---|---|---|---|---|
+| **09 보고서** | daily_gift 전체 현재값 | 스냅샷 기반 (6,500g/7일 vs 라이브 11,000g/7일) | 라이브값 반영 + daily_gift 관련 론칭안 재설계 | **P0** |
+| **09 보고서** | daily_wheel 140007 현재값 | 5,000g 골드 가정 → 라이브는 booster_extra_deck | "5000→2000" 변경안 삭제. 현재 EV=540g 기준 재계산 | **P0** |
+| **09 보고서** | shop_free_gold 구조 | current 2,000×5=10,000g/일 가정 → 라이브 product 1,000×1/일 | 상점 광고 구조 재조사 (클라이언트 동작 확인 필요) | **P0** |
+| **09 보고서** | entry_cost 구조 | 누진 모델(increase/max_cap) 가정 → 라이브는 level_entry_tier 고정 테이블 | entry_cost 론칭안을 level_entry_tier 구조로 재설계 | **P0** |
+| **09 보고서** | reward_margin_max | const key 10013 참조 → 시트에 미존재 | 보상 마진 제어 방식 확인 후 론칭안 반영 | **P0** |
+| **09 보고서** | 전체 시뮬레이션 | 위 5건의 입력 오류 | **라이브 확정값 기준 전면 재시뮬레이션** | **P0** |
+| **02 경제** | pst_currency_config 등 | 전체 스냅샷 기반 | 라이브 시트값 갱신 | P1 |
+| **03 게임** | DDA 파라미터 | 구버전 | PM 확정값 반영 (fail_spiral=5, hard_cooldown=3, hard_guarantee=7) | P1 |
+| **03 게임** | difficulty_tier score | 구버전 | PM v2 확정 반영 (1~700/701~1000/1001~1400) | P1 |
+| **03 게임** | 승률 가설 | 변경된 입장비·마진 미반영 | 론칭안 파라미터 기준 재추정 | P2 |
+| **04 스키마** | FAIL-2 | booster_infinite_undo 미등재 | PM 확인 후 결정 | P2 |
+
+---
+
+## 6. 09 론칭안 시뮬레이션 내적 정합성 검증
+
+### 6-1. 수식 검증 (Average 유저: 15판/일, 65% WR, Lv75)
+
+| 항목 | 산출식 | 09 값 | 결과 |
 |---|---|---|---|
-| **02** | `pst_currency_config` key 10005 | idle_gold_amount_increase=1,200g (스냅샷) vs 라이브 확정 400g | 400g으로 수정. "가설: 라이브 시트 PM 승인" 표기 |
-| **02** | `pst_currency_config` key 10058 | inbox_free_gold_amount=2,000g (스냅샷) vs 라이브 확정 800g | 800g으로 수정. "가설: 라이브 시트 PM 승인" 표기 |
-| **02** | `pst_currency_config` key 10064 | popup_free_gold_amount=2,000g (스냅샷) vs 라이브 확정 800g | 800g으로 수정. "가설: 라이브 시트 PM 승인" 표기 |
-| **02** | `pst_free_currency_source` inbox/popup 행 | amount_per_claim=2,000g (스냅샷 기준) | 800g으로 수정 |
-| **02** | `pst_free_currency_source` daily_wheel_ad 행 | amount_per_claim EV=525g (스냅샷 가챠 금액 기준) | EV 720g (가설)으로 수정. 라이브 가챠 금액 변경 근거 명시 |
-| **02** | `pst_streak_reward_pool` | gacha_group_id 가설 할당 + gacha_rate 합산 15,000 (VAL-003 FAIL) | 서버 팀 확인 후 재기재. 확인 전 현행 유지하되 FAIL 플래그 명시 |
-| **02** | `pst_item_definition` | booster_infinite_undo_15m/30m 미등재 (참조 무결성 FAIL) | PM 확인 후 정식 등재 또는 이벤트 전용 별도 처리 |
-| **02** | `pst_event_milestone_step` 행 180037/180041 | reward_item_key 가설 표기 누락 | "(가설: PST_item_list.json 미등재 아이템)" 표기 추가 |
-| **02** | `pst_product_definition` 비활성 상품 행 | label_type, max_display_count 컬럼 누락 | 비활성 행에 해당 컬럼 추가 (none/0 또는 원본 확인 후 기재) |
-| **02** | `pst_currency_config` key 10015 | friend_send_reward unit 미상 (count 임시 기재) | PM/서버 확인 후 확정 |
-| **02** | `pst_entry_cost_config` | PST_const.json 기반 선형 구조 vs 라이브 level_entry_tier 비선형 구간 테이블 구조 불일치 | 구간 테이블로 확장하거나 불일치 근거 주석 추가 |
-| **03** | `pst_event_schedule` (담당 테이블) | VAL-003 등 확률 검증 대상 아님. PASS 판정 유지 | 수정 불필요. 단, 160004 clear_ranking end_day=0 (주간 경계 운영 여부) 구현 확인 권고 |
-| **03** | 난이도 곡선·승률 가설 표 | 스키마 외 테이블이나 가설 표기 완결성 PASS. 기믹 spawn_rate 실데이터 없음 | 수정 불필요. 출시 후 실측 데이터 확보 시 가설 수치 교체 필요 |
+| 방치골드 | min(3,000+floor(75/20)×400, 6,000) = 4,200 × 3회 | 12,600g | **PASS** |
+| 상점광고 | 700g × 6회 | 4,200g | **PASS** |
+| 인박스 | 700g × 5회 | 3,500g | **PASS** |
+| 팝업 | 700g × 5회 | 3,500g | **PASS** |
+| 데일리휠 | EV × 회수 | 2,175g | **주의** — 최고상금 변경 시 EV 재계산 필요 |
+| 출석보상 | 7일 평균 | 786g | **WARN** — 라이브 기준 확인 필요 |
+| 승리마진 | 9.75wins × avg(500,1200) ≈ 8,288 | 8,500g | **PASS** |
+| Source 합계 | 합산 | 36,521g | **PASS** (12,600+4,200+3,500+3,500+2,175+786+8,500+1,260) |
+
+### 6-2. Sink 검증
+
+| 항목 | 현재 | 론칭 | 검증 |
+|---|---|---|---|
+| 참가비(손실분) | 25,500g | 30,750g | increase 150 + max 7,000 반영 → 증가 합리적 |
+| 부스터 | 500g | 500g | 변경 없음 |
+| 메타 데코 | 1,992g | 1,992g | 변경 없음 |
+| 컬렉션 | 0g | 3,000g | 신규 Sink |
+| Sink 합계 | 27,992g | 36,242g | **PASS** |
+
+### 6-3. Dedicated 유저 조기 이탈 리스크
+
+| 유저 | D30 잔액 (론칭) | 골드소진 시점 | 평가 |
+|---|---|---|---|
+| Dedicated (25판/일, 60%, Lv150) | −1,085,994g | D1.4 | IAP 전환 또는 플레이 빈도 하향 |
+| Hardcore (40판/일, 55%, Lv300) | −4,954,884g | D0.3 | 즉시 적자 |
+
+**리스크:** Dedicated 유저가 D2부터 입장비 부족으로 플레이 불가. 방치골드 대기(4h) → 5,800g 수령 → 2판분만 가능. **D3~D7 세션 급감 시나리오가 D7 리텐션에 직접 영향.**
+
+**권고:** 09 모니터링의 "D7 세션수/DAU < 2.5" 긴급 완화 트리거 적절. Dedicated 유저 D3~D7 세션 드롭 시나리오 별도 시뮬레이션 추가 권장.
 
 ---
 
 ## 7. CP2 판정
 
-**판정: Adjust**
+### 판정: **Adjust**
 
-| 판정 근거 | 내용 |
-|---|---|
-| **수정 필수 항목 (FAIL)** | 4건: ①idle_increase 스냅샷/라이브 괴리 ②inbox/popup gold amount 스냅샷/라이브 괴리 ③pst_streak_reward_pool VAL-003 FAIL ④pst_item_definition 참조 무결성 FAIL |
-| **수정 권고 항목 (WARN)** | 8건: entry_cost 구조 불일치, daily_wheel EV 괴리, idle_max_cap 괴리, 비활성 상품 컬럼 누락, friend_send_reward 단위 미상, key_number 교차 중복 방침 미결, gacha_group_id 가설, 가설 표기 2행 누락 |
-| **Go 전환 조건** | FAIL 4건 수정 완료 후 재제출. WARN 항목은 서버 팀·PM 확인 의존 항목 포함으로 출시 전 단계적 해소 허용 |
-| **Stop 아닌 이유** | 구조적 밸런스 문제(골드 인플레이션)는 시뮬v2에서 이미 진단·개선안(idle_increase=400 라이브 반영, 부스터 누진 채택) 확인됨. 수치 오류는 스냅샷-라이브 괴리로 데이터 교체 수준이며 설계 구조 자체 재설계 불필요 |
+### 판정 근거 (라이브 검증 후 갱신)
 
-### Adjust 대상 에이전트
+| 구분 | 건수 | 내용 |
+|---|---|---|
+| **P0 차단 이슈** | **6건** | ① daily_gift 전체 현재값 스냅샷 기반 (+642g/일 오차) ② daily_wheel 140007 골드→부스터 구조 변경 ③ shop_free_gold 구조 불일치 (10,000 vs 1,000g/일) ④ entry_cost 누진→고정테이블 구조 불일치 ⑤ reward_margin_max const 미존재 ⑥ 전체 시뮬레이션 재실행 필수 |
+| **P1 갱신 필요** | 3건 | 02/03 문서의 DDA, difficulty_tier, 경제 데이터 구버전. |
+| **P2 미해결** | 2건 | 04 FAIL-2 (infinite_undo), 승률 가설. |
 
-| 에이전트 | 수정 항목 수 (FAIL) | 수정 항목 수 (WARN) | 우선순위 |
-|---|---|---|---|
-| **02_economic_balance** | 4 | 7 | 높음 — 라이브 확정값 반영 및 스키마 FAIL 2건 해소 필수 |
-| **03_game_balance** | 0 | 0 (구현 확인 권고 1건) | 낮음 — 수정 불필요. 출시 후 실측 데이터 교체만 예정 |
+### 구조적 건전성
+
+09 론칭안의 핵심 설계 — **"적게 주고 늘리기"** 원칙, **광고 700g 통일**, **Source/Sink 균형** — 은 경제 구조적으로 건전.
+
+그러나 **입력 데이터 기반이 크게 벗어남**:
+- 09 보고서의 "현재값"이 라이브와 최대 10배 차이 (shop_ads)
+- entry_cost/reward_margin 제어 방식이 가상 const가 아니라 별도 테이블
+- 론칭안의 Source/Sink 재계산이 필수이며, 결과에 따라 파라미터 변경 방향 자체가 달라질 수 있음
+
+### Adjust 해제 조건 (4가지 모두 충족)
+
+1. ✅ **Google Sheet 라이브 재확인**: `daily_gift`, `daily_wheel`, `const`, `level_entry_tier`, `product` 시트 확인 완료 (2026-03-25)
+2. ⬜ **구조 정합성 해소**: entry_cost(level_entry_tier), reward_margin, shop_free_gold의 실제 제어 구조 파악 후 론칭안 재설계
+3. ⬜ **09 시뮬레이션 재실행**: 라이브 확정값 + 정확한 구조 기준 Source/Sink 재계산 + D30 시뮬레이션
+4. ⬜ **보고서 갱신**: 불일치 해소 후 09 HTML 보고서 v4 갱신
 
 ---
 
-*문서 종료. CP2 완료 (2026-03-09T20:00:00+09:00)*
+*CP2 검수 완료. 초회 2026-03-25T16:10:00+09:00 / 라이브 검증 갱신 2026-03-25T16:45:00+09:00*

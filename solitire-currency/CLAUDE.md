@@ -69,6 +69,38 @@ python3 scripts/deep_dive.py summary     # 핵심 지표 대시보드
 
 ---
 
+## string_code 시트 번역 입력 규칙 ⚠️ 필수
+
+번역 텍스트를 string_code 시트에 입력할 때, **JSON 파싱 에러를 유발하는 특수문자를 반드시 치환**한다.
+
+| 금지 문자 | 유니코드 | 치환 대상 | 비고 |
+|---|---|---|---|
+| `"` (straight double quote) | U+0022 | `«»` (guillemets) 또는 제거 | JSON 값 구분자와 충돌 → 파싱 에러 |
+| `\xa0` (NO-BREAK SPACE) | U+00A0 | 일반 스페이스 (U+0020) | 프랑스어에서 다량 혼입됨 |
+| `—` (em-dash) | U+2014 | `-` (hyphen) | |
+| `–` (en-dash) | U+2013 | `-` (hyphen) | |
+| `№` (numero sign) | U+2116 | `#` | 러시아어에서 사용 |
+| `\` (backslash) | U+005C | 제거 또는 이스케이프 | JSON 이스케이프 문자 |
+| 제어 문자 | U+0000~U+001F | 제거 | 탭·개행 제외 |
+| Zero-width 문자 | U+200B~U+200F, U+FEFF | 제거 | 보이지 않는 문자 |
+
+**입력 후 검증**: 번역 입력 완료 후 반드시 아래 검사를 실행하여 0건 확인:
+
+```python
+# 전체 언어 컬럼 특수문자 검사
+for i, row in enumerate(all_data[2:], 3):
+    for col_idx in range(1, 10):
+        val = row[col_idx] if len(row) > col_idx else ''
+        for ch in val:
+            cp = ord(ch)
+            if cp in (0x22, 0xA0, 0x2014, 0x2013, 0x2116) or (cp < 0x20 and ch not in '\n\r\t') or cp in (0x200B, 0x200C, 0x200D, 0x200E, 0x200F, 0xFEFF):
+                print(f'Row {i} col {col_idx}: U+{cp:04X} in {repr(val)}')
+```
+
+**사고 이력 (2026-03-25)**: 러시아어 `"Отменить"` (U+0022), 프랑스어 NBSP 55건, em-dash 다국어 7건 → ru.json 빌드 에러 발생. 전수 스캔 후 일괄 치환으로 해결.
+
+---
+
 ## Not-To-Do List
 
 ### 데이터 & 수치 생성
