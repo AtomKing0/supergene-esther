@@ -28,6 +28,8 @@ for f in "${FILES[@]}"; do
     continue
   fi
   cp "$SRC/$f" "$DEST/$f"
+  # reports/ 내부에서는 상대 경로 보정
+  sed -i '' 's|href="reports/index.html"|href="index.html"|g' "$DEST/$f"
   echo "  SYNC  $f"
   ((copied++))
 done
