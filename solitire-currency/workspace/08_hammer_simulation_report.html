@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta City Hammer Simulation Report v2.5</title>
+<style>
+:root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d; --border: #30363d;
+    --text: #e6edf3; --text-dim: #8b949e; --accent: #58a6ff; --green: #3fb950;
+    --yellow: #d29922; --red: #f85149; --purple: #bc8cff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 20px; max-width: 1400px; margin: 0 auto; }
+h1 { font-size: 1.8em; margin: 30px 0 5px; border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+h2 { font-size: 1.4em; margin: 35px 0 15px; color: var(--accent); }
+h3 { font-size: 1.15em; margin: 25px 0 10px; color: var(--text-dim); }
+p { margin: 8px 0; }
+.header { text-align: center; padding: 30px 0; }
+.header h1 { border: none; font-size: 2em; }
+.header .subtitle { color: var(--text-dim); font-size: 1.1em; }
+.header .meta { display: flex; justify-content: center; gap: 25px; margin-top: 15px; font-size: 0.9em; color: var(--text-dim); }
+.header .meta span { background: var(--surface); padding: 4px 12px; border-radius: 12px; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 15px 0; }
+.kpi-box { background: var(--surface); border-radius: 8px; padding: 16px; text-align: center; border: 1px solid var(--border); }
+.kpi-box .value { font-size: 1.8em; font-weight: 700; }
+.kpi-box .label { font-size: 0.8em; color: var(--text-dim); margin-top: 4px; }
+.kpi-box.accent .value { color: var(--accent); }
+.kpi-box.green .value { color: var(--green); }
+.kpi-box.yellow .value { color: var(--yellow); }
+.kpi-box.red .value { color: var(--red); }
+
+table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.85em; }
+th, td { padding: 8px 10px; border: 1px solid var(--border); text-align: center; }
+th { background: var(--surface2); color: var(--text-dim); font-weight: 600; position: sticky; top: 0; }
+td { background: var(--surface); }
+tr:hover td { background: var(--surface2); }
+.positive { color: var(--green); }
+.negative { color: var(--red); }
+.dim { color: var(--text-dim); font-size: 0.85em; }
+.warn { color: var(--yellow); font-weight: 600; }
+.ok { color: var(--green); }
+.caution { color: var(--yellow); font-weight: 600; }
+.danger { color: var(--red); font-weight: 700; }
+
+.player-card { background: var(--surface); border-radius: 10px; padding: 18px; margin: 12px 0; border: 1px solid var(--border); }
+.player-card h4 { font-size: 1.1em; margin-bottom: 4px; }
+.player-card .desc { color: var(--text-dim); font-size: 0.85em; margin-bottom: 12px; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0; }
+.stat { text-align: center; }
+.stat-value { display: block; font-size: 1.5em; font-weight: 700; }
+.stat-label { font-size: 0.75em; color: var(--text-dim); }
+.tier-bar { display: flex; height: 24px; border-radius: 4px; overflow: hidden; margin: 10px 0; font-size: 0.75em; font-weight: 600; }
+.tier-segment { display: flex; align-items: center; justify-content: center; }
+.tier-segment.normal { background: #2d6a4f; color: #b7e4c7; }
+.tier-segment.hard { background: #e76f51; color: #fff; }
+.tier-segment.sh { background: #9b2226; color: #fff; }
+.milestone-row { display: flex; gap: 20px; font-size: 0.85em; color: var(--text-dim); margin-top: 8px; flex-wrap: wrap; }
+.milestone-row strong { color: var(--text); }
+
+.city-detail { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 6px 0; }
+.city-detail summary { padding: 12px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.city-detail summary:hover { background: var(--surface2); }
+.city-num { color: var(--text-dim); font-weight: 600; min-width: 30px; }
+.city-name { font-weight: 700; min-width: 120px; }
+.city-meta { color: var(--text-dim); font-size: 0.85em; }
+.city-delta { font-size: 0.8em; margin-left: auto; }
+.badge-pub { background: var(--green); color: #000; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+.deco-table { font-size: 0.82em; margin: 0; }
+.deco-table th { font-size: 0.85em; }
+.total-row td { background: var(--surface2); font-weight: 600; }
+
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 15px 0; }
+canvas { width: 100% !important; }
+
+.callout { background: var(--surface); border-left: 4px solid var(--accent); padding: 14px 18px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+.callout.warn { border-left-color: var(--yellow); }
+.callout.danger { border-left-color: var(--red); }
+.callout.success { border-left-color: var(--green); }
+.callout strong { color: var(--accent); }
+.callout.warn strong { color: var(--yellow); }
+.callout.danger strong { color: var(--red); }
+
+.rec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.rec-card h4 { color: var(--accent); margin-bottom: 8px; }
+.rec-card ul { padding-left: 18px; font-size: 0.9em; }
+.rec-card li { margin: 4px 0; }
+
+.toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 20px 0; }
+.toc h3 { margin-top: 0; color: var(--accent); }
+.toc ol { padding-left: 20px; }
+.toc li { margin: 6px 0; }
+.toc a { color: var(--accent); text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+
+@media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .milestone-row { flex-direction: column; gap: 4px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Meta City Hammer Simulation Report</h1>
+    <div class="subtitle">v2.5 Progressive Hammer Curve &times; Player Pattern City Consumption Analysis</div>
+    <div class="meta">
+        <span>Data Source: Google Sheet (Live)</span>
+        <span>21 Cities &middot; 105 Decorations</span>
+        <span>2026-03-25</span>
+        <span>Agent: 01_PM</span>
+    </div>
+</div>
+
+<div class="toc">
+    <h3>목차</h3>
+    <ol>
+        <li><a href="#s1">설계 개요 &mdash; Progressive Hammer Curve</a></li>
+        <li><a href="#s2">현행 vs 개선 비교표</a></li>
+        <li><a href="#s3">유저 유형별 해머 획득 시뮬레이션</a></li>
+        <li><a href="#s4">해머 누적 차트</a></li>
+        <li><a href="#s5">도시 소진 타임라인</a></li>
+        <li><a href="#s6">콘텐츠 고갈 위험 분석</a></li>
+        <li><a href="#s7">론칭 도시 수 시나리오</a></li>
+        <li><a href="#s8">난이도 보상 민감도 분석</a></li>
+        <li><a href="#s9">도시별 데코 상세</a></li>
+        <li><a href="#s10">PM 권고사항</a></li>
+    </ol>
+</div>
+
+<!-- Section 1: Design Overview -->
+<h2 id="s1">1. 설계 개요 &mdash; Progressive Hammer Curve v2.5</h2>
+
+<div class="kpi-grid">
+    <div class="kpi-box accent"><div class="value">21</div><div class="label">총 도시 수</div></div>
+    <div class="kpi-box accent"><div class="value">2,543</div><div class="label">총 해머</div></div>
+    <div class="kpi-box green"><div class="value">166.2일</div><div class="label">완주 기간 (설계 기준)</div></div>
+    <div class="kpi-box green"><div class="value">&times;1.0726</div><div class="label">도시간 증가 배율</div></div>
+    <div class="kpi-box"><div class="value">55&rarr;223</div><div class="label">해머 범위 (City1&rarr;21)</div></div>
+    <div class="kpi-box green"><div class="value">72~74%</div><div class="label">Recovery Rate (균일)</div></div>
+    <div class="kpi-box yellow"><div class="value">331K</div><div class="label">총 골드 (현행 1,022K)</div></div>
+    <div class="kpi-box"><div class="value">2:3:4</div><div class="label">스테이지 해머 비율</div></div>
+</div>
+
+<div class="callout success">
+    <strong>해결된 문제 4가지</strong><br>
+    A. 도시 1~6 동일 해머 61 &rarr; 55/59/63/68/73/78 (점진 증가)<br>
+    B. 쌍 도시 동일값 &rarr; 21개 모두 고유값 (strictly increasing)<br>
+    C. Recovery 58%&rarr;10.5% 급락 &rarr; 72~74% 균일<br>
+    D. Chicago &times;1.34 제한 초과 &rarr; 최대 &times;1.08
+</div>
+
+<!-- Section 2: Comparison Table -->
+<h2 id="s2">2. 현행 vs 개선 비교표</h2>
+
+<div style="overflow-x:auto">
+<table>
+<thead><tr>
+    <th>#</th><th>도시</th><th>현행 해머</th><th>개선 해머</th><th>Δ</th><th>증가율</th>
+    <th>현행 골드</th><th>개선 골드</th><th>회수율</th>
+</tr></thead>
+<tbody>
+<tr>
+        <td>1</td>
+        <td>✅ New York</td>
+        <td>61</td>
+        <td><strong>55</strong></td>
+        <td class="negative">-6</td>
+        <td>—</td>
+        <td>10,300</td>
+        <td><strong>8,200</strong></td>
+        <td>73.2%</td>
+    </tr>
+<tr>
+        <td>2</td>
+        <td>✅ Venice</td>
+        <td>61</td>
+        <td><strong>59</strong></td>
+        <td class="negative">-2</td>
+        <td>×1.07</td>
+        <td>15,400</td>
+        <td><strong>8,800</strong></td>
+        <td>73.9%</td>
+    </tr>
+<tr>
+        <td>3</td>
+        <td>✅ Sapporo</td>
+        <td>61</td>
+        <td><strong>63</strong></td>
+        <td class="positive">+2</td>
+        <td>×1.07</td>
+        <td>15,400</td>
+        <td><strong>9,500</strong></td>
+        <td>73.7%</td>
+    </tr>
+<tr>
+        <td>4</td>
+        <td>✅ Cairo</td>
+        <td>61</td>
+        <td><strong>68</strong></td>
+        <td class="positive">+7</td>
+        <td>×1.08</td>
+        <td>18,400</td>
+        <td><strong>10,600</strong></td>
+        <td>73.6%</td>
+    </tr>
+<tr>
+        <td>5</td>
+        <td> San Francisco</td>
+        <td>61</td>
+        <td><strong>73</strong></td>
+        <td class="positive">+12</td>
+        <td>×1.07</td>
+        <td>18,400</td>
+        <td><strong>12,000</strong></td>
+        <td>73.3%</td>
+    </tr>
+<tr>
+        <td>6</td>
+        <td> Las Vegas</td>
+        <td>61</td>
+        <td><strong>78</strong></td>
+        <td class="positive">+17</td>
+        <td>×1.07</td>
+        <td>20,400</td>
+        <td><strong>12,000</strong></td>
+        <td>73.3%</td>
+    </tr>
+<tr>
+        <td>7</td>
+        <td> Chicago</td>
+        <td>82</td>
+        <td><strong>84</strong></td>
+        <td class="positive">+2</td>
+        <td>×1.08</td>
+        <td>22,400</td>
+        <td><strong>14,300</strong></td>
+        <td>73.4%</td>
+    </tr>
+<tr>
+        <td>8</td>
+        <td> Miami</td>
+        <td>82</td>
+        <td><strong>90</strong></td>
+        <td class="positive">+8</td>
+        <td>×1.07</td>
+        <td>22,400</td>
+        <td><strong>14,300</strong></td>
+        <td>73.4%</td>
+    </tr>
+<tr>
+        <td>9</td>
+        <td> Paris</td>
+        <td>102</td>
+        <td><strong>96</strong></td>
+        <td class="negative">-6</td>
+        <td>×1.07</td>
+        <td>25,700</td>
+        <td><strong>14,300</strong></td>
+        <td>73.4%</td>
+    </tr>
+<tr>
+        <td>10</td>
+        <td> London</td>
+        <td>102</td>
+        <td><strong>103</strong></td>
+        <td class="positive">+1</td>
+        <td>×1.07</td>
+        <td>25,700</td>
+        <td><strong>16,100</strong></td>
+        <td>73.3%</td>
+    </tr>
+<tr>
+        <td>11</td>
+        <td> Rome</td>
+        <td>122</td>
+        <td><strong>111</strong></td>
+        <td class="negative">-11</td>
+        <td>×1.08</td>
+        <td>29,600</td>
+        <td><strong>16,100</strong></td>
+        <td>73.3%</td>
+    </tr>
+<tr>
+        <td>12</td>
+        <td> Los Angeles</td>
+        <td>122</td>
+        <td><strong>119</strong></td>
+        <td class="negative">-3</td>
+        <td>×1.07</td>
+        <td>29,600</td>
+        <td><strong>16,100</strong></td>
+        <td>73.3%</td>
+    </tr>
+<tr>
+        <td>13</td>
+        <td> Tokyo</td>
+        <td>136</td>
+        <td><strong>128</strong></td>
+        <td class="negative">-8</td>
+        <td>×1.08</td>
+        <td>34,800</td>
+        <td><strong>18,800</strong></td>
+        <td>73.4%</td>
+    </tr>
+<tr>
+        <td>14</td>
+        <td> Bangkok</td>
+        <td>136</td>
+        <td><strong>137</strong></td>
+        <td class="positive">+1</td>
+        <td>×1.07</td>
+        <td>39,800</td>
+        <td><strong>18,800</strong></td>
+        <td>73.4%</td>
+    </tr>
+<tr>
+        <td>15</td>
+        <td> Dubai</td>
+        <td>159</td>
+        <td><strong>147</strong></td>
+        <td class="negative">-12</td>
+        <td>×1.07</td>
+        <td>46,100</td>
+        <td><strong>18,800</strong></td>
+        <td>73.4%</td>
+    </tr>
+<tr>
+        <td>16</td>
+        <td> Sydney</td>
+        <td>159</td>
+        <td><strong>157</strong></td>
+        <td class="negative">-2</td>
+        <td>×1.07</td>
+        <td>51,100</td>
+        <td><strong>19,000</strong></td>
+        <td>73.7%</td>
+    </tr>
+<tr>
+        <td>17</td>
+        <td> Rio</td>
+        <td>165</td>
+        <td><strong>169</strong></td>
+        <td class="positive">+4</td>
+        <td>×1.08</td>
+        <td>102,000</td>
+        <td><strong>19,000</strong></td>
+        <td>73.7%</td>
+    </tr>
+<tr>
+        <td>18</td>
+        <td> Barcelona</td>
+        <td>165</td>
+        <td><strong>181</strong></td>
+        <td class="positive">+16</td>
+        <td>×1.07</td>
+        <td>102,000</td>
+        <td><strong>21,100</strong></td>
+        <td>73.5%</td>
+    </tr>
+<tr>
+        <td>19</td>
+        <td> Istanbul</td>
+        <td>201</td>
+        <td><strong>194</strong></td>
+        <td class="negative">-7</td>
+        <td>×1.07</td>
+        <td>122,500</td>
+        <td><strong>21,100</strong></td>
+        <td>73.5%</td>
+    </tr>
+<tr>
+        <td>20</td>
+        <td> Athens</td>
+        <td>201</td>
+        <td><strong>208</strong></td>
+        <td class="positive">+7</td>
+        <td>×1.07</td>
+        <td>122,500</td>
+        <td><strong>21,100</strong></td>
+        <td>73.5%</td>
+    </tr>
+<tr>
+        <td>21</td>
+        <td> Prague</td>
+        <td>243</td>
+        <td><strong>223</strong></td>
+        <td class="negative">-20</td>
+        <td>×1.07</td>
+        <td>147,100</td>
+        <td><strong>21,100</strong></td>
+        <td>73.5%</td>
+    </tr>
+
+<tr class="total-row">
+    <td colspan="2"><strong>합계</strong></td>
+    <td>2543</td>
+    <td><strong>2543</strong></td>
+    <td>0</td><td></td>
+    <td>1,021,600</td>
+    <td><strong>331,100</strong></td>
+    <td></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- Section 3: Player Type Simulation -->
+<h2 id="s3">3. 유저 유형별 해머 획득 시뮬레이션</h2>
+
+<div class="callout">
+    <strong>시뮬레이션 조건</strong><br>
+    해머 지급: Normal 클리어 1개 / Hard 클리어 2개 / Super Hard 클리어 3개<br>
+    DDA 분배: Normal ~82% / Hard ~12% / SH ~6%<br>
+    패배 시 인게임 보상 전체 미지급 (해머, 골드, 콤보 보상, 잔여덱 보상 등 모두 소실) &middot; 200일 시뮬레이션 &middot; seed=42 (재현 가능)
+</div>
+
+
+    <div class="player-card" style="border-left: 4px solid #4A90D9">
+        <h4 style="color:#4A90D9">Casual Light</h4>
+        <p class="desc">가벼운 캐주얼 (하루 8판, 승률 65%)</p>
+        <div class="stats-grid">
+            <div class="stat"><span class="stat-value">65%</span><span class="stat-label">승률</span></div>
+            <div class="stat"><span class="stat-value">8</span><span class="stat-label">판/일</span></div>
+            <div class="stat"><span class="stat-value">6.1</span><span class="stat-label">해머/일</span></div>
+            <div class="stat"><span class="stat-value">0.81</span><span class="stat-label">해머/판</span></div>
+        </div>
+        <div class="tier-bar">
+            <div class="tier-segment normal" style="width:80.90787716955941%">81%</div>
+            <div class="tier-segment hard" style="width:12.683578104138851%">13%</div>
+            <div class="tier-segment sh" style="width:6.408544726301736%">6%</div>
+        </div>
+        <div class="milestone-row">
+            <span>City4: <strong>D41</strong></span>
+            <span>City8: <strong>D94</strong></span>
+            <span>City14: <strong>>200</strong></span>
+            <span>완주: <strong>>200일</strong></span>
+        </div>
+    </div>
+    <div class="player-card" style="border-left: 4px solid #50B848">
+        <h4 style="color:#50B848">Casual Regular</h4>
+        <p class="desc">일반 캐주얼 (하루 12판, 승률 70%)</p>
+        <div class="stats-grid">
+            <div class="stat"><span class="stat-value">70%</span><span class="stat-label">승률</span></div>
+            <div class="stat"><span class="stat-value">12</span><span class="stat-label">판/일</span></div>
+            <div class="stat"><span class="stat-value">9.9</span><span class="stat-label">해머/일</span></div>
+            <div class="stat"><span class="stat-value">0.88</span><span class="stat-label">해머/판</span></div>
+        </div>
+        <div class="tier-bar">
+            <div class="tier-segment normal" style="width:81.07507774322524%">81%</div>
+            <div class="tier-segment hard" style="width:12.216792536650377%">12%</div>
+            <div class="tier-segment sh" style="width:6.70812972012439%">7%</div>
+        </div>
+        <div class="milestone-row">
+            <span>City4: <strong>D25</strong></span>
+            <span>City8: <strong>D59</strong></span>
+            <span>City14: <strong>D127</strong></span>
+            <span>완주: <strong>>200일</strong></span>
+        </div>
+    </div>
+    <div class="player-card" style="border-left: 4px solid #F5A623">
+        <h4 style="color:#F5A623">Average</h4>
+        <p class="desc">평균 유저 (하루 15판, 승률 72%)</p>
+        <div class="stats-grid">
+            <div class="stat"><span class="stat-value">72%</span><span class="stat-label">승률</span></div>
+            <div class="stat"><span class="stat-value">15</span><span class="stat-label">판/일</span></div>
+            <div class="stat"><span class="stat-value">13.2</span><span class="stat-label">해머/일</span></div>
+            <div class="stat"><span class="stat-value">0.90</span><span class="stat-label">해머/판</span></div>
+        </div>
+        <div class="tier-bar">
+            <div class="tier-segment normal" style="width:81.43002372077261%">81%</div>
+            <div class="tier-segment hard" style="width:12.029820399864452%">12%</div>
+            <div class="tier-segment sh" style="width:6.540155879362927%">7%</div>
+        </div>
+        <div class="milestone-row">
+            <span>City4: <strong>D19</strong></span>
+            <span>City8: <strong>D43</strong></span>
+            <span>City14: <strong>D97</strong></span>
+            <span>완주: <strong>D193 (6.4개월)</strong></span>
+        </div>
+    </div>
+    <div class="player-card" style="border-left: 4px solid #E85D75">
+        <h4 style="color:#E85D75">Dedicated</h4>
+        <p class="desc">열성 유저 (하루 20판, 승률 75%)</p>
+        <div class="stats-grid">
+            <div class="stat"><span class="stat-value">75%</span><span class="stat-label">승률</span></div>
+            <div class="stat"><span class="stat-value">20</span><span class="stat-label">판/일</span></div>
+            <div class="stat"><span class="stat-value">18.1</span><span class="stat-label">해머/일</span></div>
+            <div class="stat"><span class="stat-value">0.94</span><span class="stat-label">해머/판</span></div>
+        </div>
+        <div class="tier-bar">
+            <div class="tier-segment normal" style="width:82.15575038679732%">82%</div>
+            <div class="tier-segment hard" style="width:11.578133058277462%">12%</div>
+            <div class="tier-segment sh" style="width:6.266116554925219%">6%</div>
+        </div>
+        <div class="milestone-row">
+            <span>City4: <strong>D14</strong></span>
+            <span>City8: <strong>D33</strong></span>
+            <span>City14: <strong>D71</strong></span>
+            <span>완주: <strong>D141 (4.7개월)</strong></span>
+        </div>
+    </div>
+    <div class="player-card" style="border-left: 4px solid #9B59B6">
+        <h4 style="color:#9B59B6">Hardcore</h4>
+        <p class="desc">하드코어 (하루 30판, 승률 80%)</p>
+        <div class="stats-grid">
+            <div class="stat"><span class="stat-value">80%</span><span class="stat-label">승률</span></div>
+            <div class="stat"><span class="stat-value">30</span><span class="stat-label">판/일</span></div>
+            <div class="stat"><span class="stat-value">29.2</span><span class="stat-label">해머/일</span></div>
+            <div class="stat"><span class="stat-value">0.99</span><span class="stat-label">해머/판</span></div>
+        </div>
+        <div class="tier-bar">
+            <div class="tier-segment normal" style="width:82.60499914980446%">83%</div>
+            <div class="tier-segment hard" style="width:11.47763985716715%">11%</div>
+            <div class="tier-segment sh" style="width:5.917360993028396%">6%</div>
+        </div>
+        <div class="milestone-row">
+            <span>City4: <strong>D9</strong></span>
+            <span>City8: <strong>D20</strong></span>
+            <span>City14: <strong>D43</strong></span>
+            <span>완주: <strong>D86 (2.9개월)</strong></span>
+        </div>
+    </div>
+
+<!-- Section 4: Chart -->
+<h2 id="s4">4. 해머 누적 차트</h2>
+<div class="chart-container">
+    <canvas id="hammerChart" height="400"></canvas>
+</div>
+
+<!-- Section 5: City Timeline -->
+<h2 id="s5">5. 도시 소진 타임라인</h2>
+
+<div style="overflow-x:auto">
+<table>
+<thead><tr>
+    <th>#</th><th>도시</th><th>해머</th><th>누적</th>
+    <th style="color:#4A90D9">Casual Light</th>
+    <th style="color:#50B848">Casual Regular</th>
+    <th style="color:#F5A623">Average</th>
+    <th style="color:#E85D75">Dedicated</th>
+    <th style="color:#9B59B6">Hardcore</th>
+</tr></thead>
+<tbody>
+<tr><td>1</td><td>New York</td><td>55</td><td>55</td><td>D9 <span class="dim">(1.3w)</span></td><td>D6 <span class="dim">(0.9w)</span></td><td>D5 <span class="dim">(0.7w)</span></td><td>D3 <span class="dim">(0.4w)</span></td><td>D2 <span class="dim">(0.3w)</span></td></tr>
+<tr><td>2</td><td>Venice</td><td>59</td><td>114</td><td>D19 <span class="dim">(2.7w)</span></td><td>D12 <span class="dim">(1.7w)</span></td><td>D9 <span class="dim">(1.3w)</span></td><td>D7 <span class="dim">(1.0w)</span></td><td>D4 <span class="dim">(0.6w)</span></td></tr>
+<tr><td>3</td><td>Sapporo</td><td>63</td><td>177</td><td>D28 <span class="dim">(4.0w)</span></td><td>D18 <span class="dim">(2.6w)</span></td><td>D13 <span class="dim">(1.9w)</span></td><td>D10 <span class="dim">(1.4w)</span></td><td>D6 <span class="dim">(0.9w)</span></td></tr>
+<tr><td>4</td><td>Cairo</td><td>68</td><td>245</td><td>D41 <span class="dim">(5.9w)</span></td><td>D25 <span class="dim">(3.6w)</span></td><td>D19 <span class="dim">(2.7w)</span></td><td>D14 <span class="dim">(2.0w)</span></td><td>D9 <span class="dim">(1.3w)</span></td></tr>
+<tr><td>5</td><td>San Francisco</td><td>73</td><td>318</td><td>D54 <span class="dim">(7.7w)</span></td><td>D33 <span class="dim">(4.7w)</span></td><td>D24 <span class="dim">(3.4w)</span></td><td>D19 <span class="dim">(2.7w)</span></td><td>D11 <span class="dim">(1.6w)</span></td></tr>
+<tr><td>6</td><td>Las Vegas</td><td>78</td><td>396</td><td>D66 <span class="dim">(9.4w)</span></td><td>D41 <span class="dim">(5.9w)</span></td><td>D30 <span class="dim">(4.3w)</span></td><td>D24 <span class="dim">(3.4w)</span></td><td>D14 <span class="dim">(2.0w)</span></td></tr>
+<tr><td>7</td><td>Chicago</td><td>84</td><td>480</td><td>D78 <span class="dim">(11.1w)</span></td><td>D50 <span class="dim">(7.1w)</span></td><td>D37 <span class="dim">(5.3w)</span></td><td>D28 <span class="dim">(4.0w)</span></td><td>D17 <span class="dim">(2.4w)</span></td></tr>
+<tr><td>8</td><td>Miami</td><td>90</td><td>570</td><td>D94 <span class="dim">(13.4w)</span></td><td>D59 <span class="dim">(8.4w)</span></td><td>D43 <span class="dim">(6.1w)</span></td><td>D33 <span class="dim">(4.7w)</span></td><td>D20 <span class="dim">(2.9w)</span></td></tr>
+<tr><td>9</td><td>Paris</td><td>96</td><td>666</td><td>D110 <span class="dim">(15.7w)</span></td><td>D69 <span class="dim">(9.9w)</span></td><td>D51 <span class="dim">(7.3w)</span></td><td>D38 <span class="dim">(5.4w)</span></td><td>D22 <span class="dim">(3.1w)</span></td></tr>
+<tr><td>10</td><td>London</td><td>103</td><td>769</td><td>D127 <span class="dim">(18.1w)</span></td><td>D78 <span class="dim">(11.1w)</span></td><td>D58 <span class="dim">(8.3w)</span></td><td>D44 <span class="dim">(6.3w)</span></td><td>D26 <span class="dim">(3.7w)</span></td></tr>
+<tr><td>11</td><td>Rome</td><td>111</td><td>880</td><td>D145 <span class="dim">(20.7w)</span></td><td>D89 <span class="dim">(12.7w)</span></td><td>D68 <span class="dim">(9.7w)</span></td><td>D51 <span class="dim">(7.3w)</span></td><td>D30 <span class="dim">(4.3w)</span></td></tr>
+<tr><td>12</td><td>Los Angeles</td><td>119</td><td>999</td><td>D165 <span class="dim">(23.6w)</span></td><td>D100 <span class="dim">(14.3w)</span></td><td>D77 <span class="dim">(11.0w)</span></td><td>D58 <span class="dim">(8.3w)</span></td><td>D33 <span class="dim">(4.7w)</span></td></tr>
+<tr><td>13</td><td>Tokyo</td><td>128</td><td>1127</td><td>D186 <span class="dim">(26.6w)</span></td><td>D112 <span class="dim">(16.0w)</span></td><td>D86 <span class="dim">(12.3w)</span></td><td>D64 <span class="dim">(9.1w)</span></td><td>D38 <span class="dim">(5.4w)</span></td></tr>
+<tr><td>14</td><td>Bangkok</td><td>137</td><td>1264</td><td class="warn">&gt;200d</td><td>D127 <span class="dim">(18.1w)</span></td><td>D97 <span class="dim">(13.9w)</span></td><td>D71 <span class="dim">(10.1w)</span></td><td>D43 <span class="dim">(6.1w)</span></td></tr>
+<tr><td>15</td><td>Dubai</td><td>147</td><td>1411</td><td class="warn">&gt;200d</td><td>D143 <span class="dim">(20.4w)</span></td><td>D109 <span class="dim">(15.6w)</span></td><td>D79 <span class="dim">(11.3w)</span></td><td>D47 <span class="dim">(6.7w)</span></td></tr>
+<tr><td>16</td><td>Sydney</td><td>157</td><td>1568</td><td class="warn">&gt;200d</td><td>D160 <span class="dim">(22.9w)</span></td><td>D121 <span class="dim">(17.3w)</span></td><td>D88 <span class="dim">(12.6w)</span></td><td>D53 <span class="dim">(7.6w)</span></td></tr>
+<tr><td>17</td><td>Rio</td><td>169</td><td>1737</td><td class="warn">&gt;200d</td><td>D178 <span class="dim">(25.4w)</span></td><td>D132 <span class="dim">(18.9w)</span></td><td>D98 <span class="dim">(14.0w)</span></td><td>D58 <span class="dim">(8.3w)</span></td></tr>
+<tr><td>18</td><td>Barcelona</td><td>181</td><td>1918</td><td class="warn">&gt;200d</td><td>D195 <span class="dim">(27.9w)</span></td><td>D147 <span class="dim">(21.0w)</span></td><td>D107 <span class="dim">(15.3w)</span></td><td>D65 <span class="dim">(9.3w)</span></td></tr>
+<tr><td>19</td><td>Istanbul</td><td>194</td><td>2112</td><td class="warn">&gt;200d</td><td class="warn">&gt;200d</td><td>D160 <span class="dim">(22.9w)</span></td><td>D118 <span class="dim">(16.9w)</span></td><td>D72 <span class="dim">(10.3w)</span></td></tr>
+<tr><td>20</td><td>Athens</td><td>208</td><td>2320</td><td class="warn">&gt;200d</td><td class="warn">&gt;200d</td><td>D175 <span class="dim">(25.0w)</span></td><td>D129 <span class="dim">(18.4w)</span></td><td>D78 <span class="dim">(11.1w)</span></td></tr>
+<tr><td>21</td><td>Prague</td><td>223</td><td>2543</td><td class="warn">&gt;200d</td><td class="warn">&gt;200d</td><td>D193 <span class="dim">(27.6w)</span></td><td>D141 <span class="dim">(20.1w)</span></td><td>D86 <span class="dim">(12.3w)</span></td></tr>
+
+</tbody>
+</table>
+</div>
+
+<!-- Section 6: Content Drought -->
+<h2 id="s6">6. 콘텐츠 고갈 위험 분석</h2>
+
+<div class="callout danger">
+    <strong>핵심 발견</strong><br>
+    Hardcore 유저(30판/일, 승률80%)는 론칭 도시 4개를 9일 만에 소진.<br>
+    이후 <strong>최대 41일 연속 콘텐츠 대기</strong> 발생 &mdash; 주 1개 제작 속도로도 캐치업 불가.
+</div>
+
+<h3>설계 기준 해머/일 vs 실측 시뮬레이션</h3>
+<table>
+<thead><tr><th>유형</th><th>해머/일</th><th>설계 기준(15.3) 대비</th><th>판정</th></tr></thead>
+<tbody>
+    <tr><td>Casual Light</td><td>6.1</td><td class="negative">-60.2%</td><td>기준 대비 부족</td></tr>
+    <tr><td>Casual Regular</td><td>9.9</td><td class="negative">-35.3%</td><td>기준 대비 부족</td></tr>
+    <tr><td>Average</td><td>13.2</td><td class="negative">-13.4%</td><td style="color:var(--accent)">&larr; 기준 근접</td></tr>
+    <tr><td>Dedicated</td><td>18.1</td><td class="positive">+18.6%</td><td>기준 초과</td></tr>
+    <tr><td>Hardcore</td><td>29.2</td><td class="positive">+90.9%</td><td class="danger">기준 대비 2배</td></tr>
+</tbody>
+</table>
+
+<!-- Section 7: Launch Readiness -->
+<h2 id="s7">7. 론칭 도시 수 시나리오</h2>
+
+<p>제작 가정: 론칭 후 D14부터 주 1개 도시 추가 제작. 각 셀은 최대 대기일.</p>
+
+<table>
+<thead><tr>
+    <th>론칭 도시</th>
+    <th style="color:#4A90D9">Casual Light</th>
+    <th style="color:#50B848">Casual Regular</th>
+    <th style="color:#F5A623">Average</th>
+    <th style="color:#E85D75">Dedicated</th>
+    <th style="color:#9B59B6">Hardcore</th>
+</tr></thead>
+<tbody>
+<tr><td><strong>4개</strong></td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td><td class="caution">🟡 6일</td><td class="danger">🔴 41일</td></tr>
+<tr><td><strong>6개</strong></td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td><td class="danger">🔴 27일</td></tr>
+<tr><td><strong>8개</strong></td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td><td class="danger">🔴 13일</td></tr>
+<tr><td><strong>10개</strong></td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td><td class="ok">🟢 OK</td></tr>
+
+</tbody>
+</table>
+
+<div class="callout warn">
+    <strong>권장: 론칭 시 8개 도시 사전 제작</strong><br>
+    4개(현재): Dedicated 6일, Hardcore 41일 대기 &rarr; 부적합<br>
+    6개: Hardcore 27일 대기 &rarr; 최소한<br>
+    <strong>8개: Hardcore 13일 대기, Dedicated 이하 OK &rarr; 권장</strong><br>
+    10개: 전 유형 OK &rarr; 이상적 (제작 비용 높음)
+</div>
+
+<!-- Section 8: Sensitivity -->
+<h2 id="s8">8. 난이도 보상 민감도 분석</h2>
+
+<p>해머 보상 변경 시 유저 유형별 영향 비교 (해머/일 및 전체 완주일)</p>
+
+<table>
+<thead><tr>
+    <th>시나리오</th>
+    <th style="color:#4A90D9">Casual Light</th>
+    <th style="color:#50B848">Casual Regular</th>
+    <th style="color:#F5A623">Average</th>
+    <th style="color:#E85D75">Dedicated</th>
+    <th style="color:#9B59B6">Hardcore</th>
+</tr></thead>
+<tbody>
+<tr><td><strong>Current (1/2/3)</strong></td><td>6.1h/d<br><span class="dim">D417</span></td><td>9.9h/d<br><span class="dim">D257</span></td><td>13.2h/d<br><span class="dim">D192</span></td><td>18.1h/d<br><span class="dim">D140</span></td><td>29.2h/d<br><span class="dim">D87</span></td></tr>
+<tr><td><strong>Reduced (1/1/2)</strong></td><td>5.2h/d<br><span class="dim">D493</span></td><td>8.4h/d<br><span class="dim">D302</span></td><td>11.3h/d<br><span class="dim">D225</span></td><td>15.5h/d<br><span class="dim">D164</span></td><td>25.1h/d<br><span class="dim">D101</span></td></tr>
+<tr><td><strong>Flat (1/1/1)</strong></td><td>4.8h/d<br><span class="dim">D529</span></td><td>7.9h/d<br><span class="dim">D322</span></td><td>10.6h/d<br><span class="dim">D239</span></td><td>14.6h/d<br><span class="dim">D174</span></td><td>23.7h/d<br><span class="dim">D107</span></td></tr>
+
+</tbody>
+</table>
+
+<div class="callout">
+    <strong>인사이트</strong><br>
+    &middot; Flat(1/1/1): 전 유형 ~20% 감속 &mdash; 콘텐츠 수명 연장 효과<br>
+    &middot; 그러나 Hard/SH 클리어 보상 차등 제거 = 게임플레이 도전 동기 약화<br>
+    &middot; Hardcore 콘텐츠 고갈은 해머 보상 조정만으로 해결 불가 &rarr; 론칭 도시 수 확대가 핵심
+</div>
+
+<!-- Section 9: Deco Detail -->
+<h2 id="s9">9. 도시별 데코레이션 상세 (v2.5 개혁 적용)</h2>
+
+<p>v2.5 개혁: S1g=0, S2g=0, S3g only &middot; 해머 비율 S1:S2:S3 = 2:3:4 &middot; 데코 가중치 1:1.5:2:2.5:3<br>
+클릭하여 상세 확인 (Published 도시는 기본 열림)</p>
+
+
+    <details class="city-detail" open>
+        <summary>
+            <span class="city-num">#1</span>
+            <span class="city-name">NEW YORK</span> <span class="badge-pub">Published</span>
+            <span class="city-meta">해머 55 | 골드 8,200 | 회수율 73.2% | 3.6일</span>
+            <span class="city-delta">Δ해머 -6 | Δ골드 -2,100</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>1</td><td>2</td><td>3</td><td><strong>6</strong></td>
+            <td>0</td><td>0</td><td>900</td><td><strong>900</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>2</td><td>3</td><td>3</td><td><strong>8</strong></td>
+            <td>0</td><td>0</td><td>1,200</td><td><strong>1,200</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>2</td><td>4</td><td>5</td><td><strong>11</strong></td>
+            <td>0</td><td>0</td><td>1,600</td><td><strong>1,600</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>3</td><td>5</td><td>6</td><td><strong>14</strong></td>
+            <td>0</td><td>0</td><td>2,100</td><td><strong>2,100</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>4</td><td>5</td><td>7</td><td><strong>16</strong></td>
+            <td>0</td><td>0</td><td>2,400</td><td><strong>2,400</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>55</strong></td><td colspan="3"></td><td><strong>8,200</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" open>
+        <summary>
+            <span class="city-num">#2</span>
+            <span class="city-name">VENICE</span> <span class="badge-pub">Published</span>
+            <span class="city-meta">해머 59 | 골드 8,800 | 회수율 73.9% | 3.9일</span>
+            <span class="city-delta">Δ해머 -2 | Δ골드 -6,600</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>1</td><td>2</td><td>3</td><td><strong>6</strong></td>
+            <td>0</td><td>0</td><td>900</td><td><strong>900</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>2</td><td>3</td><td>4</td><td><strong>9</strong></td>
+            <td>0</td><td>0</td><td>1,300</td><td><strong>1,300</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>3</td><td>4</td><td>5</td><td><strong>12</strong></td>
+            <td>0</td><td>0</td><td>1,800</td><td><strong>1,800</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>3</td><td>5</td><td>7</td><td><strong>15</strong></td>
+            <td>0</td><td>0</td><td>2,200</td><td><strong>2,200</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>4</td><td>6</td><td>7</td><td><strong>17</strong></td>
+            <td>0</td><td>0</td><td>2,600</td><td><strong>2,600</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>59</strong></td><td colspan="3"></td><td><strong>8,800</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" open>
+        <summary>
+            <span class="city-num">#3</span>
+            <span class="city-name">SAPPORO</span> <span class="badge-pub">Published</span>
+            <span class="city-meta">해머 63 | 골드 9,500 | 회수율 73.7% | 4.1일</span>
+            <span class="city-delta">Δ해머 +2 | Δ골드 -5,900</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>1</td><td>2</td><td>3</td><td><strong>6</strong></td>
+            <td>0</td><td>0</td><td>900</td><td><strong>900</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>2</td><td>3</td><td>4</td><td><strong>9</strong></td>
+            <td>0</td><td>0</td><td>1,400</td><td><strong>1,400</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>3</td><td>4</td><td>6</td><td><strong>13</strong></td>
+            <td>0</td><td>0</td><td>2,000</td><td><strong>2,000</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>4</td><td>5</td><td>7</td><td><strong>16</strong></td>
+            <td>0</td><td>0</td><td>2,400</td><td><strong>2,400</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>4</td><td>6</td><td>9</td><td><strong>19</strong></td>
+            <td>0</td><td>0</td><td>2,800</td><td><strong>2,800</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>63</strong></td><td colspan="3"></td><td><strong>9,500</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" open>
+        <summary>
+            <span class="city-num">#4</span>
+            <span class="city-name">CAIRO</span> <span class="badge-pub">Published</span>
+            <span class="city-meta">해머 68 | 골드 10,600 | 회수율 73.6% | 4.4일</span>
+            <span class="city-delta">Δ해머 +7 | Δ골드 -7,800</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>2</td><td>2</td><td>3</td><td><strong>7</strong></td>
+            <td>0</td><td>0</td><td>1,100</td><td><strong>1,100</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>2</td><td>3</td><td>5</td><td><strong>10</strong></td>
+            <td>0</td><td>0</td><td>1,600</td><td><strong>1,600</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>3</td><td>5</td><td>6</td><td><strong>14</strong></td>
+            <td>0</td><td>0</td><td>2,200</td><td><strong>2,200</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>4</td><td>6</td><td>7</td><td><strong>17</strong></td>
+            <td>0</td><td>0</td><td>2,600</td><td><strong>2,600</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>4</td><td>7</td><td>9</td><td><strong>20</strong></td>
+            <td>0</td><td>0</td><td>3,100</td><td><strong>3,100</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>68</strong></td><td colspan="3"></td><td><strong>10,600</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#5</span>
+            <span class="city-name">SAN FRANCISCO</span>
+            <span class="city-meta">해머 73 | 골드 12,000 | 회수율 73.3% | 4.8일</span>
+            <span class="city-delta">Δ해머 +12 | Δ골드 -6,400</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>2</td><td>2</td><td>3</td><td><strong>7</strong></td>
+            <td>0</td><td>0</td><td>1,200</td><td><strong>1,200</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>2</td><td>4</td><td>5</td><td><strong>11</strong></td>
+            <td>0</td><td>0</td><td>1,800</td><td><strong>1,800</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>3</td><td>5</td><td>7</td><td><strong>15</strong></td>
+            <td>0</td><td>0</td><td>2,500</td><td><strong>2,500</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>4</td><td>6</td><td>8</td><td><strong>18</strong></td>
+            <td>0</td><td>0</td><td>3,000</td><td><strong>3,000</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>5</td><td>7</td><td>10</td><td><strong>22</strong></td>
+            <td>0</td><td>0</td><td>3,500</td><td><strong>3,500</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>73</strong></td><td colspan="3"></td><td><strong>12,000</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#6</span>
+            <span class="city-name">LAS VEGAS</span>
+            <span class="city-meta">해머 78 | 골드 12,000 | 회수율 73.3% | 5.1일</span>
+            <span class="city-delta">Δ해머 +17 | Δ골드 -8,400</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>2</td><td>3</td><td>3</td><td><strong>8</strong></td>
+            <td>0</td><td>0</td><td>1,200</td><td><strong>1,200</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>3</td><td>4</td><td>5</td><td><strong>12</strong></td>
+            <td>0</td><td>0</td><td>1,800</td><td><strong>1,800</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>4</td><td>5</td><td>7</td><td><strong>16</strong></td>
+            <td>0</td><td>0</td><td>2,500</td><td><strong>2,500</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>4</td><td>7</td><td>9</td><td><strong>20</strong></td>
+            <td>0</td><td>0</td><td>3,100</td><td><strong>3,100</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>5</td><td>7</td><td>10</td><td><strong>22</strong></td>
+            <td>0</td><td>0</td><td>3,400</td><td><strong>3,400</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>78</strong></td><td colspan="3"></td><td><strong>12,000</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#7</span>
+            <span class="city-name">CHICAGO</span>
+            <span class="city-meta">해머 84 | 골드 14,300 | 회수율 73.4% | 5.5일</span>
+            <span class="city-delta">Δ해머 +2 | Δ골드 -8,100</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>2</td><td>3</td><td>3</td><td><strong>8</strong></td>
+            <td>0</td><td>0</td><td>1,400</td><td><strong>1,400</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>3</td><td>4</td><td>6</td><td><strong>13</strong></td>
+            <td>0</td><td>0</td><td>2,200</td><td><strong>2,200</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>4</td><td>6</td><td>7</td><td><strong>17</strong></td>
+            <td>0</td><td>0</td><td>2,900</td><td><strong>2,900</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>5</td><td>7</td><td>9</td><td><strong>21</strong></td>
+            <td>0</td><td>0</td><td>3,600</td><td><strong>3,600</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>6</td><td>8</td><td>11</td><td><strong>25</strong></td>
+            <td>0</td><td>0</td><td>4,200</td><td><strong>4,200</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>84</strong></td><td colspan="3"></td><td><strong>14,300</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#8</span>
+            <span class="city-name">MIAMI</span>
+            <span class="city-meta">해머 90 | 골드 14,300 | 회수율 73.4% | 5.9일</span>
+            <span class="city-delta">Δ해머 +8 | Δ골드 -8,100</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>2</td><td>3</td><td>4</td><td><strong>9</strong></td>
+            <td>0</td><td>0</td><td>1,400</td><td><strong>1,400</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>3</td><td>5</td><td>6</td><td><strong>14</strong></td>
+            <td>0</td><td>0</td><td>2,200</td><td><strong>2,200</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>4</td><td>6</td><td>8</td><td><strong>18</strong></td>
+            <td>0</td><td>0</td><td>2,900</td><td><strong>2,900</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>5</td><td>7</td><td>10</td><td><strong>22</strong></td>
+            <td>0</td><td>0</td><td>3,500</td><td><strong>3,500</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>6</td><td>9</td><td>12</td><td><strong>27</strong></td>
+            <td>0</td><td>0</td><td>4,300</td><td><strong>4,300</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>90</strong></td><td colspan="3"></td><td><strong>14,300</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#9</span>
+            <span class="city-name">PARIS</span>
+            <span class="city-meta">해머 96 | 골드 14,300 | 회수율 73.4% | 6.3일</span>
+            <span class="city-delta">Δ해머 -6 | Δ골드 -11,400</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>2</td><td>3</td><td>5</td><td><strong>10</strong></td>
+            <td>0</td><td>0</td><td>1,500</td><td><strong>1,500</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>3</td><td>5</td><td>6</td><td><strong>14</strong></td>
+            <td>0</td><td>0</td><td>2,100</td><td><strong>2,100</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>4</td><td>6</td><td>9</td><td><strong>19</strong></td>
+            <td>0</td><td>0</td><td>2,800</td><td><strong>2,800</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>5</td><td>8</td><td>11</td><td><strong>24</strong></td>
+            <td>0</td><td>0</td><td>3,600</td><td><strong>3,600</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>6</td><td>10</td><td>13</td><td><strong>29</strong></td>
+            <td>0</td><td>0</td><td>4,300</td><td><strong>4,300</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>96</strong></td><td colspan="3"></td><td><strong>14,300</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#10</span>
+            <span class="city-name">LONDON</span>
+            <span class="city-meta">해머 103 | 골드 16,100 | 회수율 73.3% | 6.7일</span>
+            <span class="city-delta">Δ해머 +1 | Δ골드 -9,600</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>2</td><td>3</td><td>5</td><td><strong>10</strong></td>
+            <td>0</td><td>0</td><td>1,600</td><td><strong>1,600</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>3</td><td>5</td><td>7</td><td><strong>15</strong></td>
+            <td>0</td><td>0</td><td>2,300</td><td><strong>2,300</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>5</td><td>7</td><td>9</td><td><strong>21</strong></td>
+            <td>0</td><td>0</td><td>3,300</td><td><strong>3,300</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>6</td><td>9</td><td>11</td><td><strong>26</strong></td>
+            <td>0</td><td>0</td><td>4,100</td><td><strong>4,100</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>7</td><td>10</td><td>14</td><td><strong>31</strong></td>
+            <td>0</td><td>0</td><td>4,800</td><td><strong>4,800</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>103</strong></td><td colspan="3"></td><td><strong>16,100</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#11</span>
+            <span class="city-name">ROME</span>
+            <span class="city-meta">해머 111 | 골드 16,100 | 회수율 73.3% | 7.3일</span>
+            <span class="city-delta">Δ해머 -11 | Δ골드 -13,500</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>2</td><td>4</td><td>5</td><td><strong>11</strong></td>
+            <td>0</td><td>0</td><td>1,600</td><td><strong>1,600</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>4</td><td>6</td><td>7</td><td><strong>17</strong></td>
+            <td>0</td><td>0</td><td>2,500</td><td><strong>2,500</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>5</td><td>7</td><td>10</td><td><strong>22</strong></td>
+            <td>0</td><td>0</td><td>3,200</td><td><strong>3,200</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>6</td><td>9</td><td>13</td><td><strong>28</strong></td>
+            <td>0</td><td>0</td><td>4,100</td><td><strong>4,100</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>7</td><td>11</td><td>15</td><td><strong>33</strong></td>
+            <td>0</td><td>0</td><td>4,700</td><td><strong>4,700</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>111</strong></td><td colspan="3"></td><td><strong>16,100</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#12</span>
+            <span class="city-name">LOS ANGELES</span>
+            <span class="city-meta">해머 119 | 골드 16,100 | 회수율 73.3% | 7.8일</span>
+            <span class="city-delta">Δ해머 -3 | Δ골드 -13,500</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>3</td><td>4</td><td>5</td><td><strong>12</strong></td>
+            <td>0</td><td>0</td><td>1,600</td><td><strong>1,600</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>4</td><td>6</td><td>8</td><td><strong>18</strong></td>
+            <td>0</td><td>0</td><td>2,400</td><td><strong>2,400</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>5</td><td>8</td><td>11</td><td><strong>24</strong></td>
+            <td>0</td><td>0</td><td>3,200</td><td><strong>3,200</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>7</td><td>10</td><td>13</td><td><strong>30</strong></td>
+            <td>0</td><td>0</td><td>4,100</td><td><strong>4,100</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>8</td><td>12</td><td>15</td><td><strong>35</strong></td>
+            <td>0</td><td>0</td><td>4,800</td><td><strong>4,800</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>119</strong></td><td colspan="3"></td><td><strong>16,100</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#13</span>
+            <span class="city-name">TOKYO</span>
+            <span class="city-meta">해머 128 | 골드 18,800 | 회수율 73.4% | 8.4일</span>
+            <span class="city-delta">Δ해머 -8 | Δ골드 -16,000</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>3</td><td>4</td><td>6</td><td><strong>13</strong></td>
+            <td>0</td><td>0</td><td>1,900</td><td><strong>1,900</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>4</td><td>6</td><td>9</td><td><strong>19</strong></td>
+            <td>0</td><td>0</td><td>2,800</td><td><strong>2,800</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>6</td><td>9</td><td>11</td><td><strong>26</strong></td>
+            <td>0</td><td>0</td><td>3,800</td><td><strong>3,800</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>7</td><td>11</td><td>14</td><td><strong>32</strong></td>
+            <td>0</td><td>0</td><td>4,700</td><td><strong>4,700</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>8</td><td>13</td><td>17</td><td><strong>38</strong></td>
+            <td>0</td><td>0</td><td>5,600</td><td><strong>5,600</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>128</strong></td><td colspan="3"></td><td><strong>18,800</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#14</span>
+            <span class="city-name">BANGKOK</span>
+            <span class="city-meta">해머 137 | 골드 18,800 | 회수율 73.4% | 9.0일</span>
+            <span class="city-delta">Δ해머 +1 | Δ골드 -21,000</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>3</td><td>5</td><td>6</td><td><strong>14</strong></td>
+            <td>0</td><td>0</td><td>1,900</td><td><strong>1,900</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>5</td><td>7</td><td>9</td><td><strong>21</strong></td>
+            <td>0</td><td>0</td><td>2,900</td><td><strong>2,900</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>6</td><td>9</td><td>12</td><td><strong>27</strong></td>
+            <td>0</td><td>0</td><td>3,700</td><td><strong>3,700</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>8</td><td>11</td><td>15</td><td><strong>34</strong></td>
+            <td>0</td><td>0</td><td>4,700</td><td><strong>4,700</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>9</td><td>14</td><td>18</td><td><strong>41</strong></td>
+            <td>0</td><td>0</td><td>5,600</td><td><strong>5,600</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>137</strong></td><td colspan="3"></td><td><strong>18,800</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#15</span>
+            <span class="city-name">DUBAI</span>
+            <span class="city-meta">해머 147 | 골드 18,800 | 회수율 73.4% | 9.6일</span>
+            <span class="city-delta">Δ해머 -12 | Δ골드 -27,300</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>3</td><td>5</td><td>7</td><td><strong>15</strong></td>
+            <td>0</td><td>0</td><td>1,900</td><td><strong>1,900</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>5</td><td>7</td><td>10</td><td><strong>22</strong></td>
+            <td>0</td><td>0</td><td>2,800</td><td><strong>2,800</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>6</td><td>10</td><td>13</td><td><strong>29</strong></td>
+            <td>0</td><td>0</td><td>3,700</td><td><strong>3,700</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>8</td><td>12</td><td>17</td><td><strong>37</strong></td>
+            <td>0</td><td>0</td><td>4,700</td><td><strong>4,700</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>10</td><td>15</td><td>19</td><td><strong>44</strong></td>
+            <td>0</td><td>0</td><td>5,700</td><td><strong>5,700</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>147</strong></td><td colspan="3"></td><td><strong>18,800</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#16</span>
+            <span class="city-name">SYDNEY</span>
+            <span class="city-meta">해머 157 | 골드 19,000 | 회수율 73.7% | 10.3일</span>
+            <span class="city-delta">Δ해머 -2 | Δ골드 -32,100</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>4</td><td>5</td><td>7</td><td><strong>16</strong></td>
+            <td>0</td><td>0</td><td>1,900</td><td><strong>1,900</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>5</td><td>8</td><td>11</td><td><strong>24</strong></td>
+            <td>0</td><td>0</td><td>2,900</td><td><strong>2,900</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>7</td><td>10</td><td>14</td><td><strong>31</strong></td>
+            <td>0</td><td>0</td><td>3,800</td><td><strong>3,800</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>9</td><td>13</td><td>17</td><td><strong>39</strong></td>
+            <td>0</td><td>0</td><td>4,700</td><td><strong>4,700</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>10</td><td>16</td><td>21</td><td><strong>47</strong></td>
+            <td>0</td><td>0</td><td>5,700</td><td><strong>5,700</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>157</strong></td><td colspan="3"></td><td><strong>19,000</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#17</span>
+            <span class="city-name">RIO</span>
+            <span class="city-meta">해머 169 | 골드 19,000 | 회수율 73.7% | 11.0일</span>
+            <span class="city-delta">Δ해머 +4 | Δ골드 -83,000</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>4</td><td>6</td><td>7</td><td><strong>17</strong></td>
+            <td>0</td><td>0</td><td>1,900</td><td><strong>1,900</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>6</td><td>8</td><td>11</td><td><strong>25</strong></td>
+            <td>0</td><td>0</td><td>2,800</td><td><strong>2,800</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>8</td><td>11</td><td>15</td><td><strong>34</strong></td>
+            <td>0</td><td>0</td><td>3,800</td><td><strong>3,800</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>9</td><td>14</td><td>19</td><td><strong>42</strong></td>
+            <td>0</td><td>0</td><td>4,700</td><td><strong>4,700</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>11</td><td>17</td><td>23</td><td><strong>51</strong></td>
+            <td>0</td><td>0</td><td>5,800</td><td><strong>5,800</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>169</strong></td><td colspan="3"></td><td><strong>19,000</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#18</span>
+            <span class="city-name">BARCELONA</span>
+            <span class="city-meta">해머 181 | 골드 21,100 | 회수율 73.5% | 11.8일</span>
+            <span class="city-delta">Δ해머 +16 | Δ골드 -80,900</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>4</td><td>6</td><td>8</td><td><strong>18</strong></td>
+            <td>0</td><td>0</td><td>2,100</td><td><strong>2,100</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>6</td><td>9</td><td>12</td><td><strong>27</strong></td>
+            <td>0</td><td>0</td><td>3,100</td><td><strong>3,100</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>8</td><td>12</td><td>16</td><td><strong>36</strong></td>
+            <td>0</td><td>0</td><td>4,200</td><td><strong>4,200</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>10</td><td>15</td><td>20</td><td><strong>45</strong></td>
+            <td>0</td><td>0</td><td>5,200</td><td><strong>5,200</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>12</td><td>18</td><td>25</td><td><strong>55</strong></td>
+            <td>0</td><td>0</td><td>6,500</td><td><strong>6,500</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>181</strong></td><td colspan="3"></td><td><strong>21,100</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#19</span>
+            <span class="city-name">ISTANBUL</span>
+            <span class="city-meta">해머 194 | 골드 21,100 | 회수율 73.5% | 12.7일</span>
+            <span class="city-delta">Δ해머 -7 | Δ골드 -101,400</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>4</td><td>6</td><td>9</td><td><strong>19</strong></td>
+            <td>0</td><td>0</td><td>2,100</td><td><strong>2,100</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>6</td><td>10</td><td>13</td><td><strong>29</strong></td>
+            <td>0</td><td>0</td><td>3,200</td><td><strong>3,200</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>9</td><td>13</td><td>17</td><td><strong>39</strong></td>
+            <td>0</td><td>0</td><td>4,200</td><td><strong>4,200</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>11</td><td>16</td><td>21</td><td><strong>48</strong></td>
+            <td>0</td><td>0</td><td>5,200</td><td><strong>5,200</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>13</td><td>20</td><td>26</td><td><strong>59</strong></td>
+            <td>0</td><td>0</td><td>6,400</td><td><strong>6,400</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>194</strong></td><td colspan="3"></td><td><strong>21,100</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#20</span>
+            <span class="city-name">ATHENS</span>
+            <span class="city-meta">해머 208 | 골드 21,100 | 회수율 73.5% | 13.6일</span>
+            <span class="city-delta">Δ해머 +7 | Δ골드 -101,400</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>5</td><td>7</td><td>9</td><td><strong>21</strong></td>
+            <td>0</td><td>0</td><td>2,100</td><td><strong>2,100</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>7</td><td>10</td><td>14</td><td><strong>31</strong></td>
+            <td>0</td><td>0</td><td>3,100</td><td><strong>3,100</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>9</td><td>14</td><td>19</td><td><strong>42</strong></td>
+            <td>0</td><td>0</td><td>4,300</td><td><strong>4,300</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>12</td><td>17</td><td>23</td><td><strong>52</strong></td>
+            <td>0</td><td>0</td><td>5,300</td><td><strong>5,300</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>14</td><td>21</td><td>27</td><td><strong>62</strong></td>
+            <td>0</td><td>0</td><td>6,300</td><td><strong>6,300</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>208</strong></td><td colspan="3"></td><td><strong>21,100</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+    <details class="city-detail" >
+        <summary>
+            <span class="city-num">#21</span>
+            <span class="city-name">PRAGUE</span>
+            <span class="city-meta">해머 223 | 골드 21,100 | 회수율 73.5% | 14.6일</span>
+            <span class="city-delta">Δ해머 -20 | Δ골드 -126,000</span>
+        </summary>
+        <table class="deco-table">
+            <thead><tr><th>Deco</th><th>S1h</th><th>S2h</th><th>S3h</th><th>ΣH</th><th>S1g</th><th>S2g</th><th>S3g</th><th>ΣG</th></tr></thead>
+            <tbody><tr>
+            <td>D1</td>
+            <td>5</td><td>7</td><td>10</td><td><strong>22</strong></td>
+            <td>0</td><td>0</td><td>2,100</td><td><strong>2,100</strong></td>
+        </tr><tr>
+            <td>D2</td>
+            <td>7</td><td>11</td><td>15</td><td><strong>33</strong></td>
+            <td>0</td><td>0</td><td>3,100</td><td><strong>3,100</strong></td>
+        </tr><tr>
+            <td>D3</td>
+            <td>10</td><td>15</td><td>20</td><td><strong>45</strong></td>
+            <td>0</td><td>0</td><td>4,300</td><td><strong>4,300</strong></td>
+        </tr><tr>
+            <td>D4</td>
+            <td>12</td><td>19</td><td>25</td><td><strong>56</strong></td>
+            <td>0</td><td>0</td><td>5,300</td><td><strong>5,300</strong></td>
+        </tr><tr>
+            <td>D5</td>
+            <td>15</td><td>22</td><td>30</td><td><strong>67</strong></td>
+            <td>0</td><td>0</td><td>6,300</td><td><strong>6,300</strong></td>
+        </tr>
+            <tr class="total-row"><td>합계</td><td colspan="3"></td><td><strong>223</strong></td><td colspan="3"></td><td><strong>21,100</strong></td></tr>
+            </tbody>
+        </table>
+    </details>
+
+<!-- Section 10: Recommendations -->
+<h2 id="s10">10. PM 권고사항</h2>
+
+<div class="rec-grid">
+    <div class="rec-card">
+        <h4>1. 론칭 도시 수 확대</h4>
+        <ul>
+            <li>현재 4개 &rarr; <strong>최소 8개</strong> 사전 제작</li>
+            <li>Dedicated/Hardcore 콘텐츠 고갈 방지</li>
+            <li>론칭 후 주 1개 제작 속도 유지 필수</li>
+        </ul>
+    </div>
+    <div class="rec-card">
+        <h4>2. 해머 보상 차등(1/2/3) 유지</h4>
+        <ul>
+            <li>Flat(1/1/1) 전환 시 ~20% 감속</li>
+            <li>난이도 도전 보상 유지가 게임플레이 동기에 중요</li>
+            <li>콘텐츠 고갈은 해머 하향이 아닌 도시 수 확대로 대응</li>
+        </ul>
+    </div>
+    <div class="rec-card">
+        <h4>3. hammer_full_stop_reward=1 유지</h4>
+        <ul>
+            <li>현행: 해머 FULL 후에도 1개/클리어 지급</li>
+            <li>0으로 변경 시: 다음 도시 0에서 시작 &rarr; 불만 유발</li>
+            <li>론칭 도시 확대가 우선 대응</li>
+        </ul>
+    </div>
+    <div class="rec-card">
+        <h4>4. 설계 기준 해머/일 재검토</h4>
+        <ul>
+            <li>기존 15.3개/일 &rarr; Average 실측 13.2개/일 (14% 괴리)</li>
+            <li>Dedicated(18.1)가 기존 기준에 가장 근접</li>
+            <li>완주 기간: Average 193일 vs 설계 166일</li>
+        </ul>
+    </div>
+</div>
+
+<div class="callout success" style="margin-top:20px">
+    <strong>결론</strong><br>
+    Progressive Hammer Curve v2.5는 현행 4가지 구조 문제를 모두 해결하며,
+    총 해머(2,543)를 유지한 채로 21개 도시에 걸친 균등한 난이도 상승을 달성합니다.<br><br>
+    <strong>핵심 리스크</strong>는 Hardcore 유저의 콘텐츠 고갈이며,
+    이는 론칭 시 사전 제작 도시 수 확대(4&rarr;8개)로 대응할 것을 권고합니다.
+</div>
+
+<script>
+// Chart.js CDN
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+script.onload = () => {
+    const data = [{"label": "Casual Light", "points": [{"d": 1, "h": 4}, {"d": 2, "h": 12}, {"d": 4, "h": 25}, {"d": 6, "h": 38}, {"d": 8, "h": 48}, {"d": 10, "h": 62}, {"d": 12, "h": 75}, {"d": 14, "h": 85}, {"d": 16, "h": 98}, {"d": 18, "h": 113}, {"d": 20, "h": 127}, {"d": 22, "h": 144}, {"d": 24, "h": 153}, {"d": 26, "h": 166}, {"d": 28, "h": 178}, {"d": 30, "h": 187}, {"d": 32, "h": 196}, {"d": 34, "h": 211}, {"d": 36, "h": 222}, {"d": 38, "h": 230}, {"d": 40, "h": 239}, {"d": 42, "h": 249}, {"d": 44, "h": 261}, {"d": 46, "h": 273}, {"d": 48, "h": 286}, {"d": 50, "h": 298}, {"d": 52, "h": 311}, {"d": 54, "h": 323}, {"d": 56, "h": 337}, {"d": 58, "h": 347}, {"d": 60, "h": 366}, {"d": 62, "h": 376}, {"d": 64, "h": 387}, {"d": 66, "h": 399}, {"d": 68, "h": 411}, {"d": 70, "h": 422}, {"d": 72, "h": 438}, {"d": 74, "h": 452}, {"d": 76, "h": 466}, {"d": 78, "h": 481}, {"d": 80, "h": 493}, {"d": 82, "h": 501}, {"d": 84, "h": 515}, {"d": 86, "h": 524}, {"d": 88, "h": 534}, {"d": 90, "h": 547}, {"d": 92, "h": 564}, {"d": 94, "h": 577}, {"d": 96, "h": 585}, {"d": 98, "h": 597}, {"d": 100, "h": 604}, {"d": 102, "h": 618}, {"d": 104, "h": 629}, {"d": 106, "h": 645}, {"d": 108, "h": 655}, {"d": 110, "h": 667}, {"d": 112, "h": 675}, {"d": 114, "h": 687}, {"d": 116, "h": 702}, {"d": 118, "h": 714}, {"d": 120, "h": 727}, {"d": 122, "h": 741}, {"d": 124, "h": 751}, {"d": 126, "h": 767}, {"d": 128, "h": 777}, {"d": 130, "h": 789}, {"d": 132, "h": 798}, {"d": 134, "h": 811}, {"d": 136, "h": 824}, {"d": 138, "h": 836}, {"d": 140, "h": 849}, {"d": 142, "h": 863}, {"d": 144, "h": 877}, {"d": 146, "h": 887}, {"d": 148, "h": 902}, {"d": 150, "h": 917}, {"d": 152, "h": 930}, {"d": 154, "h": 938}, {"d": 156, "h": 950}, {"d": 158, "h": 963}, {"d": 160, "h": 973}, {"d": 162, "h": 986}, {"d": 164, "h": 996}, {"d": 166, "h": 1010}, {"d": 168, "h": 1024}, {"d": 170, "h": 1035}, {"d": 172, "h": 1046}, {"d": 174, "h": 1058}, {"d": 176, "h": 1071}, {"d": 178, "h": 1081}, {"d": 180, "h": 1095}, {"d": 182, "h": 1107}, {"d": 184, "h": 1120}, {"d": 186, "h": 1130}, {"d": 188, "h": 1141}, {"d": 190, "h": 1153}, {"d": 192, "h": 1168}, {"d": 194, "h": 1181}, {"d": 196, "h": 1197}, {"d": 198, "h": 1208}, {"d": 200, "h": 1219}]}, {"label": "Casual Regular", "points": [{"d": 1, "h": 10}, {"d": 2, "h": 22}, {"d": 4, "h": 42}, {"d": 6, "h": 62}, {"d": 8, "h": 84}, {"d": 10, "h": 104}, {"d": 12, "h": 123}, {"d": 14, "h": 144}, {"d": 16, "h": 164}, {"d": 18, "h": 180}, {"d": 20, "h": 206}, {"d": 22, "h": 221}, {"d": 24, "h": 244}, {"d": 26, "h": 262}, {"d": 28, "h": 277}, {"d": 30, "h": 294}, {"d": 32, "h": 313}, {"d": 34, "h": 335}, {"d": 36, "h": 355}, {"d": 38, "h": 372}, {"d": 40, "h": 392}, {"d": 42, "h": 416}, {"d": 44, "h": 437}, {"d": 46, "h": 452}, {"d": 48, "h": 467}, {"d": 50, "h": 486}, {"d": 52, "h": 508}, {"d": 54, "h": 531}, {"d": 56, "h": 550}, {"d": 58, "h": 569}, {"d": 60, "h": 588}, {"d": 62, "h": 608}, {"d": 64, "h": 624}, {"d": 66, "h": 642}, {"d": 68, "h": 664}, {"d": 70, "h": 684}, {"d": 72, "h": 708}, {"d": 74, "h": 735}, {"d": 76, "h": 758}, {"d": 78, "h": 774}, {"d": 80, "h": 793}, {"d": 82, "h": 813}, {"d": 84, "h": 832}, {"d": 86, "h": 852}, {"d": 88, "h": 871}, {"d": 90, "h": 892}, {"d": 92, "h": 907}, {"d": 94, "h": 932}, {"d": 96, "h": 956}, {"d": 98, "h": 978}, {"d": 100, "h": 999}, {"d": 102, "h": 1019}, {"d": 104, "h": 1044}, {"d": 106, "h": 1065}, {"d": 108, "h": 1087}, {"d": 110, "h": 1108}, {"d": 112, "h": 1127}, {"d": 114, "h": 1152}, {"d": 116, "h": 1168}, {"d": 118, "h": 1185}, {"d": 120, "h": 1202}, {"d": 122, "h": 1226}, {"d": 124, "h": 1245}, {"d": 126, "h": 1260}, {"d": 128, "h": 1277}, {"d": 130, "h": 1295}, {"d": 132, "h": 1314}, {"d": 134, "h": 1334}, {"d": 136, "h": 1352}, {"d": 138, "h": 1371}, {"d": 140, "h": 1386}, {"d": 142, "h": 1403}, {"d": 144, "h": 1421}, {"d": 146, "h": 1442}, {"d": 148, "h": 1460}, {"d": 150, "h": 1477}, {"d": 152, "h": 1503}, {"d": 154, "h": 1526}, {"d": 156, "h": 1547}, {"d": 158, "h": 1561}, {"d": 160, "h": 1581}, {"d": 162, "h": 1596}, {"d": 164, "h": 1614}, {"d": 166, "h": 1629}, {"d": 168, "h": 1647}, {"d": 170, "h": 1667}, {"d": 172, "h": 1686}, {"d": 174, "h": 1706}, {"d": 176, "h": 1725}, {"d": 178, "h": 1743}, {"d": 180, "h": 1762}, {"d": 182, "h": 1790}, {"d": 184, "h": 1817}, {"d": 186, "h": 1837}, {"d": 188, "h": 1854}, {"d": 190, "h": 1869}, {"d": 192, "h": 1893}, {"d": 194, "h": 1915}, {"d": 196, "h": 1933}, {"d": 198, "h": 1957}, {"d": 200, "h": 1979}]}, {"label": "Average", "points": [{"d": 1, "h": 13}, {"d": 2, "h": 27}, {"d": 4, "h": 53}, {"d": 6, "h": 82}, {"d": 8, "h": 109}, {"d": 10, "h": 142}, {"d": 12, "h": 170}, {"d": 14, "h": 191}, {"d": 16, "h": 217}, {"d": 18, "h": 243}, {"d": 20, "h": 269}, {"d": 22, "h": 290}, {"d": 24, "h": 323}, {"d": 26, "h": 353}, {"d": 28, "h": 374}, {"d": 30, "h": 401}, {"d": 32, "h": 426}, {"d": 34, "h": 451}, {"d": 36, "h": 478}, {"d": 38, "h": 497}, {"d": 40, "h": 524}, {"d": 42, "h": 556}, {"d": 44, "h": 585}, {"d": 46, "h": 608}, {"d": 48, "h": 634}, {"d": 50, "h": 663}, {"d": 52, "h": 693}, {"d": 54, "h": 713}, {"d": 56, "h": 736}, {"d": 58, "h": 770}, {"d": 60, "h": 796}, {"d": 62, "h": 817}, {"d": 64, "h": 843}, {"d": 66, "h": 867}, {"d": 68, "h": 894}, {"d": 70, "h": 917}, {"d": 72, "h": 936}, {"d": 74, "h": 973}, {"d": 76, "h": 996}, {"d": 78, "h": 1018}, {"d": 80, "h": 1046}, {"d": 82, "h": 1077}, {"d": 84, "h": 1105}, {"d": 86, "h": 1129}, {"d": 88, "h": 1154}, {"d": 90, "h": 1184}, {"d": 92, "h": 1213}, {"d": 94, "h": 1232}, {"d": 96, "h": 1257}, {"d": 98, "h": 1280}, {"d": 100, "h": 1301}, {"d": 102, "h": 1330}, {"d": 104, "h": 1358}, {"d": 106, "h": 1386}, {"d": 108, "h": 1409}, {"d": 110, "h": 1438}, {"d": 112, "h": 1460}, {"d": 114, "h": 1490}, {"d": 116, "h": 1518}, {"d": 118, "h": 1534}, {"d": 120, "h": 1561}, {"d": 122, "h": 1591}, {"d": 124, "h": 1625}, {"d": 126, "h": 1655}, {"d": 128, "h": 1685}, {"d": 130, "h": 1714}, {"d": 132, "h": 1737}, {"d": 134, "h": 1761}, {"d": 136, "h": 1787}, {"d": 138, "h": 1812}, {"d": 140, "h": 1834}, {"d": 142, "h": 1858}, {"d": 144, "h": 1883}, {"d": 146, "h": 1913}, {"d": 148, "h": 1939}, {"d": 150, "h": 1977}, {"d": 152, "h": 2013}, {"d": 154, "h": 2045}, {"d": 156, "h": 2069}, {"d": 158, "h": 2095}, {"d": 160, "h": 2118}, {"d": 162, "h": 2150}, {"d": 164, "h": 2181}, {"d": 166, "h": 2204}, {"d": 168, "h": 2232}, {"d": 170, "h": 2261}, {"d": 172, "h": 2287}, {"d": 174, "h": 2307}, {"d": 176, "h": 2339}, {"d": 178, "h": 2375}, {"d": 180, "h": 2396}, {"d": 182, "h": 2425}, {"d": 184, "h": 2445}, {"d": 186, "h": 2470}, {"d": 188, "h": 2492}, {"d": 190, "h": 2511}, {"d": 192, "h": 2540}, {"d": 194, "h": 2569}, {"d": 196, "h": 2599}, {"d": 198, "h": 2627}, {"d": 200, "h": 2649}]}, {"label": "Dedicated", "points": [{"d": 1, "h": 18}, {"d": 2, "h": 35}, {"d": 4, "h": 73}, {"d": 6, "h": 106}, {"d": 8, "h": 138}, {"d": 10, "h": 177}, {"d": 12, "h": 216}, {"d": 14, "h": 257}, {"d": 16, "h": 282}, {"d": 18, "h": 312}, {"d": 20, "h": 350}, {"d": 22, "h": 382}, {"d": 24, "h": 418}, {"d": 26, "h": 457}, {"d": 28, "h": 493}, {"d": 30, "h": 528}, {"d": 32, "h": 566}, {"d": 34, "h": 598}, {"d": 36, "h": 631}, {"d": 38, "h": 673}, {"d": 40, "h": 705}, {"d": 42, "h": 736}, {"d": 44, "h": 769}, {"d": 46, "h": 807}, {"d": 48, "h": 839}, {"d": 50, "h": 873}, {"d": 52, "h": 906}, {"d": 54, "h": 946}, {"d": 56, "h": 982}, {"d": 58, "h": 1025}, {"d": 60, "h": 1063}, {"d": 62, "h": 1100}, {"d": 64, "h": 1143}, {"d": 66, "h": 1179}, {"d": 68, "h": 1207}, {"d": 70, "h": 1253}, {"d": 72, "h": 1287}, {"d": 74, "h": 1321}, {"d": 76, "h": 1365}, {"d": 78, "h": 1398}, {"d": 80, "h": 1438}, {"d": 82, "h": 1474}, {"d": 84, "h": 1507}, {"d": 86, "h": 1541}, {"d": 88, "h": 1575}, {"d": 90, "h": 1606}, {"d": 92, "h": 1638}, {"d": 94, "h": 1677}, {"d": 96, "h": 1712}, {"d": 98, "h": 1749}, {"d": 100, "h": 1784}, {"d": 102, "h": 1822}, {"d": 104, "h": 1865}, {"d": 106, "h": 1902}, {"d": 108, "h": 1934}, {"d": 110, "h": 1971}, {"d": 112, "h": 2009}, {"d": 114, "h": 2045}, {"d": 116, "h": 2081}, {"d": 118, "h": 2118}, {"d": 120, "h": 2155}, {"d": 122, "h": 2193}, {"d": 124, "h": 2222}, {"d": 126, "h": 2258}, {"d": 128, "h": 2304}, {"d": 130, "h": 2342}, {"d": 132, "h": 2388}, {"d": 134, "h": 2419}, {"d": 136, "h": 2454}, {"d": 138, "h": 2492}, {"d": 140, "h": 2532}, {"d": 142, "h": 2567}, {"d": 144, "h": 2594}, {"d": 146, "h": 2625}, {"d": 148, "h": 2660}, {"d": 150, "h": 2710}, {"d": 152, "h": 2741}, {"d": 154, "h": 2776}, {"d": 156, "h": 2804}, {"d": 158, "h": 2847}, {"d": 160, "h": 2877}, {"d": 162, "h": 2913}, {"d": 164, "h": 2951}, {"d": 166, "h": 2996}, {"d": 168, "h": 3033}, {"d": 170, "h": 3070}, {"d": 172, "h": 3119}, {"d": 174, "h": 3158}, {"d": 176, "h": 3186}, {"d": 178, "h": 3222}, {"d": 180, "h": 3252}, {"d": 182, "h": 3295}, {"d": 184, "h": 3327}, {"d": 186, "h": 3373}, {"d": 188, "h": 3414}, {"d": 190, "h": 3452}, {"d": 192, "h": 3487}, {"d": 194, "h": 3526}, {"d": 196, "h": 3560}, {"d": 198, "h": 3588}, {"d": 200, "h": 3630}]}, {"label": "Hardcore", "points": [{"d": 1, "h": 28}, {"d": 2, "h": 58}, {"d": 4, "h": 121}, {"d": 6, "h": 186}, {"d": 8, "h": 243}, {"d": 10, "h": 298}, {"d": 12, "h": 359}, {"d": 14, "h": 412}, {"d": 16, "h": 469}, {"d": 18, "h": 531}, {"d": 20, "h": 610}, {"d": 22, "h": 673}, {"d": 24, "h": 721}, {"d": 26, "h": 776}, {"d": 28, "h": 840}, {"d": 30, "h": 904}, {"d": 32, "h": 968}, {"d": 34, "h": 1026}, {"d": 36, "h": 1077}, {"d": 38, "h": 1144}, {"d": 40, "h": 1204}, {"d": 42, "h": 1263}, {"d": 44, "h": 1326}, {"d": 46, "h": 1390}, {"d": 48, "h": 1447}, {"d": 50, "h": 1506}, {"d": 52, "h": 1562}, {"d": 54, "h": 1625}, {"d": 56, "h": 1682}, {"d": 58, "h": 1743}, {"d": 60, "h": 1781}, {"d": 62, "h": 1851}, {"d": 64, "h": 1915}, {"d": 66, "h": 1970}, {"d": 68, "h": 2025}, {"d": 70, "h": 2074}, {"d": 72, "h": 2143}, {"d": 74, "h": 2206}, {"d": 76, "h": 2265}, {"d": 78, "h": 2332}, {"d": 80, "h": 2385}, {"d": 82, "h": 2438}, {"d": 84, "h": 2498}, {"d": 86, "h": 2551}, {"d": 88, "h": 2610}, {"d": 90, "h": 2677}, {"d": 92, "h": 2731}, {"d": 94, "h": 2786}, {"d": 96, "h": 2826}, {"d": 98, "h": 2886}, {"d": 100, "h": 2949}, {"d": 102, "h": 3012}, {"d": 104, "h": 3059}, {"d": 106, "h": 3123}, {"d": 108, "h": 3180}, {"d": 110, "h": 3249}, {"d": 112, "h": 3313}, {"d": 114, "h": 3368}, {"d": 116, "h": 3418}, {"d": 118, "h": 3473}, {"d": 120, "h": 3529}, {"d": 122, "h": 3580}, {"d": 124, "h": 3639}, {"d": 126, "h": 3700}, {"d": 128, "h": 3759}, {"d": 130, "h": 3825}, {"d": 132, "h": 3887}, {"d": 134, "h": 3944}, {"d": 136, "h": 4005}, {"d": 138, "h": 4072}, {"d": 140, "h": 4118}, {"d": 142, "h": 4180}, {"d": 144, "h": 4235}, {"d": 146, "h": 4301}, {"d": 148, "h": 4365}, {"d": 150, "h": 4431}, {"d": 152, "h": 4482}, {"d": 154, "h": 4548}, {"d": 156, "h": 4605}, {"d": 158, "h": 4661}, {"d": 160, "h": 4719}, {"d": 162, "h": 4779}, {"d": 164, "h": 4833}, {"d": 166, "h": 4879}, {"d": 168, "h": 4948}, {"d": 170, "h": 5001}, {"d": 172, "h": 5062}, {"d": 174, "h": 5131}, {"d": 176, "h": 5189}, {"d": 178, "h": 5232}, {"d": 180, "h": 5275}, {"d": 182, "h": 5335}, {"d": 184, "h": 5380}, {"d": 186, "h": 5450}, {"d": 188, "h": 5497}, {"d": 190, "h": 5549}, {"d": 192, "h": 5618}, {"d": 194, "h": 5682}, {"d": 196, "h": 5739}, {"d": 198, "h": 5792}, {"d": 200, "h": 5841}]}];
+    const thresholds = [{"city": 1, "name": "New York", "cum": 55}, {"city": 2, "name": "Venice", "cum": 114}, {"city": 3, "name": "Sapporo", "cum": 177}, {"city": 4, "name": "Cairo", "cum": 245}, {"city": 5, "name": "San Francisco", "cum": 318}, {"city": 6, "name": "Las Vegas", "cum": 396}, {"city": 7, "name": "Chicago", "cum": 480}, {"city": 8, "name": "Miami", "cum": 570}, {"city": 9, "name": "Paris", "cum": 666}, {"city": 10, "name": "London", "cum": 769}, {"city": 11, "name": "Rome", "cum": 880}, {"city": 12, "name": "Los Angeles", "cum": 999}, {"city": 13, "name": "Tokyo", "cum": 1127}, {"city": 14, "name": "Bangkok", "cum": 1264}, {"city": 15, "name": "Dubai", "cum": 1411}, {"city": 16, "name": "Sydney", "cum": 1568}, {"city": 17, "name": "Rio", "cum": 1737}, {"city": 18, "name": "Barcelona", "cum": 1918}, {"city": 19, "name": "Istanbul", "cum": 2112}, {"city": 20, "name": "Athens", "cum": 2320}, {"city": 21, "name": "Prague", "cum": 2543}];
+    const colors = ['#4A90D9', '#50B848', '#F5A623', '#E85D75', '#9B59B6'];
+    
+    const datasets = data.map((line, i) => ({
+        label: line.label,
+        data: line.points.map(p => ({x: p.d, y: p.h})),
+        borderColor: colors[i],
+        backgroundColor: colors[i] + '20',
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: false,
+        tension: 0.3
+    }));
+    
+    // City threshold annotations
+    const cityLines = thresholds.filter((_, i) => i % 3 === 0 || i < 5).map(t => ({
+        label: t.name,
+        data: [{x: 0, y: t.cum}, {x: 200, y: t.cum}],
+        borderColor: '#30363d',
+        borderWidth: 1,
+        borderDash: [4, 4],
+        pointRadius: 0,
+        fill: false
+    }));
+    
+    new Chart(document.getElementById('hammerChart'), {
+        type: 'line',
+        data: { datasets: [...datasets, ...cityLines] },
+        options: {
+            responsive: true,
+            interaction: { mode: 'nearest', axis: 'x', intersect: false },
+            plugins: {
+                legend: { position: 'top', labels: { color: '#e6edf3', filter: (item) => !item.text.includes('D') && item.datasetIndex < 5 } },
+                tooltip: { 
+                    backgroundColor: '#21262d', titleColor: '#e6edf3', bodyColor: '#8b949e', borderColor: '#30363d', borderWidth: 1,
+                    callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString() + ' hammers (D' + ctx.parsed.x + ')' }
+                }
+            },
+            scales: {
+                x: { type: 'linear', title: { display: true, text: 'Day', color: '#8b949e' }, ticks: { color: '#8b949e' }, grid: { color: '#21262d' }, min: 0, max: 200 },
+                y: { title: { display: true, text: 'Cumulative Hammers', color: '#8b949e' }, ticks: { color: '#8b949e' }, grid: { color: '#21262d' }, min: 0 }
+            }
+        }
+    });
+};
+document.head.appendChild(script);
+</script>
+
+</body>
+</html>
