@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script id="pst-theme-init">(function(){var t=localStorage.getItem("pst-report-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){if(document.getElementById("backBtn"))return;var b=document.createElement("a");b.className="back-btn";b.id="backBtn";b.href="index.html";b.title="보고서 인덱스로 이동";b.textContent="← 목록";document.body.prepend(b);var g=document.createElement("button");g.className="theme-toggle";g.id="themeToggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);});})()</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PST 골드 인플레이션 해소 — V4 론칭안 (라이브 검증)</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root { --bg: #0f1117; --card: #1a1d27; --border: #2a2d3a; --text: #e0e0e0; --muted: #888; }
+  :root { --bg: #0f1117; --card: #1a1d27; --border: #2a2d3a; --text: #e0e0e0; --muted: #888; --surface: #1a1d27; --code-bg: rgba(255,255,255,0.06); --meta-bg: rgba(255,255,255,0.04); --inner-bg: rgba(255,255,255,0.03); --grid-line: #1e2130; --chart-border: #1a1d27; --table-sep: #444; --pre-bg: rgba(0,0,0,0.3); --pre-color: #a0c4ff; }
+  [data-theme="light"] { --bg: #f5f6f8; --card: #ffffff; --border: #dfe1e6; --text: #1a1d27; --muted: #5e6278; --surface: #ffffff; --code-bg: rgba(0,0,0,0.06); --meta-bg: rgba(0,0,0,0.04); --inner-bg: rgba(0,0,0,0.03); --grid-line: #e8eaef; --chart-border: #ffffff; --table-sep: #c0c4cc; --pre-bg: rgba(0,0,0,0.05); --pre-color: #2563eb; }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height:1.6; }
   .container { max-width:1200px; margin:0 auto; padding:1.5rem; }
@@ -27,31 +29,42 @@
   th { color:var(--muted); font-weight:600; font-size:0.8rem; text-transform:uppercase; }
   .table-scroll { overflow-x:auto; }
   .badge { display:inline-block; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.78rem; font-weight:600; }
-  .badge-green { background:rgba(16,185,129,0.15); color:#10b981; }
-  .badge-red { background:rgba(239,68,68,0.15); color:#ef4444; }
-  .badge-blue { background:rgba(59,130,246,0.15); color:#3b82f6; }
-  .badge-yellow { background:rgba(245,158,11,0.15); color:#f59e0b; }
-  .badge-gray { background:rgba(136,136,136,0.15); color:#888; }
+  .badge-green { background:rgba(16,185,129,0.15); color:#059669; }
+  .badge-red { background:rgba(239,68,68,0.15); color:#dc2626; }
+  .badge-blue { background:rgba(59,130,246,0.15); color:#2563eb; }
+  .badge-yellow { background:rgba(245,158,11,0.15); color:#d97706; }
+  .badge-gray { background:rgba(136,136,136,0.15); color:var(--muted); }
   .callout { padding:1rem; border-radius:8px; font-size:0.9rem; border-left:4px solid; margin-bottom:1rem; }
   .callout-green { background:rgba(16,185,129,0.06); border-color:#10b981; }
   .callout-yellow { background:rgba(245,158,11,0.06); border-color:#f59e0b; }
   .callout-blue { background:rgba(59,130,246,0.06); border-color:#3b82f6; }
   .callout-red { background:rgba(239,68,68,0.06); border-color:#ef4444; }
-  code { background:rgba(255,255,255,0.06); padding:0.15rem 0.4rem; border-radius:3px; font-size:0.85rem; font-family:monospace; }
+  code { background:var(--code-bg); padding:0.15rem 0.4rem; border-radius:3px; font-size:0.85rem; font-family:monospace; }
   .toc { background:var(--card); border-radius:10px; padding:1.25rem; margin:1.5rem 0; border:1px solid var(--border); }
-  .toc a { color:#3b82f6; text-decoration:none; }
+  .toc a { color:#2563eb; text-decoration:none; }
   .toc a:hover { text-decoration:underline; }
   .toc ol { padding-left:1.5rem; }
   .toc li { margin:0.3rem 0; font-size:0.9rem; }
   .header-meta { display:flex; gap:1rem; flex-wrap:wrap; margin:0.5rem 0 1.5rem; font-size:0.8rem; color:var(--muted); }
-  .header-meta span { background:rgba(255,255,255,0.04); padding:0.2rem 0.6rem; border-radius:4px; }
+  .header-meta span { background:var(--meta-bg); padding:0.2rem 0.6rem; border-radius:4px; }
   ul { padding-left:1.5rem; }
   li { margin:0.3rem 0; }
   .version-tag { display:inline-block; padding:0.1rem 0.4rem; border-radius:3px; font-size:0.75rem; font-weight:700; }
-  .v4-tag { background:rgba(16,185,129,0.2); color:#10b981; }
+  .v4-tag { background:rgba(16,185,129,0.2); color:#059669; }
   .profile-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:1rem; }
   .profile-grid table td, .profile-grid table th { white-space:nowrap; padding:4px 6px; }
   .profile-grid table td:first-child { min-width:80px; }
+  .theme-toggle {
+    position: fixed; top: 16px; right: 16px; z-index: 100;
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .theme-toggle:hover { border-color: var(--muted); transform: scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:200;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim,var(--muted,#8892b0));font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { border-color:var(--text-dim,var(--muted,#8892b0));color:var(--text);transform:translateY(-1px);text-decoration:none; }
 </style>
 </head>
 <body>
@@ -176,11 +189,11 @@
         </tr>
         <tr>
           <td><code>popup_free_gold_limit</code></td><td>const</td><td>10063</td><td>팝업 광고 횟수</td><td>10</td><td><strong>10</strong></td>
-          <td><span style="color:#888">유지</span></td><td>—</td>
+          <td><span style="color:var(--muted)">유지</span></td><td>—</td>
         </tr>
         <tr>
           <td><code>inbox_free_gold_limit</code></td><td>const</td><td>10057</td><td>인박스 광고 횟수</td><td>5</td><td><strong>5</strong></td>
-          <td><span style="color:#888">유지</span></td><td>—</td>
+          <td><span style="color:var(--muted)">유지</span></td><td>—</td>
         </tr>
         <tr style="background:rgba(16,185,129,0.08)">
           <td><code>shop AD pay_limit (190001)</code></td><td>product</td><td>190001</td><td>상점 광고 횟수</td><td>1</td><td><strong>3</strong></td>
@@ -227,7 +240,7 @@
           <tr><td>데일리 휠</td><td style="text-align:right">2,160g</td><td style="text-align:right">7.7%</td></tr>
           <tr><td>출석보상</td><td style="text-align:right">1,571g</td><td style="text-align:right">5.6%</td></tr>
           <tr><td>게임보상</td><td style="text-align:right">1,814g</td><td style="text-align:right">6.5%</td></tr>
-          <tr style="font-weight:bold;border-top:2px solid #444"><td>합계</td><td style="text-align:right;color:#10b981">27,945g</td><td></td></tr>
+          <tr style="font-weight:bold;border-top:2px solid var(--table-sep)"><td>합계</td><td style="text-align:right;color:#10b981">27,945g</td><td></td></tr>
         </tbody>
       </table>
       <table style="width:100%;margin-top:1rem">
@@ -236,11 +249,11 @@
           <tr><td>입장료(손실분)</td><td style="text-align:right">10,500g</td><td style="text-align:right">87.5%</td></tr>
           <tr><td>부스터</td><td style="text-align:right">1,500g</td><td style="text-align:right">12.5%</td></tr>
           <tr><td>컬렉션</td><td style="text-align:right">0g</td><td style="text-align:right">0.0%</td></tr>
-          <tr style="font-weight:bold;border-top:2px solid #444"><td>합계</td><td style="text-align:right;color:#ef4444">12,000g</td><td></td></tr>
+          <tr style="font-weight:bold;border-top:2px solid var(--table-sep)"><td>합계</td><td style="text-align:right;color:#ef4444">12,000g</td><td></td></tr>
         </tbody>
       </table>
-      <div style="margin-top:1rem;padding:0.75rem;background:rgba(255,255,255,0.03);border-radius:8px;text-align:center">
-        <span style="font-size:0.85rem;color:#999">일일 순수익</span><br>
+      <div style="margin-top:1rem;padding:0.75rem;background:var(--inner-bg);border-radius:8px;text-align:center">
+        <span style="font-size:0.85rem;color:var(--muted)">일일 순수익</span><br>
         <span style="font-size:1.5rem;font-weight:bold;color:#f59e0b">+15,945g</span>
       </div>
     </div>
@@ -258,7 +271,7 @@
           <tr><td>데일리 휠</td><td style="text-align:right">1,740g</td><td style="text-align:right">7.8%</td></tr>
           <tr><td>출석보상</td><td style="text-align:right">1,286g</td><td style="text-align:right">5.8%</td></tr>
           <tr><td>게임보상</td><td style="text-align:right">1,814g</td><td style="text-align:right">8.2%</td></tr>
-          <tr style="font-weight:bold;border-top:2px solid #444"><td>합계</td><td style="text-align:right;color:#10b981">22,240g</td><td></td></tr>
+          <tr style="font-weight:bold;border-top:2px solid var(--table-sep)"><td>합계</td><td style="text-align:right;color:#10b981">22,240g</td><td></td></tr>
         </tbody>
       </table>
       <table style="width:100%;margin-top:1rem">
@@ -267,11 +280,11 @@
           <tr><td>입장료(손실분)</td><td style="text-align:right">12,600g</td><td style="text-align:right">74.6%</td></tr>
           <tr><td>부스터</td><td style="text-align:right">1,800g</td><td style="text-align:right">10.7%</td></tr>
           <tr><td>컬렉션</td><td style="text-align:right">2,500g</td><td style="text-align:right">14.8%</td></tr>
-          <tr style="font-weight:bold;border-top:2px solid #444"><td>합계</td><td style="text-align:right;color:#ef4444">16,900g</td><td></td></tr>
+          <tr style="font-weight:bold;border-top:2px solid var(--table-sep)"><td>합계</td><td style="text-align:right;color:#ef4444">16,900g</td><td></td></tr>
         </tbody>
       </table>
-      <div style="margin-top:1rem;padding:0.75rem;background:rgba(255,255,255,0.03);border-radius:8px;text-align:center">
-        <span style="font-size:0.85rem;color:#999">일일 순수익</span><br>
+      <div style="margin-top:1rem;padding:0.75rem;background:var(--inner-bg);border-radius:8px;text-align:center">
+        <span style="font-size:0.85rem;color:var(--muted)">일일 순수익</span><br>
         <span style="font-size:1.5rem;font-weight:bold;color:#10b981">+5,340g</span>
       </div>
     </div>
@@ -305,7 +318,7 @@
       <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem">
         <div>
           <h4 style="margin:0">캐주얼 라이트</h4>
-          <span style="font-size:0.8rem;color:#999">Lv25 · 3판/일 · 75% WR · 광고 30%</span>
+          <span style="font-size:0.8rem;color:var(--muted)">Lv25 · 3판/일 · 75% WR · 광고 30%</span>
         </div>
       </div>
       <table style="width:100%;font-size:0.85rem">
@@ -314,7 +327,7 @@
           <tr><td>일일 Source</td><td style="text-align:right">11,418g</td><td style="text-align:center">→</td><td style="text-align:right">8,690g</td></tr>
           <tr><td>일일 Sink</td><td style="text-align:right">1,710g</td><td style="text-align:center">→</td><td style="text-align:right">2,542g</td></tr>
           <tr style="font-weight:bold"><td>일일 순수익</td><td style="text-align:right">+9,708g</td><td style="text-align:center">→</td><td style="text-align:right;color:#10b981">+6,148g</td></tr>
-          <tr style="font-weight:bold;border-top:1px solid #444"><td>D30 잔액</td><td style="text-align:right">+293,240g</td><td style="text-align:center">→</td><td style="text-align:right;color:#10b981">+186,440g</td></tr>
+          <tr style="font-weight:bold;border-top:1px solid var(--table-sep)"><td>D30 잔액</td><td style="text-align:right">+293,240g</td><td style="text-align:center">→</td><td style="text-align:right;color:#10b981">+186,440g</td></tr>
         </tbody>
       </table>
       <div style="margin-top:0.75rem;padding:0.5rem;background:rgba(16,185,129,0.08);border-radius:6px;text-align:center;font-size:0.85rem">
@@ -327,7 +340,7 @@
       <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem">
         <div>
           <h4 style="margin:0">캐주얼 레귤러</h4>
-          <span style="font-size:0.8rem;color:#999">Lv50 · 8판/일 · 70% WR · 광고 50%</span>
+          <span style="font-size:0.8rem;color:var(--muted)">Lv50 · 8판/일 · 70% WR · 광고 50%</span>
         </div>
       </div>
       <table style="width:100%;font-size:0.85rem">
@@ -336,7 +349,7 @@
           <tr><td>일일 Source</td><td style="text-align:right">17,893g</td><td style="text-align:center">→</td><td style="text-align:right">13,878g</td></tr>
           <tr><td>일일 Sink</td><td style="text-align:right">5,600g</td><td style="text-align:center">→</td><td style="text-align:right">8,323g</td></tr>
           <tr style="font-weight:bold"><td>일일 순수익</td><td style="text-align:right">+12,293g</td><td style="text-align:center">→</td><td style="text-align:right;color:#10b981">+5,555g</td></tr>
-          <tr style="font-weight:bold;border-top:1px solid #444"><td>D30 잔액</td><td style="text-align:right">+370,790g</td><td style="text-align:center">→</td><td style="text-align:right;color:#10b981">+168,650g</td></tr>
+          <tr style="font-weight:bold;border-top:1px solid var(--table-sep)"><td>D30 잔액</td><td style="text-align:right">+370,790g</td><td style="text-align:center">→</td><td style="text-align:right;color:#10b981">+168,650g</td></tr>
         </tbody>
       </table>
       <div style="margin-top:0.75rem;padding:0.5rem;background:rgba(245,158,11,0.08);border-radius:6px;text-align:center;font-size:0.85rem">
@@ -349,7 +362,7 @@
       <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem">
         <div>
           <h4 style="margin:0">평균 유저</h4>
-          <span style="font-size:0.8rem;color:#999">Lv75 · 15판/일 · 65% WR · 광고 70%</span>
+          <span style="font-size:0.8rem;color:var(--muted)">Lv75 · 15판/일 · 65% WR · 광고 70%</span>
         </div>
       </div>
       <table style="width:100%;font-size:0.85rem">
@@ -358,7 +371,7 @@
           <tr><td>일일 Source</td><td style="text-align:right">27,945g</td><td style="text-align:center">→</td><td style="text-align:right">22,240g</td></tr>
           <tr><td>일일 Sink</td><td style="text-align:right">12,000g</td><td style="text-align:center">→</td><td style="text-align:right">16,900g</td></tr>
           <tr style="font-weight:bold"><td>일일 순수익</td><td style="text-align:right">+15,945g</td><td style="text-align:center">→</td><td style="text-align:right;color:#10b981">+5,340g</td></tr>
-          <tr style="font-weight:bold;border-top:1px solid #444"><td>D30 잔액</td><td style="text-align:right">+480,350g</td><td style="text-align:center">→</td><td style="text-align:right;color:#10b981">+162,200g</td></tr>
+          <tr style="font-weight:bold;border-top:1px solid var(--table-sep)"><td>D30 잔액</td><td style="text-align:right">+480,350g</td><td style="text-align:center">→</td><td style="text-align:right;color:#10b981">+162,200g</td></tr>
         </tbody>
       </table>
       <div style="margin-top:0.75rem;padding:0.5rem;background:rgba(59,130,246,0.08);border-radius:6px;text-align:center;font-size:0.85rem">
@@ -371,7 +384,7 @@
       <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem">
         <div>
           <h4 style="margin:0">헌신 유저</h4>
-          <span style="font-size:0.8rem;color:#999">Lv150 · 25판/일 · 60% WR · 광고 90%</span>
+          <span style="font-size:0.8rem;color:var(--muted)">Lv150 · 25판/일 · 60% WR · 광고 90%</span>
         </div>
       </div>
       <table style="width:100%;font-size:0.85rem">
@@ -380,7 +393,7 @@
           <tr><td>일일 Source</td><td style="text-align:right">40,591g</td><td style="text-align:center">→</td><td style="text-align:right">31,280g</td></tr>
           <tr><td>일일 Sink</td><td style="text-align:right">24,750g</td><td style="text-align:center">→</td><td style="text-align:right">31,614g</td></tr>
           <tr style="font-weight:bold"><td>일일 순수익</td><td style="text-align:right;color:#10b981">+15,841g</td><td style="text-align:center">→</td><td style="text-align:right;color:#ef4444">−334g</td></tr>
-          <tr style="font-weight:bold;border-top:1px solid #444"><td>D30 잔액</td><td style="text-align:right">+477,230g</td><td style="text-align:center">→</td><td style="text-align:right;color:#ef4444">−8,020g</td></tr>
+          <tr style="font-weight:bold;border-top:1px solid var(--table-sep)"><td>D30 잔액</td><td style="text-align:right">+477,230g</td><td style="text-align:center">→</td><td style="text-align:right;color:#ef4444">−8,020g</td></tr>
         </tbody>
       </table>
       <div style="margin-top:0.75rem;padding:0.5rem;background:rgba(239,68,68,0.08);border-radius:6px;text-align:center;font-size:0.85rem">
@@ -393,7 +406,7 @@
       <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem">
         <div>
           <h4 style="margin:0">하드코어</h4>
-          <span style="font-size:0.8rem;color:#999">Lv300 · 40판/일 · 55% WR · 광고 100%</span>
+          <span style="font-size:0.8rem;color:var(--muted)">Lv300 · 40판/일 · 55% WR · 광고 100%</span>
         </div>
       </div>
       <table style="width:100%;font-size:0.85rem">
@@ -402,7 +415,7 @@
           <tr><td>일일 Source</td><td style="text-align:right">67,353g</td><td style="text-align:center">→</td><td style="text-align:right">49,630g</td></tr>
           <tr><td>일일 Sink</td><td style="text-align:right">50,000g</td><td style="text-align:center">→</td><td style="text-align:right">62,420g</td></tr>
           <tr style="font-weight:bold"><td>일일 순수익</td><td style="text-align:right;color:#10b981">+17,353g</td><td style="text-align:center">→</td><td style="text-align:right;color:#ef4444">−12,790g</td></tr>
-          <tr style="font-weight:bold;border-top:1px solid #444"><td>D30 잔액</td><td style="text-align:right">+522,590g</td><td style="text-align:center">→</td><td style="text-align:right;color:#ef4444">−381,700g</td></tr>
+          <tr style="font-weight:bold;border-top:1px solid var(--table-sep)"><td>D30 잔액</td><td style="text-align:right">+522,590g</td><td style="text-align:center">→</td><td style="text-align:right;color:#ef4444">−381,700g</td></tr>
         </tbody>
       </table>
       <div style="margin-top:0.75rem;padding:0.5rem;background:rgba(124,58,237,0.08);border-radius:6px;text-align:center;font-size:0.85rem">
@@ -506,7 +519,7 @@
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem">
     <div class="card" style="border-top:3px solid #ef4444">
       <h3 style="color:#ef4444">긴급 완화 트리거</h3>
-      <p style="font-size:0.85rem;color:#999;margin-bottom:0.75rem">하나라도 해당 시 즉시 파라미터 완화</p>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.75rem">하나라도 해당 시 즉시 파라미터 완화</p>
       <ul style="font-size:0.88rem;color:var(--text)">
         <li>D3 리텐션 <strong>−5%p 이상</strong> 이탈</li>
         <li>세션당 플레이 판수 <strong>−20% 이상</strong> 감소</li>
@@ -520,7 +533,7 @@
 
     <div class="card" style="border-top:3px solid #f59e0b">
       <h3 style="color:#f59e0b">D7 모니터링 지표</h3>
-      <p style="font-size:0.85rem;color:#999;margin-bottom:0.75rem">7일 후 리뷰 필수</p>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.75rem">7일 후 리뷰 필수</p>
       <ul style="font-size:0.88rem;color:var(--text)">
         <li>Average 유저 D7 잔액 목표: <strong>40,000~55,000g</strong></li>
         <li>헌신 유저 IAP 전환율: <strong>+2%p 이상</strong> 기대</li>
@@ -531,7 +544,7 @@
 
     <div class="card" style="border-top:3px solid #10b981">
       <h3 style="color:#10b981">D30 목표 지표</h3>
-      <p style="font-size:0.85rem;color:#999;margin-bottom:0.75rem">V4 설계 성공 기준</p>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.75rem">V4 설계 성공 기준</p>
       <ul style="font-size:0.88rem;color:var(--text)">
         <li>Average 유저 D30 잔액: <strong>140,000~180,000g</strong></li>
         <li>ARPDAU: <strong>−10% 이내</strong> (광고 수익 보호)</li>
@@ -542,7 +555,7 @@
 
     <div class="card" style="border-top:3px solid #3b82f6">
       <h3 style="color:#3b82f6">단계별 완화 계획</h3>
-      <p style="font-size:0.85rem;color:#999;margin-bottom:0.75rem">긴급 트리거 발생 시 순서대로 적용</p>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.75rem">긴급 트리거 발생 시 순서대로 적용</p>
       <ol style="font-size:0.88rem;color:var(--text);padding-left:1.25rem">
         <li>idle_gold_charge_amount: 2,000 → 2,500</li>
         <li>inbox/popup_free_gold_amount: 600 → 700</li>
@@ -559,7 +572,7 @@
   <h2>9. 최종 파라미터 변경표 (CSV)</h2>
   <p class="section-desc">기획 문서 및 개발 티켓 첨부용 CSV. 복사하여 사용.</p>
   <div class="card">
-    <pre style="font-size:0.82rem;color:#a0c4ff;overflow-x:auto;line-height:1.8;background:rgba(0,0,0,0.3);padding:1rem;border-radius:6px">sheet,parameter,key,description,current_value,launch_value,change_rate,type
+    <pre style="font-size:0.82rem;color:var(--pre-color);overflow-x:auto;line-height:1.8;background:var(--pre-bg);padding:1rem;border-radius:6px">sheet,parameter,key,description,current_value,launch_value,change_rate,type
 const,idle_gold_charge_amount,10003,방치골드 기본값,3000,2000,-33%,Source
 const,idle_gold_amount_increase,10005,방치골드 증가율,400,300,-25%,Source
 const,idle_gold_max_cap,10006,방치골드 상한,10000,6000,-40%,Source
@@ -585,7 +598,7 @@ const,is_deck_collection_open,10062,덱 컬렉션,0,1,신규 활성,Sink</pre>
   </div>
 </section>
 
-<div style="text-align:center;padding:2rem 0;color:#444;font-size:0.8rem">
+<div style="text-align:center;padding:2rem 0;color:var(--muted);font-size:0.8rem">
   PST 골드 인플레이션 해소 — V4 론칭안 | 생성: 2026-03-25 | 라이브 검증 완료
 </div>
 
@@ -603,8 +616,8 @@ function copyCSV() {
 }
 
 // ── Chart defaults ──
-Chart.defaults.color = '#888';
-Chart.defaults.borderColor = '#2a2d3a';
+Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim() || '#888';
+Chart.defaults.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#2a2d3a';
 Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
 const DAYS = Array.from({length:30}, (_, i) => `D${i+1}`);
@@ -657,9 +670,9 @@ new Chart(document.getElementById('chart_ts_current'), {
   options: {
     plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
     scales: {
-      x: { grid: { color: '#1e2130' }, ticks: { maxTicksLimit: 10 } },
+      x: { grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--grid-line').trim() }, ticks: { maxTicksLimit: 10 } },
       y: {
-        grid: { color: '#1e2130' },
+        grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--grid-line').trim() },
         ticks: { callback: v => (v/1000).toFixed(0) + 'K' }
       }
     }
@@ -686,9 +699,9 @@ new Chart(document.getElementById('chart_ts_launch'), {
   options: {
     plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
     scales: {
-      x: { grid: { color: '#1e2130' }, ticks: { maxTicksLimit: 10 } },
+      x: { grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--grid-line').trim() }, ticks: { maxTicksLimit: 10 } },
       y: {
-        grid: { color: '#1e2130' },
+        grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--grid-line').trim() },
         ticks: { callback: v => (v/1000).toFixed(0) + 'K' }
       }
     }
@@ -710,8 +723,8 @@ new Chart(document.getElementById('chart_ts_avg'), {
   options: {
     plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } },
     scales: {
-      x: { grid: { color: '#1e2130' }, ticks: { maxTicksLimit: 10 } },
-      y: { grid: { color: '#1e2130' }, ticks: { callback: v => (v/1000).toFixed(0) + 'K' } }
+      x: { grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--grid-line').trim() }, ticks: { maxTicksLimit: 10 } },
+      y: { grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--grid-line').trim() }, ticks: { callback: v => (v/1000).toFixed(0) + 'K' } }
     }
   }
 });
@@ -725,7 +738,7 @@ new Chart(document.getElementById('chart_src_current'), {
       data: [12600, 3200, 5600, 1000, 2160, 1571, 1814],
       backgroundColor: ['#f59e0b','#3b82f6','#8b5cf6','#10b981','#ef4444','#ec4899','#64748b'],
       borderWidth: 1,
-      borderColor: '#1a1d27'
+      borderColor: getComputedStyle(document.documentElement).getPropertyValue('--chart-border').trim()
     }]
   },
   options: {
@@ -746,7 +759,7 @@ new Chart(document.getElementById('chart_src_launch'), {
       data: [8700, 2400, 4200, 2100, 1740, 1286, 1814],
       backgroundColor: ['#f59e0b','#3b82f6','#8b5cf6','#10b981','#ef4444','#ec4899','#64748b'],
       borderWidth: 1,
-      borderColor: '#1a1d27'
+      borderColor: getComputedStyle(document.documentElement).getPropertyValue('--chart-border').trim()
     }]
   },
   options: {
@@ -757,6 +770,26 @@ new Chart(document.getElementById('chart_src_launch'), {
     cutout: '55%'
   }
 });
+</script>
+<script>
+(function(){
+  const KEY = 'pst-report-theme';
+  const btn = document.getElementById('themeToggle');
+  const saved = localStorage.getItem(KEY);
+  if (saved === 'light') { document.documentElement.setAttribute('data-theme','light'); btn.textContent = '☀️'; }
+  btn.addEventListener('click', function(){
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    if (isLight) {
+      document.documentElement.removeAttribute('data-theme');
+      btn.textContent = '🌙';
+      localStorage.setItem(KEY, 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+      btn.textContent = '☀️';
+      localStorage.setItem(KEY, 'light');
+    }
+  });
+})();
 </script>
 </body>
 </html>
