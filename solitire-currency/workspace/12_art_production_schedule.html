@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="pst-theme-init">(function(){var t=localStorage.getItem("pst-report-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.getElementById("themeToggle");if(g)g.textContent=t==="light"?"\u2600\ufe0f":"\ud83c\udf19";window.addEventListener("pageshow",function(e){if(e.persisted){var s=localStorage.getItem("pst-report-theme"),il=s==="light";if(il)document.documentElement.setAttribute("data-theme","light");else document.documentElement.removeAttribute("data-theme");var b2=document.getElementById("themeToggle");if(b2)b2.textContent=il?"\u2600\ufe0f":"\ud83c\udf19";if(typeof renderAll==="function")renderAll();}});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아트 제작 일정 & 꾸미기 소진 예측 v3.0</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a; --border: #2e3250;
+  --text: #e2e8f0; --muted: #8892b0; --accent: #64ffda; --blue: #57b6ff;
+  --yellow: #ffd166; --red: #ff6b6b; --green: #69db7c; --purple: #c77dff; --orange: #ff9f43;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --border: #dfe1e6;
+  --text: #1a1d27; --muted: #5e6278; --accent: #059669; --blue: #2563eb;
+  --yellow: #d97706; --red: #dc2626; --green: #16a34a; --purple: #9333ea; --orange: #ea580c;
+}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:100;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.theme-toggle:hover{border-color:var(--muted);transform:scale(1.1)}
+.back-btn{position:fixed;top:16px;right:68px;z-index:200;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.2);text-decoration:none}
+.back-btn:hover{border-color:var(--muted);color:var(--text);transform:translateY(-1px);text-decoration:none}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.6}
+.container{max-width:1200px;margin:0 auto;padding:40px 24px 80px}
+.report-header{text-align:center;padding:48px 0 32px;border-bottom:1px solid var(--border);margin-bottom:40px}
+.report-header .badge{display:inline-block;background:linear-gradient(135deg,var(--surface),var(--surface2));border:1px solid var(--accent);color:var(--accent);font-size:11px;letter-spacing:2px;padding:4px 14px;border-radius:20px;text-transform:uppercase;margin-bottom:16px}
+.report-header h1{font-size:2em;margin:12px 0 8px}
+.report-header .subtitle{color:var(--muted);font-size:1.05em}
+.report-header .meta-row{display:flex;justify-content:center;gap:16px;margin-top:16px;flex-wrap:wrap}
+.report-header .meta-tag{background:var(--surface);border:1px solid var(--border);padding:4px 14px;border-radius:14px;font-size:.82em;color:var(--muted)}
+.section{margin:48px 0}
+.section-title{font-size:1.4em;font-weight:700;margin-bottom:20px;padding-bottom:8px;border-bottom:2px solid var(--accent);display:flex;align-items:center;gap:10px}
+.section-num{color:var(--accent);font-size:.8em;font-weight:800}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:20px 0}
+.kpi-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.kpi-box .value{font-size:1.7em;font-weight:800}
+.kpi-box .label{font-size:.78em;color:var(--muted);margin-top:4px}
+.callout{background:var(--surface);border-left:4px solid var(--accent);padding:14px 18px;margin:16px 0;border-radius:0 8px 8px 0;font-size:.92em}
+.callout.warn{border-left-color:var(--yellow)}.callout.danger{border-left-color:var(--red)}.callout.success{border-left-color:var(--green)}
+.callout strong{color:var(--accent)}.callout.warn strong{color:var(--yellow)}.callout.danger strong{color:var(--red)}.callout.success strong{color:var(--green)}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.85em}
+th,td{padding:8px 10px;border:1px solid var(--border);text-align:center}
+th{background:var(--surface2);color:var(--muted);font-weight:600;position:sticky;top:0;z-index:2}
+td{background:var(--surface)}
+tr:hover td{background:var(--surface2)}
+.total-row td{background:var(--surface2);font-weight:700}
+.chart-container{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin:16px 0;position:relative}
+canvas{width:100%!important}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0;font-size:.85em}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:12px;height:12px;border-radius:3px}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin:20px 0}
+.toc h3{margin-bottom:10px;color:var(--accent);font-size:1.1em}
+.toc ol{padding-left:20px}.toc li{margin:6px 0}.toc a{color:var(--accent);text-decoration:none}.toc a:hover{text-decoration:underline}
+
+/* Drag & Drop */
+.drag-handle{cursor:grab;color:var(--muted);font-size:1.1em;user-select:none;padding:0 4px}
+.drag-handle:active{cursor:grabbing}
+tr.dragging{opacity:.4;background:var(--surface2)!important}
+tr.drag-over td{border-top:3px solid var(--accent)!important}
+tr.locked .drag-handle{color:var(--border);cursor:not-allowed}
+.order-controls{display:flex;gap:10px;align-items:center;margin:12px 0;flex-wrap:wrap}
+.order-controls button{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:6px;font-size:.82em;cursor:pointer;transition:all .2s}
+.order-controls button:hover{border-color:var(--accent);color:var(--accent)}
+.order-badge{font-size:.75em;color:var(--muted);padding:4px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+
+/* Version bookmarks */
+.bookmark-area{margin:10px 0;display:flex;flex-direction:column;gap:8px}
+.bookmark-list{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.bm-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:3px 6px 3px 12px;font-size:.78em;cursor:pointer;transition:all .2s;max-width:220px}
+.bm-chip:hover{border-color:var(--accent)}
+.bm-chip.active{border-color:var(--accent);color:var(--accent);background:rgba(100,255,218,.06)}
+.bm-chip .bm-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.bm-chip .bm-btn{width:22px;height:22px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.bm-chip .bm-btn:hover{background:var(--surface2);color:var(--text)}
+.bm-chip .bm-btn.del:hover{color:var(--red)}
+.bm-chip .bm-btn.save{color:var(--yellow)}.bm-chip .bm-btn.save:hover{color:var(--accent);background:rgba(100,255,218,.1)}
+.bm-chip.modified{border-color:var(--yellow);border-style:dashed}
+.bm-add{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px dashed var(--border);border-radius:16px;padding:4px 12px;font-size:.78em;cursor:pointer;color:var(--muted);transition:all .2s}
+.bm-add:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Confirm dialog */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;min-width:280px;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.modal-box h3{margin-bottom:12px;font-size:1.05em}
+.modal-box p{color:var(--muted);font-size:.9em;margin-bottom:16px}
+.modal-box .modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.modal-box .modal-actions button{padding:6px 16px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:.85em;transition:all .15s}
+.modal-box .modal-actions button:hover{border-color:var(--muted)}
+.modal-box .modal-actions button.danger{background:var(--red);border-color:var(--red);color:#fff}
+.modal-box .modal-actions button.danger:hover{opacity:.85}
+
+/* Rename input */
+.bm-rename-input{background:var(--bg);border:1px solid var(--accent);color:var(--text);border-radius:4px;padding:2px 6px;font-size:.78em;width:100px;outline:none}
+
+/* City name edit */
+.city-name-edit{background:var(--bg);border:1px solid var(--accent);color:var(--text);border-radius:4px;padding:2px 6px;font-size:.85em;width:130px;outline:none;font-weight:700}
+td .edit-btn{opacity:0;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:10px;margin-left:4px;transition:opacity .15s}
+tr:hover td .edit-btn{opacity:1}
+td .edit-btn:hover{color:var(--accent)}
+
+/* City management controls */
+@keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastOut{from{opacity:1}to{opacity:0}}
+#toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:24px;font-size:.85em;pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.art-done-btn{border:none;background:transparent;cursor:pointer;font-size:1.1em;line-height:1;padding:0;transition:transform .15s}
+.art-done-btn:hover{transform:scale(1.2)}
+.art-done-ts{font-size:.7em;color:var(--muted);margin-top:2px;white-space:nowrap}
+.art-done-est{color:var(--text)}
+.city-mgmt{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}
+.city-mgmt button{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 12px;border-radius:6px;font-size:.8em;cursor:pointer;transition:all .2s}
+.city-mgmt button:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Art scenario toggle buttons */
+.scen-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:16px;font-size:.8em;cursor:pointer;transition:all .2s;border-color:var(--sc,var(--border))}
+.scen-btn:hover{opacity:.85;color:var(--text)}
+.scen-active{background:color-mix(in srgb,var(--sc,var(--accent)) 15%,var(--surface));color:var(--text);border-color:var(--sc,var(--accent));font-weight:600}
+.city-mgmt button.primary{border-color:var(--accent);color:var(--accent)}
+.city-mgmt button.export{border-color:var(--blue);color:var(--blue)}
+.city-mgmt button.export:hover{background:var(--blue);color:#fff}
+
+/* Deco cards */
+.deco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.deco-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .2s}
+.deco-card:hover{border-color:var(--accent)}
+.deco-card .city-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.deco-card .city-name{font-size:1.1em;font-weight:700}
+.deco-badge{font-size:.7em;padding:2px 8px;border-radius:4px;font-weight:700}
+.deco-bar{display:flex;gap:3px;margin:4px 0}
+.deco-stage{height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
+.deco-stage.s1{background:#2d6a4f}.deco-stage.s2{background:#e76f51}.deco-stage.s3{background:#9b2226}
+.deco-meta{display:flex;gap:12px;font-size:.8em;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.deco-meta span strong{color:var(--text)}
+
+.milestone-badge{display:inline-block;font-size:.72em;padding:2px 8px;border-radius:10px;font-weight:700}
+.milestone-review{background:var(--blue);color:#fff}
+.milestone-launch{background:var(--red);color:#fff}
+
+.launch-date-ctrl{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:stretch}
+.ctrl-group{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ctrl-group-label{font-size:.72em;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.ctrl-group .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.launch-date-ctrl label{font-size:.88em;color:var(--muted);display:flex;align-items:center;gap:6px}
+.launch-date-ctrl input[type=date],.launch-date-ctrl input[type=number]{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;font-size:.88em;cursor:pointer;outline:none;transition:border-color .2s}
+.launch-date-ctrl input[type=date]:hover,.launch-date-ctrl input[type=date]:focus,.launch-date-ctrl input[type=number]:hover,.launch-date-ctrl input[type=number]:focus{border-color:var(--accent)}
+.ctrl-hint{font-size:.75em;color:var(--muted);font-style:italic}
+.deadline-cell{font-size:.78em;line-height:1.7}
+@media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.deco-grid{grid-template-columns:1fr}.report-header h1{font-size:1.5em}}
+</style>
+</head>
+<body>
+<button id="themeToggle" class="theme-toggle" title="라이트/다크 모드 전환">🌙</button>
+<a id="backBtn" class="back-btn" href="reports/index.html" title="보고서 인덱스로 이동">← 목록</a>
+<script>
+document.getElementById('themeToggle').addEventListener('click',function(){
+  var l=document.documentElement.getAttribute('data-theme')==='light';
+  if(l){document.documentElement.removeAttribute('data-theme');this.textContent='🌙';localStorage.setItem('pst-report-theme','dark');}
+  else{document.documentElement.setAttribute('data-theme','light');this.textContent='☀️';localStorage.setItem('pst-report-theme','light');}
+  if(typeof renderAll==='function')renderAll();
+});
+</script>
+<div class="container">
+
+<!-- Header -->
+<div class="report-header">
+  <div class="badge">Art Production v3.0</div>
+  <h1>아트 제작 일정 & 꾸미기 소진 예측</h1>
+  <div class="subtitle">Reference-Calibrated Hammer Curve v3.0 · 4일/도시 · 런칭 10개 도시 + 업데이트 · 드래그로 순서 변경</div>
+  <div class="meta-row">
+    <span class="meta-tag">Hammer Curve v3.0 (x1.07 progressive)</span>
+    <span class="meta-tag">30 Cities · 3,838 Hammers</span>
+    <span class="meta-tag">2026-03-26</span>
+    <span class="meta-tag">Agent: 01_PM</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h3>목차</h3>
+  <ol>
+    <li><a href="#s1">핵심 일정 & Overview</a></li>
+    <li><a href="#s2">아트 제작 스케줄 (드래그로 순서 변경)</a></li>
+    <li><a href="#s3">유저 유형별 도시 도달 차트</a></li>
+    <li><a href="#s5">리스크 & 권고사항</a></li>
+  </ol>
+</div>
+
+<!-- Section 1: Overview (dynamic) -->
+<div class="section" id="s1">
+<div class="section-title"><span class="section-num">01</span> 핵심 일정 & Overview</div>
+<div class="launch-date-ctrl">
+  <!-- 그룹 A: 출시 일정 -->
+  <div class="ctrl-group">
+    <div class="ctrl-group-label">📅 출시 일정</div>
+    <div class="row">
+      <label>예상 출시일 <input type="date" id="launchDateInput" value="2026-05-06" onchange="setLaunchDate(this.value)"></label>
+      <span class="order-badge" id="launchDateBadge">5/6 런칭</span>
+    </div>
+  </div>
+  <!-- 그룹 B: 아트 제작 조건 -->
+  <div class="ctrl-group">
+    <div class="ctrl-group-label">🎨 아트 제작 조건</div>
+    <div class="row">
+      <label>도시당 제작 기간 <input type="number" id="artDaysInput" value="4" min="1" max="30" step="1" onchange="setArtDays(this.value)" style="width:48px;text-align:center"></label>
+      <span class="order-badge">일</span>
+      <label>런칭 빌드 도시 수 <input type="number" id="launchCitiesInput" value="8" min="5" max="30" step="1" onchange="setLaunchCities(this.value)" style="width:48px;text-align:center"></label>
+      <span class="order-badge">개</span>
+    </div>
+    <div class="ctrl-hint">시나리오 ①은 이 제작 기간과 동일한 간격으로 배포</div>
+  </div>
+  <!-- 그룹 C: 배포 스케줄 (시나리오 ②③) -->
+  <div class="ctrl-group">
+    <div class="ctrl-group-label">📦 배포 스케줄 (시나리오 ②③)</div>
+    <div class="row">
+      <label>D+40 이내 <input type="number" id="updateIntervalEarlyInput" value="5" min="1" max="30" step="1" onchange="setUpdateIntervalEarly(this.value)" style="width:48px;text-align:center"></label>
+      <span class="order-badge">일마다 오픈</span>
+      <label>D+40 이후 <input type="number" id="updateIntervalLateInput" value="8" min="1" max="60" step="1" onchange="setUpdateIntervalLate(this.value)" style="width:48px;text-align:center"></label>
+      <span class="order-badge">일마다 오픈</span>
+    </div>
+    <div class="ctrl-hint">두 값이 같으면 → 단일 배포 주기</div>
+  </div>
+</div>
+<div id="kpi-area"></div>
+</div>
+
+<!-- Section 2: Chart -->
+<div class="section" id="s3">
+<div class="section-title"><span class="section-num">02</span> 유저 유형별 도시 도달 차트</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#4A90D9"></div> Casual Light (8판/일, 65%)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#50B848"></div> Casual Regular (12판/일, 70%)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#F5A623"></div> Average (15판/일, 72%)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#E85D75"></div> Dedicated (20판/일, 75%)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#9B59B6"></div> Hardcore (30판/일, 80%)</div>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px">
+  <span style="font-size:.8em;color:var(--muted);align-self:center">아트 시나리오:</span>
+  <button id="scen-btn-0" onclick="toggleArtScenario(0)" class="scen-btn scen-active" style="--sc:#74b9ff">① 제작 즉시 오픈</button>
+  <button id="scen-btn-1" onclick="toggleArtScenario(1)" class="scen-btn scen-active" style="--sc:#a29bfe">② 정기 배포</button>
+  <button id="scen-btn-2" onclick="toggleArtScenario(2)" class="scen-btn scen-active" style="--sc:#fd79a8">③ 런칭 축소 리스크</button>
+</div>
+<div class="chart-container" style="height:450px"><canvas id="arrivalChart"></canvas></div>
+<div class="callout">
+  <strong>읽는 법</strong>: X축 = <span id="chart-launch-label"></span> 이후 일수, Y축 = 도달 도시 번호.<br>
+  <strong style="color:#ff6b6b">아트 제작선</strong>이 모든 유저 타입보다 <strong>위</strong>에 있으면 안전 (아트가 유저보다 앞서 있음).<br>
+  <span style="color:var(--muted);font-size:.9em">① 제작 완료 즉시 오픈 — 버퍼 없음, 최선 시나리오 (ART_DAYS 간격 flat) &nbsp;|&nbsp; ② 정기 배포 — 런칭 빌드 전량 + EARLY→LATE 2단계 주기 &nbsp;|&nbsp; ③ 런칭 축소 — 런칭 빌드 -2개 리스크 + 정기 배포 주기. ①→②는 배포 주기 변화, ②→③는 런칭 도시 수 변화</span>
+</div>
+</div>
+
+<!-- Section 3: Schedule Table with Drag & Drop -->
+<div class="section" id="s2">
+<div class="section-title"><span class="section-num">03</span> 아트 제작 스케줄 <span id="schedule-launch-badge" class="order-badge" style="font-size:.7em;margin-left:8px"></span></div>
+<p style="margin-bottom:8px;color:var(--muted)">
+  City 1~4는 확정(Published). <strong>City 5~30은 드래그하여 순서를 변경</strong>할 수 있습니다.<br>
+  순서 변경 시 제작 일정·버퍼·차트가 실시간 재계산됩니다. <strong>"+ 현재 순서 저장"</strong>으로 버전을 저장하세요.
+</p>
+<div class="order-controls">
+  <button onclick="resetOrder()">순서 초기화</button>
+  <span class="order-badge" id="orderStatus">기본 순서</span>
+</div>
+<div class="bookmark-area">
+  <div class="bookmark-list" id="bookmarkList"></div>
+</div>
+<div id="modalRoot"></div>
+<div class="city-mgmt" style="justify-content:space-between">
+  <button class="primary" onclick="addCity()">+ 도시 추가</button>
+  <button class="export" onclick="exportCSV()">↓ CSV 내보내기</button>
+</div>
+<div style="overflow-x:auto" id="schedule-table-wrap"></div>
+</div>
+
+<!-- Section 4: Deco Cards (dynamic) -->
+<div class="section" id="s4">
+</div>
+
+<!-- Section 5: Risk -->
+<div class="section" id="s5">
+<div class="section-title"><span class="section-num">05</span> 리스크 & 권고사항</div>
+<div id="risk-area"></div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ========== DATA ==========
+const CITIES_BASE = [
+  // Published (1-4) — 확정, 아트 완료
+  {id:'newyork',name:'New York',locked:true,artDone:new Date(2026,2,26)},
+  {id:'venice',name:'Venice',locked:true,artDone:new Date(2026,2,26)},
+  {id:'sapporo',name:'Sapporo',locked:true,artDone:new Date(2026,2,27)},
+  {id:'cairo',name:'Cairo',locked:true,artDone:new Date(2026,2,30)},
+  // Sheet city_order 5-30 (순서 미정, 드래그로 변경 가능)
+  {id:'miami',name:'Miami'},
+  {id:'prague',name:'Prague'},
+  {id:'dubai',name:'Dubai'},
+  {id:'tokyo',name:'Tokyo'},
+  {id:'barcelona',name:'Barcelona'},
+  {id:'chicago',name:'Chicago'},
+  {id:'bangkok',name:'Bangkok'},
+  {id:'london',name:'London'},
+  {id:'rio',name:'Rio de Janeiro'},
+  {id:'sanfrancisco',name:'San Francisco'},
+  {id:'athens',name:'Athens'},
+  {id:'lasvegas',name:'Las Vegas'},
+  {id:'sydney',name:'Sydney'},
+  {id:'rome',name:'Rome'},
+  {id:'losangeles',name:'Los Angeles'},
+  {id:'istanbul',name:'Istanbul'},
+  {id:'paris',name:'Paris'},
+  // 신규 9개 도시 (22-30)
+  {id:'marrakech',name:'Marrakech'},
+  {id:'kyoto',name:'Kyoto'},
+  {id:'havana',name:'Havana'},
+  {id:'reykjavik',name:'Reykjavik'},
+  {id:'shanghai',name:'Shanghai'},
+  {id:'capetown',name:'Cape Town'},
+  {id:'petra',name:'Petra'},
+  {id:'buenosaires',name:'Buenos Aires'},
+  {id:'mexicocity',name:'Mexico City'}
+];
+
+// 해머 누진 곡선: 슬롯(순서) 기반. base=40, x1.07. 도시 순서 변경해도 곡선은 고정.
+const HAMMER_CURVE = (function() {
+  const arr = [40]; // slot 1
+  for (let i = 1; i < 30; i++) arr.push(Math.round(arr[i-1] * 1.07));
+  return arr;
+})();
+
+// win_rate: 난이도별 클리어 보상 (Normal×1, Hard×2, SH×3) + DDA 분포 (85/10/5%) 기준
+// hammers_per_game = win_rate × 1.20 (이론 최대값: 100% 승률 시 120/100판)
+const PLAYERS = [
+  {name:'Casual Light',  abbr:'CL', color:'#4A90D9', win_rate:0.80, gpd:5},
+  {name:'Casual Regular',abbr:'CR', color:'#50B848', win_rate:0.84, gpd:8},
+  {name:'Average',       abbr:'Avg',color:'#F5A623', win_rate:0.88, gpd:9.5},
+  {name:'Dedicated',     abbr:'Ded',color:'#E85D75', win_rate:0.91, gpd:13},
+  {name:'Hardcore',      abbr:'HC', color:'#9B59B6', win_rate:0.94, gpd:20}
+];
+const WEIGHTED_HPW = 1.20; // hammers per win (85×1 + 10×2 + 5×3) / 100
+
+let TOTAL_CITIES = CITIES_BASE.length;
+let ART_DAYS = 4;
+let PRE_START_DAYS = 7; // 첫 Pre-Launch 도시 제작 기간 (초기에 더 오래 걸림)
+let UPDATE_INTERVAL_EARLY = 5;  // 런칭 후 D+40 이내 업데이트 주기 (일)
+let UPDATE_INTERVAL_LATE  = 8;  // 런칭 후 D+40 이후 업데이트 주기 (일)
+const UPDATE_SPLIT_DAY = 40;    // 주기 전환 기준일 (D+40)
+const PUBLISHED = 4;
+let LAUNCH_CITIES = 8;
+const TODAY = new Date(2026, 2, 26);
+let REVIEW = new Date(2026, 3, 22); // LAUNCH - 14일
+let LAUNCH = new Date(2026, 4, 6);
+const LAUNCH_OFFSET = Math.round((LAUNCH - TODAY) / 86400000);
+const MAY8 = new Date(2026, 4, 8); // 제작 마감 기준일 (5/8 고정)
+
+function setArtDays(val) {
+  const n = Math.max(1, Math.min(30, parseInt(val) || 4));
+  ART_DAYS = n;
+  const input = document.getElementById('artDaysInput');
+  if (input) input.value = n;
+  renderAll();
+}
+function setPreStartDays(val) {
+  const n = Math.max(1, Math.min(30, parseInt(val) || 7));
+  PRE_START_DAYS = n;
+  const el = document.getElementById('preStartDaysInput');
+  if (el) el.value = n;
+  renderAll();
+}
+function setLaunchCities(val) {
+  const n = Math.max(PUBLISHED + 1, Math.min(TOTAL_CITIES, parseInt(val) || 10));
+  LAUNCH_CITIES = n;
+  const el = document.getElementById('launchCitiesInput');
+  if (el) el.value = n;
+  renderAll();
+}
+function setUpdateIntervalEarly(val) {
+  const n = Math.max(1, Math.min(30, parseInt(val) || 7));
+  UPDATE_INTERVAL_EARLY = n;
+  const el = document.getElementById('updateIntervalEarlyInput');
+  if (el) el.value = n;
+  renderAll();
+}
+function setUpdateIntervalLate(val) {
+  const n = Math.max(1, Math.min(60, parseInt(val) || 14));
+  UPDATE_INTERVAL_LATE = n;
+  const el = document.getElementById('updateIntervalLateInput');
+  if (el) el.value = n;
+  renderAll();
+}
+
+function setLaunchDate(val) {
+  const p = val.split('-');
+  if (p.length !== 3) return;
+  LAUNCH = new Date(+p[0], +p[1]-1, +p[2]);
+  REVIEW = addDate(LAUNCH, -14);
+  const badge = document.getElementById('launchDateBadge');
+  if (badge) badge.textContent = fmtDate(LAUNCH) + ' 런칭 기준';
+  renderAll();
+}
+const ACTIVE_BM_KEY = 'pst-city-active-bm';
+const BM_STORAGE = 'pst-city-bookmarks-v3';
+
+const DEFAULT_ORDER = CITIES_BASE.map(c => c.id);
+
+function getOrder() {
+  // Load from active bookmark if exists
+  try {
+    const activeId = localStorage.getItem(ACTIVE_BM_KEY);
+    if (activeId) {
+      const bms = JSON.parse(localStorage.getItem(BM_STORAGE)) || [];
+      const bm = bms.find(b => b.id === activeId);
+      if (bm && bm.order.length === TOTAL_CITIES) {
+        const locked = DEFAULT_ORDER.slice(0, PUBLISHED);
+        let valid = true;
+        for (let i = 0; i < PUBLISHED; i++) {
+          if (bm.order[i] !== locked[i]) { valid = false; break; }
+        }
+        if (valid) { activeBookmarkId = activeId; return [...bm.order]; }
+      }
+    }
+  } catch {}
+  return [...DEFAULT_ORDER];
+}
+
+function setActiveBookmark(id) {
+  if (id) localStorage.setItem(ACTIVE_BM_KEY, id);
+  else localStorage.removeItem(ACTIVE_BM_KEY);
+}
+
+function getCities(order) {
+  const map = {};
+  CITIES_BASE.forEach(c => map[c.id] = {...c});
+  // 해머는 슬롯(순서) 기반 배정 — 도시가 아닌 위치에 따라 결정
+  return order.map((id, i) => ({...map[id], h: HAMMER_CURVE[i]}));
+}
+
+function addDate(base, days) {
+  const d = new Date(base);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+function addBusinessDays(base, n) {
+  const d = new Date(base);
+  let added = 0;
+  while (added < n) {
+    d.setDate(d.getDate() + 1);
+    const dow = d.getDay();
+    if (dow !== 0 && dow !== 6) added++;
+  }
+  return d;
+}
+function fmtDate(d) { return (d.getMonth()+1) + '/' + d.getDate(); }
+
+function compute(cities) {
+  const lastLocked = cities.filter(c => c.locked).reduce((a, b) => (b.artDone > a.artDone ? b : a));
+
+  // Pre-launch: 영업일 기준 연속 제작 (PRE_START_DAYS → ART_DAYS 점감)
+  const preLaunchCount = LAUNCH_CITIES - PUBLISHED;
+  const preLaunchDates = [];
+  let prevArt = lastLocked.artDone;
+  for (let k = 0; k < preLaunchCount; k++) {
+    const days = Math.round(PRE_START_DAYS + (ART_DAYS - PRE_START_DAYS) * k / Math.max(preLaunchCount - 1, 1));
+    prevArt = addBusinessDays(prevArt, days);
+    preLaunchDates.push(prevArt);
+  }
+
+  // Post-launch: 영업일 기준 2단계 배포 주기 (D+40 이내 EARLY, 이후 LATE)
+  // 시작점: max(LAUNCH, 마지막 pre-launch 완료일) — pre-launch가 런칭 이후까지 걸리면 그 날부터 시작
+  const postCount = cities.length - LAUNCH_CITIES;
+  const postDates = [];
+  const lastPreDate = preLaunchDates.length > 0 ? preLaunchDates[preLaunchDates.length - 1] : lastLocked.artDone;
+  let prevPost = lastPreDate > LAUNCH ? lastPreDate : LAUNCH;
+  for (let k = 0; k < postCount; k++) {
+    const calX = Math.round((prevPost - LAUNCH) / 86400000);
+    const interval = calX < UPDATE_SPLIT_DAY ? UPDATE_INTERVAL_EARLY : UPDATE_INTERVAL_LATE;
+    prevPost = addBusinessDays(prevPost, interval);
+    postDates.push(prevPost);
+  }
+
+  let cumH = 0;
+  return cities.map((c, i) => {
+    cumH += c.h;
+    const n = i + 1;
+    // Art completion date
+    let artDate, phase;
+    if (c.locked) {
+      artDate = c.artDone; phase = 'Published';
+    } else if (i < LAUNCH_CITIES) {
+      const prodNum = i - PUBLISHED;
+      artDate = preLaunchDates[prodNum];
+      phase = 'Pre-Launch';
+    } else {
+      const updateNum = i - LAUNCH_CITIES;
+      artDate = postDates[updateNum];
+      phase = 'Update ' + (updateNum + 1);
+    }
+    // Player days: hpd = hammers per day = gpd × win_rate × WEIGHTED_HPW
+    const pd = {};
+    PLAYERS.forEach(p => {
+      const hpd = p.gpd * p.win_rate * WEIGHTED_HPW;
+      pd[p.name] = cumH / hpd;
+    });
+    const hcD = pd['Hardcore'];
+    const hcDate = addDate(LAUNCH, Math.floor(hcD));
+    // Buffer
+    let buffer = null;
+    if (i >= PUBLISHED) {
+      buffer = Math.round((hcDate - artDate) / 86400000);
+    }
+    // Games needed per player type (this city only)
+    // hpg = win_rate × WEIGHTED_HPW (hammers per game, can exceed 1 due to Hard×2/SH×3)
+    const games = {};
+    PLAYERS.forEach(p => {
+      const hpg = p.win_rate * WEIGHTED_HPW;
+      games[p.name] = Math.ceil(c.h / hpg);
+    });
+
+    return {
+      ...c, n, cumH, artDate, phase,
+      pd, hcD, hcDate, buffer, games
+    };
+  });
+}
+
+// ========== RENDER ==========
+let currentOrder = getOrder();
+let chartInstance = null;
+
+function isDark() { return document.documentElement.getAttribute('data-theme') !== 'light'; }
+function gc() {
+  const d = isDark();
+  return { grid: d?'rgba(255,255,255,.06)':'rgba(0,0,0,.08)', text: d?'#8892b0':'#5e6278' };
+}
+
+function renderAll() {
+  const cities = getCities(currentOrder);
+  const data = compute(cities);
+  renderKPI(data);
+  renderSchedule(data);
+  renderChart(data);
+  renderRisk(data);
+  updateOrderStatus();
+}
+
+function updateOrderStatus() {
+  const el = document.getElementById('orderStatus');
+  const isDefault = currentOrder.join(',') === DEFAULT_ORDER.join(',');
+  const cur = currentOrder.join(',');
+  const bms = getBookmarks();
+
+  // Check if current order matches active bookmark
+  if (activeBookmarkId) {
+    const bm = bms.find(b => b.id === activeBookmarkId);
+    if (bm && bm.order.join(',') === cur) {
+      el.textContent = bm.name;
+      el.style.color = 'var(--accent)';
+      el.style.borderColor = 'var(--accent)';
+      renderBookmarks();
+      return;
+    }
+    // Order was modified from bookmark
+    activeBookmarkId = null;
+    setActiveBookmark(null);
+  }
+
+  if (isDefault) {
+    el.textContent = '기본 순서';
+    el.style.color = 'var(--muted)';
+    el.style.borderColor = 'var(--border)';
+  } else {
+    el.textContent = '미저장 변경';
+    el.style.color = 'var(--yellow)';
+    el.style.borderColor = 'var(--yellow)';
+  }
+  renderBookmarks();
+}
+
+function resetOrder() {
+  currentOrder = [...DEFAULT_ORDER];
+  activeBookmarkId = null;
+  lastModifiedFromId = null;
+  setActiveBookmark(null);
+  renderAll();
+}
+
+// ========== BOOKMARKS ==========
+let activeBookmarkId = null;
+let lastModifiedFromId = null; // tracks which bookmark was active before unsaved change
+
+function getBookmarks() {
+  try { return JSON.parse(localStorage.getItem(BM_STORAGE)) || []; }
+  catch { return []; }
+}
+function saveBookmarks(bms) { localStorage.setItem(BM_STORAGE, JSON.stringify(bms)); }
+
+function addBookmark() {
+  const bms = getBookmarks();
+  const num = bms.length + 1;
+  const bm = { id: Date.now().toString(36), name: '버전 ' + num, order: [...currentOrder] };
+  bms.push(bm);
+  saveBookmarks(bms);
+  activeBookmarkId = bm.id;
+  lastModifiedFromId = null;
+  setActiveBookmark(bm.id);
+  renderBookmarks();
+}
+
+function updateBookmark(id) {
+  const bms = getBookmarks();
+  const bm = bms.find(b => b.id === id);
+  if (!bm) return;
+  bm.order = [...currentOrder];
+  saveBookmarks(bms);
+  activeBookmarkId = id;
+  lastModifiedFromId = null;
+  setActiveBookmark(id);
+  renderAll();
+}
+
+function loadBookmark(id) {
+  const bms = getBookmarks();
+  const bm = bms.find(b => b.id === id);
+  if (!bm) return;
+  currentOrder = [...bm.order];
+  activeBookmarkId = id;
+  lastModifiedFromId = null;
+  setActiveBookmark(id);
+  renderAll();
+}
+
+function startRename(id) {
+  const bms = getBookmarks();
+  const bm = bms.find(b => b.id === id);
+  if (!bm) return;
+  const chip = document.querySelector(`[data-bm-id="${id}"] .bm-name`);
+  if (!chip) return;
+  const input = document.createElement('input');
+  input.className = 'bm-rename-input';
+  input.value = bm.name;
+  input.maxLength = 20;
+  chip.replaceWith(input);
+  input.focus();
+  input.select();
+
+  const finish = () => {
+    const val = input.value.trim();
+    if (val && val !== bm.name) {
+      bm.name = val;
+      saveBookmarks(bms);
+    }
+    renderBookmarks();
+  };
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { input.value = bm.name; input.blur(); }
+  });
+}
+
+function confirmDeleteBookmark(id) {
+  const bms = getBookmarks();
+  const bm = bms.find(b => b.id === id);
+  if (!bm) return;
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal-box">
+        <h3>버전 삭제</h3>
+        <p>"<strong>${bm.name}</strong>"을(를) 삭제하시겠습니까?</p>
+        <div class="modal-actions">
+          <button onclick="closeModal()">취소</button>
+          <button class="danger" onclick="doDeleteBookmark('${id}')">삭제</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function doDeleteBookmark(id) {
+  let bms = getBookmarks();
+  bms = bms.filter(b => b.id !== id);
+  saveBookmarks(bms);
+  if (activeBookmarkId === id) {
+    activeBookmarkId = null;
+    setActiveBookmark(null);
+  }
+  closeModal();
+  renderBookmarks();
+}
+
+function closeModal() {
+  document.getElementById('modalRoot').innerHTML = '';
+}
+
+function renderBookmarks() {
+  const bms = getBookmarks();
+  const el = document.getElementById('bookmarkList');
+  const isUnsaved = !activeBookmarkId && currentOrder.join(',') !== DEFAULT_ORDER.join(',');
+  // Find overwrite target: lastModifiedFromId or null
+  const overwriteTarget = isUnsaved && lastModifiedFromId ? bms.find(b => b.id === lastModifiedFromId) : null;
+
+  let html = '';
+  bms.forEach(bm => {
+    const active = bm.id === activeBookmarkId ? ' active' : '';
+    const isOverwriteTarget = overwriteTarget && overwriteTarget.id === bm.id;
+    html += `<span class="bm-chip${active}${isOverwriteTarget ? ' modified' : ''}" data-bm-id="${bm.id}">
+      <span class="bm-name" onclick="loadBookmark('${bm.id}')" title="${bm.name}">${bm.name}</span>`;
+    if (isOverwriteTarget) {
+      html += `<button class="bm-btn save" onclick="event.stopPropagation();updateBookmark('${bm.id}')" title="${bm.name}에 저장">💾</button>`;
+    }
+    html += `<button class="bm-btn" onclick="event.stopPropagation();startRename('${bm.id}')" title="이름 변경">✎</button>
+      <button class="bm-btn del" onclick="event.stopPropagation();confirmDeleteBookmark('${bm.id}')" title="삭제">✕</button>
+    </span>`;
+  });
+
+  if (isUnsaved && overwriteTarget) {
+    html += `<span class="bm-add" onclick="updateBookmark('${overwriteTarget.id}')">${overwriteTarget.name}에 저장</span>`;
+    html += `<span class="bm-add" onclick="addBookmark()">+ 새 버전으로 저장</span>`;
+  } else {
+    html += `<span class="bm-add" onclick="addBookmark()">+ 현재 순서 저장</span>`;
+  }
+  el.innerHTML = html;
+}
+
+// ========== CITY MANAGEMENT ==========
+const CITY_NAMES_KEY = 'pst-city-names-v3';
+const ART_DONE_LS_KEY = 'pst-art-done-v1'; // localStorage 폴백용
+
+// art_done_gas.js 배포 후 웹앱 URL을 아래에 입력
+const ART_STATUS_URL = '';
+
+let artDoneCache = {};
+
+async function loadArtDone() {
+  if (ART_STATUS_URL) {
+    try {
+      const res = await fetch(`${ART_STATUS_URL}?action=read`);
+      artDoneCache = await res.json();
+      return;
+    } catch (e) { console.warn('Sheets API 연결 실패, localStorage 사용', e); }
+  }
+  try { artDoneCache = JSON.parse(localStorage.getItem(ART_DONE_LS_KEY)) || {}; }
+  catch { artDoneCache = {}; }
+}
+
+function getCityNames() {
+  try { return JSON.parse(localStorage.getItem(CITY_NAMES_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveCityNames(names) { localStorage.setItem(CITY_NAMES_KEY, JSON.stringify(names)); }
+
+let _toastTimer = null;
+function showToast(msg, color) {
+  let el = document.getElementById('toast');
+  if (!el) { el = document.createElement('div'); el.id = 'toast'; document.body.appendChild(el); }
+  el.textContent = msg;
+  el.style.borderColor = color || 'var(--border)';
+  el.style.animation = 'none';
+  el.offsetHeight; // reflow
+  el.style.animation = 'toastIn .25s ease forwards';
+  el.style.display = 'block';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.style.animation = 'toastOut .3s ease forwards'; setTimeout(() => { el.style.display = 'none'; }, 300); }, 2200);
+}
+
+function deleteCity(idx) {
+  const cities = getCities(currentOrder);
+  const c = cities[idx];
+  if (!confirm(`"${c.name}" 도시를 삭제할까요?`)) return;
+  // Remove from CITIES_BASE
+  const baseIdx = CITIES_BASE.findIndex(b => b.id === c.id);
+  if (baseIdx !== -1) CITIES_BASE.splice(baseIdx, 1);
+  TOTAL_CITIES = CITIES_BASE.length;
+  // Remove from orders
+  currentOrder = currentOrder.filter(id => id !== c.id);
+  DEFAULT_ORDER.splice(DEFAULT_ORDER.indexOf(c.id), 1);
+  renderAll();
+  showToast(`🗑 "${c.name}" 삭제됨`, 'var(--red)');
+}
+
+function getArtDone() { return artDoneCache; }
+
+async function toggleArtDone(cityId) {
+  if (ART_STATUS_URL) {
+    try {
+      const res = await fetch(`${ART_STATUS_URL}?action=toggle&cityId=${encodeURIComponent(cityId)}`);
+      artDoneCache = await res.json();
+      const checked = !!artDoneCache[cityId];
+      renderAll();
+      showToast(checked ? '✅ 아트 완료 체크' : '⬜ 완료 취소됨', checked ? 'var(--green)' : 'var(--yellow)');
+      return;
+    } catch (e) { console.warn('Sheets API 연결 실패, localStorage 사용', e); }
+  }
+  // localStorage 폴백
+  const wasChecked = !!artDoneCache[cityId];
+  if (wasChecked) {
+    delete artDoneCache[cityId];
+  } else {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    artDoneCache[cityId] = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+  localStorage.setItem(ART_DONE_LS_KEY, JSON.stringify(artDoneCache));
+  renderAll();
+  showToast(!wasChecked ? '✅ 아트 완료 체크' : '⬜ 완료 취소됨', !wasChecked ? 'var(--green)' : 'var(--yellow)');
+}
+
+// Apply saved custom names to CITIES_BASE
+(function restoreNames() {
+  const names = getCityNames();
+  CITIES_BASE.forEach(c => { if (names[c.id]) c.name = names[c.id]; });
+})();
+
+function startCityRename(idx) {
+  const cities = getCities(currentOrder);
+  const c = cities[idx];
+  const td = document.querySelector(`tr[data-idx="${idx}"] td:nth-child(3)`);
+  if (!td) return;
+  const input = document.createElement('input');
+  input.className = 'city-name-edit';
+  input.value = c.name;
+  input.maxLength = 24;
+  td.innerHTML = '';
+  td.appendChild(input);
+  input.focus();
+  input.select();
+
+  const finish = () => {
+    const val = input.value.trim();
+    if (val && val !== c.name) {
+      // Update CITIES_BASE
+      const base = CITIES_BASE.find(b => b.id === c.id);
+      if (base) base.name = val;
+      const names = getCityNames();
+      names[c.id] = val;
+      saveCityNames(names);
+    }
+    renderAll();
+  };
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { input.value = c.name; input.blur(); }
+  });
+}
+
+function addCity() {
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal-box">
+        <h3>도시 추가</h3>
+        <p>새 도시 이름을 입력하세요.</p>
+        <input id="newCityInput" class="city-name-edit" style="width:100%;margin-bottom:12px;padding:8px;font-size:.95em" placeholder="예: Budapest" maxlength="24">
+        <div class="modal-actions">
+          <button onclick="closeModal()">취소</button>
+          <button style="background:var(--accent);border-color:var(--accent);color:#000;font-weight:700" onclick="doAddCity()">추가</button>
+        </div>
+      </div>
+    </div>`;
+  setTimeout(() => document.getElementById('newCityInput').focus(), 50);
+}
+
+function doAddCity() {
+  const input = document.getElementById('newCityInput');
+  const name = input.value.trim();
+  if (!name) return;
+  const id = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (CITIES_BASE.find(c => c.id === id)) {
+    alert('이미 존재하는 도시입니다.');
+    return;
+  }
+  CITIES_BASE.push({id, name});
+  TOTAL_CITIES = CITIES_BASE.length;
+  // Extend HAMMER_CURVE if needed
+  while (HAMMER_CURVE.length < TOTAL_CITIES) {
+    HAMMER_CURVE.push(Math.round(HAMMER_CURVE[HAMMER_CURVE.length-1] * 1.07));
+  }
+  // Update order
+  currentOrder.push(id);
+  DEFAULT_ORDER.push(id);
+  closeModal();
+  renderAll();
+  showToast(`🏙 "${name}" 도시 추가됨`, 'var(--accent)');
+}
+
+function exportCSV() {
+  const cities = getCities(currentOrder);
+  const data = compute(cities);
+  const BOM = '\uFEFF';
+  let csv = BOM + '#,도시,해머,누적해머,CL판,Avg판,HC판,아트완료,상태,HC도달일,HC날짜,버퍼(일),Avg도달일,CL도달일\n';
+  data.forEach(c => {
+    const artStr = c.locked ? fmtDate(c.artDate) + ' 완료' : fmtDate(c.artDate);
+    const bufStr = c.buffer !== null ? '+' + c.buffer : '-';
+    csv += [
+      c.n, c.name, c.h, c.cumH,
+      c.games['Casual Light'], c.games['Average'], c.games['Hardcore'],
+      artStr, c.phase,
+      'D' + Math.round(c.hcD), fmtDate(c.hcDate), bufStr,
+      'D' + Math.round(c.pd['Average']),
+      'D' + Math.round(c.pd['Casual Light'])
+    ].join(',') + '\n';
+  });
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'art_production_schedule_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// --- KPI ---
+function renderKPI(data) {
+  const preLaunchEnd = data[LAUNCH_CITIES-1].artDate;
+  const qaD = Math.round((LAUNCH - preLaunchEnd) / 86400000) - 1;
+  const minBuf = Math.min(...data.filter(d=>d.buffer!==null).map(d=>d.buffer));
+  const allDone = data[data.length-1].artDate;
+  const hcAll = data[data.length-1].hcD;
+  const prodStart = addDate(data[PUBLISHED-1].artDate, 1);
+  const reviewReady = data.filter(d => d.artDate <= REVIEW).length;
+
+  // D-days from TODAY
+  const dReview = Math.round((REVIEW - TODAY) / 86400000);
+  const dMay8  = Math.round((MAY8   - TODAY) / 86400000);
+  const dLaunch= Math.round((LAUNCH  - TODAY) / 86400000);
+
+  // 아트 완료 현황 (locked 제외, non-locked 체크만 집계)
+  const artDoneMap = getArtDone();
+  const allCities = getCities(currentOrder);
+  const checkedCount = allCities.filter(c => !c.locked && !!artDoneMap[c.id]).length;
+  const doneCount = PUBLISHED + checkedCount;
+
+  // 5/8 목표 & 온트랙 계산
+  const may8Target = LAUNCH_CITIES; // 5/8까지 완성 목표 = 런칭 빌드 전량
+  const additionalPossible = Math.floor(dMay8 / ART_DAYS); // 현재 속도로 추가 가능
+  const expectedByMay8 = doneCount + additionalPossible;
+  const onTrack = expectedByMay8 >= may8Target;
+  const remaining5_8 = Math.max(0, may8Target - doneCount);
+  const statusColor = onTrack ? 'var(--green)' : 'var(--red)';
+  const statusBg = onTrack ? 'rgba(105,219,124,.1)' : 'rgba(255,107,107,.1)';
+  const statusIcon = onTrack ? '✅ 달성 가능' : '⚠️ 위험';
+
+  document.getElementById('kpi-area').innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+    <div class="kpi-box" style="border-color:var(--blue)">
+      <div class="value" style="color:var(--blue)">D-${dReview}</div>
+      <div class="label">${fmtDate(REVIEW)} 리뷰 서밋<br><span style="color:var(--accent)">${reviewReady}개 준비됨</span></div>
+    </div>
+    <div class="kpi-box" style="border-color:var(--yellow)">
+      <div class="value" style="color:var(--yellow)">D-${dMay8}</div>
+      <div class="label">${fmtDate(MAY8)} 제작마감<br>목표 ${may8Target}개 완성</div>
+    </div>
+    <div class="kpi-box" style="border-color:var(--red)">
+      <div class="value" style="color:var(--red)">D-${dLaunch}</div>
+      <div class="label">${fmtDate(LAUNCH)} 런칭<br>QA ${qaD}일 확보</div>
+    </div>
+    <div class="kpi-box" style="border-color:var(--green)">
+      <div class="value" style="color:var(--green)">${doneCount} / ${TOTAL_CITIES}</div>
+      <div class="label">아트 완료<br>Published ${PUBLISHED} + 완성 ${checkedCount}개</div>
+    </div>
+  </div>
+  <div class="kpi-grid" style="margin-bottom:16px">
+    <div class="kpi-box" style="border-color:${statusColor};background:${statusBg}">
+      <div class="value" style="color:${statusColor};font-size:1em">${statusIcon}</div>
+      <div class="label">5/8 목표 달성 여부<br>예상 ${expectedByMay8}개 / 목표 ${may8Target}개</div>
+    </div>
+    <div class="kpi-box">
+      <div class="value" style="color:var(--yellow)">${remaining5_8}개</div>
+      <div class="label">5/8까지 남은 작업<br>목표 ${may8Target}개 기준</div>
+    </div>
+    <div class="kpi-box">
+      <div class="value" style="color:var(--accent)">+${additionalPossible}개</div>
+      <div class="label">현재 속도 추가 가능<br>${ART_DAYS}일/도시 × D-${dMay8}일</div>
+    </div>
+    <div class="kpi-box">
+      <div class="value" style="color:var(--blue)">${reviewReady}개</div>
+      <div class="label">리뷰(${fmtDate(REVIEW)})까지<br>완성 도시 수</div>
+    </div>
+    <div class="kpi-box">
+      <div class="value" style="color:var(--red)">+${minBuf}일</div>
+      <div class="label">최소 버퍼<br>아트 완성 vs HC 도달</div>
+    </div>
+    <div class="kpi-box">
+      <div class="value" style="color:var(--yellow)">${qaD}일</div>
+      <div class="label">QA/Polish 기간<br>런칭 전 확보</div>
+    </div>
+  </div>
+  <div class="callout ${onTrack ? 'success' : 'danger'}">
+    <strong>${onTrack ? '✅ 현재 일정 정상' : '⚠️ 일정 지연 위험'}</strong>
+    — 현재 <strong>${doneCount}개</strong> 완성, 5/8까지 <strong>D-${dMay8}일</strong> 남음.<br>
+    현재 제작 속도(${ART_DAYS}일/도시)로 <strong>+${additionalPossible}개</strong> 추가 가능
+    → 예상 <strong>${expectedByMay8}개</strong> 완성
+    ${onTrack
+      ? `(목표 ${may8Target}개 <strong style="color:var(--green)">달성 가능</strong>)`
+      : `— 목표 ${may8Target}개 대비 <strong style="color:var(--red)">${may8Target - expectedByMay8}개 부족</strong>`}.
+    <br><span style="color:var(--muted);font-size:.9em">런칭 후: City ${LAUNCH_CITIES+1}~${TOTAL_CITIES} 순차 배포. 전체 완료 <strong>${fmtDate(allDone)}</strong>. 전 구간 버퍼 +${minBuf}일 이상.</span>
+  </div>`;
+}
+
+// --- Schedule Table ---
+function renderSchedule(data) {
+  let html = '<table><thead>';
+  // 그룹 헤더
+  const gs = 'font-size:.7em;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:5px 8px 3px;border-bottom:2px solid';
+  html += '<tr>';
+  html += `<th colspan="4" style="${gs} var(--border);text-align:left;color:var(--muted)">도시 정보</th>`;
+  html += `<th colspan="1" style="${gs} var(--border);color:var(--muted)"></th>`;
+  html += `<th colspan="2" style="${gs} #4A90D9;text-align:center;color:#4A90D9">Casual Light</th>`;
+  html += `<th colspan="2" style="${gs} #F5A623;text-align:center;color:#F5A623">Average</th>`;
+  html += `<th colspan="2" style="${gs} #9B59B6;text-align:center;color:#9B59B6">Hardcore</th>`;
+  html += `<th colspan="1" style="${gs} var(--yellow);text-align:center;color:var(--yellow)">납기 일정</th>`;
+  html += `<th colspan="1" style="${gs} var(--accent);text-align:center;color:var(--accent)">아트 완료</th>`;
+  html += '</tr>';
+  // 컬럼 헤더
+  html += '<tr>';
+  html += '<th></th><th>#</th><th>도시</th>';
+  html += '<th title="제작 마일스톤 (Published / Pre-Launch / Update N)">마일스톤</th>';
+  html += '<th title="해당 도시 완성에 필요한 총 해머 수&#10;순서 변경 시 슬롯 기반으로 재배정됨">해머</th>';
+  html += '<th title="해당 도시 해머를 채우기 위해 필요한 판수&#10;승률 80% × 가중 해머 1.20 기준" style="color:#4A90D9">CL판</th>';
+  html += '<th title="Casual Light 유저의 해당 도시 도달 예상 경과일 (런칭 기준 D+N)" style="color:#4A90D9">CL일</th>';
+  html += '<th title="해당 도시 해머를 채우기 위해 필요한 판수&#10;승률 88% × 가중 해머 1.20 기준" style="color:#F5A623">Avg판</th>';
+  html += '<th title="Average 유저의 해당 도시 도달 예상 경과일 (런칭 기준 D+N)" style="color:#F5A623">Avg일</th>';
+  html += '<th title="해당 도시 해머를 채우기 위해 필요한 판수&#10;승률 94% × 가중 해머 1.20 기준&#10;Hard×2·SH×3 보상 포함" style="color:#9B59B6">HC판</th>';
+  html += '<th title="Hardcore 유저의 해당 도시 도달 예상 경과일 (런칭 기준 D+N)" style="color:#9B59B6">HC 도달</th>';
+  html += '<th title="개발에 넘겨야 하는 마지노선 날짜 (아트+연출 완료 기준)">납기 일정</th>';
+  html += '<th title="아트 완료 체크 및 완료 날짜 기록">아트 완료</th>';
+  html += '</tr></thead><tbody>';
+
+  let lastPhase = '';
+  data.forEach((c, i) => {
+    // Phase header rows
+    if (c.phase !== lastPhase) {
+      lastPhase = c.phase;
+      if (c.phase === 'Published') {
+        html += `<tr style="background:rgba(105,219,124,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--green)">Published (확정) — ${PUBLISHED}개 도시</td></tr>`;
+      } else if (c.phase === 'Pre-Launch') {
+        html += `<tr style="background:rgba(100,255,218,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--accent)">Pre-Launch 제작 (${fmtDate(addDate(data[PUBLISHED].artDate, -Math.round(PRE_START_DAYS)+1))} ~ ${fmtDate(data[LAUNCH_CITIES-1].artDate)}) — ${LAUNCH_CITIES-PUBLISHED}개 도시</td></tr>`;
+      } else if (c.phase === 'Update 1') {
+        html += `<tr style="background:rgba(87,182,255,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--blue)">QA &amp; Polish · <span class="milestone-badge milestone-review">${fmtDate(REVIEW)} 리뷰서밋</span> · <span class="milestone-badge milestone-launch">${fmtDate(LAUNCH)} 런칭</span></td></tr>`;
+        html += `<tr style="background:rgba(199,125,255,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--purple)">Post-Launch Update (${fmtDate(LAUNCH)} ~ ${fmtDate(data[data.length-1].artDate)}) — ${TOTAL_CITIES-LAUNCH_CITIES}개 도시</td></tr>`;
+      }
+    }
+
+    const locked = i < PUBLISHED;
+    const draggable = !locked;
+    const cls = locked ? 'locked' : '';
+    const artDone = getArtDone();
+    const doneTs = artDone[c.id];
+    const artCheckHtml = locked
+      ? `<span style="font-size:1.1em">✅</span><div class="art-done-ts">${fmtDate(c.artDate)}</div>`
+      : doneTs
+        ? `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="완료 취소">✅</button><div class="art-done-ts">${doneTs}</div>`
+        : `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="아트 완료 체크">⬜</button>`;
+    const bufStr = `<strong>${fmtDate(c.artDate)}</strong>`;
+    const bufColor = '';
+    const hcDStr = 'D' + Math.round(c.hcD);
+    const avgDStr = 'D' + Math.round(c.pd['Average']);
+    const clDStr = 'D' + Math.round(c.pd['Casual Light']);
+
+    let statusHtml;
+    if (locked) statusHtml = '<span style="color:var(--green)">Published</span>';
+    else if (c.phase === 'Pre-Launch') statusHtml = `<span style="color:var(--accent)">${c.phase}</span>`;
+    else statusHtml = `<span style="color:var(--purple)">${c.phase}</span>`;
+
+    // Mark last pre-launch and last city
+    let extraNote = '';
+    if (i === LAUNCH_CITIES - 1) extraNote = ' style="background:rgba(100,255,218,.08)"';
+    if (i === data.length - 1) extraNote = ' style="background:rgba(199,125,255,.08)"';
+
+    html += `<tr class="${cls}" draggable="${draggable}" data-idx="${i}"${extraNote}>`;
+    html += `<td class="drag-handle">${draggable ? '&#9776;' : '&#128274;'}</td>`;
+    html += `<td>${c.n}</td>`;
+    html += `<td style="text-align:left"><strong>${c.name}</strong>${draggable ? `<button class="edit-btn" onclick="event.stopPropagation();startCityRename(${i})" title="이름 변경">✎</button><button class="edit-btn" onclick="event.stopPropagation();deleteCity(${i})" title="도시 삭제" style="color:var(--red)">✕</button>` : ''}</td>`;
+    html += `<td>${statusHtml}</td>`;
+    html += `<td>${c.h}</td>`;
+    html += `<td style="color:#4A90D9">${c.games['Casual Light']}</td>`;
+    html += `<td style="color:#4A90D9">${clDStr}</td>`;
+    html += `<td style="color:#F5A623">${c.games['Average']}</td>`;
+    html += `<td style="color:#F5A623">${avgDStr}</td>`;
+    html += `<td style="color:#9B59B6">${c.games['Hardcore']}</td>`;
+    html += `<td style="color:#9B59B6">${hcDStr}</td>`;
+    html += `<td style="color:var(--yellow)">${bufStr}</td>`;
+    html += `<td style="text-align:center">${artCheckHtml}</td></tr>`;
+  });
+
+  html += `<tr class="total-row"><td colspan="3">합계</td><td>${data[data.length-1].cumH}</td>`;
+  html += `<td colspan="9">런칭 ${LAUNCH_CITIES}도시 · 업데이트 ${TOTAL_CITIES-LAUNCH_CITIES}도시 (${fmtDate(data[data.length-1].artDate)} 완료) · HC 전체 소진: D${Math.round(data[data.length-1].hcD)}</td></tr>`;
+  html += '</tbody></table>';
+
+  document.getElementById('schedule-table-wrap').innerHTML = html;
+  const slb = document.getElementById('schedule-launch-badge');
+  if (slb) slb.textContent = fmtDate(LAUNCH) + ' 런칭';
+  setupDragDrop();
+}
+
+// --- Drag & Drop ---
+let dragIdx = null;
+function setupDragDrop() {
+  const rows = document.querySelectorAll('#schedule-table-wrap tr[draggable="true"]');
+  rows.forEach(row => {
+    row.addEventListener('dragstart', e => {
+      dragIdx = parseInt(row.dataset.idx);
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      document.querySelectorAll('.drag-over').forEach(r => r.classList.remove('drag-over'));
+      dragIdx = null;
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      const targetIdx = parseInt(row.dataset.idx);
+      if (targetIdx < PUBLISHED || targetIdx === dragIdx) return;
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.drag-over').forEach(r => r.classList.remove('drag-over'));
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => {
+      row.classList.remove('drag-over');
+    });
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      const targetIdx = parseInt(row.dataset.idx);
+      if (targetIdx < PUBLISHED || dragIdx === null || dragIdx < PUBLISHED) return;
+      if (dragIdx === targetIdx) return;
+      // Swap in order array (unsaved until bookmarked)
+      const item = currentOrder.splice(dragIdx, 1)[0];
+      currentOrder.splice(targetIdx, 0, item);
+      if (activeBookmarkId && !lastModifiedFromId) lastModifiedFromId = activeBookmarkId;
+      activeBookmarkId = null;
+      setActiveBookmark(null);
+      renderAll();
+    });
+  });
+}
+
+// --- Chart ---
+function renderChart(data) {
+  const ctx = document.getElementById('arrivalChart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+  const c = gc();
+
+  const datasets = PLAYERS.map(p => ({
+    label: p.name,
+    data: data.map((d, i) => ({x: d.pd[p.name], y: i+1})),
+    borderColor: p.color + '66',
+    backgroundColor: p.color + '1a',
+    borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: p.color + '66',
+    fill: false, tension: .3
+  }));
+
+  // 5/8 고정 마감 기준 x값 (LAUNCH 대비 상대값)
+  const may8X = Math.round((MAY8 - LAUNCH) / 86400000);
+
+  // 시나리오 컷 (LAUNCH_CITIES 기반 동적 계산)
+  const S1_CUT = LAUNCH_CITIES;                           // 낙관/현실: 런칭 빌드 전량
+  const S2_CUT = LAUNCH_CITIES;
+  const S3_CUT = Math.max(PUBLISHED, LAUNCH_CITIES - 2); // 보수: -2개
+
+  // 버튼 라벨 동적 업데이트
+  const b0 = document.getElementById('scen-btn-0');
+  const b1 = document.getElementById('scen-btn-1');
+  const b2 = document.getElementById('scen-btn-2');
+  if (b0) b0.textContent = `① 제작 즉시 오픈 · ${S1_CUT}개 / ${ART_DAYS}일 간격`;
+  if (b1) b1.textContent = `② 정기 배포 · ${S2_CUT}개 / ${UPDATE_INTERVAL_EARLY}→${UPDATE_INTERVAL_LATE}일`;
+  if (b2) b2.textContent = `③ 런칭 축소 · ${S3_CUT}개 / ${UPDATE_INTERVAL_EARLY}→${UPDATE_INTERVAL_LATE}일`;
+
+  // 시나리오 ① 제작 즉시 오픈: 마지막 pre-launch 도시 완료일부터 ART_DAYS 영업일 간격으로 연속 배포
+  const postDates1 = [];
+  { let cur = data[S1_CUT - 1].artDate;
+    for (let k = 0; k < data.length - S1_CUT; k++) { cur = addBusinessDays(cur, ART_DAYS); postDates1.push(cur); } }
+  const artLine1 = data.map((d, i) => {
+    if (i < S1_CUT) return {x: Math.round((d.artDate - LAUNCH) / 86400000), y: i+1};
+    return {x: Math.round((postDates1[i - S1_CUT] - LAUNCH) / 86400000), y: i+1};
+  });
+  datasets.push({
+    label: `① 제작 즉시 오픈 · ${S1_CUT}개 / ${ART_DAYS}일 간격`,
+    data: artLine1,
+    borderColor: '#74b9ff', backgroundColor: 'transparent',
+    borderWidth: 2.5, borderDash: [5,5],
+    pointRadius: 3, pointBackgroundColor: '#74b9ff', pointStyle: 'rectRot',
+    fill: false, tension: 0,
+    hidden: !scenVisible[0]
+  });
+
+  // 시나리오 ② 정기 배포: 마지막 pre-launch 도시 완료일부터 EARLY→LATE 2단계 영업일 주기 연속 배포
+  const postDates2 = [];
+  { let cur = data[S2_CUT - 1].artDate;
+    for (let k = 0; k < data.length - S2_CUT; k++) {
+      const calX = Math.round((cur - LAUNCH) / 86400000);
+      const interval = calX < UPDATE_SPLIT_DAY ? UPDATE_INTERVAL_EARLY : UPDATE_INTERVAL_LATE;
+      cur = addBusinessDays(cur, interval); postDates2.push(cur);
+    } }
+  const artLine2 = data.map((d, i) => {
+    if (i < S2_CUT) return {x: Math.round((d.artDate - LAUNCH) / 86400000), y: i+1};
+    return {x: Math.round((postDates2[i - S2_CUT] - LAUNCH) / 86400000), y: i+1};
+  });
+  datasets.push({
+    label: `② 정기 배포 · ${S2_CUT}개 / ${UPDATE_INTERVAL_EARLY}→${UPDATE_INTERVAL_LATE}일`,
+    data: artLine2,
+    borderColor: '#a29bfe', backgroundColor: 'transparent',
+    borderWidth: 2.5, borderDash: [4,3],
+    pointRadius: 3, pointBackgroundColor: '#a29bfe', pointStyle: 'rectRot',
+    fill: false, tension: 0,
+    hidden: !scenVisible[1]
+  });
+
+  // 시나리오 ③ 런칭 축소: 마지막 pre-launch 도시 완료일부터 EARLY→LATE 2단계 영업일 주기 연속 배포
+  const postDates3 = [];
+  { let cur = data[S3_CUT - 1].artDate;
+    for (let k = 0; k < data.length - S3_CUT; k++) {
+      const calX = Math.round((cur - LAUNCH) / 86400000);
+      const interval = calX < UPDATE_SPLIT_DAY ? UPDATE_INTERVAL_EARLY : UPDATE_INTERVAL_LATE;
+      cur = addBusinessDays(cur, interval); postDates3.push(cur);
+    } }
+  const artLine3 = data.map((d, i) => {
+    if (i < S3_CUT) return {x: Math.round((d.artDate - LAUNCH) / 86400000), y: i+1};
+    return {x: Math.round((postDates3[i - S3_CUT] - LAUNCH) / 86400000), y: i+1};
+  });
+  datasets.push({
+    label: `③ 런칭 축소 · ${S3_CUT}개 / ${UPDATE_INTERVAL_EARLY}→${UPDATE_INTERVAL_LATE}일`,
+    data: artLine3,
+    borderColor: '#fd79a8', backgroundColor: 'transparent',
+    borderWidth: 2.5, borderDash: [6,3],
+    pointRadius: 3, pointBackgroundColor: '#fd79a8', pointStyle: 'circle',
+    fill: false, tension: 0,
+    hidden: !scenVisible[2]
+  });
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { type:'linear', title:{display:true,text:'런칭('+fmtDate(LAUNCH)+') 이후 일수',color:c.text},
+             grid:{color:c.grid}, ticks:{color:c.text}, min:-50, max:140 },
+        y: { title:{display:true,text:'도달 도시 #',color:c.text},
+             grid:{color:c.grid}, ticks:{color:c.text,stepSize:5}, min:0, max:TOTAL_CITIES+1 }
+      },
+      plugins: {
+        legend:{labels:{color:c.text,usePointStyle:true,filter:(item)=>item.datasetIndex<5}},
+        tooltip:{callbacks:{label:function(ctx2){
+          const d=ctx2.parsed.x, p=d<0?'D'+d:'D+'+d;
+          return ctx2.dataset.label+': City #'+ctx2.parsed.y+' @ '+p;
+        }}}
+      }
+    },
+    plugins: [{
+      id:'lines',
+      afterDraw(chart){
+        const xs=chart.scales.x, ys=chart.scales.y, ctx2=chart.ctx;
+        ctx2.save();
+        function vLine(xVal, color, dash, lw, label, row) {
+          const px=xs.getPixelForValue(xVal);
+          ctx2.strokeStyle=color; ctx2.lineWidth=lw; ctx2.setLineDash(dash);
+          ctx2.beginPath(); ctx2.moveTo(px,ys.top); ctx2.lineTo(px,ys.bottom); ctx2.stroke();
+          ctx2.setLineDash([]);
+          ctx2.fillStyle=color; ctx2.font='bold 10px sans-serif'; ctx2.textAlign='center';
+          ctx2.fillText(label, px, ys.top - 6 - (row||0)*14);
+        }
+        vLine(-14,'#57b6ff',[4,4],1.5,fmtDate(REVIEW)+' REVIEW',0);
+        vLine(0,'#ff6b6b',[4,4],2,fmtDate(LAUNCH)+' LAUNCH',1);
+        vLine(Math.round((MAY8-LAUNCH)/86400000),'#ffd166',[3,4],1.5,'5/8 제작마감',0);
+        ctx2.restore();
+      }
+    }]
+  });
+
+  // sync chart-launch-label
+  const cll = document.getElementById('chart-launch-label');
+  if (cll) cll.textContent = '런칭(' + fmtDate(LAUNCH) + ')';
+  // sync button active state
+  scenVisible.forEach((v, i) => {
+    const btn = document.getElementById('scen-btn-' + i);
+    if (btn) btn.classList.toggle('scen-active', v);
+  });
+}
+
+// --- Art Scenario Toggle ---
+const scenVisible = [true, true, true]; // ①on, ②on, ③on
+function toggleArtScenario(idx) {
+  scenVisible[idx] = !scenVisible[idx];
+  const btn = document.getElementById('scen-btn-' + idx);
+  if (btn) btn.classList.toggle('scen-active', scenVisible[idx]);
+  if (!chartInstance) return;
+  const dsIdx = 5 + idx; // datasets 5,6,7 = 시나리오 ①②③
+  chartInstance.data.datasets[dsIdx].hidden = !scenVisible[idx];
+  chartInstance.update();
+}
+
+// --- Risk ---
+function renderRisk(data) {
+  const minBuf = Math.min(...data.filter(d=>d.buffer!==null).map(d=>d.buffer));
+  const preBuf = data[LAUNCH_CITIES-1].buffer;
+  const preLaunchN = LAUNCH_CITIES - PUBLISHED;
+  let preTotalDays = 0;
+  for (let k = 0; k < preLaunchN; k++) {
+    preTotalDays += Math.round(PRE_START_DAYS + (ART_DAYS - PRE_START_DAYS) * k / Math.max(preLaunchN - 1, 1));
+  }
+  document.getElementById('risk-area').innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">
+    <div class="callout success" style="border-radius:8px">
+      <strong>Pre-Launch: 매우 안전</strong><br>
+      ${LAUNCH_CITIES}개 도시 제작 ${fmtDate(data[LAUNCH_CITIES-1].artDate)} 완료 → QA 기간 확보.<br>
+      리뷰 서밋(4/22) 필요 2개 대비 <strong>${data.filter(d => d.artDate <= REVIEW).length}개 준비</strong>.
+    </div>
+    <div class="callout" style="border-radius:8px">
+      <strong>Post-Launch Update: 안전</strong><br>
+      업데이트 구간 최소 버퍼 <strong>+${minBuf}일</strong>. HC가 제작을 추월 불가.<br>
+      1주 지연 시에도 +${minBuf-7}일 버퍼 유지.
+    </div>
+    <div class="callout warn" style="border-radius:8px">
+      <strong>RISK: 업데이트 구간 제작 중단</strong><br>
+      런칭 후 아트팀 타 프로젝트 투입 시 버퍼 ${minBuf}일 내 HC 추월 가능.<br>
+      <strong>대응</strong>: 4일/도시 페이스 유지 또는 Pre-Launch에서 선제작.
+    </div>
+    <div class="callout" style="border-radius:8px">
+      <strong>업데이트 배포 주기 권고</strong><br>
+      4일/도시이므로 <strong>주 1~2회 업데이트</strong> 가능.<br>
+      2도시 묶음 배포(8일 주기) 시 매 업데이트마다 신규 콘텐츠 제공.
+    </div>
+  </div>
+  <div style="margin-top:16px">
+    <div class="section-title" style="font-size:1em;margin-bottom:10px">⚠️ 시나리오 분석: Pre-Launch 제작을 런칭 이후로 미룰 경우</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+      <div class="callout warn" style="border-radius:8px">
+        <strong>🔴 RISK 1: 런칭 콘텐츠 부족</strong><br>
+        Pre-Launch 6개 도시(City 5~10) 미완성 시 런칭 시점에 <strong>${LAUNCH_CITIES}개 도시 보장 불가</strong>.<br>
+        최악: Published 4개만 제공 → 신규 유저 D1~D3 이내 콘텐츠 소진 → <strong>D1 리텐션 직격</strong>.
+      </div>
+      <div class="callout warn" style="border-radius:8px">
+        <strong>🔴 RISK 2: HC 유저 콘텐츠 선소진</strong><br>
+        HC 유저는 런칭 후 D${Math.round(data[PUBLISHED].hcD)}일에 City ${PUBLISHED+1} 도달.<br>
+        이 시점 이전에 아트 미완성 시 <strong>미완성 에셋 노출 or 강제 차단</strong> 필요.
+      </div>
+      <div class="callout" style="border-radius:8px;border-color:var(--blue)">
+        <strong>🟡 최소 투입 기준</strong><br>
+        HC 기준 City 5 도달 = 런칭 후 <strong>D${Math.round(data[PUBLISHED].hcD)}일 (${fmtDate(addDate(LAUNCH, Math.round(data[PUBLISHED].hcD)))})</strong><br>
+        역산: 초기 ${PRE_START_DAYS}→현재 ${ART_DAYS}일/도시 (6개 총 <strong>${preTotalDays}일</strong>)<br>
+        → <strong>최소 투입 기준: ${fmtDate(addDate(addDate(LAUNCH, Math.round(data[PUBLISHED].hcD)), -preTotalDays))} (런칭 전)</strong><br>
+        <span style="color:var(--red)">런칭 당일 투입 시 City 5 준비까지 D+${preTotalDays} → HC 추월 불가피.</span>
+      </div>
+      <div class="callout success" style="border-radius:8px">
+        <strong>✅ 권고</strong><br>
+        Pre-Launch 6개 도시는 <strong>런칭 전 완성이 필수</strong>.<br>
+        최소 ${fmtDate(data[LAUNCH_CITIES-1].artDate)} 이전 완료 시 QA ${Math.round((LAUNCH - data[LAUNCH_CITIES-1].artDate)/86400000)}일 확보.<br>
+        부득이한 경우 City 5~7 선제작 후 City 8~10은 런칭 직후 즉시 투입 권고.
+      </div>
+    </div>
+  </div>
+`;
+}
+
+// ========== INIT ==========
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadArtDone();
+  renderAll();
+});
+</script>
+</body>
+</html>
