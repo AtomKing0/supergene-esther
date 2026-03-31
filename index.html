@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<script id="pst-theme-init">(function(){var t=localStorage.getItem("pst-report-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){if(document.getElementById("themeToggle"))return;var g=document.createElement("button");g.className="theme-toggle";g.id="themeToggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);});})()</script>
+<script id="pst-theme-init">(function(){var t=localStorage.getItem("pst-report-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.id="themeToggle";g.title="\uB77C\uC774\uD2B8/\uB2E4\uD06C \uBAA8\uB4DC \uC804\uD658";g.textContent=t==="light"?"\u2600\uFE0F":"\uD83C\uDF19";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";if(l){document.documentElement.removeAttribute("data-theme");g.textContent="\uD83C\uDF19";localStorage.setItem("pst-report-theme","dark");}else{document.documentElement.setAttribute("data-theme","light");g.textContent="\u2600\uFE0F";localStorage.setItem("pst-report-theme","light");}});});window.addEventListener("pageshow",function(e){if(e.persisted){var s=localStorage.getItem("pst-report-theme"),il=s==="light";if(il)document.documentElement.setAttribute("data-theme","light");else document.documentElement.removeAttribute("data-theme");var b=document.getElementById("themeToggle");if(b)b.textContent=il?"\u2600\uFE0F":"\uD83C\uDF19";}});})()</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PST 기획 보고서 인덱스</title>
+<title>PST 기획서 — Solitaire City Journey</title>
 <style>
   :root {
     --bg: #0f1117;
@@ -19,6 +19,8 @@
     --accent-economy-bg: rgba(77,171,247,0.08);
     --accent-balance-bg: rgba(105,219,124,0.08);
     --accent-plan-bg: rgba(218,119,242,0.08);
+    --accent-ext: #ffa94d;
+    --accent-ext-bg: rgba(255,169,77,0.08);
     --header-bg: linear-gradient(135deg, #1a1d27 0%, #242736 100%);
     --card-hover-shadow: rgba(0,0,0,0.3);
     --tag-bg: rgba(255,255,255,0.04);
@@ -34,6 +36,8 @@
     --accent-economy: #2563eb;
     --accent-balance: #16a34a;
     --accent-plan: #9333ea;
+    --accent-ext: #d97706;
+    --accent-ext-bg: rgba(217,119,6,0.06);
     --accent-economy-bg: rgba(37,99,235,0.06);
     --accent-balance-bg: rgba(22,163,74,0.06);
     --accent-plan-bg: rgba(147,51,234,0.06);
@@ -64,10 +68,36 @@
     letter-spacing: -0.5px;
     margin-bottom: 8px;
   }
-  .header p {
+  .header .header-sub {
     color: var(--text-dim);
     font-size: 15px;
+    margin-bottom: 14px;
   }
+  .header-stats {
+    display: inline-flex;
+    gap: 20px;
+    margin-top: 4px;
+  }
+  .header-stat {
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .header-stat-num {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .header-stat-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .header-stat-dot.economy { background: var(--accent-economy); }
+  .header-stat-dot.balance { background: var(--accent-balance); }
+  .header-stat-dot.plan { background: var(--accent-plan); }
 
   /* Nav */
   .nav {
@@ -98,6 +128,8 @@
   .nav a.balance:hover { background: var(--accent-balance-bg); }
   .nav a.plan { border-color: var(--accent-plan); color: var(--accent-plan); }
   .nav a.plan:hover { background: var(--accent-plan-bg); }
+  .nav a.ext { border-color: var(--accent-ext); color: var(--accent-ext); }
+  .nav a.ext:hover { background: var(--accent-ext-bg); }
 
   /* Main */
   .main { max-width: 960px; margin: 0 auto; padding: 32px 24px 80px; }
@@ -126,6 +158,7 @@
   .section-badge.economy { background: var(--accent-economy-bg); color: var(--accent-economy); border: 1px solid rgba(77,171,247,0.2); }
   .section-badge.balance { background: var(--accent-balance-bg); color: var(--accent-balance); border: 1px solid rgba(105,219,124,0.2); }
   .section-badge.plan { background: var(--accent-plan-bg); color: var(--accent-plan); border: 1px solid rgba(218,119,242,0.2); }
+  .section-badge.ext { background: var(--accent-ext-bg); color: var(--accent-ext); border: 1px solid rgba(255,169,77,0.2); }
   .section-title {
     font-size: 20px;
     font-weight: 700;
@@ -144,7 +177,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 24px;
+    padding: 22px 24px;
     margin-bottom: 12px;
     transition: all 0.2s;
     position: relative;
@@ -163,21 +196,77 @@
     top: 0;
     bottom: 0;
     width: 3px;
+    transition: width 0.2s;
   }
   .card.economy::before { background: var(--accent-economy); }
   .card.balance::before { background: var(--accent-balance); }
   .card.plan::before { background: var(--accent-plan); }
+  .card.ext::before { background: var(--accent-ext); }
+  .card.ext:hover { border-color: var(--accent-ext); }
+
+  /* Pinned / featured card */
+  .card.pinned::before { width: 4px; }
+  .card.economy.pinned { background: linear-gradient(to right, rgba(77,171,247,0.06) 0%, var(--surface) 140px); }
+  .card.balance.pinned { background: linear-gradient(to right, rgba(105,219,124,0.06) 0%, var(--surface) 140px); }
+  .card.economy.pinned:hover { background: linear-gradient(to right, rgba(77,171,247,0.08) 0%, var(--surface2) 140px); }
+  .card.balance.pinned:hover { background: linear-gradient(to right, rgba(105,219,124,0.08) 0%, var(--surface2) 140px); }
+  [data-theme="light"] .card.economy.pinned { background: linear-gradient(to right, rgba(37,99,235,0.04) 0%, var(--surface) 140px); }
+  [data-theme="light"] .card.balance.pinned { background: linear-gradient(to right, rgba(22,163,74,0.04) 0%, var(--surface) 140px); }
+
+  .ext-badge {
+    font-size: 11px;
+    color: var(--accent-ext);
+    opacity: 0.8;
+    margin-left: 6px;
+  }
 
   .card-top {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 8px;
+    gap: 12px;
   }
   .card-title {
     font-size: 17px;
     font-weight: 600;
     line-height: 1.4;
+  }
+
+  /* Badges group (status + version) */
+  .card-badges {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .status-inline {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+  }
+  .status-inline.final {
+    background: rgba(105,219,124,0.12);
+    color: #69db7c;
+    border: 1px solid rgba(105,219,124,0.22);
+  }
+  .status-inline.live {
+    background: rgba(255,169,77,0.10);
+    color: #ffa94d;
+    border: 1px solid rgba(255,169,77,0.22);
+  }
+  [data-theme="light"] .status-inline.final {
+    background: rgba(22,163,74,0.08);
+    color: #16a34a;
+    border-color: rgba(22,163,74,0.2);
+  }
+  [data-theme="light"] .status-inline.live {
+    background: rgba(217,119,6,0.08);
+    color: #d97706;
+    border-color: rgba(217,119,6,0.2);
   }
   .card-version {
     font-size: 11px;
@@ -187,14 +276,21 @@
     color: var(--text-dim);
     font-weight: 600;
     white-space: nowrap;
-    flex-shrink: 0;
-    margin-left: 12px;
   }
+
   .card-desc {
     color: var(--text-dim);
     font-size: 14px;
     line-height: 1.6;
     margin-bottom: 12px;
+  }
+
+  /* Card footer: tags left, date right */
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
   }
   .card-tags {
     display: flex;
@@ -209,6 +305,14 @@
     color: var(--text-dim);
     border: 1px solid var(--tag-border);
   }
+  .card-date {
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
   .card-arrow {
     position: absolute;
     right: 24px;
@@ -243,6 +347,18 @@
   }
   .theme-toggle:hover { border-color: var(--text-dim); transform: scale(1.1); }
 
+  /* Subsection label */
+  .subsection-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin: 20px 0 10px;
+    padding-left: 2px;
+  }
+  .subsection-label:first-of-type { margin-top: 4px; }
+
   /* Footer */
   .footer {
     text-align: center;
@@ -253,13 +369,33 @@
     max-width: 960px;
     margin: 0 auto;
   }
+  .footer a {
+    color: var(--text-dim);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .footer a:hover { color: var(--text); }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>PST 기획 보고서</h1>
-  <p>Puzzle Solitaire Tripeaks &mdash; 경제 설계 &middot; 게임 밸런스 &middot; 기획 문서</p>
+  <h1>PST 기획서</h1>
+  <p class="header-sub">Solitaire City Journey &mdash; 라이브 서비스 중 · 경제 설계 · 밸런스 · 기획 문서 모음</p>
+  <div class="header-stats">
+    <span class="header-stat">
+      <span class="header-stat-dot plan"></span>
+      기획 <span class="header-stat-num">3</span>
+    </span>
+    <span class="header-stat">
+      <span class="header-stat-dot economy"></span>
+      경제 <span class="header-stat-num">3</span>
+    </span>
+    <span class="header-stat">
+      <span class="header-stat-dot balance"></span>
+      밸런스 <span class="header-stat-num">2</span>
+    </span>
+  </div>
 </div>
 
 <nav class="nav">
@@ -275,21 +411,94 @@
     <div class="section-header">
       <span class="section-badge plan">Planning</span>
       <span class="section-title">기획 문서</span>
-      <span class="section-desc">게임 기획 및 설계 스펙</span>
+      <span class="section-desc">외부 참조 문서 및 내부 보고서</span>
     </div>
+
+    <div class="subsection-label">외부 문서</div>
+
+    <a class="card ext" href="https://docs.google.com/presentation/d/1-su2a9WxMbBfHAAR5X2pAAphyn-fAJn2EC3s1yWJOqc/edit?slide=id.g3ba5543eee5_0_0&pli=1#slide=id.g3ba5543eee5_0_0" target="_blank" rel="noopener">
+      <div class="card-top">
+        <span class="card-title">UI/UX 기획서<span class="ext-badge">↗</span></span>
+        <div class="card-badges">
+          <span class="status-inline live">라이브</span>
+          <span class="card-version">Slides</span>
+        </div>
+      </div>
+      <div class="card-desc">
+        전체 UI/UX 흐름 및 화면 기획서. Google Slides.
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">UI/UX</span>
+          <span class="tag">기획서</span>
+          <span class="tag">Google Slides</span>
+        </div>
+      </div>
+      <span class="card-arrow">↗</span>
+    </a>
+
+    <a class="card ext" href="https://docs.google.com/spreadsheets/d/1oLbpsJjiDz0pdljaGBQznrSZcXA7aypFyJihnQ8_iiM/edit?gid=11825551#gid=11825551" target="_blank" rel="noopener">
+      <div class="card-top">
+        <span class="card-title">밸런스 시트<span class="ext-badge">↗</span></span>
+        <div class="card-badges">
+          <span class="status-inline live">라이브</span>
+          <span class="card-version">Sheets</span>
+        </div>
+      </div>
+      <div class="card-desc">
+        라이브 밸런스 데이터 시트. 재화·난이도·보상 수치 확정값 기준.
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">밸런스</span>
+          <span class="tag">라이브 데이터</span>
+          <span class="tag">Google Sheets</span>
+        </div>
+      </div>
+      <span class="card-arrow">↗</span>
+    </a>
+
+    <a class="card ext" href="https://docs.google.com/spreadsheets/d/1-QxV4ToLnL32qiQkWxbISFd575BYwVKBcaBE4YwJBLo/edit?gid=0#gid=0" target="_blank" rel="noopener">
+      <div class="card-top">
+        <span class="card-title">로그 정의서<span class="ext-badge">↗</span></span>
+        <div class="card-badges">
+          <span class="status-inline live">라이브</span>
+          <span class="card-version">Sheets</span>
+        </div>
+      </div>
+      <div class="card-desc">
+        게임 이벤트 로그 항목 정의 및 파라미터 명세. Google Sheets.
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">로그</span>
+          <span class="tag">이벤트</span>
+          <span class="tag">Google Sheets</span>
+        </div>
+      </div>
+      <span class="card-arrow">↗</span>
+    </a>
+
+    <div class="subsection-label">내부 페이지</div>
 
     <a class="card plan" href="07_tutorial_planning_doc.html">
       <div class="card-top">
         <span class="card-title">튜토리얼 기획서</span>
-        <span class="card-version">&mdash;</span>
+        <div class="card-badges">
+          <span class="status-inline final">최종</span>
+          <span class="card-version">v1</span>
+        </div>
       </div>
       <div class="card-desc">
         신규 유저 온보딩 흐름, 튜토리얼 단계별 목표·트리거·UI 스펙, 강제 레벨 설계를 포함한 기획 문서.
       </div>
-      <div class="card-tags">
-        <span class="tag">튜토리얼</span>
-        <span class="tag">온보딩</span>
-        <span class="tag">기획서</span>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">튜토리얼</span>
+          <span class="tag">온보딩</span>
+          <span class="tag">기획서</span>
+        </div>
+        <span class="card-date">2026-03-30</span>
       </div>
       <span class="card-arrow">&rarr;</span>
     </a>
@@ -297,15 +506,43 @@
     <a class="card plan" href="11_city_decoration_reform.html">
       <div class="card-top">
         <span class="card-title">도시 꾸미기 개편 — 밸런스 시트 수정 + UI/UX 명세</span>
-        <span class="card-version">&mdash;</span>
+        <div class="card-badges">
+          <span class="status-inline final">최종</span>
+          <span class="card-version">v1</span>
+        </div>
       </div>
       <div class="card-desc">
         메타 도시 데코레이션 시스템 개편안. 밸런스 시트 수정 내역과 UI/UX 상세 명세 포함.
       </div>
-      <div class="card-tags">
-        <span class="tag">도시 꾸미기</span>
-        <span class="tag">밸런스 시트</span>
-        <span class="tag">UI/UX</span>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">도시 꾸미기</span>
+          <span class="tag">밸런스 시트</span>
+          <span class="tag">UI/UX</span>
+        </div>
+        <span class="card-date">2026-03-30</span>
+      </div>
+      <span class="card-arrow">&rarr;</span>
+    </a>
+
+    <a class="card plan" href="12_art_production_schedule.html">
+      <div class="card-top">
+        <span class="card-title">아트 제작 일정 &amp; 꾸미기 소진 예측</span>
+        <div class="card-badges">
+          <span class="status-inline final">최종</span>
+          <span class="card-version">v1</span>
+        </div>
+      </div>
+      <div class="card-desc">
+        Progressive Hammer Curve v2.5 기반 도시별 데코레이션 아트 제작 우선순위, Gantt 타임라인, 유저 소진 시점 예측. 아트팀 협업용.
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">아트 일정</span>
+          <span class="tag">소진 예측</span>
+          <span class="tag">Gantt</span>
+        </div>
+        <span class="card-date">2026-03-30</span>
       </div>
       <span class="card-arrow">&rarr;</span>
     </a>
@@ -319,18 +556,24 @@
       <span class="section-desc">재화 흐름, 인플레이션, 밸런스 시트</span>
     </div>
 
-    <a class="card economy" href="economy_report_final.html">
+    <a class="card economy pinned" href="economy_report_final.html">
       <div class="card-top">
         <span class="card-title">PST 경제 시스템 최종 보고서</span>
-        <span class="card-version">v7</span>
+        <div class="card-badges">
+          <span class="status-inline final">최종</span>
+          <span class="card-version">v7</span>
+        </div>
       </div>
       <div class="card-desc">
         골드 Source/Sink 구조, 일일 수급 시뮬레이션, 인플레이션 분석을 포함한 종합 경제 보고서. 차트와 데이터 테이블 포함.
       </div>
-      <div class="card-tags">
-        <span class="tag">Source/Sink</span>
-        <span class="tag">시뮬레이션</span>
-        <span class="tag">종합 보고서</span>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">Source/Sink</span>
+          <span class="tag">시뮬레이션</span>
+          <span class="tag">종합 보고서</span>
+        </div>
+        <span class="card-date">2026-03-30</span>
       </div>
       <span class="card-arrow">&rarr;</span>
     </a>
@@ -338,15 +581,21 @@
     <a class="card economy" href="balance_sheet_guide.html">
       <div class="card-top">
         <span class="card-title">경제 밸런스 시트 설명서</span>
-        <span class="card-version">v7</span>
+        <div class="card-badges">
+          <span class="status-inline final">최종</span>
+          <span class="card-version">v7</span>
+        </div>
       </div>
       <div class="card-desc">
         밸런스 시트 컬럼 정의, 데이터 해석 방법, 수치 검증 기준을 정리한 가이드 문서.
       </div>
-      <div class="card-tags">
-        <span class="tag">밸런스 시트</span>
-        <span class="tag">컬럼 정의</span>
-        <span class="tag">가이드</span>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">밸런스 시트</span>
+          <span class="tag">컬럼 정의</span>
+          <span class="tag">가이드</span>
+        </div>
+        <span class="card-date">2026-03-30</span>
       </div>
       <span class="card-arrow">&rarr;</span>
     </a>
@@ -354,15 +603,21 @@
     <a class="card economy" href="09_gold_inflation_report.html">
       <div class="card-top">
         <span class="card-title">골드 인플레이션 해소 — 론칭안</span>
-        <span class="card-version">V4</span>
+        <div class="card-badges">
+          <span class="status-inline final">최종</span>
+          <span class="card-version">v4</span>
+        </div>
       </div>
       <div class="card-desc">
-        라이브 데이터 기반 골드 인플레이션 진단 및 V4 론칭안. 파라미터 조정 내역과 KPI 변화 추적 포함.
+        라이브 데이터 기반 골드 인플레이션 진단 및 v4 론칭안. 파라미터 조정 내역과 KPI 변화 추적 포함.
       </div>
-      <div class="card-tags">
-        <span class="tag">인플레이션</span>
-        <span class="tag">라이브 검증</span>
-        <span class="tag">론칭안</span>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">인플레이션</span>
+          <span class="tag">라이브 검증</span>
+          <span class="tag">론칭안</span>
+        </div>
+        <span class="card-date">2026-03-30</span>
       </div>
       <span class="card-arrow">&rarr;</span>
     </a>
@@ -376,18 +631,24 @@
       <span class="section-desc">난이도 조절, 보상 설계</span>
     </div>
 
-    <a class="card balance" href="10_dynamic_level_report.html">
+    <a class="card balance pinned" href="10_dynamic_level_report.html">
       <div class="card-top">
         <span class="card-title">Dynamic Level 시뮬레이션 검증 보고서</span>
-        <span class="card-version">DDA</span>
+        <div class="card-badges">
+          <span class="status-inline final">최종</span>
+          <span class="card-version">v1</span>
+        </div>
       </div>
       <div class="card-desc">
         플레이어 유형별(Hardcore~Casual) DDA 시뮬레이션 결과. 난이도 분포, 연승/연패 패턴, 파라미터 민감도 분석.
       </div>
-      <div class="card-tags">
-        <span class="tag">DDA</span>
-        <span class="tag">시뮬레이션</span>
-        <span class="tag">난이도 분포</span>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">DDA</span>
+          <span class="tag">시뮬레이션</span>
+          <span class="tag">난이도 분포</span>
+        </div>
+        <span class="card-date">2026-03-31</span>
       </div>
       <span class="card-arrow">&rarr;</span>
     </a>
@@ -395,15 +656,21 @@
     <a class="card balance" href="reward_system_report.html">
       <div class="card-top">
         <span class="card-title">보상 시스템 현황 보고서</span>
-        <span class="card-version">&mdash;</span>
+        <div class="card-badges">
+          <span class="status-inline final">최종</span>
+          <span class="card-version">v1</span>
+        </div>
       </div>
       <div class="card-desc">
         가챠 풀(데일리 휠·스트릭), 출석 보상, 이벤트 마일스톤 등 전체 보상 채널 현황과 기대값 분석.
       </div>
-      <div class="card-tags">
-        <span class="tag">가챠</span>
-        <span class="tag">출석 보상</span>
-        <span class="tag">이벤트</span>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">가챠</span>
+          <span class="tag">출석 보상</span>
+          <span class="tag">이벤트</span>
+        </div>
+        <span class="card-date">2026-03-30</span>
       </div>
       <span class="card-arrow">&rarr;</span>
     </a>
@@ -412,28 +679,8 @@
 </div>
 
 <div class="footer">
-  PST Solitaire Tripeaks &mdash; Game Design Documents &middot; Last updated 2026-03-25
+  PST Solitaire City Journey &mdash; Game Design Documents &middot; Last updated 2026-03-31 &middot; <a href="CHANGELOG.md">변경 이력</a>
 </div>
 
-<script>
-(function(){
-  const KEY = 'pst-report-theme';
-  const btn = document.getElementById('themeToggle');
-  const saved = localStorage.getItem(KEY);
-  if (saved === 'light') { document.documentElement.setAttribute('data-theme','light'); btn.textContent = '☀️'; }
-  btn.addEventListener('click', function(){
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-    if (isLight) {
-      document.documentElement.removeAttribute('data-theme');
-      btn.textContent = '🌙';
-      localStorage.setItem(KEY, 'dark');
-    } else {
-      document.documentElement.setAttribute('data-theme','light');
-      btn.textContent = '☀️';
-      localStorage.setItem(KEY, 'light');
-    }
-  });
-})();
-</script>
 </body>
 </html>

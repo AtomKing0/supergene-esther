@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>아트 제작 일정 & 꾸미기 소진 예측 v3.0</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a; --border: #2e3250;
@@ -22,7 +23,7 @@
 .back-btn{position:fixed;top:16px;right:68px;z-index:200;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.2);text-decoration:none}
 .back-btn:hover{border-color:var(--muted);color:var(--text);transform:translateY(-1px);text-decoration:none}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.6}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6}
 .container{max-width:1200px;margin:0 auto;padding:40px 24px 80px}
 .report-header{text-align:center;padding:48px 0 32px;border-bottom:1px solid var(--border);margin-bottom:40px}
 .report-header .badge{display:inline-block;background:linear-gradient(135deg,var(--surface),var(--surface2));border:1px solid var(--accent);color:var(--accent);font-size:11px;letter-spacing:2px;padding:4px 14px;border-radius:20px;text-transform:uppercase;margin-bottom:16px}
@@ -78,6 +79,7 @@ tr.locked .drag-handle{color:var(--border);cursor:not-allowed}
 .bm-chip .bm-btn.del:hover{color:var(--red)}
 .bm-chip .bm-btn.save{color:var(--yellow)}.bm-chip .bm-btn.save:hover{color:var(--accent);background:rgba(100,255,218,.1)}
 .bm-chip.modified{border-color:var(--yellow);border-style:dashed}
+.bm-chip .bm-ts{font-size:.78em;color:var(--muted);opacity:.8;margin-left:3px}
 .bm-add{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px dashed var(--border);border-radius:16px;padding:4px 12px;font-size:.78em;cursor:pointer;color:var(--muted);transition:all .2s}
 .bm-add:hover{border-color:var(--accent);color:var(--accent)}
 
@@ -205,7 +207,7 @@ document.getElementById('themeToggle').addEventListener('click',function(){
     <div class="row">
       <label>도시당 제작 기간 <input type="number" id="artDaysInput" value="4" min="1" max="30" step="1" onchange="setArtDays(this.value)" style="width:48px;text-align:center"></label>
       <span class="order-badge">일</span>
-      <label>런칭 빌드 도시 수 <input type="number" id="launchCitiesInput" value="8" min="5" max="30" step="1" onchange="setLaunchCities(this.value)" style="width:48px;text-align:center"></label>
+      <label>런칭 빌드 도시 수 <input type="number" id="launchCitiesInput" value="10" min="5" max="30" step="1" onchange="setLaunchCities(this.value)" style="width:48px;text-align:center"></label>
       <span class="order-badge">개</span>
     </div>
     <div class="ctrl-hint">시나리오 ①은 이 제작 기간과 동일한 간격으로 배포</div>
@@ -290,7 +292,7 @@ const CITIES_BASE = [
   {id:'newyork',name:'New York',locked:true,artDone:new Date(2026,2,26)},
   {id:'venice',name:'Venice',locked:true,artDone:new Date(2026,2,26)},
   {id:'sapporo',name:'Sapporo',locked:true,artDone:new Date(2026,2,27)},
-  {id:'cairo',name:'Cairo',locked:true,artDone:new Date(2026,2,30)},
+  {id:'cairo',name:'Cairo',locked:true,pending:true,artDone:new Date(2026,3,2)},
   // Sheet city_order 5-30 (순서 미정, 드래그로 변경 가능)
   {id:'miami',name:'Miami'},
   {id:'prague',name:'Prague'},
@@ -346,7 +348,7 @@ let UPDATE_INTERVAL_EARLY = 5;  // 런칭 후 D+40 이내 업데이트 주기 (�
 let UPDATE_INTERVAL_LATE  = 8;  // 런칭 후 D+40 이후 업데이트 주기 (일)
 const UPDATE_SPLIT_DAY = 40;    // 주기 전환 기준일 (D+40)
 const PUBLISHED = 4;
-let LAUNCH_CITIES = 8;
+let LAUNCH_CITIES = 10;
 const TODAY = new Date(2026, 2, 26);
 let REVIEW = new Date(2026, 3, 22); // LAUNCH - 14일
 let LAUNCH = new Date(2026, 4, 6);
@@ -403,23 +405,20 @@ const BM_STORAGE = 'pst-city-bookmarks-v3';
 
 const DEFAULT_ORDER = CITIES_BASE.map(c => c.id);
 
+// 저장된 북마크 순서에 신규 도시 병합. locked 순서 불일치 시 null 반환.
+function _mergeOrder(savedOrder) {
+  const knownIds = new Set(DEFAULT_ORDER);
+  const locked = DEFAULT_ORDER.slice(0, PUBLISHED);
+  const valid = savedOrder.filter(id => knownIds.has(id));
+  for (let i = 0; i < PUBLISHED; i++) {
+    if (valid[i] !== locked[i]) return null;
+  }
+  const validSet = new Set(valid);
+  const newCities = DEFAULT_ORDER.filter(id => !validSet.has(id));
+  return [...valid, ...newCities];
+}
+
 function getOrder() {
-  // Load from active bookmark if exists
-  try {
-    const activeId = localStorage.getItem(ACTIVE_BM_KEY);
-    if (activeId) {
-      const bms = JSON.parse(localStorage.getItem(BM_STORAGE)) || [];
-      const bm = bms.find(b => b.id === activeId);
-      if (bm && bm.order.length === TOTAL_CITIES) {
-        const locked = DEFAULT_ORDER.slice(0, PUBLISHED);
-        let valid = true;
-        for (let i = 0; i < PUBLISHED; i++) {
-          if (bm.order[i] !== locked[i]) { valid = false; break; }
-        }
-        if (valid) { activeBookmarkId = activeId; return [...bm.order]; }
-      }
-    }
-  } catch {}
   return [...DEFAULT_ORDER];
 }
 
@@ -440,17 +439,43 @@ function addDate(base, days) {
   d.setDate(d.getDate() + days);
   return d;
 }
+// 한국 공휴일 (YYYY-M-D). 추석·설날 등은 해당 연도 확정 후 업데이트
+const KR_HOLIDAYS = new Set([
+  // 2026
+  '2026-3-1',   // 삼일절
+  '2026-5-5',   // 어린이날
+  '2026-6-6',   // 현충일 (토요일이나 대체공휴일 없음)
+  '2026-8-17',  // 광복절 대체공휴일 (8/15 토 → 월)
+  '2026-10-5',  // 개천절 대체공휴일 (10/3 토 → 월)
+  '2026-10-9',  // 한글날
+  '2026-12-25', // 크리스마스
+  // 설날 (2026-02-16~18)
+  '2026-2-16', '2026-2-17', '2026-2-18',
+  // 추석 (2026-09-24~26)
+  '2026-9-24', '2026-9-25', '2026-9-26',
+]);
+
+function isWorkday(d) {
+  const dow = d.getDay();
+  if (dow === 0 || dow === 6) return false;
+  return !KR_HOLIDAYS.has(`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`);
+}
+
 function addBusinessDays(base, n) {
   const d = new Date(base);
   let added = 0;
   while (added < n) {
     d.setDate(d.getDate() + 1);
-    const dow = d.getDay();
-    if (dow !== 0 && dow !== 6) added++;
+    if (isWorkday(d)) added++;
   }
   return d;
 }
 function fmtDate(d) { return (d.getMonth()+1) + '/' + d.getDate(); }
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function fmtBmDate(iso) {
+  const d = new Date(iso);
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
 
 function compute(cities) {
   const lastLocked = cities.filter(c => c.locked).reduce((a, b) => (b.artDone > a.artDone ? b : a));
@@ -485,7 +510,7 @@ function compute(cities) {
     // Art completion date
     let artDate, phase;
     if (c.locked) {
-      artDate = c.artDone; phase = 'Published';
+      artDate = c.artDone; phase = c.pending ? 'Pre-Launch' : 'Published';
     } else if (i < LAUNCH_CITIES) {
       const prodNum = i - PUBLISHED;
       artDate = preLaunchDates[prodNum];
@@ -559,7 +584,8 @@ function updateOrderStatus() {
       renderBookmarks();
       return;
     }
-    // Order was modified from bookmark
+    // Order was modified from bookmark — remember it as overwrite target
+    lastModifiedFromId = activeBookmarkId;
     activeBookmarkId = null;
     setActiveBookmark(null);
   }
@@ -582,22 +608,24 @@ function resetOrder() {
   lastModifiedFromId = null;
   setActiveBookmark(null);
   renderAll();
+  saveCityOrder();
 }
 
 // ========== BOOKMARKS ==========
 let activeBookmarkId = null;
 let lastModifiedFromId = null; // tracks which bookmark was active before unsaved change
 
-function getBookmarks() {
-  try { return JSON.parse(localStorage.getItem(BM_STORAGE)) || []; }
-  catch { return []; }
+function getBookmarks() { return bookmarksCache; }
+function saveBookmarks(bms) {
+  bookmarksCache = [...bms];
+  localStorage.setItem(BM_STORAGE, JSON.stringify(bms));
+  _syncBookmarksToSupabase(bms);
 }
-function saveBookmarks(bms) { localStorage.setItem(BM_STORAGE, JSON.stringify(bms)); }
 
 function addBookmark() {
   const bms = getBookmarks();
   const num = bms.length + 1;
-  const bm = { id: Date.now().toString(36), name: '버전 ' + num, order: [...currentOrder] };
+  const bm = { id: Date.now().toString(36), name: '버전 ' + num, order: [...currentOrder], updatedAt: new Date().toISOString() };
   bms.push(bm);
   saveBookmarks(bms);
   activeBookmarkId = bm.id;
@@ -611,6 +639,7 @@ function updateBookmark(id) {
   const bm = bms.find(b => b.id === id);
   if (!bm) return;
   bm.order = [...currentOrder];
+  bm.updatedAt = new Date().toISOString();
   saveBookmarks(bms);
   activeBookmarkId = id;
   lastModifiedFromId = null;
@@ -622,7 +651,8 @@ function loadBookmark(id) {
   const bms = getBookmarks();
   const bm = bms.find(b => b.id === id);
   if (!bm) return;
-  currentOrder = [...bm.order];
+  const merged = _mergeOrder(bm.order);
+  currentOrder = merged || [...DEFAULT_ORDER];
   activeBookmarkId = id;
   lastModifiedFromId = null;
   setActiveBookmark(id);
@@ -647,6 +677,7 @@ function startRename(id) {
     const val = input.value.trim();
     if (val && val !== bm.name) {
       bm.name = val;
+      bm.updatedAt = new Date().toISOString();
       saveBookmarks(bms);
     }
     renderBookmarks();
@@ -667,7 +698,7 @@ function confirmDeleteBookmark(id) {
     <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
       <div class="modal-box">
         <h3>버전 삭제</h3>
-        <p>"<strong>${bm.name}</strong>"을(를) 삭제하시겠습니까?</p>
+        <p>"<strong>${esc(bm.name)}</strong>"을(를) 삭제하시겠습니까?</p>
         <div class="modal-actions">
           <button onclick="closeModal()">취소</button>
           <button class="danger" onclick="doDeleteBookmark('${id}')">삭제</button>
@@ -699,14 +730,18 @@ function renderBookmarks() {
   // Find overwrite target: lastModifiedFromId or null
   const overwriteTarget = isUnsaved && lastModifiedFromId ? bms.find(b => b.id === lastModifiedFromId) : null;
 
+  // 미저장 + 활성 북마크 없음: 전체 북마크에 💾 표시해 선택 저장 가능
+  const showAllSave = isUnsaved && !lastModifiedFromId && !activeBookmarkId;
+
   let html = '';
   bms.forEach(bm => {
     const active = bm.id === activeBookmarkId ? ' active' : '';
     const isOverwriteTarget = overwriteTarget && overwriteTarget.id === bm.id;
+    const showSave = isOverwriteTarget || showAllSave;
     html += `<span class="bm-chip${active}${isOverwriteTarget ? ' modified' : ''}" data-bm-id="${bm.id}">
-      <span class="bm-name" onclick="loadBookmark('${bm.id}')" title="${bm.name}">${bm.name}</span>`;
-    if (isOverwriteTarget) {
-      html += `<button class="bm-btn save" onclick="event.stopPropagation();updateBookmark('${bm.id}')" title="${bm.name}에 저장">💾</button>`;
+      <span class="bm-name" onclick="loadBookmark('${bm.id}')" title="${esc(bm.name)}">${esc(bm.name)}${bm.updatedAt ? `<span class="bm-ts">· ${fmtBmDate(bm.updatedAt)}</span>` : ''}</span>`;
+    if (showSave) {
+      html += `<button class="bm-btn save" onclick="event.stopPropagation();updateBookmark('${bm.id}')" title="${esc(bm.name)}에 저장">💾</button>`;
     }
     html += `<button class="bm-btn" onclick="event.stopPropagation();startRename('${bm.id}')" title="이름 변경">✎</button>
       <button class="bm-btn del" onclick="event.stopPropagation();confirmDeleteBookmark('${bm.id}')" title="삭제">✕</button>
@@ -714,7 +749,9 @@ function renderBookmarks() {
   });
 
   if (isUnsaved && overwriteTarget) {
-    html += `<span class="bm-add" onclick="updateBookmark('${overwriteTarget.id}')">${overwriteTarget.name}에 저장</span>`;
+    html += `<span class="bm-add" onclick="updateBookmark('${overwriteTarget.id}')">${esc(overwriteTarget.name)}에 저장</span>`;
+    html += `<span class="bm-add" onclick="addBookmark()">+ 새 버전으로 저장</span>`;
+  } else if (showAllSave && bms.length > 0) {
     html += `<span class="bm-add" onclick="addBookmark()">+ 새 버전으로 저장</span>`;
   } else {
     html += `<span class="bm-add" onclick="addBookmark()">+ 현재 순서 저장</span>`;
@@ -722,25 +759,65 @@ function renderBookmarks() {
   el.innerHTML = html;
 }
 
+// ========== BOOKMARK SYNC ==========
+let bookmarksCache = [];
+let _isSavingBookmarks = false;
+
+async function loadBookmarks() {
+  try {
+    const { data, error } = await _sb.from('city_bookmarks').select('*').order('sort_order', { ascending: true });
+    if (error) throw error;
+    bookmarksCache = data.map(r => ({ id: r.bm_id, name: r.name, order: JSON.parse(r.order_ids), updatedAt: r.updated_at || null }));
+    localStorage.setItem(BM_STORAGE, JSON.stringify(bookmarksCache));
+  } catch (e) {
+    console.warn('북마크 로드 실패, localStorage 사용', e);
+    try { bookmarksCache = JSON.parse(localStorage.getItem(BM_STORAGE)) || []; }
+    catch { bookmarksCache = []; }
+  }
+}
+
+async function _syncBookmarksToSupabase(bms) {
+  _isSavingBookmarks = true;
+  try {
+    const { data: existing } = await _sb.from('city_bookmarks').select('bm_id');
+    const existingIds = new Set((existing || []).map(r => r.bm_id));
+    const newIds = new Set(bms.map(b => b.id));
+    const toDelete = [...existingIds].filter(id => !newIds.has(id));
+    if (toDelete.length) await _sb.from('city_bookmarks').delete().in('bm_id', toDelete);
+    if (bms.length) await _sb.from('city_bookmarks').upsert(
+      bms.map((b, i) => ({ bm_id: b.id, name: b.name, order_ids: JSON.stringify(b.order), sort_order: i, updated_at: b.updatedAt || new Date().toISOString() }))
+    );
+  } catch (e) {
+    console.error('북마크 저장 실패', e);
+    showToast('⚠️ 북마크 저장 실패: ' + e.message, 'var(--red)');
+  } finally {
+    setTimeout(() => { _isSavingBookmarks = false; }, 600);
+  }
+}
+
 // ========== CITY MANAGEMENT ==========
 const CITY_NAMES_KEY = 'pst-city-names-v3';
 const ART_DONE_LS_KEY = 'pst-art-done-v1'; // localStorage 폴백용
+const CITY_CONFIG_LS_KEY = 'pst-city-config-v1'; // 도시 목록 localStorage 캐시
 
-// art_done_gas.js 배포 후 웹앱 URL을 아래에 입력
-const ART_STATUS_URL = '';
+// Supabase 협업 sync
+const SUPABASE_URL = 'https://hfiukhidqwhntdpmippt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_xBec1mH6Vdlm08vNtlYmbA_EMgH8Ui9';
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let artDoneCache = {};
 
 async function loadArtDone() {
-  if (ART_STATUS_URL) {
-    try {
-      const res = await fetch(`${ART_STATUS_URL}?action=read`);
-      artDoneCache = await res.json();
-      return;
-    } catch (e) { console.warn('Sheets API 연결 실패, localStorage 사용', e); }
+  try {
+    const { data, error } = await _sb.from('art_done').select('city_id, done_at, done_by');
+    if (error) throw error;
+    artDoneCache = {};
+    data.forEach(r => { artDoneCache[r.city_id] = r.done_by ? `${r.done_at} (${r.done_by})` : r.done_at; });
+  } catch (e) {
+    console.warn('Supabase 연결 실패, localStorage 사용', e);
+    try { artDoneCache = JSON.parse(localStorage.getItem(ART_DONE_LS_KEY)) || {}; }
+    catch { artDoneCache = {}; }
   }
-  try { artDoneCache = JSON.parse(localStorage.getItem(ART_DONE_LS_KEY)) || {}; }
-  catch { artDoneCache = {}; }
 }
 
 function getCityNames() {
@@ -775,34 +852,34 @@ function deleteCity(idx) {
   currentOrder = currentOrder.filter(id => id !== c.id);
   DEFAULT_ORDER.splice(DEFAULT_ORDER.indexOf(c.id), 1);
   renderAll();
+  saveCityConfig();
+  saveCityOrder();
   showToast(`🗑 "${c.name}" 삭제됨`, 'var(--red)');
 }
 
 function getArtDone() { return artDoneCache; }
 
 async function toggleArtDone(cityId) {
-  if (ART_STATUS_URL) {
-    try {
-      const res = await fetch(`${ART_STATUS_URL}?action=toggle&cityId=${encodeURIComponent(cityId)}`);
-      artDoneCache = await res.json();
-      const checked = !!artDoneCache[cityId];
-      renderAll();
-      showToast(checked ? '✅ 아트 완료 체크' : '⬜ 완료 취소됨', checked ? 'var(--green)' : 'var(--yellow)');
-      return;
-    } catch (e) { console.warn('Sheets API 연결 실패, localStorage 사용', e); }
-  }
-  // localStorage 폴백
   const wasChecked = !!artDoneCache[cityId];
-  if (wasChecked) {
-    delete artDoneCache[cityId];
-  } else {
-    const now = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    artDoneCache[cityId] = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  try {
+    if (wasChecked) {
+      const { error } = await _sb.from('art_done').delete().eq('city_id', cityId);
+      if (error) throw error;
+      delete artDoneCache[cityId];
+    } else {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const ts = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      const { error } = await _sb.from('art_done').upsert({ city_id: cityId, done_at: ts });
+      if (error) throw error;
+      artDoneCache[cityId] = ts;
+    }
+    renderAll();
+    showToast(!wasChecked ? '✅ 아트 완료 체크' : '⬜ 완료 취소됨', !wasChecked ? 'var(--green)' : 'var(--yellow)');
+  } catch (e) {
+    console.error('Supabase 저장 실패', e);
+    showToast('⚠️ 저장 실패: ' + e.message, 'var(--red)');
   }
-  localStorage.setItem(ART_DONE_LS_KEY, JSON.stringify(artDoneCache));
-  renderAll();
-  showToast(!wasChecked ? '✅ 아트 완료 체크' : '⬜ 완료 취소됨', !wasChecked ? 'var(--green)' : 'var(--yellow)');
 }
 
 // Apply saved custom names to CITIES_BASE
@@ -834,6 +911,7 @@ function startCityRename(idx) {
       const names = getCityNames();
       names[c.id] = val;
       saveCityNames(names);
+      saveCityConfig();
     }
     renderAll();
   };
@@ -866,6 +944,7 @@ function doAddCity() {
   const name = input.value.trim();
   if (!name) return;
   const id = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!id) { alert('도시 이름에 영문자 또는 숫자가 포함되어야 합니다.'); return; }
   if (CITIES_BASE.find(c => c.id === id)) {
     alert('이미 존재하는 도시입니다.');
     return;
@@ -881,6 +960,8 @@ function doAddCity() {
   DEFAULT_ORDER.push(id);
   closeModal();
   renderAll();
+  saveCityConfig();
+  saveCityOrder();
   showToast(`🏙 "${name}" 도시 추가됨`, 'var(--accent)');
 }
 
@@ -929,7 +1010,8 @@ function renderKPI(data) {
   const artDoneMap = getArtDone();
   const allCities = getCities(currentOrder);
   const checkedCount = allCities.filter(c => !c.locked && !!artDoneMap[c.id]).length;
-  const doneCount = PUBLISHED + checkedCount;
+  const publishedCount = data.filter(d => d.phase === 'Published').length;
+  const doneCount = publishedCount + checkedCount;
 
   // 5/8 목표 & 온트랙 계산
   const may8Target = LAUNCH_CITIES; // 5/8까지 완성 목표 = 런칭 빌드 전량
@@ -957,7 +1039,7 @@ function renderKPI(data) {
     </div>
     <div class="kpi-box" style="border-color:var(--green)">
       <div class="value" style="color:var(--green)">${doneCount} / ${TOTAL_CITIES}</div>
-      <div class="label">아트 완료<br>Published ${PUBLISHED} + 완성 ${checkedCount}개</div>
+      <div class="label">아트 완료<br>Published ${publishedCount} + 완성 ${checkedCount}개</div>
     </div>
   </div>
   <div class="kpi-grid" style="margin-bottom:16px">
@@ -1028,14 +1110,16 @@ function renderSchedule(data) {
   html += '</tr></thead><tbody>';
 
   let lastPhase = '';
+  let launchSectionShown = false;
   data.forEach((c, i) => {
     // Phase header rows
     if (c.phase !== lastPhase) {
       lastPhase = c.phase;
-      if (c.phase === 'Published') {
-        html += `<tr style="background:rgba(105,219,124,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--green)">Published (확정) — ${PUBLISHED}개 도시</td></tr>`;
-      } else if (c.phase === 'Pre-Launch') {
-        html += `<tr style="background:rgba(100,255,218,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--accent)">Pre-Launch 제작 (${fmtDate(addDate(data[PUBLISHED].artDate, -Math.round(PRE_START_DAYS)+1))} ~ ${fmtDate(data[LAUNCH_CITIES-1].artDate)}) — ${LAUNCH_CITIES-PUBLISHED}개 도시</td></tr>`;
+      if ((c.phase === 'Published' || c.phase === 'Pre-Launch') && !launchSectionShown) {
+        launchSectionShown = true;
+        const pubCnt = data.filter(d => d.phase === 'Published').length;
+        const preCnt = LAUNCH_CITIES - pubCnt;
+        html += `<tr style="background:rgba(100,255,218,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--accent)">런칭 준비 — <span style="color:var(--green)">완료 ${pubCnt}개</span> · <span style="color:var(--yellow)">제작 ${preCnt}개</span> · 납기 마감 ${fmtDate(data[LAUNCH_CITIES-1].artDate)}</td></tr>`;
       } else if (c.phase === 'Update 1') {
         html += `<tr style="background:rgba(87,182,255,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--blue)">QA &amp; Polish · <span class="milestone-badge milestone-review">${fmtDate(REVIEW)} 리뷰서밋</span> · <span class="milestone-badge milestone-launch">${fmtDate(LAUNCH)} 런칭</span></td></tr>`;
         html += `<tr style="background:rgba(199,125,255,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--purple)">Post-Launch Update (${fmtDate(LAUNCH)} ~ ${fmtDate(data[data.length-1].artDate)}) — ${TOTAL_CITIES-LAUNCH_CITIES}개 도시</td></tr>`;
@@ -1047,7 +1131,7 @@ function renderSchedule(data) {
     const cls = locked ? 'locked' : '';
     const artDone = getArtDone();
     const doneTs = artDone[c.id];
-    const artCheckHtml = locked
+    const artCheckHtml = (locked && !c.pending)
       ? `<span style="font-size:1.1em">✅</span><div class="art-done-ts">${fmtDate(c.artDate)}</div>`
       : doneTs
         ? `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="완료 취소">✅</button><div class="art-done-ts">${doneTs}</div>`
@@ -1059,7 +1143,7 @@ function renderSchedule(data) {
     const clDStr = 'D' + Math.round(c.pd['Casual Light']);
 
     let statusHtml;
-    if (locked) statusHtml = '<span style="color:var(--green)">Published</span>';
+    if (locked && !c.pending) statusHtml = '<span style="color:var(--green)">Published</span>';
     else if (c.phase === 'Pre-Launch') statusHtml = `<span style="color:var(--accent)">${c.phase}</span>`;
     else statusHtml = `<span style="color:var(--purple)">${c.phase}</span>`;
 
@@ -1071,7 +1155,7 @@ function renderSchedule(data) {
     html += `<tr class="${cls}" draggable="${draggable}" data-idx="${i}"${extraNote}>`;
     html += `<td class="drag-handle">${draggable ? '&#9776;' : '&#128274;'}</td>`;
     html += `<td>${c.n}</td>`;
-    html += `<td style="text-align:left"><strong>${c.name}</strong>${draggable ? `<button class="edit-btn" onclick="event.stopPropagation();startCityRename(${i})" title="이름 변경">✎</button><button class="edit-btn" onclick="event.stopPropagation();deleteCity(${i})" title="도시 삭제" style="color:var(--red)">✕</button>` : ''}</td>`;
+    html += `<td style="text-align:left"><strong>${esc(c.name)}</strong>${draggable ? `<button class="edit-btn" onclick="event.stopPropagation();startCityRename(${i})" title="이름 변경">✎</button><button class="edit-btn" onclick="event.stopPropagation();deleteCity(${i})" title="도시 삭제" style="color:var(--red)">✕</button>` : ''}</td>`;
     html += `<td>${statusHtml}</td>`;
     html += `<td>${c.h}</td>`;
     html += `<td style="color:#4A90D9">${c.games['Casual Light']}</td>`;
@@ -1133,6 +1217,7 @@ function setupDragDrop() {
       activeBookmarkId = null;
       setActiveBookmark(null);
       renderAll();
+      saveCityOrder();
     });
   });
 }
@@ -1355,10 +1440,174 @@ function renderRisk(data) {
 `;
 }
 
+// ========== CITY CONFIG SYNC (도시 목록·이름·추가·삭제) ==========
+let _isSavingConfig = false;
+
+function _applyCityList(cities) {
+  const locked = CITIES_BASE.filter(c => c.locked);
+  const lockedIds = new Set(locked.map(c => c.id));
+  const filtered = cities.filter(c => !lockedIds.has(c.id));
+  CITIES_BASE.splice(0, CITIES_BASE.length, ...locked, ...filtered);
+  TOTAL_CITIES = CITIES_BASE.length;
+  while (HAMMER_CURVE.length < TOTAL_CITIES) {
+    HAMMER_CURVE.push(Math.round(HAMMER_CURVE[HAMMER_CURVE.length-1] * 1.07));
+  }
+  DEFAULT_ORDER.splice(0, DEFAULT_ORDER.length, ...CITIES_BASE.map(c => c.id));
+}
+
+async function loadCityConfig() {
+  try {
+    const { data, error } = await _sb.from('city_config').select('cities').eq('id', 1).single();
+    if (error || !data || !Array.isArray(data.cities) || data.cities.length === 0) {
+      // Supabase 응답은 왔지만 유효 데이터 없음 → localStorage 폴백
+      try {
+        const cached = JSON.parse(localStorage.getItem(CITY_CONFIG_LS_KEY));
+        if (cached && Array.isArray(cached) && cached.length > 0) _applyCityList(cached);
+      } catch {}
+      return;
+    }
+    _applyCityList(data.cities);
+    localStorage.setItem(CITY_CONFIG_LS_KEY, JSON.stringify(data.cities));
+  } catch (e) {
+    console.warn('city_config 로드 실패, localStorage 폴백', e);
+    try {
+      const cached = JSON.parse(localStorage.getItem(CITY_CONFIG_LS_KEY));
+      if (cached && Array.isArray(cached) && cached.length > 0) _applyCityList(cached);
+    } catch {}
+  }
+}
+
+async function saveCityConfig() {
+  _isSavingConfig = true;
+  try {
+    const cities = CITIES_BASE.filter(c => !c.locked).map(c => ({id: c.id, name: c.name}));
+    localStorage.setItem(CITY_CONFIG_LS_KEY, JSON.stringify(cities));
+    await _sb.from('city_config').upsert({ id: 1, cities, updated_at: new Date().toISOString() });
+  } catch (e) {
+    console.error('city_config 저장 실패', e);
+    showToast('⚠️ 도시 설정 저장 실패: ' + e.message, 'var(--red)');
+  } finally {
+    setTimeout(() => { _isSavingConfig = false; }, 600);
+  }
+}
+
+// ========== CITY ORDER SYNC ==========
+let _isSavingOrder = false;
+
+const CITY_ORDER_LS_KEY = 'pst-city-order-v1';
+
+function _applyOrder(order) {
+  const knownIds = new Set(CITIES_BASE.map(c => c.id));
+  const locked = DEFAULT_ORDER.slice(0, PUBLISHED);
+  const valid = order.length === TOTAL_CITIES
+    && order.every(id => knownIds.has(id))
+    && locked.every((id, i) => order[i] === id);
+  if (valid) currentOrder = order;
+}
+
+async function loadCityOrder() {
+  try {
+    const { data, error } = await _sb.from('city_order').select('order_ids').eq('id', 1).single();
+    if (error) throw error;
+    if (!data) return;
+    const order = JSON.parse(data.order_ids);
+    _applyOrder(order);
+    localStorage.setItem(CITY_ORDER_LS_KEY, JSON.stringify(order));
+  } catch (e) {
+    console.warn('city_order 로드 실패, localStorage 사용', e);
+    try {
+      const cached = JSON.parse(localStorage.getItem(CITY_ORDER_LS_KEY));
+      if (cached && Array.isArray(cached)) _applyOrder(cached);
+    } catch {}
+  }
+}
+
+async function saveCityOrder() {
+  _isSavingOrder = true;
+  try {
+    localStorage.setItem(CITY_ORDER_LS_KEY, JSON.stringify(currentOrder));
+    await _sb.from('city_order').upsert({ id: 1, order_ids: JSON.stringify(currentOrder), updated_at: new Date().toISOString() });
+  } catch (e) {
+    console.error('city_order 저장 실패', e);
+    showToast('⚠️ 순서 저장 실패: ' + e.message, 'var(--red)');
+  } finally {
+    setTimeout(() => { _isSavingOrder = false; }, 600);
+  }
+}
+
 // ========== INIT ==========
 window.addEventListener('DOMContentLoaded', async () => {
-  await loadArtDone();
+  // city_config 먼저 로드 (CITIES_BASE 확정) → 이후 order/art_done 병렬 로드
+  await loadCityConfig();
+  await Promise.all([loadArtDone(), loadCityOrder(), loadBookmarks()]);
+
+  // 개인 북마크 복원: Supabase 로드 완료 후 last-active 북마크 적용
+  const _rememberedBmId = localStorage.getItem(ACTIVE_BM_KEY);
+  if (_rememberedBmId) {
+    const _bm = bookmarksCache.find(b => b.id === _rememberedBmId);
+    if (_bm) {
+      const _merged = _mergeOrder(_bm.order);
+      if (_merged) { currentOrder = _merged; activeBookmarkId = _rememberedBmId; }
+    } else {
+      // 삭제된 북마크 — localStorage 정리
+      localStorage.removeItem(ACTIVE_BM_KEY);
+    }
+  }
+
   renderAll();
+
+  // 실시간 채널 정리 (페이지 언로드 시)
+  const _channels = [];
+  window.addEventListener('beforeunload', () => _channels.forEach(ch => ch.unsubscribe()));
+
+  // 실시간 협업 sync — 도시 목록 (추가·삭제·이름 변경)
+  _channels.push(_sb.channel('city_config_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'city_config' }, payload => {
+      if (_isSavingConfig || !payload.new || !Array.isArray(payload.new.cities)) return;
+      _applyCityList(payload.new.cities);
+      // currentOrder 재정합: 사라진 도시 제거, 새 도시 뒤에 추가
+      const knownIds = new Set(CITIES_BASE.map(c => c.id));
+      currentOrder = currentOrder.filter(id => knownIds.has(id));
+      CITIES_BASE.forEach(c => { if (!currentOrder.includes(c.id)) currentOrder.push(c.id); });
+      renderAll();
+    })
+    .subscribe());
+
+  // 실시간 협업 sync — 아트 완료 체크
+  _channels.push(_sb.channel('art_done_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'art_done' }, payload => {
+      if (payload.eventType === 'DELETE') {
+        delete artDoneCache[payload.old.city_id];
+      } else {
+        const r = payload.new;
+        artDoneCache[r.city_id] = r.done_by ? `${r.done_at} (${r.done_by})` : r.done_at;
+      }
+      renderAll();
+    })
+    .subscribe());
+
+  // 실시간 협업 sync — 북마크 (저장된 순서 버전)
+  _channels.push(_sb.channel('city_bookmarks_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'city_bookmarks' }, async () => {
+      if (_isSavingBookmarks) return;
+      const { data } = await _sb.from('city_bookmarks').select('*').order('sort_order', { ascending: true });
+      if (data) {
+        bookmarksCache = data.map(r => ({ id: r.bm_id, name: r.name, order: JSON.parse(r.order_ids), updatedAt: r.updated_at || null }));
+        localStorage.setItem(BM_STORAGE, JSON.stringify(bookmarksCache));
+        renderBookmarks();
+      }
+    })
+    .subscribe());
+
+  // 실시간 협업 sync — 도시 순서 변경
+  _channels.push(_sb.channel('city_order_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'city_order' }, payload => {
+      if (_isSavingOrder || !payload.new || !payload.new.order_ids) return;
+      const order = JSON.parse(payload.new.order_ids);
+      _applyOrder(order);
+      renderAll();
+    })
+    .subscribe());
 });
 </script>
 </body>
