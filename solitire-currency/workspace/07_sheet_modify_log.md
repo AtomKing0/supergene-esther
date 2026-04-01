@@ -1644,3 +1644,135 @@ reward_1은 항상 currency_gold 유지. reward_2~4를 재배정하여 gold 60%,
 **총 수정 셀: 59건 (daily_task 48 + product 11) — 전체 검증 통과**
 
 ---
+
+---
+agent: 07_sheet_modifier
+mode: sheet-modify
+scope: meta_city_list, meta_decoration_list, collection_album_puzzle_list, collection_puzzle_piece_list
+executed: 2026-03-26
+status: complete
+approved_by: pm
+items_modified: 4 sheets
+items_skipped: 0
+---
+
+# 도시 순서 재배치 + 콜렉션 시스템 수정 (2026-03-26)
+
+## 1. meta_city_list — 21개 도시 순서 재배치
+
+### 변경 사유
+연속 도시 간 시각적 차이 극대화. 초기 4개 도시(NY, Venice, Sapporo, Cairo) 순서 유지, 5번째부터 테마 대비 기준으로 재배치.
+
+### 설계 원칙
+- **도시 고유 속성**(key_number, prefab_name, display_name)은 도시와 함께 이동
+- **포지션 기반 보상 티어**(reward_1_amount 등)는 포지션에 고정 (포지션 5는 항상 같은 보상 레벨)
+- `is_published`: 포지션 1-4 = TRUE, 5-21 = FALSE
+
+### 변경 내역
+
+| Pos | City | Old Pos | Reward Gold |
+|-----|------|---------|-------------|
+| 1 | New York | 1 | 6,000 |
+| 2 | Venice | 2 | 6,500 |
+| 3 | Sapporo | 3 | 7,000 |
+| 4 | Cairo | 4 | 7,000 |
+| 5 | Miami | 8 | 7,500 |
+| 6 | Prague | 21 | 8,000 |
+| 7 | Dubai | 15 | 8,000 |
+| 8 | Tokyo | 13 | 8,500 |
+| 9 | Barcelona | 18 | 9,000 |
+| 10 | Chicago | 7 | 9,000 |
+| 11 | Bangkok | 14 | 9,500 |
+| 12 | London | 10 | 10,000 |
+| 13 | Rio de Janeiro | 17 | 10,500 |
+| 14 | San Francisco | 5 | 10,500 |
+| 15 | Athens | 20 | 11,000 |
+| 16 | Las Vegas | 6 | 11,500 |
+| 17 | Sydney | 16 | 12,000 |
+| 18 | Rome | 11 | 12,500 |
+| 19 | Los Angeles | 12 | 13,000 |
+| 20 | Istanbul | 19 | 14,000 |
+| 21 | Paris | 9 | 15,500 |
+
+### 백업
+본 시트 O-Q열: `City | Original Order | New Order`
+
+---
+
+## 2. meta_decoration_list — 도시 순서 재배치 연동
+
+- 105행 (21 도시 × 5 데코) 도시 순서에 맞게 재배치
+- 코스트 티어(hammer, gold)는 포지션에 고정, 데코 이름(name_key)은 도시와 함께 이동
+- 변경 범위: 포지션 5-21 (85행)
+
+---
+
+## 3. collection_album_puzzle_list — 보상 재설계
+
+### 변경 사유
+앨범 보상을 입장료 대비 적절한 수준으로 조정. 초기 소량에서 점진적 증가, 상한선 설정.
+
+### 설계 기준
+- 골드 보상: 입장료 대비 ~2.8-3.4× (상한 12,000g = 최대 입장료 6,000g × 2)
+- 부스터: 저가→고가 순으로 점진 등장
+- 언락 레벨: 1→25→50→75→100→150→200
+
+### 변경 내역
+
+| City | Unlock | Gold | Booster 1 | Booster 2 | Booster 3 |
+|------|--------|------|-----------|-----------|-----------|
+| NY | Lv1 | 3,500 | fireworks×1 | - | - |
+| Venice | Lv25 | 5,000 | fireworks×1 | undo×1 | - |
+| Cairo | Lv50 | 6,000 | undo×1 | wild_card×1 | - |
+| Tokyo | Lv75 | 7,000 | wild_card×1 | fireworks×1 | - |
+| London | Lv100 | 8,500 | fireworks×1 | golden_ticket×1 | - |
+| Sydney | Lv150 | 10,000 | golden_ticket×1 | extra_deck×1 | - |
+| Paris | Lv200 | 12,000 | golden_ticket×1 | extra_deck×1 | ticket×1 |
+
+---
+
+## 4. collection_puzzle_piece_list — 84조각 생성 + 도시별 수량 점진 증가
+
+### 변경 사유
+기존 NY+Paris 14행 → 7개 도시 × 12조각 = 84행 확장. 도시별 총 소모 피스 수량 점진 증가.
+
+### 설계 기준
+- const 10044-46 참조: 드롭량 betting_1=1, betting_2=3, betting_4=5
+- 기본 패턴(1-12, 합계 78)에 도시별 승수 적용, 개별 조각 상한 25
+- 도시 내 순서는 랜덤 배치
+
+### 변경 내역
+
+| City | Multiplier | piece_amount (랜덤 배치) | Total |
+|------|-----------|------------------------|-------|
+| NY | ×1.0 | 8,6,3,9,10,7,12,4,5,1,2,11 | 78 |
+| Venice | ×1.2 | 7,10,4,12,13,8,6,11,5,2,14,1 | 93 |
+| Cairo | ×1.4 | 13,15,8,4,17,3,10,1,7,14,11,6 | 109 |
+| Tokyo | ×1.6 | 19,14,13,8,18,5,2,11,16,3,10,6 | 125 |
+| London | ×1.8 | 22,2,7,5,14,11,18,9,20,13,4,16 | 141 |
+| Sydney | ×2.0 | 16,6,12,18,14,22,20,10,8,2,4,24 | 156 |
+| Paris | ×2.2 | 15,9,11,2,22,18,4,20,25,7,13,24 | 170 |
+
+### 최소 클리어 게임수 (betting_4 기준)
+NY=16, Venice=19, Cairo=22, Tokyo=25, London=29, Sydney=32, Paris=34
+
+### 키 번호 할당
+NY: 80001-80012, Venice: 80013-80024, Cairo: 80025-80036, Tokyo: 80037-80048, London: 80049-80060, Sydney: 80061-80072, Paris: 80073-80084
+
+---
+
+## 타입 수정 (전 시트 공통)
+
+### 대상
+meta_city_list, meta_decoration_list — 양 시트(에이전트 + 라이브)
+
+### 수정 내용
+- 숫자: 문자열 → `numberValue` (int)
+- 불리언: `'TRUE'`/`'FALSE'` 문자열 → `boolValue` (true/false)
+- meta_city_list: 숫자 139셀 + 불리언 21셀
+- meta_decoration_list: 숫자 ~1,400셀 + 불리언 105셀
+
+### 오타 수정
+- meta_decoration_list Row41 Col6: `ㅡㄷㅅ` → `11` (라이브 시트 타이핑 오류)
+
+---

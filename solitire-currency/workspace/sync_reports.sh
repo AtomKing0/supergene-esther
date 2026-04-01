@@ -15,6 +15,7 @@ FILES=(
   "balance_sheet_guide.html"
   "economy_report_final.html"
   "reward_system_report.html"
+  "12_art_production_schedule.html"
 )
 
 mkdir -p "$DEST"
