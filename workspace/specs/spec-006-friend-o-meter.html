@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-006 · Friend-O-Meter</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #fb923c;
+  --accent2: #fdba74;
+  --green: #34d399;
+  --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;
+  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;
+  --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,0.12);
+  --teal: #2dd4bf;
+  --teal-bg: rgba(45,212,191,0.12);
+  --orange: #fb923c;
+  --orange-bg: rgba(251,146,60,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #2a1e14 45%, #1a1d27 100%);
+  --nav-bg: rgba(15,17,23,0.92);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #ea580c; --accent2: #c2410c;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626; --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb; --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --teal: #0d9488; --teal-bg: rgba(13,148,136,0.1);
+  --orange: #ea580c; --orange-bg: rgba(234,88,12,0.1);
+  --hero-bg: linear-gradient(135deg, #fff7ed 0%, #ffedd5 45%, #fef3c7 100%);
+  --nav-bg: rgba(245,246,248,0.95);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { position:fixed;left:16px;top:16px;z-index:300;background:var(--surface2);border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:10px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s; }
+.nav-toggle:hover { border-color:var(--accent); }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200;transform:translateX(-100%);transition:transform 0.25s; }
+.nav-sidebar.open { transform:translateX(0); }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(251,146,60,0.1) 0%,transparent 60%); }
+.hero::after  { content:'';position:absolute;bottom:-30%;left:5%;width:400px;height:400px;background:radial-gradient(circle,rgba(251,191,36,0.07) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--orange-bg);border:1px solid rgba(251,146,60,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge-row { display:flex;gap:8px;flex-wrap:wrap; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-purple { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+.badge-orange { background:var(--orange-bg);color:var(--orange);border:1px solid rgba(251,146,60,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+.kpi-trend { font-size:0.72rem;font-weight:700;margin-top:6px; }
+.trend-up   { color:var(--green); }
+.trend-down { color:var(--red); }
+.trend-neutral { color:var(--text2); }
+
+.container { max-width:1100px;margin:0 auto;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--teal-bg);color:var(--teal);border:1px solid rgba(45,212,191,0.3); }
+.section-num-3 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;gap:4px;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--teal-bg);color:var(--teal); }
+.aud-dev { background:var(--blue-bg);color:var(--blue); }
+
+h2 { font-size:1.45rem;font-weight:700;margin-bottom:22px;display:flex;align-items:center;gap:10px; }
+h2 .num { background:var(--accent);color:#fff;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:0.82rem;font-weight:800;flex-shrink:0; }
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.code { font-family:monospace;font-size:0.82rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 7px;color:var(--accent2); }
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-green  { background:var(--green-bg);border-left:3px solid var(--green); }
+.callout-red    { background:var(--red-bg);border-left:3px solid var(--red); }
+.callout-orange { background:var(--orange-bg);border-left:3px solid var(--orange); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.wireframe { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:20px 0;font-family:monospace;font-size:0.8rem;color:var(--text);line-height:1.5; }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.86rem; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var { font-family:monospace;color:var(--blue);font-weight:600;min-width:320px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:80px; }
+.sheet-row-unit { font-size:0.75rem;color:var(--text2);min-width:110px; }
+.sheet-row-desc { color:var(--text2);font-size:0.82rem; }
+
+.flow-step { display:flex;gap:14px;margin-bottom:14px;align-items:flex-start; }
+.flow-dot  { width:28px;height:28px;border-radius:50%;background:var(--orange-bg);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--accent);flex-shrink:0;margin-top:2px; }
+.flow-body { flex:1; }
+.flow-body strong { color:var(--text);font-size:0.9rem; }
+.flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+
+.section-divider { border:none;border-top:2px dashed var(--border);margin:12px 0 40px; }
+
+/* 안 A/B 구분 탭 */
+.plan-tabs { display:flex;gap:8px;margin:24px 0 16px; }
+.plan-tab { padding:6px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;border:1px solid var(--border);color:var(--text2);background:var(--surface2); }
+.plan-tab-a { border-color:rgba(96,165,250,0.4);color:var(--blue);background:var(--blue-bg); }
+.plan-tab-b { border-color:rgba(251,146,60,0.4);color:var(--orange);background:var(--orange-bg); }
+
+.plan-block { border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:16px 0;background:var(--surface); }
+.plan-block-a { border-left:4px solid var(--blue); }
+.plan-block-b { border-left:4px solid var(--orange); }
+.plan-block-label { font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:12px; }
+.plan-block-label-a { color:var(--blue); }
+.plan-block-label-b { color:var(--orange); }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">☰</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-006</div>
+  <a href="#s1">① 기획 의도 &amp; 흐름</a>
+  <a href="#s2">② 아트 가이드</a>
+  <a href="#s3">③ 개발 스펙</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-006</span>
+    </div>
+    <h1>Friend-O-Meter<br><span>친구 초대 누적 보상</span></h1>
+    <p class="hero-sub">친구를 더 많이 초대할수록 더 큰 보상을 받는 소셜 루프 시스템. 전체 공동 달성(안 A)과 개인 누적 달성(안 B) 두 가지 안을 함께 검토합니다.</p>
+    <div class="badge-row">
+      <span id="hero-tag" class="badge badge-orange">📣 소셜/바이럴</span>
+      <span id="hero-priority" class="badge badge-yellow">🟡 보통 우선순위</span>
+      <span id="hero-status" class="badge badge-blue">🔵 검토중</span>
+      <span class="badge badge-green">신규 유저 유입</span>
+      <span class="badge badge-blue">K-factor</span>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">초대 전환율</div>
+        <div class="kpi-value" style="color:var(--orange)">+%</div>
+        <div class="kpi-sub">초대 링크 클릭 → 설치</div>
+        <div class="kpi-trend trend-up">▲ 개선 목표</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">K-factor</div>
+        <div class="kpi-value" style="color:var(--yellow)">+</div>
+        <div class="kpi-sub">기존 유저 1명당 신규 유입</div>
+        <div class="kpi-trend trend-up">▲ 간접 기여 목표</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">D7 신규 유저 Retention</div>
+        <div class="kpi-value" style="color:var(--green)">모니터</div>
+        <div class="kpi-sub">초대 경로 신규 유저 기준</div>
+        <div class="kpi-trend trend-up">▲ 오가닉 대비 기대</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">기존 유저 초대 행동률</div>
+        <div class="kpi-value" style="color:var(--blue)">+%</div>
+        <div class="kpi-sub">초대 기능 사용 유저 비율</div>
+        <div class="kpi-trend trend-up">▲ 목표</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════════
+  SECTION 1 — 기획 의도 & 콘텐츠 흐름
+════════════════════════════════════════ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">1</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도 &amp; 콘텐츠 흐름</div>
+      <span class="section-audience aud-all">개발 + 아트 공통</span>
+    </div>
+  </div>
+
+  <h3>왜 만드는가</h3>
+  <p>캐주얼 카드 게임에서 <strong>오가닉 신규 유입은 마케팅 비용 대비 효율이 낮고 지속성이 떨어집니다.</strong> 소셜 초대는 CPI 없이 유저를 데려오는 몇 안 되는 수단이지만, 보상 없는 초대 버튼은 사실상 방치됩니다.</p>
+  <p>Candy Crush Solitaire의 Friend-O-Meter는 초대 행동에 명확한 보상 루프를 붙여 기존 유저의 초대 동기를 만들어내는 검증된 패턴입니다. 이 스펙은 해당 메커닉을 우리 게임에 맞게 적용하기 위해 두 가지 안을 동시에 검토합니다.</p>
+
+  <div class="callout callout-orange">
+    <p><strong>레퍼런스:</strong> Candy Crush Solitaire — Friend-O-Meter. 전체 유저가 함께 게이지를 채우고, 목표 달성 시 참여 유저 전원에게 보상. 공동체 감각과 긴박감(남은 수)이 핵심 동인.</p>
+  </div>
+
+  <h3>두 가지 안 개요</h3>
+  <table>
+    <thead><tr><th>구분</th><th>안 A — 전체 공동 미터</th><th>안 B — 개인 누적 미터</th></tr></thead>
+    <tbody>
+      <tr><td>대상</td><td>전체 유저 (서버 합산)</td><td>유저 개인별 독립 진행</td></tr>
+      <tr><td>게이지 의미</td><td>이번 기간 전체 초대 합계</td><td>내가 초대한 유효 친구 수</td></tr>
+      <tr><td>보상 시점</td><td>전체 목표 달성 시 참여자 전원 지급</td><td>개인 단계 달성 시 즉시 지급</td></tr>
+      <tr><td>핵심 동인</td><td>공동체 긴박감, 사회적 기여감</td><td>개인 성취, 단계별 즉각 보상</td></tr>
+      <tr><td>어뷰징 위험</td><td>중간 — 전체 목표라 개인 기여 희석</td><td>높음 — 개인 보상 직결, 다계정 유인</td></tr>
+      <tr><td>구현 복잡도</td><td>서버 집계 필요 (실시간 카운터)</td><td>개인 기록만 관리하면 됨 (단순)</td></tr>
+      <tr><td>리텐션 기여</td><td>기간 내 복귀 유인 (보상 놓칠 수 있음)</td><td>단계 달성 직후 소비 유인</td></tr>
+    </tbody>
+  </table>
+
+  <h3>플레이어 경험 흐름 — 안 A (전체 공동 미터)</h3>
+
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>미터 노출</strong><p>메인 화면 또는 소셜 탭에서 현재 전체 초대 진행 게이지와 "목표까지 N명 남음"을 상시 표시. 긴박감을 주는 숫자가 핵심.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>초대 행동</strong><p>유저가 초대 링크를 공유. 링크를 통해 가입한 친구가 자격 조건(일정 판 수 플레이)을 충족하면 전체 카운터에 +1 합산.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>목표 달성 알림</strong><p>전체 목표 수 달성 시 참여한 유저(최소 1명 이상 초대)에게 보상 지급 알림 발송. 보상은 자동 지급 또는 수동 수령 방식 선택.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>다음 라운드 자동 시작</strong><p>목표 달성 후 미터 리셋, 새 라운드 즉시 시작. 유저는 다시 초대 행동을 이어갈 동기를 얻음.</p></div></div>
+
+  <h3>플레이어 경험 흐름 — 안 B (개인 누적 미터)</h3>
+
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>개인 미터 노출</strong><p>내 초대 현황 카드: "친구 N명 초대 완료 / 다음 단계까지 M명". 단계별 보상 미리보기로 다음 목표를 명확히 인식.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>초대 행동</strong><p>링크 공유 → 친구 가입 + 자격 조건 충족 시 개인 카운터 +1.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>단계 달성 → 즉시 보상</strong><p>임계값 돌파 시 단계 보상 즉시 지급. 게이지 채워지는 시각 피드백과 함께 보상 팝업 표시.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>다음 단계 동기 부여</strong><p>다음 단계 보상 미리보기로 연속 초대 행동을 유도. 최고 단계 달성 후에는 영구 기록 뱃지 또는 월별 리셋 구조 검토.</p></div></div>
+
+  <h3>기대 KPI 및 성공 지표</h3>
+  <table>
+    <thead><tr><th>지표</th><th>측정 방법</th><th>목표</th><th>해당 안</th></tr></thead>
+    <tbody>
+      <tr><td>초대 링크 발송율</td><td>초대 버튼 클릭 / DAU</td><td>현재 대비 +% 개선</td><td>공통</td></tr>
+      <tr><td>초대 전환율</td><td>링크 클릭 → 설치 완료</td><td>목표 설정 필요 (기준값 수집 우선)</td><td>공통</td></tr>
+      <tr><td>유효 초대 달성 유저 비율</td><td>최소 1회 유효 초대 / MAU</td><td>+%</td><td>공통</td></tr>
+      <tr><td>전체 목표 달성 횟수/월</td><td>서버 카운터 리셋 횟수</td><td>월 N회 이상</td><td>안 A 전용</td></tr>
+      <tr><td>개인 단계 달성 분포</td><td>단계별 달성 유저 수 코호트</td><td>1단계 X%, 2단계 Y%...</td><td>안 B 전용</td></tr>
+      <tr><td>초대 경로 신규 D7 리텐션</td><td>코호트 분석 (초대 vs 오가닉)</td><td>오가닉 대비 +pp 이상</td><td>공통</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow">
+    <p><strong>측정 전제:</strong> 현재 초대 링크 발송율, 전환율 기준값 수집 선행 필요. 초대 경로 별도 어트리뷰션 태깅 확인 필수. 어뷰징 모니터링 대시보드 사전 준비 권장.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+  SECTION 2 — 아트 가이드
+════════════════════════════════════════ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">2</div>
+    <div class="section-meta">
+      <div class="section-title">아트 가이드</div>
+      <span class="section-audience aud-art">아트팀 전용</span>
+    </div>
+  </div>
+
+  <h3>와이어프레임 1 — 안 A: 전체 공동 미터 UI</h3>
+  <div class="wireframe">
+    <svg viewBox="0 0 620 320" width="100%" style="display:block;max-width:700px;margin:16px 0;">
+      <!-- 메인 카드 영역 -->
+      <rect x="20" y="20" width="360" height="280" rx="12" style="fill:var(--surface2);stroke:var(--border);stroke-width:1.5"/>
+      <!-- 헤더 -->
+      <rect x="30" y="30" width="340" height="44" rx="8" style="fill:var(--surface3)"/>
+      <text x="50" y="58" style="fill:var(--orange);font-size:14px;font-family:sans-serif;font-weight:700;">🫂 Friend-O-Meter</text>
+      <text x="310" y="56" text-anchor="end" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">D-5</text>
+      <!-- 공동 게이지 레이블 -->
+      <text x="50" y="96" style="fill:var(--text);font-size:10px;font-family:sans-serif;font-weight:700;">전체 달성 현황</text>
+      <text x="350" y="96" text-anchor="end" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">7,420 / 10,000명</text>
+      <!-- 게이지 배경 -->
+      <rect x="38" y="104" width="324" height="22" rx="11" style="fill:var(--surface3)"/>
+      <!-- 게이지 채워진 부분 (74%) -->
+      <rect x="38" y="104" width="240" height="22" rx="11" style="fill:var(--orange)"/>
+      <text x="150" y="120" text-anchor="middle" style="fill:#fff;font-size:9px;font-family:sans-serif;font-weight:700;">74%</text>
+      <!-- 마일스톤 마커 -->
+      <line x1="120" y1="104" x2="120" y2="126" style="stroke:#fff;stroke-width:1.5;opacity:0.5"/>
+      <line x1="200" y1="104" x2="200" y2="126" style="stroke:#fff;stroke-width:1.5;opacity:0.5"/>
+      <line x1="280" y1="104" x2="280" y2="126" style="stroke:#fff;stroke-width:1.5;opacity:0.3"/>
+      <!-- 남은 수 강조 -->
+      <rect x="38" y="136" width="324" height="36" rx="8" style="fill:var(--orange-bg);stroke:var(--orange);stroke-width:1;stroke-dasharray:4,2"/>
+      <text x="200" y="158" text-anchor="middle" style="fill:var(--orange);font-size:11px;font-family:sans-serif;font-weight:700;">목표까지 2,580명 남았습니다!</text>
+      <!-- 내 기여 -->
+      <text x="50" y="194" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">내 기여</text>
+      <rect x="100" y="182" width="60" height="18" rx="9" style="fill:var(--green-bg);stroke:var(--green);stroke-width:1"/>
+      <text x="130" y="195" text-anchor="middle" style="fill:var(--green);font-size:9px;font-family:sans-serif;font-weight:700;">3명 초대</text>
+      <text x="170" y="194" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">최소 기여 조건 충족</text>
+      <!-- 보상 미리보기 -->
+      <rect x="38" y="210" width="155" height="72" rx="8" style="fill:var(--surface3);stroke:var(--border);stroke-width:1"/>
+      <text x="116" y="228" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">달성 시 보상</text>
+      <text x="116" y="252" text-anchor="middle" style="fill:var(--yellow);font-size:18px;font-family:sans-serif;font-weight:800;">💰</text>
+      <text x="116" y="272" text-anchor="middle" style="fill:var(--text);font-size:9px;font-family:sans-serif;font-weight:700;">골드 보상</text>
+      <!-- 초대 버튼 -->
+      <rect x="203" y="210" width="159" height="72" rx="8" style="fill:var(--orange);"/>
+      <text x="282" y="244" text-anchor="middle" style="fill:#fff;font-size:11px;font-family:sans-serif;font-weight:800;">📣 친구 초대하기</text>
+      <text x="282" y="264" text-anchor="middle" style="fill:rgba(255,255,255,0.8);font-size:8px;font-family:sans-serif;">링크 공유</text>
+      <!-- 주석들 -->
+      <line x1="362" y1="51" x2="430" y2="42" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="430" y="30" width="175" height="26" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="518" y="47" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">남은 기간 카운트다운 (긴박감)</text>
+      <line x1="362" y1="115" x2="430" y2="108" style="stroke:var(--orange);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="430" y="96" width="175" height="26" rx="4" style="fill:var(--orange-bg);stroke:var(--orange);stroke-width:1"/>
+      <text x="518" y="113" text-anchor="middle" style="fill:var(--orange);font-size:9px;font-family:sans-serif;">서버 실시간 집계 (폴링 or 푸시)</text>
+      <line x1="362" y1="152" x2="430" y2="152" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="430" y="141" width="175" height="26" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="518" y="158" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">남은 수 — 핵심 동인, 항상 노출</text>
+      <line x1="362" y1="193" x2="430" y2="196" style="stroke:var(--green);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="430" y="185" width="175" height="26" rx="4" style="fill:var(--green-bg);stroke:var(--green);stroke-width:1"/>
+      <text x="518" y="202" text-anchor="middle" style="fill:var(--green);font-size:9px;font-family:sans-serif;">최소 기여 충족 여부 명시</text>
+    </svg>
+  </div>
+
+  <h3>와이어프레임 2 — 안 B: 개인 누적 미터 UI</h3>
+  <div class="wireframe">
+    <svg viewBox="0 0 620 340" width="100%" style="display:block;max-width:700px;margin:16px 0;">
+      <!-- 메인 카드 -->
+      <rect x="20" y="20" width="360" height="300" rx="12" style="fill:var(--surface2);stroke:var(--border);stroke-width:1.5"/>
+      <!-- 헤더 -->
+      <rect x="30" y="30" width="340" height="44" rx="8" style="fill:var(--surface3)"/>
+      <text x="50" y="58" style="fill:var(--orange);font-size:14px;font-family:sans-serif;font-weight:700;">🎯 내 초대 현황</text>
+      <!-- 내 초대 수 -->
+      <text x="200" y="108" text-anchor="middle" style="fill:var(--text);font-size:26px;font-family:sans-serif;font-weight:800;">3명</text>
+      <text x="200" y="124" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">유효 친구 초대 완료</text>
+      <!-- 단계 게이지 (5단계) -->
+      <!-- 단계 선 -->
+      <line x1="38" y1="156" x2="362" y2="156" style="stroke:var(--border);stroke-width:2"/>
+      <!-- 단계 1 (달성) -->
+      <circle cx="71" cy="156" r="14" style="fill:var(--green);"/>
+      <text x="71" y="161" text-anchor="middle" style="fill:#fff;font-size:8px;font-family:sans-serif;font-weight:700;">1명</text>
+      <text x="71" y="180" text-anchor="middle" style="fill:var(--green);font-size:8px;font-family:sans-serif;font-weight:700;">✓ 200G</text>
+      <!-- 단계 2 (달성) -->
+      <circle cx="135" cy="156" r="14" style="fill:var(--green);"/>
+      <text x="135" y="161" text-anchor="middle" style="fill:#fff;font-size:8px;font-family:sans-serif;font-weight:700;">3명</text>
+      <text x="135" y="180" text-anchor="middle" style="fill:var(--green);font-size:8px;font-family:sans-serif;font-weight:700;">✓ 500G</text>
+      <!-- 단계 3 (현재 진행) -->
+      <circle cx="199" cy="156" r="16" style="fill:var(--orange-bg);stroke:var(--orange);stroke-width:2.5"/>
+      <text x="199" y="161" text-anchor="middle" style="fill:var(--orange);font-size:8px;font-family:sans-serif;font-weight:700;">5명</text>
+      <text x="199" y="180" text-anchor="middle" style="fill:var(--orange);font-size:8px;font-family:sans-serif;font-weight:700;">1,000G</text>
+      <!-- 단계 4 (미달성) -->
+      <circle cx="263" cy="156" r="14" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+      <text x="263" y="161" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">10명</text>
+      <text x="263" y="180" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">2,000G</text>
+      <!-- 단계 5 (미달성) -->
+      <circle cx="327" cy="156" r="14" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+      <text x="327" y="161" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">20명</text>
+      <text x="327" y="180" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">5,000G</text>
+      <!-- 진행 라인 채워진 부분 -->
+      <line x1="57" y1="156" x2="149" y2="156" style="stroke:var(--green);stroke-width:4"/>
+      <!-- 다음 단계 안내 -->
+      <rect x="38" y="196" width="324" height="36" rx="8" style="fill:var(--orange-bg);stroke:var(--orange);stroke-width:1;stroke-dasharray:4,2"/>
+      <text x="200" y="218" text-anchor="middle" style="fill:var(--orange);font-size:10px;font-family:sans-serif;font-weight:700;">3단계까지 2명 더 초대하면 1,000G!</text>
+      <!-- 초대 버튼 -->
+      <rect x="38" y="244" width="324" height="44" rx="10" style="fill:var(--orange)"/>
+      <text x="200" y="270" text-anchor="middle" style="fill:#fff;font-size:12px;font-family:sans-serif;font-weight:800;">📣 친구 초대하기</text>
+      <!-- 주석들 -->
+      <line x1="215" y1="96" x2="430" y2="75" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="430" y="62" width="175" height="26" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="518" y="79" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">개인 누적 수 — 대형 숫자로 강조</text>
+      <line x1="215" y1="156" x2="430" y2="140" style="stroke:var(--orange);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="430" y="128" width="175" height="26" rx="4" style="fill:var(--orange-bg);stroke:var(--orange);stroke-width:1"/>
+      <text x="518" y="145" text-anchor="middle" style="fill:var(--orange);font-size:9px;font-family:sans-serif;">현재 단계 펄싱 강조</text>
+      <line x1="362" y1="213" x2="430" y2="207" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="430" y="195" width="175" height="26" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="518" y="212" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">다음 보상 명시 — 행동 유발</text>
+      <line x1="362" y1="266" x2="430" y2="260" style="stroke:var(--green);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="430" y="248" width="175" height="26" rx="4" style="fill:var(--green-bg);stroke:var(--green);stroke-width:1"/>
+      <text x="518" y="265" text-anchor="middle" style="fill:var(--green);font-size:9px;font-family:sans-serif;">항상 접근 가능한 초대 CTA</text>
+    </svg>
+  </div>
+
+  <h3>비주얼 방향성</h3>
+
+  <div class="plan-block plan-block-a">
+    <div class="plan-block-label plan-block-label-a">안 A — 전체 공동 미터</div>
+    <p style="margin-bottom:8px;">전체 유저가 함께 만들어가는 느낌을 강조합니다. 게이지는 두껍고 따뜻한 색감으로, 채워질수록 밝아지는 인상을 줍니다. <strong>남은 수 텍스트가 시각적 중심</strong>이 되어야 합니다 — 이것이 긴박감의 핵심입니다. 달성 임박 시 게이지 끝부분에 은은한 글로우 효과를 추가하면 흥분감이 올라갑니다.</p>
+    <ul>
+      <li><strong>게이지:</strong> 진행 방향이 명확한 수평 바. 달성 마커가 중간중간 표시되어 진행감을 줍니다.</li>
+      <li><strong>내 기여 표시:</strong> 작게, 하지만 눈에 띄게. "나도 참여하고 있다"는 소속감 강조.</li>
+      <li><strong>카운트다운:</strong> 남은 일수가 항상 보여야 합니다. 조용하지만 놓치지 않게.</li>
+    </ul>
+  </div>
+
+  <div class="plan-block plan-block-b">
+    <div class="plan-block-label plan-block-label-b">안 B — 개인 누적 미터</div>
+    <p style="margin-bottom:8px;">내 성취를 중심에 두는 개인화된 느낌입니다. 현재 단계가 시각적으로 두드러지고, 다음 단계의 보상이 명확하게 보여야 합니다. 단계 달성 시에는 <strong>보상 획득 애니메이션</strong>이 즉각적이고 만족스럽게 재생되어야 합니다.</p>
+    <ul>
+      <li><strong>단계 표시:</strong> 원형 노드 스타일. 달성 단계는 색상 채워짐, 현재 단계는 테두리 강조(펄스 효과), 미달성은 회색.</li>
+      <li><strong>숫자 강조:</strong> 내가 초대한 수를 대형 숫자로 중앙에 표시. 성취감의 핵심.</li>
+      <li><strong>다음 목표 유도:</strong> 남은 초대 수와 보상을 명시한 배너가 항상 노출.</li>
+    </ul>
+  </div>
+
+  <h3>애니메이션 방향성</h3>
+  <ul>
+    <li><strong>게이지 채워짐:</strong> 새 초대 집계 시 게이지가 스르르 늘어나는 느낌. 급격하지 않고 부드럽게.</li>
+    <li><strong>단계 달성 (안 B):</strong> 노드가 터지듯 채워지고 보상 아이템이 위에서 쏟아지는 파티클 효과. 짧고 화려하게.</li>
+    <li><strong>달성 임박 (안 A):</strong> 남은 수가 일정 이하로 줄어들면 게이지 끝단에 부드러운 글로우가 켜짐.</li>
+    <li>수치 하드코딩 금지 — 애니메이션 타이밍은 개발 스펙 변수로 관리.</li>
+  </ul>
+
+  <h3>필요 에셋</h3>
+  <ul>
+    <li><strong>친구 아이콘 (공통):</strong> 2~3명의 실루엣이 함께 있는 따뜻한 느낌의 아이콘. 게임 캐릭터 스타일과 통일.</li>
+    <li><strong>게이지 바 텍스처 (선택):</strong> 단순 컬러 블록이 아닌 약간의 텍스처나 패턴으로 생동감 추가 가능. 없어도 무방.</li>
+    <li><strong>단계 달성 이펙트 (안 B):</strong> 기존 보상 획득 파티클 재사용 가능 여부 개발팀 확인 필요.</li>
+    <li><strong>초대 버튼:</strong> 기존 공유 버튼 스타일 재활용 가능. accent 컬러 적용.</li>
+  </ul>
+
+  <div class="callout callout-blue">
+    <p><strong>진입점:</strong> 메인 화면 하단 탭 또는 소셜 탭 내 고정 카드로 진입. 새 초대 달성 시 메인 화면에 소형 배지 알림 표시 검토.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+  SECTION 3 — 개발 스펙
+════════════════════════════════════════ -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">3</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+  </div>
+
+  <h3>밸런스 시트 변수 — 공통 (신규 탭 제안)</h3>
+  <div class="sheet-block">
+    <div class="sheet-block-title">신규 시트 탭: friend_meter_config &nbsp;·&nbsp; key_number 30001~</div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_qualify_play_count</span>
+      <span class="sheet-row-default">= 3</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">초대된 친구가 유효 초대로 인정받기 위해 플레이해야 하는 최소 판 수. key_number: 30001</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_qualify_day_limit</span>
+      <span class="sheet-row-default">= 7</span>
+      <span class="sheet-row-unit">unit: count (day)</span>
+      <span class="sheet-row-desc">초대 후 자격 조건 인정 유효 기간. 이 기간 내에 qualify_play_count를 달성해야 유효 초대로 처리. key_number: 30002</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_abuse_block_same_device_count</span>
+      <span class="sheet-row-default">= 2</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">같은 기기에서 동일 초대자로 처리 가능한 최대 계정 수. 초과 시 어뷰징 플래그. key_number: 30003</span>
+    </div>
+  </div>
+
+  <h3>밸런스 시트 변수 — 안 A (전체 공동 미터)</h3>
+  <div class="sheet-block">
+    <div class="sheet-block-title">탭: friend_meter_config &nbsp;·&nbsp; 안 A 변수 · key_number 30010~</div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_global_target_count</span>
+      <span class="sheet-row-default">= 10000</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">전체 유저 합산 초대 달성 목표 수. 달성 시 참여 유저 전원 보상. key_number: 30010</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_global_period_day</span>
+      <span class="sheet-row-default">= 14</span>
+      <span class="sheet-row-unit">unit: count (day)</span>
+      <span class="sheet-row-desc">한 라운드 최대 기간. 기간 내 목표 미달성 시 미터 리셋 후 다음 라운드 시작. key_number: 30011</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_global_reward_gold_amount</span>
+      <span class="sheet-row-default">= 500</span>
+      <span class="sheet-row-unit">unit: amount</span>
+      <span class="sheet-row-desc">목표 달성 시 참여 유저 1인당 지급 골드. key_number: 30012</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_global_min_invite_count</span>
+      <span class="sheet-row-default">= 1</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">보상 수령을 위한 최소 개인 유효 초대 수. 0이면 미터 진입만 해도 보상. key_number: 30013</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_global_refresh_count_sec</span>
+      <span class="sheet-row-default">= 60</span>
+      <span class="sheet-row-unit">unit: sec</span>
+      <span class="sheet-row-desc">전체 게이지 UI 갱신 주기 (클라이언트 폴링 간격). 실시간 푸시 미지원 시 사용. key_number: 30014</span>
+    </div>
+  </div>
+
+  <h3>밸런스 시트 변수 — 안 B (개인 누적 미터)</h3>
+  <div class="sheet-block">
+    <div class="sheet-block-title">탭: friend_meter_config &nbsp;·&nbsp; 안 B 변수 · key_number 30020~</div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_personal_stage_count</span>
+      <span class="sheet-row-default">= 5</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">개인 미터 단계 수. 이 값에 따라 아래 단계별 변수 행 수가 결정됨. key_number: 30020</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_personal_stage_1_threshold</span>
+      <span class="sheet-row-default">= 1</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">1단계 달성 유효 초대 수. key_number: 30021</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_personal_stage_2_threshold</span>
+      <span class="sheet-row-default">= 3</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">2단계 달성 유효 초대 수. key_number: 30022</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_personal_stage_3_threshold</span>
+      <span class="sheet-row-default">= 5</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">3단계 달성 유효 초대 수. key_number: 30023</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_personal_stage_4_threshold</span>
+      <span class="sheet-row-default">= 10</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">4단계 달성 유효 초대 수. key_number: 30024</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_personal_stage_5_threshold</span>
+      <span class="sheet-row-default">= 20</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">5단계 달성 유효 초대 수. key_number: 30025</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_personal_stage_1_reward_gold_amount</span>
+      <span class="sheet-row-default">= 200</span>
+      <span class="sheet-row-unit">unit: amount</span>
+      <span class="sheet-row-desc">1단계 달성 골드 보상. key_number: 30026</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_personal_stage_2_reward_gold_amount</span>
+      <span class="sheet-row-default">= 500</span>
+      <span class="sheet-row-unit">unit: amount</span>
+      <span class="sheet-row-desc">2단계 달성 골드 보상. key_number: 30027</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_personal_stage_3_reward_gold_amount</span>
+      <span class="sheet-row-default">= 1000</span>
+      <span class="sheet-row-unit">unit: amount</span>
+      <span class="sheet-row-desc">3단계 달성 골드 보상. key_number: 30028</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_personal_stage_4_reward_gold_amount</span>
+      <span class="sheet-row-default">= 2000</span>
+      <span class="sheet-row-unit">unit: amount</span>
+      <span class="sheet-row-desc">4단계 달성 골드 보상. key_number: 30029</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">friend_meter_personal_stage_5_reward_gold_amount</span>
+      <span class="sheet-row-default">= 5000</span>
+      <span class="sheet-row-unit">unit: amount</span>
+      <span class="sheet-row-desc">5단계 달성 골드 보상. key_number: 30030</span>
+    </div>
+  </div>
+
+  <div class="callout callout-yellow">
+    <p><strong>시트 수정 절차:</strong> 에이전트 시트 신규 탭 <code>friend_meter_config</code> 생성 → 공통 변수 + 채택된 안 변수 입력 → 연두색 하이라이트 → PM 확인 → 라이브 시트 동기화 → 하이라이트 제거. key_number 대역 30001~ 선점.</p>
+  </div>
+
+  <h3>트리거 조건 — 유효 초대 처리</h3>
+  <ul>
+    <li>초대 링크를 통해 신규 유저가 가입 완료</li>
+    <li>가입 후 <span class="sheet-var">friend_meter_qualify_day_limit</span>일 이내에</li>
+    <li><span class="sheet-var">friend_meter_qualify_play_count</span>판 이상 플레이 완료 시</li>
+    <li>→ 초대자 카운터 +1 (안 A: 전체 서버 카운터, 안 B: 개인 카운터)</li>
+  </ul>
+
+  <h3>억제 조건 — 어뷰징 방어</h3>
+  <table>
+    <thead><tr><th>상황</th><th>처리 방식</th></tr></thead>
+    <tbody>
+      <tr><td>동일 기기 다계정</td><td>같은 기기에서 <span class="sheet-var">friend_meter_abuse_block_same_device_count</span> 초과 시 어뷰징 플래그, 카운터 미집계</td></tr>
+      <tr><td>동일 IP 대량 가입</td><td>단기간 동일 IP에서 N계정 이상 가입 시 신규 유저 어뷰징 심사 큐 처리 (기준값 PM 결정)</td></tr>
+      <tr><td>이미 게임을 한 기존 유저</td><td>기존 게임 데이터 보유 계정은 신규 가입으로 처리 불가 — 가입 시점에 서버 검증 필요</td></tr>
+      <tr><td>자기 초대</td><td>초대자와 피초대자 UID 동일 여부 서버 검증, 자기 초대 불가</td></tr>
+    </tbody>
+  </table>
+
+  <h3>안 A 전용 — 서버 집계 처리</h3>
+  <ul>
+    <li>전체 카운터는 서버 단일 진실 소스 (Single Source of Truth). 클라이언트 로컬 캐시 금지.</li>
+    <li>클라이언트는 <span class="sheet-var">friend_meter_global_refresh_count_sec</span> 주기로 서버 폴링 또는 실시간 푸시 수신.</li>
+    <li>목표 달성 시 서버에서 참여 유저 목록 추출 → 보상 배치 지급 → 미터 자동 리셋.</li>
+    <li>기간 만료 시 목표 미달성이면 미터 리셋 (보상 없음), 다음 라운드 즉시 시작.</li>
+  </ul>
+
+  <h3>안 B 전용 — 개인 단계 처리</h3>
+  <ul>
+    <li>단계 달성은 서버에서 판정 후 클라이언트에 이벤트 전달.</li>
+    <li>보상은 달성 즉시 자동 지급. 미수령 팝업 별도 불필요 (단, 오프라인 달성 시 다음 접속 때 알림).</li>
+    <li>최고 단계(5단계) 달성 후 추가 보상 없음 — 미터 UI는 유지하되 "최고 단계 달성" 상태 표시.</li>
+    <li>월별 리셋 여부는 PM 결정 필요 (기본: 리셋 없음, 영구 누적).</li>
+  </ul>
+
+  <h3>z-index 관리</h3>
+  <table>
+    <thead><tr><th>레이어</th><th>z-index</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>메인 화면 배지/알림</td><td>150</td><td>새 초대 달성 소형 배지</td></tr>
+      <tr><td>Friend-O-Meter 진입 카드</td><td>100</td><td>탭 또는 메인 화면 고정 카드</td></tr>
+      <tr><td>단계 달성 보상 팝업</td><td>300</td><td>기존 보상 팝업 레이어와 동일</td></tr>
+    </tbody>
+  </table>
+
+  <h3>엣지 케이스</h3>
+  <ul>
+    <li><strong>네트워크 오프라인 중 달성:</strong> 서버 이벤트 기반이므로 오프라인 달성 없음. 온라인 복귀 후 정상 처리.</li>
+    <li><strong>안 A 달성 직후 동시 기여자:</strong> 목표 카운터 초과 집계 허용 (선착순 컷오프 시 서버 부담 크고 불만 유발). 초과분은 다음 라운드 이월 불가.</li>
+    <li><strong>안 B 동일 시점 다단계 달성:</strong> 예: 초대 수 1에서 5로 점프 시 1~3단계 보상 모두 지급. 배치 지급 처리 확인 필요.</li>
+    <li><strong>초대 취소/탈퇴:</strong> 피초대 유저가 탈퇴해도 이미 집계된 카운터는 유지 (롤백 없음).</li>
+    <li><strong>안 A 참여 기준 모호성:</strong> "참여"의 정의 = <span class="sheet-var">friend_meter_global_min_invite_count</span> 이상 유효 초대. 단순 미터 열람은 해당 없음.</li>
+  </ul>
+
+  <div class="callout callout-blue">
+    <p><strong>구현 우선순위 제안:</strong> 안 B(개인 미터)가 서버 집계 복잡도가 낮아 1차 구현 후 검증, 안 A는 서버 실시간 집계 인프라 준비 후 2차 도입 검토. 두 안을 동시에 런칭하는 것은 집계 혼선 우려로 비권장.</p>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<script>
+(function () {
+  const SPEC_ID = 'spec-006';
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',      cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',      cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',   cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',      cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',    cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',   cls: 'badge-yellow' },
+    social:  { label: '📣 소셜/바이럴', cls: 'badge-orange' },
+    monetize:{ label: '💰 수익화',   cls: 'badge-green'  },
+    etc:     { label: '📌 기타',      cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',     cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',     cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',       cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',       cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS = { tag: 'social', priority: 'mid', status: 'open' };
+  let ddField = null;
+
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:160px;display:none;';
+  document.body.appendChild(dd);
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--orange-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+  function applyBadge(el, info) { if (!el) return; el.className = 'badge ' + info.cls; el.textContent = info.label; el.style.cursor = 'pointer'; }
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o => `<div class="dd-itm${o.val===cur?' active':''}" data-val="${o.val}">${o.label}</div>`).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 180) + 'px';
+    dd.style.top  = (rect.bottom + 6) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+  dd.addEventListener('click', e => {
+    const item = e.target.closest('.dd-itm');
+    if (!item || !ddField) return;
+    setVal(ddField, item.dataset.val);
+    updateHero();
+    dd.style.display = 'none';
+  });
+  document.addEventListener('click', () => { dd.style.display = 'none'; });
+
+  updateHero();
+  document.getElementById('hero-tag')     ?.addEventListener('click', e => openDropdown(e, 'tag'));
+  document.getElementById('hero-priority')?.addEventListener('click', e => openDropdown(e, 'priority'));
+  document.getElementById('hero-status')  ?.addEventListener('click', e => openDropdown(e, 'status'));
+
+  // 사이드바 active 처리
+  const links = document.querySelectorAll('.nav-sidebar a');
+  const sections = ['s1','s2','s3'].map(id => document.getElementById(id));
+  window.addEventListener('scroll', () => {
+    const mid = window.scrollY + window.innerHeight / 2;
+    sections.forEach((s, i) => {
+      if (!s) return;
+      if (s.offsetTop <= mid && (sections[i+1] ? sections[i+1].offsetTop > mid : true))
+        links.forEach((l,li) => l.classList.toggle('active', li===i));
+    });
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>

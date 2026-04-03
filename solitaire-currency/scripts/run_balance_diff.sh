@@ -17,6 +17,14 @@ echo "======================================" >> "$LOG_FILE"
 echo "실행 시각: $(date '+%Y-%m-%d %H:%M:%S')" >> "$LOG_FILE"
 echo "작업 디렉토리: $PROJECT_DIR" >> "$LOG_FILE"
 
+# 주말(토=6, 일=0) 스킵
+DOW=$(date '+%u')  # 1=월 ... 6=토, 7=일
+if [ "$DOW" -eq 6 ] || [ "$DOW" -eq 7 ]; then
+    echo "[SKIP] 주말 — 스냅샷 생략 ($(date '+%A'))" >> "$LOG_FILE"
+    echo "======================================" >> "$LOG_FILE"
+    exit 0
+fi
+
 # Python 경로 탐색 (macOS 로컬 환경)
 PYTHON=""
 for candidate in /usr/local/bin/python3 /opt/homebrew/bin/python3 /usr/bin/python3 python3; do
