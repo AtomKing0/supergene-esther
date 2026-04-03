@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>업데이트 스펙 기획서</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0f1117;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+/* ── 헤더 ── */
+header {
+  background: #1a1d27;
+  border-bottom: 1px solid #2d3148;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+header h1 { font-size: 17px; font-weight: 700; color: #a78bfa; }
+header .subtitle { font-size: 12px; color: #475569; margin-top: 2px; }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.filter-btn {
+  background: #1e2235; border: 1px solid #2d3148; color: #94a3b8;
+  padding: 4px 11px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.15s;
+}
+.filter-btn:hover { border-color: #a78bfa; color: #a78bfa; }
+.filter-btn.active { background: #a78bfa22; border-color: #a78bfa; color: #c4b5fd; }
+
+.hdr-btn {
+  background: #1e2235; border: 1px solid #2d3148; color: #64748b;
+  padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.15s;
+}
+.hdr-btn:hover { border-color: #a78bfa; color: #a78bfa; }
+
+/* ── 레이아웃 ── */
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  height: calc(100vh - 53px);
+}
+
+/* ── 왼쪽 패널 ── */
+.input-panel {
+  background: #14172b;
+  border-right: 1px solid #2d3148;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.panel-label {
+  font-size: 11px; font-weight: 600; color: #64748b;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  display: block; margin-bottom: 6px;
+}
+
+.content-area {
+  width: 100%; background: #1e2235; border: 1px solid #2d3148;
+  color: #e2e8f0; padding: 10px 12px; border-radius: 8px;
+  font-size: 12px; line-height: 1.7; outline: none; resize: vertical;
+  font-family: monospace; transition: border-color 0.15s;
+}
+.content-area:focus { border-color: #a78bfa; }
+.content-area::placeholder { color: #3d4268; font-family: inherit; }
+
+.submit-btn {
+  width: 100%; background: #7c3aed; color: white; border: none;
+  padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+}
+.submit-btn:hover { background: #6d28d9; }
+
+.toggle-btn {
+  width: 100%; background: #1e2235; border: 1px dashed #3d4268;
+  color: #64748b; padding: 8px 12px; border-radius: 8px;
+  font-size: 12px; cursor: pointer; transition: all 0.15s; text-align: left;
+}
+.toggle-btn:hover { border-color: #a78bfa; color: #c4b5fd; }
+
+.title-input {
+  width: 100%; background: #1e2235; border: 1px solid #2d3148;
+  color: #e2e8f0; padding: 9px 12px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; outline: none; transition: border-color 0.15s;
+  font-family: inherit;
+}
+.title-input:focus { border-color: #a78bfa; }
+.title-input::placeholder { color: #3d4268; font-weight: 400; }
+
+.quick-text {
+  width: 100%; background: #1e2235; border: 1px solid #2d3148;
+  color: #e2e8f0; padding: 9px 12px; border-radius: 8px;
+  font-size: 12px; line-height: 1.6; outline: none; resize: vertical;
+  font-family: inherit; min-height: 70px; transition: border-color 0.15s;
+}
+.quick-text:focus { border-color: #a78bfa; }
+.quick-text::placeholder { color: #3d4268; }
+
+.auto-tag-row { display: flex; align-items: center; gap: 8px; }
+.auto-tag-row .lbl { font-size: 11px; color: #475569; }
+.auto-tag-chip { font-size: 11px; padding: 2px 9px; border-radius: 10px; font-weight: 500; }
+
+.tip { font-size: 11px; color: #3d4268; line-height: 1.75; }
+.tip strong { color: #475569; }
+
+/* ── 오른쪽 패널 ── */
+.list-panel { overflow-y: auto; padding: 18px 20px; }
+
+.section-header {
+  font-size: 11px; font-weight: 700; color: #475569;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding-bottom: 10px; border-bottom: 1px solid #2d3148;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.count-badge { background: #2d3148; color: #94a3b8; font-size: 11px; padding: 1px 8px; border-radius: 10px; }
+.drag-hint { font-size: 11px; color: #3d4268; margin-left: auto; }
+
+.items-list { display: flex; flex-direction: column; gap: 8px; }
+
+/* ── 카드 ── */
+.item-card {
+  background: #1a1d27; border: 1px solid #2d3148; border-radius: 10px;
+  padding: 12px 14px; cursor: grab; transition: border-color 0.15s, background 0.15s, opacity 0.15s;
+  position: relative; user-select: none;
+}
+.item-card:hover { border-color: #3d4268; background: #1e2235; }
+.item-card.expanded { border-color: #a78bfa40; background: #1e2235; }
+.item-card.dragging { opacity: 0.35; }
+.item-card.drag-over { border-color: #a78bfa; border-style: dashed; }
+.item-card.has-spec { border-left: 2px solid #a78bfa60; }
+.item-card.status-done { opacity: 0.4; }
+.item-card.status-done .item-title { text-decoration: line-through; color: #475569; }
+
+.card-top { display: flex; align-items: flex-start; gap: 8px; }
+.drag-handle { color: #2d3148; font-size: 14px; cursor: grab; padding-top: 1px; flex-shrink: 0; transition: color 0.15s; }
+.item-card:hover .drag-handle { color: #475569; }
+.tag-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.card-main { flex: 1; min-width: 0; }
+.item-title { font-size: 13px; font-weight: 600; color: #e2e8f0; line-height: 1.4; word-break: break-word; }
+
+.item-meta { display: flex; align-items: center; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+.tag-badge { font-size: 11px; padding: 1px 8px; border-radius: 10px; font-weight: 500; }
+
+.priority-select {
+  font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 8px;
+  border: 1px solid; background: transparent; cursor: pointer; outline: none;
+  transition: all 0.15s; -webkit-appearance: none; appearance: none;
+}
+.priority-select option { background: #1a1d27; color: #e2e8f0; }
+
+.spec-indicator {
+  font-size: 10px; color: #a78bfa; background: #a78bfa15;
+  border: 1px solid #a78bfa40; padding: 1px 6px; border-radius: 8px;
+}
+
+.item-date { font-size: 11px; color: #3d4268; margin-left: auto; }
+.expand-arrow { color: #3d4268; font-size: 12px; padding-top: 1px; transition: transform 0.2s, color 0.15s; flex-shrink: 0; }
+.item-card.expanded .expand-arrow { transform: rotate(180deg); color: #a78bfa; }
+
+.item-body {
+  display: none; margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid #2d3148; font-size: 12px; color: #94a3b8;
+  line-height: 1.75; white-space: pre-wrap; word-break: break-word;
+}
+.item-card.expanded .item-body { display: block; }
+
+.item-actions { display: none; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.item-card.expanded .item-actions { display: flex; }
+
+.action-btn {
+  background: #14172b; border: 1px solid #2d3148; color: #64748b;
+  padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.15s;
+}
+.action-btn:hover { border-color: #a78bfa; color: #a78bfa; }
+.action-btn.del:hover { border-color: #ef4444; color: #ef4444; }
+.action-btn.done-btn:hover { border-color: #22c55e; color: #22c55e; }
+.action-btn.spec-btn { border-color: #a78bfa50; color: #a78bfa; }
+.action-btn.spec-btn:hover { background: #a78bfa15; border-color: #a78bfa; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #2d3148; }
+.empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+.empty-state p { font-size: 13px; }
+
+/* 태그 색상 */
+.tag-review  { color: #60a5fa; background: #1e3a5f30; }
+.tag-feature { color: #34d399; background: #064e3b30; }
+.tag-balance { color: #fbbf24; background: #78350f30; }
+.tag-bug     { color: #f87171; background: #7f1d1d30; }
+.tag-ux      { color: #e879f9; background: #581c8730; }
+.tag-content { color: #fb923c; background: #7c2d1230; }
+.tag-etc     { color: #94a3b8; background: #1e223540; }
+.dot-review  { background: #60a5fa; } .dot-feature { background: #34d399; }
+.dot-balance { background: #fbbf24; } .dot-bug     { background: #f87171; }
+.dot-ux      { background: #e879f9; } .dot-content { background: #fb923c; }
+.dot-etc     { background: #94a3b8; }
+.pri-high { color: #f87171; border-color: #7f1d1d80; }
+.pri-mid  { color: #fbbf24; border-color: #78350f80; }
+.pri-low  { color: #64748b; border-color: #2d3148; }
+
+/* ── 기획서 모달 ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: #0a0c14cc;
+  backdrop-filter: blur(4px);
+  align-items: stretch;
+}
+.modal-overlay.open { display: flex; }
+
+.spec-modal {
+  background: #12151f;
+  border-left: 1px solid #2d3148;
+  width: 680px;
+  max-width: 90vw;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideIn 0.2s ease;
+}
+@keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.spec-modal-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #2d3148;
+  background: #1a1d27;
+  flex-shrink: 0;
+}
+.spec-modal-tag { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.spec-modal-title {
+  font-size: 18px; font-weight: 700; color: #e2e8f0; line-height: 1.3;
+  word-break: break-word;
+}
+.spec-modal-meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.spec-close-btn {
+  position: absolute; top: 14px; right: 16px;
+  background: #1e2235; border: 1px solid #2d3148; color: #64748b;
+  width: 28px; height: 28px; border-radius: 6px; font-size: 14px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.spec-close-btn:hover { border-color: #ef4444; color: #ef4444; }
+
+.spec-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+.spec-section {}
+.spec-section-header {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700; color: #64748b;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.spec-section-icon { font-size: 13px; }
+
+.spec-field {
+  width: 100%; background: #1a1d27; border: 1px solid #2d3148;
+  color: #cbd5e1; padding: 10px 12px; border-radius: 8px;
+  font-size: 13px; line-height: 1.75; outline: none; resize: vertical;
+  font-family: inherit; min-height: 72px; transition: border-color 0.15s;
+}
+.spec-field:focus { border-color: #a78bfa; background: #1e2235; }
+.spec-field::placeholder { color: #2d3148; }
+.spec-field:empty:before { content: attr(data-placeholder); color: #2d3148; }
+
+.spec-footer {
+  padding: 14px 20px;
+  border-top: 1px solid #2d3148;
+  background: #1a1d27;
+  display: flex; gap: 8px; align-items: center;
+  flex-shrink: 0;
+}
+.spec-save-btn {
+  background: #7c3aed; color: white; border: none;
+  padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+}
+.spec-save-btn:hover { background: #6d28d9; }
+.spec-export-btn {
+  background: #1e2235; border: 1px solid #2d3148; color: #64748b;
+  padding: 8px 14px; border-radius: 8px; font-size: 12px;
+  cursor: pointer; transition: all 0.15s;
+}
+.spec-export-btn:hover { border-color: #a78bfa; color: #a78bfa; }
+.spec-saved-msg { font-size: 11px; color: #34d399; margin-left: auto; opacity: 0; transition: opacity 0.3s; }
+.spec-saved-msg.show { opacity: 1; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2d3148; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3d4268; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📋 업데이트 스펙 기획서</h1>
+    <div class="subtitle">게임 리뷰 &amp; 개선 아이템 관리</div>
+  </div>
+  <div class="header-right">
+    <div id="tagFilter"></div>
+    <button class="hdr-btn" onclick="exportMarkdown()">MD 내보내기</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- 왼쪽: 입력 패널 -->
+  <div class="input-panel">
+
+    <div>
+      <span class="panel-label">📥 Claude JSON 붙여넣기</span>
+      <textarea id="importArea" class="content-area" style="min-height:160px;"
+        placeholder='[&#10;  {&#10;    "title": "제목",&#10;    "content": "내용",&#10;    "spec": {&#10;      "background": "배경",&#10;      "solution": "솔루션"&#10;    }&#10;  }&#10;]'></textarea>
+      <div id="importError" style="font-size:11px;color:#f87171;margin-top:4px;display:none;"></div>
+      <button class="submit-btn" style="margin-top:8px;" onclick="importItems()">가져오기</button>
+    </div>
+
+    <div>
+      <button class="toggle-btn" onclick="toggleQuickAdd()">✏️ 직접 입력 (빠른 추가)</button>
+      <div id="quickAddPanel" style="display:none; flex-direction:column; gap:8px; margin-top:8px;">
+        <input type="text" class="title-input" id="titleInput" placeholder="제목..." oninput="updateTagPreview()" />
+        <textarea class="quick-text" id="contentArea" placeholder="내용 (선택)..." oninput="updateTagPreview()"></textarea>
+        <div class="auto-tag-row">
+          <span class="lbl">자동 분류</span>
+          <span class="auto-tag-chip tag-etc" id="tagPreview">—</span>
+        </div>
+        <button class="submit-btn" style="background:#374151;" onclick="addItem()">+ 추가</button>
+      </div>
+    </div>
+
+    <div class="tip" style="border-top:1px solid #2d3148;padding-top:12px;">
+      <strong>💡 워크플로우</strong><br>
+      1. 터미널에 의식의 흐름으로 던지기<br>
+      2. Claude가 JSON으로 정리해줌<br>
+      3. 붙여넣기 → 가져오기<br>
+      4. 카드 → 📄 기획서로 고도화
+    </div>
+
+  </div>
+
+  <!-- 오른쪽: 리스트 -->
+  <div class="list-panel">
+    <div class="section-header">
+      아이템 목록 <span class="count-badge" id="totalCount">0</span>
+      <span class="drag-hint">↕ 드래그로 순서 변경</span>
+    </div>
+    <div class="items-list" id="itemsList"
+         ondragover="onDragOver(event)" ondrop="onDrop(event)"></div>
+    <div class="empty-state" id="emptyState">
+      <div class="icon">📝</div>
+      <p>아직 아이템이 없습니다.<br>왼쪽에서 추가해주세요.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 기획서 모달 -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeSpec(event)">
+  <div class="spec-modal" onclick="event.stopPropagation()">
+    <div class="spec-modal-header" style="position:relative;">
+      <div class="spec-modal-tag">
+        <span class="tag-dot" id="specDot"></span>
+        <span class="tag-badge" id="specTagBadge"></span>
+      </div>
+      <div class="spec-modal-title" id="specTitle"></div>
+      <div class="spec-modal-meta">
+        <select class="priority-select" id="specPriSelect" onchange="specPriChange()"></select>
+        <span id="specDate" style="font-size:11px;color:#3d4268;"></span>
+      </div>
+      <button class="spec-close-btn" onclick="closeSpec()">✕</button>
+    </div>
+
+    <div class="spec-body">
+      <div class="spec-section">
+        <div class="spec-section-header"><span class="spec-section-icon">📌</span> 배경 / 문제 정의</div>
+        <textarea class="spec-field" id="sf-background" placeholder="왜 필요한가? 현재 어떤 문제가 있는가?"></textarea>
+      </div>
+      <div class="spec-section">
+        <div class="spec-section-header"><span class="spec-section-icon">🎯</span> 목표</div>
+        <textarea class="spec-field" id="sf-goals" placeholder="이걸 통해 달성하려는 것은?"></textarea>
+      </div>
+      <div class="spec-section">
+        <div class="spec-section-header"><span class="spec-section-icon">📊</span> 성공 지표</div>
+        <textarea class="spec-field" id="sf-metrics" placeholder="어떻게 성공을 측정할 것인가? (수치, 지표)"></textarea>
+      </div>
+      <div class="spec-section">
+        <div class="spec-section-header"><span class="spec-section-icon">💡</span> 제안 솔루션</div>
+        <textarea class="spec-field" id="sf-solution" style="min-height:100px;" placeholder="구체적으로 어떻게 구현할 것인가?"></textarea>
+      </div>
+      <div class="spec-section">
+        <div class="spec-section-header"><span class="spec-section-icon">⚙️</span> 구현 고려사항</div>
+        <textarea class="spec-field" id="sf-implementation" placeholder="기술적/디자인적 고려사항, 엣지케이스, 의존성"></textarea>
+      </div>
+      <div class="spec-section">
+        <div class="spec-section-header"><span class="spec-section-icon">🔗</span> 레퍼런스</div>
+        <textarea class="spec-field" id="sf-references" placeholder="관련 데이터, 참고 링크, 유사 사례"></textarea>
+      </div>
+    </div>
+
+    <div class="spec-footer">
+      <button class="spec-save-btn" onclick="saveSpec()">저장</button>
+      <button class="spec-export-btn" onclick="exportSpecMd()">MD 내보내기</button>
+      <span class="spec-saved-msg" id="savedMsg">✓ 저장됐습니다</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 상수 ─────────────────────────────────────────────────
+const TAGS = [
+  { id: 'review',  label: '리뷰',   emoji: '🔍' },
+  { id: 'feature', label: '기능',   emoji: '✨' },
+  { id: 'balance', label: '밸런스', emoji: '⚖️' },
+  { id: 'bug',     label: '버그',   emoji: '🐛' },
+  { id: 'ux',      label: 'UX/UI',  emoji: '🎨' },
+  { id: 'content', label: '콘텐츠', emoji: '📦' },
+  { id: 'etc',     label: '기타',   emoji: '📌' },
+];
+const TAG_KEYWORDS = {
+  review:  ['리뷰','평가','게임성','플레이','경험','피드백','인상','느낌','좋았','아쉬','개선점'],
+  feature: ['기능','추가','신규','새로운','구현','개발','필요','시스템','도입'],
+  balance: ['밸런스','난이도','경제','골드','비용','가격','보상','수치','조정','너프','버프','인플레'],
+  bug:     ['버그','오류','에러','error','크래시','튕김','안됨','깨짐','문제','이슈','fix'],
+  ux:      ['UI','UX','디자인','화면','레이아웃','폰트','색상','애니메이션','아이콘','인터페이스','플로팅','알럿','팝업'],
+  content: ['콘텐츠','맵','레벨','스테이지','카드','미션','이벤트','시즌','챕터','튜토리얼'],
+};
+const PRI_LABEL = { high: '높음', mid: '보통', low: '낮음' };
+const SPEC_FIELDS = ['background','goals','metrics','solution','implementation','references'];
+
+let activeFilter = 'all';
+let editingId = null;
+let dragSrcId = null;
+let currentSpecId = null;
+
+// ── 자동 분류 ─────────────────────────────────────────────
+function classifyTag(text) {
+  const t = text.toLowerCase();
+  let best = 'etc', bestScore = 0;
+  for (const [tag, kws] of Object.entries(TAG_KEYWORDS)) {
+    const score = kws.filter(k => t.includes(k.toLowerCase())).length;
+    if (score > bestScore) { bestScore = score; best = tag; }
+  }
+  return best;
+}
+
+function updateTagPreview() {
+  const text = ((document.getElementById('titleInput').value || '') + ' ' +
+                (document.getElementById('contentArea').value || '')).trim();
+  const tag = text ? classifyTag(text) : 'etc';
+  const def = TAGS.find(t => t.id === tag);
+  const el = document.getElementById('tagPreview');
+  el.className = `auto-tag-chip tag-${tag}`;
+  el.textContent = text ? `${def.emoji} ${def.label}` : '—';
+}
+
+// ── 스토리지 ──────────────────────────────────────────────
+function getItems() { return JSON.parse(localStorage.getItem('specItems3') || '[]'); }
+function saveItems(items) { localStorage.setItem('specItems3', JSON.stringify(items)); }
+
+function emptySpec() {
+  return { background:'', goals:'', metrics:'', solution:'', implementation:'', references:'' };
+}
+function hasSpec(item) {
+  return item.spec && SPEC_FIELDS.some(f => (item.spec[f] || '').trim());
+}
+
+// ── 직접 입력 ─────────────────────────────────────────────
+function toggleQuickAdd() {
+  const p = document.getElementById('quickAddPanel');
+  const open = p.style.display === 'none' || !p.style.display;
+  p.style.display = open ? 'flex' : 'none';
+  if (open) document.getElementById('titleInput').focus();
+}
+
+function addItem() {
+  const title   = (document.getElementById('titleInput').value || '').trim();
+  const content = (document.getElementById('contentArea').value || '').trim();
+  if (!title) { document.getElementById('titleInput').focus(); return; }
+  const tag   = classifyTag(title + ' ' + content);
+  const items = getItems();
+  if (editingId) {
+    const idx = items.findIndex(i => i.id === editingId);
+    if (idx !== -1) items[idx] = { ...items[idx], title, content, tag, updatedAt: Date.now() };
+    editingId = null;
+    document.querySelector('.submit-btn[onclick="addItem()"]').textContent = '+ 추가';
+  } else {
+    const maxOrd = items.reduce((m, i) => Math.max(m, i.order ?? 0), -1);
+    items.push({ id: Date.now().toString(), title, content, tag, priority:'mid',
+      status:'open', order: maxOrd + 1, spec: emptySpec(),
+      createdAt: Date.now(), updatedAt: Date.now() });
+  }
+  saveItems(items);
+  document.getElementById('titleInput').value = '';
+  document.getElementById('contentArea').value = '';
+  updateTagPreview();
+  renderList(); renderFilter();
+}
+
+// ── JSON 가져오기 ─────────────────────────────────────────
+function importItems() {
+  const raw = (document.getElementById('importArea').value || '').trim();
+  const errEl = document.getElementById('importError');
+  errEl.style.display = 'none';
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) parsed = [parsed];
+  } catch(e) {
+    errEl.textContent = 'JSON 형식이 아닙니다. 다시 확인해주세요.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const items = getItems();
+  const maxOrd = items.reduce((m, i) => Math.max(m, i.order ?? 0), -1);
+  let added = 0;
+  parsed.forEach((p, idx) => {
+    if (!p.title) return;
+    const text = p.title + ' ' + (p.content || '');
+    const spec = Object.assign(emptySpec(), p.spec || {});
+    items.push({ id: (Date.now() + idx).toString(), title: p.title,
+      content: p.content || '', tag: p.tag || classifyTag(text),
+      priority: p.priority || 'mid', status: 'open',
+      order: maxOrd + 1 + idx, spec,
+      createdAt: Date.now(), updatedAt: Date.now() });
+    added++;
+  });
+  saveItems(items);
+  document.getElementById('importArea').value = '';
+  renderList(); renderFilter();
+  alert(added + '개 추가됐습니다!');
+}
+
+// ── 카드 액션 ─────────────────────────────────────────────
+function toggleCard(id) { document.getElementById('card-'+id).classList.toggle('expanded'); }
+
+function changePriority(e, id) {
+  e.stopPropagation();
+  const items = getItems();
+  const item = items.find(i => i.id === id);
+  if (item) { item.priority = e.target.value; saveItems(items); }
+  e.target.className = `priority-select pri-${e.target.value}`;
+}
+
+function toggleDone(e, id) {
+  e.stopPropagation();
+  const items = getItems();
+  const item = items.find(i => i.id === id);
+  if (item) item.status = item.status === 'done' ? 'open' : 'done';
+  saveItems(items); renderList();
+}
+
+function editItem(e, id) {
+  e.stopPropagation();
+  const item = getItems().find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('titleInput').value   = item.title;
+  document.getElementById('contentArea').value  = item.content || '';
+  document.getElementById('quickAddPanel').style.display = 'flex';
+  updateTagPreview();
+  editingId = id;
+  document.querySelector('.submit-btn[onclick="addItem()"]').textContent = '✏️ 수정 저장';
+  document.getElementById('titleInput').focus();
+}
+
+function deleteItem(e, id) {
+  e.stopPropagation();
+  if (!confirm('삭제할까요?')) return;
+  saveItems(getItems().filter(i => i.id !== id));
+  renderList(); renderFilter();
+}
+
+// ── 드래그 앤 드롭 ────────────────────────────────────────
+function onDragStart(e, id) {
+  dragSrcId = id; e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => { const el = document.getElementById('card-'+id); if (el) el.classList.add('dragging'); }, 0);
+}
+function onDragEnd() {
+  dragSrcId = null;
+  document.querySelectorAll('.item-card').forEach(c => c.classList.remove('dragging','drag-over'));
+}
+function onDragOver(e) {
+  e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+  const target = e.target.closest('.item-card');
+  document.querySelectorAll('.item-card').forEach(c => c.classList.remove('drag-over'));
+  if (target && target.dataset.id !== dragSrcId) target.classList.add('drag-over');
+}
+function onDrop(e) {
+  e.preventDefault();
+  const target = e.target.closest('.item-card');
+  if (!target || !dragSrcId || target.dataset.id === dragSrcId) return;
+  const items = getItems();
+  const si = items.findIndex(i => i.id === dragSrcId);
+  const ti = items.findIndex(i => i.id === target.dataset.id);
+  if (si === -1 || ti === -1) return;
+  const [moved] = items.splice(si, 1);
+  items.splice(ti, 0, moved);
+  items.forEach((item, i) => { item.order = i; });
+  saveItems(items); renderList();
+}
+
+// ── 기획서 모달 ───────────────────────────────────────────
+function openSpec(e, id) {
+  e.stopPropagation();
+  const item = getItems().find(i => i.id === id);
+  if (!item) return;
+  currentSpecId = id;
+
+  const tag = TAGS.find(t => t.id === item.tag) || TAGS[6];
+  document.getElementById('specDot').className    = `tag-dot dot-${item.tag}`;
+  document.getElementById('specTagBadge').className = `tag-badge tag-${item.tag}`;
+  document.getElementById('specTagBadge').textContent = `${tag.emoji} ${tag.label}`;
+  document.getElementById('specTitle').textContent = item.title;
+  document.getElementById('specDate').textContent  =
+    new Date(item.createdAt).toLocaleDateString('ko-KR', { year:'numeric', month:'short', day:'numeric' });
+
+  const sel = document.getElementById('specPriSelect');
+  sel.innerHTML = ['high','mid','low'].map(p =>
+    `<option value="${p}" ${item.priority===p?'selected':''}>${PRI_LABEL[p]}</option>`).join('');
+  sel.className = `priority-select pri-${item.priority}`;
+
+  const spec = item.spec || emptySpec();
+  SPEC_FIELDS.forEach(f => { document.getElementById('sf-'+f).value = spec[f] || ''; });
+
+  document.getElementById('savedMsg').classList.remove('show');
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeSpec(e) {
+  if (e && e.target !== document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').classList.remove('open');
+  currentSpecId = null;
+}
+
+function saveSpec() {
+  if (!currentSpecId) return;
+  const items = getItems();
+  const item  = items.find(i => i.id === currentSpecId);
+  if (!item) return;
+  if (!item.spec) item.spec = emptySpec();
+  SPEC_FIELDS.forEach(f => { item.spec[f] = document.getElementById('sf-'+f).value; });
+  item.priority = document.getElementById('specPriSelect').value;
+  item.updatedAt = Date.now();
+  saveItems(items);
+  renderList(); renderFilter();
+  const msg = document.getElementById('savedMsg');
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 2000);
+}
+
+function specPriChange() {
+  const sel = document.getElementById('specPriSelect');
+  sel.className = `priority-select pri-${sel.value}`;
+}
+
+function exportSpecMd() {
+  if (!currentSpecId) return;
+  const item = getItems().find(i => i.id === currentSpecId);
+  if (!item) return;
+  const tag = TAGS.find(t => t.id === item.tag) || TAGS[6];
+  const spec = item.spec || emptySpec();
+  const secMap = {
+    background: '📌 배경 / 문제 정의', goals: '🎯 목표',
+    metrics: '📊 성공 지표', solution: '💡 제안 솔루션',
+    implementation: '⚙️ 구현 고려사항', references: '🔗 레퍼런스',
+  };
+  let md = `# ${item.title}\n\n`;
+  md += `**카테고리**: ${tag.emoji} ${tag.label}  |  **우선순위**: ${PRI_LABEL[item.priority]}\n\n---\n\n`;
+  SPEC_FIELDS.forEach(f => {
+    if (spec[f]?.trim()) md += `## ${secMap[f]}\n\n${spec[f]}\n\n`;
+  });
+  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `spec-${item.title.slice(0,20).replace(/\s/g,'-')}.md`;
+  a.click();
+}
+
+// ── 필터 & 렌더 ───────────────────────────────────────────
+function renderFilter() {
+  const counts = {};
+  getItems().forEach(i => { counts[i.tag] = (counts[i.tag]||0)+1; });
+  document.getElementById('tagFilter').innerHTML =
+    `<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="setFilter('all')">전체</button>` +
+    TAGS.filter(t => counts[t.id]).map(t =>
+      `<button class="filter-btn ${activeFilter===t.id?'active':''}" onclick="setFilter('${t.id}')">${t.emoji} ${t.label}</button>`
+    ).join('');
+}
+function setFilter(tag) { activeFilter = tag; renderFilter(); renderList(); }
+
+function renderList() {
+  let items = getItems().sort((a,b) => (a.order??0)-(b.order??0));
+  if (activeFilter !== 'all') items = items.filter(i => i.tag === activeFilter);
+  document.getElementById('totalCount').textContent = items.length;
+  const container = document.getElementById('itemsList');
+  const empty     = document.getElementById('emptyState');
+  if (!items.length) { container.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  container.innerHTML = items.map(item => {
+    const tag  = TAGS.find(t => t.id === item.tag) || TAGS[6];
+    const date = new Date(item.createdAt).toLocaleDateString('ko-KR', { month:'short', day:'numeric' });
+    const priOpts = ['high','mid','low'].map(p =>
+      `<option value="${p}" ${item.priority===p?'selected':''}>${PRI_LABEL[p]}</option>`).join('');
+    const specMark = hasSpec(item) ? `<span class="spec-indicator">📄 기획서</span>` : '';
+
+    return `
+<div class="item-card ${item.status==='done'?'status-done':''} ${hasSpec(item)?'has-spec':''}"
+     id="card-${item.id}" data-id="${item.id}" draggable="true"
+     ondragstart="onDragStart(event,'${item.id}')"
+     ondragend="onDragEnd()"
+     onclick="toggleCard('${item.id}')">
+  <div class="card-top">
+    <div class="drag-handle">⠿</div>
+    <div class="tag-dot dot-${item.tag}"></div>
+    <div class="card-main">
+      <div class="item-title">${escHtml(item.title)}</div>
+      <div class="item-meta">
+        <span class="tag-badge tag-${item.tag}">${tag.emoji} ${tag.label}</span>
+        <select class="priority-select pri-${item.priority}"
+                onclick="event.stopPropagation()"
+                onchange="changePriority(event,'${item.id}')">${priOpts}</select>
+        ${specMark}
+        <span class="item-date">${date}</span>
+      </div>
+    </div>
+    <div class="expand-arrow">▾</div>
+  </div>
+  ${item.content
+    ? `<div class="item-body">${escHtml(item.content)}</div>`
+    : `<div class="item-body" style="color:#2d3148;font-style:italic;">내용 없음</div>`}
+  <div class="item-actions">
+    <button class="action-btn spec-btn" onclick="openSpec(event,'${item.id}')">📄 기획서 작성</button>
+    <button class="action-btn done-btn" onclick="toggleDone(event,'${item.id}')">${item.status==='done'?'↩ 되돌리기':'✓ 완료'}</button>
+    <button class="action-btn" onclick="editItem(event,'${item.id}')">✏️ 수정</button>
+    <button class="action-btn del" onclick="deleteItem(event,'${item.id}')">🗑 삭제</button>
+  </div>
+</div>`;
+  }).join('');
+}
+
+// ── 전체 MD 내보내기 ──────────────────────────────────────
+function exportMarkdown() {
+  const items = getItems().sort((a,b) => (a.order??0)-(b.order??0));
+  const grouped = {}; TAGS.forEach(t => { grouped[t.id] = []; });
+  items.forEach(i => { if (grouped[i.tag]) grouped[i.tag].push(i); });
+  const secMap = { background:'배경/문제', goals:'목표', metrics:'성공 지표',
+    solution:'제안 솔루션', implementation:'구현 고려사항', references:'레퍼런스' };
+  let md = `# 업데이트 스펙 기획서\n\n생성일: ${new Date().toLocaleDateString('ko-KR')}\n\n---\n\n`;
+  TAGS.forEach(t => {
+    const list = grouped[t.id]; if (!list.length) return;
+    md += `## ${t.emoji} ${t.label} (${list.length})\n\n`;
+    list.forEach(item => {
+      const pri = {high:'🔴',mid:'🟡',low:'⚪'}[item.priority]||'';
+      md += `### ${pri} ${item.status==='done'?'~~'+item.title+'~~':item.title}\n\n`;
+      if (item.content) md += `${item.content}\n\n`;
+      if (hasSpec(item)) {
+        SPEC_FIELDS.forEach(f => {
+          if (item.spec[f]?.trim()) md += `**${secMap[f]}**: ${item.spec[f]}\n\n`;
+        });
+      }
+    });
+  });
+  const blob = new Blob([md], { type:'text/markdown;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `update-spec-${new Date().toISOString().slice(0,10)}.md`;
+  a.click();
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── ESC로 모달 닫기 ───────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { document.getElementById('modalOverlay').classList.remove('open'); currentSpecId = null; }
+});
+
+renderList(); renderFilter();
+</script>
+</body>
+</html>

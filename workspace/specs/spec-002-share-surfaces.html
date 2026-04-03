@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-002 · 공유 지면 3종 설계</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #2dd4bf;
+  --accent2: #5eead4;
+  --green: #34d399;
+  --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;
+  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;
+  --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,0.12);
+  --teal: #2dd4bf;
+  --teal-bg: rgba(45,212,191,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #1a2d2a 45%, #1a1d27 100%);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #0d9488; --accent2: #0f766e;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626; --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb; --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --teal: #0d9488; --teal-bg: rgba(13,148,136,0.1);
+  --hero-bg: linear-gradient(135deg, #ccfbf1 0%, #a7f3d0 45%, #d1fae5 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { position:fixed;left:16px;top:16px;z-index:300;background:var(--surface2);border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:10px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s; }
+.nav-toggle:hover { border-color:var(--accent); }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200;transform:translateX(-100%);transition:transform 0.25s; }
+.nav-sidebar.open { transform:translateX(0); }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(45,212,191,0.1) 0%,transparent 60%); }
+.hero::after  { content:'';position:absolute;bottom:-30%;left:5%;width:400px;height:400px;background:radial-gradient(circle,rgba(52,211,153,0.07) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--teal-bg);border:1px solid rgba(45,212,191,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--teal),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge-row { display:flex;gap:8px;flex-wrap:wrap; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-purple { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-teal   { background:var(--teal-bg);color:var(--teal);border:1px solid rgba(45,212,191,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+.kpi-trend { font-size:0.72rem;font-weight:700;margin-top:6px; }
+.trend-up   { color:var(--green); }
+
+.container { max-width:1100px;margin:0 auto;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--teal-bg);color:var(--teal);border:1px solid rgba(45,212,191,0.3); }
+.section-num-3 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--teal-bg);color:var(--teal); }
+.aud-dev { background:var(--blue-bg);color:var(--blue); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+h4 { font-size:0.95rem;font-weight:700;margin:24px 0 10px;color:var(--accent); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-teal   { background:var(--teal-bg);border-left:3px solid var(--teal); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.wireframe { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:20px 0; }
+
+.surface-cards { display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0; }
+.surface-card { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px; }
+.surface-card-num { font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin-bottom:6px; }
+.surface-card-title { font-size:1rem;font-weight:700;margin-bottom:8px; }
+.surface-card-desc { font-size:0.85rem;color:var(--text2); }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.86rem; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var { font-family:monospace;color:var(--blue);font-weight:600;min-width:300px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:72px; }
+.sheet-row-unit { font-size:0.75rem;color:var(--text2);min-width:100px; }
+.sheet-row-desc { color:var(--text2);font-size:0.82rem;flex:1; }
+
+.flow-step { display:flex;gap:14px;margin-bottom:14px;align-items:flex-start; }
+.flow-dot  { width:28px;height:28px;border-radius:50%;background:var(--teal-bg);border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--teal);flex-shrink:0;margin-top:2px; }
+.flow-body { flex:1; }
+.flow-body strong { color:var(--text);font-size:0.9rem; }
+.flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">☰</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-002</div>
+  <a href="#s1">① 기획 의도 &amp; 흐름</a>
+  <a href="#s2">② 아트 가이드</a>
+  <a href="#s3">③ 개발 스펙</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-002</span>
+    </div>
+    <h1>공유 지면 <span>3종 설계</span></h1>
+    <p class="hero-sub">히든 스팟, 레벨 마일스톤, 이벤트 보상 — 세 가지 공유 지면으로 바이럴 루프를 만들고 골드 보상으로 참여를 유도합니다.</p>
+    <div class="badge-row">
+      <span id="hero-tag" class="badge badge-purple">🎨 UX/UI</span>
+      <span id="hero-priority" class="badge badge-yellow">🟡 보통 우선순위</span>
+      <span id="hero-status" class="badge badge-blue">🔵 검토중</span>
+      <span class="badge badge-green">바이럴 획득</span>
+      <span class="badge badge-yellow">사회적 연결</span>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">공유 전환율</div>
+        <div class="kpi-value" style="color:var(--teal)">+%</div>
+        <div class="kpi-sub">지면 노출 → 실제 공유</div>
+        <div class="kpi-trend trend-up">▲ 목표 설정 필요</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">공유 유입 설치</div>
+        <div class="kpi-value" style="color:var(--green)">+%</div>
+        <div class="kpi-sub">공유 링크 → 신규 설치</div>
+        <div class="kpi-trend trend-up">▲ 획득 채널 다변화</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">D7 리텐션</div>
+        <div class="kpi-value" style="color:var(--blue)">모니터</div>
+        <div class="kpi-sub">보상 루프 → 재방문</div>
+        <div class="kpi-trend trend-up">▲ 간접 기여 기대</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════
+  SECTION 1 — 기획 의도 & 콘텐츠 흐름
+════════════════════════════════════ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">1</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도 &amp; 콘텐츠 흐름</div>
+      <span class="section-audience aud-all">개발 + 아트 공통</span>
+    </div>
+  </div>
+
+  <h3>왜 만드는가</h3>
+  <p>소셜 공유는 <strong>가장 저비용의 획득 채널</strong>이지만, 공유할 가치 있는 순간이 설계되어야 동작합니다. 현재 게임에는 플레이어가 자발적으로 공유하고 싶어질 만한 특별한 순간이 없습니다.</p>
+  <p>세 가지 공유 지면은 각각 <strong>발견의 기쁨(히든 스팟)</strong>, <strong>성취의 자랑(레벨 마일스톤)</strong>, <strong>보상의 즐거움(이벤트 수령)</strong>을 공유 계기로 삼아 골드 인센티브와 결합합니다.</p>
+
+  <h3>공유 지면 3종 개요</h3>
+  <div class="surface-cards">
+    <div class="surface-card">
+      <div class="surface-card-num">Surface A</div>
+      <div class="surface-card-title">시티 히든 스팟</div>
+      <div class="surface-card-desc">로비 도시 배경에 일정 확률로 ? 스팟이 출현합니다. 탭하면 해당 도시의 비밀 공간 이미지가 나타나고, 공유하면 골드를 받습니다.</div>
+    </div>
+    <div class="surface-card">
+      <div class="surface-card-num">Surface B</div>
+      <div class="surface-card-title">레벨 마일스톤 피드</div>
+      <div class="surface-card-desc">특정 레벨 도달 시 마일스톤 축하 카드가 표시됩니다. 레벨 달성 정보를 공유하면 골드를 받습니다.</div>
+    </div>
+    <div class="surface-card">
+      <div class="surface-card-num">Surface C</div>
+      <div class="surface-card-title">이벤트 보상 수령 피드</div>
+      <div class="surface-card-desc">이벤트 보상을 수령하는 순간 공유 지면이 표시됩니다. 보상 수령 장면을 공유하면 골드를 받습니다.</div>
+    </div>
+  </div>
+
+  <h3>공통 플레이어 경험 흐름</h3>
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>특별한 순간 발생</strong><p>히든 스팟 출현 / 레벨 마일스톤 달성 / 이벤트 보상 수령</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>공유 지면 표시</strong><p>해당 순간을 담은 비주얼 카드 또는 모달이 표시됩니다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>공유 선택</strong><p>플레이어가 공유 버튼을 탭하면 OS 공유 시트가 열립니다. 건너뛰기 가능합니다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>골드 보상 지급</strong><p>공유 완료 시 골드 보상이 즉시 지급됩니다. 쿨다운 내 중복 지급 없음.</p></div></div>
+
+  <div class="callout callout-teal">
+    <p><strong>인센티브 원칙:</strong> 공유 보상은 게임 경제를 보조하는 수준이어야 합니다. 과도한 보상은 인플레이션을 유발합니다. 수치는 밸런스 시트에서 경제 팀이 관리합니다.</p>
+  </div>
+
+  <h3>기대 KPI 및 성공 지표</h3>
+  <table>
+    <thead><tr><th>지표</th><th>측정 방법</th><th>목표</th></tr></thead>
+    <tbody>
+      <tr><td>공유 전환율 (각 지면)</td><td>공유 완료 / 공유 지면 노출</td><td>지면별 목표 수치 설정 필요</td></tr>
+      <tr><td>공유 유입 설치 수</td><td>딥링크 추적 (AppsFlyer 등)</td><td>전체 신규 설치 중 % 목표</td></tr>
+      <tr><td>히든 스팟 탭률</td><td>히든 스팟 탭 이벤트 / 노출</td><td>출현 자체의 매력도 측정</td></tr>
+      <tr><td>공유 보상 골드 비율</td><td>공유 보상 지급량 / 전체 골드 지급량</td><td>전체 Source의 N% 이하로 제한</td></tr>
+      <tr><td>D1/D7 리텐션</td><td>코호트 분석</td><td>간접 기여 모니터링</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════════════════════════════════════
+  SECTION 2 — 아트 가이드
+════════════════════════════════════ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">2</div>
+    <div class="section-meta">
+      <div class="section-title">아트 가이드</div>
+      <span class="section-audience aud-art">아트팀 전용</span>
+    </div>
+  </div>
+
+  <h4>A. 시티 히든 스팟 — 로비 출현</h4>
+  <div class="wireframe">
+    <svg viewBox="0 0 460 300" width="100%" style="display:block;max-width:560px;margin:8px 0;">
+      <rect x="10" y="10" width="280" height="280" rx="10" style="fill:var(--surface2);stroke:var(--border);stroke-width:1.5"/>
+      <rect x="10" y="10" width="280" height="165" rx="10" style="fill:var(--surface3);opacity:0.8"/>
+      <rect x="10" y="165" width="280" height="14" style="fill:var(--surface3);opacity:0.5"/>
+      <text x="150" y="95" text-anchor="middle" style="fill:var(--text2);font-size:11px;font-family:sans-serif;">도시 배경 이미지</text>
+      <rect x="30" y="105" width="30" height="70" rx="2" style="fill:var(--surface);opacity:0.3"/>
+      <rect x="70" y="85" width="40" height="90" rx="2" style="fill:var(--surface);opacity:0.3"/>
+      <rect x="120" y="110" width="25" height="65" rx="2" style="fill:var(--surface);opacity:0.3"/>
+      <rect x="200" y="95" width="35" height="80" rx="2" style="fill:var(--surface);opacity:0.3"/>
+      <rect x="240" y="108" width="30" height="67" rx="2" style="fill:var(--surface);opacity:0.3"/>
+      <rect x="20" y="20" width="260" height="30" rx="6" style="fill:var(--surface);opacity:0.85;stroke:var(--border);stroke-width:1"/>
+      <text x="150" y="39" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">게임 HUD 영역</text>
+      <!-- 히든 스팟 버블 -->
+      <circle cx="170" cy="132" r="20" style="fill:var(--yellow-bg);stroke:var(--yellow);stroke-width:2.5"/>
+      <text x="170" y="139" text-anchor="middle" style="fill:var(--yellow);font-size:18px;font-weight:900;font-family:sans-serif;">?</text>
+      <circle cx="170" cy="132" r="28" style="fill:none;stroke:var(--yellow);stroke-width:1;opacity:0.35"/>
+      <circle cx="170" cy="132" r="36" style="fill:none;stroke:var(--yellow);stroke-width:0.5;opacity:0.15"/>
+      <rect x="20" y="222" width="260" height="58" rx="8" style="fill:var(--surface);opacity:0.9;stroke:var(--border);stroke-width:1"/>
+      <text x="150" y="250" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">메타 UI 영역</text>
+      <!-- 주석 -->
+      <line x1="194" y1="124" x2="306" y2="82" style="stroke:var(--yellow);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="304" y="62" width="152" height="34" rx="5" style="fill:var(--yellow-bg);stroke:var(--yellow);stroke-width:1"/>
+      <text x="380" y="82" text-anchor="middle" style="fill:var(--yellow);font-size:9px;font-family:sans-serif;">? 버블 — 도시 위 랜덤 위치</text>
+      <text x="380" y="93" text-anchor="middle" style="fill:var(--yellow);font-size:8px;font-family:sans-serif;">글로우 루핑 애니메이션</text>
+      <line x1="170" y1="154" x2="308" y2="135" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="306" y="122" width="152" height="24" rx="5" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="382" y="137" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">탭 → 히든 스팟 모달 오픈</text>
+    </svg>
+  </div>
+
+  <h4>A. 시티 히든 스팟 — 모달</h4>
+  <div class="wireframe">
+    <svg viewBox="0 0 460 310" width="100%" style="display:block;max-width:480px;margin:8px 0;">
+      <rect x="0" y="0" width="300" height="310" style="fill:var(--bg);opacity:0.65"/>
+      <rect x="30" y="20" width="240" height="275" rx="14" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/>
+      <rect x="30" y="20" width="240" height="140" rx="14" style="fill:var(--surface2)"/>
+      <rect x="30" y="146" width="240" height="14" style="fill:var(--surface2)"/>
+      <text x="150" y="88" text-anchor="middle" style="fill:var(--text2);font-size:10px;font-family:sans-serif;">도시 시크릿 스팟 이미지</text>
+      <text x="150" y="104" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">(도시별 1종 이상, 아트팀 제작)</text>
+      <text x="150" y="180" text-anchor="middle" style="fill:var(--text);font-size:12px;font-weight:700;font-family:sans-serif;">🗽 뉴욕의 히든 스팟!</text>
+      <text x="150" y="197" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">이 비밀 장소를 발견했습니다.</text>
+      <rect x="80" y="210" width="140" height="28" rx="8" style="fill:var(--yellow-bg);stroke:var(--yellow);stroke-width:1"/>
+      <text x="150" y="228" text-anchor="middle" style="fill:var(--yellow);font-size:10px;font-weight:700;font-family:sans-serif;">💰 공유하면 N골드 지급!</text>
+      <rect x="50" y="250" width="200" height="34" rx="10" style="fill:var(--accent)"/>
+      <text x="150" y="271" text-anchor="middle" style="fill:#0f1117;font-size:11px;font-weight:800;font-family:sans-serif;">공유하기</text>
+      <text x="255" y="42" text-anchor="middle" style="fill:var(--text2);font-size:16px;font-family:sans-serif;">✕</text>
+      <!-- 주석 -->
+      <line x1="295" y1="88" x2="318" y2="88" style="stroke:var(--teal);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="316" y="74" width="142" height="28" rx="5" style="fill:var(--teal-bg);stroke:var(--teal);stroke-width:1"/>
+      <text x="387" y="92" text-anchor="middle" style="fill:var(--teal);font-size:9px;font-family:sans-serif;">도시별 전용 이미지 에셋 필요</text>
+      <line x1="295" y1="228" x2="318" y2="228" style="stroke:var(--yellow);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="316" y="214" width="142" height="28" rx="5" style="fill:var(--yellow-bg);stroke:var(--yellow);stroke-width:1"/>
+      <text x="387" y="232" text-anchor="middle" style="fill:var(--yellow);font-size:9px;font-family:sans-serif;">hidden_spot_reward_gold_amount</text>
+    </svg>
+  </div>
+
+  <h4>B. 레벨 마일스톤 피드 카드</h4>
+  <div class="wireframe">
+    <svg viewBox="0 0 460 310" width="100%" style="display:block;max-width:480px;margin:8px 0;">
+      <rect x="30" y="10" width="240" height="290" rx="14" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/>
+      <rect x="30" y="10" width="240" height="82" rx="14" style="fill:var(--purple-bg)"/>
+      <rect x="30" y="76" width="240" height="16" style="fill:var(--purple-bg)"/>
+      <circle cx="150" cy="52" r="30" style="fill:var(--purple-bg);stroke:var(--purple);stroke-width:2.5"/>
+      <text x="150" y="48" text-anchor="middle" style="fill:var(--purple);font-size:9px;font-family:sans-serif;font-weight:700;">LEVEL</text>
+      <text x="150" y="64" text-anchor="middle" style="fill:var(--purple);font-size:15px;font-weight:900;font-family:sans-serif;">150</text>
+      <text x="150" y="114" text-anchor="middle" style="fill:var(--text);font-size:12px;font-weight:700;font-family:sans-serif;">레벨 150 달성!</text>
+      <text x="150" y="130" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">Solitaire City Journey</text>
+      <rect x="50" y="142" width="80" height="50" rx="8" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="90" y="162" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">클리어</text>
+      <text x="90" y="179" text-anchor="middle" style="fill:var(--green);font-size:14px;font-weight:800;font-family:sans-serif;">248</text>
+      <rect x="170" y="142" width="80" height="50" rx="8" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="210" y="162" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">플레이</text>
+      <text x="210" y="179" text-anchor="middle" style="fill:var(--blue);font-size:14px;font-weight:800;font-family:sans-serif;">312</text>
+      <rect x="60" y="208" width="180" height="28" rx="8" style="fill:var(--yellow-bg);stroke:var(--yellow);stroke-width:1"/>
+      <text x="150" y="226" text-anchor="middle" style="fill:var(--yellow);font-size:10px;font-weight:700;font-family:sans-serif;">💰 공유하면 N골드 지급!</text>
+      <rect x="50" y="248" width="200" height="34" rx="10" style="fill:var(--accent)"/>
+      <text x="150" y="269" text-anchor="middle" style="fill:#0f1117;font-size:11px;font-weight:800;font-family:sans-serif;">공유하기</text>
+      <!-- 주석 -->
+      <line x1="295" y1="165" x2="318" y2="165" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="316" y="151" width="142" height="28" rx="5" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="387" y="169" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">실제 플레이어 통계 반영</text>
+      <line x1="295" y1="226" x2="318" y2="226" style="stroke:var(--yellow);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="316" y="212" width="142" height="28" rx="5" style="fill:var(--yellow-bg);stroke:var(--yellow);stroke-width:1"/>
+      <text x="387" y="230" text-anchor="middle" style="fill:var(--yellow);font-size:9px;font-family:sans-serif;">milestone_share_reward_gold_amount</text>
+    </svg>
+  </div>
+
+  <h4>C. 이벤트 보상 수령 피드</h4>
+  <p>이벤트 보상 수령 직후 표시. 마일스톤 카드와 유사한 구조이나 이벤트 테마 비주얼로 차별화. 이벤트 종류에 따라 배경색과 아이콘이 변경됩니다.</p>
+
+  <h3>필요 에셋</h3>
+  <table>
+    <thead><tr><th>에셋</th><th>방향</th><th>수량</th><th>우선순위</th></tr></thead>
+    <tbody>
+      <tr><td>히든 스팟 도시별 이미지</td><td>가로형. 각 도시 분위기가 느껴지는 비밀 공간 콘셉트</td><td>도시당 1종 이상 (21도시)</td><td>높음</td></tr>
+      <tr><td>? 버블 아이콘</td><td>신비롭고 눈에 띄는 느낌. 글로우 루핑 애니메이션 포함</td><td>1종</td><td>높음</td></tr>
+      <tr><td>마일스톤 배지 프레임</td><td>레벨 번호가 들어가는 템플릿 형태. 성취감이 느껴지게</td><td>1종</td><td>중간</td></tr>
+      <tr><td>이벤트 공유 카드 배경</td><td>이벤트 테마에 맞는 배경. 이벤트 오픈 시 별도 협의</td><td>이벤트별</td><td>낮음</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-teal">
+    <p><strong>히든 스팟 이미지 가이드:</strong> 각 도시의 관광객이 잘 모르는 비밀 공간 콘셉트. 실제 사진 합성 또는 일러스트 모두 가능. 첫 4개 도시 (NY, Venice, Sapporo, Cairo) 우선 제작 권장.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+  SECTION 3 — 개발 스펙
+════════════════════════════════════ -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">3</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+  </div>
+
+  <h3>밸런스 시트 변수 (신규 탭 생성 필요)</h3>
+  <div class="sheet-block">
+    <div class="sheet-block-title">신규 탭: hidden_spot_config &nbsp;·&nbsp; key_number 대역: 20001~20008 &nbsp;·&nbsp; 담당: 02_경제_밸런스</div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">hidden_spot_config.hidden_spot_appearance_rate</span>
+      <span class="sheet-row-default">= 1000</span>
+      <span class="sheet-row-unit">ratio_10000</span>
+      <span class="sheet-row-desc">히든 스팟 출현 확률. 1000 = 10%. key: 20001</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">hidden_spot_config.hidden_spot_appearance_per_city</span>
+      <span class="sheet-row-default">= 3</span>
+      <span class="sheet-row-unit">count</span>
+      <span class="sheet-row-desc">시티당 최대 출현 횟수 (기간 내). key: 20002</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">hidden_spot_config.hidden_spot_validity_duration_min</span>
+      <span class="sheet-row-default">= 30</span>
+      <span class="sheet-row-unit">count (분)</span>
+      <span class="sheet-row-desc">히든 스팟 유효 시간(분). 만료 시 자동 소멸. key: 20003</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">hidden_spot_config.hidden_spot_reward_gold_amount</span>
+      <span class="sheet-row-default">= 500</span>
+      <span class="sheet-row-unit">amount</span>
+      <span class="sheet-row-desc">히든 스팟 공유 완료 시 지급 골드. key: 20004</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">hidden_spot_config.milestone_share_reward_gold_amount</span>
+      <span class="sheet-row-default">= 1000</span>
+      <span class="sheet-row-unit">amount</span>
+      <span class="sheet-row-desc">레벨 마일스톤 공유 완료 시 지급 골드. key: 20005</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">hidden_spot_config.event_share_reward_gold_amount</span>
+      <span class="sheet-row-default">= 1500</span>
+      <span class="sheet-row-unit">amount</span>
+      <span class="sheet-row-desc">이벤트 보상 수령 공유 완료 시 지급 골드. key: 20006</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">hidden_spot_config.share_cooldown_hours</span>
+      <span class="sheet-row-default">= 14400</span>
+      <span class="sheet-row-unit">sec</span>
+      <span class="sheet-row-desc">공유 보상 쿨다운. 14400초 = 4시간. 3종 지면 통합 쿨다운. key: 20007</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">hidden_spot_config.share_exposure_max_per_session</span>
+      <span class="sheet-row-default">= 5</span>
+      <span class="sheet-row-unit">count</span>
+      <span class="sheet-row-desc">세션당 공유 지면 최대 노출 횟수 (3종 합산). key: 20008</span>
+    </div>
+  </div>
+
+  <div class="callout callout-yellow">
+    <p><strong>시트 수정 절차:</strong> 에이전트 시트(1Z6VGk…)에 <code>hidden_spot_config</code> 탭 신규 생성 → 8행 입력 → 연두색 하이라이트 → PM 확인 → 라이브 시트(1oLbps…) 동기화 → 확인 → 하이라이트 제거. 담당: 02_경제_밸런스 에이전트.</p>
+  </div>
+
+  <h3>Surface A: 히든 스팟 로직</h3>
+  <table>
+    <thead><tr><th>항목</th><th>상세</th></tr></thead>
+    <tbody>
+      <tr><td>출현 트리거</td><td>로비 진입 또는 일정 주기마다 <span class="sheet-var">hidden_spot_config.hidden_spot_appearance_rate</span> 확률로 스팟 생성</td></tr>
+      <tr><td>출현 위치</td><td>도시 배경 내 사전 정의된 앵커 포인트 중 랜덤 1곳. HUD/메타 UI 영역과 비겹침 보장 필요 (아트팀 앵커 정의)</td></tr>
+      <tr><td>최대 출현</td><td>시티당 <span class="sheet-var">hidden_spot_config.hidden_spot_appearance_per_city</span>회 제한. 서버 또는 로컬 카운트</td></tr>
+      <tr><td>유효 시간</td><td><span class="sheet-var">hidden_spot_config.hidden_spot_validity_duration_min</span>분 경과 시 자동 소멸 (퇴장 애니메이션 포함)</td></tr>
+      <tr><td>공유 완료 판정</td><td>OS 공유 completion callback 수신 시. 공유 시트 열기만으로는 보상 지급 안 됨</td></tr>
+      <tr><td>골드 지급</td><td><span class="sheet-var">hidden_spot_config.hidden_spot_reward_gold_amount</span>, 쿨다운 <span class="sheet-var">hidden_spot_config.share_cooldown_hours</span>초 이내 재지급 없음</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Surface B: 레벨 마일스톤 로직</h3>
+  <table>
+    <thead><tr><th>항목</th><th>상세</th></tr></thead>
+    <tbody>
+      <tr><td>마일스톤 레벨 정의</td><td>별도 테이블 필요 (예: 50, 100, 150, 200, …). 초기 구현 후 시트 탭으로 이관 예정</td></tr>
+      <tr><td>트리거</td><td>마일스톤 레벨 최초 클리어 시 1회. 동일 레벨 중복 표시 없음 (서버 기록 필요)</td></tr>
+      <tr><td>표시 타이밍</td><td>레벨 결과 화면(Win) 이후 또는 로비 복귀 시</td></tr>
+      <tr><td>골드 지급</td><td><span class="sheet-var">hidden_spot_config.milestone_share_reward_gold_amount</span>, 공통 쿨다운 적용</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Surface C: 이벤트 보상 수령 피드 로직</h3>
+  <table>
+    <thead><tr><th>항목</th><th>상세</th></tr></thead>
+    <tbody>
+      <tr><td>트리거</td><td>이벤트 마일스톤 보상 수령 완료 직후</td></tr>
+      <tr><td>표시 조건</td><td>보상 수령이 완전히 완료된 경우에만. 1회성 보상에만 적용 권장</td></tr>
+      <tr><td>골드 지급</td><td><span class="sheet-var">hidden_spot_config.event_share_reward_gold_amount</span>, 공통 쿨다운 적용</td></tr>
+    </tbody>
+  </table>
+
+  <h3>공통 쿨다운 및 노출 제어</h3>
+  <ul>
+    <li>3종 지면 모두 동일한 <span class="sheet-var">hidden_spot_config.share_cooldown_hours</span> 쿨다운 풀 공유</li>
+    <li>세션당 최대 <span class="sheet-var">hidden_spot_config.share_exposure_max_per_session</span>회 (3종 합산). 초과 시 해당 세션 추가 노출 없음</li>
+    <li>공유 완료 여부: OS 공유 completion handler 수신으로 판단 (단순 시트 열기 제외)</li>
+  </ul>
+
+  <h3>엣지 케이스</h3>
+  <table>
+    <thead><tr><th>상황</th><th>처리 방식</th></tr></thead>
+    <tbody>
+      <tr><td>OS 공유 취소</td><td>보상 지급 없음. 지면 유지 또는 닫기 — PM 결정</td></tr>
+      <tr><td>히든 스팟 유효시간 만료 중 모달 오픈 상태</td><td>이미 모달이 열린 경우 공유 가능 유지</td></tr>
+      <tr><td>도시 출현 횟수 초과</td><td>서버 카운터 기준. 클라이언트는 서버 응답으로 출현 여부 판단</td></tr>
+      <tr><td>오프라인 상태</td><td>지면 표시는 가능, 골드 지급은 온라인 복귀 후 처리 — PM 결정</td></tr>
+      <tr><td>도시 이미지 로드 실패</td><td>플레이스홀더 표시, 공유 기능 유지</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-blue">
+    <p><strong>딥링크 연동 권고:</strong> 공유 URL에 딥링크 파라미터 포함 시 공유 유입 설치 추적 가능. AppsFlyer 또는 Firebase Dynamic Links 활용 권장. 초기 구현에서 선택적.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function () {
+  const SPEC_ID = 'spec-002';
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',   cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',   cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스', cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',   cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',  cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠', cls: 'badge-yellow' },
+    etc:     { label: '📌 기타',   cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS = { tag: 'ux', priority: 'mid', status: 'open' };
+  let ddField = null;
+
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+  function applyBadge(el, info) { if (!el) return; el.className = 'badge ' + info.cls; el.textContent = info.label; el.style.cursor = 'pointer'; }
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o => `<div class="dd-itm${o.val===cur?' active':''}" data-val="${o.val}">${o.label}</div>`).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    ['hero-tag','hero-priority','hero-status'].forEach(id => {
+      const field = id.replace('hero-','');
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('click', e => openDropdown(e, field));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none'; ddField = null; updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
+
+  // ── 사이드바 네비 ──
+  var links = document.querySelectorAll('.nav-sidebar a');
+  var sections = document.querySelectorAll('section[id]');
+  function activate() {
+    var scrollY = window.pageYOffset + 120;
+    sections.forEach(function (s) {
+      if (s.offsetTop <= scrollY && s.offsetTop + s.offsetHeight > scrollY) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = document.querySelector('.nav-sidebar a[href="#' + s.id + '"]');
+        if (a) a.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', activate);
+  activate();
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.nav-sidebar') && !e.target.closest('.nav-toggle'))
+      document.querySelector('.nav-sidebar').classList.remove('open');
+  });
+})();
+</script>
+<script src="memo.js"></script>
+</body>
+</html>

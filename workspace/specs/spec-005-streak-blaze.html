@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPEC-005 · Streak Blaze</title>
+<style>
+:root {
+  --bg:#0f1117; --surface:#1a1d27; --surface2:#222635; --surface3:#2a2e3f;
+  --border:#2e3348; --text:#e4e6f0; --text2:#9ea3b5; --text-dim:#9ea3b5;
+  --accent:#f43f5e; --accent-bg:rgba(244,63,94,.15); --accent2:#fb7185;
+  --green:#34d399; --green-bg:rgba(52,211,153,0.12);
+  --yellow:#fbbf24; --yellow-bg:rgba(251,191,36,0.12);
+  --red:#f87171; --red-bg:rgba(248,113,113,0.12);
+  --blue:#60a5fa; --blue-bg:rgba(96,165,250,0.12);
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.12);
+  --teal:#2dd4bf; --teal-bg:rgba(45,212,191,0.12);
+  --orange:#f97316; --orange-bg:rgba(249,115,22,0.12);
+  --hero-bg:linear-gradient(135deg,#1a1d27 0%,#1e1a2e 45%,#1a1d27 100%);
+  --radius:12px;
+}
+[data-theme=light] {
+  --bg:#f5f6f8; --surface:#ffffff; --surface2:#f0f1f4; --surface3:#e8e9ee;
+  --border:#dfe1e6; --text:#1a1d27; --text2:#5e6278; --text-dim:#5e6278;
+  --green:#059669; --green-bg:rgba(5,150,105,0.1);
+  --yellow:#d97706; --yellow-bg:rgba(217,119,6,0.1);
+  --red:#dc2626; --red-bg:rgba(220,38,38,0.1);
+  --blue:#2563eb; --blue-bg:rgba(37,99,235,0.1);
+  --purple:#7c3aed; --purple-bg:rgba(124,58,237,0.1);
+  --teal:#0d9488; --teal-bg:rgba(13,148,136,0.1);
+  --hero-bg:linear-gradient(135deg,#fff1f2 0%,#ffe4e6 45%,#fff1f2 100%);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:15px; line-height:1.7; }
+a { color:var(--accent); text-decoration:none; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+.nav-toggle { position:fixed;left:16px;top:16px;z-index:300;background:var(--surface2);border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:10px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s; }
+.nav-toggle:hover { border-color:var(--accent); }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200;transform:translateX(-100%);transition:transform 0.25s; }
+.nav-sidebar.open { transform:translateX(0); }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;position:relative;overflow:hidden; }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.spec-badge { display:inline-block;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;letter-spacing:.06em;margin-bottom:16px; }
+.hero h1 { font-size:32px;font-weight:800;margin-bottom:8px; }
+.hero p { color:var(--text2);font-size:16px;margin-bottom:4px; }
+
+.badge-row { display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 24px; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-purple { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+
+.container { max-width:900px;margin:0 auto;padding:0 40px 80px; }
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:4px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center; }
+[data-theme=light] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-card .kpi-val { font-size:16px;font-weight:800;color:var(--accent); }
+.kpi-card .kpi-label { font-size:12px;color:var(--text2);margin-top:4px; }
+.section { margin-bottom:56px;padding-top:40px; }
+.section-header { display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border); }
+.section-num { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0; }
+.section-audience { display:inline-block;border-radius:4px;padding:3px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em; }
+.s1 .section-num { background:var(--purple-bg);color:var(--purple); }
+.s1 .section-audience { background:var(--purple-bg);color:var(--purple); }
+.s2 .section-num { background:var(--teal-bg);color:var(--teal); }
+.s2 .section-audience { background:var(--teal-bg);color:var(--teal); }
+.s3 .section-num { background:var(--blue-bg);color:var(--blue); }
+.s3 .section-audience { background:var(--blue-bg);color:var(--blue); }
+h2 { font-size:20px;font-weight:700;margin:28px 0 12px; }
+h3 { font-size:15px;font-weight:600;color:var(--text2);margin:20px 0 8px; }
+p,li { color:var(--text2); }
+ul,ol { padding-left:20px;margin:8px 0; }
+li { margin:4px 0; }
+.flow-steps { display:flex;flex-direction:column; }
+.flow-step { display:flex;gap:16px;padding:14px 0;border-left:2px solid var(--border);padding-left:20px;position:relative; }
+.flow-step::before { content:attr(data-n);position:absolute;left:-12px;top:14px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center; }
+.flow-step:last-child { border-left-color:transparent; }
+.flow-step-title { font-weight:600;margin-bottom:2px; }
+.flow-step-desc { font-size:13px;color:var(--text2); }
+table { width:100%;border-collapse:collapse;margin:16px 0; }
+th { background:var(--surface2);color:var(--text);font-size:13px;font-weight:600;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border); }
+td { padding:10px 14px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border); }
+tr:hover td { background:var(--surface2); }
+.bs-block { background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;margin:16px 0; }
+.bs-table { width:100%;border-collapse:collapse; }
+.bs-table th { background:var(--surface3);color:var(--text);font-size:12px;padding:8px 12px;text-align:left;border:1px solid var(--border); }
+.bs-table td { padding:8px 12px;font-size:12px;color:var(--text2);border:1px solid var(--border);font-family:monospace; }
+.bs-table tr:hover td { background:var(--surface3); }
+.tab-badge { display:inline-block;background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:2px 8px;font-size:11px;font-family:monospace;margin:12px 0 4px; }
+.wf-wrap { background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin:16px 0; }
+.wf-caption { font-size:12px;color:var(--text-dim);margin-top:8px;text-align:center; }
+.asset-tag { display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700; }
+.prio-high { background:var(--red-bg);color:var(--red); }
+.prio-mid { background:var(--yellow-bg);color:var(--yellow); }
+.prio-low { background:var(--green-bg);color:var(--green); }
+.note { background:var(--surface2);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:var(--text2);margin:12px 0; }
+.streak-example { display:flex;align-items:center;gap:6px;margin:12px 0;flex-wrap:wrap; }
+.streak-dot { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid transparent; }
+.streak-dot.filled { background:var(--accent);color:#fff;border-color:var(--accent); }
+.streak-dot.bonus { background:var(--yellow);color:#000;border-color:var(--yellow); }
+.streak-dot.empty { background:var(--surface2);color:var(--text-dim);border-color:var(--border); }
+.streak-dot.broken { background:var(--surface3);color:var(--text-dim);border-color:var(--border);opacity:0.5; }
+.streak-label { font-size:12px;color:var(--text-dim);margin-left:4px; }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">☰</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-005</div>
+  <a href="#s1">① 기획 의도 &amp; 흐름</a>
+  <a href="#s2">② 아트 가이드</a>
+  <a href="#s3">③ 개발 스펙</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="spec-badge">SPEC-005</div>
+    <h1>Streak Blaze</h1>
+    <p>레벨 클리어 시 스탬프를 획득하고, <strong>quit 없이 N판 연속 클리어</strong>할 때마다 보너스 스탬프를 추가 지급하는 주중 이벤트. Golden Stamp Tour와 동일한 스킬 보상 로직, "불꽃 같은 연속 클리어" 테마 적용.</p>
+    <div class="badge-row">
+      <span id="hero-tag" class="badge badge-green">✨ 기능</span>
+      <span id="hero-priority" class="badge badge-yellow">🟡 보통 우선순위</span>
+      <span id="hero-status" class="badge badge-blue">🔵 검토중</span>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-val">세션 길이 ↑</div><div class="kpi-label">연속 플레이 유도</div></div>
+      <div class="kpi-card"><div class="kpi-val">quit율 ↓</div><div class="kpi-label">레벨 이탈 감소</div></div>
+      <div class="kpi-card"><div class="kpi-val">스탬프 완주율 ↑</div><div class="kpi-label">마일스톤 최종 달성</div></div>
+      <div class="kpi-card"><div class="kpi-val">부스터 소비 ↑</div><div class="kpi-label">스트릭 유지 위해 사용</div></div>
+    </div>
+  </div><!-- /hero-inner -->
+</div><!-- /hero -->
+
+<div class="container">
+
+    <!-- SECTION 1 -->
+    <section class="section s1" id="s1">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2 style="margin:0">기획 의도 &amp; 콘텐츠 흐름</h2>
+        <span class="section-audience">개발 + 아트 공통</span>
+      </div>
+
+      <h2>왜 만드는가</h2>
+      <p>Golden Stamp Tour가 "첫 시도 클리어(First Try)"로 <strong>질적 집중</strong>을 유도했다면, Streak Blaze는 "quit 없이 N판 연속 클리어"로 <strong>세션 지속성</strong>을 유도한다. 스트릭이 쌓일수록 보너스가 발동되어 "한 판 더 해야지" 동기가 자연스럽게 만들어진다. 스트릭이 끊길까봐 부스터를 사용하게 되는 BM 연계 효과도 기대된다.</p>
+      <ul>
+        <li><strong>세션 연장</strong> — 연속 클리어 카운터가 보이면 그 판을 마저 하고 싶어짐</li>
+        <li><strong>quit 억제</strong> — quit하면 스트릭이 초기화된다는 인식이 자연스러운 억제제</li>
+        <li><strong>BM 자연 연계</strong> — 어려운 레벨에서 스트릭을 지키기 위해 부스터를 자발적으로 소비</li>
+        <li><strong>Golden Stamp Tour와 차별화</strong> — 첫 시도 여부(질) vs 연속 클리어(양/지속성)</li>
+      </ul>
+
+      <h2>스트릭 보너스 구조</h2>
+      <p>레벨 클리어마다 스탬프 +1. <code>streak_blaze_bonus_interval</code>판마다 보너스 스탬프 추가 지급. quit 시 스트릭 초기화.</p>
+      <div class="streak-example">
+        <div class="streak-dot filled">1</div>
+        <div class="streak-dot filled">2</div>
+        <div class="streak-dot bonus">3🔥</div>
+        <div class="streak-dot filled">4</div>
+        <div class="streak-dot filled">5</div>
+        <div class="streak-dot bonus">6🔥</div>
+        <div class="streak-dot broken">Q</div>
+        <div class="streak-dot filled">1</div>
+        <div class="streak-dot filled">2</div>
+        <div class="streak-dot empty">3</div>
+        <span class="streak-label">← quit → 스트릭 초기화</span>
+      </div>
+
+      <h2>플레이어 경험 흐름</h2>
+      <div class="flow-steps">
+        <div class="flow-step" data-n="1">
+          <div>
+            <div class="flow-step-title">이벤트 진입</div>
+            <div class="flow-step-desc">배너 또는 이벤트 허브에서 Streak Blaze 진입. 현재 스탬프 수, 스트릭 카운터, 마일스톤 보상 미리보기 확인.</div>
+          </div>
+        </div>
+        <div class="flow-step" data-n="2">
+          <div>
+            <div class="flow-step-title">레벨 클리어</div>
+            <div class="flow-step-desc">클리어 시 스탬프 +1 + 스트릭 카운터 +1. 레벨 결과 화면에서 현재 스트릭 수 피드백 노출.</div>
+          </div>
+        </div>
+        <div class="flow-step" data-n="3">
+          <div>
+            <div class="flow-step-title">스트릭 보너스 발동</div>
+            <div class="flow-step-desc">N판 연속 클리어 달성 시 "🔥 STREAK!" 연출과 함께 보너스 스탬프 추가 지급. 다음 보너스까지 카운터 리셋 후 재시작.</div>
+          </div>
+        </div>
+        <div class="flow-step" data-n="4">
+          <div>
+            <div class="flow-step-title">quit → 스트릭 초기화</div>
+            <div class="flow-step-desc">레벨 quit 시 스트릭 카운터 0으로 초기화. "스트릭이 끊겼어요" 메시지로 인지시킴. 스탬프 누적은 유지.</div>
+          </div>
+        </div>
+        <div class="flow-step" data-n="5">
+          <div>
+            <div class="flow-step-title">마일스톤 달성</div>
+            <div class="flow-step-desc">목표 스탬프 도달 시 로비 전면 팝업 → 즉시 보상 수령. 다음 스텝 목표 표시.</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>기대 KPI &amp; 성공 지표</h2>
+      <table>
+        <tr><th>지표</th><th>측정 방법</th><th>목표</th><th>전제 조건</th></tr>
+        <tr><td>평균 세션 클리어 수</td><td>이벤트 기간 세션당 평균 클리어 판 수</td><td>베이스라인 대비 +% 증가</td><td>세션/클리어 로그</td></tr>
+        <tr><td>quit율</td><td>레벨 시작 후 quit 이벤트 발생 비율</td><td>베이스라인 대비 -%p 감소</td><td>quit 이벤트 로그</td></tr>
+        <tr><td>부스터 소비량</td><td>이벤트 기간 부스터 사용 건수</td><td>+% 증가</td><td>BM 아이템 소비 로그</td></tr>
+        <tr><td>마일스톤 완주율</td><td>최종 스텝 달성 / 이벤트 참여 유저</td><td>참여자의 +%</td><td>스텝별 달성 로그</td></tr>
+        <tr><td>스트릭 보너스 발동율</td><td>전체 클리어 중 스트릭 보너스 발동 비율</td><td>모니터링 지표</td><td>보너스 지급 로그</td></tr>
+      </table>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="section s2" id="s2">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <h2 style="margin:0">아트 가이드</h2>
+        <span class="section-audience">아트팀 전용</span>
+      </div>
+
+      <h2>와이어프레임</h2>
+
+      <div class="wf-wrap">
+        <svg viewBox="0 0 500 240" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <!-- 레벨 결과 화면 + 스트릭 카운터 -->
+          <rect width="500" height="240" rx="8" style="fill:var(--surface3)"/>
+          <rect x="10" y="10" width="480" height="220" rx="6" style="fill:var(--surface)"/>
+          <!-- 클리어 헤더 -->
+          <rect x="10" y="10" width="480" height="48" rx="6" style="fill:var(--accent-bg)"/>
+          <text x="250" y="40" text-anchor="middle" style="fill:var(--accent);font-size:16px;font-weight:bold">CLEAR!</text>
+          <!-- 스트릭 카운터 강조 -->
+          <rect x="140" y="70" width="220" height="50" rx="10" style="fill:var(--surface2);stroke:var(--accent);stroke-width:2"/>
+          <text x="250" y="90" text-anchor="middle" style="fill:var(--accent);font-size:11px">🔥 STREAK</text>
+          <text x="250" y="112" text-anchor="middle" style="fill:var(--accent);font-size:20px;font-weight:bold">3 / 3</text>
+          <!-- 보너스 표시 -->
+          <rect x="160" y="130" width="180" height="28" rx="6" style="fill:var(--yellow-bg);stroke:var(--yellow);stroke-width:1"/>
+          <text x="250" y="149" text-anchor="middle" style="fill:var(--yellow);font-size:12px;font-weight:bold">🔥 BONUS! 스탬프 +2</text>
+          <!-- 스탬프 현황 -->
+          <text x="250" y="180" text-anchor="middle" style="fill:var(--text2);font-size:11px">이벤트 스탬프: 8 / 20</text>
+          <!-- 진행 바 -->
+          <rect x="100" y="188" width="300" height="6" rx="3" style="fill:var(--surface3)"/>
+          <rect x="100" y="188" width="120" height="6" rx="3" style="fill:var(--accent)"/>
+          <!-- 버튼 -->
+          <rect x="150" y="205" width="200" height="28" rx="6" style="fill:var(--accent)"/>
+          <text x="250" y="224" text-anchor="middle" style="fill:#fff;font-size:12px;font-weight:bold">계속 플레이</text>
+        </svg>
+        <div class="wf-caption">레벨 클리어 결과 화면 — 스트릭 달성 시 BONUS 배너와 함께 보너스 스탬프 표시. 스트릭 카운터 강조.</div>
+      </div>
+
+      <div class="wf-wrap">
+        <svg viewBox="0 0 500 240" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <!-- quit 시 스트릭 초기화 화면 -->
+          <rect width="500" height="240" rx="8" style="fill:var(--surface3)"/>
+          <rect x="10" y="10" width="480" height="220" rx="6" style="fill:var(--surface)"/>
+          <!-- quit 헤더 -->
+          <rect x="10" y="10" width="480" height="48" rx="6" style="fill:var(--yellow-bg)"/>
+          <text x="250" y="40" text-anchor="middle" style="fill:var(--yellow);font-size:16px;font-weight:bold">QUIT</text>
+          <!-- 스트릭 초기화 알림 -->
+          <rect x="100" y="68" width="300" height="48" rx="8" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+          <text x="250" y="88" text-anchor="middle" style="fill:var(--text2);font-size:11px">스트릭이 끊어졌어요</text>
+          <text x="250" y="108" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">다시 연속 클리어하면 보너스를 받을 수 있어요!</text>
+          <!-- 스트릭 시각화 (끊긴 상태) -->
+          <circle cx="175" cy="148" r="14" style="fill:var(--accent)"/>
+          <text x="170" y="153" style="fill:#fff;font-size:9px;font-weight:bold">✓</text>
+          <circle cx="215" cy="148" r="14" style="fill:var(--accent)"/>
+          <text x="210" y="153" style="fill:#fff;font-size:9px;font-weight:bold">✓</text>
+          <circle cx="255" cy="148" r="14" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+          <text x="250" y="153" style="fill:var(--text-dim);font-size:9px">✗</text>
+          <circle cx="295" cy="148" r="14" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+          <circle cx="335" cy="148" r="14" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+          <text x="250" y="174" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">2연속 후 초기화 → 다음 보너스까지 3판</text>
+          <!-- 버튼 -->
+          <rect x="100" y="190" width="130" height="28" rx="6" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+          <text x="165" y="209" text-anchor="middle" style="fill:var(--text2);font-size:11px">로비</text>
+          <rect x="270" y="190" width="130" height="28" rx="6" style="fill:var(--accent)"/>
+          <text x="335" y="209" text-anchor="middle" style="fill:#fff;font-size:11px;font-weight:bold">🔥 다시 도전</text>
+        </svg>
+        <div class="wf-caption">quit 화면 — 스트릭 초기화 인지 + "다시 연속 클리어하면 보너스" 안내. 재도전 버튼 강조.</div>
+      </div>
+
+      <h2>방향성</h2>
+      <p><strong>전체 무드:</strong> 불꽃, 질주, 집중. 연속으로 달리는 에너지가 시각적으로 느껴져야 함. 빨강-오렌지 그라데이션이 자연스러운 테마.</p>
+      <p><strong>스트릭 카운터:</strong> 레벨 결과 화면에서 가장 눈에 잘 띄게. 숫자가 올라갈수록 불꽃이 더 강하게 타오르는 느낌이면 좋음. 단조롭지 않게.</p>
+      <p><strong>스트릭 보너스 연출:</strong> "🔥 STREAK BONUS!" 순간은 화끈하고 짧게. 플레이 리듬을 끊지 않는 선에서 임팩트 있게.</p>
+      <p><strong>스트릭 초기화:</strong> 너무 부정적이지 않게 — 실망보다는 "다시 시작하면 돼" 에너지. 불꽃이 꺼지는 느낌보다 "새 불꽃 시작" 느낌.</p>
+      <p><strong>인게임 스트릭 힌트 (선택):</strong> 게임 화면 내 작은 스트릭 카운터 뱃지. 숫자가 올라갈수록 더 빛나거나 뜨거워지는 시각 변화.</p>
+
+      <h2>필요 에셋</h2>
+      <table>
+        <tr><th>에셋</th><th>수량</th><th>우선순위</th><th>방향</th></tr>
+        <tr><td>이벤트 배너 (로비)</td><td>1</td><td><span class="asset-tag prio-high">HIGH</span></td><td>불꽃/질주 테마. 빨강-오렌지 계열. 에너지 넘치게</td></tr>
+        <tr><td>스트릭 카운터 UI</td><td>1</td><td><span class="asset-tag prio-high">HIGH</span></td><td>레벨 결과 화면 내 카운터. 불꽃 모티브. 숫자 강조</td></tr>
+        <tr><td>스트릭 보너스 이펙트</td><td>1</td><td><span class="asset-tag prio-high">HIGH</span></td><td>"🔥 STREAK!" 텍스트 + 파티클. 화끈하고 짧게</td></tr>
+        <tr><td>스트릭 초기화 UI</td><td>1</td><td><span class="asset-tag prio-mid">MID</span></td><td>quit 화면 내 초기화 알림. 부정적이지 않게</td></tr>
+        <tr><td>스탬프 아이콘</td><td>1</td><td><span class="asset-tag prio-mid">MID</span></td><td>불꽃 형태. Golden Stamp Tour와 구분되게</td></tr>
+        <tr><td>인게임 스트릭 뱃지 (선택)</td><td>1</td><td><span class="asset-tag prio-low">LOW</span></td><td>작고 비침투적. 숫자+불꽃 아이콘</td></tr>
+      </table>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="section s3" id="s3">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <h2 style="margin:0">개발 스펙</h2>
+        <span class="section-audience">개발팀 전용</span>
+      </div>
+
+      <h2>스탬프 획득 방식 요약</h2>
+      <table>
+        <tr><th>조건</th><th>스탬프 지급</th><th>스트릭 카운터</th></tr>
+        <tr><td>레벨 클리어</td><td>+1 (기본)</td><td>+1</td></tr>
+        <tr><td>streak_blaze_bonus_interval 연속 클리어 달성</td><td>+1 (기본) + streak_blaze_bonus_stamp_count (보너스)</td><td>0으로 초기화 후 재시작</td></tr>
+        <tr><td>레벨 quit</td><td>없음</td><td>0으로 초기화</td></tr>
+      </table>
+
+      <h2>밸런스 시트 변수</h2>
+      <div class="bs-block">
+        <div class="tab-badge">const 탭 (key 10071~)</div>
+        <table class="bs-table">
+          <tr><th>key_number</th><th>변수명</th><th>기본값</th><th>단위</th><th>설명</th></tr>
+          <tr><td>10071</td><td>streak_blaze_duration_days</td><td>3</td><td>count</td><td>이벤트 운영 기간 (일)</td></tr>
+          <tr><td>10072</td><td>streak_blaze_bonus_interval</td><td>3</td><td>count</td><td>보너스 발동까지 필요한 연속 클리어 수</td></tr>
+          <tr><td>10073</td><td>streak_blaze_bonus_stamp_count</td><td>2</td><td>count</td><td>스트릭 달성 시 추가 지급 보너스 스탬프 수</td></tr>
+        </table>
+        <div class="tab-badge">streak_blaze_milestone 탭 (신규, key 50001~)</div>
+        <table class="bs-table">
+          <tr><th>key_number</th><th>step</th><th>required_stamp_count</th><th>reward_item_key</th><th>reward_amount</th><th>in_use</th></tr>
+          <tr><td>50001</td><td>1</td><td>streak_blaze_step1_required</td><td>item_gold</td><td>streak_blaze_step1_gold</td><td>1</td></tr>
+          <tr><td>50002</td><td>2</td><td>streak_blaze_step2_required</td><td>item_booster_wild</td><td>streak_blaze_step2_booster_count</td><td>1</td></tr>
+          <tr><td>50003</td><td>3</td><td>streak_blaze_step3_required</td><td>item_gold</td><td>streak_blaze_step3_gold</td><td>1</td></tr>
+        </table>
+        <p class="note">required_stamp_count, reward_amount는 const 탭 별도 변수 or milestone 탭 내 수치 컬럼으로 관리. streak_blaze_bonus_interval 조정으로 보너스 발동 빈도 튜닝 가능.</p>
+      </div>
+
+      <h2>스트릭 카운터 로직</h2>
+      <ul>
+        <li>스트릭 카운터는 서버 사이드 유저별 유지 (클라이언트 단독 처리 불가)</li>
+        <li>클리어 이벤트 수신 시: 카운터 +1 → <code>streak_blaze_bonus_interval</code>과 비교</li>
+        <li>카운터 == bonus_interval이면: 보너스 스탬프 지급 + 카운터 0 초기화</li>
+        <li>quit 이벤트 수신 시: 카운터 즉시 0 초기화</li>
+        <li>이벤트 기간 종료 시 카운터 초기화 (다음 이벤트 재오픈 시 0에서 시작)</li>
+      </ul>
+
+      <h2>트리거 조건</h2>
+      <ul>
+        <li>이벤트 활성 기간 중 레벨 클리어(clear) 이벤트 발생 시 스탬프 지급 + 스트릭 카운터 증가</li>
+        <li>스트릭 보너스: 카운터가 streak_blaze_bonus_interval에 도달 시 즉시 지급</li>
+        <li>마일스톤 도달 시: 로비 진입 시점에 팝업 큐에 추가</li>
+      </ul>
+
+      <h2>억제 조건</h2>
+      <ul>
+        <li>이벤트 기간 외 스탬프 적립 및 스트릭 카운트 불가</li>
+        <li>quit 시 스탬프 미지급, 스트릭 카운터 초기화</li>
+        <li>팝업 동시 노출 방지 — 마일스톤 팝업은 다른 전면 팝업 완료 후 순차 노출</li>
+        <li>마일스톤 중복 지급 방지 — 서버 수령 플래그 확인 후 지급</li>
+      </ul>
+
+      <h2>큐 &amp; 상태 처리</h2>
+      <ul>
+        <li>복수 마일스톤 동시 도달 시 (오프라인 누적 후 동기화): 순차 팝업 노출</li>
+        <li>이벤트 종료 시 미수령 마일스톤 → 우편함 자동 발송</li>
+        <li>앱 강제 종료 후 재접속: 서버 기준 스탬프 및 스트릭 카운터 복원</li>
+      </ul>
+
+      <h2>z-index</h2>
+      <table>
+        <tr><th>요소</th><th>레이어</th><th>비고</th></tr>
+        <tr><td>레벨 결과 화면 스트릭 카운터</td><td>클리어 결과 화면 내</td><td>기존 결과 화면 UI와 겹치지 않는 위치</td></tr>
+        <tr><td>스트릭 보너스 이펙트</td><td>클리어 결과 화면 최상단</td><td>짧게 재생 후 자동 소멸</td></tr>
+        <tr><td>quit 화면 스트릭 초기화 알림</td><td>quit 결과 화면 내</td><td>버튼 가리지 않도록</td></tr>
+        <tr><td>마일스톤 달성 팝업</td><td>전면 팝업 레이어</td><td>로비 진입 시 노출</td></tr>
+      </table>
+
+      <h2>엣지 케이스</h2>
+      <ul>
+        <li>streak_blaze_bonus_interval = 1 설정 시: 매 클리어마다 보너스 발동 — 밸런스 주의</li>
+        <li>오프라인 플레이 후 동기화: 서버가 클리어/quit 이벤트 순서를 타임스탬프로 처리, 스트릭 카운터 재계산</li>
+        <li>이벤트 기간 마지막 클리어가 보너스 인터벌 도달 시: 기간 내 지급 확정</li>
+        <li>Golden Stamp Tour와 동일 기간 운영 시: 스탬프 보상이 중복 적립될 수 있으나 이벤트별 독립 집계 — 정상 동작</li>
+        <li>인게임 스트릭 뱃지 표시 여부: 선택 적용. 미표시 시 레벨 결과 화면에서만 인지 가능</li>
+      </ul>
+    </section>
+</div><!-- /container -->
+<script>
+(function () {
+  const SPEC_ID = 'spec-005';
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',   cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',   cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스', cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',   cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',  cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠', cls: 'badge-yellow' },
+    etc:     { label: '📌 기타',   cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS = { tag: 'feature', priority: 'mid', status: 'open' };
+  let ddField = null;
+
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+  function applyBadge(el, info) { if (!el) return; el.className = 'badge ' + info.cls; el.textContent = info.label; el.style.cursor = 'pointer'; }
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o => `<div class="dd-itm${o.val===cur?' active':''}" data-val="${o.val}">${o.label}</div>`).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    ['hero-tag','hero-priority','hero-status'].forEach(id => {
+      const field = id.replace('hero-','');
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('click', e => openDropdown(e, field));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none'; ddField = null; updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
+
+  // ── 사이드바 네비 ──
+  var links = document.querySelectorAll('.nav-sidebar a');
+  var sections = document.querySelectorAll('section[id]');
+  function activate() {
+    var scrollY = window.pageYOffset + 120;
+    sections.forEach(function (s) {
+      if (s.offsetTop <= scrollY && s.offsetTop + s.offsetHeight > scrollY) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = document.querySelector('.nav-sidebar a[href="#' + s.id + '"]');
+        if (a) a.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', activate);
+  activate();
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.nav-sidebar') && !e.target.closest('.nav-toggle'))
+      document.querySelector('.nav-sidebar').classList.remove('open');
+  });
+})();
+</script>
+<script src="memo.js"></script>
+</body>
+</html>
