@@ -1,0 +1,62 @@
+===================================================
+밸런스 시트 일일 변경 감지 — 오류 리포트
+날짜: 2026-04-02
+실행 시각: 2026-04-02 (자동 스케줄 실행)
+===================================================
+
+## 실행 결과: 실패
+
+스냅샷 취득에 실패하여 오늘 diff 리포트를 생성할 수 없었습니다.
+
+---
+
+## 오류 경위
+
+### Step 1 — Python 스크립트 직접 실행 실패
+- 스크립트: `scripts/balance_sheet_diff.py`
+- 원인: 샌드박스 환경에서 Google OAuth2 인증 엔드포인트에 접근 불가
+- 상세 오류:
+    google.auth.exceptions.TransportError:
+    HTTPSConnectionPool(host='oauth2.googleapis.com', port=443):
+    Max retries exceeded with url: /token
+    (Caused by ProxyError('Unable to connect to proxy',
+    OSError('Tunnel connection failed: 403 Forbidden')))
+
+### Step 2 — Google Drive MCP 대체 시도 실패
+- 대상 시트 ID: 1oLbpsJjiDz0pdljaGBQznrSZcXA7aypFyJihnQ8_iiM
+- 시트명: [PST] 밸런스시트
+- 원인: Google Drive MCP는 Google Docs(Docs MIME)만 지원.
+         해당 파일 MIME 타입이 `application/vnd.google-apps.spreadsheet`이므로
+         데이터 추출 불가.
+- 참고: 파일의 최종 수정 시각은 2026-04-02T07:58:37Z 으로 오늘 변경이 있었음을 확인.
+
+---
+
+## 기존 스냅샷 현황
+
+- `snapshots/` 폴더: 비어 있음 (기존 스냅샷 없음)
+- 어제(2026-04-01) 스냅샷: 없음
+- → 스냅샷 비교 자체가 불가능한 상태
+
+---
+
+## 조치 권고
+
+1. **근본 원인 해결**: 샌드박스에서 Google API 접근을 허용하거나,
+   Claude Code를 사용자의 로컬 환경에서 실행하도록 스케줄러 설정 변경.
+
+2. **단기 대안**: 사용자가 직접 로컬에서 아래 명령으로 스냅샷을 생성할 수 있음:
+   ```
+   cd /Users/estherpark/Documents/Claude/solitaire-esther-1/solitaire-currency
+   python3 scripts/balance_sheet_diff.py
+   ```
+
+3. **장기 대안**: Google Sheets API를 직접 호출하는 Edge Function 또는
+   Webhook 기반 스냅샷 저장 시스템 구축 검토.
+
+---
+
+## 다음 자동 실행
+내일(2026-04-03) 동일한 절차로 재시도됩니다.
+오늘 스냅샷이 없으므로 내일도 "최초 실행" 상태가 됩니다.
+===================================================
