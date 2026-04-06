@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>재화 밸런스 시스템 보고서</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3352;
+      --accent: #6c8eff;
+      --accent2: #a78bfa;
+      --gold: #f5c842;
+      --green: #4ade80;
+      --red: #f87171;
+      --text: #e2e8f0;
+      --muted: #8892b0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a1d27 0%, #12152a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 36px 48px 28px;
+    }
+    header .tag {
+      display: inline-block;
+      background: rgba(108,142,255,0.15);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    header .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    header .meta {
+      margin-top: 16px;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    header .meta span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    header .meta strong { color: var(--text); }
+
+    /* ── Layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 48px;
+    }
+
+    /* ── Section ── */
+    section { margin-bottom: 48px; }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Summary Cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 22px;
+    }
+    .card .label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .card .value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .card .value sup { font-size: 14px; font-weight: 500; }
+    .card .desc { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 12px 18px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    td {
+      padding: 13px 18px;
+      font-size: 13px;
+    }
+    .num { font-variant-numeric: tabular-nums; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-iap  { background: rgba(108,142,255,0.15); color: var(--accent); }
+    .badge-ad   { background: rgba(74,222,128,0.15);  color: var(--green); }
+    .badge-once { background: rgba(248,113,113,0.15); color: var(--red); }
+    .badge-free { background: rgba(245,200,66,0.12);  color: var(--gold); }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .pill-best  { background: rgba(74,222,128,0.12); color: var(--green); }
+    .pill-good  { background: rgba(108,142,255,0.12); color: var(--accent); }
+    .pill-basic { background: rgba(139,146,176,0.12); color: var(--muted); }
+
+    /* ── Bar chart ── */
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .bar-row:last-child { border-bottom: none; }
+    .bar-label { width: 90px; font-size: 12px; color: var(--muted); flex-shrink: 0; }
+    .bar-track { flex: 1; background: var(--surface2); border-radius: 4px; height: 10px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .bar-val   { width: 100px; font-size: 12px; color: var(--text); text-align: right; flex-shrink: 0; }
+
+    /* ── Free gold ── */
+    .free-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .free-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .free-item .fi-left .fi-name { font-size: 13px; font-weight: 500; }
+    .free-item .fi-left .fi-limit { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .free-item .fi-right { text-align: right; }
+    .free-item .fi-gold { font-size: 18px; font-weight: 700; color: var(--gold); }
+    .free-item .fi-gold::after { content: 'G'; font-size: 11px; margin-left: 2px; color: var(--muted); }
+    .free-item .fi-krw  { font-size: 11px; color: var(--muted); }
+
+    /* ── Highlight box ── */
+    .highlight {
+      background: rgba(108,142,255,0.08);
+      border: 1px solid rgba(108,142,255,0.25);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .highlight strong { color: var(--accent); }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Game Balance</div>
+  <h1>재화 밸런스 시스템 보고서</h1>
+  <p class="subtitle">골드(Gold) 경제 구조 · IAP 가격 체계 · 아이템 단가 분석</p>
+  <div class="meta">
+    <span><strong>기준 환율</strong> $1 = ₩1,400</span>
+    <span><strong>데이터 출처</strong> product / const / ingame_item 시트</span>
+    <span><strong>작성일</strong> 2026-04-06</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── 핵심 요약 ── -->
+  <section>
+    <div class="section-title">핵심 요약</div>
+    <div class="cards">
+      <div class="card">
+        <div class="label">골드 기준 단가</div>
+        <div class="value"><sup>₩</sup>1.2</div>
+        <div class="desc">중간 패키지 기준 평균값</div>
+      </div>
+      <div class="card">
+        <div class="label">최소 구매 단가</div>
+        <div class="value"><sup>₩</sup>1.39</div>
+        <div class="desc">gold_1000 ($0.99) 기준</div>
+      </div>
+      <div class="card">
+        <div class="label">최대 구매 단가</div>
+        <div class="value"><sup>₩</sup>1.08</div>
+        <div class="desc">gold_26000 ($19.99) 기준</div>
+      </div>
+      <div class="card">
+        <div class="label">하루 무료 최대</div>
+        <div class="value">590<sup style="font-size:14px">G</sup></div>
+        <div class="desc">광고 전부 소화 시</div>
+      </div>
+      <div class="card">
+        <div class="label">대량 구매 할인율</div>
+        <div class="value">22<sup>%</sup></div>
+        <div class="desc">최소 → 최대 패키지 비교</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── IAP 골드 상품 ── -->
+  <section>
+    <div class="section-title">IAP 골드 상품</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>상품 ID</th>
+            <th>가격 (USD)</th>
+            <th>골드 수량</th>
+            <th>골드당 USD</th>
+            <th>골드당 원화</th>
+            <th>효율</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>gold_1000</td>
+            <td class="num">$0.99</td>
+            <td class="num">1,000 G</td>
+            <td class="num">$0.00099</td>
+            <td class="num">₩1.39</td>
+            <td><span class="pill pill-basic">기본</span></td>
+          </tr>
+          <tr>
+            <td>gold_5500</td>
+            <td class="num">$4.99</td>
+            <td class="num">5,500 G</td>
+            <td class="num">$0.000907</td>
+            <td class="num">₩1.27</td>
+            <td><span class="pill pill-good">양호</span></td>
+          </tr>
+          <tr>
+            <td>gold_12000</td>
+            <td class="num">$9.99</td>
+            <td class="num">12,000 G</td>
+            <td class="num">$0.000833</td>
+            <td class="num">₩1.17</td>
+            <td><span class="pill pill-good">양호</span></td>
+          </tr>
+          <tr>
+            <td>gold_26000</td>
+            <td class="num">$19.99</td>
+            <td class="num">26,000 G</td>
+            <td class="num">$0.000769</td>
+            <td class="num">₩1.08</td>
+            <td><span class="pill pill-best">최고가성비</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 패키지 대비 골드량 bar -->
+    <div class="table-wrap" style="margin-top:16px; padding: 18px 22px;">
+      <div style="font-size:12px; color:var(--muted); margin-bottom:14px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">패키지별 골드 수량 비교</div>
+      <div class="bar-row">
+        <div class="bar-label">$0.99</div>
+        <div class="bar-track"><div class="bar-fill" style="width:3.8%"></div></div>
+        <div class="bar-val">1,000 G</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">$4.99</div>
+        <div class="bar-track"><div class="bar-fill" style="width:21.2%"></div></div>
+        <div class="bar-val">5,500 G</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">$9.99</div>
+        <div class="bar-track"><div class="bar-fill" style="width:46.2%"></div></div>
+        <div class="bar-val">12,000 G</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">$19.99</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+        <div class="bar-val">26,000 G</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 인게임 아이템 ── -->
+  <section>
+    <div class="section-title">인게임 아이템 단가</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>아이템</th>
+            <th>골드 가격</th>
+            <th>해금 스코어</th>
+            <th>원화 (₩1.39/G · 최소구매)</th>
+            <th>원화 (₩1.08/G · 최대구매)</th>
+            <th>광고 대체</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Undo</strong></td>
+            <td class="num">150 G</td>
+            <td class="num">200점</td>
+            <td class="num">₩209</td>
+            <td class="num">₩162</td>
+            <td><span class="badge badge-ad">가능</span></td>
+          </tr>
+          <tr>
+            <td><strong>Redeal</strong></td>
+            <td class="num">200 G</td>
+            <td class="num">600점</td>
+            <td class="num">₩278</td>
+            <td class="num">₩216</td>
+            <td><span class="badge badge-ad">가능</span></td>
+          </tr>
+          <tr>
+            <td><strong>Bomb</strong></td>
+            <td class="num">300 G</td>
+            <td class="num">1,000점</td>
+            <td class="num">₩417</td>
+            <td class="num">₩324</td>
+            <td><span class="badge badge-ad">가능</span></td>
+          </tr>
+          <tr>
+            <td><strong>Revive</strong></td>
+            <td class="num">500 G</td>
+            <td class="num">1,000점</td>
+            <td class="num">₩695</td>
+            <td class="num">₩540</td>
+            <td><span class="badge badge-ad">가능</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="highlight">
+      <strong>판당 최대 소비 시나리오:</strong> Undo×5 + Redeal×5 + Bomb×5 + Revive×2 = <strong>3,750 G</strong> (₩4,050~₩5,213)<br>
+      <strong>일반 소비 시나리오:</strong> Revive 1회 + Undo 2회 = <strong>800 G</strong> (₩864~₩1,112)
+    </div>
+  </section>
+
+  <!-- ── 특가 상품 ── -->
+  <section>
+    <div class="section-title">특가 상품 (Special Deal)</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>상품</th>
+            <th>가격 (USD)</th>
+            <th>구성</th>
+            <th>실질 골드 환산</th>
+            <th>제한</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Special Deal 1</strong></td>
+            <td class="num">$1.99</td>
+            <td>광고스킵권 30장</td>
+            <td class="num">— (스킵권 전용)</td>
+            <td><span class="badge badge-once">1회 한정</span></td>
+          </tr>
+          <tr>
+            <td><strong>Special Deal 2</strong></td>
+            <td class="num">$9.99</td>
+            <td>골드 6,000 + Undo 10 + Redeal 10 + Bomb 10</td>
+            <td class="num">≈ 9,500 G 상당</td>
+            <td><span class="badge badge-iap">무제한</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="highlight">
+      <strong>Special Deal 2 분석:</strong> 골드 6,000 + 아이템(Undo 10×150 + Redeal 10×200 + Bomb 10×300) = 골드 환산 시 약 9,500G 상당 →
+      gold_12000 ($9.99) 대비 <strong>낮은 골드지만 아이템 포함으로 실용성 높음</strong>
+    </div>
+  </section>
+
+  <!-- ── 무료 획득 경로 ── -->
+  <section>
+    <div class="section-title">무료 골드 획득 경로</div>
+    <div class="free-grid">
+      <div class="free-item">
+        <div class="fi-left">
+          <div class="fi-name">신규 유저 지급</div>
+          <div class="fi-limit">최초 1회</div>
+        </div>
+        <div class="fi-right">
+          <div class="fi-gold">100</div>
+          <div class="fi-krw">≈ ₩120</div>
+        </div>
+      </div>
+      <div class="free-item">
+        <div class="fi-left">
+          <div class="fi-name">로비 광고 (free gold)</div>
+          <div class="fi-limit">하루 3회</div>
+        </div>
+        <div class="fi-right">
+          <div class="fi-gold">30 × 3</div>
+          <div class="fi-krw">= 90G / ≈ ₩108/일</div>
+        </div>
+      </div>
+      <div class="free-item">
+        <div class="fi-left">
+          <div class="fi-name">인박스 광고</div>
+          <div class="fi-limit">하루 1회</div>
+        </div>
+        <div class="fi-right">
+          <div class="fi-gold">30</div>
+          <div class="fi-krw">≈ ₩36/일</div>
+        </div>
+      </div>
+      <div class="free-item">
+        <div class="fi-left">
+          <div class="fi-name">인게임 광고 (추가코인)</div>
+          <div class="fi-limit">하루 5회</div>
+        </div>
+        <div class="fi-right">
+          <div class="fi-gold">100 × 5</div>
+          <div class="fi-krw">= 500G / ≈ ₩600/일</div>
+        </div>
+      </div>
+      <div class="free-item">
+        <div class="fi-left">
+          <div class="fi-name">별 수집 (80개 → 상자)</div>
+          <div class="fi-limit">횟수 무제한</div>
+        </div>
+        <div class="fi-right">
+          <div class="fi-gold">50</div>
+          <div class="fi-krw">≈ ₩60/교환</div>
+        </div>
+      </div>
+      <div class="free-item">
+        <div class="fi-left">
+          <div class="fi-name">친구 초대 보상</div>
+          <div class="fi-limit">초대 1인당</div>
+        </div>
+        <div class="fi-right">
+          <div class="fi-gold">500</div>
+          <div class="fi-krw">≈ ₩600/인</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight" style="margin-top:14px;">
+      <strong>하루 광고 최대 수령:</strong> 90 (로비) + 30 (인박스) + 500 (인게임) = <strong>620 G/일</strong> (≈ ₩744)<br>
+      <strong>월 30일 누적:</strong> 18,600 G (≈ ₩22,320) — 골드 IAP 없이도 꾸준한 플레이로 상당량 축적 가능
+    </div>
+  </section>
+
+  <!-- ── 기타 주요 상수 ── -->
+  <section>
+    <div class="section-title">기타 주요 밸런스 상수</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>상수명</th>
+            <th>값</th>
+            <th>설명</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>base_coin_get</td>
+            <td class="num">15</td>
+            <td>줄 제거 기본 점수</td>
+          </tr>
+          <tr>
+            <td>all_clear_bonus</td>
+            <td class="num">300</td>
+            <td>올클리어 보너스 점수</td>
+          </tr>
+          <tr>
+            <td>star_reward_gold</td>
+            <td class="num">50 G</td>
+            <td>별 80개 → 상자 교환 시 획득 골드</td>
+          </tr>
+          <tr>
+            <td>daily_ad_reward_coin</td>
+            <td class="num">100 G</td>
+            <td>인게임 광고 1회 시청 보상</td>
+          </tr>
+          <tr>
+            <td>daily_ad_reward_limit</td>
+            <td class="num">5회/일</td>
+            <td>하루 광고 시청 제한</td>
+          </tr>
+          <tr>
+            <td>revive_limit</td>
+            <td class="num">2회/판</td>
+            <td>판당 부활 최대 횟수</td>
+          </tr>
+          <tr>
+            <td>undo_limit</td>
+            <td class="num">5회/판</td>
+            <td>판당 Undo 최대 사용 횟수</td>
+          </tr>
+          <tr>
+            <td>lucky_chest_cooldown</td>
+            <td class="num">4시간</td>
+            <td>럭키 체스트 쿨타임</td>
+          </tr>
+          <tr>
+            <td>lucky_chest_daily_limit</td>
+            <td class="num">4회/일</td>
+            <td>럭키 체스트 하루 수령 한도</td>
+          </tr>
+          <tr>
+            <td>invited_friends_reward</td>
+            <td class="num">500 G</td>
+            <td>친구 초대 보상 (초대자 기준)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Esther Solitaire · 재화 밸런스 보고서 · 2026-04-06 · 데이터 출처: Game Balance Spreadsheet
+</footer>
+
+</body>
+</html>
