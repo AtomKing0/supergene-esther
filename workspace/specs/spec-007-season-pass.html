@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-007 · 시즌 패스</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #e879f9;
+  --accent2: #f0abfc;
+  --green: #34d399;
+  --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;
+  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;
+  --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,0.12);
+  --teal: #2dd4bf;
+  --teal-bg: rgba(45,212,191,0.12);
+  --pink: #e879f9;
+  --pink-bg: rgba(232,121,249,0.12);
+  --gold: #fbbf24;
+  --gold-bg: rgba(251,191,36,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #271a35 45%, #1a1d2e 100%);
+  --nav-bg: rgba(15,17,23,0.92);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #c026d3; --accent2: #a21caf;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626; --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb; --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --teal: #0d9488; --teal-bg: rgba(13,148,136,0.1);
+  --pink: #c026d3; --pink-bg: rgba(192,38,211,0.1);
+  --gold: #d97706; --gold-bg: rgba(217,119,6,0.1);
+  --hero-bg: linear-gradient(135deg, #fdf4ff 0%, #ede9fe 45%, #eff6ff 100%);
+  --nav-bg: rgba(245,246,248,0.95);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { position:fixed;left:16px;top:16px;z-index:300;background:var(--surface2);border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:10px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s; }
+.nav-toggle:hover { border-color:var(--accent); }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200;transform:translateX(-100%);transition:transform 0.25s; }
+.nav-sidebar.open { transform:translateX(0); }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(232,121,249,0.1) 0%,transparent 60%); }
+.hero::after  { content:'';position:absolute;bottom:-30%;left:5%;width:400px;height:400px;background:radial-gradient(circle,rgba(251,191,36,0.08) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--pink-bg);border:1px solid rgba(232,121,249,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--pink),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge-row { display:flex;gap:8px;flex-wrap:wrap; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-purple { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+.badge-pink   { background:var(--pink-bg);color:var(--pink);border:1px solid rgba(232,121,249,0.3); }
+.badge-gold   { background:var(--gold-bg);color:var(--gold);border:1px solid rgba(251,191,36,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+.kpi-trend { font-size:0.72rem;font-weight:700;margin-top:6px; }
+.trend-up   { color:var(--green); }
+.trend-down { color:var(--red); }
+.trend-neutral { color:var(--text2); }
+
+.container { max-width:1100px;margin:0 auto;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--teal-bg);color:var(--teal);border:1px solid rgba(45,212,191,0.3); }
+.section-num-3 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;gap:4px;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--teal-bg);color:var(--teal); }
+.aud-dev { background:var(--blue-bg);color:var(--blue); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.code { font-family:monospace;font-size:0.82rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 7px;color:var(--accent2); }
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-green  { background:var(--green-bg);border-left:3px solid var(--green); }
+.callout-red    { background:var(--red-bg);border-left:3px solid var(--red); }
+.callout-pink   { background:var(--pink-bg);border-left:3px solid var(--pink); }
+.callout-gold   { background:var(--gold-bg);border-left:3px solid var(--gold); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.wireframe { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:20px 0; }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.86rem;flex-wrap:wrap; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var { font-family:monospace;color:var(--blue);font-weight:600;min-width:300px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:80px; }
+.sheet-row-unit { font-size:0.75rem;color:var(--text2);min-width:110px; }
+.sheet-row-desc { color:var(--text2);font-size:0.82rem; }
+
+.flow-step { display:flex;gap:14px;margin-bottom:14px;align-items:flex-start; }
+.flow-dot  { width:28px;height:28px;border-radius:50%;background:var(--pink-bg);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--accent);flex-shrink:0;margin-top:2px; }
+.flow-body { flex:1; }
+.flow-body strong { color:var(--text);font-size:0.9rem; }
+.flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+
+/* 티어 구분 블록 */
+.tier-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0; }
+@media(max-width:640px){ .tier-grid { grid-template-columns:1fr; } }
+.tier-block { border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;background:var(--surface); }
+.tier-block-free { border-top:4px solid var(--purple); }
+.tier-block-vip  { border-top:4px solid var(--gold); }
+.tier-label { font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.3px;margin-bottom:10px; }
+.tier-label-free { color:var(--purple); }
+.tier-label-vip  { color:var(--gold); }
+.tier-name { font-size:1.1rem;font-weight:800;margin-bottom:4px; }
+.tier-price { font-size:0.85rem;color:var(--text2);margin-bottom:12px; }
+
+/* 보상 트랙 미리보기 */
+.reward-track { display:flex;gap:0;margin:16px 0;overflow-x:auto;padding-bottom:4px; }
+.reward-node { display:flex;flex-direction:column;align-items:center;min-width:56px; }
+.reward-node-circle { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;position:relative;z-index:1; }
+.reward-node-free { background:var(--purple-bg);border:2px solid var(--purple);color:var(--purple); }
+.reward-node-vip  { background:var(--gold-bg);border:2px solid var(--gold);color:var(--gold); }
+.reward-node-label { font-size:0.6rem;color:var(--text2);margin-top:4px;text-align:center;max-width:50px; }
+.reward-connector { height:2px;flex:1;align-self:center;min-width:12px; }
+.reward-connector-free { background:var(--purple); }
+.reward-connector-vip  { background:var(--gold); }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">☰</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-007</div>
+  <a href="#s1">① 기획 의도 &amp; 흐름</a>
+  <a href="#s2">② 아트 가이드</a>
+  <a href="#s3">③ 개발 스펙</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-007</span>
+    </div>
+    <h1>시즌 패스<br><span>2주 단위 일반 · VIP 이중 구조</span></h1>
+    <p class="hero-sub">2주 단위로 리셋되는 시즌 패스. 무료 일반 패스와 유료 VIP 패스 두 트랙으로 구성되며, 미션 수행으로 경험치를 쌓아 보상을 수령합니다.</p>
+    <div class="badge-row">
+      <span id="hero-tag" class="badge badge-gold">💰 수익화</span>
+      <span id="hero-priority" class="badge badge-yellow">🟡 보통 우선순위</span>
+      <span id="hero-status" class="badge badge-blue">🔵 검토중</span>
+      <span class="badge badge-green">리텐션</span>
+      <span class="badge badge-pink">IAP</span>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">VIP 패스 전환율</div>
+        <div class="kpi-value" style="color:var(--gold)">+%</div>
+        <div class="kpi-sub">시즌 패스 노출 → VIP 구매</div>
+        <div class="kpi-trend trend-up">▲ 목표 설정 필요</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">시즌 완주율</div>
+        <div class="kpi-value" style="color:var(--pink)">+%</div>
+        <div class="kpi-sub">최종 단계 보상 수령 유저 비율</div>
+        <div class="kpi-trend trend-up">▲ 리텐션 지표</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">D14 리텐션</div>
+        <div class="kpi-value" style="color:var(--green)">모니터</div>
+        <div class="kpi-sub">시즌 패스 유저 vs 비참여</div>
+        <div class="kpi-trend trend-up">▲ 참여 코호트 기대</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">시즌당 ARPU</div>
+        <div class="kpi-value" style="color:var(--blue)">+</div>
+        <div class="kpi-sub">VIP 매출 / 시즌 활성 유저</div>
+        <div class="kpi-trend trend-up">▲ 수익화 핵심 지표</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════════
+  SECTION 1 — 기획 의도 & 콘텐츠 흐름
+════════════════════════════════════════ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">1</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도 &amp; 콘텐츠 흐름</div>
+      <span class="section-audience aud-all">개발 + 아트 공통</span>
+    </div>
+  </div>
+
+  <h3>왜 만드는가</h3>
+  <p>현재 게임의 수익화는 IAP 단발 구매와 광고 시청에 의존합니다. <strong>정기적이고 예측 가능한 수익 흐름이 없다는 것</strong>이 구조적 취약점입니다. 시즌 패스는 이를 보완하는 가장 검증된 수단으로, 유저에게 2주 단위의 플레이 목표를 제공하는 동시에 VIP 구매를 통한 안정적 매출을 만듭니다.</p>
+  <p>리텐션 측면에서도 효과적입니다. 2주는 D14 코호트를 직접 타겟하는 기간이며, 달성 중인 보상 트랙은 유저가 게임을 떠나지 않을 이유를 매일 제공합니다. <strong>일반 패스는 무료 유저의 참여를 끌어내고, VIP 패스는 지불 의사가 있는 유저의 전환을 유도하는 이중 구조</strong>입니다.</p>
+
+  <div class="callout callout-pink">
+    <p><strong>레퍼런스:</strong> Royal Match 시즌 패스, Candy Crush 골드 배틀 패스. 공통점 — 미션 기반 경험치 누적 + 무료/유료 이중 트랙 + 기간 내 완주 압박.</p>
+  </div>
+
+  <h3>시스템 구조 개요</h3>
+  <table>
+    <thead><tr><th>항목</th><th>일반 패스 (무료)</th><th>VIP 패스 (유료)</th></tr></thead>
+    <tbody>
+      <tr><td>가격</td><td>무료 (모든 유저 자동 참여)</td><td>시즌 시작 시 IAP 구매</td></tr>
+      <tr><td>보상 트랙</td><td>일반 보상 트랙</td><td>일반 + VIP 보상 동시 수령</td></tr>
+      <tr><td>보상 종류</td><td>골드, 부스터 등 기본 재화</td><td>프리미엄 재화, 전용 아이템, 코인 등</td></tr>
+      <tr><td>단계 수</td><td colspan="2">동일 (시즌당 N단계, 공통 경험치 진행)</td></tr>
+      <tr><td>경험치 적립</td><td colspan="2">미션 수행으로 동일하게 적립</td></tr>
+      <tr><td>기간</td><td colspan="2">2주 (14일) 고정, 이후 미수령 보상 소멸</td></tr>
+      <tr><td>VIP 소급 적용</td><td>—</td><td>기간 중 구매 시 이미 달성한 단계까지 VIP 보상 즉시 수령</td></tr>
+    </tbody>
+  </table>
+
+  <h3>플레이어 경험 흐름</h3>
+
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>시즌 시작 알림</strong><p>새 시즌 시작 시 메인 화면 배너 또는 팝업으로 시즌 패스 진입 유도. "이번 시즌 보상 미리보기"로 VIP 전환 동기 부여.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>미션 수행 → 경험치 적립</strong><p>일일 미션(판 수 플레이, 승리, 특정 조건 달성 등)을 수행하면 시즌 경험치가 쌓입니다. 미션은 매일 갱신되며 유저는 매일 게임에 접속할 동기를 얻습니다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>단계 달성 → 보상 수령</strong><p>경험치가 임계값에 도달하면 단계가 올라가고 보상을 수령합니다. 일반 패스는 일반 보상만, VIP 패스는 같은 단계에서 VIP 보상도 함께 수령합니다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>VIP 전환 유도 (비VIP 유저 대상)</strong><p>VIP 보상 슬롯이 잠금 상태로 보이며 "지금 VIP로 전환 시 이 보상도 즉시 받을 수 있습니다"라는 유도 문구가 노출됩니다. 구매 전환 압박은 달성 단계가 높아질수록 강해집니다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>시즌 종료 경고</strong><p>D-3, D-1에 종료 알림 발송. 완주 유저에게는 완주 축하 연출, 미완주 유저에게는 다음 시즌 예고로 복귀 유도.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">6</div><div class="flow-body"><strong>시즌 리셋 → 다음 시즌 시작</strong><p>미수령 보상 소멸, 경험치 리셋. VIP 패스는 구매 상태가 초기화되어 다음 시즌에 재구매 필요.</p></div></div>
+
+  <h3>미션 구조 (안)</h3>
+  <p>미션은 매일 유저에게 새로 주어지며, 완료 시 시즌 경험치를 지급합니다. 난이도 기준으로 세 분류로 나눠 균형을 잡습니다.</p>
+  <table>
+    <thead><tr><th>미션 유형</th><th>예시</th><th>경험치 배율</th><th>갱신 주기</th></tr></thead>
+    <tbody>
+      <tr><td>기본 미션</td><td>오늘 N판 플레이하기</td><td>×1</td><td>매일 갱신</td></tr>
+      <tr><td>도전 미션</td><td>N연승 달성, 부스터 없이 클리어</td><td>×2</td><td>매일 갱신</td></tr>
+      <tr><td>시즌 미션</td><td>시즌 전체 누적 판 수 N 달성</td><td>×3</td><td>시즌 고정 (갱신 없음)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow">
+    <p><strong>밸런스 핵심 전제:</strong> 캐주얼 유저(1일 30분 플레이 기준)가 2주 내에 일반 패스를 완주할 수 있어야 합니다. VIP 패스 완주는 같은 시간을 투자한 유저가 더 풍성한 보상을 받는 구조이지, 시간을 더 요구해서는 안 됩니다. 경험치 곡선 설계 시 이 원칙을 기준으로 잡을 것.</p>
+  </div>
+
+  <h3>기대 KPI 및 성공 지표</h3>
+  <table>
+    <thead><tr><th>지표</th><th>측정 방법</th><th>목표</th></tr></thead>
+    <tbody>
+      <tr><td>VIP 패스 전환율</td><td>시즌 진입 유저 대비 VIP 구매 유저 비율</td><td>기준값 수집 후 목표 설정</td></tr>
+      <tr><td>시즌 완주율 (일반)</td><td>최종 단계 달성 유저 / 시즌 참여 유저</td><td>참여 유저의 X% 이상</td></tr>
+      <tr><td>D14 리텐션 (패스 참여 vs 비참여)</td><td>코호트 분리 분석</td><td>참여 코호트 +pp 이상</td></tr>
+      <tr><td>VIP 소급 전환율</td><td>시즌 중간 VIP 구매 / 전체 VIP 구매</td><td>소급 유도 문구 효과 측정</td></tr>
+      <tr><td>시즌당 ARPU</td><td>VIP 매출 / 시즌 활성 유저 수</td><td>분기 매출 목표의 Y% 기여</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════════════════════════════════════════
+  SECTION 2 — 아트 가이드
+════════════════════════════════════════ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">2</div>
+    <div class="section-meta">
+      <div class="section-title">아트 가이드</div>
+      <span class="section-audience aud-art">아트팀 전용</span>
+    </div>
+  </div>
+
+  <h3>와이어프레임 1 — 시즌 패스 메인 화면 (보상 트랙)</h3>
+  <div class="wireframe">
+    <svg viewBox="0 0 640 380" width="100%" style="display:block;max-width:720px;margin:16px 0;">
+      <!-- 전체 배경 -->
+      <rect x="20" y="20" width="420" height="340" rx="12" style="fill:var(--surface2);stroke:var(--border);stroke-width:1.5"/>
+      <!-- 헤더 -->
+      <rect x="30" y="30" width="400" height="50" rx="8" style="fill:var(--surface3)"/>
+      <text x="50" y="52" style="fill:var(--pink);font-size:13px;font-family:sans-serif;font-weight:700;">✦ 시즌 패스 — 시즌 1</text>
+      <text x="50" y="68" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">종료까지 D-9</text>
+      <rect x="330" y="40" width="90" height="28" rx="14" style="fill:var(--gold);"/>
+      <text x="375" y="59" text-anchor="middle" style="fill:#1a1a1a;font-size:10px;font-family:sans-serif;font-weight:800;">VIP 구매</text>
+
+      <!-- 경험치 바 -->
+      <text x="50" y="100" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">이번 단계 경험치</text>
+      <text x="410" y="100" text-anchor="end" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">320 / 500 XP</text>
+      <rect x="38" y="106" width="384" height="14" rx="7" style="fill:var(--surface3)"/>
+      <rect x="38" y="106" width="246" height="14" rx="7" style="fill:var(--pink)"/>
+
+      <!-- 보상 트랙 라벨 -->
+      <text x="50" y="140" style="fill:var(--purple);font-size:9px;font-family:sans-serif;font-weight:700;">일반 패스</text>
+      <text x="50" y="205" style="fill:var(--gold);font-size:9px;font-family:sans-serif;font-weight:700;">VIP 패스</text>
+
+      <!-- 일반 보상 트랙 (단계 1~5 노출) -->
+      <!-- 단계 1 (달성) -->
+      <rect x="38" y="148" width="64" height="44" rx="8" style="fill:var(--purple-bg);stroke:var(--purple);stroke-width:1.5"/>
+      <text x="70" y="168" text-anchor="middle" style="fill:var(--purple);font-size:11px;font-family:sans-serif;">💰</text>
+      <text x="70" y="183" text-anchor="middle" style="fill:var(--purple);font-size:8px;font-family:sans-serif;font-weight:700;">✓ 200G</text>
+      <!-- 단계 2 (달성) -->
+      <rect x="114" y="148" width="64" height="44" rx="8" style="fill:var(--purple-bg);stroke:var(--purple);stroke-width:1.5"/>
+      <text x="146" y="168" text-anchor="middle" style="fill:var(--purple);font-size:11px;font-family:sans-serif;">⚡</text>
+      <text x="146" y="183" text-anchor="middle" style="fill:var(--purple);font-size:8px;font-family:sans-serif;font-weight:700;">✓ 부스터</text>
+      <!-- 단계 3 (현재 진행) -->
+      <rect x="190" y="144" width="68" height="52" rx="8" style="fill:var(--pink-bg);stroke:var(--pink);stroke-width:2.5"/>
+      <text x="224" y="168" text-anchor="middle" style="fill:var(--pink);font-size:11px;font-family:sans-serif;">💰</text>
+      <text x="224" y="183" text-anchor="middle" style="fill:var(--pink);font-size:8px;font-family:sans-serif;font-weight:700;">500G</text>
+      <text x="224" y="193" text-anchor="middle" style="fill:var(--pink);font-size:7px;font-family:sans-serif;">← 진행중</text>
+      <!-- 단계 4 (잠김) -->
+      <rect x="270" y="148" width="64" height="44" rx="8" style="fill:var(--surface3);stroke:var(--border);stroke-width:1"/>
+      <text x="302" y="168" text-anchor="middle" style="fill:var(--text2);font-size:11px;font-family:sans-serif;">🔒</text>
+      <text x="302" y="183" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">부스터</text>
+      <!-- 단계 5 (잠김) -->
+      <rect x="346" y="148" width="64" height="44" rx="8" style="fill:var(--surface3);stroke:var(--border);stroke-width:1"/>
+      <text x="378" y="168" text-anchor="middle" style="fill:var(--text2);font-size:11px;font-family:sans-serif;">🔒</text>
+      <text x="378" y="183" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">1000G</text>
+
+      <!-- VIP 보상 트랙 (단계 1~5) -->
+      <!-- 단계 1 VIP (달성) -->
+      <rect x="38" y="213" width="64" height="44" rx="8" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1.5"/>
+      <text x="70" y="233" text-anchor="middle" style="fill:var(--gold);font-size:11px;font-family:sans-serif;">💎</text>
+      <text x="70" y="248" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;font-weight:700;">✓ 젬 30</text>
+      <!-- 단계 2 VIP (달성) -->
+      <rect x="114" y="213" width="64" height="44" rx="8" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1.5"/>
+      <text x="146" y="233" text-anchor="middle" style="fill:var(--gold);font-size:11px;font-family:sans-serif;">🎰</text>
+      <text x="146" y="248" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;font-weight:700;">✓ 전용덱</text>
+      <!-- 단계 3 VIP (진행 중) -->
+      <rect x="190" y="209" width="68" height="52" rx="8" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:2.5"/>
+      <text x="224" y="233" text-anchor="middle" style="fill:var(--gold);font-size:11px;font-family:sans-serif;">💎</text>
+      <text x="224" y="248" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;font-weight:700;">젬 80</text>
+      <!-- 단계 4, 5 VIP (잠김 — 비VIP에겐 흐리게 표시) -->
+      <rect x="270" y="213" width="64" height="44" rx="8" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1;opacity:0.35"/>
+      <text x="302" y="233" text-anchor="middle" style="fill:var(--gold);font-size:11px;font-family:sans-serif;opacity:0.5">🔒</text>
+      <text x="302" y="248" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;opacity:0.5">전용 테마</text>
+      <rect x="346" y="213" width="64" height="44" rx="8" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1;opacity:0.35"/>
+      <text x="378" y="233" text-anchor="middle" style="fill:var(--gold);font-size:11px;font-family:sans-serif;opacity:0.5">🔒</text>
+      <text x="378" y="248" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;opacity:0.5">젬 200</text>
+
+      <!-- 미션 영역 -->
+      <rect x="38" y="276" width="384" height="68" rx="8" style="fill:var(--surface3);stroke:var(--border);stroke-width:1"/>
+      <text x="50" y="293" style="fill:var(--text2);font-size:9px;font-family:sans-serif;font-weight:700;">오늘의 미션</text>
+      <rect x="50" y="300" width="180" height="18" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <rect x="50" y="300" width="110" height="18" rx="4" style="fill:var(--pink-bg)"/>
+      <text x="140" y="313" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">3판 플레이 · 150XP</text>
+      <rect x="50" y="324" width="220" height="18" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <rect x="50" y="324" width="44" height="18" rx="4" style="fill:var(--purple-bg)"/>
+      <text x="160" y="337" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">연승 5회 달성 (도전) · 300XP</text>
+
+      <!-- 주석들 -->
+      <line x1="375" y1="54" x2="490" y2="44" style="stroke:var(--gold);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="490" y="32" width="140" height="26" rx="4" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1"/>
+      <text x="560" y="49" text-anchor="middle" style="fill:var(--gold);font-size:9px;font-family:sans-serif;">상단 CTA — 항상 노출</text>
+
+      <line x1="440" y1="113" x2="490" y2="100" style="stroke:var(--pink);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="490" y="88" width="140" height="26" rx="4" style="fill:var(--pink-bg);stroke:var(--pink);stroke-width:1"/>
+      <text x="560" y="105" text-anchor="middle" style="fill:var(--pink);font-size:9px;font-family:sans-serif;">경험치 진행 항상 표시</text>
+
+      <line x1="350" y1="230" x2="490" y2="220" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="490" y="208" width="140" height="36" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="560" y="224" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">VIP 잠금 보상 — 반투명</text>
+      <text x="560" y="237" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">클릭 시 구매 유도 팝업</text>
+
+      <line x1="440" y1="305" x2="490" y2="305" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="490" y="293" width="140" height="26" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="560" y="310" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">미션 — 매일 갱신</text>
+    </svg>
+  </div>
+
+  <h3>와이어프레임 2 — VIP 구매 유도 팝업 (비VIP 유저가 VIP 보상 탭 시)</h3>
+  <div class="wireframe">
+    <svg viewBox="0 0 560 280" width="100%" style="display:block;max-width:640px;margin:16px 0;">
+      <!-- 딤 배경 -->
+      <rect x="0" y="0" width="560" height="280" style="fill:rgba(0,0,0,0.5)"/>
+      <!-- 팝업 카드 -->
+      <rect x="100" y="30" width="360" height="220" rx="14" style="fill:var(--surface);stroke:var(--gold);stroke-width:2"/>
+      <!-- 황금 장식 상단 띠 -->
+      <rect x="100" y="30" width="360" height="44" rx="14" style="fill:var(--gold-bg);"/>
+      <rect x="100" y="58" width="360" height="16" style="fill:var(--gold-bg);"/>
+      <text x="280" y="58" text-anchor="middle" style="fill:var(--gold);font-size:13px;font-family:sans-serif;font-weight:800;">✦ VIP 패스로 업그레이드</text>
+      <!-- 이미 달성한 단계 소급 안내 -->
+      <rect x="120" y="85" width="320" height="36" rx="8" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1"/>
+      <text x="280" y="101" text-anchor="middle" style="fill:var(--gold);font-size:10px;font-family:sans-serif;font-weight:700;">지금 구매하면 달성한 3단계 VIP 보상도 즉시 지급!</text>
+      <text x="280" y="114" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">젬 110개 + 전용 덱 바로 수령</text>
+      <!-- 보상 미리보기 소형 -->
+      <rect x="120" y="132" width="90" height="50" rx="6" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="165" y="155" text-anchor="middle" style="fill:var(--gold);font-size:14px;font-family:sans-serif;">💎</text>
+      <text x="165" y="172" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">젬 30 × 3</text>
+      <rect x="220" y="132" width="90" height="50" rx="6" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="265" y="155" text-anchor="middle" style="fill:var(--gold);font-size:14px;font-family:sans-serif;">🎰</text>
+      <text x="265" y="172" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">전용 덱</text>
+      <rect x="320" y="132" width="120" height="50" rx="6" style="fill:var(--gold);"/>
+      <text x="380" y="152" text-anchor="middle" style="fill:#1a1a1a;font-size:10px;font-family:sans-serif;font-weight:800;">시즌 내내</text>
+      <text x="380" y="166" text-anchor="middle" style="fill:#1a1a1a;font-size:9px;font-family:sans-serif;">VIP 보상 계속!</text>
+      <!-- 구매 버튼 -->
+      <rect x="120" y="196" width="200" height="36" rx="10" style="fill:var(--gold)"/>
+      <text x="220" y="219" text-anchor="middle" style="fill:#1a1a1a;font-size:11px;font-family:sans-serif;font-weight:800;">지금 VIP 구매하기</text>
+      <!-- 닫기 버튼 -->
+      <rect x="330" y="196" width="110" height="36" rx="10" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="385" y="219" text-anchor="middle" style="fill:var(--text2);font-size:10px;font-family:sans-serif;">다음에</text>
+      <!-- 주석 -->
+      <line x1="460" y1="102" x2="510" y2="88" style="stroke:var(--gold);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="464" y="76" width="88" height="26" rx="4" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1"/>
+      <text x="508" y="89" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;">소급 강조 — 핵심</text>
+      <text x="508" y="100" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;">놓친 것 아니라는 메시지</text>
+    </svg>
+  </div>
+
+  <h3>비주얼 방향성</h3>
+
+  <p><strong>시즌 패스 전체 UI의 핵심 원칙은 "일반 패스는 참여감, VIP 패스는 프리미엄감"입니다.</strong> 두 트랙이 화면에 나란히 있을 때, VIP 트랙은 황금빛으로 확실히 구분되어야 하지만 일반 패스를 초라하게 만들어서는 안 됩니다. 일반 패스도 달성하면 충분히 만족스러운 느낌을 줘야 유저가 시즌을 계속 하게 됩니다.</p>
+  <ul>
+    <li><strong>일반 패스 트랙:</strong> 퍼플 계열. 조용하고 깔끔한 인상. 달성 시 충분한 체크마크 피드백.</li>
+    <li><strong>VIP 패스 트랙:</strong> 황금빛 계열. 빛나고 프리미엄한 느낌. 잠긴 보상은 반투명으로 존재감을 유지하되 희미하게.</li>
+    <li><strong>경험치 바:</strong> 핑크/마젠타 계열로 두 트랙을 가로지르는 진행감 표현. 단계 달성 시 바가 터지는 듯한 짧은 파티클 효과.</li>
+    <li><strong>VIP 구매 버튼:</strong> 황금색 단색 버튼. 텍스트 흰색 또는 어두운 색으로 대비. 화면 내에서 항상 가장 눈에 띄는 요소여야 합니다.</li>
+  </ul>
+
+  <h3>애니메이션 방향성</h3>
+  <ul>
+    <li><strong>단계 달성:</strong> 보상 슬롯이 쏟아지듯 열리는 느낌. 카드가 뒤집히는 인상이나 빛이 퍼지는 방식 — 화려하되 짧게.</li>
+    <li><strong>경험치 증가:</strong> 미션 완료 직후 경험치 바가 부드럽게 올라가는 애니메이션. 임계값 도달 시 넘치다가 다음 단계로 전환하는 흐름.</li>
+    <li><strong>VIP 잠금 해제 (구매 직후):</strong> 잠긴 보상들이 황금빛으로 차례로 열리는 연출. 소급 보상이 많을수록 더 화려하게. 시즌 중 VIP 전환의 핵심 만족 포인트.</li>
+    <li>타이밍 수치는 개발 스펙 변수로 관리. 아트 가이드에 수치 고정 금지.</li>
+  </ul>
+
+  <h3>필요 에셋</h3>
+  <ul>
+    <li><strong>시즌 패스 배너 (메인 화면용):</strong> 시즌별로 교체 가능한 소재. 시즌 테마 이미지 + 종료 카운트다운 텍스트 레이어.</li>
+    <li><strong>VIP 크라운/배지 아이콘:</strong> VIP 트랙 상단, VIP 유저 닉네임 옆 표시용. 황금 크라운 계열.</li>
+    <li><strong>보상 슬롯 프레임:</strong> 일반용 (퍼플 계열)과 VIP용 (황금 계열) 두 종. 달성/미달성/진행 중 세 가지 상태별로.</li>
+    <li><strong>미션 완료 이펙트:</strong> 기존 클리어 이펙트 재활용 가능 여부 개발팀 확인 필요.</li>
+    <li><strong>VIP 구매 팝업 배경:</strong> 황금빛 글로우가 퍼지는 느낌. 코드로 처리 가능하면 별도 이미지 불필요.</li>
+  </ul>
+
+  <div class="callout callout-blue">
+    <p><strong>시즌 테마:</strong> 시즌마다 전체 배너와 색상 테마를 교체하는 방향을 권장합니다. 시즌 1은 현재 배포 팔레트, 시즌 2부터 새 테마 적용 — 반복 플레이 유저에게 리프레시 효과를 줍니다. 테마 교체 범위(배너만 vs 전체 UI 색상)는 개발 공수와 함께 결정 필요.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+  SECTION 3 — 개발 스펙
+════════════════════════════════════════ -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">3</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+  </div>
+
+  <h3>밸런스 시트 변수 (신규 탭 제안)</h3>
+  <div class="sheet-block">
+    <div class="sheet-block-title">신규 시트 탭: season_pass_config &nbsp;·&nbsp; key_number 50001~</div>
+
+    <!-- 시즌 구조 -->
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_duration_day</span>
+      <span class="sheet-row-default">= 14</span>
+      <span class="sheet-row-unit">unit: count (day)</span>
+      <span class="sheet-row-desc">한 시즌의 기간. 14일 고정. key_number: 50001</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_stage_count</span>
+      <span class="sheet-row-default">= 30</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">시즌당 총 단계 수. 캐주얼 유저 14일 완주 기준으로 역산 설계. key_number: 50002</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_xp_per_stage</span>
+      <span class="sheet-row-default">= 500</span>
+      <span class="sheet-row-unit">unit: amount (xp)</span>
+      <span class="sheet-row-desc">단계 하나를 올리는 데 필요한 경험치. 전 단계 동일 기준값 (추후 구간별 차등 가능). key_number: 50003</span>
+    </div>
+
+    <!-- 미션 경험치 -->
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_mission_basic_xp_amount</span>
+      <span class="sheet-row-default">= 150</span>
+      <span class="sheet-row-unit">unit: amount (xp)</span>
+      <span class="sheet-row-desc">기본 미션 완료 시 지급 경험치. key_number: 50004</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_mission_challenge_xp_amount</span>
+      <span class="sheet-row-default">= 300</span>
+      <span class="sheet-row-unit">unit: amount (xp)</span>
+      <span class="sheet-row-desc">도전 미션 완료 시 지급 경험치. key_number: 50005</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_mission_season_xp_amount</span>
+      <span class="sheet-row-default">= 1000</span>
+      <span class="sheet-row-unit">unit: amount (xp)</span>
+      <span class="sheet-row-desc">시즌 미션(누적 목표) 완료 시 지급 경험치. key_number: 50006</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_mission_basic_count_per_day</span>
+      <span class="sheet-row-default">= 3</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">하루에 주어지는 기본 미션 수. key_number: 50007</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_mission_challenge_count_per_day</span>
+      <span class="sheet-row-default">= 1</span>
+      <span class="sheet-row-unit">unit: count</span>
+      <span class="sheet-row-desc">하루에 주어지는 도전 미션 수. key_number: 50008</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_mission_reset_hour</span>
+      <span class="sheet-row-default">= 0</span>
+      <span class="sheet-row-unit">unit: count (hour, UTC)</span>
+      <span class="sheet-row-desc">일일 미션 갱신 기준 시각 (UTC). 서버 기준 통일 필수. key_number: 50009</span>
+    </div>
+
+    <!-- VIP 가격 및 구조 -->
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_vip_price_usd_cent</span>
+      <span class="sheet-row-default">= 499</span>
+      <span class="sheet-row-unit">unit: amount (USD cent)</span>
+      <span class="sheet-row-desc">VIP 패스 가격 (USD 기준). 499 = $4.99. 환율별 현지화 별도. key_number: 50010</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_vip_retroactive_enabled</span>
+      <span class="sheet-row-default">= 1</span>
+      <span class="sheet-row-unit">unit: count (bool)</span>
+      <span class="sheet-row-desc">1 = 구매 시 달성 단계까지 VIP 보상 소급 지급. 0 = 구매 이후 단계만 지급. key_number: 50011</span>
+    </div>
+
+    <!-- 종료 알림 -->
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_end_warning_day_1</span>
+      <span class="sheet-row-default">= 3</span>
+      <span class="sheet-row-unit">unit: count (day)</span>
+      <span class="sheet-row-desc">종료 N일 전 첫 번째 경고 알림. key_number: 50012</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">season_pass_end_warning_day_2</span>
+      <span class="sheet-row-default">= 1</span>
+      <span class="sheet-row-unit">unit: count (day)</span>
+      <span class="sheet-row-desc">종료 N일 전 두 번째 경고 알림. key_number: 50013</span>
+    </div>
+  </div>
+
+  <div class="callout callout-yellow">
+    <p><strong>완주 가능성 검증 공식:</strong> 하루 최대 XP = (기본 미션 수 × 기본 XP) + (도전 미션 수 × 도전 XP) = (3 × 150) + (1 × 300) = 750 XP/일. 시즌 총 필요 XP = 단계 수 × 단계당 XP = 30 × 500 = 15,000 XP. 순수 일일 미션만으로 완주 필요 일수 = 15,000 ÷ 750 = 20일. <strong>14일 내 완주 불가 — 시즌 미션 XP를 포함하거나 기준값 재조정 필요.</strong> 최종 배포 전 반드시 시뮬레이션 검증.</p>
+  </div>
+
+  <h3>VIP 소급 지급 처리 로직</h3>
+  <ul>
+    <li><span class="sheet-var">season_pass_vip_retroactive_enabled</span> = 1인 경우</li>
+    <li>구매 완료 시점의 현재 달성 단계(N)를 서버에서 조회</li>
+    <li>1단계 ~ N단계까지 VIP 보상을 일괄 지급 (배치 처리)</li>
+    <li>지급 후 클라이언트에 보상 연출 이벤트 전달 → 황금빛 열림 애니메이션 재생</li>
+    <li>이미 소급 지급 완료된 단계는 중복 지급 방지 서버 플래그 관리</li>
+  </ul>
+
+  <h3>트리거 조건</h3>
+  <table>
+    <thead><tr><th>이벤트</th><th>처리</th></tr></thead>
+    <tbody>
+      <tr><td>시즌 시작 (서버 스케줄)</td><td>새 시즌 생성, 전 유저 참여 상태 초기화, 메인 화면 배너 활성화</td></tr>
+      <tr><td>미션 완료</td><td>경험치 지급 → 단계 달성 판정 → 보상 지급 → 클라이언트 이벤트</td></tr>
+      <tr><td>VIP 구매 완료 (IAP 검증 성공)</td><td>VIP 플래그 활성화 → 소급 보상 지급 → 연출 이벤트</td></tr>
+      <tr><td>시즌 종료 (서버 스케줄)</td><td>미수령 보상 소멸, 경험치 초기화, VIP 플래그 초기화, 다음 시즌 예약</td></tr>
+      <tr><td>종료 D-N 도달</td><td>설정된 경고일 기준으로 푸시 알림 발송</td></tr>
+    </tbody>
+  </table>
+
+  <h3>억제 조건</h3>
+  <table>
+    <thead><tr><th>상황</th><th>처리</th></tr></thead>
+    <tbody>
+      <tr><td>시즌 종료 후 미수령 보상 수령 시도</td><td>서버에서 거부. "시즌이 종료되었습니다" 안내.</td></tr>
+      <tr><td>VIP 중복 구매 (같은 시즌 내)</td><td>IAP 영수증 검증 단계에서 중복 처리 거부. 환불은 스토어 정책 따름.</td></tr>
+      <tr><td>미션 중복 완료 시도</td><td>미션 ID 기준 서버 중복 방지. 동일 미션 경험치 이중 지급 불가.</td></tr>
+      <tr><td>앱 시간 조작</td><td>미션 갱신 기준은 서버 UTC 시간. 클라이언트 로컬 시간 신뢰 불가.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>상태 전이표</h3>
+  <table>
+    <thead><tr><th>상태</th><th>진입 조건</th><th>가능한 전이</th></tr></thead>
+    <tbody>
+      <tr><td>미참여</td><td>시즌 시작 전</td><td>→ 일반 참여 (시즌 시작 시 자동)</td></tr>
+      <tr><td>일반 참여</td><td>시즌 활성 + 비VIP</td><td>→ VIP 참여 (VIP 구매), → 시즌 종료</td></tr>
+      <tr><td>VIP 참여</td><td>시즌 활성 + VIP 구매 완료</td><td>→ 시즌 종료</td></tr>
+      <tr><td>시즌 종료</td><td>시즌 기간 만료 또는 전 단계 완료</td><td>→ 미참여 (다음 시즌 리셋)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>z-index 관리</h3>
+  <table>
+    <thead><tr><th>레이어</th><th>z-index</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>시즌 패스 메인 화면</td><td>100</td><td>일반 탭 전환으로 진입</td></tr>
+      <tr><td>VIP 구매 유도 팝업</td><td>300</td><td>기존 팝업 레이어와 동일</td></tr>
+      <tr><td>단계 달성 보상 연출</td><td>300</td><td>팝업과 동일 레이어, 큐로 순차 처리</td></tr>
+      <tr><td>메인 화면 시즌 배너</td><td>150</td><td>HUD 아래, 일반 카드 위</td></tr>
+    </tbody>
+  </table>
+
+  <h3>엣지 케이스</h3>
+  <ul>
+    <li><strong>시즌 중 앱 업데이트로 미션 구조 변경:</strong> 진행 중인 미션은 완료 처리하거나 유지. 서버 플래그로 버전 분기 처리.</li>
+    <li><strong>VIP 구매 직후 결제 실패 / 환불:</strong> IAP 영수증 서버 검증 후 VIP 플래그 활성화. 검증 실패 시 플래그 미활성화. 환불 후 스토어 webhook으로 VIP 플래그 비활성화 처리 필요.</li>
+    <li><strong>시즌 종료 직전 단계 달성 동시 발생:</strong> 서버 타임스탬프 기준으로 판정. 종료 시각 이전에 달성된 경우 보상 지급.</li>
+    <li><strong>오프라인 상태에서 미션 조건 달성:</strong> 미션 완료 판정은 서버 기준. 오프라인 플레이 카운트 누적 후 온라인 복귀 시 일괄 처리 — 오프라인 미션 인정 여부 PM 결정 필요.</li>
+    <li><strong>신규 유저의 시즌 중 합류:</strong> 합류 시점부터 참여. 이전 단계 소급 불가 (VIP도 합류 이후 달성 기준).</li>
+  </ul>
+
+  <div class="callout callout-blue">
+    <p><strong>시뮬레이션 필수:</strong> 배포 전 <code>season_pass_xp_per_stage</code>, <code>season_pass_stage_count</code>, 미션별 XP 조합으로 캐주얼/코어 유저 시뮬레이션 실행 권장. 위 callout의 완주 가능성 검증 공식 참고. 변수 조정 후 <code>difficulty-tier-simulator</code> 에이전트 패턴으로 경계값 검증.</p>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<script>
+(function () {
+  const SPEC_ID = 'spec-007';
+  const TAG_INFO = {
+    review:   { label: '🔍 리뷰',      cls: 'badge-blue'   },
+    feature:  { label: '✨ 기능',      cls: 'badge-green'  },
+    balance:  { label: '⚖️ 밸런스',   cls: 'badge-yellow' },
+    bug:      { label: '🐛 버그',      cls: 'badge-red'    },
+    ux:       { label: '🎨 UX/UI',    cls: 'badge-purple' },
+    content:  { label: '📦 콘텐츠',   cls: 'badge-yellow' },
+    social:   { label: '📣 소셜/바이럴', cls: 'badge-blue' },
+    monetize: { label: '💰 수익화',   cls: 'badge-gold'   },
+    etc:      { label: '📌 기타',      cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',     cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',     cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',       cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',       cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS = { tag: 'monetize', priority: 'mid', status: 'open' };
+  let ddField = null;
+
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:160px;display:none;';
+  document.body.appendChild(dd);
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--pink-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+  function applyBadge(el, info) { if (!el) return; el.className = 'badge ' + info.cls; el.textContent = info.label; el.style.cursor = 'pointer'; }
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o => `<div class="dd-itm${o.val===cur?' active':''}" data-val="${o.val}">${o.label}</div>`).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 180) + 'px';
+    dd.style.top  = (rect.bottom + 6) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+  dd.addEventListener('click', e => {
+    const item = e.target.closest('.dd-itm');
+    if (!item || !ddField) return;
+    setVal(ddField, item.dataset.val);
+    updateHero();
+    dd.style.display = 'none';
+  });
+  document.addEventListener('click', () => { dd.style.display = 'none'; });
+
+  updateHero();
+  document.getElementById('hero-tag')     ?.addEventListener('click', e => openDropdown(e, 'tag'));
+  document.getElementById('hero-priority')?.addEventListener('click', e => openDropdown(e, 'priority'));
+  document.getElementById('hero-status')  ?.addEventListener('click', e => openDropdown(e, 'status'));
+
+  const links = document.querySelectorAll('.nav-sidebar a');
+  const sections = ['s1','s2','s3'].map(id => document.getElementById(id));
+  window.addEventListener('scroll', () => {
+    const mid = window.scrollY + window.innerHeight / 2;
+    sections.forEach((s, i) => {
+      if (!s) return;
+      if (s.offsetTop <= mid && (sections[i+1] ? sections[i+1].offsetTop > mid : true))
+        links.forEach((l,li) => l.classList.toggle('active', li===i));
+    });
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>

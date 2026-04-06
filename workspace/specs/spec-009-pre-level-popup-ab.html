@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPEC-009 · [AB-플로우] 프리레벨 팝업 제거 A/B</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--surface3:#2a2f45;
+  --border:#2e3347;--text:#e2e8f0;--text2:#94a3b8;--text-dim:#64748b;
+  --accent:#f97316;--accent-bg:rgba(249,115,22,.15);--accent-border:rgba(249,115,22,.35);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.12);--purple-border:rgba(167,139,250,.3);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,.12);--teal-border:rgba(45,212,191,.3);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.12);--blue-border:rgba(96,165,250,.3);
+  --green:#4ade80;--green-bg:rgba(74,222,128,.12);--green-border:rgba(74,222,128,.25);
+  --yellow:#fbbf24;--yellow-bg:rgba(251,191,36,.12);--yellow-border:rgba(251,191,36,.3);
+  --red:#f87171;--red-bg:rgba(248,113,113,.12);--red-border:rgba(248,113,113,.25);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
+  --text-xs:12px;--text-sm:13px;--text-base:14px;--text-lg:15px;
+  --dur-base:.18s;
+}
+[data-theme=light]{
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--text:#0f172a;--text2:#475569;--text-dim:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--text-lg);line-height:1.7;display:flex}
+
+/* 사이드 네비 */
+.sidenav{position:fixed;left:0;top:0;height:100vh;width:200px;background:var(--surface);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;gap:4px;z-index:200}
+.sidenav-logo{padding:0 20px 20px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:var(--text-sm);color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all var(--dur-base)}
+.nav-item:hover,.nav-item.active{color:var(--text);border-left-color:var(--accent);background:var(--accent-bg)}
+.nav-num{font-size:10px;font-weight:700;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.n1{background:var(--purple-bg);color:var(--purple)}
+.n2{background:var(--teal-bg);color:var(--teal)}
+.n3{background:var(--blue-bg);color:var(--blue)}
+
+/* 메인 */
+.main{margin-left:200px;flex:1;padding:60px 56px 80px;max-width:900px}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-toggle:hover{transform:scale(1.1)}
+.back-btn{position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;text-decoration:none}
+.back-btn:hover{color:var(--text)}
+
+/* 히어로 */
+.spec-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;margin-bottom:14px}
+.prefix-badge{display:inline-block;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.04em;margin-bottom:14px;margin-left:8px}
+h1{font-size:26px;font-weight:800;margin-bottom:8px;line-height:1.3}
+.subtitle{color:var(--text2);font-size:var(--text-base);margin-bottom:32px}
+
+/* KPI 그리드 */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:40px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 16px}
+.kpi-label{font-size:var(--text-xs);color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:800}
+.kv-orange{color:var(--accent)}.kv-green{color:var(--green)}.kv-blue{color:var(--blue)}.kv-yellow{color:var(--yellow)}
+
+/* 섹션 헤더 */
+.section-header{display:flex;align-items:center;gap:12px;margin:48px 0 24px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.section-num{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);font-weight:800}
+.s1-num{background:var(--purple-bg);color:var(--purple)}
+.s2-num{background:var(--teal-bg);color:var(--teal)}
+.s3-num{background:var(--blue-bg);color:var(--blue)}
+.section-title{font-size:18px;font-weight:700}
+.section-audience{font-size:var(--text-xs);padding:3px 10px;border-radius:var(--radius-full);font-weight:600}
+.aud-all{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.aud-art{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+.aud-dev{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+
+/* 카드 */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:16px}
+.card-title{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);margin-bottom:12px}
+p,li{color:var(--text2);font-size:var(--text-base)}
+ul,ol{padding-left:20px;margin:8px 0}
+li{margin:6px 0}
+.hl{color:var(--text);font-weight:600}
+code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(--text-xs);font-family:monospace;color:var(--accent)}
+
+/* A/B 비교 */
+.ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.ab-card{border-radius:var(--radius-lg);padding:18px}
+.ab-a{background:var(--surface2);border:1px solid var(--border)}
+.ab-b{background:var(--accent-bg);border:1px solid var(--accent-border)}
+.ab-label{font-size:var(--text-xs);font-weight:800;letter-spacing:.08em;margin-bottom:10px}
+.ab-a .ab-label{color:var(--text-dim)}
+.ab-b .ab-label{color:var(--accent)}
+
+/* 플로우 */
+.flow-steps{display:flex;flex-direction:column;gap:0;margin:16px 0}
+.flow-step{display:flex;gap:14px;align-items:flex-start;padding:10px 0}
+.flow-step:not(:last-child){border-bottom:1px dashed var(--border)}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--accent);font-size:var(--text-xs);font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-body{font-size:var(--text-base);color:var(--text2)}
+.step-body strong{color:var(--text)}
+
+/* 밸런스 시트 */
+.bs-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin:16px 0}
+.bs-tab{background:var(--surface3);padding:8px 18px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.bs-row{display:grid;grid-template-columns:220px 80px 1fr;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);font-size:var(--text-sm)}
+.bs-row:last-child{border-bottom:none}
+.bs-key{font-family:monospace;color:var(--blue);font-size:var(--text-xs)}
+.bs-val{color:var(--accent);font-weight:700;font-family:monospace;font-size:var(--text-xs)}
+.bs-desc{color:var(--text2)}
+
+/* SVG 래퍼 */
+.wireframe{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin:16px 0}
+.wireframe-label{font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.06em;margin-bottom:12px;text-transform:uppercase}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+
+<nav class="sidenav">
+  <div class="sidenav-logo">SPEC-009</div>
+  <a class="nav-item" href="#s1"><span class="nav-num n1">1</span>기획 의도</a>
+  <a class="nav-item" href="#s2"><span class="nav-num n2">2</span>아트 가이드</a>
+  <a class="nav-item" href="#s3"><span class="nav-num n3">3</span>개발 스펙</a>
+</nav>
+
+<main class="main">
+  <!-- 히어로 -->
+  <div>
+    <span class="spec-badge">SPEC-009</span>
+    <span class="prefix-badge">AB-플로우</span>
+  </div>
+  <h1>프리레벨 팝업 제거 A/B 테스트</h1>
+  <p class="subtitle">게임 시작 전 팝업 제거 → 연속 플레이 유도로 판당 플레이 횟수 증가 검증</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">핵심 지표</div><div class="kpi-value kv-orange">판/세션</div></div>
+    <div class="kpi-card"><div class="kpi-label">부수 지표</div><div class="kpi-value kv-yellow">부스터 구매율</div></div>
+    <div class="kpi-card"><div class="kpi-label">리스크 지표</div><div class="kpi-value kv-blue">클리어율</div></div>
+    <div class="kpi-card"><div class="kpi-label">기간</div><div class="kpi-value kv-green" style="font-size:16px">ab_test_duration_days</div></div>
+  </div>
+
+  <!-- S1 -->
+  <section id="s1">
+    <div class="section-header">
+      <div class="section-num s1-num">1</div>
+      <div class="section-title">기획 의도 &amp; 흐름</div>
+      <span class="section-audience aud-all">개발 + 아트 공통</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">왜 테스트하는가</div>
+      <ul>
+        <li>현재 프리레벨 팝업은 <span class="hl">부스터·배수 선택</span>을 제공하지만, 매 판 나타나는 진입 장벽으로 작용할 수 있음</li>
+        <li>팝업 제거 시 <span class="hl">게임 진입 마찰 제거</span> → 세션당 플레이 횟수 증가 기대</li>
+        <li>부스터 구매 기회 감소 리스크 존재 → 실측 검증 필요</li>
+      </ul>
+    </div>
+
+    <div class="ab-grid">
+      <div class="ab-card ab-a">
+        <div class="ab-label">A안 (현재)</div>
+        <ul>
+          <li>레벨 선택 후 프리레벨 팝업 표시</li>
+          <li>부스터 구매 / 배수 설정 가능</li>
+          <li>확인 버튼 탭 → 게임 시작</li>
+        </ul>
+      </div>
+      <div class="ab-card ab-b">
+        <div class="ab-label">B안 (테스트)</div>
+        <ul>
+          <li>레벨 선택 즉시 게임 시작</li>
+          <li>프리레벨 팝업 미노출</li>
+          <li><span class="hl">Grand Fireworks</span> — 프리레벨 전용에서 <span class="hl">인게임 즉석 부스트 아이템</span>으로 전환, 인게임 내 판매 배치</li>
+          <li>배수 설정 등 기타 프리레벨 기능은 별도 진입점 또는 제거 검토</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">B안 플레이어 경험 흐름</div>
+      <div class="flow-steps">
+        <div class="flow-step"><div class="step-num">1</div><div class="step-body"><strong>레벨 맵 진입</strong> — 다음 레벨 카드 탭</div></div>
+        <div class="flow-step"><div class="step-num">2</div><div class="step-body"><strong>즉시 게임 시작</strong> — 팝업 없이 바로 인게임 전환</div></div>
+        <div class="flow-step"><div class="step-num">3</div><div class="step-body"><strong>클리어 / Quit</strong> — 결과 화면 후 다음 레벨로 자동 유도</div></div>
+        <div class="flow-step"><div class="step-num">4</div><div class="step-body"><strong>연속 플레이</strong> — 결과 화면의 "다음 게임" CTA 강조</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">성공 지표 &amp; 전제</div>
+      <ul>
+        <li><span class="hl">주요:</span> B안의 세션당 플레이 판수가 A안 대비 통계적 유의 수준으로 증가</li>
+        <li><span class="hl">허용 범위:</span> 부스터 구매율 하락이 판수 증가 효과를 상쇄하지 않는 수준</li>
+        <li><span class="hl">실패 기준:</span> 클리어율 유의미한 하락 (부스터 미사용으로 인한 실력 저하 신호)</li>
+        <li><span class="hl">전제:</span> Grand Fireworks는 인게임 즉석 부스트로 전환 — 완전 제거 아님, 수익 기회 유지</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- S2 -->
+  <section id="s2">
+    <div class="section-header">
+      <div class="section-num s2-num">2</div>
+      <div class="section-title">아트 가이드</div>
+      <span class="section-audience aud-art">아트팀 전용</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">방향성</div>
+      <ul>
+        <li><span class="hl">B안 팝업 제거</span> — 기존 프리레벨 팝업 숨김 처리만으로 구현</li>
+        <li><span class="hl">Grand Fireworks 인게임 배치</span> — 인게임 중 사용 가능한 즉석 부스트 UI로 재배치. 기존 프리레벨 팝업 스타일과 구분되는 인게임 오버레이 또는 하단 버튼 형태 고려</li>
+        <li>결과 화면 "다음 게임" 버튼: 현재보다 시각적으로 더 강조, 자연스럽게 눈에 들어오는 위치와 크기</li>
+        <li>전환 느낌: 팝업 사라짐 → 게임 씬이 부드럽게 전환, 끊기는 느낌 없이</li>
+      </ul>
+    </div>
+
+    <div class="wireframe">
+      <div class="wireframe-label">A안 vs B안 — 레벨 진입 흐름 비교</div>
+      <svg viewBox="0 0 680 260" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <!-- A안 -->
+        <rect x="10" y="10" width="310" height="240" rx="10" style="fill:var(--surface3);stroke:var(--border)" stroke-width="1.5"/>
+        <text x="165" y="32" text-anchor="middle" style="fill:var(--text-dim);font-size:11px;font-weight:700">A안 (현재)</text>
+        <!-- 레벨맵 -->
+        <rect x="24" y="40" width="282" height="60" rx="6" style="fill:var(--surface2)"/>
+        <text x="165" y="64" text-anchor="middle" style="fill:var(--text2);font-size:11px">레벨 맵</text>
+        <text x="165" y="80" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">레벨 탭 →</text>
+        <!-- 팝업 -->
+        <rect x="54" y="110" width="222" height="90" rx="8" style="fill:var(--surface);stroke:var(--border)" stroke-width="1.5"/>
+        <text x="165" y="132" text-anchor="middle" style="fill:var(--accent);font-size:11px;font-weight:700">프리레벨 팝업</text>
+        <rect x="74" y="140" width="90" height="22" rx="4" style="fill:var(--surface2)"/>
+        <text x="119" y="155" text-anchor="middle" style="fill:var(--text2);font-size:10px">부스터 선택</text>
+        <rect x="172" y="140" width="90" height="22" rx="4" style="fill:var(--surface2)"/>
+        <text x="217" y="155" text-anchor="middle" style="fill:var(--text2);font-size:10px">배수 설정</text>
+        <rect x="94" y="172" width="142" height="22" rx="4" style="fill:var(--accent-bg);stroke:var(--accent-border)" stroke-width="1"/>
+        <text x="165" y="187" text-anchor="middle" style="fill:var(--accent);font-size:10px;font-weight:700">게임 시작</text>
+        <!-- 화살표 -->
+        <line x1="165" y1="100" x2="165" y2="110" style="stroke:var(--text-dim)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- B안 -->
+        <rect x="360" y="10" width="310" height="240" rx="10" style="fill:var(--surface3);stroke:var(--accent-border)" stroke-width="1.5"/>
+        <text x="515" y="32" text-anchor="middle" style="fill:var(--accent);font-size:11px;font-weight:700">B안 (테스트)</text>
+        <!-- 레벨맵 -->
+        <rect x="374" y="40" width="282" height="60" rx="6" style="fill:var(--surface2)"/>
+        <text x="515" y="64" text-anchor="middle" style="fill:var(--text2);font-size:11px">레벨 맵</text>
+        <text x="515" y="80" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">레벨 탭 →</text>
+        <!-- 바로 게임 -->
+        <rect x="374" y="115" width="282" height="60" rx="6" style="fill:var(--accent-bg);stroke:var(--accent-border)" stroke-width="1.5"/>
+        <text x="515" y="143" text-anchor="middle" style="fill:var(--accent);font-size:12px;font-weight:700">즉시 게임 시작</text>
+        <text x="515" y="163" text-anchor="middle" style="fill:var(--accent);font-size:10px;opacity:0.7">팝업 없음</text>
+        <!-- 화살표 -->
+        <line x1="515" y1="100" x2="515" y2="115" style="stroke:var(--accent)" stroke-width="2"/>
+        <polygon points="515,115 510,108 520,108" style="fill:var(--accent)"/>
+
+        <defs>
+          <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <polygon points="0,0 6,3 0,6" style="fill:var(--text-dim)"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="card">
+      <div class="card-title">필요 에셋</div>
+      <ul>
+        <li>Grand Fireworks 인게임 버튼 UI — 인게임 중 탭 가능한 즉석 부스트 아이콘/버튼. 기존 프리레벨 아이콘 재활용 가능 여부 개발 확인 필요</li>
+        <li>(선택) 결과 화면 "다음 게임" 버튼 강조 버전 — 우선순위 낮음</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- S3 -->
+  <section id="s3">
+    <div class="section-header">
+      <div class="section-num s3-num">3</div>
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">밸런스 시트 변수</div>
+      <div class="bs-block">
+        <div class="bs-tab">TAB: const</div>
+        <div class="bs-row">
+          <span class="bs-key">ab_pre_level_popup_variant</span>
+          <span class="bs-val">0</span>
+          <span class="bs-desc">0=A안(팝업 표시), 1=B안(팝업 제거). 서버 플래그로 그룹 분기</span>
+        </div>
+        <div class="bs-row">
+          <span class="bs-key">ab_pre_level_test_duration_days</span>
+          <span class="bs-val">—</span>
+          <span class="bs-desc">테스트 기간(일). PM이 종료 시점에 플래그 수동 회수</span>
+        </div>
+        <div class="bs-row">
+          <span class="bs-key">ab_grand_fireworks_ingame_enabled</span>
+          <span class="bs-val">0</span>
+          <span class="bs-desc">B안 활성 시 1로 세팅. Grand Fireworks를 인게임 즉석 부스트로 노출</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">트리거 &amp; 분기 조건</div>
+      <ul>
+        <li><span class="hl">A/B 그룹 배정:</span> 유저 ID 기반 해시로 50:50 분기 (서버 결정, 클라이언트는 플래그 수신)</li>
+        <li><span class="hl">B안 발동:</span> <code>ab_pre_level_popup_variant == 1</code> — 레벨 진입 시 팝업 스킵, 게임 씬 직행</li>
+        <li><span class="hl">억제 조건:</span> 튜토리얼 미완료 유저는 A안 강제 적용 (팝업 교육 목적)</li>
+        <li><span class="hl">Grand Fireworks 전환:</span> <code>ab_grand_fireworks_ingame_enabled == 1</code> 시 인게임 중 즉석 부스트 버튼으로 노출, 프리레벨 팝업 내 판매 제거</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">측정 이벤트</div>
+      <ul>
+        <li><code>ab_game_start</code> — variant(a/b), level_id 포함</li>
+        <li><code>ab_game_result</code> — variant, result(clear/quit), booster_used</li>
+        <li><code>ab_booster_purchase</code> — variant, booster_type, source(pregame/ingame)</li>
+        <li>세션당 판수: <code>ab_game_start</code> 집계로 도출</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">엣지 케이스</div>
+      <ul>
+        <li>Grand Fireworks 인게임 배치 위치 — 인게임 HUD 내 어느 위치에 놓을지 UX 설계 필요 (게임 플레이 방해 최소화)</li>
+        <li>B안 유저가 배수 부스터를 원할 경우 → 별도 메타 UI 진입점 제공 여부 PM 확인 필요</li>
+        <li>테스트 종료 후 플래그 회수: A/B 중 채택안으로 <code>ab_pre_level_popup_variant</code> 고정</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script src="memo.js"></script>
+</body>
+</html>

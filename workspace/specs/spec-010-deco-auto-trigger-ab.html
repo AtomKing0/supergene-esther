@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPEC-010 · [AB-메타] 꾸미기 자동 진입 A/B</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--surface3:#2a2f45;
+  --border:#2e3347;--text:#e2e8f0;--text2:#94a3b8;--text-dim:#64748b;
+  --accent:#2dd4bf;--accent-bg:rgba(45,212,191,.15);--accent-border:rgba(45,212,191,.35);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.12);--purple-border:rgba(167,139,250,.3);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,.12);--teal-border:rgba(45,212,191,.3);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.12);--blue-border:rgba(96,165,250,.3);
+  --green:#4ade80;--green-bg:rgba(74,222,128,.12);--green-border:rgba(74,222,128,.25);
+  --yellow:#fbbf24;--yellow-bg:rgba(251,191,36,.12);--yellow-border:rgba(251,191,36,.3);
+  --red:#f87171;--red-bg:rgba(248,113,113,.12);--red-border:rgba(248,113,113,.25);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
+  --text-xs:12px;--text-sm:13px;--text-base:14px;--text-lg:15px;
+  --dur-base:.18s;
+}
+[data-theme=light]{
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--text:#0f172a;--text2:#475569;--text-dim:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--text-lg);line-height:1.7;display:flex}
+
+.sidenav{position:fixed;left:0;top:0;height:100vh;width:200px;background:var(--surface);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;gap:4px;z-index:200}
+.sidenav-logo{padding:0 20px 20px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:var(--text-sm);color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all var(--dur-base)}
+.nav-item:hover,.nav-item.active{color:var(--text);border-left-color:var(--accent);background:var(--accent-bg)}
+.nav-num{font-size:10px;font-weight:700;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.n1{background:var(--purple-bg);color:var(--purple)}
+.n2{background:var(--teal-bg);color:var(--teal)}
+.n3{background:var(--blue-bg);color:var(--blue)}
+
+.main{margin-left:200px;flex:1;padding:60px 56px 80px;max-width:900px}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-toggle:hover{transform:scale(1.1)}
+.back-btn{position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;text-decoration:none}
+.back-btn:hover{color:var(--text)}
+
+.spec-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;margin-bottom:14px}
+.prefix-badge{display:inline-block;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.04em;margin-bottom:14px;margin-left:8px}
+h1{font-size:26px;font-weight:800;margin-bottom:8px;line-height:1.3}
+.subtitle{color:var(--text2);font-size:var(--text-base);margin-bottom:32px}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:40px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 16px}
+.kpi-label{font-size:var(--text-xs);color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.kpi-value{font-size:20px;font-weight:800}
+.kv-teal{color:var(--teal)}.kv-green{color:var(--green)}.kv-blue{color:var(--blue)}.kv-yellow{color:var(--yellow)}
+
+.section-header{display:flex;align-items:center;gap:12px;margin:48px 0 24px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.section-num{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);font-weight:800}
+.s1-num{background:var(--purple-bg);color:var(--purple)}
+.s2-num{background:var(--teal-bg);color:var(--teal)}
+.s3-num{background:var(--blue-bg);color:var(--blue)}
+.section-title{font-size:18px;font-weight:700}
+.section-audience{font-size:var(--text-xs);padding:3px 10px;border-radius:var(--radius-full);font-weight:600}
+.aud-all{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.aud-art{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+.aud-dev{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:16px}
+.card-title{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);margin-bottom:12px}
+p,li{color:var(--text2);font-size:var(--text-base)}
+ul,ol{padding-left:20px;margin:8px 0}
+li{margin:6px 0}
+.hl{color:var(--text);font-weight:600}
+code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(--text-xs);font-family:monospace;color:var(--accent)}
+
+.ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.ab-card{border-radius:var(--radius-lg);padding:18px}
+.ab-a{background:var(--surface2);border:1px solid var(--border)}
+.ab-b{background:var(--accent-bg);border:1px solid var(--accent-border)}
+.ab-label{font-size:var(--text-xs);font-weight:800;letter-spacing:.08em;margin-bottom:10px}
+.ab-a .ab-label{color:var(--text-dim)}
+.ab-b .ab-label{color:var(--accent)}
+
+.flow-steps{display:flex;flex-direction:column;gap:0;margin:16px 0}
+.flow-step{display:flex;gap:14px;align-items:flex-start;padding:10px 0}
+.flow-step:not(:last-child){border-bottom:1px dashed var(--border)}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--accent);font-size:var(--text-xs);font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-body{font-size:var(--text-base);color:var(--text2)}
+.step-body strong{color:var(--text)}
+
+.bs-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin:16px 0}
+.bs-tab{background:var(--surface3);padding:8px 18px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.bs-row{display:grid;grid-template-columns:240px 80px 1fr;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);font-size:var(--text-sm)}
+.bs-row:last-child{border-bottom:none}
+.bs-key{font-family:monospace;color:var(--blue);font-size:var(--text-xs)}
+.bs-val{color:var(--accent);font-weight:700;font-family:monospace;font-size:var(--text-xs)}
+.bs-desc{color:var(--text2)}
+
+.wireframe{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin:16px 0}
+.wireframe-label{font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.06em;margin-bottom:12px;text-transform:uppercase}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+
+<nav class="sidenav">
+  <div class="sidenav-logo">SPEC-010</div>
+  <a class="nav-item" href="#s1"><span class="nav-num n1">1</span>기획 의도</a>
+  <a class="nav-item" href="#s2"><span class="nav-num n2">2</span>아트 가이드</a>
+  <a class="nav-item" href="#s3"><span class="nav-num n3">3</span>개발 스펙</a>
+</nav>
+
+<main class="main">
+  <div>
+    <span class="spec-badge">SPEC-010</span>
+    <span class="prefix-badge">AB-메타</span>
+  </div>
+  <h1>꾸미기 자동 진입 A/B 테스트</h1>
+  <p class="subtitle">꾸미기 재화 충족 시 자동 진입 → 데코 진행률 증가 &amp; 재화 소비 유도 검증</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">핵심 지표</div><div class="kpi-value kv-teal">데코 진행률</div></div>
+    <div class="kpi-card"><div class="kpi-label">부수 지표</div><div class="kpi-value kv-yellow">재화 소비량</div></div>
+    <div class="kpi-card"><div class="kpi-label">리스크 지표</div><div class="kpi-value kv-blue">리텐션 D1/D7</div></div>
+    <div class="kpi-card"><div class="kpi-label">우선 타깃</div><div class="kpi-value kv-green" style="font-size:14px">데코 미진행 유저</div></div>
+  </div>
+
+  <!-- S1 -->
+  <section id="s1">
+    <div class="section-header">
+      <div class="section-num s1-num">1</div>
+      <div class="section-title">기획 의도 &amp; 흐름</div>
+      <span class="section-audience aud-all">개발 + 아트 공통</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">왜 테스트하는가</div>
+      <ul>
+        <li>꾸미기 시스템은 메타 핵심 콘텐츠이나, <span class="hl">자발적 진입률이 낮은</span> 유저군 존재</li>
+        <li>재화가 충분히 쌓였는데도 꾸미기를 안 하는 유저 → 인식 부족 or 진입 마찰</li>
+        <li>자동 진입으로 꾸미기 경험을 강제 노출 → <span class="hl">진행률 상승 + 재화 sink 활성화</span> 기대</li>
+        <li>단, 강제 전환이 불편함으로 느껴질 경우 리텐션 하락 리스크 → 실측 필요</li>
+      </ul>
+    </div>
+
+    <div class="ab-grid">
+      <div class="ab-card ab-a">
+        <div class="ab-label">A안 (현재)</div>
+        <ul>
+          <li>꾸미기는 유저가 원할 때 언제든 자유 진입</li>
+          <li>로비에 꾸미기 버튼 상시 노출</li>
+          <li>재화 충족 여부와 무관하게 알림 없음</li>
+        </ul>
+      </div>
+      <div class="ab-card ab-b">
+        <div class="ab-label">B안 (테스트)</div>
+        <ul>
+          <li>꾸미기 재화가 다음 데코 아이템 구매 가능 수준에 도달하면</li>
+          <li>게임 결과 화면 → 로비 복귀 시 자동으로 꾸미기 화면 전환</li>
+          <li>꾸미기 완료(또는 스킵) → 로비 자동 복귀</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">B안 플레이어 경험 흐름</div>
+      <div class="flow-steps">
+        <div class="flow-step"><div class="step-num">1</div><div class="step-body"><strong>레벨 클리어</strong> — 결과 화면 표시</div></div>
+        <div class="flow-step"><div class="step-num">2</div><div class="step-body"><strong>재화 충족 감지</strong> — 서버에서 다음 구매 가능 아이템 체크. 충족 시 플래그 세팅</div></div>
+        <div class="flow-step"><div class="step-num">3</div><div class="step-body"><strong>자동 전환</strong> — 로비로 복귀하는 대신 꾸미기 화면으로 전환. 짧고 부드러운 전환 연출</div></div>
+        <div class="flow-step"><div class="step-num">4</div><div class="step-body"><strong>꾸미기 진행</strong> — 구매 가능한 아이템 하이라이트 표시. 유저가 자유롭게 구매 또는 스킵</div></div>
+        <div class="flow-step"><div class="step-num">5</div><div class="step-body"><strong>로비 복귀</strong> — 꾸미기 완료 또는 "나중에" 버튼 → 로비로 돌아옴</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">성공 지표 &amp; 전제</div>
+      <ul>
+        <li><span class="hl">주요:</span> B안 유저의 데코 진행률(완성 아이템 수)이 A안 대비 유의미하게 높음</li>
+        <li><span class="hl">부수:</span> 재화 소비량 증가 (골드 sink 활성화)</li>
+        <li><span class="hl">허용 범위:</span> D1/D7 리텐션 하락 없거나 미미한 수준</li>
+        <li><span class="hl">실패 기준:</span> 리텐션 유의미한 하락 (강제 전환이 불쾌감으로 작용)</li>
+        <li><span class="hl">타깃 우선:</span> 재화 보유 중이나 꾸미기 미진행 유저군에 먼저 적용 고려</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- S2 -->
+  <section id="s2">
+    <div class="section-header">
+      <div class="section-num s2-num">2</div>
+      <div class="section-title">아트 가이드</div>
+      <span class="section-audience aud-art">아트팀 전용</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">방향성</div>
+      <ul>
+        <li><span class="hl">자동 전환 연출:</span> 갑작스럽지 않게 — 살짝 페이드 또는 슬라이드로 꾸미기 화면 등장. 놀라거나 끊기는 느낌 없도록</li>
+        <li><span class="hl">꾸미기 화면 진입 배너:</span> "지금 꾸밀 수 있어요!" 같은 가이드 텍스트를 화면 상단에 가볍게 — 강제가 아니라 초대받는 느낌</li>
+        <li><span class="hl">구매 가능 아이템 하이라이트:</span> 구매 가능한 데코 아이템을 은은하게 강조 (빛나거나 테두리 강조). 과하지 않게</li>
+        <li><span class="hl">"나중에" 버튼:</span> 명확하지만 주인공이 되지 않도록 — 보조적 위치, 차분한 컬러</li>
+      </ul>
+    </div>
+
+    <div class="wireframe">
+      <div class="wireframe-label">B안 — 자동 꾸미기 진입 흐름 와이어프레임</div>
+      <svg viewBox="0 0 680 280" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <!-- 레벨 결과 -->
+        <rect x="10" y="20" width="190" height="240" rx="10" style="fill:var(--surface3);stroke:var(--border)" stroke-width="1.5"/>
+        <text x="105" y="44" text-anchor="middle" style="fill:var(--text-dim);font-size:10px;font-weight:700">레벨 결과 화면</text>
+        <rect x="30" y="54" width="150" height="100" rx="6" style="fill:var(--surface2)"/>
+        <text x="105" y="104" text-anchor="middle" style="fill:var(--text2);font-size:11px">클리어!</text>
+        <text x="105" y="124" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">재화 충족 감지됨</text>
+        <rect x="40" y="168" width="130" height="28" rx="6" style="fill:var(--accent-bg);stroke:var(--accent-border)" stroke-width="1"/>
+        <text x="105" y="187" text-anchor="middle" style="fill:var(--accent);font-size:10px;font-weight:700">계속하기</text>
+
+        <!-- 화살표 -->
+        <line x1="202" y1="140" x2="248" y2="140" style="stroke:var(--accent)" stroke-width="2"/>
+        <polygon points="248,140 240,135 240,145" style="fill:var(--accent)"/>
+        <text x="225" y="130" text-anchor="middle" style="fill:var(--accent);font-size:9px">자동 전환</text>
+
+        <!-- 꾸미기 화면 -->
+        <rect x="250" y="20" width="210" height="240" rx="10" style="fill:var(--surface3);stroke:var(--accent-border)" stroke-width="1.5"/>
+        <text x="355" y="44" text-anchor="middle" style="fill:var(--accent);font-size:10px;font-weight:700">꾸미기 화면 (자동 진입)</text>
+        <!-- 배너 -->
+        <rect x="264" y="52" width="182" height="22" rx="5" style="fill:var(--accent-bg)"/>
+        <text x="355" y="67" text-anchor="middle" style="fill:var(--accent);font-size:10px">✨ 지금 꾸밀 수 있어요!</text>
+        <!-- 아이템 그리드 -->
+        <rect x="264" y="82" width="82" height="82" rx="6" style="fill:var(--surface2);stroke:var(--accent)" stroke-width="2"/>
+        <text x="305" y="128" text-anchor="middle" style="fill:var(--accent);font-size:10px">구매 가능</text>
+        <rect x="354" y="82" width="82" height="82" rx="6" style="fill:var(--surface2)"/>
+        <text x="395" y="128" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">잠금</text>
+        <rect x="264" y="172" width="82" height="82" rx="6" style="fill:var(--surface2)"/>
+        <text x="305" y="218" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">잠금</text>
+        <rect x="354" y="172" width="82" height="82" rx="6" style="fill:var(--surface2)"/>
+        <text x="395" y="218" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">잠금</text>
+
+        <!-- 화살표 -->
+        <line x1="462" y1="140" x2="508" y2="140" style="stroke:var(--border)" stroke-width="2"/>
+        <polygon points="508,140 500,135 500,145" style="fill:var(--text-dim)"/>
+        <text x="485" y="130" text-anchor="middle" style="fill:var(--text-dim);font-size:9px">완료/스킵</text>
+
+        <!-- 로비 -->
+        <rect x="510" y="20" width="160" height="240" rx="10" style="fill:var(--surface3);stroke:var(--border)" stroke-width="1.5"/>
+        <text x="590" y="44" text-anchor="middle" style="fill:var(--text-dim);font-size:10px;font-weight:700">로비 복귀</text>
+        <rect x="530" y="60" width="120" height="150" rx="6" style="fill:var(--surface2)"/>
+        <text x="590" y="140" text-anchor="middle" style="fill:var(--text2);font-size:11px">로비</text>
+        <!-- 나중에 버튼 -->
+        <rect x="530" y="220" width="120" height="26" rx="5" style="fill:var(--surface2);stroke:var(--border)" stroke-width="1"/>
+        <text x="590" y="237" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">나중에</text>
+      </svg>
+    </div>
+
+    <div class="card">
+      <div class="card-title">필요 에셋</div>
+      <ul>
+        <li>자동 진입 배너 텍스트 — "지금 꾸밀 수 있어요!" 혹은 그에 상응하는 카피 (로컬라이징 필요)</li>
+        <li>구매 가능 아이템 하이라이트 이펙트 — 기존 잠금/해제 UI 확장으로 처리 가능한지 개발 확인 필요</li>
+        <li>화면 전환 애니메이션 — 기존 씬 전환 에셋 재활용 우선 검토</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- S3 -->
+  <section id="s3">
+    <div class="section-header">
+      <div class="section-num s3-num">3</div>
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">밸런스 시트 변수</div>
+      <div class="bs-block">
+        <div class="bs-tab">TAB: const</div>
+        <div class="bs-row">
+          <span class="bs-key">ab_deco_auto_trigger_variant</span>
+          <span class="bs-val">0</span>
+          <span class="bs-desc">0=A안(자유 진입), 1=B안(자동 진입). 서버 플래그로 그룹 분기</span>
+        </div>
+        <div class="bs-row">
+          <span class="bs-key">ab_deco_auto_cooldown_count</span>
+          <span class="bs-val">—</span>
+          <span class="bs-desc">자동 진입 후 다음 자동 진입까지 최소 플레이 판수 (연속 강제 방지)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">트리거 &amp; 분기 조건</div>
+      <ul>
+        <li><span class="hl">A/B 그룹 배정:</span> 유저 ID 기반 해시로 50:50 분기 (서버 결정)</li>
+        <li><span class="hl">B안 발동 조건:</span> <code>ab_deco_auto_trigger_variant == 1</code> AND 현재 보유 골드 ≥ 다음 데코 아이템 가격</li>
+        <li><span class="hl">발동 시점:</span> 레벨 클리어 결과 화면에서 로비 복귀 직전</li>
+        <li><span class="hl">쿨다운:</span> 자동 진입 후 <code>ab_deco_auto_cooldown_count</code> 판 동안 재발동 억제 (도배 방지)</li>
+        <li><span class="hl">억제 조건:</span> 이미 모든 데코 아이템 구매 완료 유저 / 튜토리얼 미완료 유저</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">측정 이벤트</div>
+      <ul>
+        <li><code>ab_deco_auto_triggered</code> — 자동 진입 발동 횟수</li>
+        <li><code>ab_deco_purchased</code> — variant(a/b), source(auto/manual), item_id</li>
+        <li><code>ab_deco_skipped</code> — "나중에" 선택 횟수 (B안에서 강제 스킵 비율 모니터링)</li>
+        <li>데코 진행률: 유저별 구매 완료 아이템 수 스냅샷 비교</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">엣지 케이스</div>
+      <ul>
+        <li>재화가 딱 맞게 있어 구매 후 0원이 되는 경우 → 정상 허용 (유저 선택으로 구매하는 것)</li>
+        <li>자동 진입 중 앱 백그라운드 전환 → 복귀 시 로비로 자연 복귀, 자동 진입 재발동 없음</li>
+        <li>테스트 종료 후: 채택안으로 <code>ab_deco_auto_trigger_variant</code> 고정, 쿨다운 값 조정</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script src="memo.js"></script>
+</body>
+</html>
