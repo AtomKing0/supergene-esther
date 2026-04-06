@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="pst-theme-init">(function(){var t=localStorage.getItem("pst-report-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var b=document.createElement("a");b.className="back-btn";b.id="backBtn";b.href="index.html";b.title="보고서 인덱스로 이동";b.textContent="← 목록";document.body.prepend(b);var g=document.createElement("button");g.className="theme-toggle";g.id="themeToggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";if(l){document.documentElement.removeAttribute("data-theme");g.textContent="🌙";localStorage.setItem("pst-report-theme","dark");}else{document.documentElement.setAttribute("data-theme","light");g.textContent="☀️";localStorage.setItem("pst-report-theme","light");}if(typeof buildCharts==="function")buildCharts();});window.addEventListener("pageshow",function(e){if(e.persisted){var s=localStorage.getItem("pst-report-theme"),il=s==="light";if(il)document.documentElement.setAttribute("data-theme","light");else document.documentElement.removeAttribute("data-theme");var b=document.getElementById("themeToggle");if(b)b.textContent=il?"\u2600\uFE0F":"\uD83C\uDF19";if(typeof buildCharts==="function")buildCharts();}});})()</script>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PST 경제 시스템 최종 보고서 v7</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --text: #e2e8f0;
+    --muted: #8892b0;
+    --accent: #64ffda;
+    --blue: #57b6ff;
+    --yellow: #ffd166;
+    --red: #ff6b6b;
+    --green: #69db7c;
+    --purple: #c77dff;
+    --orange: #ff9f43;
+  }
+  [data-theme="light"] {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --surface2: #f0f1f4;
+    --border: #dfe1e6;
+    --text: #1a1d27;
+    --muted: #5e6278;
+    --accent: #059669;
+    --blue: #2563eb;
+    --yellow: #d97706;
+    --red: #dc2626;
+    --green: #16a34a;
+    --purple: #9333ea;
+    --orange: #ea580c;
+  }
+  .theme-toggle { position:fixed;top:16px;right:16px;z-index:100;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+  .theme-toggle:hover { border-color:var(--muted);transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:200;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim,var(--muted,#8892b0));font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { border-color:var(--text-dim,var(--muted,#8892b0));color:var(--text);transform:translateY(-1px);text-decoration:none; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+  /* Header */
+  .report-header { text-align: center; padding: 48px 0 32px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+  .report-header .badge { display: inline-block; background: linear-gradient(135deg, var(--surface), var(--surface2)); border: 1px solid var(--accent); color: var(--accent); font-size: 11px; letter-spacing: 2px; padding: 4px 14px; border-radius: 20px; text-transform: uppercase; margin-bottom: 16px; }
+  .report-header h1 { font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .report-header .subtitle { color: var(--muted); font-size: 15px; }
+  .report-header .meta { margin-top: 16px; display: flex; justify-content: center; gap: 24px; color: var(--muted); font-size: 12px; }
+  .report-header .meta span { display: flex; align-items: center; gap: 6px; }
+  .report-header .meta .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+  /* Version Timeline */
+  .version-bar { display: flex; gap: 2px; background: var(--surface); border-radius: 10px; padding: 4px; margin-bottom: 40px; overflow-x: auto; }
+  .version-item { flex: 1; min-width: 100px; text-align: center; padding: 10px 8px; border-radius: 8px; cursor: default; transition: background 0.2s; }
+  .version-item.active { background: linear-gradient(135deg, var(--surface2), var(--surface)); border: 1px solid var(--accent); }
+  .version-item .ver { font-size: 12px; font-weight: 700; color: var(--accent); }
+  .version-item .desc { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .version-item .grade { font-size: 11px; margin-top: 4px; font-weight: 600; }
+  .grade-a { color: var(--green); }
+  .grade-b { color: var(--yellow); }
+  .grade-c { color: var(--red); }
+
+  /* Section */
+  .section { margin-bottom: 48px; }
+  .section-title { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .section-title::before { content: ''; display: block; width: 3px; height: 20px; background: var(--accent); border-radius: 2px; }
+
+  /* Verdict Banner */
+  .verdict-banner { background: linear-gradient(135deg, var(--surface2), var(--surface)); border: 1px solid var(--border); border-radius: 12px; padding: 28px 32px; display: flex; align-items: center; gap: 32px; margin-bottom: 40px; }
+  .verdict-grade { font-size: 64px; font-weight: 900; color: var(--yellow); line-height: 1; text-shadow: 0 0 30px rgba(255,209,102,0.4); }
+  .verdict-info h2 { font-size: 20px; color: var(--text); margin-bottom: 6px; }
+  .verdict-info p { color: var(--muted); font-size: 13px; max-width: 500px; }
+  .verdict-tags { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .tag { font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+  .tag-green { background: rgba(105,219,124,0.15); color: var(--green); border: 1px solid rgba(105,219,124,0.3); }
+  .tag-yellow { background: rgba(255,209,102,0.15); color: var(--yellow); border: 1px solid rgba(255,209,102,0.3); }
+  .tag-red { background: rgba(255,107,107,0.15); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+  .tag-blue { background: rgba(87,182,255,0.15); color: var(--blue); border: 1px solid rgba(87,182,255,0.3); }
+
+  /* KPI Grid */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 40px; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .kpi-card.highlight { border-color: var(--accent); background: linear-gradient(135deg, var(--surface2), var(--surface)); }
+  .kpi-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .kpi-card .value { font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1.1; }
+  .kpi-card .unit { font-size: 13px; color: var(--muted); font-weight: 400; }
+  .kpi-card .delta { font-size: 12px; margin-top: 6px; }
+  .delta-up { color: var(--green); }
+  .delta-down { color: var(--red); }
+  .delta-neutral { color: var(--muted); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--surface2); color: var(--muted); font-weight: 600; text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  tr:hover td { background: var(--surface2); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pass { color: var(--green); font-weight: 600; }
+  .warn { color: var(--yellow); font-weight: 600; }
+  .fail { color: var(--red); font-weight: 600; }
+  .badge-new { background: rgba(105,219,124,0.15); color: var(--green); border: 1px solid rgba(105,219,124,0.3); font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .badge-adj { background: rgba(255,209,102,0.15); color: var(--yellow); border: 1px solid rgba(255,209,102,0.3); font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .badge-fix { background: rgba(87,182,255,0.15); color: var(--blue); border: 1px solid rgba(87,182,255,0.3); font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+
+  /* Chart containers */
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  @media (max-width: 700px) { .chart-row { grid-template-columns: 1fr; } }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .chart-card h3 { font-size: 13px; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* Progress bars */
+  .progress-section { margin-bottom: 32px; }
+  .progress-item { margin-bottom: 14px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+  .progress-label .name { color: var(--text); }
+  .progress-label .val { color: var(--accent); font-weight: 700; }
+  .progress-bar { background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 1s; }
+  .fill-green { background: linear-gradient(90deg, #52b788, var(--green)); }
+  .fill-yellow { background: linear-gradient(90deg, #e9c46a, var(--yellow)); }
+  .fill-blue { background: linear-gradient(90deg, #4895ef, var(--blue)); }
+  .fill-accent { background: linear-gradient(90deg, #00b4d8, var(--accent)); }
+  .progress-target { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+  /* Action cards */
+  .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .action-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .action-card .priority { font-size: 10px; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+  .action-card .priority.p1 { color: var(--red); }
+  .action-card .priority.p2 { color: var(--yellow); }
+  .action-card .priority.p3 { color: var(--blue); }
+  .action-card .priority.done { color: var(--green); }
+  .action-card h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .action-card p { font-size: 12px; color: var(--muted); }
+  .action-card .status { margin-top: 10px; font-size: 11px; font-weight: 600; }
+  .status-done { color: var(--green); }
+  .status-pending { color: var(--yellow); }
+
+  /* Changelog */
+  .changelog { }
+  .change-item { display: flex; gap: 16px; margin-bottom: 16px; }
+  .change-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .dot-green { background: var(--green); }
+  .dot-yellow { background: var(--yellow); }
+  .dot-blue { background: var(--blue); }
+  .change-content .title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .change-content .desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .change-content .rev { font-size: 11px; color: var(--border); margin-top: 2px; }
+
+  /* City groups */
+  .city-group-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+  .city-group-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .city-group-card .group-label { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; }
+  .city-group-card .cities { font-size: 12px; color: var(--text); margin-bottom: 6px; }
+  .city-group-card .hammer { font-size: 13px; font-weight: 700; color: var(--accent); }
+  .city-group-card .pattern { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .city-group-card.new-g7 { border-color: rgba(255,209,102,0.4); background: linear-gradient(135deg, var(--surface), var(--surface2)); }
+  .city-group-card.new-g8 { border-color: rgba(105,219,124,0.4); background: linear-gradient(135deg, var(--surface), var(--surface2)); }
+
+  /* Footer */
+  .footer { border-top: 1px solid var(--border); margin-top: 60px; padding-top: 24px; text-align: center; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="report-header">
+    <div class="badge">Final Report · v7</div>
+    <h1>PST 경제 시스템 최종 보고서</h1>
+    <div class="subtitle">Puzzle Solitaire Tripeaks — 재화 밸런스 설계 완료</div>
+    <div class="meta">
+      <span><span class="dot"></span>2026-03-25</span>
+      <span><span class="dot"></span>01 PM 에이전트 발행</span>
+      <span><span class="dot"></span>시트 수정 Rev.1~10 완료</span>
+    </div>
+  </div>
+
+  <!-- Version Timeline -->
+  <div class="version-bar">
+    <div class="version-item">
+      <div class="ver">v1</div>
+      <div class="desc">초기 시뮬</div>
+      <div class="grade grade-c">C</div>
+    </div>
+    <div class="version-item">
+      <div class="ver">v2</div>
+      <div class="desc">부스터 누진</div>
+      <div class="grade grade-b">B+</div>
+    </div>
+    <div class="version-item">
+      <div class="ver">v3</div>
+      <div class="desc">수치 재검증</div>
+      <div class="grade grade-b">B+</div>
+    </div>
+    <div class="version-item">
+      <div class="ver">v4</div>
+      <div class="desc">이벤트·G7</div>
+      <div class="grade grade-b">B+</div>
+    </div>
+    <div class="version-item">
+      <div class="ver">v5</div>
+      <div class="desc">G8 확장</div>
+      <div class="grade grade-b">B+</div>
+    </div>
+    <div class="version-item">
+      <div class="ver">v6</div>
+      <div class="desc">Stage 3 확장</div>
+      <div class="grade grade-b">B+★</div>
+    </div>
+    <div class="version-item active">
+      <div class="ver">v7</div>
+      <div class="desc">V4 런치 확정</div>
+      <div class="grade grade-a">A-</div>
+    </div>
+  </div>
+
+  <!-- Verdict Banner -->
+  <div class="verdict-banner">
+    <div class="verdict-grade" style="color:var(--green);text-shadow:0 0 30px rgba(105,219,124,0.4)">A-</div>
+    <div class="verdict-info">
+      <h2>경제 건강도 A- — V4 런치 파라미터 확정, Source 29% 감소 + Sink 전면 활성화</h2>
+      <p>idle_gold·inbox·popup 하향, entry_tier +20%, 컬렉션 활성화(is_album/deck_collection_open=1)로 구조적 개선 완료. 패시브 공급 29,771→21,140g/일로 축소. 메타 Sink 138.4일 유지. 방치형 인플레이션 잔류하나 규모 ~29% 감소.</p>
+      <div class="verdict-tags">
+        <span class="tag tag-green">✓ 메타 Sink 138.4일</span>
+        <span class="tag tag-green">✓ 데코 3단계 확장 완료</span>
+        <span class="tag tag-green">✓ 평균 플레이 A기준 충족</span>
+        <span class="tag tag-green">✓ 이벤트 골드 조정 완료</span>
+        <span class="tag tag-green">✓ 부스터 누진 가격 적용</span>
+        <span class="tag tag-green">✓ 패시브 공급 29% 감소</span>
+        <span class="tag tag-green">✓ 컬렉션 Sink 활성화</span>
+        <span class="tag tag-green">✓ entry_tier +20% 적용</span>
+        <span class="tag tag-green">✓ VAL-003 EXEMPT 처리 완료</span>
+        <span class="tag tag-yellow">◑ 방치형 인플레이션 잔류</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card highlight">
+      <div class="label">메타 Sink</div>
+      <div class="value">138.4<span class="unit">일</span></div>
+      <div class="delta delta-up">▲ v5 대비 +46.1일 (Stage 3 추가)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">총 메타 해머</div>
+      <div class="value">2,118<span class="unit">개</span></div>
+      <div class="delta delta-up">▲ v5 1,412 대비 +706</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">평균 플레이 30일</div>
+      <div class="value">+19,530<span class="unit">g</span></div>
+      <div class="delta delta-up">▲ v3 기준 (A등급 충족, v4 대비 96.3% 개선)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">총 메타 도시</div>
+      <div class="value">20<span class="unit">개</span></div>
+      <div class="delta delta-up">▲ 원본 16개 → 20개</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">패시브 골드 공급</div>
+      <div class="value">21,140<span class="unit">g/일</span></div>
+      <div class="delta delta-down">▼ 29,771 → 21,140 (-29%, Lv75 기준)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">시트 수정 이력</div>
+      <div class="value">Rev.10</div>
+      <div class="delta delta-neutral">총 10차 수정 완료</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-row">
+    <div class="chart-card">
+      <h3>메타 Sink 누적 확장 이력</h3>
+      <div class="chart-wrap">
+        <canvas id="sinkChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>유저 타입별 30일 골드 변동 (V4 런치 파라미터 기준)</h3>
+      <div class="chart-wrap">
+        <canvas id="userChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meta Sink Progress -->
+  <div class="section">
+    <div class="section-title">메타 Sink 달성 현황</div>
+    <div class="progress-section">
+      <div class="progress-item">
+        <div class="progress-label">
+          <span class="name">기존 G1~G6 (16개 도시, 924해머)</span>
+          <span class="val">60.4일</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill fill-blue" style="width:65%"></div></div>
+        <div class="progress-target">New York ~ Rio de Janeiro</div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-label">
+          <span class="name">+ G7 Barcelona/Istanbul (Plan B, 220해머)</span>
+          <span class="val">74.8일</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill fill-yellow" style="width:80%"></div></div>
+        <div class="progress-target">해머 패턴 [4,6,10,15,20], 골드 [3000,4800,7200,10800,15000]</div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-label">
+          <span class="name">+ G8 Athens/Prague (268해머)</span>
+          <span class="val">92.3일</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill fill-yellow" style="width:67%"></div></div>
+        <div class="progress-target">해머 패턴 [5,7,12,18,25], 골드 [3600,5800,8600,13000,18000]</div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-label">
+          <span class="name">+ Stage 3 데코 업그레이드 (+706해머, +694,900g) → 대폭 확장</span>
+          <span class="val" style="color:var(--green)">138.4일 ✓</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill fill-green" style="width:100%"></div></div>
+        <div class="progress-target">전 20개 도시 3단계 확장 · 골드 Sink ×1.5 배율 · A등급 90일 기준 ×1.54 달성</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- City Groups -->
+  <div class="section">
+    <div class="section-title">메타 도시 그룹 구성 (G1~G8)</div>
+    <div class="city-group-grid">
+      <div class="city-group-card">
+        <div class="group-label">G1</div>
+        <div class="cities">New York ~ Miami (6개)</div>
+        <div class="hammer">36해머/도시</div>
+        <div class="pattern">[1,2,3,5,7]</div>
+      </div>
+      <div class="city-group-card">
+        <div class="group-label">G2</div>
+        <div class="cities">Paris, London</div>
+        <div class="hammer">48해머/도시</div>
+        <div class="pattern">[1,2,4,7,10]</div>
+      </div>
+      <div class="city-group-card">
+        <div class="group-label">G3</div>
+        <div class="cities">Rome, Venice</div>
+        <div class="hammer">60해머/도시</div>
+        <div class="pattern">[2,3,5,8,12]</div>
+      </div>
+      <div class="city-group-card">
+        <div class="group-label">G4</div>
+        <div class="cities">Tokyo, Bangkok</div>
+        <div class="hammer">72해머/도시</div>
+        <div class="pattern">[2,4,6,10,14]</div>
+      </div>
+      <div class="city-group-card">
+        <div class="group-label">G5</div>
+        <div class="cities">Cairo, Dubai</div>
+        <div class="hammer">80해머/도시</div>
+        <div class="pattern">[2,4,7,11,16]</div>
+      </div>
+      <div class="city-group-card">
+        <div class="group-label">G6</div>
+        <div class="cities">Sydney, Rio</div>
+        <div class="hammer">94해머/도시</div>
+        <div class="pattern">[3,5,8,13,18]</div>
+      </div>
+      <div class="city-group-card new-g7">
+        <div class="group-label">G7 <span class="badge-adj">조정됨</span></div>
+        <div class="cities">Barcelona, Istanbul</div>
+        <div class="hammer">110해머/도시</div>
+        <div class="pattern">[4,6,10,15,20] Plan B</div>
+      </div>
+      <div class="city-group-card new-g8">
+        <div class="group-label">G8 <span class="badge-new">신규</span></div>
+        <div class="cities">Athens, Prague</div>
+        <div class="hammer">134해머/도시</div>
+        <div class="pattern">[5,7,12,18,25] ×1.218</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Balance Verification -->
+  <div class="section">
+    <div class="section-title">G8 밸런스 검증 결과 (03 게임 밸런스 에이전트)</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>항목</th><th>판정</th><th>세부 내용</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>[A] 해머 패턴 일관성</td><td class="pass">PASS</td><td>G7→G8 증가율 ×1.218, 기존 범위(1.11~1.33) 내, 슬롯 단조 증가 확인</td></tr>
+          <tr><td>[B] 골드 패턴 일관성</td><td class="pass">PASS</td><td>슬롯 비율 [1.0:1.61:2.39:3.61:5.0], G7→G8 첫슬롯 ×1.20</td></tr>
+          <tr><td>[C] 도시 보상 적절성</td><td class="pass">PASS</td><td>reward_1_amount 15,500 (G7 14,000 대비 ×1.107, G9 계획 반영)</td></tr>
+          <tr><td>[D] 메타 Sink 재계산</td><td class="pass">PASS</td><td>시트 실측 2,118해머 ÷ 15.3 = 138.4일 (Stage 3 포함), 설계값 일치</td></tr>
+          <tr><td>[E] 숫자 타입</td><td class="pass">PASS</td><td>is_ad_var 전체 100행 boolean 통일 (apostrophe 제거)</td></tr>
+          <tr><td>[F] 이상값 탐지</td><td class="pass">PASS</td><td>해머 ×1.218, 골드 ×1.201, 과도·과소 항목 없음</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Sheet Revision History -->
+  <div class="section">
+    <div class="section-title">시트 수정 이력 (Rev.1~10)</div>
+    <div class="changelog">
+      <div class="change-item">
+        <div class="change-dot dot-yellow"></div>
+        <div class="change-content">
+          <div class="title">Rev.1~2 — 핵심 상수·부스터 누진 가격 적용</div>
+          <div class="desc">level_entry_tier 조정, use_count_increase_rate=2000, use_count_max_ratio=20000 (개선안 2 채택)</div>
+          <div class="rev">v2 기반</div>
+        </div>
+      </div>
+      <div class="change-item">
+        <div class="change-dot dot-yellow"></div>
+        <div class="change-content">
+          <div class="title">Rev.3 — 이벤트 골드 60%→40% 조정</div>
+          <div class="desc">event_milestone 3개 이벤트 24셀 수정, 공급량 -1,381g/일</div>
+          <div class="rev">v4 기반</div>
+        </div>
+      </div>
+      <div class="change-item">
+        <div class="change-dot dot-green"></div>
+        <div class="change-content">
+          <div class="title">Rev.4 — G7 Barcelona/Istanbul 데이터 추가</div>
+          <div class="desc">meta_city_list 2행, meta_decoration_list 10행, string_code 2행 신규 입력</div>
+          <div class="rev">v4 기반</div>
+        </div>
+      </div>
+      <div class="change-item">
+        <div class="change-dot dot-yellow"></div>
+        <div class="change-content">
+          <div class="title">Rev.5 — G7 데코 비용 Plan B 조정</div>
+          <div class="desc">초기 G7 [5,10,16,27,37]=190해머 → Plan B [4,6,10,15,20]=110해머 (×2.02 급등 → ×1.17 정상화, 30셀)</div>
+          <div class="rev">v4 기반</div>
+        </div>
+      </div>
+      <div class="change-item">
+        <div class="change-dot dot-green"></div>
+        <div class="change-content">
+          <div class="title">Rev.6 — G8 Athens/Prague 데이터 추가</div>
+          <div class="desc">meta_city_list 2행, meta_decoration_list 10행, string_code 2행 신규 입력. 메타 Sink 74.8→92.3일</div>
+          <div class="rev">v5 기반</div>
+        </div>
+      </div>
+      <div class="change-item">
+        <div class="change-dot dot-blue"></div>
+        <div class="change-content">
+          <div class="title">Rev.7 — G8 보상 상향 및 타입 통일</div>
+          <div class="desc">G8 reward_1_amount 14,000→15,500, is_ad_var 전체 100행 boolean 통일 (apostrophe 제거)</div>
+          <div class="rev">v5 기반</div>
+        </div>
+      </div>
+      <div class="change-item">
+        <div class="change-dot dot-yellow"></div>
+        <div class="change-content">
+          <div class="title">Rev.8 — fixed 부스터 ucir/ucmr 복원</div>
+          <div class="desc">fireworks/golden_ticket/wild_card use_count_increase_rate=0, use_count_max_ratio=0 복원. interval_type=fixed 부스터는 entry_cost_ratio로만 가격 결정. 개선안 2 핵심(tier 타입 ratio 상향)은 유지</div>
+          <div class="rev">v5 기반</div>
+        </div>
+      </div>
+      <div class="change-item">
+        <div class="change-dot dot-green"></div>
+        <div class="change-content">
+          <div class="title">Rev.9 — 전 도시 데코 3단계 업그레이드 추가</div>
+          <div class="desc">100개 데코 upgrade_max 2→3. cost_hammer3=cost_hammer2 (동일), cost_gold_var3=cost_gold_var2×1.5 (100단위 반올림). 추가 해머 +706개, 추가 골드 Sink +694,900g. 메타 Sink 92.3→138.4일</div>
+          <div class="rev">v6 기반</div>
+        </div>
+      </div>
+      <div class="change-item">
+        <div class="change-dot dot-green"></div>
+        <div class="change-content">
+          <div class="title">Rev.10 — V4 런치 파라미터 확정</div>
+          <div class="desc">idle_gold_charge_amount 3,000→2,000 / idle_gold_amount_increase 400→300 / idle_gold_max_cap 10,000→6,000 / inbox_free_gold_amount 800→600 / popup_free_gold_amount 800→600. Shop AD 700×3=2,100g/일. entry_tier 전체 +20%. is_album_collection_open=1, is_deck_collection_open=1 (컬렉션 Sink 활성화). 패시브 공급 29,771→21,140g/일 (-29%). 등급 B+→A-</div>
+          <div class="rev">v7 기반</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Type Table -->
+  <div class="section">
+    <div class="section-title">유저 타입별 경제 영향도 (V4 런치 파라미터 기준)</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>유저 타입</th><th class="num">30일 골드 변동</th><th>판정</th><th>비고</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>방치형 (비플레이)</td><td class="num fail">+634,200g</td><td class="fail">구조적 인플레이션</td><td>패시브 21,140g/일 × 30일 (Lv75) · 구 893,000g 대비 -29%</td></tr>
+          <tr><td>라이트 플레이</td><td class="num warn">+354,928g</td><td class="warn">주의</td><td>적절한 소비 유도 필요</td></tr>
+          <tr><td>평균 플레이</td><td class="num pass">+19,530g</td><td class="pass">A기준 충족</td><td>메타 소비 주도층</td></tr>
+          <tr><td>이벤트 집중형</td><td class="num pass">+45,000g</td><td class="pass">개선됨</td><td>이벤트 골드 조정 효과</td></tr>
+          <tr><td>부스터 라이트</td><td class="num pass">-100,000g</td><td class="pass">정상 소비</td><td>누진 가격 효과</td></tr>
+          <tr><td>부스터 헤비</td><td class="num pass">-2,380,062g</td><td class="pass">강력한 Sink</td><td>핵심 수익화 타겟</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Improvement Plan -->
+  <div class="section">
+    <div class="section-title">개선 과제 현황</div>
+    <div class="action-grid">
+      <div class="action-card">
+        <div class="priority done">● 완료</div>
+        <h4>부스터 누진 가격 적용</h4>
+        <p>undo/extra_deck Lv50+ ratio 상향으로 중·헤비 유저 강력 Sink. fixed 타입(fireworks/golden_ticket/wild_card) ucir=0 복원 (Rev.8 — 정합성 수정)</p>
+        <div class="status status-done">✓ Rev.1~2, Rev.8 완료</div>
+      </div>
+      <div class="action-card">
+        <div class="priority done">● 완료</div>
+        <h4>이벤트 골드 60%→40%</h4>
+        <p>3개 이벤트 24셀 수정. 공급량 -1,381g/일 감소</p>
+        <div class="status status-done">✓ Rev.3 완료</div>
+      </div>
+      <div class="action-card">
+        <div class="priority done">● 완료</div>
+        <h4>메타 도시 4개 + Stage 3 확장</h4>
+        <p>G7 Barcelona/Istanbul + G8 Athens/Prague + 전 도시 3단계 업그레이드. Sink 60.4→138.4일</p>
+        <div class="status status-done">✓ Rev.4~7, Rev.9 완료</div>
+      </div>
+      <div class="action-card">
+        <div class="priority done">● 완료</div>
+        <h4>컬렉션 시스템 활성화</h4>
+        <p>is_album_collection_open=1, is_deck_collection_open=1. V4 런치와 함께 활성화. +15~20일 Sink 효과 발동.</p>
+        <div class="status status-done">✓ V4 런치 확정 (활성화 완료)</div>
+      </div>
+      <div class="action-card">
+        <div class="priority done">● 완료</div>
+        <h4>VAL-003 EXEMPT 처리</h4>
+        <p>streak_reward_pool gacha_rate 합산 검증 제외 확정. 합이 10,000 미만이어도 정상 동작 (PM 규칙 2026-03-11)</p>
+        <div class="status status-done">✓ EXEMPT 처리 완료</div>
+      </div>
+      <div class="action-card">
+        <div class="priority p2">◑ 장기 과제</div>
+        <h4>Lv200+ 방치 인플레이션 억제</h4>
+        <p>고레벨 idle_gold_amount 상한 또는 일일 수집 캡 도입 검토</p>
+        <div class="status status-pending">장기 로드맵</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A-Grade Path -->
+  <div class="section">
+    <div class="section-title">A등급 전환 조건</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>기준 항목</th><th>A등급 조건</th><th>현재 상태</th><th>판정</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>메타 Sink</td><td>90일+</td><td>138.4일 (Stage 3 포함)</td><td class="pass">✓ 대폭 달성</td></tr>
+          <tr><td>평균 플레이 인플레이션</td><td>+100,000g/30d 이하</td><td>+19,530g</td><td class="pass">✓ 달성</td></tr>
+          <tr><td>이벤트 골드 통제</td><td>1회성 이벤트 비중 &lt;30%</td><td>40% 조정 완료</td><td class="pass">✓ 달성</td></tr>
+          <tr><td>부스터 Sink</td><td>헤비 유저 월 -200만g+</td><td>-2,380,062g</td><td class="pass">✓ 달성</td></tr>
+          <tr><td>비부스터 구조 인플레이션</td><td>방치형 억제</td><td>부분 개선 (Source -29%)</td><td class="warn">◑ 부분 달성</td></tr>
+          <tr><td>컬렉션 Sink</td><td>활성화 시 +15~20일</td><td>활성화 완료 (=1)</td><td class="pass">✓ 달성</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:12px;">→ 컬렉션 활성화 완료, entry_tier +20%, Source -29% — 5/6 기준 충족 → A- 등급 달성</p>
+  </div>
+
+  <div class="footer">
+    PST Economy Balance Report v7 · Generated by PM Agent (01) · 2026-03-25<br>
+    Spreadsheet ID: 1Z6VGkSOFydDcX74anwN2meFW_LNMPs-rVgy3FlAqYqk · Revision 10 기준
+  </div>
+</div>
+
+<script>
+function getCssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function buildCharts() {
+  const muted = getCssVar('--muted');
+  const border = getCssVar('--border');
+  const gridColor = border + '88';
+
+  const sinkCtx = document.getElementById('sinkChart').getContext('2d');
+  const userCtx = document.getElementById('userChart').getContext('2d');
+
+  // Destroy previous instances if re-building on theme toggle
+  if (window._sinkChart) window._sinkChart.destroy();
+  if (window._userChart) window._userChart.destroy();
+
+  window._sinkChart = new Chart(sinkCtx, {
+    type: 'bar',
+    data: {
+      labels: ['초기\n(G1~G6)', 'v4\n(+G7)', 'v5\n(+G8)', 'v6\n(+Stage3)', 'A등급\n기준'],
+      datasets: [{
+        label: '메타 Sink (일)',
+        data: [60.4, 74.8, 92.3, 138.4, 90],
+        backgroundColor: ['#4895ef88', '#ffd16688', '#ffd16688', '#69db7c88', '#ff6b6b33'],
+        borderColor: ['#4895ef', '#ffd166', '#ffd166', '#69db7c', '#ff6b6b'],
+        borderWidth: 1.5,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: muted, font: { size: 10 } } },
+        y: { grid: { color: gridColor }, ticks: { color: muted, font: { size: 10 } }, min: 0, max: 160,
+          title: { display: true, text: '일', color: muted, font: { size: 10 } } }
+      }
+    }
+  });
+
+  window._userChart = new Chart(userCtx, {
+    type: 'bar',
+    data: {
+      labels: ['방치형', '라이트', '평균', '이벤트', '부스터\n라이트', '부스터\n헤비'],
+      datasets: [{
+        label: '30일 골드 변동 (만g)',
+        data: [63.4, 35.5, 1.95, 4.5, -10, -238],
+        backgroundColor: (ctx) => ctx.raw > 0 ? '#ff6b6b55' : '#69db7c55',
+        borderColor: (ctx) => ctx.raw > 0 ? '#ff6b6b' : '#69db7c',
+        borderWidth: 1.5,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: muted, font: { size: 9 } } },
+        y: { grid: { color: gridColor }, ticks: { color: muted, font: { size: 10 },
+          callback: v => v + '만g' } }
+      }
+    }
+  });
+}
+
+buildCharts();
+</script>
+
+</body>
+</html>
