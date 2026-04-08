@@ -862,6 +862,18 @@ function deleteCity(idx) {
 
 function getArtDone() { return artDoneCache; }
 
+const CITY_CONFIRMED_KEY = 'pst-city-confirmed';
+function getCityConfirmed() {
+  try { return JSON.parse(localStorage.getItem(CITY_CONFIRMED_KEY)) || {}; } catch { return {}; }
+}
+function toggleCityConfirmed(cityId) {
+  const map = getCityConfirmed();
+  if (map[cityId]) delete map[cityId]; else map[cityId] = true;
+  localStorage.setItem(CITY_CONFIRMED_KEY, JSON.stringify(map));
+  renderAll();
+  showToast(map[cityId] ? '✅ 도시 확정' : '⬜ 확정 취소됨', map[cityId] ? 'var(--green)' : 'var(--yellow)');
+}
+
 async function toggleArtDone(cityId) {
   const wasChecked = !!artDoneCache[cityId];
   try {
@@ -1089,7 +1101,7 @@ function renderSchedule(data) {
   // 그룹 헤더
   const gs = 'font-size:.7em;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:5px 8px 3px;border-bottom:2px solid';
   html += '<tr>';
-  html += `<th colspan="4" style="${gs} var(--border);text-align:left;color:var(--muted)">도시 정보</th>`;
+  html += `<th colspan="5" style="${gs} var(--border);text-align:left;color:var(--muted)">도시 정보</th>`;
   html += `<th colspan="1" style="${gs} var(--border);color:var(--muted)"></th>`;
   html += `<th colspan="2" style="${gs} #4A90D9;text-align:center;color:#4A90D9">Casual Light</th>`;
   html += `<th colspan="2" style="${gs} #F5A623;text-align:center;color:#F5A623">Average</th>`;
@@ -1100,6 +1112,7 @@ function renderSchedule(data) {
   // 컬럼 헤더
   html += '<tr>';
   html += '<th></th><th>#</th><th>도시</th>';
+  html += '<th title="도시 확정 여부 (체크 시 확정 완료)">확정</th>';
   html += '<th title="제작 마일스톤 (Published / Pre-Launch / Update N)">마일스톤</th>';
   html += '<th title="해당 도시 완성에 필요한 총 해머 수&#10;순서 변경 시 슬롯 기반으로 재배정됨">해머</th>';
   html += '<th title="해당 도시 해머를 채우기 위해 필요한 판수&#10;승률 80% × 가중 해머 1.20 기준" style="color:#4A90D9">CL판</th>';
@@ -1120,12 +1133,19 @@ function renderSchedule(data) {
       lastPhase = c.phase;
       if ((c.phase === 'Published' || c.phase === 'Pre-Launch') && !launchSectionShown) {
         launchSectionShown = true;
-        const pubCnt = data.filter(d => d.phase === 'Published').length;
+        const artDoneMap = getArtDone();
+        const pubCnt = data.slice(0, LAUNCH_CITIES).filter(d => d.phase === 'Published' || !!artDoneMap[d.id]).length;
         const preCnt = LAUNCH_CITIES - pubCnt;
-        html += `<tr style="background:rgba(100,255,218,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--accent)">런칭 준비 — <span style="color:var(--green)">완료 ${pubCnt}개</span> · <span style="color:var(--yellow)">제작 ${preCnt}개</span> · 납기 마감 ${fmtDate(data[LAUNCH_CITIES-1].artDate)}</td></tr>`;
+        html += `<tr style="background:rgba(100,255,218,.06)"><td colspan="14" style="text-align:left;font-weight:700;color:var(--accent)">런칭 준비 — <span style="color:var(--green)">완료 ${pubCnt}개</span> · <span style="color:var(--yellow)">제작 ${preCnt}개</span> · 납기 마감 ${fmtDate(data[LAUNCH_CITIES-1].artDate)}</td></tr>`;
       } else if (c.phase === 'Update 1') {
-        html += `<tr style="background:rgba(87,182,255,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--blue)">QA &amp; Polish · <span class="milestone-badge milestone-review">${fmtDate(REVIEW)} 리뷰서밋</span> · <span class="milestone-badge milestone-launch">${fmtDate(LAUNCH)} 런칭</span></td></tr>`;
-        html += `<tr style="background:rgba(199,125,255,.06)"><td colspan="13" style="text-align:left;font-weight:700;color:var(--purple)">Post-Launch Update (${fmtDate(LAUNCH)} ~ ${fmtDate(data[data.length-1].artDate)}) — ${TOTAL_CITIES-LAUNCH_CITIES}개 도시</td></tr>`;
+        html += `<tr style="background:rgba(87,182,255,.06)"><td colspan="14" style="text-align:left;font-weight:700;color:var(--blue)">QA &amp; Polish · <span class="milestone-badge milestone-review">${fmtDate(REVIEW)} 리뷰서밋</span> · <span class="milestone-badge milestone-launch">${fmtDate(LAUNCH)} 런칭</span></td></tr>`;
+        const postTotal = TOTAL_CITIES - LAUNCH_CITIES;
+        const postDoneMap = getArtDone();
+        const postDoneCnt = data.slice(LAUNCH_CITIES).filter(d => !!postDoneMap[d.id]).length;
+        const postRemain = postTotal - postDoneCnt;
+        const postFirst = data[LAUNCH_CITIES].artDate;
+        const postLast = data[data.length-1].artDate;
+        html += `<tr style="background:rgba(199,125,255,.06)"><td colspan="14" style="text-align:left;font-weight:700;color:var(--purple)">Post-Launch Update (${fmtDate(postFirst)} ~ ${fmtDate(postLast)}) — ${postTotal}개 도시 · <span style="color:var(--green)">완료 ${postDoneCnt}개</span> · <span style="color:var(--yellow)">제작 ${postRemain}개</span></td></tr>`;
       }
     }
 
@@ -1139,7 +1159,13 @@ function renderSchedule(data) {
       : doneTs
         ? `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="완료 취소">✅</button><div class="art-done-ts">${doneTs}</div>`
         : `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="아트 완료 체크">⬜</button>`;
-    const bufStr = `<strong>${fmtDate(c.artDate)}</strong>`;
+    const nowDate = new Date(); nowDate.setHours(0,0,0,0);
+    const artDeadline = new Date(c.artDate); artDeadline.setHours(0,0,0,0);
+    const isOverdue = !(locked && !c.pending) && artDeadline < nowDate;
+    const overdueDays = isOverdue ? Math.round((nowDate - artDeadline) / 86400000) : 0;
+    const bufStr = isOverdue
+      ? `<strong style="color:var(--red)">${fmtDate(c.artDate)}</strong><div style="font-size:.75em;color:var(--red);margin-top:1px">(D+${overdueDays})</div>`
+      : `<strong>${fmtDate(c.artDate)}</strong>`;
     const bufColor = '';
     const hcDStr = 'D' + Math.round(c.hcD);
     const avgDStr = 'D' + Math.round(c.pd['Average']);
@@ -1159,6 +1185,8 @@ function renderSchedule(data) {
     html += `<td class="drag-handle">${draggable ? '&#9776;' : '&#128274;'}</td>`;
     html += `<td>${c.n}</td>`;
     html += `<td style="text-align:left"><strong>${esc(c.name)}</strong>${draggable ? `<button class="edit-btn" onclick="event.stopPropagation();startCityRename(${i})" title="이름 변경">✎</button><button class="edit-btn" onclick="event.stopPropagation();deleteCity(${i})" title="도시 삭제" style="color:var(--red)">✕</button>` : ''}</td>`;
+    const cityConfirmed = getCityConfirmed()[c.id];
+    html += `<td style="text-align:center"><button class="art-done-btn" onclick="event.stopPropagation();toggleCityConfirmed('${c.id}')" title="${cityConfirmed ? '확정 취소' : '도시 확정'}">${cityConfirmed ? '✅' : '⬜'}</button></td>`;
     html += `<td>${statusHtml}</td>`;
     html += `<td>${c.h}</td>`;
     html += `<td style="color:#4A90D9">${c.games['Casual Light']}</td>`;
@@ -1171,7 +1199,7 @@ function renderSchedule(data) {
     html += `<td style="text-align:center">${artCheckHtml}</td></tr>`;
   });
 
-  html += `<tr class="total-row"><td colspan="3">합계</td><td>${data[data.length-1].cumH}</td>`;
+  html += `<tr class="total-row"><td colspan="4">합계</td><td>${data[data.length-1].cumH}</td>`;
   html += `<td colspan="9">런칭 ${LAUNCH_CITIES}도시 · 업데이트 ${TOTAL_CITIES-LAUNCH_CITIES}도시 (${fmtDate(data[data.length-1].artDate)} 완료) · HC 전체 소진: D${Math.round(data[data.length-1].hcD)}</td></tr>`;
   html += '</tbody></table>';
 
