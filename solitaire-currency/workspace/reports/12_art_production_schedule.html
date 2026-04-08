@@ -571,6 +571,32 @@ function renderAll() {
   updateOrderStatus();
 }
 
+function hasUnsavedOrderChanges() {
+  const cur = currentOrder.join(',');
+  if (cur === DEFAULT_ORDER.join(',')) return false;
+  return !getBookmarks().some(b => b.order.join(',') === cur);
+}
+
+let _unsavedCb = null;
+function showUnsavedModal(onSave, onLeave) {
+  _unsavedCb = { onSave, onLeave };
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `<div class="modal-overlay"><div class="modal-box">
+    <h3>⚠️ 저장하지 않은 순서 변경</h3>
+    <p>현재 도시 순서가 저장되지 않았습니다. 이동 전에 저장할까요?</p>
+    <div class="modal-actions">
+      <button onclick="_closeUnsavedModal()">취소</button>
+      <button onclick="_unsavedCb&&_unsavedCb.onLeave();_closeUnsavedModal()">저장 없이 이동</button>
+      <button class="danger" onclick="_unsavedCb&&_unsavedCb.onSave()">저장하고 이동</button>
+    </div>
+  </div></div>`;
+}
+function _closeUnsavedModal() {
+  const root = document.getElementById('modalRoot');
+  if (root) root.innerHTML = '';
+  _unsavedCb = null;
+}
+
 function updateOrderStatus() {
   const el = document.getElementById('orderStatus');
   const isDefault = currentOrder.join(',') === DEFAULT_ORDER.join(',');
@@ -1613,11 +1639,33 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // JOEY를 기본 필터로: 저장된 북마크 복원이 없으면 JOEY 북마크 자동 적용
+  if (!activeBookmarkId) {
+    const joeyBm = bookmarksCache.find(b => b.name === 'JOEY');
+    if (joeyBm) {
+      const _merged = _mergeOrder(joeyBm.order);
+      if (_merged) { currentOrder = _merged; activeBookmarkId = joeyBm.id; setActiveBookmark(joeyBm.id); }
+    }
+  }
+
   renderAll();
+
+  // ← 목록 버튼: 미저장 순서 변경 시 저장 팝업
+  document.getElementById('backBtn').addEventListener('click', e => {
+    if (!hasUnsavedOrderChanges()) return;
+    e.preventDefault();
+    showUnsavedModal(
+      () => { addBookmark(); window.location.href = 'index.html'; },
+      () => { window.location.href = 'index.html'; }
+    );
+  });
 
   // 실시간 채널 정리 (페이지 언로드 시)
   const _channels = [];
-  window.addEventListener('beforeunload', () => _channels.forEach(ch => ch.unsubscribe()));
+  window.addEventListener('beforeunload', e => {
+    _channels.forEach(ch => ch.unsubscribe());
+    if (hasUnsavedOrderChanges()) { e.preventDefault(); e.returnValue = ''; }
+  });
 
   // 실시간 협업 sync — 도시 목록 (추가·삭제·이름 변경)
   _channels.push(_sb.channel('city_config_changes')
