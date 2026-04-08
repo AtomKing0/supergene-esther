@@ -862,16 +862,44 @@ function deleteCity(idx) {
 
 function getArtDone() { return artDoneCache; }
 
-const CITY_CONFIRMED_KEY = 'pst-city-confirmed';
-function getCityConfirmed() {
-  try { return JSON.parse(localStorage.getItem(CITY_CONFIRMED_KEY)) || {}; } catch { return {}; }
+let cityConfirmedCache = {};
+
+async function loadCityConfirmed() {
+  try {
+    const { data, error } = await _sb.from('city_confirmed').select('city_id, confirmed_at');
+    if (error) throw error;
+    cityConfirmedCache = {};
+    data.forEach(r => { cityConfirmedCache[r.city_id] = r.confirmed_at; });
+  } catch (e) {
+    console.warn('city_confirmed 로드 실패, localStorage 사용', e);
+    try { cityConfirmedCache = JSON.parse(localStorage.getItem('pst-city-confirmed')) || {}; }
+    catch { cityConfirmedCache = {}; }
+  }
 }
-function toggleCityConfirmed(cityId) {
-  const map = getCityConfirmed();
-  if (map[cityId]) delete map[cityId]; else map[cityId] = true;
-  localStorage.setItem(CITY_CONFIRMED_KEY, JSON.stringify(map));
-  renderAll();
-  showToast(map[cityId] ? '✅ 도시 확정' : '⬜ 확정 취소됨', map[cityId] ? 'var(--green)' : 'var(--yellow)');
+
+function getCityConfirmed() { return cityConfirmedCache; }
+
+async function toggleCityConfirmed(cityId) {
+  const wasChecked = !!cityConfirmedCache[cityId];
+  try {
+    if (wasChecked) {
+      const { error } = await _sb.from('city_confirmed').delete().eq('city_id', cityId);
+      if (error) throw error;
+      delete cityConfirmedCache[cityId];
+    } else {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const ts = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      const { error } = await _sb.from('city_confirmed').upsert({ city_id: cityId, confirmed_at: ts });
+      if (error) throw error;
+      cityConfirmedCache[cityId] = ts;
+    }
+    renderAll();
+    showToast(!wasChecked ? '✅ 도시 확정' : '⬜ 확정 취소됨', !wasChecked ? 'var(--green)' : 'var(--yellow)');
+  } catch (e) {
+    console.error('city_confirmed 저장 실패', e);
+    showToast('⚠️ 저장 실패: ' + e.message, 'var(--red)');
+  }
 }
 
 async function toggleArtDone(cityId) {
@@ -1570,7 +1598,7 @@ async function saveCityOrder() {
 window.addEventListener('DOMContentLoaded', async () => {
   // city_config 먼저 로드 (CITIES_BASE 확정) → 이후 order/art_done 병렬 로드
   await loadCityConfig();
-  await Promise.all([loadArtDone(), loadCityOrder(), loadBookmarks()]);
+  await Promise.all([loadArtDone(), loadCityConfirmed(), loadCityOrder(), loadBookmarks()]);
 
   // 개인 북마크 복원: Supabase 로드 완료 후 last-active 북마크 적용
   const _rememberedBmId = localStorage.getItem(ACTIVE_BM_KEY);
@@ -1612,6 +1640,18 @@ window.addEventListener('DOMContentLoaded', async () => {
       } else {
         const r = payload.new;
         artDoneCache[r.city_id] = r.done_by ? `${r.done_at} (${r.done_by})` : r.done_at;
+      }
+      renderAll();
+    })
+    .subscribe());
+
+  // 실시간 협업 sync — 도시 확정 체크
+  _channels.push(_sb.channel('city_confirmed_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'city_confirmed' }, payload => {
+      if (payload.eventType === 'DELETE') {
+        delete cityConfirmedCache[payload.old.city_id];
+      } else {
+        cityConfirmedCache[payload.new.city_id] = payload.new.confirmed_at;
       }
       renderAll();
     })
