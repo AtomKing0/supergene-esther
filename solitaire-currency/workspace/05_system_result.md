@@ -539,15 +539,33 @@ data_sources:
 
 ### 주요 상수 (출처 비교)
 
-| const_name              | key   | 로컬 스냅샷 값     | 라이브 확정값 (PM 승인)      |
+| const_name              | key   | 이전값             | 현재 상태                     |
 |-------------------------|-------|-------------------|------------------------------|
-| inbox_free_gold_limit   | 10057 | 5회/일            | 5회/일                       |
-| inbox_free_gold_amount  | 10058 | 2,000g [스냅샷 구버전] | **800g [가설, PM 승인]**  |
-| popup_free_gold_limit   | 10063 | 10회/일           | 10회/일                      |
-| popup_free_gold_amount  | 10064 | 2,000g [스냅샷 구버전] | **800g [가설, PM 승인]**  |
-| daily_wheel_ad_limit    | 10027 | 5회/일            | 5회/일                       |
+| inbox_free_gold_limit   | 10057 | 5회/일            | 5회/일 (유지)                |
+| inbox_free_gold_amount  | 10058 | 2,000g → 600g     | ⚠️ **deprecated** — rv_gold_ratio로 대체 |
+| popup_free_gold_limit   | 10063 | 10회/일           | 10회/일 (유지)               |
+| popup_free_gold_amount  | 10064 | 2,000g → 600g     | ⚠️ **deprecated** — rv_gold_ratio로 대체 |
+| daily_wheel_ad_limit    | 10027 | 5회/일            | 5회/일 (유지)                |
+| lobby_free_gold_limit   | 10076 | —                 | **3회/일 [신규, 2026-04-06]** |
 
-> **주의**: inbox/popup free_gold_amount 값은 라이브 시트에 "가설" 주석 달린 PM 승인 수정값(800g). 로컬 스냅샷(2,000g)은 구버전.
+> **핵심 변경**: inbox / popup / lobby RV 1회 지급량이 const 고정값에서 **level_entry_tier.rv_gold_ratio 기반 동적 계산**으로 전환.
+> ```
+> rv_gold_per_watch = level_entry_tier.entry_cost × level_entry_tier.rv_gold_ratio / 10000
+> ```
+>
+> | 티어 | 레벨 범위 | entry_cost | rv_gold_ratio | rv_gold/회 |
+> |------|----------|-----------|--------------|-----------|
+> | 220002 | Lv3~9   | 1,200g | 6500 (65%) | 780g   |
+> | 220003 | Lv10~24 | 1,800g | 5500 (55%) | 990g   |
+> | 220004 | Lv25~49 | 2,100g | 5000 (50%) | 1,050g |
+> | **220005** | **Lv50~99** | **2,400g** | **4800 (48%)** | **1,152g** |
+> | 220006 | Lv100~199 | 2,600g | 4500 (45%) | 1,170g |
+> | 220007 | Lv200~349 | 3,000g | 4200 (42%) | 1,260g |
+> | 220008 | Lv350~549 | 3,400g | 4000 (40%) | 1,360g |
+> | 220009 | Lv550~799 | 4,000g | 3800 (38%) | 1,520g |
+> | 220010 | Lv800~1099 | 4,600g | 3500 (35%) | 1,610g |
+> | 220011 | Lv1100~1449 | 5,400g | 3200 (32%) | 1,728g |
+> | 220012 | Lv1450+ | 6,000g | 3000 (30%) | 1,800g |
 
 ### 계산 공식 블록
 
@@ -557,18 +575,19 @@ data_sources:
 [Inbox RV 광고 보상]
 
 공식:
-  inbox_daily_max = inbox_free_gold_limit × inbox_free_gold_amount
-                  = 5 × 800 = 4,000g/일
+  rv_gold_per_watch = level_entry_tier.entry_cost × level_entry_tier.rv_gold_ratio / 10000
+  inbox_daily_max   = inbox_free_gold_limit × rv_gold_per_watch
 
 리셋: UTC 00:00 일일 리셋
 
 변수 정의:
-  - inbox_free_gold_limit  : const[10057] = 5회/일
-  - inbox_free_gold_amount : 800g [가설, PM 승인]
+  - inbox_free_gold_limit : const[10057] = 5회/일
+  - rv_gold_per_watch     : level_entry_tier.rv_gold_ratio 기반 (레벨 티어마다 상이)
+  - inbox_free_gold_amount (10058): deprecated — rv_gold_ratio로 대체
 
-예시:
-  1회 시청 → 800g 지급
-  일 5회 시청 → 4,000g/일
+예시 (Lv75, 티어 220005):
+  rv_gold_per_watch = 2,400 × 4800 / 10000 = 1,152g
+  일 5회 시청 → 5 × 1,152 = 5,760g/일
 ```
 
 #### 5-B. 팝업(Popup) RV 광고
@@ -577,18 +596,19 @@ data_sources:
 [Popup RV 광고 보상]
 
 공식:
-  popup_daily_max = popup_free_gold_limit × popup_free_gold_amount
-                  = 10 × 800 = 8,000g/일
+  rv_gold_per_watch = level_entry_tier.entry_cost × level_entry_tier.rv_gold_ratio / 10000
+  popup_daily_max   = popup_free_gold_limit × rv_gold_per_watch
 
 리셋: UTC 00:00 일일 리셋
 
 변수 정의:
-  - popup_free_gold_limit  : const[10063] = 10회/일
-  - popup_free_gold_amount : 800g [가설, PM 승인]
+  - popup_free_gold_limit : const[10063] = 10회/일
+  - rv_gold_per_watch     : level_entry_tier.rv_gold_ratio 기반 (레벨 티어마다 상이)
+  - popup_free_gold_amount (10064): deprecated — rv_gold_ratio로 대체
 
-예시:
-  1회 시청 → 800g 지급
-  일 10회 시청 → 8,000g/일
+예시 (Lv75, 티어 220005):
+  rv_gold_per_watch = 2,400 × 4800 / 10000 = 1,152g
+  일 10회 시청 → 10 × 1,152 = 11,520g/일
 ```
 
 #### 5-C. 데일리 휠 (Daily Wheel) 광고
@@ -630,40 +650,70 @@ data_sources:
 | 140008 | currency_ticket     | 3개  | 100          | 1.0%    | —       |
 | **합계** |                   |      | **10,000**   | **100%**| **720g/회** |
 
-### 일일 패시브 광고 골드 공급량 요약 (Lv75 기준)
+#### 5-D. 로비(Lobby) RV 광고
 
-| 소스           | 1회 | 횟수/일  | 일 공급량    |
-|----------------|-----|---------|-------------|
-| Inbox RV       | 800g| 5회     | 4,000g      |
-| Popup RV       | 800g| 10회    | 8,000g      |
-| Daily Wheel EV | 720g| 5회     | 3,600g      |
-| **합계**       |     |         | **15,600g** |
+```
+[Lobby RV 광고 보상]
+
+공식:
+  rv_gold_per_watch = level_entry_tier.entry_cost × level_entry_tier.rv_gold_ratio / 10000
+  lobby_daily_max   = lobby_free_gold_limit × rv_gold_per_watch
+
+리셋: UTC 00:00 일일 리셋
+
+변수 정의:
+  - lobby_free_gold_limit : const[10076] = 3회/일 [신규, 2026-04-06]
+  - rv_gold_per_watch     : level_entry_tier.rv_gold_ratio 기반 (inbox/popup과 동일 공식)
+
+예시 (Lv75, 티어 220005):
+  rv_gold_per_watch = 2,400 × 4800 / 10000 = 1,152g
+  일 3회 시청 → 3 × 1,152 = 3,456g/일
+```
+
+### 일일 패시브 광고 골드 공급량 요약 (Lv75 기준, rv_gold_ratio 적용)
+
+| 소스           | rv_gold/회  | 횟수/일 | 일 공급량       |
+|----------------|------------|---------|----------------|
+| Inbox RV       | 1,152g     | 5회     | 5,760g         |
+| Popup RV       | 1,152g     | 10회    | 11,520g        |
+| Lobby RV       | 1,152g     | 3회     | 3,456g         |
+| Daily Wheel EV | 720g (EV)  | 5회     | 3,600g         |
+| **RV 합계**    |            |         | **20,736g**    |
+| **전체 합계**  |            |         | **24,336g**    |
+
+> Lv75 기준: entry_cost=2,400g, rv_gold_ratio=4800(48%), rv_gold_per_watch=1,152g.
+> 모든 RV 채널(inbox/popup/lobby) 동일한 rv_gold_ratio 적용.
 
 ### 상태 전이표 (광고 보상)
 
-| 현재 상태          | 전이 조건                                   | 다음 상태            | 조건 출처                          |
-|--------------------|---------------------------------------------|----------------------|------------------------------------|
-| 우편함 광고 대기   | RV 광고 시청 완료                           | inbox 보상 지급      | inbox_free_gold_limit(5회)         |
-| 우편함 광고 대기   | 일일 횟수 >= inbox_free_gold_limit          | 광고 버튼 비활성화   | UTC0 리셋까지                      |
-| 팝업 광고 대기     | RV 광고 시청 완료                           | popup 보상 지급      | popup_free_gold_limit(10회)        |
-| 팝업 광고 대기     | 일일 횟수 >= popup_free_gold_limit          | 광고 버튼 비활성화   | UTC0 리셋까지                      |
-| 데일리 휠 대기     | 광고 시청 + 휠 돌리기                       | 가챠 결과 지급       | daily_wheel 풀 + gacha_rate        |
-| 데일리 휠 대기     | 일일 횟수 >= daily_wheel_ad_limit(5회)     | 휠 비활성화          | UTC0 리셋까지                      |
-| 임의 상태          | UTC 00:00 도달                              | 모든 광고 카운터 리셋 | UTC0 일일 리셋                    |
+| 현재 상태          | 전이 조건                                   | 다음 상태                              | 조건 출처                          |
+|--------------------|---------------------------------------------|----------------------------------------|------------------------------------|
+| 우편함 광고 대기   | RV 광고 시청 완료                           | inbox 보상 지급 (entry_cost×rv_gold_ratio/10000) | inbox_free_gold_limit(5회)  |
+| 우편함 광고 대기   | 일일 횟수 >= inbox_free_gold_limit          | 광고 버튼 비활성화                     | UTC0 리셋까지                      |
+| 팝업 광고 대기     | RV 광고 시청 완료                           | popup 보상 지급 (entry_cost×rv_gold_ratio/10000) | popup_free_gold_limit(10회) |
+| 팝업 광고 대기     | 일일 횟수 >= popup_free_gold_limit          | 광고 버튼 비활성화                     | UTC0 리셋까지                      |
+| 로비 광고 대기     | RV 광고 시청 완료                           | lobby 보상 지급 (entry_cost×rv_gold_ratio/10000) | lobby_free_gold_limit(3회)  |
+| 로비 광고 대기     | 일일 횟수 >= lobby_free_gold_limit          | 광고 버튼 비활성화                     | UTC0 리셋까지                      |
+| 데일리 휠 대기     | 광고 시청 + 휠 돌리기                       | 가챠 결과 지급                         | daily_wheel 풀 + gacha_rate        |
+| 데일리 휠 대기     | 일일 횟수 >= daily_wheel_ad_limit(5회)     | 휠 비활성화                            | UTC0 리셋까지                      |
+| 임의 상태          | UTC 00:00 도달                              | 모든 광고 카운터 리셋                  | UTC0 일일 리셋                     |
 
 ### 데이터 흐름도
 
 ```
 [클라이언트]
-    │ 요청: { ad_type(inbox/popup/daily_wheel), ad_watch_complete=true }
+    │ 요청: { ad_type(inbox/popup/daily_wheel/lobby), ad_watch_complete=true, current_level }
     ▼
 [서버 로직]
-    │ 1. 일일 카운터 확인 (UTC0 기준)
-    ├─ inbox:       daily_count < 5  → gold += 800
-    ├─ popup:       daily_count < 10 → gold += 800
+    │ 1. current_level → level_entry_tier 조회 → entry_cost, rv_gold_ratio 획득
+    │    rv_gold = entry_cost × rv_gold_ratio / 10000
+    │ 2. 일일 카운터 확인 (UTC0 기준)
+    ├─ inbox:       daily_count < 5  → gold += rv_gold
+    ├─ popup:       daily_count < 10 → gold += rv_gold
+    ├─ lobby:       daily_count < 3  → gold += rv_gold
     ├─ daily_wheel: daily_count < 5  → gacha(daily_wheel 풀) → 보상 지급
     └─ 초과 시      → 오류 응답 (DAILY_LIMIT_EXCEEDED)
-    │ 2. daily_count[ad_type] += 1
+    │ 3. daily_count[ad_type] += 1
     │ 응답: { reward_item, reward_amount, gold_remaining, daily_count_remaining }
     ▼
 [클라이언트 반영]

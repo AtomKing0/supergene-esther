@@ -1776,3 +1776,61 @@ meta_city_list, meta_decoration_list — 양 시트(에이전트 + 라이브)
 - meta_decoration_list Row41 Col6: `ㅡㄷㅅ` → `11` (라이브 시트 타이핑 오류)
 
 ---
+
+## 2026-04-06 — lobby_free_gold_limit 신규 추가 + RV 지급량 rv_gold_ratio 전환
+
+**Spreadsheet:** `1oLbpsJjiDz0pdljaGBQznrSZcXA7aypFyJihnQ8_iiM` (라이브 시트)
+**시트명:** `const`, `level_entry_tier`
+
+### 변경 내역
+
+| Parameter | Original Data | Updated Data | 사유 |
+|-----------|---------------|--------------|------|
+| `lobby_free_gold_limit` (key 10076) | — (미존재) | **3** | 로비 RV 무료 골드 채널 신규 추가. 일 3회, UTC0 리셋. |
+| `inbox_free_gold_amount` (key 10058) | 800 | **deprecated** | RV 지급량 전체를 rv_gold_ratio 기반으로 전환 |
+| `popup_free_gold_amount` (key 10064) | 800 | **deprecated** | 동상 |
+
+### RV 지급량 계산 방식 전환
+
+모든 RV 채널(inbox / popup / lobby)의 1회 지급 골드가 **const 고정값에서 `level_entry_tier.rv_gold_ratio` 기반 동적 계산으로 대체**됨.
+
+```
+rv_gold_per_watch = level_entry_tier.entry_cost × level_entry_tier.rv_gold_ratio / 10000
+```
+
+**level_entry_tier rv_gold_ratio 전체 (라이브 확정):**
+
+| key | 레벨 범위 | entry_cost | rv_gold_ratio | rv_gold/회 |
+|-----|----------|-----------|--------------|-----------|
+| 220002 | Lv3~9   | 1,200g | 6500 (65%) | 780g   |
+| 220003 | Lv10~24 | 1,800g | 5500 (55%) | 990g   |
+| 220004 | Lv25~49 | 2,100g | 5000 (50%) | 1,050g |
+| 220005 | Lv50~99 | 2,400g | 4800 (48%) | 1,152g |
+| 220006 | Lv100~199 | 2,600g | 4500 (45%) | 1,170g |
+| 220007 | Lv200~349 | 3,000g | 4200 (42%) | 1,260g |
+| 220008 | Lv350~549 | 3,400g | 4000 (40%) | 1,360g |
+| 220009 | Lv550~799 | 4,000g | 3800 (38%) | 1,520g |
+| 220010 | Lv800~1099 | 4,600g | 3500 (35%) | 1,610g |
+| 220011 | Lv1100~1449 | 5,400g | 3200 (32%) | 1,728g |
+| 220012 | Lv1450+ | 6,000g | 3000 (30%) | 1,800g |
+
+### 경제 영향 요약 (Lv75 기준)
+
+| 항목 | 이전 | 변경 후 |
+|------|------|---------|
+| RV 1회 지급량 | 800g (고정) | **1,152g** (Lv75 rv_gold_ratio 기반) |
+| 일일 inbox RV 최대 | 4,000 (5×800) | **5,760** (5×1,152) |
+| 일일 popup RV 최대 | 8,000 (10×800) | **11,520** (10×1,152) |
+| 일일 lobby RV 최대 | — | **3,456** (3×1,152) |
+| 광고 채널 수 | 4채널 | **5채널** (+lobby) |
+| 일일 RV 합산 (Lv75) | 12,000 | **20,736** (+73%) |
+
+### 문서 업데이트 현황
+
+| 문서 | 업데이트 항목 | 완료 |
+|------|-------------|------|
+| `workspace/02_economic_result.md` | Source/Sink 5채널, const 테이블(deprecated), pst_free_currency_source, rv_gold_ratio 티어표, VAL-007 | ✅ |
+| `workspace/05_system_result.md` | 주요 상수 표, rv_gold_ratio 티어표, 5-A/5-B/5-D 공식 전면 교체, 요약 테이블, 상태 전이표, 데이터 흐름도 | ✅ |
+| `workspace/07_sheet_modify_log.md` | 본 로그 항목 | ✅ |
+
+---
