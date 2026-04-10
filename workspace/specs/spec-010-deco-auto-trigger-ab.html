@@ -6,6 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<meta name="spec-created" content="2026. 4. 6.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SPEC-010 · [AB-메타] 꾸미기 자동 진입 A/B</title>
 <style>
@@ -170,7 +171,7 @@ code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(
       <div class="flow-steps">
         <div class="flow-step"><div class="step-num">1</div><div class="step-body"><strong>레벨 클리어</strong> — 결과 화면 표시</div></div>
         <div class="flow-step"><div class="step-num">2</div><div class="step-body"><strong>재화 충족 감지</strong> — 서버에서 다음 구매 가능 아이템 체크. 충족 시 플래그 세팅</div></div>
-        <div class="flow-step"><div class="step-num">3</div><div class="step-body"><strong>자동 전환</strong> — 로비로 복귀하는 대신 꾸미기 화면으로 전환. 짧고 부드러운 전환 연출</div></div>
+        <div class="flow-step"><div class="step-num">3</div><div class="step-body"><strong>자동 진입</strong> — 로비로 복귀하는 대신 꾸미기 화면으로 진입. 짧고 부드러운 전환 연출</div></div>
         <div class="flow-step"><div class="step-num">4</div><div class="step-body"><strong>꾸미기 진행</strong> — 구매 가능한 아이템 하이라이트 표시. 유저가 자유롭게 구매 또는 스킵</div></div>
         <div class="flow-step"><div class="step-num">5</div><div class="step-body"><strong>로비 복귀</strong> — 꾸미기 완료 또는 "나중에" 버튼 → 로비로 돌아옴</div></div>
       </div>
@@ -221,7 +222,7 @@ code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(
         <!-- 화살표 -->
         <line x1="202" y1="140" x2="248" y2="140" style="stroke:var(--accent)" stroke-width="2"/>
         <polygon points="248,140 240,135 240,145" style="fill:var(--accent)"/>
-        <text x="225" y="130" text-anchor="middle" style="fill:var(--accent);font-size:9px">자동 전환</text>
+        <text x="225" y="130" text-anchor="middle" style="fill:var(--accent);font-size:9px">자동 진입</text>
 
         <!-- 꾸미기 화면 -->
         <rect x="250" y="20" width="210" height="240" rx="10" style="fill:var(--surface3);stroke:var(--accent-border)" stroke-width="1.5"/>
@@ -293,11 +294,9 @@ code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(
     <div class="card">
       <div class="card-title">트리거 &amp; 분기 조건</div>
       <ul>
-        <li><span class="hl">A/B 그룹 배정:</span> 유저 ID 기반 해시로 50:50 분기 (서버 결정)</li>
-        <li><span class="hl">B안 발동 조건:</span> <code>ab_deco_auto_trigger_variant == 1</code> AND 현재 보유 골드 ≥ 다음 데코 아이템 가격</li>
-        <li><span class="hl">발동 시점:</span> 레벨 클리어 결과 화면에서 로비 복귀 직전</li>
+        <li><span class="hl">B안 진입 조건:</span> <code>ab_deco_auto_trigger_variant == 1</code> (유저 ID 기반 해시 50:50 서버 배정) AND 현재 보유 골드 ≥ 다음 데코 아이템 가격. 단, 모든 데코 완료 유저·튜토리얼 미완료 유저는 제외</li>
+        <li><span class="hl">진입 시점:</span> 레벨 클리어 결과 화면에서 로비 복귀 직전</li>
         <li><span class="hl">쿨다운:</span> 자동 진입 후 <code>ab_deco_auto_cooldown_count</code> 판 동안 재발동 억제 (도배 방지)</li>
-        <li><span class="hl">억제 조건:</span> 이미 모든 데코 아이템 구매 완료 유저 / 튜토리얼 미완료 유저</li>
       </ul>
     </div>
 
@@ -322,5 +321,6 @@ code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(
   </section>
 </main>
 <script src="memo.js"></script>
+<script src="changelog.js"></script>
 </body>
 </html>
