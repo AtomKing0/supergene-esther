@@ -1776,3 +1776,207 @@ meta_city_list, meta_decoration_list — 양 시트(에이전트 + 라이브)
 - meta_decoration_list Row41 Col6: `ㅡㄷㅅ` → `11` (라이브 시트 타이핑 오류)
 
 ---
+
+## 2026-04-06 — lobby_free_gold_limit 신규 추가 + RV 지급량 rv_gold_ratio 전환
+
+**Spreadsheet:** `1oLbpsJjiDz0pdljaGBQznrSZcXA7aypFyJihnQ8_iiM` (라이브 시트)
+**시트명:** `const`, `level_entry_tier`
+
+### 변경 내역
+
+| Parameter | Original Data | Updated Data | 사유 |
+|-----------|---------------|--------------|------|
+| `lobby_free_gold_limit` (key 10076) | — (미존재) | **3** | 로비 RV 무료 골드 채널 신규 추가. 일 3회, UTC0 리셋. |
+| `inbox_free_gold_amount` (key 10058) | 800 | **deprecated** | RV 지급량 전체를 rv_gold_ratio 기반으로 전환 |
+| `popup_free_gold_amount` (key 10064) | 800 | **deprecated** | 동상 |
+
+### RV 지급량 계산 방식 전환
+
+모든 RV 채널(inbox / popup / lobby)의 1회 지급 골드가 **const 고정값에서 `level_entry_tier.rv_gold_ratio` 기반 동적 계산으로 대체**됨.
+
+```
+rv_gold_per_watch = level_entry_tier.entry_cost × level_entry_tier.rv_gold_ratio / 10000
+```
+
+**level_entry_tier rv_gold_ratio 전체 (라이브 확정):**
+
+| key | 레벨 범위 | entry_cost | rv_gold_ratio | rv_gold/회 |
+|-----|----------|-----------|--------------|-----------|
+| 220002 | Lv3~9   | 1,200g | 6500 (65%) | 780g   |
+| 220003 | Lv10~24 | 1,800g | 5500 (55%) | 990g   |
+| 220004 | Lv25~49 | 2,100g | 5000 (50%) | 1,050g |
+| 220005 | Lv50~99 | 2,400g | 4800 (48%) | 1,152g |
+| 220006 | Lv100~199 | 2,600g | 4500 (45%) | 1,170g |
+| 220007 | Lv200~349 | 3,000g | 4200 (42%) | 1,260g |
+| 220008 | Lv350~549 | 3,400g | 4000 (40%) | 1,360g |
+| 220009 | Lv550~799 | 4,000g | 3800 (38%) | 1,520g |
+| 220010 | Lv800~1099 | 4,600g | 3500 (35%) | 1,610g |
+| 220011 | Lv1100~1449 | 5,400g | 3200 (32%) | 1,728g |
+| 220012 | Lv1450+ | 6,000g | 3000 (30%) | 1,800g |
+
+### 경제 영향 요약 (Lv75 기준)
+
+| 항목 | 이전 | 변경 후 |
+|------|------|---------|
+| RV 1회 지급량 | 800g (고정) | **1,152g** (Lv75 rv_gold_ratio 기반) |
+| 일일 inbox RV 최대 | 4,000 (5×800) | **5,760** (5×1,152) |
+| 일일 popup RV 최대 | 8,000 (10×800) | **11,520** (10×1,152) |
+| 일일 lobby RV 최대 | — | **3,456** (3×1,152) |
+| 광고 채널 수 | 4채널 | **5채널** (+lobby) |
+| 일일 RV 합산 (Lv75) | 12,000 | **20,736** (+73%) |
+
+### 문서 업데이트 현황
+
+| 문서 | 업데이트 항목 | 완료 |
+|------|-------------|------|
+| `workspace/02_economic_result.md` | Source/Sink 5채널, const 테이블(deprecated), pst_free_currency_source, rv_gold_ratio 티어표, VAL-007 | ✅ |
+| `workspace/05_system_result.md` | 주요 상수 표, rv_gold_ratio 티어표, 5-A/5-B/5-D 공식 전면 교체, 요약 테이블, 상태 전이표, 데이터 흐름도 | ✅ |
+| `workspace/07_sheet_modify_log.md` | 본 로그 항목 | ✅ |
+
+---
+
+---
+
+## T_CITY_LIST_TITLE 수정 (2026-04-09)
+
+### 대상 시트
+- 스프레드시트 ID: `1Z6VGkSOFydDcX74anwN2meFW_LNMPs-rVgy3FlAqYqk`
+- 시트명: `string_code`
+- 시트 링크: https://docs.google.com/spreadsheets/d/1Z6VGkSOFydDcX74anwN2meFW_LNMPs-rVgy3FlAqYqk/edit#gid=3322884
+
+### 수정 내역
+
+| 셀 | 언어 | 원본 | 수정값 |
+|----|------|------|--------|
+| B34 | en | Cities Collection | City Journey |
+| C34 | ar | مجموعة المدن | رحلة المدن |
+| D34 | es | Colección de ciudades | Viaje por las ciudades |
+| E34 | pt | Coleção de Cidades | Jornada pelas Cidades |
+| F34 | id | Koleksi Kota | Perjalanan Kota |
+| G34 | ru | Коллекция городов | Городское путешествие |
+| H34 | fr | Collection de villes | Voyage en Ville |
+| I34 | th | คอลเลกชันเมือง | การเดินทางสู่เมือง |
+| J34 | kr | 도시 컬렉션 | 도시 여정 |
+
+### 백업
+- 위치: `string_code!Q34:S43`
+- 구조: `Parameter | Original | Updated` (3열, 30 cells)
+
+### 하이라이트
+- 수정된 셀: `B34:J34` (9 cells)
+- 색상: 하늘색 `{red: 0.68, green: 0.85, blue: 0.90}`
+
+### 작업 결과
+- 백업 완료: Q34:S43 (30 cells)
+- 값 업데이트 완료: B34:J34 (9 cells)
+- 하이라이트 적용 완료
+- 검증 완료 (시트 재조회로 모든 값 일치 확인)
+
+---
+
+---
+agent: 07_sheet_modifier
+mode: sheet-modify
+scope: event_ranking
+executed: 2026-04-10T00:00:00+09:00
+status: complete
+approved_by: pm
+items_modified: 29
+items_skipped: 0
+---
+
+# 시트 수정 완료 보고 — event_ranking 보상 다양화
+
+## 수정 대상 시트
+
+**Spreadsheet:** `1Z6VGkSOFydDcX74anwN2meFW_LNMPs-rVgy3FlAqYqk`
+**시트명:** `event_ranking` (gid=1910606750)
+
+---
+
+## 작업 목적
+
+event_ranking 시트의 보상을 순위별 티어에 맞게 다양화하고, 하위 순위 구간(B/C/D) 행 4개 신규 추가.
+
+---
+
+## 수정 전 → 후 비교표
+
+| key | rank | 수정 전 보상 구성 | 수정 후 보상 구성 | 티어 |
+|---|---|---|---|---|
+| 170001 | 1 | golden_ticket×3 + gold×8000 + ticket×3 | golden_ticket×5 + gold×10000 + extra_deck×2 | S |
+| 170002 | 2→2~3 | golden_ticket×2 + gold×4000 + ticket×2 | golden_ticket×2 + wild_card×2 + gold×5000 | A+ |
+| 170003 | 3→4~5 | golden_ticket×1 + gold×2000 + extra_deck×1 | extra_deck×2 + gold×3000 + wild_card×1 | A+ |
+| 170004 | 4~6→6~10 | gold×1500 + fireworks×1 | wild_card×1 + gold×2000 + undo×2 | A |
+| 170005 | 7~10→11~20 | gold×1000 | undo×3 + gold×1500 | B |
+| 170006 (신규) | 21~30 | — | fireworks×2 + gold×1000 | B |
+| 170007 (신규) | 31~50 | — | gold×800 + fireworks×1 | C |
+| 170008 (신규) | 51~100 | — | gold×500 + booster_ticket×1 | C |
+| 170009 (신규) | 101~999 | — | gold×200 | D |
+
+---
+
+## 변경 셀 목록 (총 29셀 수정 + 4행 신규)
+
+### 기존 행 수정 (29 셀)
+- 170001: reward_amount_1 (3→5), reward_amount_2 (8000→10000), reward_item_key_3 (currency_ticket→booster_extra_deck), reward_amount_3 (3→2)
+- 170002: rank_end (2→3), reward_item_key_2 (currency_gold→booster_wild_card), reward_amount_2 (4000→2), reward_item_key_3 (currency_ticket→currency_gold), reward_amount_3 (2→5000)
+- 170003: rank_start (3→4), rank_end (3→5), reward_item_key_1 (booster_golden_ticket→booster_extra_deck), reward_amount_1 (1→2), reward_amount_2 (2000→3000), reward_item_key_3 (booster_extra_deck→booster_wild_card)
+- 170004: rank_start (4→6), rank_end (6→10), reward_item_key_1 (currency_gold→booster_wild_card), reward_amount_1 (1500→1), reward_item_key_2 (booster_fireworks→currency_gold), reward_amount_2 (1→2000), reward_item_key_3 (none→booster_undo), reward_amount_3 (0→2)
+- 170005: rank_start (7→11), rank_end (10→20), reward_item_key_1 (currency_gold→booster_undo), reward_amount_1 (1000→3), reward_item_key_2 (none→currency_gold), reward_amount_2 (0→1500)
+
+### 신규 행 추가 (4행)
+- 170006: rank 21~30, fireworks×2 + gold×1000
+- 170007: rank 31~50, gold×800 + fireworks×1
+- 170008: rank 51~100, gold×500 + booster_ticket×1
+- 170009: rank 101~999, gold×200
+
+---
+
+## 백업
+
+- 위치: 에이전트 시트 event_ranking 탭, 열 K(빈칸) + L(Parameter) + M(Original) + N(Updated)
+- 행: 1~31 (헤더 2행 + 데이터 29행)
+- 모든 값 숫자형(numberValue) 또는 문자열형(stringValue) 저장 확인
+
+---
+
+## 하이라이트
+
+- 보상 타입 변경 셀(reward_item_key_*): 하늘색 `{"red": 0.68, "green": 0.85, "blue": 0.90}`
+- 보상 수량/순위 변경 셀 및 신규 행: 연두색 `{"red": 0.85, "green": 0.93, "blue": 0.83}`
+- 총 33개 범위에 하이라이트 적용 완료
+
+---
+
+## Step 5 검증 결과
+
+### 순위 내림차순 보상 가치 단조 감소 확인
+
+| rank | 주요 보상 | 가치 방향 |
+|---|---|---|
+| 1 | golden_ticket×5 + gold×10000 + extra_deck×2 | 최고 ✅ |
+| 2~3 | golden_ticket×2 + wild_card×2 + gold×5000 | ↓ ✅ |
+| 4~5 | extra_deck×2 + gold×3000 + wild_card×1 | ↓ ✅ |
+| 6~10 | wild_card×1 + gold×2000 + undo×2 | ↓ ✅ |
+| 11~20 | undo×3 + gold×1500 | ↓ ✅ |
+| 21~30 | fireworks×2 + gold×1000 | ↓ ✅ |
+| 31~50 | gold×800 + fireworks×1 | ↓ ✅ |
+| 51~100 | gold×500 + booster_ticket×1 | ↓ ✅ |
+| 101~999 | gold×200 | 최소 ✅ |
+
+단조 감소 확인: ✅ 모든 구간에서 역전 없음
+
+### 보상 다양성 확인
+
+사용된 보상 타입: golden_ticket, extra_deck, wild_card, undo, fireworks, booster_ticket, currency_gold — **7종** ✅
+(기존: golden_ticket, extra_deck, fireworks, currency_gold, currency_ticket — 5종, 하위 구간 단조로움)
+
+### 수정 완료 확인
+
+- 수정 셀 수: 29셀 (기존 행) + 4행×10열 신규 = 총 69셀 적용
+- 백업 기록: ✅ L~N열, 31행
+- 하이라이트 적용: ✅ 33 ranges
+- 숫자형 저장: ✅ numberValue int 사용
+- apostrophe 없음: ✅
+

@@ -14,6 +14,7 @@ FILES=(
   "11_city_decoration_reform.html"
   "balance_sheet_guide.html"
   "economy_report_final.html"
+  "economy_competitive_report.html"
   "reward_system_report.html"
   "12_art_production_schedule.html"
 )

@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>경제 시스템 경쟁사 분석 — Solitaire City Journey (PST)</title>
+<style>
+  :root {
+    --bg:     #0f1117;
+    --bg2:    #1a1d27;
+    --bg3:    #222638;
+    --border: #2e3350;
+    --text:   #e8eaf0;
+    --text2:  #9ca3b0;
+    --pst:    #5b8ef0;   /* 우리 게임(PST) — 파랑 */
+    --ccs:    #3ecf8e;   /* Candy Crush Solitaire — 초록 */
+    --sgh:    #f5c842;   /* Solitaire Grand Harvest — 노랑 */
+    --ss:     #f06b6b;   /* Solitaire Story(SOFTGAMES) — 빨강 */
+    --green:  #3ecf8e;
+    --yellow: #f5c842;
+    --red:    #f06b6b;
+    --orange: #f09050;
+    --purple: #b06bf0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; line-height: 1.6; }
+  .page { max-width: 1280px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Header */
+  .report-header {
+    background: linear-gradient(135deg, #1a1d27, #16192a, #1a1d30);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 40px 48px; margin-bottom: 32px; position: relative; overflow: hidden;
+  }
+  .report-header::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(91,142,240,0.08), transparent 70%);
+  }
+  .report-title { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .report-subtitle { font-size: 14px; color: var(--text2); margin-bottom: 20px; }
+  .report-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .meta-chip { background: rgba(91,142,240,0.12); border: 1px solid rgba(91,142,240,0.25); border-radius: 20px; padding: 4px 14px; font-size: 12px; color: var(--pst); }
+
+  /* Legend badges */
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* Section */
+  .section { margin-bottom: 40px; }
+  .section-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .badge { font-size: 11px; font-weight: 600; background: var(--pst); color: #fff; border-radius: 4px; padding: 2px 8px; }
+  .sub-title { font-size: 13px; font-weight: 700; color: var(--text2); margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Card grids */
+  .card-grid { display: grid; gap: 16px; }
+  .g4 { grid-template-columns: repeat(4,1fr); }
+  .g3 { grid-template-columns: repeat(3,1fr); }
+  .g2 { grid-template-columns: repeat(2,1fr); }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .card.pst  { border-top: 3px solid var(--pst); }
+  .card.ccs  { border-top: 3px solid var(--ccs); }
+  .card.sgh  { border-top: 3px solid var(--sgh); }
+  .card.ss   { border-top: 3px solid var(--ss);  }
+  .card-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .card-value { font-size: 24px; font-weight: 700; color: #fff; }
+  .card-sub   { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--bg3); }
+  th { padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text2); white-space: nowrap; }
+  td { padding: 10px 14px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text); }
+  tr:hover td { background: rgba(255,255,255,0.015); }
+  /* game column headers */
+  .th-pst { color: var(--pst) !important; }
+  .th-ccs { color: var(--ccs) !important; }
+  .th-sgh { color: var(--sgh) !important; }
+  .th-ss  { color: var(--ss)  !important; }
+  .td-pst { background: rgba(91,142,240,0.04); }
+  .td-ccs { background: rgba(62,207,142,0.03); }
+
+  /* Tags */
+  .tag { display:inline-block; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:600; }
+  .tag-g { background:rgba(62,207,142,0.15); color:var(--green); }
+  .tag-b { background:rgba(91,142,240,0.15); color:var(--pst); }
+  .tag-y { background:rgba(245,200,66,0.15);  color:var(--yellow); }
+  .tag-r { background:rgba(240,107,107,0.15); color:var(--red); }
+  .tag-o { background:rgba(240,144,80,0.15);  color:var(--orange); }
+  .tag-x { background:rgba(156,163,176,0.15); color:var(--text2); }
+
+  /* Bar */
+  .bar-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .bar-label { width:170px; font-size:12px; color:var(--text2); text-align:right; flex-shrink:0; }
+  .bar-track { flex:1; background:var(--bg3); border-radius:4px; height:22px; }
+  .bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding:0 10px; font-size:11px; font-weight:600; color:#fff; white-space:nowrap; }
+  .bar-fill.dark { color:#1a1d27; }
+
+  /* Gauge */
+  .gauge-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .gauge-label { width:190px; font-size:12px; color:var(--text); flex-shrink:0; }
+  .gauge-track { flex:1; background:var(--bg3); border-radius:20px; height:10px; }
+  .gauge-fill { height:100%; border-radius:20px; }
+  .gauge-score { width:32px; font-size:12px; font-weight:700; text-align:right; }
+
+  /* Callout / Note */
+  .callout { border-left:3px solid var(--pst); background:var(--bg2); border-radius:0 8px 8px 0; padding:12px 16px; margin:12px 0; font-size:13px; }
+  .callout.green  { border-color:var(--green); }
+  .callout.yellow { border-color:var(--yellow); }
+  .callout.red    { border-color:var(--red); }
+  .note { background:rgba(91,142,240,0.07); border:1px solid rgba(91,142,240,0.2); border-radius:8px; padding:12px 16px; font-size:12px; color:var(--text2); margin-top:12px; }
+  .note strong { color:var(--text); }
+  .warn { background:rgba(245,200,66,0.07); border-color:rgba(245,200,66,0.2); }
+  .warn strong { color:var(--yellow); }
+
+  hr { border:none; border-top:1px solid var(--border); margin:28px 0; }
+
+  .hi-b { color:var(--pst);    font-weight:700; }
+  .hi-g { color:var(--green);  font-weight:700; }
+  .hi-y { color:var(--yellow); font-weight:700; }
+  .hi-r { color:var(--red);    font-weight:700; }
+
+  .two-col   { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+
+  /* Positioning bars */
+  .pos-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:24px; }
+  .pos-row  { display:flex; align-items:flex-start; gap:16px; margin-bottom:20px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+  .pos-row:last-child { margin-bottom:0; padding-bottom:0; border-bottom:none; }
+  .pos-game { width:140px; flex-shrink:0; }
+  .pos-name { font-size:13px; font-weight:700; }
+  .pos-dev  { font-size:11px; color:var(--text2); margin-top:2px; }
+  .pos-bars { flex:1; display:flex; flex-direction:column; gap:7px; }
+  .pos-bar-row { display:flex; align-items:center; gap:8px; }
+  .pos-key { width:130px; font-size:11px; color:var(--text2); flex-shrink:0; }
+  .pos-track { flex:1; background:var(--bg3); border-radius:3px; height:8px; }
+  .pos-fill  { height:100%; border-radius:3px; }
+  .pos-score { width:28px; font-size:11px; font-weight:700; text-align:right; flex-shrink:0; }
+
+  .report-footer { text-align:center; color:var(--text2); font-size:11px; padding:24px 0; border-top:1px solid var(--border); margin-top:40px; }
+
+  @media(max-width:900px) {
+    .g4,.g3 { grid-template-columns:repeat(2,1fr); }
+    .two-col,.three-col { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══ HEADER ══ -->
+<div class="report-header">
+  <div class="report-title">경제 시스템 경쟁사 분석</div>
+  <div class="report-subtitle">우리 게임(PST) vs Candy Crush Solitaire(King) vs Solitaire Grand Harvest(Playtika) vs Solitaire Story(SOFTGAMES)</div>
+  <div class="report-meta">
+    <span class="meta-chip">기준일: 2026-04-08</span>
+    <span class="meta-chip">PST 데이터: Google Sheets 라이브 (2026-03-25 확인)</span>
+    <span class="meta-chip">CCS / SGH / SS: 공개 시장 정보 기반</span>
+    <span class="meta-chip">비교 게임 4종</span>
+  </div>
+</div>
+
+<!-- 범례 -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--pst)"></div><span style="color:var(--pst)">우리 게임 (PST)</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--ccs)"></div><span style="color:var(--ccs)">Candy Crush Solitaire (King)</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--sgh)"></div><span style="color:var(--sgh)">Solitaire Grand Harvest (Playtika)</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--ss)"></div><span style="color:var(--ss)">Solitaire Story (SOFTGAMES)</span></div>
+</div>
+
+<!-- ══ SECTION 0: 비교 대상 개요 ══ -->
+<div class="section">
+  <div class="section-title">비교 대상 게임 개요</div>
+  <div class="card-grid g4">
+    <div class="card pst">
+      <div class="card-label">우리 게임</div>
+      <div class="card-value" style="font-size:17px; color:var(--pst)">PST<br><span style="font-size:13px; color:#fff;">Solitaire City Journey</span></div>
+      <div class="card-sub" style="margin-top:8px;">트라이픽스 솔리테어 · 모바일 · 개발 중</div>
+      <div style="margin-top:10px;"><span class="tag tag-b">내부 라이브 데이터</span></div>
+    </div>
+    <div class="card ccs">
+      <div class="card-label">네이티브 모바일 경쟁사</div>
+      <div class="card-value" style="font-size:17px; color:var(--ccs)">CCS<br><span style="font-size:13px; color:#fff;">Candy Crush Solitaire</span></div>
+      <div class="card-sub" style="margin-top:8px;">King (Activision Blizzard) · iOS/Android · PST 설계 레퍼런스</div>
+      <div style="margin-top:10px;"><span class="tag tag-g">시장 공개 정보</span></div>
+    </div>
+    <div class="card sgh">
+      <div class="card-label">모바일 / Facebook 경쟁사</div>
+      <div class="card-value" style="font-size:17px; color:var(--sgh)">SGH<br><span style="font-size:13px; color:#fff;">Solitaire Grand Harvest</span></div>
+      <div class="card-sub" style="margin-top:8px;">Playtika · iOS/Android/Facebook · 트라이픽스 1위</div>
+      <div style="margin-top:10px;"><span class="tag tag-y">시장 공개 정보</span></div>
+    </div>
+    <div class="card ss">
+      <div class="card-label">Facebook 전용 경쟁사</div>
+      <div class="card-value" style="font-size:17px; color:var(--ss)">SS<br><span style="font-size:13px; color:#fff;">Solitaire Story</span></div>
+      <div class="card-sub" style="margin-top:8px;">SOFTGAMES · Facebook HTML5 · 트라이픽스 솔리테어</div>
+      <div style="margin-top:10px;"><span class="tag tag-r">시장 공개 정보</span></div>
+    </div>
+  </div>
+  <div class="note">
+    <strong>데이터 신뢰도:</strong> PST(우리 게임)는 Google Sheets 라이브 데이터 기반 내부 분석. CCS/SGH/SS는 App Store 공개 정보·플레이어 리뷰·업계 리서치 기반. CCS는 PST 설계의 직접 레퍼런스로 구조적 유사도가 매우 높음.
+  </div>
+</div>
+
+<!-- ══ SECTION 1: 재화 구조 ══ -->
+<div class="section">
+  <div class="section-title">1. 재화 구조 비교 <span class="badge">Currency Structure</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th class="th-pst">PST (우리 게임)</th>
+          <th class="th-ccs">Candy Crush Solitaire</th>
+          <th class="th-sgh">Solitaire Grand Harvest</th>
+          <th class="th-ss">Solitaire Story</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>소프트 통화</strong></td>
+          <td class="td-pst">currency_gold</td>
+          <td class="td-ccs">Gold</td>
+          <td>Coins</td>
+          <td>Coins</td>
+        </tr>
+        <tr>
+          <td><strong>준하드 통화</strong></td>
+          <td class="td-pst">currency_ticket (입장권)</td>
+          <td class="td-ccs">Ticket (입장권)</td>
+          <td>Stars (하드, 제한적)</td>
+          <td>없음 (또는 소수)</td>
+        </tr>
+        <tr>
+          <td><strong>보조 통화</strong></td>
+          <td class="td-pst">streak_star, hammer (비활성)</td>
+          <td class="td-ccs">동일 구조 추정</td>
+          <td>Wheat (이벤트 전용)</td>
+          <td>없음</td>
+        </tr>
+        <tr>
+          <td><strong>라이프 시스템</strong></td>
+          <td class="td-pst"><span class="tag tag-b">없음</span> — 골드 입장비</td>
+          <td class="td-ccs"><span class="tag tag-b">없음</span> — 골드 입장비</td>
+          <td><span class="tag tag-b">없음</span> — 골드 입장비</td>
+          <td><span class="tag tag-r">5 lives</span> — 30분/life</td>
+        </tr>
+        <tr>
+          <td><strong>부스터 종류</strong></td>
+          <td class="td-pst">5종 (fireworks/golden_ticket/undo/wild_card/extra_deck)</td>
+          <td class="td-ccs">5종 동일 (CCS 구조 채택)</td>
+          <td>4~6종 (Wild/Undo/Volcano 등)</td>
+          <td>2~3종 (Undo/Wild 기본)</td>
+        </tr>
+        <tr>
+          <td><strong>통화 단위 스케일</strong></td>
+          <td class="td-pst">10K ~ 1M 단위</td>
+          <td class="td-ccs">10K ~ 1M 단위</td>
+          <td><strong>100K ~ 수백M 단위</strong></td>
+          <td>1K ~ 수십K 단위</td>
+        </tr>
+        <tr>
+          <td><strong>신규 유저 시작 지급</strong></td>
+          <td class="td-pst"><span class="hi-b">2,000g</span></td>
+          <td class="td-ccs">~1,000g + 라이프 5개</td>
+          <td>~50,000 coins + 라이프</td>
+          <td>~500~1,000 coins</td>
+        </tr>
+        <tr>
+          <td><strong>시즌 패스</strong></td>
+          <td class="td-pst"><span class="tag tag-x">미정</span></td>
+          <td class="td-ccs"><span class="tag tag-g">있음</span> (Sugar Stars 등)</td>
+          <td><span class="tag tag-y">있음</span> (Garden Pass)</td>
+          <td><span class="tag tag-x">없음</span></td>
+        </tr>
+        <tr>
+          <td><strong>지갑 상한</strong></td>
+          <td class="td-pst">무제한 (판당 수령 20K 상한)</td>
+          <td class="td-ccs">무제한</td>
+          <td>무제한</td>
+          <td>무제한 (추정)</td>
+        </tr>
+        <tr>
+          <td><strong>인플레이션 위험도</strong></td>
+          <td class="td-pst"><span class="tag tag-r">높음</span> (D30 45만g, 해소 중)</td>
+          <td class="td-ccs"><span class="tag tag-g">통제됨</span> (골드 싱크 구조 성숙)</td>
+          <td><span class="tag tag-r">구조적 높음</span> (설계 의도)</td>
+          <td><span class="tag tag-g">낮음</span> (소규모 단순 구조)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout" style="margin-top:16px;">
+    <strong>핵심 구조 차이:</strong> PST·CCS·SGH 모두 <span class="hi-b">골드(코인) 입장비 방식</span> 채택 — Lives 시스템 없음. SS(SOFTGAMES)만 Lives 5개 기반 플레이 제한 구조. CCS는 PST 설계의 직접 레퍼런스로 통화 종류·부스터·입장비 구조가 거의 동일. SGH는 단위 스케일이 100배 이상 크고 "풍요형 경제" 설계.
+  </div>
+</div>
+
+<!-- ══ SECTION 2: 달러-골드 환산 ══ -->
+<div class="section">
+  <div class="section-title">2. 달러-골드 환산 & IAP 패키지 구조 <span class="badge">Dollar Value</span></div>
+
+  <div class="sub-title">최소 IAP 기준 (진입 상품)</div>
+  <div class="card-grid g4">
+    <div class="card pst">
+      <div class="card-label">PST (우리 게임) — $1.99</div>
+      <div class="card-value">5,025 g/$</div>
+      <div class="card-sub">1g = $0.000199 · 10,000g = $1.99</div>
+    </div>
+    <div class="card ccs">
+      <div class="card-label">CCS — $0.99</div>
+      <div class="card-value">~5,050 g/$</div>
+      <div class="card-sub">~5,000g = $0.99 (진입 상품 기준)</div>
+    </div>
+    <div class="card sgh">
+      <div class="card-label">SGH — $1.99</div>
+      <div class="card-value">~25,000 c/$</div>
+      <div class="card-sub">~50,000 coins = $1.99 (단위 체계 상이)</div>
+    </div>
+    <div class="card ss">
+      <div class="card-label">SS (SOFTGAMES) — $0.99</div>
+      <div class="card-value">~5,000 c/$</div>
+      <div class="card-sub">~5,000 coins = $0.99 (Facebook IAP 부재 또는 소규모)</div>
+    </div>
+  </div>
+
+  <div class="sub-title" style="margin-top:24px;">IAP 패키지 전체 구조 비교</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>가격</th>
+          <th class="th-pst">PST 골드 · EV g/$</th>
+          <th class="th-ccs">CCS 골드 · g/$</th>
+          <th class="th-sgh">SGH coins · c/$</th>
+          <th class="th-ss">SS coins · c/$</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>$0.99</td>
+          <td class="td-pst">—</td>
+          <td class="td-ccs">~5,000g · <strong>5,050</strong></td>
+          <td>—</td>
+          <td>~5,000c · ~5,050</td>
+        </tr>
+        <tr>
+          <td><strong>$1.99</strong></td>
+          <td class="td-pst">10,000g · <strong>5,025</strong></td>
+          <td class="td-ccs">~10,000g · ~5,025</td>
+          <td>~50,000c · ~25,126</td>
+          <td>~10,000c · ~5,025</td>
+        </tr>
+        <tr>
+          <td>$4.99</td>
+          <td class="td-pst">27,000g + 부스터2종 · EV <strong>6,136</strong></td>
+          <td class="td-ccs">~27,000g + 부스터 · ~6,100</td>
+          <td>~150,000c · ~30,060</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>$8.99</td>
+          <td class="td-pst">45,000g + 부스터4종 · EV <strong>6,323</strong> ★most popular</td>
+          <td class="td-ccs">~45,000g + 부스터4종 · ~6,300</td>
+          <td>~350,000c · ~38,932</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>$9.99</td>
+          <td class="td-pst">—</td>
+          <td class="td-ccs">~55,000g · ~5,506</td>
+          <td>~430,000c · ~43,043</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>$14.99</td>
+          <td class="td-pst">85,000g + 부스터4종×2 · EV <strong>6,584</strong></td>
+          <td class="td-ccs">~90,000g · ~6,004</td>
+          <td>~750,000c · ~50,033</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>$26.99</td>
+          <td class="td-pst">170,000g + 부스터4종×4 · EV <strong>7,313</strong></td>
+          <td class="td-ccs">~180,000g · ~6,669</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>$49.99</td>
+          <td class="td-pst">370,000g + 부스터4종×8 · EV <strong>8,497</strong> ★best value</td>
+          <td class="td-ccs">~400,000g · ~8,002</td>
+          <td>~3,500,000c · ~70,014</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>$99.99</td>
+          <td class="td-pst"><span class="tag tag-r">미정 (미존재)</span></td>
+          <td class="td-ccs">~900,000g · ~9,001 <span class="tag tag-g">✓ whale tier</span></td>
+          <td>~8,000,000c · ~80,008</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sub-title" style="margin-top:20px;">IAP 단가 효율 시각화 (EV 기준, 최고가 상품)</div>
+  <div style="padding:20px; background:var(--bg2); border-radius:12px; border:1px solid var(--border);">
+    <div class="bar-row">
+      <div class="bar-label" style="color:var(--pst)">PST — $49.99</div>
+      <div class="bar-track"><div class="bar-fill" style="width:85%; background:linear-gradient(90deg,#3a5bbf,var(--pst));">8,497 g/$</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="color:var(--ccs)">CCS — $99.99</div>
+      <div class="bar-track"><div class="bar-fill" style="width:90%; background:linear-gradient(90deg,#1a8a5a,var(--ccs));">~9,001 g/$</div></div>
+    </div>
+    <div style="height:1px;background:var(--border);margin:8px 0 14px;"></div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:10px;">* SGH/SS coin 단위는 gold와 직접 비교 불가 — 아래는 coin/$ 스케일만 참고</div>
+    <div class="bar-row">
+      <div class="bar-label" style="color:var(--sgh)">SGH — $99.99</div>
+      <div class="bar-track"><div class="bar-fill dark" style="width:100%;background:linear-gradient(90deg,#8a6a00,var(--sgh));">~80,008 coins/$</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label" style="color:var(--ss)">SS (SOFTGAMES)</div>
+      <div class="bar-track"><div class="bar-fill" style="width:10%;background:linear-gradient(90deg,#8a1a1a,var(--ss));">소규모</div></div>
+    </div>
+  </div>
+
+  <div class="callout green" style="margin-top:12px;">
+    <strong>우리 게임 포지션:</strong> CCS와 거의 동일한 g/$ 효율 구조 (PST가 CCS를 레퍼런스로 설계). <span class="hi-r">$99.99 whale tier 미존재</span>가 유일한 갭 — 하이스펜더 포획 기회 존재.
+  </div>
+</div>
+
+<!-- ══ SECTION 3: 일일 소득 채널 ══ -->
+<div class="section">
+  <div class="section-title">3. 일일 무료 소득 채널 비교 <span class="badge">Daily Income</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>소득 채널</th>
+          <th class="th-pst">PST (우리 게임, Lv75)</th>
+          <th class="th-ccs">Candy Crush Solitaire</th>
+          <th class="th-sgh">Solitaire Grand Harvest</th>
+          <th class="th-ss">Solitaire Story</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>방치/충전 골드</strong></td>
+          <td class="td-pst">1,900g × 3회 = <strong>5,700g/일</strong><br><span style="font-size:11px;color:var(--text2)">4h 사이클, 능동 수령</span></td>
+          <td class="td-ccs">Lives 재충전 구조<br>(골드로 라이프 구매 가능)</td>
+          <td>농장 수확 2~3h × 최대 6회<br>= <strong>~500K~2M coins/일</strong></td>
+          <td>에너지 재충전<br>(소규모)</td>
+        </tr>
+        <tr>
+          <td><strong>팝업 광고</strong></td>
+          <td class="td-pst">600g × 10회 = <strong>6,000g</strong></td>
+          <td class="td-ccs">광고 시청 시 골드 지급<br>(횟수/금액 제한)</td>
+          <td>소액 coins 광고 보상</td>
+          <td>주 수익원 (광고형)</td>
+        </tr>
+        <tr>
+          <td><strong>우편함 광고</strong></td>
+          <td class="td-pst">600g × 5회 = <strong>3,000g</strong></td>
+          <td class="td-ccs">있음 (inbox 구조)</td>
+          <td>있음</td>
+          <td>있음 (소규모)</td>
+        </tr>
+        <tr>
+          <td><strong>로비 광고 (신규)</strong></td>
+          <td class="td-pst">rv_gold × 3회 = ~<strong>600~900g</strong></td>
+          <td class="td-ccs">있음</td>
+          <td>있음</td>
+          <td>있음</td>
+        </tr>
+        <tr>
+          <td><strong>데일리 휠 / 스핀</strong></td>
+          <td class="td-pst">EV 720g × 5회 = <strong>3,600g</strong></td>
+          <td class="td-ccs">있음 (Daily Wheel)</td>
+          <td>Daily Wheel ~100K coins/일</td>
+          <td>있음 (소규모)</td>
+        </tr>
+        <tr>
+          <td><strong>7일 출석 보상</strong></td>
+          <td class="td-pst">합계 11,000g → <strong>1,571g/일</strong></td>
+          <td class="td-ccs">있음 (구조 유사)</td>
+          <td>~200K~500K coins/일</td>
+          <td>있음 (소규모)</td>
+        </tr>
+        <tr>
+          <td><strong>이벤트 마일스톤</strong></td>
+          <td class="td-pst">3이벤트 순환 = ~665g/일</td>
+          <td class="td-ccs">이벤트 다수 (King 특기)</td>
+          <td>다층 이벤트 (리그/시즌/팀)</td>
+          <td>제한적</td>
+        </tr>
+        <tr>
+          <td><strong>시즌 패스 소득</strong></td>
+          <td class="td-pst"><span class="tag tag-x">없음</span></td>
+          <td class="td-ccs"><span class="tag tag-g">있음</span></td>
+          <td><span class="tag tag-y">있음</span> (Garden Pass)</td>
+          <td><span class="tag tag-x">없음</span></td>
+        </tr>
+        <tr style="background:rgba(91,142,240,0.05);">
+          <td><strong>보통 유저 일일 순소득 합계</strong></td>
+          <td class="td-pst"><span class="hi-b"><strong>~15,712g</strong></span></td>
+          <td class="td-ccs"><span class="hi-g"><strong>~15,000~20,000g</strong></span><br><span style="font-size:11px;color:var(--text2)">(골드 입장비 구조, 성숙한 싱크 설계)</span></td>
+          <td><span class="hi-y"><strong>~1,000,000~3,000,000 coins</strong></span></td>
+          <td><span class="hi-r"><strong>~2,000~5,000 coins</strong></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sub-title">유저 유형별 일일 순소득 시뮬레이션 (PST v4 기준)</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>유저 유형</th>
+          <th>레벨</th>
+          <th>판수/일</th>
+          <th>방치골드/일</th>
+          <th>광고 소득/일</th>
+          <th>게임플레이 EV/일</th>
+          <th>일일 순소득</th>
+          <th>D30 잔액</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>극소극 (튜토리얼)</td><td>5</td><td>2</td><td>3,000g</td><td>1,600g</td><td>−140g</td><td><strong>6,588g</strong></td><td>43,353g</td></tr>
+        <tr><td>소극 (초보)</td><td>15</td><td>5</td><td>6,000g</td><td>5,000g</td><td>−2,184g</td><td><strong>11,360g</strong></td><td>150,439g</td></tr>
+        <tr style="background:rgba(91,142,240,0.05);">
+          <td><strong>보통 (Lv75) ★기준</strong></td><td><strong>75</strong></td><td><strong>15</strong></td><td><strong>5,700g</strong></td><td><strong>10,300g</strong></td><td><strong>−8,976g</strong></td><td><strong>15,712g</strong></td><td><strong>211,493g</strong></td>
+        </tr>
+        <tr><td>활발 (중반)</td><td>75</td><td>25</td><td>7,600g</td><td>11,400g</td><td>−14,960g</td><td><strong>12,239g</strong></td><td>91,384g</td></tr>
+        <tr><td>헤비 (고레벨)</td><td>200</td><td>40</td><td>42,000g</td><td>11,400g</td><td>−31,168g</td><td><strong>8,907g</strong></td><td>−124,723g</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ SECTION 4: 게임플레이 비용 구조 ══ -->
+<div class="section">
+  <div class="section-title">4. 게임플레이 비용 구조 비교 <span class="badge">Gameplay Cost</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th class="th-pst">PST (우리 게임)</th>
+          <th class="th-ccs">Candy Crush Solitaire</th>
+          <th class="th-sgh">Solitaire Grand Harvest</th>
+          <th class="th-ss">Solitaire Story</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>진입 비용 방식</strong></td>
+          <td class="td-pst">골드 입장비 (레벨 구간별 고정)</td>
+          <td class="td-ccs">골드 입장비 (레벨별 고정, PST와 동일 구조)</td>
+          <td>Coins 입장비 (레벨별 고정)</td>
+          <td>Lives 5개 (30분/life)</td>
+        </tr>
+        <tr>
+          <td><strong>기준 레벨 입장료</strong></td>
+          <td class="td-pst"><strong>2,000g</strong> (Lv50~99)</td>
+          <td class="td-ccs">~2,000g 상당 (PST와 유사 구간)</td>
+          <td>~50,000~200,000 coins</td>
+          <td>라이프 1개</td>
+        </tr>
+        <tr>
+          <td><strong>무료 입장 제공</strong></td>
+          <td class="td-pst">2회/일 (무료 티켓)</td>
+          <td class="td-ccs">무료 티켓 + 보상 골드</td>
+          <td>데일리 무료 coins 지급</td>
+          <td>라이프 5개 자동 충전</td>
+        </tr>
+        <tr>
+          <td><strong>60% 승률 게임플레이 EV</strong></td>
+          <td class="td-pst">−598g/판 (Lv50~99)</td>
+          <td class="td-ccs">음수 EV (구조 동일)</td>
+          <td>음수 EV</td>
+          <td>음수 (추정)</td>
+        </tr>
+        <tr>
+          <td><strong>부스터 비용 (Lv75)</strong></td>
+          <td class="td-pst">undo 800g · extra_deck 1,600g</td>
+          <td class="td-ccs">구조 동일 (CCS 레퍼런스)</td>
+          <td>Wild ~5,000~20,000 coins</td>
+          <td>소규모 coins</td>
+        </tr>
+        <tr>
+          <td><strong>하드 판 풀 부스터</strong></td>
+          <td class="td-pst">7,600g = 일소득의 <strong>43%</strong></td>
+          <td class="td-ccs">라이프 + 부스터 = 일소득의 ~30~50%</td>
+          <td>~100K coins = 일소득의 ~5%</td>
+          <td>소규모</td>
+        </tr>
+        <tr>
+          <td><strong>IAP 전환 압력</strong></td>
+          <td class="td-pst">하드판 연패 → 골드 고갈 → 구매 유도</td>
+          <td class="td-ccs">라이프 소진 → 구매 또는 대기</td>
+          <td>Coins 고갈 → 구매 유도</td>
+          <td>광고 시청 또는 友 요청</td>
+        </tr>
+        <tr>
+          <td><strong>입장료 vs 일소득 비율</strong></td>
+          <td class="td-pst"><strong>~11.2%</strong></td>
+          <td class="td-ccs">~10~15% (라이프 기준 추정)</td>
+          <td>~5% (코인 단위 팽창)</td>
+          <td>라이프 기반 (비율 개념 약함)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout" style="margin-top:12px;">
+    <strong>진입 비용 구조:</strong> PST·CCS·SGH는 모두 <span class="hi-b">골드(코인) 입장비</span> 방식을 채택 — SS만 Lives 시스템. PST와 CCS는 구조적으로 가장 유사하며, 인플레이션 통제가 완성되면 CCS 수준의 강력한 IAP 유도 구조를 갖출 수 있음. <span class="hi-r">현재 D30 45만g 누적 문제는 이 설계를 훼손</span>하고 있으며 론칭 전 해소가 P0 과제.
+  </div>
+</div>
+
+<!-- ══ SECTION 5: Facebook 경쟁 심층 분석 ══ -->
+<div class="section">
+  <div class="section-title">5. Facebook 직접 경쟁사 심층 분석 <span class="badge">Facebook Competitive</span></div>
+
+  <div class="callout" style="margin-bottom:20px;">
+    <strong>경쟁 구도 설명:</strong> 우리 게임(PST)의 <span class="hi-b">직접 경쟁 대상은 Solitaire Story(SS)</span>입니다 — 동일 Facebook 트라이픽스 솔리테어 장르. CCS(King)와 SGH(Playtika)는 네이티브 모바일 게임으로 직접 경쟁 대상이 아니며, 이들의 <span class="hi-g">검증된 장점을 차용하여 PST를 설계</span>했습니다. SS 대비 압도적 품질·경제 구조로 Facebook 솔리테어 시장을 공략하는 것이 핵심 전략입니다.
+  </div>
+
+  <div class="sub-title">Solitaire Story (SOFTGAMES) — 직접 경쟁 대상 (Facebook 트라이픽스)</div>
+  <div class="card-grid g2" style="margin-bottom:16px;">
+    <div class="card ss">
+      <div class="card-label">게임 특성</div>
+      <div style="font-size:13px; line-height:1.8; margin-top:8px;">
+        · 브라우저 기반 HTML5 (Facebook Games 플랫폼)<br>
+        · 모바일 앱 없음 — Facebook 내 직접 플레이<br>
+        · 트라이픽스 솔리테어 장르 <strong>(PST와 동일)</strong><br>
+        · 카드 배경/테마 무료 제공<br>
+        · 친구 Lives 요청 시스템 (Facebook 소셜 그래프 활용)<br>
+        · Lives 5개 기반 플레이 제한 구조
+      </div>
+    </div>
+    <div class="card ss">
+      <div class="card-label">경제 구조 특징</div>
+      <div style="font-size:13px; line-height:1.8; margin-top:8px;">
+        · <strong>광고 수익 우선</strong> (IAP 부차적 또는 소규모)<br>
+        · IAP 최고가 $9.99 이하 (추정)<br>
+        · 출석·데일리 보너스 구조 단순<br>
+        · 부스터 2~3종 (Undo/Wild 위주)<br>
+        · 이벤트·시즌 패스 없음<br>
+        · 경제 복잡도 낮음 — 캐주얼 중심
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>비교 항목</th>
+          <th class="th-pst">PST (우리 게임)</th>
+          <th class="th-ss">Solitaire Story (SOFTGAMES)</th>
+          <th>PST 경쟁 우위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>장르 / 플랫폼</td>
+          <td class="td-pst">트라이픽스 솔리테어 · 모바일</td>
+          <td>트라이픽스 솔리테어 · Facebook HTML5</td>
+          <td>동일 장르 — <span class="tag tag-r">직접 경쟁</span></td>
+        </tr>
+        <tr>
+          <td>진입 비용 방식</td>
+          <td class="td-pst">골드 입장비 (레벨 구간별 고정)</td>
+          <td>Lives 5개 (30분/life)</td>
+          <td>PST: 골드 기반 → IAP 전환 압력 구조적 우위</td>
+        </tr>
+        <tr>
+          <td>수익 모델</td>
+          <td class="td-pst">IAP 우선 + 광고 5채널</td>
+          <td>광고 우선 + IAP 소규모</td>
+          <td>PST IAP ARPU 압도적 우위</td>
+        </tr>
+        <tr>
+          <td>IAP 최고가</td>
+          <td class="td-pst"><strong>$49.99</strong></td>
+          <td>$9.99 이하 (추정)</td>
+          <td>하이스펜더 포획 능력 5× 이상 우위</td>
+        </tr>
+        <tr>
+          <td>부스터 종류</td>
+          <td class="td-pst">5종 (CCS 구조 차용)</td>
+          <td>2~3종 (Undo/Wild 기본)</td>
+          <td>PST 전략적 깊이 우위 — 구매 동기 다양화</td>
+        </tr>
+        <tr>
+          <td>DDA / 난이도 시스템</td>
+          <td class="td-pst">4단계 룰 체인 DDA (CCS 구조 차용)</td>
+          <td>사전 지정 (DDA 제한적)</td>
+          <td>PST 플레이어 맞춤형 경험 → 리텐션 우위</td>
+        </tr>
+        <tr>
+          <td>이벤트 / 메타 콘텐츠</td>
+          <td class="td-pst">도시 꾸미기 + 3종 마일스톤 이벤트 (SGH 구조 차용)</td>
+          <td>없거나 제한적</td>
+          <td>PST 장기 체류 구조 우위</td>
+        </tr>
+        <tr>
+          <td>소셜 기능</td>
+          <td class="td-pst">이벤트 랭킹 (예정)</td>
+          <td>Facebook 친구 Lives 요청 (강점)</td>
+          <td>SS 소셜 바이럴 단기 우위 — PST 향후 보완 필요</td>
+        </tr>
+        <tr>
+          <td>$1.99 = 무료소득 며칠치</td>
+          <td class="td-pst"><span class="tag tag-y"><strong>~0.6일</strong></span></td>
+          <td><span class="tag tag-g"><strong>~0.5일</strong></span></td>
+          <td>구조 유사 — 큰 차이 없음</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout green" style="margin-top:16px;">
+    <strong>전략 요약:</strong> SS는 단순한 광고형 캐주얼 게임. PST는 <span class="hi-g">CCS의 검증된 IAP 구조</span> + <span class="hi-y">SGH의 메타 콘텐츠 깊이</span>를 차용하여 Facebook 솔리테어 장르에서 SS 대비 압도적 수익화 구조를 갖춤. 인플레이션 해소 완료 시 FB 솔리테어 시장 선점 가능.
+  </div>
+
+  <div class="sub-title" style="margin-top:28px;">네이티브 게임에서 차용한 핵심 장점 (PST 설계 레퍼런스)</div>
+  <div class="card-grid g2">
+    <div class="card ccs">
+      <div class="card-label">CCS (King) — 구조 레퍼런스</div>
+      <div style="font-size:13px; line-height:1.9; margin-top:8px;">
+        · 골드 입장비 구조 (Lives 없는 순수 골드 싱크)<br>
+        · 5종 부스터 체계 (fireworks / golden_ticket / undo / wild / extra_deck)<br>
+        · IAP 단가 효율 단조성 구조 ($1.99 ~ $99.99)<br>
+        · 입장권(Ticket) 준하드 통화 체계<br>
+        · DDA 4단계 난이도 티어 개념<br>
+        · 절제형 경제 (소스/싱크 균형 중시)
+      </div>
+    </div>
+    <div class="card sgh">
+      <div class="card-label">SGH (Playtika) — 메타·운영 레퍼런스</div>
+      <div style="font-size:13px; line-height:1.9; margin-top:8px;">
+        · 도시/농장 꾸미기 메타 콘텐츠 Sink 구조<br>
+        · 다층 이벤트 (마일스톤 + 리그 + 시즌) 개념<br>
+        · 스페셜 오퍼 맥락형 특가 운영 방식<br>
+        · 시즌 패스(Garden Pass) 경상 수익 구조 <span class="tag tag-x">PST 미도입 (검토 중)</span><br>
+        · $99.99 Whale tier 상한 구조 <span class="tag tag-x">PST 미도입 (검토 중)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECTION 6: 난이도 & DDA ══ -->
+<div class="section">
+  <div class="section-title">6. 난이도 시스템 & DDA 비교 <span class="badge">Difficulty & DDA</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th class="th-pst">PST (우리 게임)</th>
+          <th class="th-ccs">Candy Crush Solitaire</th>
+          <th class="th-sgh">Solitaire Grand Harvest</th>
+          <th class="th-ss">Solitaire Story</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>난이도 티어</strong></td>
+          <td class="td-pst">4단계: Tutorial / Normal / Hard / Super Hard</td>
+          <td class="td-ccs">Easy / Normal / Hard / Extra Hard (레벨 사전 지정)</td>
+          <td>Easy / Normal / Hard / Expert (사전 지정)</td>
+          <td>레벨별 단순 설계 (추정)</td>
+        </tr>
+        <tr>
+          <td><strong>DDA 방식</strong></td>
+          <td class="td-pst">룰 체인 (fail_streak=5 → Normal, hard_guarantee=7)</td>
+          <td class="td-ccs">사전 지정 + 일부 서버 A/B 조정</td>
+          <td>사전 지정 + 부스터 제공</td>
+          <td>사전 지정 (DDA 제한적)</td>
+        </tr>
+        <tr>
+          <td><strong>도움 시스템</strong></td>
+          <td class="td-pst">help_card_rate: Tutorial 80% → Super Hard 0%</td>
+          <td class="td-ccs">힌트 제공 (레벨별 다름)</td>
+          <td>Hint 제공 (유료 보조)</td>
+          <td>기본 힌트</td>
+        </tr>
+        <tr>
+          <td><strong>기믹 종류</strong></td>
+          <td class="td-pst">4종 (plus/rope/runner/lock_key)</td>
+          <td class="td-ccs">다종 (Thorn, Chain, Lava, Fog 등)</td>
+          <td>다종 누적 증가</td>
+          <td>기본 기믹 2~3종</td>
+        </tr>
+        <tr>
+          <td><strong>난이도 분포 목표</strong></td>
+          <td class="td-pst">Tutorial 5% / Normal <strong>85%</strong> / Hard 10% / SH 5%</td>
+          <td class="td-ccs">Easy 30% / Normal 40% / Hard 20% / XH 10% (추정)</td>
+          <td>Easy 35% / Normal 40% / Hard 20% / Expert 5%</td>
+          <td>단순 (추정)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout green" style="margin-top:12px;">
+    <strong>PST DDA 우위:</strong> 룰 체인 기반 DDA는 맵 품질 의존도를 낮추고 예측 가능한 플레이 경험 제공. CCS/SGH는 사전 지정 난이도로 수천 개 레벨 수작업 튜닝 필요 — PST는 자동 조정으로 운영 부담 감소.
+  </div>
+</div>
+
+<!-- ══ SECTION 7: 경제 건강 지표 ══ -->
+<div class="section">
+  <div class="section-title">7. 경제 건강 지표 & 인플레이션 현황 <span class="badge">Economy Health</span></div>
+  <div class="two-col">
+    <div>
+      <div class="sub-title">경제 건강 점수 (우리 게임 v4 시뮬레이션 · A-)</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div class="gauge-row"><div class="gauge-label">경제 건강 종합</div><div class="gauge-track"><div class="gauge-fill" style="width:78%;background:var(--green);"></div></div><div class="gauge-score" style="color:var(--green)">78</div></div>
+        <div class="gauge-row"><div class="gauge-label">골드 공급 건전성</div><div class="gauge-track"><div class="gauge-fill" style="width:75%;background:var(--green);"></div></div><div class="gauge-score" style="color:var(--green)">75</div></div>
+        <div class="gauge-row"><div class="gauge-label">IAP 전환 구조</div><div class="gauge-track"><div class="gauge-fill" style="width:72%;background:var(--green);"></div></div><div class="gauge-score" style="color:var(--green)">72</div></div>
+        <div class="gauge-row"><div class="gauge-label">부스터 싱크 잠재력</div><div class="gauge-track"><div class="gauge-fill" style="width:78%;background:var(--green);"></div></div><div class="gauge-score" style="color:var(--green)">78</div></div>
+        <div class="gauge-row"><div class="gauge-label">광고 채널 다양성</div><div class="gauge-track"><div class="gauge-fill" style="width:65%;background:var(--green);"></div></div><div class="gauge-score" style="color:var(--green)">65</div></div>
+        <div class="gauge-row"><div class="gauge-label">D7 리텐션 구조</div><div class="gauge-track"><div class="gauge-fill" style="width:68%;background:var(--green);"></div></div><div class="gauge-score" style="color:var(--green)">68</div></div>
+        <div style="font-size:11px;color:var(--text2);margin-top:12px;">* 100점 만점. 론칭 목표: 경제건강 75+ · V4 달성 (5/6 A기준 충족)</div>
+      </div>
+    </div>
+    <div>
+      <div class="sub-title">D30 인플레이션 개선 현황 (보통 유저 기준)</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div class="bar-row"><div class="bar-label">v2 (오류 버전)</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#8a1a1a,var(--red));">1,016,736g</div></div></div>
+        <div class="bar-row"><div class="bar-label">v3 (이전)</div><div class="bar-track"><div class="bar-fill" style="width:45%;background:linear-gradient(90deg,#8a6a00,var(--yellow));">457,593g</div></div></div>
+        <div class="bar-row"><div class="bar-label">v4 (현재 · −54%)</div><div class="bar-track"><div class="bar-fill" style="width:21%;background:linear-gradient(90deg,#1a4a8a,var(--pst));">211,493g</div></div></div>
+        <div class="bar-row"><div class="bar-label">론칭 목표 (−98%)</div><div class="bar-track"><div class="bar-fill" style="width:2%;background:linear-gradient(90deg,#1a5a3a,var(--green));min-width:60px;"> 10,356g</div></div></div>
+
+        <div style="margin-top:20px;">
+          <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:10px;">론칭 확정안 핵심 변경 (15개 파라미터)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-size:11px;color:var(--text2)">광고 단가 통일</div><div style="font-size:13px;">2,000g → <span class="hi-g">700g</span></div></div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-size:11px;color:var(--text2)">Shop 광고 횟수 확대</div><div style="font-size:13px;">5 → <span class="hi-g">7회</span></div></div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-size:11px;color:var(--text2)">보상 마진 축소</div><div style="font-size:13px;">max 2,000 → <span class="hi-g">1,200g</span></div></div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-size:11px;color:var(--text2)">콜렉션 Sink 신규</div><div style="font-size:13px;"><span class="hi-g">+3,000g/일</span> 소비</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECTION 8: 종합 포지셔닝 ══ -->
+<div class="section">
+  <div class="section-title">8. 종합 포지셔닝 매트릭스 <span class="badge">Positioning</span></div>
+  <div class="callout" style="margin-bottom:16px;">
+    <strong>읽는 방법:</strong> <span class="hi-b">PST ↔ SS</span>가 직접 경쟁 구도. <span class="hi-g">CCS</span>·<span class="hi-y">SGH</span>는 PST가 장점을 차용한 네이티브 게임 벤치마크 — 우리의 경쟁 상대가 아닌 <strong>설계 레퍼런스</strong>. PST가 SS 대비 어떤 우위를 갖는지를 중심으로 읽으세요.
+  </div>
+  <div class="pos-wrap">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:20px;">각 항목 0~10점. PST는 내부 데이터, CCS/SGH/SS는 시장 조사 기반. <strong style="color:var(--pst)">PST vs SS</strong>가 직접 경쟁 / CCS·SGH는 벤치마크.</div>
+
+    <!-- PST -->
+    <div class="pos-row">
+      <div class="pos-game">
+        <div class="pos-name" style="color:var(--pst)">우리 게임 (PST)</div>
+        <div class="pos-dev">Solitaire City Journey</div>
+      </div>
+      <div class="pos-bars">
+        <div class="pos-bar-row"><div class="pos-key">IAP 구조 건전성</div><div class="pos-track"><div class="pos-fill" style="width:85%;background:var(--pst)"></div></div><div class="pos-score" style="color:var(--pst)">8.5</div></div>
+        <div class="pos-bar-row"><div class="pos-key">인플레이션 통제</div><div class="pos-track"><div class="pos-fill" style="width:70%;background:var(--green)"></div></div><div class="pos-score" style="color:var(--green)">7.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">IAP 체감 가치</div><div class="pos-track"><div class="pos-fill" style="width:70%;background:var(--green)"></div></div><div class="pos-score" style="color:var(--green)">7.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">D7 리텐션 설계</div><div class="pos-track"><div class="pos-fill" style="width:70%;background:var(--green)"></div></div><div class="pos-score" style="color:var(--green)">7.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">광고 채널 다양성</div><div class="pos-track"><div class="pos-fill" style="width:80%;background:var(--green)"></div></div><div class="pos-score" style="color:var(--green)">8.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">라이브 운영 성숙도</div><div class="pos-track"><div class="pos-fill" style="width:30%;background:var(--red)"></div></div><div class="pos-score" style="color:var(--red)">3.0</div></div>
+      </div>
+    </div>
+
+    <!-- CCS -->
+    <div class="pos-row">
+      <div class="pos-game">
+        <div class="pos-name" style="color:var(--ccs)">CCS</div>
+        <div class="pos-dev">Candy Crush Solitaire<br>King · 네이티브 모바일<br><span style="color:var(--green);font-size:10px;">★ 구조 레퍼런스</span></div>
+      </div>
+      <div class="pos-bars">
+        <div class="pos-bar-row"><div class="pos-key">IAP 구조 건전성</div><div class="pos-track"><div class="pos-fill" style="width:90%;background:var(--ccs)"></div></div><div class="pos-score" style="color:var(--ccs)">9.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">인플레이션 통제</div><div class="pos-track"><div class="pos-fill" style="width:80%;background:var(--ccs)"></div></div><div class="pos-score" style="color:var(--ccs)">8.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">IAP 체감 가치</div><div class="pos-track"><div class="pos-fill" style="width:70%;background:var(--ccs)"></div></div><div class="pos-score" style="color:var(--ccs)">7.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">D7 리텐션 설계</div><div class="pos-track"><div class="pos-fill" style="width:85%;background:var(--ccs)"></div></div><div class="pos-score" style="color:var(--ccs)">8.5</div></div>
+        <div class="pos-bar-row"><div class="pos-key">광고 채널 다양성</div><div class="pos-track"><div class="pos-fill" style="width:75%;background:var(--ccs)"></div></div><div class="pos-score" style="color:var(--ccs)">7.5</div></div>
+        <div class="pos-bar-row"><div class="pos-key">라이브 운영 성숙도</div><div class="pos-track"><div class="pos-fill" style="width:95%;background:var(--ccs)"></div></div><div class="pos-score" style="color:var(--ccs)">9.5</div></div>
+      </div>
+    </div>
+
+    <!-- SGH -->
+    <div class="pos-row">
+      <div class="pos-game">
+        <div class="pos-name" style="color:var(--sgh)">SGH</div>
+        <div class="pos-dev">Solitaire Grand Harvest<br>Playtika · 모바일/Facebook<br><span style="color:var(--yellow);font-size:10px;">★ 메타·운영 레퍼런스</span></div>
+      </div>
+      <div class="pos-bars">
+        <div class="pos-bar-row"><div class="pos-key">IAP 구조 건전성</div><div class="pos-track"><div class="pos-fill" style="width:75%;background:var(--sgh)"></div></div><div class="pos-score" style="color:var(--sgh)">7.5</div></div>
+        <div class="pos-bar-row"><div class="pos-key">인플레이션 통제</div><div class="pos-track"><div class="pos-fill" style="width:30%;background:var(--sgh)"></div></div><div class="pos-score" style="color:var(--red)">3.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">IAP 체감 가치</div><div class="pos-track"><div class="pos-fill" style="width:45%;background:var(--sgh)"></div></div><div class="pos-score" style="color:var(--sgh)">4.5</div></div>
+        <div class="pos-bar-row"><div class="pos-key">D7 리텐션 설계</div><div class="pos-track"><div class="pos-fill" style="width:90%;background:var(--sgh)"></div></div><div class="pos-score" style="color:var(--green)">9.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">광고 채널 다양성</div><div class="pos-track"><div class="pos-fill" style="width:85%;background:var(--sgh)"></div></div><div class="pos-score" style="color:var(--green)">8.5</div></div>
+        <div class="pos-bar-row"><div class="pos-key">라이브 운영 성숙도</div><div class="pos-track"><div class="pos-fill" style="width:90%;background:var(--sgh)"></div></div><div class="pos-score" style="color:var(--green)">9.0</div></div>
+      </div>
+    </div>
+
+    <!-- SS -->
+    <div class="pos-row">
+      <div class="pos-game">
+        <div class="pos-name" style="color:var(--ss)">SS</div>
+        <div class="pos-dev">Solitaire Story<br>SOFTGAMES · Facebook HTML5<br><span style="color:var(--red);font-size:10px;">▶ 직접 경쟁 대상</span></div>
+      </div>
+      <div class="pos-bars">
+        <div class="pos-bar-row"><div class="pos-key">IAP 구조 건전성</div><div class="pos-track"><div class="pos-fill" style="width:40%;background:var(--ss)"></div></div><div class="pos-score" style="color:var(--ss)">4.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">인플레이션 통제</div><div class="pos-track"><div class="pos-fill" style="width:70%;background:var(--ss)"></div></div><div class="pos-score" style="color:var(--green)">7.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">IAP 체감 가치</div><div class="pos-track"><div class="pos-fill" style="width:30%;background:var(--ss)"></div></div><div class="pos-score" style="color:var(--red)">3.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">D7 리텐션 설계</div><div class="pos-track"><div class="pos-fill" style="width:50%;background:var(--ss)"></div></div><div class="pos-score" style="color:var(--ss)">5.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">광고 채널 다양성</div><div class="pos-track"><div class="pos-fill" style="width:60%;background:var(--ss)"></div></div><div class="pos-score" style="color:var(--ss)">6.0</div></div>
+        <div class="pos-bar-row"><div class="pos-key">라이브 운영 성숙도</div><div class="pos-track"><div class="pos-fill" style="width:35%;background:var(--ss)"></div></div><div class="pos-score" style="color:var(--ss)">3.5</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECTION 9: 종합 요약 ══ -->
+<div class="section">
+  <div class="section-title">9. 종합 요약 & 전략 권고 <span class="badge">Summary</span></div>
+
+  <div class="three-col">
+    <div class="card" style="border-top:3px solid var(--green);">
+      <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:10px;">✅ 우리의 강점</div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:16px;line-height:2.0;">
+        <li>IAP 단가 구조 건전 (단조성 PASS)</li>
+        <li>best_value $49.99 EV로 정당화</li>
+        <li>광고 5채널 분산 (CCS 대비 우위)</li>
+        <li>DDA 4단계 룰 체인 — 운영 효율적</li>
+        <li>방치골드 4h 사이클 → D7 리텐션 유효</li>
+        <li>First Purchase SO1 ($1.99, +287% EV)</li>
+        <li>CCS 구조 직접 채택 → 검증된 설계</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--red);">
+      <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:10px;">⚠️ 론칭 전 P0 과제</div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:16px;line-height:2.0;">
+        <li>D30 골드 457K → 목표 10K (인플레이션)</li>
+        <li>entry_cost level_entry_tier 구조 재설계</li>
+        <li>daily_gift 라이브값 재시뮬레이션</li>
+        <li>daily_wheel 140007 구조 반영</li>
+        <li>shop_free_gold 클라이언트 동작 확인</li>
+        <li>$1.99 = 0.6일치 → 론칭안 1.0일치 목표</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--pst);">
+      <div style="font-size:13px;font-weight:700;color:var(--pst);margin-bottom:10px;">🎯 경쟁 전략 방향</div>
+      <ul style="font-size:12px;color:var(--text2);padding-left:16px;line-height:2.0;">
+        <li><span style="color:var(--red);font-weight:700;">[직접 경쟁] SS 대비:</span> IAP 5종 부스터·DDA·메타 콘텐츠로 압도적 깊이 제공</li>
+        <li><span style="color:var(--green);font-weight:700;">[CCS 차용]</span> 골드 입장비 구조 + IAP 단가 단조성 → 검증된 수익화 기반</li>
+        <li><span style="color:var(--yellow);font-weight:700;">[SGH 차용]</span> 도시 꾸미기 메타 + 다층 이벤트 → 장기 체류 설계</li>
+        <li>인플레이션 해소 완료 → $1.99 = 1일치 목표 달성 시 IAP 경쟁력 확보</li>
+        <li>$99.99 Whale tier 도입 검토 (CCS/SGH 수준 벤치마크)</li>
+        <li>시즌 패스 도입 검토 (SGH Garden Pass 구조 참고)</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr>
+
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-top:20px;">
+    <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:16px;">전체 경제 구조 한눈에 보기</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>지표</th>
+            <th class="th-pst">PST (우리 게임)</th>
+            <th class="th-ccs">CCS (King)</th>
+            <th class="th-sgh">SGH (Playtika)</th>
+            <th class="th-ss">SS (SOFTGAMES)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>최저 IAP</td><td class="td-pst">$1.99</td><td class="td-ccs">$0.99</td><td>$1.99</td><td>$0.99 이하</td></tr>
+          <tr><td>최고 IAP</td><td class="td-pst"><span class="tag tag-r">$49.99 ⚠️</span></td><td class="td-ccs">$99.99</td><td>$99.99</td><td>$9.99 이하</td></tr>
+          <tr><td>라이프 시스템</td><td class="td-pst"><span class="tag tag-b">없음 (골드 진입비)</span></td><td class="td-ccs"><span class="tag tag-b">없음 (골드 진입비)</span></td><td><span class="tag tag-b">없음 (골드 진입비)</span></td><td><span class="tag tag-r">5 lives</span></td></tr>
+          <tr><td>통화 단위</td><td class="td-pst">10K~1M</td><td class="td-ccs">10K~1M</td><td><strong>100K~수백M</strong></td><td>1K~10K</td></tr>
+          <tr><td>$1.99 = 무료소득 몇 일치</td><td class="td-pst"><span class="tag tag-y">0.6일</span></td><td class="td-ccs"><span class="tag tag-g">~0.7일</span></td><td><span class="tag tag-r">~0.025일</span></td><td><span class="tag tag-g">~0.5일</span></td></tr>
+          <tr><td>시즌 패스</td><td class="td-pst"><span class="tag tag-x">없음</span></td><td class="td-ccs"><span class="tag tag-g">있음</span></td><td><span class="tag tag-y">있음</span></td><td><span class="tag tag-x">없음</span></td></tr>
+          <tr><td>부스터 종류</td><td class="td-pst">5종</td><td class="td-ccs">5종 (동일)</td><td>4~6종</td><td>2~3종</td></tr>
+          <tr><td>D30 인플레이션</td><td class="td-pst"><span class="tag tag-r">높음 (해소 중)</span></td><td class="td-ccs"><span class="tag tag-g">통제됨</span></td><td><span class="tag tag-r">의도적 높음</span></td><td><span class="tag tag-g">낮음</span></td></tr>
+          <tr><td>경제 성격</td><td class="td-pst">절제형 (개선 중)</td><td class="td-ccs">절제형 (성숙)</td><td>풍요형</td><td>단순 광고형</td></tr>
+          <tr><td>라이브 운영 성숙도</td><td class="td-pst"><span class="tag tag-r">초기</span></td><td class="td-ccs"><span class="tag tag-g">최고 수준</span></td><td><span class="tag tag-g">최고 수준</span></td><td><span class="tag tag-y">중간</span></td></tr>
+          <tr><td>직접 경쟁 위협도</td><td class="td-pst">—</td><td class="td-ccs"><span class="tag tag-x">해당 없음 (설계 레퍼런스)</span></td><td><span class="tag tag-x">해당 없음 (설계 레퍼런스)</span></td><td><span class="tag tag-r">높음 (동일 장르·동일 타겟)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="report-footer">
+  Solitaire City Journey (PST) — 경제 시스템 경쟁사 분석 v2.1 · 2026-04-08<br>
+  PST 데이터: Google Sheets 라이브 확인 (2026-03-25) · CCS/SGH/SS: 공개 시장 정보 기반<br>
+  생성: Claude Sonnet 4.6
+</div>
+
+</div><!-- /page -->
+</body>
+</html>

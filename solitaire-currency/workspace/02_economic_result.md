@@ -24,7 +24,7 @@ schema_ref: workspace/04_schema_template.md
 | **무한 아이템** | infinite_fireworks/gticket/ticket (5m/10m/15m 3단계) | 없음 | 미확인 | PST 무한 아이템 9종 구조 채택 + booster_infinite_undo_15m/30m 이벤트 전용 추가 검토 | PST_event_milestone에서 booster_infinite_undo_15m/30m 발견 (PST_item_list 미등재). 이벤트 전용 임시 지급 아이템으로 활용 가능. 정식 등재 여부 결정 필요 |
 | **유휴 충전 (Source)** | 4시간마다 3,000 gold 자동 충전 (상한 8,000) | 없음 (럭키 체스트 4시간으로 대체) | 미확인 | PST 유휴 충전 구조 채택 | 카드게임 특성상 자연 회복 구조가 리텐션에 유리. PST_const.json 10002~10006 수치 그대로 적용 |
 | **데일리 출석 (Source)** | 7일 사이클, gold+부스터 혼합 보상 | 7일 사이클, gold+아이템 혼합 보상 | 미확인 | PST 7일 사이클 구조 채택 | PST_daily_gift.json 수치 그대로 적용. 7일 누적 gold 6,500 + 부스터 4개 + ticket 3개 |
-| **광고 기반 무료 재화 (Source)** | shop_ad / inbox / popup / daily_wheel_ad 4채널 | daily_ad / lobby_ad / inbox_ad 3채널 | 미확인 | PST 4채널 구조 채택 | 광고 분산 채널 운영으로 유저 선택권 확대. daily_wheel은 가챠 구조로 기대감 부여 |
+| **광고 기반 무료 재화 (Source)** | shop_ad / inbox / popup / daily_wheel_ad / lobby_ad 5채널 | daily_ad / lobby_ad / inbox_ad 3채널 | 미확인 | PST 5채널 구조 채택 | 광고 분산 채널 운영으로 유저 선택권 확대. daily_wheel은 가챠 구조로 기대감 부여. lobby_ad 추가(10076, 일 3회, 2026-04-06) |
 | **이벤트 마일스톤 (Source)** | 15스텝, 3가지 이벤트 타입 병행 운영 | 미분석 | 미확인 | PST 3이벤트 타입 구조 채택 | black_card/red_card/winning_milestone 주간 순환 + clear_ranking 병행. PST_event_schedule.json 스케줄 그대로 적용 |
 | **레벨 입장비 (Sink)** | 기본 1,000 gold, 10레벨마다 +100, 상한 5,000 | 없음 (점수 기반 진행) | 미확인 | PST 입장비 구조 채택 | 카드게임 특성상 레벨 진입 비용이 핵심 Sink. 무료 입장 2회/일로 캐주얼 접근성 확보 |
 | **보상 마진 (Sink 완충)** | 클리어 시 500~2,000 gold 지급 | 없음 | 미확인 | PST 보상 마진 구조 채택 | 입장비 1,000 gold 대비 최소 500 gold 회수 보장 → 실질 net cost 500~1,000 gold/레벨 |
@@ -73,12 +73,13 @@ schema_ref: workspace/04_schema_template.md
 | 10054 | remaining_deck_reward_max_cap | gold | ingame_earn | 5000 | amount | true | 잔여 덱 보상 상한 (gold) |
 | 10055 | remaining_deck_reward_level_interval | gold | ingame_earn | 5 | count | true | 잔여 덱 보상 증가 레벨 간격 |
 | 10056 | remaining_deck_reward_level_increase | gold | ingame_earn | 5 | count | true | 간격당 레벨 증가 수치 |
-| 10057 | inbox_free_gold_limit | gold | free_source | 5 | count | true | 받은편지함 무료 광고 골드 일일 횟수 상한 |
-| 10058 | inbox_free_gold_amount | gold | free_source | 800 [라이브 확정, 2026-03-09] | amount | true | 받은편지함 광고 1회 지급 골드량 |
-| 10059 | gold_max_limit | gold | cap | 10000 | amount | true | 보유 골드 최대 상한 |
+| 10057 | inbox_free_gold_limit | gold | free_source | 5 | count | true | 받은편지함 RV 광고 일일 횟수 상한 |
+| 10058 | inbox_free_gold_amount | gold | free_source | 600 [deprecated] | amount | false | ⚠️ rv_gold_ratio(level_entry_tier)로 대체. entry_cost × rv_gold_ratio / 10000 |
+| 10059 | gold_max_limit | gold | cap | 20000 | amount | true | 인게임 판당 최대 수령 골드량 |
 | 10060 | streak_star_max_limit | streak_star | cap | 100 | amount | true | 스트릭 스타 최대 보유 상한 |
-| 10063 | popup_free_gold_limit | gold | free_source | 10 | count | true | 팝업 무료 광고 골드 일일 횟수 상한 |
-| 10064 | popup_free_gold_amount | gold | free_source | 800 [라이브 확정, 2026-03-09] | amount | true | 팝업 광고 1회 지급 골드량 |
+| 10063 | popup_free_gold_limit | gold | free_source | 10 | count | true | 팝업 RV 광고 일일 횟수 상한 |
+| 10064 | popup_free_gold_amount | gold | free_source | 600 [deprecated] | amount | false | ⚠️ rv_gold_ratio(level_entry_tier)로 대체. entry_cost × rv_gold_ratio / 10000 |
+| 10076 | lobby_free_gold_limit | gold | free_source | 3 [라이브 확정, 2026-04-06] | count | true | 로비 RV 광고 일일 횟수 상한 (UTC0 리셋). 지급량은 rv_gold_ratio 기반 |
 
 ---
 
@@ -379,7 +380,7 @@ schema_ref: workspace/04_schema_template.md
 
 ### 테이블: `pst_free_currency_source`
 
-> 출처: PST_const.json 직접 파생 (shop: 10025~10026, inbox: 10057~10058, popup: 10063~10064, daily_wheel: 10027).
+> 출처: PST_const.json 직접 파생 (shop: 10025~10026, inbox: 10057~10058, popup: 10063~10064, daily_wheel: 10027, lobby: 10076).
 > daily_wheel_ad의 amount_per_claim: PST_const.json에 고정 지급 수량 필드 없음. PST_daily_wheel.json 분석 결과 가챠 구조 확인.
 
 **daily_wheel_ad 구조 조사 결과 (PST_daily_wheel.json 분석):**
@@ -407,25 +408,44 @@ gold EV(기댓값) per spin = (500×3000 + 1500×1500 + 5000×300) / 10000 = (1,
 
 | key_number | source_type | currency_type | daily_limit | amount_per_claim | in_use |
 |---|---|---|---|---|---|
-| 10025 | shop_ad | gold | 5 | 2000 | true |
-| 10057 | inbox | gold | 5 | 800 [라이브 확정, 2026-03-09] | true |
-| 10063 | popup | gold | 10 | 800 [라이브 확정, 2026-03-09] | true |
-| 10027 | daily_wheel_ad | gold | 5 | 720 [라이브 확정, 2026-03-09] (가설: 05_system_result.md 가챠 EV 검증값. 실제 1회 지급량은 확률 기반 가변값 500/1500/5000 gold 또는 부스터 중 1개 선택) | true |
+| 10025 | shop_ad | gold | 5 | 2000 (고정) | true |
+| 10057 | inbox | gold | 5 | entry_cost × rv_gold_ratio / 10000 (레벨 티어 가변) | true |
+| 10063 | popup | gold | 10 | entry_cost × rv_gold_ratio / 10000 (레벨 티어 가변) | true |
+| 10076 | lobby_ad | gold | 3 | entry_cost × rv_gold_ratio / 10000 (레벨 티어 가변) | true |
+| 10027 | daily_wheel_ad | gold | 5 | 720 [라이브 확정, 2026-03-09] (가설: 가챠 EV. 실제 1회 지급량은 확률 기반 가변값) | true |
 
-> 출처 명시:
-> - shop_ad: PST_const.json `shop_free_gold_limit: 5` (key 10025), `shop_free_gold_amount: 2000` (key 10026)
-> - inbox: PST_const.json `inbox_free_gold_limit: 5` (key 10057), `inbox_free_gold_amount: 800` (key 10058) [라이브 확정, 2026-03-09; 07_sheet_modify_log.md 반영 확인]
-> - popup: PST_const.json `popup_free_gold_limit: 10` (key 10063), `popup_free_gold_amount: 800` (key 10064) [라이브 확정, 2026-03-09; 07_sheet_modify_log.md 반영 확인]
-> - daily_wheel_ad daily_limit: PST_const.json `daily_wheel_ad_limit: 5` (key 10027)
-> - daily_wheel_ad amount_per_claim: **PST_const.json에 고정값 없음**. 05_system_result.md 가챠 EV 검증값 720 gold 기재 [라이브 확정, 2026-03-09] (가설: 부스터 환산 포함 전체 EV).
+> **RV 골드 계산 공식 (inbox / popup / lobby 공통)**
+> ```
+> rv_gold_per_watch = level_entry_tier.entry_cost × level_entry_tier.rv_gold_ratio / 10000
+> ```
+> const의 inbox_free_gold_amount(10058), popup_free_gold_amount(10064)는 deprecated — rv_gold_ratio로 대체됨.
 
-> VAL-007 검증: 일일 최대 무료 gold 획득량 계산
-> - shop_ad: 2000 × 5 = 10,000 gold
-> - inbox: 2000 × 5 = 10,000 gold
-> - popup: 2000 × 10 = 20,000 gold
-> - daily_wheel_ad: 최대 5000 gold × 5 = 25,000 gold (최고 운 기준)
-> - **총계: 이론적 최대 65,000 gold — gold_max_limit(10,000) 대비 대폭 초과 가능**
-> - 단, gold_max_limit은 보유 상한이며 획득 총합 제한과는 별개 설계로 추정. PST에서 초과분은 캡에서 소실되는 구조임.
+> **level_entry_tier rv_gold_ratio 전체 티어표 (라이브 확정, 2026-04-06)**
+>
+> | key | 레벨 범위 | entry_cost | rv_gold_ratio | rv_gold/회 |
+> |-----|----------|-----------|--------------|-----------|
+> | 220001 | Lv1~2   | 0g        | 0            | 0g        |
+> | 220002 | Lv3~9   | 1,200g    | 6500 (65%)   | 780g      |
+> | 220003 | Lv10~24 | 1,800g    | 5500 (55%)   | 990g      |
+> | 220004 | Lv25~49 | 2,100g    | 5000 (50%)   | 1,050g    |
+> | 220005 | Lv50~99 | 2,400g    | 4800 (48%)   | **1,152g** |
+> | 220006 | Lv100~199 | 2,600g  | 4500 (45%)   | 1,170g    |
+> | 220007 | Lv200~349 | 3,000g  | 4200 (42%)   | 1,260g    |
+> | 220008 | Lv350~549 | 3,400g  | 4000 (40%)   | 1,360g    |
+> | 220009 | Lv550~799 | 4,000g  | 3800 (38%)   | 1,520g    |
+> | 220010 | Lv800~1099 | 4,600g | 3500 (35%)   | 1,610g    |
+> | 220011 | Lv1100~1449 | 5,400g| 3200 (32%)   | 1,728g    |
+> | 220012 | Lv1450+  | 6,000g   | 3000 (30%)   | 1,800g    |
+
+> VAL-007 검증: 일일 최대 무료 gold 획득량 계산 [2026-04-06 기준, Lv75 기준]
+> - shop_ad: 2,000 × 5 = 10,000 gold (고정)
+> - inbox: 1,152 × 5 = 5,760 gold (Lv75, rv_gold_ratio 기반)
+> - popup: 1,152 × 10 = 11,520 gold (Lv75, rv_gold_ratio 기반)
+> - lobby_ad: 1,152 × 3 = 3,456 gold (Lv75, rv_gold_ratio 기반)
+> - daily_wheel_ad: 최대 5,000 × 5 = 25,000 gold (최고 운 기준)
+> - **총계 (Lv75 이론적 최대): 55,736 gold**
+> - 단, gold_max_limit(20,000)은 인게임 판당 최대 수령량이며 지갑 상한 아님.
+> - RV 채널 일일 합산 (Lv75): 5,760 + 11,520 + 3,456 = **20,736 gold**
 
 ---
 

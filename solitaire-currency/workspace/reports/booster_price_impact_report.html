@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>부스터 가격 변경 영향 분석 | V4 Economy</title>
+<style>
+:root {
+  --bg: #1a1a2e; --surface: #16213e; --card: #0f3460;
+  --accent: #e94560; --green: #4ecca3; --yellow: #ffc947;
+  --orange: #ff8c32; --text: #e0e0e0; --muted: #8899aa;
+  --red: #ff4757; --blue: #54a0ff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Pretendard', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+h1 { text-align: center; font-size: 1.8em; padding: 30px 0 10px; color: #fff; }
+.subtitle { text-align: center; color: var(--muted); margin-bottom: 30px; font-size: 0.95em; }
+h2 { font-size: 1.3em; color: var(--green); margin: 30px 0 15px; padding-left: 12px; border-left: 4px solid var(--green); }
+h3 { font-size: 1.1em; color: var(--yellow); margin: 20px 0 10px; }
+
+/* KPI Cards */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }
+.kpi { background: var(--surface); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+.kpi .label { font-size: 0.85em; color: var(--muted); margin-bottom: 4px; }
+.kpi .value { font-size: 1.8em; font-weight: 700; }
+.kpi .delta { font-size: 0.9em; margin-top: 4px; }
+.kpi .value.green { color: var(--green); }
+.kpi .value.red { color: var(--red); }
+.kpi .value.yellow { color: var(--yellow); }
+.kpi .value.blue { color: var(--blue); }
+.delta.down { color: var(--green); }
+.delta.up { color: var(--red); }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin: 10px 0 20px; font-size: 0.9em; }
+th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.06); }
+th { background: var(--surface); color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 0.8em; letter-spacing: 0.5px; position: sticky; top: 0; }
+td:first-child, th:first-child { text-align: left; }
+tr:hover td { background: rgba(255,255,255,0.03); }
+.cell-down { color: var(--green); font-weight: 600; }
+.cell-up { color: var(--red); font-weight: 600; }
+.cell-new { color: var(--yellow); font-weight: 600; }
+.cell-neutral { color: var(--muted); }
+.highlight-row td { background: rgba(78, 204, 163, 0.08); }
+
+/* Charts */
+.chart-container { background: var(--surface); border-radius: 12px; padding: 20px; margin: 15px 0; }
+.bar-group { display: flex; align-items: center; margin: 8px 0; gap: 10px; }
+.bar-label { min-width: 120px; font-size: 0.85em; color: var(--muted); text-align: right; }
+.bar-track { flex: 1; height: 28px; position: relative; display: flex; align-items: center; }
+.bar { height: 100%; border-radius: 4px; position: absolute; left: 0; transition: width 0.5s ease; }
+.bar.old { background: rgba(255,255,255,0.12); z-index: 1; }
+.bar.new-green { background: var(--green); opacity: 0.7; z-index: 2; }
+.bar.new-red { background: var(--red); opacity: 0.7; z-index: 2; }
+.bar-value { position: relative; z-index: 3; font-size: 0.8em; padding-left: 8px; font-weight: 600; }
+.legend { display: flex; gap: 20px; justify-content: center; margin: 10px 0; font-size: 0.85em; color: var(--muted); }
+.legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
+
+/* Stacked bar for breakdown */
+.stack-row { display: flex; align-items: center; margin: 6px 0; gap: 10px; }
+.stack-label { min-width: 80px; font-size: 0.8em; color: var(--muted); text-align: right; }
+.stack-track { flex: 1; height: 24px; display: flex; border-radius: 4px; overflow: hidden; }
+.stack-seg { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.7em; font-weight: 600; color: #fff; min-width: 2px; }
+.stack-total { min-width: 90px; font-size: 0.85em; text-align: right; font-weight: 600; }
+
+/* D30 gauge */
+.gauge-row { display: flex; align-items: center; margin: 6px 0; gap: 10px; }
+.gauge-label { min-width: 140px; font-size: 0.85em; }
+.gauge-track { flex: 1; height: 20px; background: rgba(255,255,255,0.05); border-radius: 10px; position: relative; overflow: hidden; }
+.gauge-fill { height: 100%; border-radius: 10px; transition: width 0.5s; }
+.gauge-fill.positive { background: linear-gradient(90deg, var(--green), #2ed573); }
+.gauge-fill.negative { background: linear-gradient(90deg, var(--red), var(--accent)); }
+.gauge-value { min-width: 100px; font-size: 0.85em; text-align: right; font-weight: 600; }
+
+/* Sections */
+.section { background: var(--surface); border-radius: 12px; padding: 25px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.05); }
+.section-dark { background: var(--card); }
+.note { background: rgba(233, 69, 96, 0.1); border: 1px solid rgba(233, 69, 96, 0.3); border-radius: 8px; padding: 12px 16px; margin: 15px 0; font-size: 0.9em; }
+.note-info { background: rgba(84, 160, 255, 0.1); border-color: rgba(84, 160, 255, 0.3); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 600; margin-left: 6px; }
+.tag-down { background: rgba(78, 204, 163, 0.2); color: var(--green); }
+.tag-up { background: rgba(255, 71, 87, 0.2); color: var(--red); }
+.divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 25px 0; }
+.footer { text-align: center; color: var(--muted); font-size: 0.8em; margin: 40px 0 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>V4 부스터 가격 변경 영향 분석</h1>
+<p class="subtitle">level_entry_tier undo_ratio / extra_deck_ratio 변경 + item_list ucir 변경 종합</p>
+
+<!-- KPI Cards -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="label">언두 1회 단가 (Lv75)</div>
+    <div class="value yellow">720g &rarr; 576g</div>
+    <div class="delta down">&darr; 20% 인하</div>
+  </div>
+  <div class="kpi">
+    <div class="label">추가덱 단가 (Lv75)</div>
+    <div class="value yellow">2,016g &rarr; 2,304g</div>
+    <div class="delta up">&uarr; 14% 인상</div>
+  </div>
+  <div class="kpi">
+    <div class="label">와일드카드 단가 (Lv75)</div>
+    <div class="value yellow">1,200g &rarr; 1,560g</div>
+    <div class="delta up">&uarr; 30% 인상</div>
+  </div>
+  <div class="kpi">
+    <div class="label">1게임 부스터 총비용 (Lv75)</div>
+    <div class="value green">7,200g &rarr; 6,360g</div>
+    <div class="delta down">&darr; 12% 절감</div>
+  </div>
+</div>
+
+<!-- Section 1: 변경 요약 -->
+<h2>1. 변경 항목 요약</h2>
+<div class="section">
+<table>
+  <thead>
+    <tr><th>시트</th><th>항목</th><th>파라미터</th><th>변경 전</th><th>변경 후</th><th>변동</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>level_entry_tier</td><td>언두 단가</td><td>undo_ratio (11행)</td>
+      <td>1,000~4,000</td><td class="cell-down">800~3,200</td>
+      <td><span class="tag tag-down">&times;0.8</span></td>
+    </tr>
+    <tr>
+      <td>level_entry_tier</td><td>추가덱 단가</td><td>extra_deck_ratio (11행)</td>
+      <td>5,500~8,000</td><td class="cell-up">6,500~9,000</td>
+      <td><span class="tag tag-up">+1,000</span></td>
+    </tr>
+    <tr>
+      <td>item_list</td><td>언두 ucir</td><td>40012 use_count_increase_rate</td>
+      <td>2,500 (25%)</td><td class="cell-down">2,000 (20%)</td>
+      <td><span class="tag tag-down">-5%p</span></td>
+    </tr>
+    <tr>
+      <td>item_list</td><td>와일드카드 ratio</td><td>40013 entry_cost_ratio</td>
+      <td>5,000 (50%)</td><td class="cell-up">6,500 (65%)</td>
+      <td><span class="tag tag-up">+15%p</span></td>
+    </tr>
+    <tr>
+      <td>item_list</td><td>추가덱 ucir</td><td>40014 use_count_increase_rate</td>
+      <td>1,500 (15%)</td><td class="cell-up">2,500 (25%)</td>
+      <td><span class="tag tag-up">+10%p</span></td>
+    </tr>
+    <tr>
+      <td>const</td><td>방치골드 기본값</td><td>10003 idle_gold_charge_amount</td>
+      <td>2,000</td><td class="cell-down">1,000</td>
+      <td><span class="tag tag-down">-50%</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- Section 2: 티어별 부스터 가격 비교 -->
+<h2>2. 티어별 부스터 실제 골드 단가</h2>
+<div class="section">
+<h3>언두 1회 단가 (entry &times; undo_ratio / 10000 &times; V4배수 1.2)</h3>
+<div class="chart-container">
+  <div class="legend">
+    <span><span class="legend-dot" style="background:rgba(255,255,255,0.15)"></span>변경 전</span>
+    <span><span class="legend-dot" style="background:var(--green)"></span>변경 후 (인하)</span>
+  </div>
+  <div class="bar-group"><div class="bar-label">Lv3~9</div><div class="bar-track"><div class="bar old" style="width:5%"></div><div class="bar new-green" style="width:4%"></div><div class="bar-value">144g &rarr; 115g</div></div></div>
+  <div class="bar-group"><div class="bar-label">Lv10~24</div><div class="bar-track"><div class="bar old" style="width:11.3%"></div><div class="bar new-green" style="width:9%"></div><div class="bar-value">324g &rarr; 259g</div></div></div>
+  <div class="bar-group"><div class="bar-label">Lv25~49</div><div class="bar-track"><div class="bar old" style="width:17.5%"></div><div class="bar new-green" style="width:14%"></div><div class="bar-value">504g &rarr; 403g</div></div></div>
+  <div class="bar-group highlight-row"><div class="bar-label">Lv50~99 ★</div><div class="bar-track"><div class="bar old" style="width:25%"></div><div class="bar new-green" style="width:20%"></div><div class="bar-value">720g &rarr; 576g</div></div></div>
+  <div class="bar-group"><div class="bar-label">Lv100~199</div><div class="bar-track"><div class="bar old" style="width:32.5%"></div><div class="bar new-green" style="width:26%"></div><div class="bar-value">936g &rarr; 748g</div></div></div>
+  <div class="bar-group"><div class="bar-label">Lv200~349</div><div class="bar-track"><div class="bar old" style="width:43.8%"></div><div class="bar new-green" style="width:35%"></div><div class="bar-value">1,260g &rarr; 1,008g</div></div></div>
+  <div class="bar-group"><div class="bar-label">Lv550~799</div><div class="bar-track"><div class="bar old" style="width:66.7%"></div><div class="bar new-green" style="width:53.3%"></div><div class="bar-value">1,920g &rarr; 1,536g</div></div></div>
+  <div class="bar-group"><div class="bar-label">Lv1450+</div><div class="bar-track"><div class="bar old" style="width:100%"></div><div class="bar new-green" style="width:80%"></div><div class="bar-value">2,880g &rarr; 2,304g</div></div></div>
+</div>
+
+<h3>추가덱 1회 단가 (entry &times; extra_deck_ratio / 10000 &times; V4배수 1.2)</h3>
+<div class="chart-container">
+  <div class="legend">
+    <span><span class="legend-dot" style="background:rgba(255,255,255,0.15)"></span>변경 전</span>
+    <span><span class="legend-dot" style="background:var(--red)"></span>변경 후 (인상)</span>
+  </div>
+  <div class="bar-group"><div class="bar-label">Lv3~9</div><div class="bar-track"><div class="bar old" style="width:12.2%"></div><div class="bar new-red" style="width:14.4%"></div><div class="bar-value">792g &rarr; 936g</div></div></div>
+  <div class="bar-group"><div class="bar-label">Lv10~24</div><div class="bar-track"><div class="bar old" style="width:20%"></div><div class="bar new-red" style="width:23.3%"></div><div class="bar-value">1,296g &rarr; 1,512g</div></div></div>
+  <div class="bar-group"><div class="bar-label">Lv25~49</div><div class="bar-track"><div class="bar old" style="width:25.3%"></div><div class="bar new-red" style="width:29.2%"></div><div class="bar-value">1,638g &rarr; 1,890g</div></div></div>
+  <div class="bar-group highlight-row"><div class="bar-label">Lv50~99 ★</div><div class="bar-track"><div class="bar old" style="width:31.1%"></div><div class="bar new-red" style="width:35.6%"></div><div class="bar-value">2,016g &rarr; 2,304g</div></div></div>
+  <div class="bar-group"><div class="bar-label">Lv200~349</div><div class="bar-track"><div class="bar old" style="width:41.7%"></div><div class="bar new-red" style="width:47.2%"></div><div class="bar-value">2,700g &rarr; 3,060g</div></div></div>
+  <div class="bar-group"><div class="bar-label">Lv550~799</div><div class="bar-track"><div class="bar old" style="width:59.3%"></div><div class="bar new-red" style="width:66.7%"></div><div class="bar-value">3,840g &rarr; 4,320g</div></div></div>
+  <div class="bar-group"><div class="bar-label">Lv1450+</div><div class="bar-track"><div class="bar old" style="width:88.9%"></div><div class="bar new-red" style="width:100%"></div><div class="bar-value">5,760g &rarr; 6,480g</div></div></div>
+</div>
+</div>
+
+<!-- Section 3: 누적 사용 비용 -->
+<h2>3. Lv75 기준 1게임 부스터 누적 비용 (x1 배팅)</h2>
+<div class="section">
+<h3>언두 사용별 비용 (entry 2,400g &times; n &times; ucir)</h3>
+<table>
+  <thead>
+    <tr><th>사용 횟수</th><th>변경 전 (ucir 25%)</th><th>변경 후 (ucir 20%)</th><th>절감</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1회</td><td>600g</td><td class="cell-down">480g</td><td class="cell-down">-120g</td></tr>
+    <tr><td>2회</td><td>1,200g</td><td class="cell-down">960g</td><td class="cell-down">-240g</td></tr>
+    <tr><td>3회</td><td>1,800g</td><td class="cell-down">1,440g</td><td class="cell-down">-360g</td></tr>
+    <tr><td>4회</td><td>2,400g</td><td class="cell-down">1,920g</td><td class="cell-down">-480g</td></tr>
+    <tr style="font-weight:700; border-top: 2px solid rgba(255,255,255,0.15)">
+      <td>언두 합계 (4회)</td><td>6,000g</td><td class="cell-down">4,800g</td><td class="cell-down">-1,200g</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>와일드카드 + 총합</h3>
+<table>
+  <thead>
+    <tr><th>항목</th><th>변경 전</th><th>변경 후</th><th>변동</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>와일드카드 1회</td><td>1,200g (50%)</td><td class="cell-up">1,560g (65%)</td><td class="cell-up">+360g</td></tr>
+    <tr style="font-weight:700; border-top: 2px solid rgba(255,255,255,0.15)">
+      <td>1게임 총 부스터 비용</td><td>7,200g</td><td class="cell-down">6,360g</td><td class="cell-down">-840g (-12%)</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="note note-info">
+  <strong>가격 위계 유지 확인:</strong> 추가덱 (2,304g) &gt; 와일드카드 (1,560g) &gt; 언두 1회 (576g) &#x2714;
+  <br>추가덱 ucir (25%) &gt; 언두 ucir (20%) &#x2714;
+</div>
+</div>
+
+<!-- Section 4: 전 티어 부스터 가격표 -->
+<h2>4. 전 티어 부스터 단가 상세표</h2>
+<div class="section">
+<table>
+  <thead>
+    <tr>
+      <th>레벨</th><th>입장료</th>
+      <th colspan="2">언두 1회 단가</th><th>변동</th>
+      <th colspan="2">추가덱 단가</th><th>변동</th>
+    </tr>
+    <tr>
+      <th></th><th>(V4 &times;1.2)</th>
+      <th>변경 전</th><th>변경 후</th><th></th>
+      <th>변경 전</th><th>변경 후</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="cell-neutral"><td>Lv1~2</td><td>0g</td><td>0</td><td>0</td><td>-</td><td>0</td><td>0</td><td>-</td></tr>
+    <tr><td>Lv3~9</td><td>1,440g</td><td>144g</td><td class="cell-down">115g</td><td class="cell-down">-29g</td><td>792g</td><td class="cell-up">936g</td><td class="cell-up">+144g</td></tr>
+    <tr><td>Lv10~24</td><td>2,160g</td><td>324g</td><td class="cell-down">259g</td><td class="cell-down">-65g</td><td>1,296g</td><td class="cell-up">1,512g</td><td class="cell-up">+216g</td></tr>
+    <tr><td>Lv25~49</td><td>2,520g</td><td>504g</td><td class="cell-down">403g</td><td class="cell-down">-101g</td><td>1,638g</td><td class="cell-up">1,890g</td><td class="cell-up">+252g</td></tr>
+    <tr class="highlight-row"><td><strong>Lv50~99 ★</strong></td><td>2,880g</td><td>720g</td><td class="cell-down"><strong>576g</strong></td><td class="cell-down">-144g</td><td>2,016g</td><td class="cell-up"><strong>2,304g</strong></td><td class="cell-up">+288g</td></tr>
+    <tr><td>Lv100~199</td><td>3,120g</td><td>936g</td><td class="cell-down">748g</td><td class="cell-down">-188g</td><td>2,184g</td><td class="cell-up">2,496g</td><td class="cell-up">+312g</td></tr>
+    <tr><td>Lv200~349</td><td>3,600g</td><td>1,260g</td><td class="cell-down">1,008g</td><td class="cell-down">-252g</td><td>2,700g</td><td class="cell-up">3,060g</td><td class="cell-up">+360g</td></tr>
+    <tr><td>Lv350~549</td><td>4,080g</td><td>1,428g</td><td class="cell-down">1,142g</td><td class="cell-down">-286g</td><td>3,060g</td><td class="cell-up">3,468g</td><td class="cell-up">+408g</td></tr>
+    <tr><td>Lv550~799</td><td>4,800g</td><td>1,920g</td><td class="cell-down">1,536g</td><td class="cell-down">-384g</td><td>3,840g</td><td class="cell-up">4,320g</td><td class="cell-up">+480g</td></tr>
+    <tr><td>Lv800~1099</td><td>5,520g</td><td>2,208g</td><td class="cell-down">1,766g</td><td class="cell-down">-442g</td><td>4,416g</td><td class="cell-up">4,968g</td><td class="cell-up">+552g</td></tr>
+    <tr><td>Lv1100~1449</td><td>6,480g</td><td>2,592g</td><td class="cell-down">2,073g</td><td class="cell-down">-519g</td><td>5,184g</td><td class="cell-up">5,832g</td><td class="cell-up">+648g</td></tr>
+    <tr><td>Lv1450+</td><td>7,200g</td><td>2,880g</td><td class="cell-down">2,304g</td><td class="cell-down">-576g</td><td>5,760g</td><td class="cell-up">6,480g</td><td class="cell-up">+720g</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- Section 5: D30 시뮬레이션 -->
+<h2>5. D30 경제 시뮬레이션 (부스터 사용률별)</h2>
+<div class="section">
+<div class="note note-info">
+  시뮬레이션 조건: undo 4회 + wild_card 1회/게임, x1 배팅 기준, 300회 Monte Carlo, 30일<br>
+  부스터 비용: undo_ucir=20%, wildcard_ratio=65% (변경 후 기준)
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>유저 유형</th><th>레벨</th><th>판수</th>
+      <th>V3 D30</th>
+      <th>V4 부스터 0%</th>
+      <th>V4 부스터 10%</th>
+      <th>V4 부스터 20%</th>
+      <th>V4 부스터 30%</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>극소극(튜토리얼)</td><td>5</td><td>2</td>
+      <td>+61,339g</td><td>+38,391g</td><td class="cell-down">+20,047g</td><td>+6,525g</td><td>+1,668g</td>
+    </tr>
+    <tr>
+      <td>소극(초보)</td><td>15</td><td>5</td>
+      <td>+173,129g</td><td>+82,732g</td><td class="cell-down">+19,919g</td><td>+2,603g</td><td>+198g</td>
+    </tr>
+    <tr class="highlight-row">
+      <td><strong>보통(중반) ★</strong></td><td>75</td><td>15</td>
+      <td>+247,343g</td><td>+107,190g</td><td class="cell-down"><strong>+2,918g</strong></td><td class="cell-up">-113g</td><td class="cell-up">-500g</td>
+    </tr>
+    <tr>
+      <td>활발(중반)</td><td>75</td><td>25</td>
+      <td>+209,614g</td><td>+20,224g</td><td class="cell-down">+664g</td><td>+69g</td><td class="cell-up">-549g</td>
+    </tr>
+    <tr>
+      <td>헌신(고레벨)</td><td>200</td><td>35</td>
+      <td>+140,969g</td><td>+10,147g</td><td class="cell-down">+1,306g</td><td class="cell-up">-103g</td><td class="cell-up">-817g</td>
+    </tr>
+    <tr>
+      <td>하드코어</td><td>300</td><td>40</td>
+      <td>+499,360g</td><td>+77,858g</td><td class="cell-down">+1,581g</td><td>+549g</td><td class="cell-up">-539g</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>D30 잔액 비주얼 (부스터 10% 기준, A안)</h3>
+<div class="chart-container">
+  <div class="gauge-row">
+    <div class="gauge-label">극소극 (Lv5)</div>
+    <div class="gauge-track"><div class="gauge-fill positive" style="width:80%"></div></div>
+    <div class="gauge-value" style="color:var(--green)">+20,047g</div>
+  </div>
+  <div class="gauge-row">
+    <div class="gauge-label">소극 (Lv15)</div>
+    <div class="gauge-track"><div class="gauge-fill positive" style="width:79%"></div></div>
+    <div class="gauge-value" style="color:var(--green)">+19,919g</div>
+  </div>
+  <div class="gauge-row">
+    <div class="gauge-label"><strong>보통 ★ (Lv75)</strong></div>
+    <div class="gauge-track"><div class="gauge-fill positive" style="width:12%"></div></div>
+    <div class="gauge-value" style="color:var(--green)">+2,918g</div>
+  </div>
+  <div class="gauge-row">
+    <div class="gauge-label">활발 (Lv75)</div>
+    <div class="gauge-track"><div class="gauge-fill positive" style="width:3%"></div></div>
+    <div class="gauge-value" style="color:var(--yellow)">+664g</div>
+  </div>
+  <div class="gauge-row">
+    <div class="gauge-label">헌신 (Lv200)</div>
+    <div class="gauge-track"><div class="gauge-fill positive" style="width:5%"></div></div>
+    <div class="gauge-value" style="color:var(--yellow)">+1,306g</div>
+  </div>
+  <div class="gauge-row">
+    <div class="gauge-label">하드코어 (Lv300)</div>
+    <div class="gauge-track"><div class="gauge-fill positive" style="width:6%"></div></div>
+    <div class="gauge-value" style="color:var(--yellow)">+1,581g</div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>핵심 판정:</strong> 부스터 10% 사용 시 전 유저 D30 &gt; 0 유지 &#x2714;<br>
+  부스터 20% 이상 시 보통/헌신 유저 마이너스 진입 &rarr; IAP 전환 압박 시작
+</div>
+</div>
+
+<!-- Section 6: V3 대비 변화율 -->
+<h2>6. V3 대비 D30 감소율</h2>
+<div class="section">
+<table>
+  <thead>
+    <tr><th>유저</th><th>V3 D30</th><th>V4 부스터 0%</th><th>감소율</th><th>V4 부스터 10%</th><th>감소율</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>극소극</td><td>+61,339g</td><td>+38,391g</td><td>-37%</td><td>+20,047g</td><td class="cell-down">-67%</td>
+    </tr>
+    <tr>
+      <td>소극</td><td>+173,129g</td><td>+82,732g</td><td>-52%</td><td>+19,919g</td><td class="cell-down">-88%</td>
+    </tr>
+    <tr class="highlight-row">
+      <td><strong>보통 ★</strong></td><td>+247,343g</td><td>+107,190g</td><td>-57%</td><td>+2,918g</td><td class="cell-down"><strong>-99%</strong></td>
+    </tr>
+    <tr>
+      <td>활발</td><td>+209,614g</td><td>+20,224g</td><td>-90%</td><td>+664g</td><td class="cell-down">-100%</td>
+    </tr>
+    <tr>
+      <td>헌신</td><td>+140,969g</td><td>+10,147g</td><td>-93%</td><td>+1,306g</td><td class="cell-down">-99%</td>
+    </tr>
+    <tr>
+      <td>하드코어</td><td>+499,360g</td><td>+77,858g</td><td>-84%</td><td>+1,581g</td><td class="cell-down">-100%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- Section 7: 보통★ 일일 소득 구조 -->
+<h2>7. 보통(중반)★ Lv75 일일 소득 구조</h2>
+<div class="section">
+<h3>Source 내역 (부스터 미사용 기준)</h3>
+<div class="chart-container">
+  <div class="stack-row">
+    <div class="stack-label">Source</div>
+    <div class="stack-track">
+      <div class="stack-seg" style="width:26.8%; background:#4ecca3" title="방치골드 5,700g">방치</div>
+      <div class="stack-seg" style="width:13.2%; background:#54a0ff" title="인박스 2,796g">인박스</div>
+      <div class="stack-seg" style="width:26.3%; background:#5f27cd" title="팝업 5,593g">팝업</div>
+      <div class="stack-seg" style="width:7.9%; background:#ff9f43" title="상점 1,677g">상점</div>
+      <div class="stack-seg" style="width:7.9%; background:#ee5a24" title="로비 1,677g">로비</div>
+      <div class="stack-seg" style="width:11.9%; background:#ffc947" title="휠 2,520g">휠</div>
+      <div class="stack-seg" style="width:6%; background:#a29bfe" title="출석 1,285g">출석</div>
+    </div>
+    <div class="stack-total" style="color:var(--green)">+21,251g</div>
+  </div>
+  <div class="stack-row">
+    <div class="stack-label">게임플레이</div>
+    <div class="stack-track">
+      <div class="stack-seg" style="width:100%; background:var(--accent)">입장료 싱크 - 인게임 보상</div>
+    </div>
+    <div class="stack-total" style="color:var(--red)">-12,375g</div>
+  </div>
+  <div class="stack-row">
+    <div class="stack-label">컬렉션</div>
+    <div class="stack-track">
+      <div class="stack-seg" style="width:100%; background:#26de81">앨범+마일스톤</div>
+    </div>
+    <div class="stack-total" style="color:var(--green)">+870g</div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr><th>항목</th><th>일일 골드</th><th>비율</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>방치골드</td><td>+5,700g</td><td>26.8%</td></tr>
+    <tr><td>인박스 RV</td><td>+2,796g</td><td>13.2%</td></tr>
+    <tr><td>팝업 RV</td><td>+5,593g</td><td>26.3%</td></tr>
+    <tr><td>상점 RV</td><td>+1,677g</td><td>7.9%</td></tr>
+    <tr><td>로비 RV (신규)</td><td>+1,677g</td><td>7.9%</td></tr>
+    <tr><td>데일리 휠</td><td>+2,520g</td><td>11.9%</td></tr>
+    <tr><td>출석 보상</td><td>+1,285g</td><td>6.0%</td></tr>
+    <tr style="font-weight:700; border-top:2px solid rgba(255,255,255,0.15)"><td>Source 합계</td><td>+21,251g</td><td>100%</td></tr>
+    <tr><td>게임플레이 EV</td><td class="cell-up">-12,375g</td><td>-</td></tr>
+    <tr><td>컬렉션</td><td>+870g</td><td>-</td></tr>
+    <tr style="font-weight:700; border-top:2px solid rgba(255,255,255,0.15)"><td>일일 순소득 (부스터 0%)</td><td>+9,746g</td><td>-</td></tr>
+    <tr><td>부스터 싱크 (10%, 636g/판)</td><td class="cell-up">-6,828g</td><td>-</td></tr>
+    <tr style="font-weight:700"><td>일일 순소득 (부스터 10%)</td><td>+2,918g</td><td>-</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- Section 8: 설계 의도 요약 -->
+<h2>8. 설계 의도 및 주의사항</h2>
+<div class="section section-dark">
+<h3>A안 설계 원칙</h3>
+<table>
+  <thead><tr><th>원칙</th><th>내용</th><th>상태</th></tr></thead>
+  <tbody>
+    <tr><td>부스터 = 주요 싱크</td><td>부스터 사용이 골드 소진의 핵심 레버</td><td style="color:var(--green)">&#x2714; 확인</td></tr>
+    <tr><td>가격 위계</td><td>추가덱 (25%) &gt; 언두 (20%) &gt; 와일드카드 (fixed)</td><td style="color:var(--green)">&#x2714; 유지</td></tr>
+    <tr><td>체감 개선</td><td>언두 인하 (-20%), 와일드카드 인상 (+30%)</td><td style="color:var(--green)">&#x2714; 반영</td></tr>
+    <tr><td>전 유저 D30 &gt; 0</td><td>부스터 10% 기준 최소 +664g (활발)</td><td style="color:var(--green)">&#x2714; PASS</td></tr>
+    <tr><td>V3 대비 인플레 억제</td><td>보통★ 기준 V3 대비 -99% (부스터 10%)</td><td style="color:var(--green)">&#x2714; 목표 달성</td></tr>
+  </tbody>
+</table>
+
+<h3>모니터링 포인트</h3>
+<div class="note">
+  <strong>활발/헌신 유저 버퍼 주의:</strong> 부스터 10% 기준 D30 +664g / +1,306g로 매우 얇음.<br>
+  &bull; 실제 부스터 사용률이 15% 이상이면 마이너스 진입 가능<br>
+  &bull; 라이브 모니터링: 부스터 사용률 &gt; 15% 구간 감지 시 undo_ratio 추가 인하 또는 RV 버퍼 검토<br>
+  &bull; 부스터 20% 이상 사용 유저 &rarr; IAP 전환 대상 (의도된 설계)
+</div>
+</div>
+
+<hr class="divider">
+
+<p class="footer">
+  V4 Economy Booster Price Impact Report | 시뮬레이션: economy_simulator_v5.py (300 runs &times; 30 days)<br>
+  생성일: 2026-04-08 | undo_ucir 25%&rarr;20%, wildcard_ratio 50%&rarr;65%, extra_deck ucir 15%&rarr;25%
+</p>
+
+</div>
+</body>
+</html>

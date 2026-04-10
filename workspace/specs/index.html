@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
 <meta charset="UTF-8">
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>업데이트 스펙 인덱스 · Solitaire TriPeaks</title>
 <style>
@@ -91,6 +91,10 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .kpi-value--yellow { color:var(--yellow); }
 .kpi-value--green  { color:var(--green); }
 .kpi-sub { font-size:var(--text-xs);color:var(--text-dim);margin-top:4px; }
+.kpi-sparkline { display:none;margin-top:12px;height:48px;border:1px solid var(--border);border-radius:var(--radius-lg);background:rgba(255,255,255,0.035);padding:6px 10px; }
+[data-theme="light"] .kpi-sparkline { background:rgba(0,0,0,0.025); }
+.kpi-sparkline svg { display:block;width:100%;height:100%;overflow:visible; }
+.kpi-sparkline .spark-label { fill:var(--text-dim);font-size:10px; }
 
 /* ── 필터 바 ── */
 .filter-bar { background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;display:flex;align-items:center;gap:8px;height:48px;overflow-x:auto;position:sticky;top:0;z-index:var(--z-sticky); }
@@ -100,6 +104,13 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .filter-btn.active { background:var(--purple-bg);border-color:var(--accent);color:var(--accent2); }
 .filter-sep { width:1px;height:20px;background:var(--border);flex-shrink:0; }
 .sort-label { font-size:var(--text-xs);color:var(--text-dim);white-space:nowrap; }
+.filter-search { margin-left:auto;position:relative;display:flex;align-items:center;min-width:220px;flex:0 0 240px; }
+.filter-search input { width:100%;height:30px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-full);color:var(--text);font-size:var(--text-sm);padding:4px 32px 4px 12px;outline:none; }
+.filter-search input:focus { border-color:var(--accent);box-shadow:0 0 0 2px var(--purple-bg); }
+.filter-search input::placeholder { color:var(--text-dim); }
+.search-clear { position:absolute;right:5px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:0;background:transparent;color:var(--text-dim);font-size:15px;line-height:1;display:none;align-items:center;justify-content:center;cursor:pointer;border-radius:var(--radius-full); }
+.filter-search.has-value .search-clear { display:flex; }
+.search-clear:hover { color:var(--text);background:var(--surface3); }
 
 /* ── 메인 ── */
 .main { max-width:1100px;margin:0 auto;padding:32px 40px 80px; }
@@ -108,6 +119,14 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .list-title { font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-dim); }
 .count-badge { background:var(--surface2);color:var(--text-dim);font-size:var(--text-xs);padding:2px 10px;border-radius:var(--radius-md); }
 .drag-hint { margin-left:auto;font-size:var(--text-xs);color:var(--text-dim); }
+.list-actions { margin-left:auto;display:flex;align-items:center;gap:8px;position:relative; }
+.header-btn,.sort-select { height:30px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-size:var(--text-xs);padding:0 10px;cursor:pointer; }
+.header-btn:hover,.sort-select:hover { border-color:var(--accent);color:var(--accent); }
+.export-wrap { position:relative; }
+.export-menu { position:absolute;right:0;top:calc(100% + 6px);z-index:var(--z-dropdown);min-width:130px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:5px;display:none; }
+.export-menu.open { display:block; }
+.export-menu button { width:100%;background:transparent;border:0;color:var(--text);font-size:var(--text-sm);padding:7px 10px;border-radius:var(--radius-sm);text-align:left;cursor:pointer; }
+.export-menu button:hover { background:var(--surface2); }
 
 /* ── 카드 ── */
 .spec-list { display:flex;flex-direction:column;gap:8px; }
@@ -115,7 +134,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .spec-card {
   background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
   padding:18px 20px;cursor:pointer;transition:all var(--dur-fast);
-  display:grid;grid-template-columns:auto auto 1fr auto;align-items:center;gap:14px;
+  display:grid;grid-template-columns:auto auto auto 1fr auto;align-items:center;gap:14px;
   text-decoration:none;color:inherit;user-select:none;
 }
 .spec-card:hover { border-color:var(--purple-border);background:var(--surface2);transform:translateX(2px);text-decoration:none; }
@@ -123,15 +142,27 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .spec-card.drag-over { border-color:var(--accent);border-style:dashed; }
 .spec-card.status-done { opacity:0.45; }
 .spec-card.status-done .spec-title { text-decoration:line-through;color:var(--text-dim); }
+.spec-card.drag-disabled { cursor:pointer; }
+.spec-card.drag-disabled .drag-handle { opacity:0.3;cursor:default; }
+.sheet-body .spec-card { grid-template-columns:auto 1fr auto; }
 
 .drag-handle { color:var(--border);font-size:18px;cursor:grab;transition:color var(--dur-fast); }
 .spec-card:hover .drag-handle { color:var(--text-dim); }
+.bulk-select { width:16px;height:16px;accent-color:var(--accent);opacity:0;pointer-events:none;transition:opacity var(--dur-fast); }
+.spec-card:hover .bulk-select, body.has-bulk-selection .bulk-select { opacity:1;pointer-events:auto; }
 
 .spec-num { font-family:monospace;font-size:var(--text-xs);color:var(--text-dim);background:var(--surface2);padding:2px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);white-space:nowrap; }
 
 .spec-info { min-width:0; }
 .spec-title { font-size:var(--text-base);font-weight:700;color:var(--text);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .spec-meta  { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+.history-line { flex-basis:100%;font-size:var(--text-xs);color:var(--text-dim);line-height:1.4;margin-top:1px; }
+.due-chip,.related-chip { display:inline-flex;align-items:center;gap:4px;font-size:var(--text-xs);font-weight:700;padding:2px 8px;border-radius:var(--radius-md);border:1px solid;cursor:pointer; }
+.due-green { color:var(--green);background:var(--green-bg);border-color:var(--green-border); }
+.due-yellow { color:var(--yellow);background:var(--yellow-bg);border-color:var(--yellow-border); }
+.due-red { color:var(--red);background:var(--red-bg);border-color:var(--red-border); }
+.related-chip { color:var(--text-dim);background:var(--surface2);border-color:var(--border);text-decoration:none; }
+.related-chip:hover { color:var(--accent);border-color:var(--accent); }
 
 /* ── 배지 (토큰 참조) ── */
 .badge { display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:var(--radius-md);font-size:var(--text-xs);font-weight:600; }
@@ -218,6 +249,17 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .dd-item { display:flex;align-items:center;padding:7px 10px;border-radius:var(--radius-sm);font-size:var(--text-sm);cursor:pointer;color:var(--text);transition:background var(--dur-fast);white-space:nowrap;gap:6px; }
 .dd-item:hover { background:var(--surface2); }
 .dd-item.active { color:var(--accent);font-weight:700;background:var(--purple-bg); }
+.dd-item .check { width:14px;display:inline-flex;justify-content:center;color:var(--accent); }
+.date-editor { position:fixed;z-index:var(--z-dropdown);display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:6px; }
+.date-editor.open { display:block; }
+.date-editor input { background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:5px;font-size:var(--text-sm); }
+.bulk-bar { position:fixed;left:0;right:0;bottom:0;z-index:900;background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -8px 28px rgba(0,0,0,0.28);display:none;align-items:center;justify-content:center;gap:8px;padding:12px 16px; }
+.bulk-bar.open { display:flex; }
+.bulk-count { color:var(--text);font-size:var(--text-sm);font-weight:700;margin-right:6px; }
+.bulk-bar button { background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-size:var(--text-xs);font-weight:700;padding:7px 10px;cursor:pointer; }
+.bulk-bar button:hover { border-color:var(--accent);color:var(--accent); }
+.toast { position:fixed;left:50%;bottom:80px;transform:translateX(-50%);z-index:950;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-full);box-shadow:var(--shadow-md);color:var(--text);font-size:var(--text-sm);font-weight:700;padding:8px 14px;display:none; }
+.toast.open { display:block; }
 </style>
 </head>
 <body>
@@ -265,7 +307,15 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
   <button class="filter-btn" data-filter="monetize" onclick="setFilter('monetize')">💰 수익화</button>
   <button class="filter-btn" data-filter="social" onclick="setFilter('social')">👥 소셜</button>
   <div class="filter-sep"></div>
-  <span class="sort-label">↕ 드래그로 순서 변경 &nbsp;·&nbsp; 배지 클릭 → 드롭다운으로 태그·우선순위·상태 변경</span>
+  <button class="filter-btn" data-status-filter="all" onclick="setStatusFilter('all')">전체 상태</button>
+  <button class="filter-btn" data-status-filter="planned" onclick="setStatusFilter('planned')">🟣 진행예정</button>
+  <button class="filter-btn" data-status-filter="wip" onclick="setStatusFilter('wip')">🟡 진행중</button>
+  <button class="filter-btn" data-status-filter="open" onclick="setStatusFilter('open')">🔵 검토중</button>
+  <button class="filter-btn" data-status-filter="hold" onclick="setStatusFilter('hold')">⏸ 보류</button>
+  <div class="filter-search" id="searchWrap">
+    <input id="searchInput" type="search" placeholder="제목 검색" oninput="setSearch(this.value)" aria-label="제목 검색">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="검색어 지우기">×</button>
+  </div>
 </div>
 
 <!-- ── 리스트 ── -->
@@ -273,6 +323,20 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
   <div class="list-header">
     <span class="list-title">기획서 목록</span>
     <span class="count-badge" id="countBadge">0</span>
+    <div class="list-actions">
+      <select class="sort-select" id="sortSelect" onchange="setSortMode(this.value)" aria-label="정렬">
+        <option value="manual">수동</option>
+        <option value="date">날짜 최신순</option>
+        <option value="priority">우선순위 높은순</option>
+      </select>
+      <div class="export-wrap">
+        <button class="header-btn" onclick="toggleExportMenu(event)">내보내기</button>
+        <div class="export-menu" id="exportMenu">
+          <button onclick="copyExport('csv')">CSV 복사</button>
+          <button onclick="copyExport('md')">마크다운 복사</button>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="spec-list" id="specList"
        ondragover="onDragOver(event)" ondrop="onDrop(event)"></div>
@@ -283,6 +347,19 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 </div>
 
 <div class="meta-dropdown" id="metaDropdown"></div>
+<div class="date-editor" id="dateEditor">
+  <input id="dateEditorInput" type="date" onchange="saveDueDate(this.value)">
+</div>
+<div class="bulk-bar" id="bulkBar">
+  <span class="bulk-count" id="bulkCount">0개 선택됨</span>
+  <button onclick="applyBulkStatus('planned')">🟣 진행예정</button>
+  <button onclick="applyBulkStatus('wip')">🟡 진행중</button>
+  <button onclick="applyBulkStatus('open')">🔵 검토중</button>
+  <button onclick="applyBulkStatus('hold')">⏸ 보류</button>
+  <button onclick="applyBulkStatus('done')">✅ 완료</button>
+  <button onclick="applyBulkStatus('archive')">🗄️ 아카이브</button>
+</div>
+<div class="toast" id="toast">복사됨 ✓</div>
 
 <!-- ── 완료 모달 ── -->
 <div class="sheet-overlay" id="doneOverlay" onclick="closeDoneModal(event)">
@@ -312,52 +389,57 @@ const SPECS = [
   {
     id: 'spec-001', file: 'spec-001-daily-task-alert.html',
     title: '[메타-알림] 데일리 태스크 달성 플로팅 알럿',
-    tag: 'feature', priority: 'mid', status: 'open', date: '2026. 4. 2.',
+    tags: ['feature'], priority: 'mid', status: 'open', date: '2026. 4. 2.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-002', file: 'spec-002-share-surfaces.html',
     title: '[소셜-공유] 공유 지면 3종 설계',
-    tag: 'content', priority: 'mid', status: 'open', date: '2026. 4. 2.',
+    tags: ['content'], priority: 'mid', status: 'open', date: '2026. 4. 2.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-003', file: 'spec-003-rv-milestone.html',
     title: '[수익화-광고] RV 누적 마일스톤 보상',
-    tag: 'monetize', priority: 'mid', status: 'open', date: '2026. 4. 2.',
+    tags: ['monetize'], priority: 'mid', status: 'open', date: '2026. 4. 2.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-004', file: 'spec-004-explorer-rush.html',
     title: '[콘텐츠-이벤트] Explorer Rush',
-    tag: 'content', priority: 'mid', status: 'open', date: '2026. 4. 3.',
+    tags: ['content'], priority: 'mid', status: 'open', date: '2026. 4. 3.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-005', file: 'spec-005-streak-blaze.html',
     title: '[콘텐츠-이벤트] Streak Blaze',
-    tag: 'content', priority: 'mid', status: 'open', date: '2026. 4. 3.',
+    tags: ['content'], priority: 'mid', status: 'open', date: '2026. 4. 3.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-006', file: 'spec-006-friend-o-meter.html',
     title: '[소셜-친구] Friend-O-Meter',
-    tag: 'social', priority: 'mid', status: 'open', date: '2026. 4. 3.',
+    tags: ['social'], priority: 'mid', status: 'open', date: '2026. 4. 3.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-007', file: 'spec-007-season-pass.html',
     title: '[수익화-패스] 시즌 패스 (일반 · VIP)',
-    tag: 'monetize', priority: 'mid', status: 'open', date: '2026. 4. 3.',
+    tags: ['monetize'], priority: 'mid', status: 'open', date: '2026. 4. 3.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-008', file: 'spec-008-share-reward-launch.html',
     title: '[운영-후처리] share_reward_in_use 런칭 후 ON',
-    tag: 'etc', priority: 'high', status: 'hold', date: '2026. 4. 6.',
+    tags: ['etc'], priority: 'high', status: 'hold', date: '2026. 4. 6.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-009', file: 'spec-009-pre-level-popup-ab.html',
     title: '[AB-플로우] 프리레벨 팝업 제거 A/B',
-    tag: 'ux', priority: 'mid', status: 'open', date: '2026. 4. 6.',
+    tags: ['ux'], priority: 'mid', status: 'open', date: '2026. 4. 6.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-010', file: 'spec-010-deco-auto-trigger-ab.html',
     title: '[AB-메타] 꾸미기 자동 진입 A/B',
-    tag: 'ux', priority: 'mid', status: 'open', date: '2026. 4. 6.',
+    tags: ['ux'], priority: 'mid', status: 'open', date: '2026. 4. 6.', dueDate: null, relatedTo: [],
+  },
+  {
+    id: 'spec-011', file: 'spec-011-peak-rankers-info-button.html',
+    title: 'Peak Rankers — 자세히 보기 버튼',
+    tags: ['ux'], priority: 'mid', status: 'open', date: '2026. 4. 10.', dueDate: null, relatedTo: [],
   },
 ];
 
@@ -374,9 +456,7 @@ const TAG_INFO = {
   etc:      { label: '📌 기타',   cls: 'badge-etc'      },
 };
 const PRI_LABEL  = { high: '🔴 높음', mid: '🟡 보통', low: '⚪ 낮음' };
-const PRI_CYCLE    = { high: 'mid', mid: 'low', low: 'high' };
-const STATUS_CYCLE = { planned: 'wip', wip: 'open', open: 'hold', hold: 'planned', done: 'hold' };
-const TAG_CYCLE    = ['review','feature','balance','bug','ux','content','monetize','social','etc'];
+const PRI_ORDER  = { high: 3, mid: 2, low: 1 };
 const STATUS_INFO = {
   planned: { label: '🟣 진행 예정', cls: 'status-planned' },
   wip:     { label: '🟡 진행중',    cls: 'status-wip'     },
@@ -386,30 +466,93 @@ const STATUS_INFO = {
   archive: { label: '🗄️ 아카이브', cls: 'status-hold'    },
 };
 
-let activeFilter = 'all';
-let dragSrcId    = null;
+let activeFilter       = 'all';
+let activeStatusFilter = 'all';
+let searchQuery        = '';
+let sortMode           = 'manual';
+let selectedIds        = new Set();
+let dragSrcId          = null;
+let dueEditId          = null;
+let toastTimer         = null;
 
 // ── 로컬 오버라이드 ────────────────────────────────────────
-function getOv()   { return JSON.parse(localStorage.getItem('spec-ov')    || '{}'); }
-function getOrder(){ return JSON.parse(localStorage.getItem('spec-order') || '[]'); }
+function readJson(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
+  catch(e) { return fallback; }
+}
+function getOv() {
+  const ov = readJson('spec-ov', {});
+  let changed = false;
+  Object.keys(ov).forEach(id => {
+    const rec = ov[id] || {};
+    if (!rec || typeof rec !== 'object' || Array.isArray(rec)) {
+      ov[id] = {};
+      changed = true;
+      return;
+    }
+    if (rec.tag && !rec.tags) { rec.tags = [rec.tag]; changed = true; }
+    if (typeof rec.tags === 'string') { rec.tags = [rec.tags]; changed = true; }
+    if (Array.isArray(rec.tags)) {
+      const clean = rec.tags.filter(Boolean);
+      if (clean.length !== rec.tags.length) changed = true;
+      rec.tags = clean;
+    }
+    if (rec.tag) { delete rec.tag; changed = true; }
+    if (typeof rec.relatedTo === 'string') { rec.relatedTo = [rec.relatedTo]; changed = true; }
+    if (!Array.isArray(rec.relatedTo) && rec.relatedTo != null) { rec.relatedTo = []; changed = true; }
+  });
+  if (changed) saveOv(ov);
+  return ov;
+}
+function getOrder(){ return readJson('spec-order', []); }
 function saveOv(ov)   { localStorage.setItem('spec-ov',    JSON.stringify(ov));    }
 function saveOrder(o) { localStorage.setItem('spec-order', JSON.stringify(o));     }
+function normalizeItem(item) {
+  const tagVal = item.tag;
+  if (!Array.isArray(item.tags)) item.tags = item.tags ? [item.tags] : (tagVal ? [tagVal] : ['etc']);
+  item.tags = item.tags.filter(Boolean);
+  if (!item.tags.length) item.tags = ['etc'];
+  if (!Array.isArray(item.relatedTo)) item.relatedTo = item.relatedTo ? [item.relatedTo] : [];
+  if (!item.dueDate) item.dueDate = null;
+  return item;
+}
+function getAllItems() {
+  const ov = getOv();
+  return SPECS.map(s => normalizeItem({ ...s, ...(ov[s.id] || {}) }));
+}
 function applyOv(id, key, val) {
   const ov = getOv(); if (!ov[id]) ov[id] = {};
+  if (key === 'status') {
+    const from = ov[id].status || (SPECS.find(s => s.id === id) || {}).status || null;
+    if (from !== val) {
+      const logKey = id + '-log';
+      let logs; try { logs = JSON.parse(localStorage.getItem(logKey) || '[]'); } catch(e) { logs = []; }
+      const now = new Date();
+      const date = now.getFullYear() + '. ' + (now.getMonth()+1) + '. ' + now.getDate() + '.';
+      logs.push({ date, from, to: val });
+      localStorage.setItem(logKey, JSON.stringify(logs));
+    }
+  }
   ov[id][key] = val; saveOv(ov);
 }
 
 function buildList() {
-  const ov    = getOv();
   const order = getOrder();
-  let items   = SPECS.map(s => ({ ...s, ...(ov[s.id] || {}) }));
+  let items   = getAllItems();
   if (order.length) {
     const map    = Object.fromEntries(items.map(i => [i.id, i]));
     const sorted = order.map(id => map[id]).filter(Boolean);
     const rest   = items.filter(i => !order.includes(i.id));
     items = [...sorted, ...rest];
   }
-  if (activeFilter !== 'all') items = items.filter(i => i.tag === activeFilter);
+  if (sortMode === 'date') items = [...items].sort((a,b) => parseSpecDate(b.date) - parseSpecDate(a.date));
+  if (sortMode === 'priority') items = [...items].sort((a,b) => (PRI_ORDER[b.priority] || 0) - (PRI_ORDER[a.priority] || 0));
+  if (activeFilter !== 'all') items = items.filter(i => i.tags.includes(activeFilter));
+  if (activeStatusFilter !== 'all') items = items.filter(i => (i.status || 'open') === activeStatusFilter);
+  if (searchQuery.trim()) {
+    const q = searchQuery.trim().toLowerCase();
+    items = items.filter(i => (i.title || '').toLowerCase().includes(q));
+  }
   return items;
 }
 
@@ -424,7 +567,7 @@ const STATUS_SECTIONS = [
 // ── 렌더 ──────────────────────────────────────────────────
 function render() {
   const items     = buildList();
-  const all       = SPECS.map(s => ({ ...s, ...(getOv()[s.id] || {}) }));
+  const all       = getAllItems();
   const container = document.getElementById('specList');
   const empty     = document.getElementById('emptyState');
 
@@ -434,15 +577,26 @@ function render() {
   document.getElementById('statWip').textContent   = all.filter(i => i.status === 'wip').length;
   document.getElementById('statDone').textContent  = all.filter(i => i.status === 'done').length;
   document.getElementById('countBadge').textContent = items.length;
+  saveKpiSnapshot(all);
+  renderKpiSparkline();
 
-  if (!items.length) { container.innerHTML = ''; empty.style.display = 'block'; return; }
+  if (!items.length) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    syncControls();
+    updateBulkBar();
+    return;
+  }
   empty.style.display = 'none';
 
   let html = '';
   STATUS_SECTIONS.forEach(sec => {
+    if (activeStatusFilter !== 'all' && sec.key !== activeStatusFilter) return;
+    if (activeStatusFilter !== 'all' && sec.key === 'boxes') return;
     const group = sec.key === 'boxes'
       ? items.filter(i => i.status === 'done' || i.status === 'archive')
       : items.filter(i => (i.status || 'open') === sec.key);
+    if (group.length === 0) return;
     html += `<div class="section-divider">${sec.label} <span style="font-weight:400;opacity:0.55;font-size:var(--text-xs)">${group.length}</span></div>`;
     if (sec.key === 'boxes') {
       const doneGroup    = items.filter(i => (i.status || 'open') === 'done');
@@ -476,48 +630,86 @@ function render() {
   container.innerHTML = html;
   if (doneModalOpen) renderDoneModal();
   if (archiveModalOpen) renderArchiveModal();
-
-  // 필터 버튼 active 동기화
-  document.querySelectorAll('.filter-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.filter === activeFilter);
-  });
+  syncControls();
+  updateBulkBar();
 }
 
 function renderCard(item) {
-  const tag    = TAG_INFO[item.tag]       || TAG_INFO.etc;
-  const status = STATUS_INFO[item.status] || STATUS_INFO.open;
+  const tags       = item.tags || ['etc'];
+  const tagBadges  = tags.map(t => {
+    const tag = TAG_INFO[t] || TAG_INFO.etc;
+    return `<span class="badge ${tag.cls}" onclick="event.preventDefault();openDropdown(event,'${item.id}','tags')" title="태그 변경" style="cursor:pointer">${tag.label}</span>`;
+  }).join('');
+  const status     = STATUS_INFO[item.status] || STATUS_INFO.open;
+  const history    = renderHistoryLine(item.id);
+  const dueChip    = renderDueChip(item);
+  const related    = renderRelatedChips(item);
+  const dragOn     = sortMode === 'manual';
+  const selected   = selectedIds.has(item.id);
   return `
-<div class="spec-card ${item.status==='done'?'status-done':''}"
-     data-id="${item.id}" draggable="true"
+<a href="${item.file}" class="spec-card ${item.status==='done'?'status-done':''} ${dragOn?'':'drag-disabled'}"
+     data-id="${item.id}" draggable="${dragOn?'true':'false'}"
      ondragstart="onDragStart(event,'${item.id}')"
-     ondragend="onDragEnd()"
-     onclick="goTo('${item.file}')">
+     ondragend="onDragEnd()">
+  <input class="bulk-select" type="checkbox" ${selected?'checked':''} aria-label="${item.id.toUpperCase()} 선택"
+         onclick="event.stopPropagation()"
+         onchange="toggleSelection(event,'${item.id}')">
   <span class="drag-handle">⠿</span>
   <span class="spec-num">${item.id.toUpperCase()}</span>
   <div class="spec-info">
     <div class="spec-title">${escHtml(item.title)}</div>
     <div class="spec-meta">
-      <span class="badge ${tag.cls}" onclick="openDropdown(event,'${item.id}','tag')" title="태그 변경" style="cursor:pointer">${tag.label}</span>
+      ${tagBadges}
       <span class="pri-badge pri-${item.priority}"
-            onclick="openDropdown(event,'${item.id}','priority')"
+            onclick="event.preventDefault();openDropdown(event,'${item.id}','priority')"
             title="우선순위 변경">${PRI_LABEL[item.priority]}</span>
-      <span class="status-pill ${status.cls}" onclick="openDropdown(event,'${item.id}','status')" title="상태 변경" style="cursor:pointer">${status.label}</span>
+      <span class="status-pill ${status.cls}" onclick="event.preventDefault();openDropdown(event,'${item.id}','status')" title="상태 변경" style="cursor:pointer">${status.label}</span>
       <span class="spec-date">${item.date}</span>
+      ${dueChip}
+      ${related}
+      <span class="related-chip" onclick="event.preventDefault();openDropdown(event,'${item.id}','related')" title="관련 기획서 연결">관련</span>
+      ${history}
     </div>
   </div>
   <span class="spec-arrow">→</span>
-</div>`;
+</a>`;
 }
 
 function goTo(file) { window.location.href = file; }
+function goToRelated(id) {
+  const item = SPECS.find(s => s.id === id);
+  if (item) goTo(item.file);
+}
 
 function setFilter(tag) {
   activeFilter = (tag !== 'all' && activeFilter === tag) ? 'all' : tag;
   render();
 }
 
+function setStatusFilter(status) {
+  activeStatusFilter = (status !== 'all' && activeStatusFilter === status) ? 'all' : status;
+  render();
+}
+
+function setSearch(value) {
+  searchQuery = value || '';
+  render();
+}
+
+function clearSearch() {
+  searchQuery = '';
+  const input = document.getElementById('searchInput');
+  if (input) input.value = '';
+  render();
+}
+
+function setSortMode(value) {
+  sortMode = value || 'manual';
+  render();
+}
+
 const DD_OPTIONS = {
-  tag: [
+  tags: [
     { val:'review',   label:'🔍 리뷰'   },
     { val:'feature',  label:'✨ 기능'   },
     { val:'balance',  label:'⚖️ 밸런스' },
@@ -534,51 +726,95 @@ const DD_OPTIONS = {
     { val:'low',  label:'⚪ 낮음' },
   ],
   status: [
+    { val:'planned', label:'🟣 진행 예정' },
     { val:'open',    label:'🔵 검토중'    },
     { val:'wip',     label:'🟡 진행중'    },
+    { val:'hold',    label:'⏸ 보류'      },
     { val:'done',    label:'✅ 완료'      },
     { val:'archive', label:'🗄️ 아카이브' },
-    { val:'hold',    label:'⏸ 보류'      },
   ],
 };
-const DD_LABEL = { tag:'태그', priority:'우선순위', status:'상태' };
+const DD_LABEL = { tags:'태그', priority:'우선순위', status:'상태', related:'관련 기획서' };
 let ddCtx = null;
+
+function dropdownMarkup(id, field) {
+  const ov  = getOv();
+  const base = normalizeItem({ ...(SPECS.find(s => s.id === id) || {}), ...(ov[id] || {}) });
+  const cur = field === 'tags' ? base.tags : field === 'related' ? base.relatedTo : base[field] || '';
+  const options = field === 'related'
+    ? SPECS.filter(s => s.id !== id).map(s => ({ val:s.id, label:s.id.toUpperCase() }))
+    : DD_OPTIONS[field];
+
+  return `<div class="dd-label">${DD_LABEL[field]}</div>` +
+    options.map(o => {
+      const active = Array.isArray(cur) ? cur.includes(o.val) : o.val === cur;
+      const check = field === 'tags' || field === 'related' ? `<span class="check">${active ? '✓' : ''}</span>` : '';
+      return `<div class="dd-item${active ? ' active' : ''}" data-val="${o.val}">${check}${o.label}</div>`;
+    }
+    ).join('');
+}
 
 function openDropdown(e, id, field) {
   e.stopPropagation();
   const dd  = document.getElementById('metaDropdown');
-  const ov  = getOv();
-  const cur = (ov[id] && ov[id][field]) || SPECS.find(s => s.id === id)?.[field] || '';
-
-  dd.innerHTML =
-    `<div class="dd-label">${DD_LABEL[field]}</div>` +
-    DD_OPTIONS[field].map(o =>
-      `<div class="dd-item${o.val === cur ? ' active' : ''}" data-val="${o.val}">${o.label}</div>`
-    ).join('');
+  dd.innerHTML = dropdownMarkup(id, field);
 
   const rect = e.currentTarget.getBoundingClientRect();
-  dd.style.left = Math.min(rect.left, window.innerWidth - 160) + 'px';
+  dd.style.left = Math.min(rect.left, window.innerWidth - 190) + 'px';
   dd.style.top  = (rect.bottom + 5) + 'px';
   dd.classList.add('open');
+  if (rect.bottom + 5 + dd.offsetHeight > window.innerHeight) {
+    dd.style.top = (rect.top - dd.offsetHeight - 5) + 'px';
+  }
   ddCtx = { id, field };
 }
 
-document.addEventListener('click', () => {
+function closeMetaDropdown() {
   document.getElementById('metaDropdown')?.classList.remove('open');
   ddCtx = null;
+}
+
+document.addEventListener('click', () => {
+  closeMetaDropdown();
+  closeExportMenu();
+  closeDateEditor();
+});
+document.getElementById('dateEditor')?.addEventListener('click', e => e.stopPropagation());
+document.getElementById('exportMenu')?.addEventListener('click', e => e.stopPropagation());
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  closeDoneModal();
+  closeArchiveModal();
+  closeMetaDropdown();
+  closeExportMenu();
+  closeDateEditor();
 });
 document.getElementById('metaDropdown')?.addEventListener('click', e => {
   e.stopPropagation();
   const item = e.target.closest('.dd-item');
   if (!item || !ddCtx) return;
+  if (ddCtx.field === 'tags' || ddCtx.field === 'related') {
+    const ctx = { ...ddCtx };
+    const curItem = getAllItems().find(i => i.id === ctx.id) || {};
+    const key = ctx.field === 'tags' ? 'tags' : 'relatedTo';
+    let next = Array.isArray(curItem[key]) ? [...curItem[key]] : [];
+    if (next.includes(item.dataset.val)) next = next.filter(v => v !== item.dataset.val);
+    else next.push(item.dataset.val);
+    if (ctx.field === 'tags' && !next.length) next = ['etc'];
+    applyOv(ctx.id, key, next);
+    document.getElementById('metaDropdown').innerHTML = dropdownMarkup(ctx.id, ctx.field);
+    ddCtx = ctx;
+    render();
+    return;
+  }
   applyOv(ddCtx.id, ddCtx.field, item.dataset.val);
-  document.getElementById('metaDropdown').classList.remove('open');
-  ddCtx = null;
+  closeMetaDropdown();
   render();
 });
 
 // ── 드래그 앤 드롭 ────────────────────────────────────────
 function onDragStart(e, id) {
+  if (sortMode !== 'manual') { e.preventDefault(); return; }
   dragSrcId = id; e.dataTransfer.effectAllowed = 'move';
   setTimeout(() => { const el = document.querySelector(`[data-id="${id}"]`); if (el) el.classList.add('dragging'); }, 0);
 }
@@ -588,6 +824,7 @@ function onDragEnd() {
   document.querySelectorAll('.section-empty,.done-box,.archive-box').forEach(z => z.classList.remove('drag-over'));
 }
 function onDragOver(e) {
+  if (sortMode !== 'manual') return;
   e.preventDefault();
   const t = e.target.closest('.spec-card');
   document.querySelectorAll('.spec-card').forEach(c => c.classList.remove('drag-over'));
@@ -595,19 +832,31 @@ function onDragOver(e) {
 }
 function onDrop(e) {
   e.preventDefault();
+  if (sortMode !== 'manual') return;
   const t = e.target.closest('.spec-card');
   if (!t || !dragSrcId || t.dataset.id === dragSrcId) return;
-  const allItems     = buildList();
+  const allItems  = getAllItems();
   const targetStatus = allItems.find(i => i.id === t.dataset.id)?.status || 'open';
   const srcStatus    = allItems.find(i => i.id === dragSrcId)?.status    || 'open';
   if (targetStatus !== srcStatus) applyOv(dragSrcId, 'status', targetStatus);
-  const ids = buildList().map(i => i.id);
-  const si  = ids.indexOf(dragSrcId), ti = ids.indexOf(t.dataset.id);
+  // Reorder using the full unfiltered list so active tag filters don't erase hidden items
+  const order = getOrder();
+  let ids;
+  if (order.length) {
+    const map    = Object.fromEntries(allItems.map(i => [i.id, i]));
+    const sorted = order.map(id => map[id]).filter(Boolean);
+    const rest   = allItems.filter(i => !order.includes(i.id));
+    ids = [...sorted, ...rest].map(i => i.id);
+  } else {
+    ids = allItems.map(i => i.id);
+  }
+  const si = ids.indexOf(dragSrcId), ti = ids.indexOf(t.dataset.id);
   if (si === -1 || ti === -1) { render(); return; }
   ids.splice(si, 1); ids.splice(ti, 0, dragSrcId);
   saveOrder(ids); render();
 }
 function onDragOverEmpty(e) {
+  if (sortMode !== 'manual') return;
   e.preventDefault(); e.stopPropagation();
   e.currentTarget.classList.add('drag-over');
 }
@@ -616,6 +865,7 @@ function onDragLeaveEmpty(e) {
 }
 function onDropEmpty(e, statusKey) {
   e.preventDefault(); e.stopPropagation();
+  if (sortMode !== 'manual') return;
   e.currentTarget.classList.remove('drag-over');
   if (!dragSrcId) return;
   applyOv(dragSrcId, 'status', statusKey);
@@ -624,6 +874,225 @@ function onDropEmpty(e, statusKey) {
 
 function escHtml(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escAttr(s) {
+  return escHtml(s).replace(/"/g,'&quot;');
+}
+
+function parseSpecDate(dateText) {
+  const nums = (dateText || '').match(/\d+/g) || [];
+  if (nums.length < 3) return 0;
+  return new Date(Number(nums[0]), Number(nums[1]) - 1, Number(nums[2])).getTime();
+}
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function statusText(status) {
+  return (STATUS_INFO[status] && STATUS_INFO[status].label) || status || '-';
+}
+
+function renderHistoryLine(id) {
+  const logs = readJson(id + '-log', []);
+  if (!Array.isArray(logs) || !logs.length) return '';
+  const last = logs[logs.length - 1];
+  return `<div class="history-line">↺ ${escHtml(statusText(last.from))} → ${escHtml(statusText(last.to))} · ${escHtml(last.date || '')}</div>`;
+}
+
+function dueState(dueDate) {
+  const today = new Date(todayKey() + 'T00:00:00');
+  const due = new Date(dueDate + 'T00:00:00');
+  const diff = Math.ceil((due - today) / 86400000);
+  if (diff < 0) return 'red';
+  if (diff <= 3) return 'yellow';
+  return 'green';
+}
+
+function renderDueChip(item) {
+  if (!item.dueDate) return '';
+  const state = dueState(item.dueDate);
+  return `<span class="due-chip due-${state}" onclick="event.preventDefault();openDueEditor(event,'${item.id}')" title="마감일 변경">마감 ${escHtml(item.dueDate)}</span>`;
+}
+
+function renderRelatedChips(item) {
+  if (!Array.isArray(item.relatedTo) || !item.relatedTo.length) return '';
+  return item.relatedTo.map(id => {
+    const rel = SPECS.find(s => s.id === id);
+    if (!rel) return '';
+    return `<span class="related-chip" onclick="event.preventDefault();goToRelated('${id}')" title="${escAttr(rel.title)}">→ ${id.toUpperCase()}</span>`;
+  }).join('');
+}
+
+function openDueEditor(e, id) {
+  e.stopPropagation();
+  dueEditId = id;
+  closeMetaDropdown();
+  closeExportMenu();
+  const item = getAllItems().find(i => i.id === id) || {};
+  const pop = document.getElementById('dateEditor');
+  const input = document.getElementById('dateEditorInput');
+  const rect = e.currentTarget.getBoundingClientRect();
+  input.value = item.dueDate || '';
+  pop.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+  pop.style.top = (rect.bottom + 5) + 'px';
+  pop.classList.add('open');
+  input.focus();
+}
+
+function saveDueDate(value) {
+  if (!dueEditId) return;
+  applyOv(dueEditId, 'dueDate', value || null);
+  closeDateEditor();
+  render();
+}
+
+function closeDateEditor() {
+  document.getElementById('dateEditor')?.classList.remove('open');
+  dueEditId = null;
+}
+
+function toggleSelection(e, id) {
+  e.stopPropagation();
+  if (e.target.checked) selectedIds.add(id);
+  else selectedIds.delete(id);
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  const count = selectedIds.size;
+  document.body.classList.toggle('has-bulk-selection', count > 0);
+  const bar = document.getElementById('bulkBar');
+  const label = document.getElementById('bulkCount');
+  if (label) label.textContent = count + '개 선택됨';
+  if (bar) bar.classList.toggle('open', count > 0);
+}
+
+function applyBulkStatus(status) {
+  [...selectedIds].forEach(id => applyOv(id, 'status', status));
+  selectedIds.clear();
+  render();
+}
+
+function syncControls() {
+  document.querySelectorAll('[data-filter]').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === activeFilter);
+  });
+  document.querySelectorAll('[data-status-filter]').forEach(b => {
+    b.classList.toggle('active', b.dataset.statusFilter === activeStatusFilter);
+  });
+  const input = document.getElementById('searchInput');
+  const wrap = document.getElementById('searchWrap');
+  if (input && input.value !== searchQuery) input.value = searchQuery;
+  if (wrap) wrap.classList.toggle('has-value', !!searchQuery);
+  const sort = document.getElementById('sortSelect');
+  if (sort && sort.value !== sortMode) sort.value = sortMode;
+}
+
+function toggleExportMenu(e) {
+  e.stopPropagation();
+  closeMetaDropdown();
+  closeDateEditor();
+  document.getElementById('exportMenu')?.classList.toggle('open');
+}
+
+function closeExportMenu() {
+  document.getElementById('exportMenu')?.classList.remove('open');
+}
+
+function exportRows() {
+  return buildList().map(i => [
+    i.id.toUpperCase(),
+    i.title,
+    (i.tags || []).join('|'),
+    PRI_LABEL[i.priority] || i.priority,
+    statusText(i.status || 'open'),
+    i.date,
+    i.dueDate || ''
+  ]);
+}
+
+function csvCell(value) {
+  const s = String(value == null ? '' : value);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+
+async function copyExport(type) {
+  const headers = ['ID','제목','태그','우선순위','상태','날짜','마감일'];
+  const rows = exportRows();
+  const text = type === 'csv'
+    ? [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\n')
+    : ['| ' + headers.join(' | ') + ' |', '| ' + headers.map(() => '---').join(' | ') + ' |', ...rows.map(row => '| ' + row.map(v => String(v).replace(/\|/g,'/')).join(' | ') + ' |')].join('\n');
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('clipboard fallback');
+    await navigator.clipboard.writeText(text);
+  } catch(e) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  }
+  closeExportMenu();
+  showToast('복사됨 ✓');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.add('open');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('open'), 2000);
+}
+
+function saveKpiSnapshot(all) {
+  const date = todayKey();
+  const next = {
+    date,
+    total: all.length,
+    open: all.filter(i => i.status === 'open').length,
+    wip: all.filter(i => i.status === 'wip').length,
+    done: all.filter(i => i.status === 'done').length
+  };
+  let history = readJson('spec-kpi-history', []);
+  if (!Array.isArray(history)) history = [];
+  history = history.filter(h => h && h.date !== date);
+  history.push(next);
+  history = history.slice(-30);
+  localStorage.setItem('spec-kpi-history', JSON.stringify(history));
+}
+
+function sparkPoints(history, key, width, height, pad) {
+  const maxVal = Math.max(1, ...history.flatMap(h => [h.done || 0, h.wip || 0]));
+  return history.map((h, idx) => {
+    const x = history.length === 1 ? width / 2 : pad + idx * ((width - pad * 2) / (history.length - 1));
+    const y = height - pad - ((h[key] || 0) / maxVal) * (height - pad * 2);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  }).join(' ');
+}
+
+function renderKpiSparkline() {
+  const el = document.getElementById('kpiSparkline');
+  if (!el) return;
+  const history = readJson('spec-kpi-history', []);
+  if (!Array.isArray(history) || history.length < 2) {
+    el.style.display = 'none';
+    el.innerHTML = '';
+    return;
+  }
+  const width = 320, height = 48, pad = 6;
+  el.style.display = 'block';
+  el.innerHTML = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-label="KPI 추세">
+    <polyline points="${sparkPoints(history,'done',width,height,pad)}" fill="none" stroke="var(--green)" stroke-width="2.2" vector-effect="non-scaling-stroke"/>
+    <polyline points="${sparkPoints(history,'wip',width,height,pad)}" fill="none" stroke="var(--blue)" stroke-width="2.2" vector-effect="non-scaling-stroke"/>
+    <text x="4" y="12" class="spark-label">done</text>
+    <text x="4" y="26" class="spark-label">wip</text>
+  </svg>`;
 }
 
 // ── 완료 모달 ────────────────────────────────────────────
@@ -642,14 +1111,17 @@ function closeDoneModal(e) {
 }
 
 function renderDoneCard(item) {
-  const tag = TAG_INFO[item.tag] || TAG_INFO.etc;
+  const tagBadges = (item.tags || ['etc']).map(t => {
+    const tag = TAG_INFO[t] || TAG_INFO.etc;
+    return `<span class="badge ${tag.cls}" onclick="openDropdown(event,'${item.id}','tags')" title="태그 변경" style="cursor:pointer">${tag.label}</span>`;
+  }).join('');
   return `
 <div class="spec-card status-done" data-id="${item.id}" onclick="goTo('${item.file}')">
   <span class="spec-num">${item.id.toUpperCase()}</span>
   <div class="spec-info">
     <div class="spec-title">${escHtml(item.title)}</div>
     <div class="spec-meta">
-      <span class="badge ${tag.cls}" onclick="openDropdown(event,'${item.id}','tag')" title="태그 변경" style="cursor:pointer">${tag.label}</span>
+      ${tagBadges}
       <span class="pri-badge pri-${item.priority}" onclick="openDropdown(event,'${item.id}','priority')" title="우선순위 변경">${PRI_LABEL[item.priority]}</span>
       <span class="spec-date">${item.date}</span>
     </div>
@@ -665,16 +1137,13 @@ function restoreItem(e, id) {
 }
 
 function renderDoneModal() {
-  const ov   = getOv();
-  const done = SPECS.map(s => ({ ...s, ...(ov[s.id] || {}) })).filter(i => i.status === 'done');
+  const done = getAllItems().filter(i => i.status === 'done');
   const count = document.getElementById('doneModalCount');
   const list  = document.getElementById('doneModalList');
   if (count) count.textContent = done.length + '개';
   if (!list) return;
   if (!done.length) {
     list.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-dim);font-size:var(--text-sm)">완료된 기획서가 없습니다.</div>';
-    doneModalOpen = false;
-    document.getElementById('doneOverlay').classList.remove('open');
     return;
   }
   list.innerHTML = done.map(item => renderDoneCard(item)).join('');
@@ -696,14 +1165,17 @@ function closeArchiveModal(e) {
 }
 
 function renderArchiveCard(item) {
-  const tag = TAG_INFO[item.tag] || TAG_INFO.etc;
+  const tagBadges = (item.tags || ['etc']).map(t => {
+    const tag = TAG_INFO[t] || TAG_INFO.etc;
+    return `<span class="badge ${tag.cls}" onclick="openDropdown(event,'${item.id}','tags')" title="태그 변경" style="cursor:pointer">${tag.label}</span>`;
+  }).join('');
   return `
 <div class="spec-card status-done" data-id="${item.id}" onclick="goTo('${item.file}')">
   <span class="spec-num">${item.id.toUpperCase()}</span>
   <div class="spec-info">
     <div class="spec-title">${escHtml(item.title)}</div>
     <div class="spec-meta">
-      <span class="badge ${tag.cls}" onclick="openDropdown(event,'${item.id}','tag')" title="태그 변경" style="cursor:pointer">${tag.label}</span>
+      ${tagBadges}
       <span class="pri-badge pri-${item.priority}" onclick="openDropdown(event,'${item.id}','priority')" title="우선순위 변경">${PRI_LABEL[item.priority]}</span>
       <span class="spec-date">${item.date}</span>
     </div>
@@ -719,16 +1191,13 @@ function restoreFromArchive(e, id) {
 }
 
 function renderArchiveModal() {
-  const ov       = getOv();
-  const archived = SPECS.map(s => ({ ...s, ...(ov[s.id] || {}) })).filter(i => i.status === 'archive');
+  const archived = getAllItems().filter(i => i.status === 'archive');
   const count    = document.getElementById('archiveModalCount');
   const list     = document.getElementById('archiveModalList');
   if (count) count.textContent = archived.length + '개';
   if (!list) return;
   if (!archived.length) {
     list.innerHTML = '<div style="text-align:center;padding:48px;color:var(--text-dim);font-size:var(--text-sm)">아카이브된 기획서가 없습니다.</div>';
-    archiveModalOpen = false;
-    document.getElementById('archiveOverlay').classList.remove('open');
     return;
   }
   list.innerHTML = archived.map(item => renderArchiveCard(item)).join('');

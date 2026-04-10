@@ -145,3 +145,45 @@ meta_decoration_list 전체 30도시 × 5데코 = 150행 해머 비용 재설계
 ### 동기화 후 검증
 에이전트↔라이브 동기화 완료 ✅
 
+---
+
+## 동기화 #4 — string_code T_CLAIM_ALL_EMPTY 신규 행 + T_DAILY_TASK_120023 ar 수정 (2026-04-09)
+
+### 실행 일시
+2026-04-09 KST
+
+### 동기화 대상
+
+| 시트명 | 처리 | 변경 셀 | 하이라이트 | 확인 | 제거 |
+|--------|------|---------|-----------|------|------|
+| string_code | 신규 행 삽입 (Row 167) | 10 (A~J) | 하늘색 (구조 변경) | ✅ | ✅ |
+| string_code | 데이터 열만 (C117) | 1 | 연두색 (값 채움) | ✅ | ✅ |
+
+### 변경 상세
+
+#### T_CLAIM_ALL_EMPTY — 신규 행 삽입 (Row 167)
+
+T_CLAIM_ALL(Row 166) 바로 다음 위치에 `insertDimension`으로 삽입. 에이전트 시트(07) 작업 완료 후 라이브 동기화.
+
+| 언어 | 값 |
+|------|----|
+| key | T_CLAIM_ALL_EMPTY |
+| en | Nothing to claim right now! |
+| ar | لا شيء للاستلام الآن! |
+| es | ¡Nada que reclamar por ahora! |
+| pt | Nada para resgatar agora! |
+| id | Tidak ada yang bisa diklaim sekarang! |
+| ru | Нечего получать прямо сейчас! |
+| fr | Rien à récupérer pour l'instant ! |
+| th | ไม่มีรางวัลให้รับตอนนี้! |
+| kr | 지금은 받을 보상이 없어요! |
+
+#### T_DAILY_TASK_120023 — ar 열 공백 수정 (C117)
+
+| 항목 | 변경 전 | 변경 후 |
+|------|--------|--------|
+| ar | `               ` (공백) | `مسح {0} الملوك` |
+
+### 동기화 후 검증
+에이전트↔라이브 동기화 완료 ✅
+

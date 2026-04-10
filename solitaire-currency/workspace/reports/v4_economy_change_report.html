@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V4 경제 변경안 최종 보고서 — 적용 완료 (2026-04-08)</title>
+<style>
+  :root {
+    --bg: #0f1117; --bg2: #1a1d27; --bg3: #222638;
+    --border: #2e3350; --text: #e8eaf0; --text2: #9ca3b0;
+    --green: #3ecf8e; --yellow: #f5c842; --red: #f06b6b;
+    --blue: #5b8ef0; --orange: #f09050; --purple: #a78bfa;
+    --cyan: #38bdf8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', -apple-system, sans-serif; font-size: 14px; line-height: 1.6; }
+  .page { max-width: 1080px; margin: 0 auto; padding: 32px 24px; }
+
+  .report-header {
+    background: linear-gradient(135deg, #1a1d27, #16192a);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 36px 44px; margin-bottom: 32px;
+  }
+  .report-title { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .report-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+  .chip { border-radius: 20px; padding: 3px 14px; font-size: 11px; font-weight: 600; }
+  .chip-blue   { background: rgba(91,142,240,0.15); border: 1px solid rgba(91,142,240,0.3); color: var(--blue); }
+  .chip-green  { background: rgba(62,207,142,0.15); border: 1px solid rgba(62,207,142,0.3); color: var(--green); }
+  .chip-yellow { background: rgba(245,200,66,0.15); border: 1px solid rgba(245,200,66,0.3); color: var(--yellow); }
+  .chip-red    { background: rgba(240,107,107,0.15); border: 1px solid rgba(240,107,107,0.3); color: var(--red); }
+  .chip-purple { background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3); color: var(--purple); }
+
+  .section { margin-bottom: 40px; }
+  .section-title {
+    font-size: 16px; font-weight: 700; color: #fff;
+    margin-bottom: 18px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .snum { background: var(--blue); color: #fff; border-radius: 6px; padding: 2px 9px; font-size: 12px; font-weight: 700; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--bg3); color: var(--text2); font-weight: 600; padding: 9px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 9px 14px; border-bottom: 1px solid #1e2235; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .tbl-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+
+  .tag { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+  .tag-down  { background: rgba(240,107,107,0.2); color: var(--red); }
+  .tag-up    { background: rgba(62,207,142,0.2); color: var(--green); }
+  .tag-new   { background: rgba(91,142,240,0.2); color: var(--blue); }
+  .tag-keep  { background: rgba(156,163,176,0.15); color: var(--text2); }
+  .tag-fix   { background: rgba(245,200,66,0.2); color: var(--yellow); }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; }
+  .card-label { font-size: 11px; color: var(--text2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .card-value { font-size: 22px; font-weight: 700; color: #fff; }
+  .card-sub { font-size: 11px; color: var(--text2); margin-top: 4px; }
+  .card-green .card-value { color: var(--green); }
+  .card-red   .card-value { color: var(--red); }
+  .card-blue  .card-value { color: var(--blue); }
+  .card-yellow .card-value { color: var(--yellow); }
+  .card-purple .card-value { color: var(--purple); }
+
+  .callout { border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; font-size: 13px; line-height: 1.7; }
+  .callout-blue   { background: rgba(91,142,240,0.08); border-left: 3px solid var(--blue); }
+  .callout-green  { background: rgba(62,207,142,0.08); border-left: 3px solid var(--green); }
+  .callout-yellow { background: rgba(245,200,66,0.08); border-left: 3px solid var(--yellow); }
+  .callout-red    { background: rgba(240,107,107,0.08); border-left: 3px solid var(--red); }
+  .callout-purple { background: rgba(167,139,250,0.08); border-left: 3px solid var(--purple); }
+  .callout strong { color: #fff; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .bar-label { width: 120px; font-size: 12px; color: var(--text2); flex-shrink: 0; }
+  .bar-track { flex: 1; background: var(--bg3); border-radius: 4px; height: 18px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 600; color: #fff; white-space: nowrap; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  code { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 12px; font-family: 'Consolas', monospace; color: var(--cyan); }
+
+  .verdict { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 13px; }
+  .verdict-pass { background: rgba(62,207,142,0.15); color: var(--green); border: 1px solid rgba(62,207,142,0.3); }
+  .verdict-fail { background: rgba(240,107,107,0.15); color: var(--red); border: 1px solid rgba(240,107,107,0.3); }
+  .verdict-warn { background: rgba(245,200,66,0.15); color: var(--yellow); border: 1px solid rgba(245,200,66,0.3); }
+
+  .sheet-badge { background: rgba(62,207,142,0.1); border: 1px solid rgba(62,207,142,0.25); color: var(--green); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+  .sheet-badge-new { background: rgba(91,142,240,0.1); border: 1px solid rgba(91,142,240,0.25); color: var(--blue); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+  .num-down { color: var(--red); font-weight: 600; }
+  .num-up { color: var(--green); font-weight: 600; }
+  .num-keep { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="report-header">
+    <div class="report-title">V4 경제 변경안 최종 보고서</div>
+    <div class="report-sub">2026-04-08 · Economy Simulator V5 기반 · 적용 완료 (2026-04-08)</div>
+    <div class="chips">
+      <span class="chip chip-blue">rv_gold_ratio 신규</span>
+      <span class="chip chip-red">idle_base 인하</span>
+      <span class="chip chip-green">부스터 싱크 설계</span>
+      <span class="chip chip-yellow">전 유저 D30 플러스 확인</span>
+      <span class="chip chip-purple">시트 반영 6항목</span>
+    </div>
+  </div>
+
+  <!-- 1. 설계 목표 -->
+  <div class="section">
+    <div class="section-title"><span class="snum">1</span> 설계 목표 및 달성 여부</div>
+    <div class="card-grid">
+      <div class="card card-green">
+        <div class="card-label">보통★ D30 목표 (부스터 0%)</div>
+        <div class="card-value">−57%</div>
+        <div class="card-sub">V3 +247,343g → V4 +107,190g<br>목표 V3 × 40% (+98,937g) 근접 ✅</div>
+      </div>
+      <div class="card card-blue">
+        <div class="card-label">보통★ D30 (부스터 10%)</div>
+        <div class="card-value">+2,918g</div>
+        <div class="card-sub">부스터 사용 시 거의 소진<br>IAP 압박 활성화 설계 ✅</div>
+      </div>
+      <div class="card card-yellow">
+        <div class="card-label">$1.99 IAP 가치</div>
+        <div class="card-value">1.03일</div>
+        <div class="card-sub">목표 ≥ 1.0일 ✅<br>10,000g / 9,746g</div>
+      </div>
+      <div class="card card-purple">
+        <div class="card-label">전 유저 D30</div>
+        <div class="card-value">전원 플러스</div>
+        <div class="card-sub">부스터 10% 기준<br>6개 유저 타입 모두 > 0 ✅</div>
+      </div>
+    </div>
+    <div class="callout callout-blue">
+      <strong>A안 설계 원칙:</strong> 부스터가 주요 골드 싱크 역할. 부스터 미사용 시 D30 ≈ +100k (버퍼 확보), 부스터 10% 사용 시 D30 ≈ 0 (IAP 압박). V3에서 Lv100까지 40~50만원 골드 누적 문제를 부스터 싱크로 해소.
+    </div>
+  </div>
+
+  <!-- 2. 파라미터 변경 전체 -->
+  <div class="section">
+    <div class="section-title"><span class="snum">2</span> V3 → V4 파라미터 변경 전체</div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>항목</th><th>시트 위치</th><th>V3 현재값</th><th>V4 확정값</th><th>변화</th><th>시트 반영</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>idle_gold_charge_amount</strong><br><span style="color:var(--text2);font-size:11px">방치골드 1회 수령 기본량</span></td>
+            <td><code>const 10003</code></td>
+            <td>2,000g</td>
+            <td class="num-down">1,000g</td>
+            <td><span class="tag tag-down">−50%</span></td>
+            <td><span class="sheet-badge">적용 완료</span></td>
+          </tr>
+          <tr>
+            <td><strong>idle_gold_amount_increase</strong><br><span style="color:var(--text2);font-size:11px">레벨 20당 증가량</span></td>
+            <td><code>const 10005</code></td>
+            <td>300g</td>
+            <td class="num-keep">300g</td>
+            <td><span class="tag tag-keep">동일</span></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>idle_gold_max_cap</strong><br><span style="color:var(--text2);font-size:11px">방치골드 상한</span></td>
+            <td><code>const 10006</code></td>
+            <td>6,000g</td>
+            <td class="num-keep">6,000g</td>
+            <td><span class="tag tag-keep">동일</span></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>rv_gold_ratio 테이블</strong><br><span style="color:var(--text2);font-size:11px">RV 1회당 골드 = 입장료 × ratio/10000</span></td>
+            <td><code>신규 상수</code></td>
+            <td>고정 단가<br>(inbox 800g, shop 1,000g)</td>
+            <td class="num-up">레벨 비례<br>(아래 표 참조)</td>
+            <td><span class="tag tag-new">신규</span></td>
+            <td><span class="sheet-badge-new">신규 추가</span></td>
+          </tr>
+          <tr>
+            <td><strong>shop AD pay_limit</strong><br><span style="color:var(--text2);font-size:11px">상점 광고 일일 한도</span></td>
+            <td><code>product 190001</code></td>
+            <td>1회/일</td>
+            <td class="num-up">3회/일</td>
+            <td><span class="tag tag-up">+200%</span></td>
+            <td>✅ 이미 반영</td>
+          </tr>
+          <tr>
+            <td><strong>lobby RV 채널</strong><br><span style="color:var(--text2);font-size:11px">로비 광고 신규</span></td>
+            <td><code>신규</code></td>
+            <td>없음</td>
+            <td class="num-up">3회/일</td>
+            <td><span class="tag tag-new">신규</span></td>
+            <td><span class="sheet-badge-new">신규 추가</span></td>
+          </tr>
+          <tr>
+            <td><strong>level_entry_tier 전 구간</strong><br><span style="color:var(--text2);font-size:11px">입장료 배수</span></td>
+            <td><code>difficulty_tier</code></td>
+            <td>×1.0</td>
+            <td class="num-down">×1.2</td>
+            <td><span class="tag tag-down">+20%</span></td>
+            <td>✅ 이미 반영</td>
+          </tr>
+          <tr>
+            <td><strong>booster_undo ucir</strong><br><span style="color:var(--text2);font-size:11px">undo 사용횟수 증가율</span></td>
+            <td><code>item_list 40012</code></td>
+            <td>2,500 (25%)</td>
+            <td class="num-down">2,000 (20%)</td>
+            <td><span class="tag tag-down">−5%p</span></td>
+            <td><span class="sheet-badge">적용 완료</span></td>
+          </tr>
+          <tr>
+            <td><strong>booster_wild_card ratio</strong><br><span style="color:var(--text2);font-size:11px">와일드카드 가격 비율</span></td>
+            <td><code>item_list 40013</code></td>
+            <td>5,000 (50%)</td>
+            <td class="num-up">6,500 (65%)</td>
+            <td><span class="tag tag-up">+15%p</span></td>
+            <td><span class="sheet-badge">적용 완료</span></td>
+          </tr>
+          <tr>
+            <td><strong>booster_fireworks ratio</strong><br><span style="color:var(--text2);font-size:11px">불꽃놀이 가격 비율</span></td>
+            <td><code>item_list 40010</code></td>
+            <td>6,000 (60%)</td>
+            <td class="num-up">7,500 (75%)</td>
+            <td><span class="tag tag-up">+15%p</span></td>
+            <td>✅ 이미 반영</td>
+          </tr>
+          <tr>
+            <td><strong>booster_golden_ticket ratio</strong><br><span style="color:var(--text2);font-size:11px">황금티켓 가격 비율</span></td>
+            <td><code>item_list 40011</code></td>
+            <td>8,000 (80%)</td>
+            <td class="num-down">5,500 (55%)</td>
+            <td><span class="tag tag-down">−25%p</span></td>
+            <td>✅ 이미 반영</td>
+          </tr>
+          <tr>
+            <td><strong>daily_gift Day6</strong><br><span style="color:var(--text2);font-size:11px">출석 6일차 보상</span></td>
+            <td><code>daily_gift</code></td>
+            <td>5,000g</td>
+            <td class="num-down">3,000g</td>
+            <td><span class="tag tag-down">−40%</span></td>
+            <td>✅ 이미 반영</td>
+          </tr>
+          <tr>
+            <td><strong>undo_ratio</strong><br><span style="color:var(--text2);font-size:11px">언두 입장료 배수 (11행)</span></td>
+            <td><code>level_entry_tier</code></td>
+            <td>1,000~4,000</td>
+            <td class="num-down">800~3,200</td>
+            <td><span class="tag tag-down">&times;0.8</span></td>
+            <td><span class="sheet-badge">적용 완료</span></td>
+          </tr>
+          <tr>
+            <td><strong>extra_deck_ratio</strong><br><span style="color:var(--text2);font-size:11px">추가덱 입장료 배수 (11행)</span></td>
+            <td><code>level_entry_tier</code></td>
+            <td>5,500~8,000</td>
+            <td class="num-up">6,500~9,000</td>
+            <td><span class="tag tag-up">+1,000</span></td>
+            <td><span class="sheet-badge">적용 완료</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-yellow">
+      <strong>시트 반영 완료 항목 6개:</strong>
+      ① <code>const 10003</code> idle_gold_charge_amount: 2,000 → <strong>1,000</strong> &nbsp;
+      ② <code>item_list 40012</code> booster_undo ucir: 2,500 → <strong>2,000</strong> &nbsp;
+      ③ <code>item_list 40013</code> booster_wild_card ratio: 5,000 → <strong>6,500</strong> &nbsp;
+      ④ <code>item_list 40014</code> booster_extra_deck ucir: 1,500 → <strong>2,500</strong> (undo보다 비싸게 유지)
+      ⑤ <code>level_entry_tier</code> undo_ratio: 전 구간 &times;0.8 (1,000~4,000 → <strong>800~3,200</strong>) &nbsp;
+      ⑥ <code>level_entry_tier</code> extra_deck_ratio: 전 구간 +1,000 (5,500~8,000 → <strong>6,500~9,000</strong>)
+    </div>
+  </div>
+
+  <!-- 3. RV 비율 테이블 -->
+  <div class="section">
+    <div class="section-title"><span class="snum">3</span> RV Gold Ratio 신규 테이블</div>
+
+    <div class="callout callout-blue">
+      <strong>공식:</strong> <code>rv_gold = 입장료 × rv_gold_ratio / 10,000</code> &nbsp;|&nbsp;
+      <strong>N=3 UX 기준:</strong> ratio ≥ 3,333 → 최대 3번 시청으로 1판 입장 가능 (Lv3~99)
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>레벨 구간</th><th>ratio</th><th>N (watch/game)</th>
+            <th>대표 입장료 (V4)</th><th>RV 1회 골드</th><th>근거</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Lv1–2</td><td>0</td><td>—</td><td>0g</td><td>0g</td><td>튜토리얼 무료</td></tr>
+          <tr><td>Lv3–9</td><td class="num-up">3,333</td><td>3.0</td><td>1,200g</td><td>399g</td><td>N=3 하한</td></tr>
+          <tr><td>Lv10–24</td><td class="num-up">3,333</td><td>3.0</td><td>1,800g</td><td>599g</td><td>N=3 하한</td></tr>
+          <tr><td>Lv25–49</td><td class="num-up">3,333</td><td>3.0</td><td>2,160g</td><td>719g</td><td>N=3 하한</td></tr>
+          <tr><td>Lv50–99</td><td class="num-up">3,333</td><td>3.0</td><td>2,400g</td><td>799g</td><td>N=3 하한</td></tr>
+          <tr><td>Lv100–199</td><td class="num-up">3,800</td><td>2.6</td><td>2,640g</td><td>1,003g</td><td>고레벨 버퍼</td></tr>
+          <tr><td>Lv200–349</td><td class="num-up">3,800</td><td>2.4</td><td>3,000g</td><td>1,140g</td><td>고레벨 버퍼</td></tr>
+          <tr><td>Lv350+</td><td class="num-up">4,200</td><td>2.1</td><td>3,480g+</td><td>1,462g+</td><td>최고레벨 완화</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout callout-green">
+      <strong>V3 대비:</strong> 기존 고정 단가(inbox 800g, popup 800g, shop 1,000g)에서 <strong>입장료 비례 방식</strong>으로 전환. 레벨이 올라갈수록 RV 가치가 자연 상승하여 고레벨 유저의 골드 버퍼 유지.
+    </div>
+  </div>
+
+  <!-- 4. 부스터 가격 체계 -->
+  <div class="section">
+    <div class="section-title"><span class="snum">4</span> 부스터 가격 체계 (V3 → V4)</div>
+
+    <div class="two-col">
+      <div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>부스터</th><th>타입</th><th>V3</th><th>V4</th><th>변화</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>undo</strong></td><td>tier (누진)</td>
+                <td>ucir 25%</td><td class="num-down">ucir 20%</td>
+                <td><span class="tag tag-down">인하</span></td>
+              </tr>
+              <tr>
+                <td><strong>wild_card</strong></td><td>fixed</td>
+                <td>50%</td><td class="num-up">65%</td>
+                <td><span class="tag tag-up">인상</span></td>
+              </tr>
+              <tr>
+                <td><strong>extra_deck</strong></td><td>tier (누진)</td>
+                <td>ucir 40%</td><td class="num-down">ucir 25%</td>
+                <td><span class="tag tag-down">인하 (undo보다 비쌈)</span></td>
+              </tr>
+              <tr>
+                <td><strong>fireworks</strong></td><td>fixed</td>
+                <td>60%</td><td class="num-up">75%</td>
+                <td><span class="tag tag-up">인상</span></td>
+              </tr>
+              <tr>
+                <td><strong>golden_ticket</strong></td><td>fixed</td>
+                <td>80%</td><td class="num-down">55%</td>
+                <td><span class="tag tag-down">대폭 인하</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>undo 누진 가격 (Lv75, x1)</th><th>V3 (25%)</th><th>V4 (20%)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1회차</td><td>600g</td><td class="num-down">480g</td></tr>
+              <tr><td>2회차</td><td>1,200g</td><td class="num-down">960g</td></tr>
+              <tr><td>3회차</td><td>1,800g</td><td class="num-down">1,440g</td></tr>
+              <tr><td>4회차</td><td>2,400g</td><td class="num-down">1,920g</td></tr>
+              <tr><td>5회차</td><td>3,000g</td><td class="num-down">2,400g</td></tr>
+              <tr><td><strong>4회 합계</strong></td><td><strong>6,000g</strong></td><td class="num-down"><strong>4,800g</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-yellow" style="font-size:12px">
+          <strong>설계 근거:</strong> V3 유저 피드백 "undo 비싸다" → 20%로 인하.<br>
+          "wild_card 저렴하다" → 65%로 인상하여 싱크 강화.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. 시뮬레이션 결과 -->
+  <div class="section">
+    <div class="section-title"><span class="snum">5</span> 경제 시뮬레이션 결과 (Monte Carlo 300회)</div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>유저 타입</th><th>레벨</th><th>판수/일</th><th>V3 D30</th>
+            <th>V4 D30 (부스터0%)</th><th>V4 D30 (부스터10%)</th><th>V3대비(0%)</th><th>판정</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>극소극</strong><br><span style="font-size:11px;color:var(--text2)">튜토리얼</span></td>
+            <td>Lv5</td><td>2판</td>
+            <td>+61,339g</td><td>+38,391g</td><td>+20,047g</td>
+            <td>−37%</td><td><span class="verdict verdict-pass">✅</span></td>
+          </tr>
+          <tr>
+            <td><strong>소극</strong><br><span style="font-size:11px;color:var(--text2)">초보</span></td>
+            <td>Lv15</td><td>5판</td>
+            <td>+173,129g</td><td>+82,732g</td><td>+19,919g</td>
+            <td>−52%</td><td><span class="verdict verdict-pass">✅</span></td>
+          </tr>
+          <tr style="background:rgba(91,142,240,0.04)">
+            <td><strong>보통★</strong><br><span style="font-size:11px;color:var(--blue)">기준 유저</span></td>
+            <td>Lv75</td><td>15판</td>
+            <td>+247,343g</td><td>+107,190g</td><td>+2,918g</td>
+            <td>−57%</td><td><span class="verdict verdict-pass">✅</span></td>
+          </tr>
+          <tr>
+            <td><strong>활발</strong><br><span style="font-size:11px;color:var(--text2)">중반 고판수</span></td>
+            <td>Lv75</td><td>25판</td>
+            <td>+209,614g</td><td>+20,224g</td><td>+664g</td>
+            <td>−90%</td><td><span class="verdict verdict-pass">✅</span></td>
+          </tr>
+          <tr>
+            <td><strong>헌신</strong><br><span style="font-size:11px;color:var(--text2)">고레벨</span></td>
+            <td>Lv200</td><td>35판</td>
+            <td>+140,969g</td><td>+10,147g</td><td>+1,306g</td>
+            <td>−93%</td><td><span class="verdict verdict-pass">✅</span></td>
+          </tr>
+          <tr>
+            <td><strong>하드코어</strong></td>
+            <td>Lv300</td><td>40판</td>
+            <td>+499,360g</td><td>+77,858g</td><td>+1,581g</td>
+            <td>−84%</td><td><span class="verdict verdict-pass">✅</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-green">
+      <strong>부스터 10% 시나리오 전 유저 D30 > 0 달성.</strong> RV 잔고 충전 로직(잔고 부족 시 광고 우선 시청) 반영 결과. 단, 헌신/활발은 버퍼가 매우 얇아 실제 서비스에서 이탈 가능성 모니터링 필요.
+    </div>
+  </div>
+
+  <!-- 6. 일일 소득 구조 -->
+  <div class="section">
+    <div class="section-title"><span class="snum">6</span> 보통★ 일일 소득 구조 (V3 vs V4)</div>
+
+    <div class="two-col">
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-label">V3 일일 순소득</div>
+          <div class="card-value card-green" style="color:var(--green)">+15,816g</div>
+        </div>
+        <div class="bar-row"><div class="bar-label">방치골드</div><div class="bar-track"><div class="bar-fill" style="width:79.7%;background:var(--purple)">+12,600g</div></div></div>
+        <div class="bar-row"><div class="bar-label">인박스 RV</div><div class="bar-track"><div class="bar-fill" style="width:17.7%;background:var(--blue)">+2,800g</div></div></div>
+        <div class="bar-row"><div class="bar-label">팝업 RV</div><div class="bar-track"><div class="bar-fill" style="width:35.4%;background:var(--blue)">+5,600g</div></div></div>
+        <div class="bar-row"><div class="bar-label">상점 RV</div><div class="bar-track"><div class="bar-fill" style="width:4.4%;background:var(--blue)">+700g</div></div></div>
+        <div class="bar-row"><div class="bar-label">데일리 휠</div><div class="bar-track"><div class="bar-fill" style="width:15.9%;background:var(--yellow)">+2,520g</div></div></div>
+        <div class="bar-row"><div class="bar-label">출석 보상</div><div class="bar-track"><div class="bar-fill" style="width:9.9%;background:var(--yellow)">+1,571g</div></div></div>
+        <div class="bar-row"><div class="bar-label">게임플레이</div><div class="bar-track"><div class="bar-fill" style="width:63%;background:var(--red)">−9,975g</div></div></div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-label">V4 일일 순소득 (부스터0%)</div>
+          <div class="card-value" style="color:var(--blue)">+9,746g</div>
+        </div>
+        <div class="bar-row"><div class="bar-label">방치골드</div><div class="bar-track"><div class="bar-fill" style="width:36%;background:var(--purple)">+5,700g</div></div></div>
+        <div class="bar-row"><div class="bar-label">인박스 RV</div><div class="bar-track"><div class="bar-fill" style="width:17.7%;background:var(--blue)">+2,796g</div></div></div>
+        <div class="bar-row"><div class="bar-label">팝업 RV</div><div class="bar-track"><div class="bar-fill" style="width:35.4%;background:var(--blue)">+5,593g</div></div></div>
+        <div class="bar-row"><div class="bar-label">상점 RV</div><div class="bar-track"><div class="bar-fill" style="width:10.6%;background:var(--blue)">+1,678g</div></div></div>
+        <div class="bar-row"><div class="bar-label">로비 RV (신규)</div><div class="bar-track"><div class="bar-fill" style="width:10.6%;background:var(--cyan)">+1,678g</div></div></div>
+        <div class="bar-row"><div class="bar-label">데일리 휠</div><div class="bar-track"><div class="bar-fill" style="width:15.9%;background:var(--yellow)">+2,520g</div></div></div>
+        <div class="bar-row"><div class="bar-label">출석 보상</div><div class="bar-track"><div class="bar-fill" style="width:8.1%;background:var(--yellow)">+1,286g</div></div></div>
+        <div class="bar-row"><div class="bar-label">컬렉션</div><div class="bar-track"><div class="bar-fill" style="width:5.5%;background:var(--green)">+870g</div></div></div>
+        <div class="bar-row"><div class="bar-label">게임플레이</div><div class="bar-track"><div class="bar-fill" style="width:78.2%;background:var(--red)">−12,375g</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. 부스터 사용률 시나리오 -->
+  <div class="section">
+    <div class="section-title"><span class="snum">7</span> 부스터 사용률별 보통★ D30 시나리오</div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>시나리오</th><th>bet_mult</th><th>사용률</th><th>1게임 싱크</th><th>보통★ D30</th><th>전 유저 플러스</th><th>추천</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>부스터 미사용</td><td>—</td><td>0%</td><td>0g</td><td>+107,190g</td><td>✅</td><td>—</td></tr>
+          <tr style="background:rgba(62,207,142,0.05)">
+            <td><strong>설계 기준 (A안)</strong></td><td>x1전용 (1.0)</td><td><strong>10%</strong></td><td>4,800g</td><td><strong>+2,918g</strong></td><td>✅</td>
+            <td><span class="verdict verdict-pass">채택</span></td>
+          </tr>
+          <tr><td>x1전용 20%</td><td>1.0</td><td>20%</td><td>4,800g</td><td>−113g</td><td>❌</td><td>—</td></tr>
+          <tr><td>반반(50%) 10%</td><td>1.5</td><td>10%</td><td>7,200g</td><td>+357g</td><td>❌ 헌신−</td><td>—</td></tr>
+          <tr><td>x1주도 10%</td><td>1.25</td><td>10%</td><td>5,940g</td><td>+1,518g</td><td>✅</td><td>차선</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-purple">
+      <strong>A안 채택 근거:</strong> x1 베팅 유저 비율이 높을 것으로 가정 (초·중반 유저 대부분 x1 선택). 10% 사용률은 "막히는 판에서만" 부스터 사용 행동과 일치. 이 조합에서만 전 유저 D30 플러스 달성.
+    </div>
+  </div>
+
+  <!-- 8. 시트 반영 체크리스트 -->
+  <div class="section">
+    <div class="section-title"><span class="snum">8</span> Google Sheet 반영 체크리스트</div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>시트</th><th>위치</th><th>항목</th><th>현재값</th><th>변경값</th><th>우선순위</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td><td>const</td><td><code>10003</code></td>
+            <td>idle_gold_charge_amount</td>
+            <td>2,000</td><td class="num-down"><strong>1,000</strong></td>
+            <td><span class="tag tag-down">High</span></td>
+          </tr>
+          <tr>
+            <td>2</td><td>item_list</td><td><code>40012</code></td>
+            <td>booster_undo / use_count_increase_rate</td>
+            <td>2,500</td><td class="num-down"><strong>2,000</strong></td>
+            <td><span class="tag tag-down">High</span></td>
+          </tr>
+          <tr>
+            <td>3</td><td>item_list</td><td><code>40013</code></td>
+            <td>booster_wild_card / entry_cost_ratio</td>
+            <td>5,000</td><td class="num-up"><strong>6,500</strong></td>
+            <td><span class="tag tag-down">High</span></td>
+          </tr>
+          <tr>
+            <td>3-1</td><td>item_list</td><td><code>40014</code></td>
+            <td>booster_extra_deck / use_count_increase_rate</td>
+            <td>1,500</td><td class="num-up"><strong>2,500</strong></td>
+            <td><span class="tag tag-down">High</span></td>
+          </tr>
+          <tr>
+            <td>level_entry_tier</td>
+            <td>undo_ratio</td>
+            <td>1,000~4,000</td><td class="num-down"><strong>800~3,200</strong></td>
+            <td><span class="verdict verdict-pass">적용 완료</span></td>
+          </tr>
+          <tr>
+            <td>level_entry_tier</td>
+            <td>extra_deck_ratio</td>
+            <td>5,500~8,000</td><td class="num-up"><strong>6,500~9,000</strong></td>
+            <td><span class="verdict verdict-pass">적용 완료</span></td>
+          </tr>
+          <tr>
+            <td>4</td><td>신규</td><td>—</td>
+            <td>rv_gold_ratio 레벨별 테이블</td>
+            <td>고정 단가</td><td class="num-up"><strong>비율 테이블</strong></td>
+            <td><span class="tag tag-new">구조 변경</span></td>
+          </tr>
+          <tr>
+            <td>5</td><td>신규/기존</td><td>—</td>
+            <td>lobby RV 채널 (3회/일)</td>
+            <td>없음</td><td class="num-up"><strong>3회/일 신규</strong></td>
+            <td><span class="tag tag-new">구조 변경</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-yellow">
+      <strong>주의:</strong> 항목 4·5 (rv_gold_ratio 테이블, lobby RV)는 기존 const 구조에 없는 신규 시스템입니다. 클라이언트 구현 일정과 함께 확인 후 반영 필요.
+    </div>
+  </div>
+
+  <!-- 9. 핵심 공식 정리 -->
+  <div class="section">
+    <div class="section-title"><span class="snum">9</span> 핵심 공식 정리</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>항목</th><th>공식</th><th>예시 (Lv75)</th></tr></thead>
+        <tbody>
+          <tr><td>RV 1회 골드</td><td><code>입장료 × rv_gold_ratio / 10,000</code></td><td>2,400 × 3,333 / 10,000 = 799g</td></tr>
+          <tr><td>방치골드 1회</td><td><code>idle_base + floor((level−1)/20) × idle_increase</code></td><td>1,000 + 3 × 300 = 1,900g</td></tr>
+          <tr><td>undo n번째</td><td><code>입장료 × bet × min(n × ucir, 1.5)</code></td><td>2,400 × 1.0 × 20% × n</td></tr>
+          <tr><td>wild_card</td><td><code>입장료 × bet × 0.65</code></td><td>2,400 × 1.0 × 65% = 1,560g</td></tr>
+          <tr><td>콤보 보상</td><td><code>Σ min(base + i × inc, cap)</code></td><td>base=9, inc=9, cap=50 (Lv75)</td></tr>
+          <tr><td>덱 보너스</td><td><code>카드당 보상 × 남은 카드 수</code></td><td>20g × 5장 = 100g</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <hr class="divider">
+  <div style="display:flex;justify-content:space-between;align-items:center;color:var(--text2);font-size:12px">
+    <span>Economy Simulator V5 · 2026-04-08</span>
+    <span>Monte Carlo 300 runs × 30 days · 6 user types</span>
+    <span>적용 완료 (2026-04-08)</span>
+  </div>
+
+</div>
+</body>
+</html>

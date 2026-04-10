@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PST 경제 변경안 보고서 V5 — rv_gold_ratio 반영</title>
+<style>
+  :root {
+    --bg: #0f1117; --bg2: #1a1d27; --bg3: #222638;
+    --border: #2e3350; --text: #e8eaf0; --text2: #9ca3b0;
+    --green: #3ecf8e; --yellow: #f5c842; --red: #f06b6b;
+    --blue: #5b8ef0; --orange: #f09050; --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', -apple-system, sans-serif; font-size: 14px; line-height: 1.6; }
+  .page { max-width: 1060px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Header */
+  .report-header {
+    background: linear-gradient(135deg, #1a1d27, #16192a);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 36px 44px; margin-bottom: 32px;
+  }
+  .report-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .report-sub { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+  .chip { border-radius: 20px; padding: 3px 12px; font-size: 11px; font-weight: 600; }
+  .chip-blue   { background: rgba(91,142,240,0.15); border: 1px solid rgba(91,142,240,0.3); color: var(--blue); }
+  .chip-green  { background: rgba(62,207,142,0.15); border: 1px solid rgba(62,207,142,0.3); color: var(--green); }
+  .chip-yellow { background: rgba(245,200,66,0.15); border: 1px solid rgba(245,200,66,0.3); color: var(--yellow); }
+  .chip-red    { background: rgba(240,107,107,0.15); border: 1px solid rgba(240,107,107,0.3); color: var(--red); }
+
+  /* Section */
+  .section { margin-bottom: 36px; }
+  .section-title {
+    font-size: 16px; font-weight: 700; color: #fff;
+    margin-bottom: 16px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .snum { background: var(--blue); color: #fff; border-radius: 6px; padding: 1px 8px; font-size: 12px; font-weight: 700; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--bg3); color: var(--text2); font-weight: 600; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 8px 12px; border-bottom: 1px solid #1e2235; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .tbl-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+
+  /* Badges */
+  .tag { display: inline-block; border-radius: 4px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
+  .tag-plus   { background: rgba(62,207,142,0.2); color: var(--green); }
+  .tag-minus  { background: rgba(240,107,107,0.2); color: var(--red); }
+  .tag-new    { background: rgba(91,142,240,0.2); color: var(--blue); }
+  .tag-keep   { background: rgba(156,163,176,0.2); color: var(--text2); }
+  .tag-depr   { background: rgba(240,144,80,0.2); color: var(--orange); }
+  .tag-sink   { background: rgba(167,139,250,0.2); color: var(--purple); }
+
+  /* Cards */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; }
+  .card + .card, .card + .tbl-wrap, .tbl-wrap + .card { margin-top: 12px; }
+  .card.highlight { border-left: 4px solid var(--blue); }
+  .card.warn { border-left: 4px solid var(--yellow); }
+  .card.good { border-left: 4px solid var(--green); }
+  .card.bad  { border-left: 4px solid var(--red); }
+  .card-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+
+  /* KPI boxes */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .kpi { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+  .kpi-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .kpi-val { font-size: 20px; font-weight: 700; }
+  .kpi-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .kpi-pass  { color: var(--green); }
+  .kpi-fail  { color: var(--red); }
+  .kpi-warn  { color: var(--yellow); }
+
+  /* Delta pills */
+  .delta-pos { color: var(--red); font-weight: 600; }   /* 골드 증가 = bad for inflation */
+  .delta-neg { color: var(--green); font-weight: 600; } /* 골드 감소 = good */
+  .delta-neu { color: var(--text2); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* Bar chart simulation */
+  .bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .bar-bg { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+
+  /* Callout */
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 16px 0; font-size: 13px; }
+  .callout-blue   { background: rgba(91,142,240,0.08); border: 1px solid rgba(91,142,240,0.2); color: #c5d3f8; }
+  .callout-yellow { background: rgba(245,200,66,0.08); border: 1px solid rgba(245,200,66,0.2); color: #f7dfa0; }
+  .callout-green  { background: rgba(62,207,142,0.08); border: 1px solid rgba(62,207,142,0.2); color: #a0e8c8; }
+  .callout-red    { background: rgba(240,107,107,0.08); border: 1px solid rgba(240,107,107,0.2); color: #f5b8b8; }
+
+  code { background: var(--bg3); padding: 1px 6px; border-radius: 4px; font-size: 12px; font-family: 'Fira Code', monospace; }
+  .mono { font-family: 'Fira Code', 'Consolas', monospace; }
+  .text2 { color: var(--text2); }
+  .bold { font-weight: 700; }
+  strong { color: #fff; }
+  .mt8 { margin-top: 8px; }
+  .mt16 { margin-top: 16px; }
+
+  footer { text-align: center; color: var(--text2); font-size: 12px; padding: 32px 0 16px; border-top: 1px solid var(--border); margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ── Header ─────────────────────────────────────────────────── -->
+<div class="report-header">
+  <div class="report-title">PST 경제 변경안 보고서 — V5 정정판</div>
+  <div class="report-sub">rv_gold_ratio 기반 RV 시스템 반영 · 로비 채널 신규 · 컬렉션 ON 확정</div>
+  <div class="chips">
+    <span class="chip chip-blue">V5 정정판</span>
+    <span class="chip chip-green">시뮬레이션 완료</span>
+    <span class="chip chip-yellow">Monte Carlo 300회 × 30일</span>
+    <span class="chip chip-blue">2026-04-07</span>
+  </div>
+</div>
+
+<!-- ── Section 1: 파라미터 변경 ──────────────────────────────── -->
+<div class="section">
+  <div class="section-title">
+    <span class="snum">1</span> V3 → V4 파라미터 변경 전체 목록
+  </div>
+
+  <div class="callout callout-blue">
+    <strong>V5 정정판 핵심 변경점</strong><br>
+    RV 골드 4채널(LOBBY / SHOP / INBOX / POPUP)은 <code>_amount</code> 상수를 사용하지 않음.
+    대신 <code>level_entry_tier.rv_gold_ratio</code> 기반으로 동적 계산:<br>
+    <code style="font-size:13px; color: var(--green)">rv_gold = entry_cost × rv_gold_ratio / 10000</code><br>
+    따라서 <code>inbox_free_gold_amount</code>(10058), <code>popup_free_gold_amount</code>(10064),
+    <code>product 190001 reward_amount</code>(=0) 은 모두 <span class="tag tag-depr">deprecated</span>.
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>파라미터</th><th>시트</th><th>키</th><th>V3 (현재)</th><th>V4 (론칭안)</th><th>변경률</th><th>유형</th><th>라이브 상태</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>idle_gold_charge_amount</code></td><td>const</td><td>10003</td>
+          <td class="num">3,000</td><td><strong>1,000</strong></td>
+          <td class="delta-neg">−67%</td><td><span class="tag tag-minus">Source ↓</span></td>
+          <td><span class="tag tag-plus">✅ 완료</span></td>
+        </tr>
+        <tr>
+          <td><code>idle_gold_amount_increase</code></td><td>const</td><td>10005</td>
+          <td class="num">400</td><td><strong>300</strong></td>
+          <td class="delta-neg">−25%</td><td><span class="tag tag-minus">Source ↓</span></td>
+          <td><span class="tag tag-plus">✅ 완료</span></td>
+        </tr>
+        <tr>
+          <td><code>idle_gold_max_cap</code></td><td>const</td><td>10006</td>
+          <td class="num">10,000</td><td><strong>6,000</strong></td>
+          <td class="delta-neg">−40%</td><td><span class="tag tag-minus">Source ↓</span></td>
+          <td><span class="tag tag-plus">✅ 완료</span></td>
+        </tr>
+        <tr style="background:rgba(240,144,80,0.04)">
+          <td><code>inbox_free_gold_amount</code></td><td>const</td><td>10058</td>
+          <td class="num">800</td><td><strong>—</strong></td>
+          <td class="delta-neu">—</td><td><span class="tag tag-depr">deprecated</span></td>
+          <td><span class="tag tag-depr">rv_gold_ratio 대체</span></td>
+        </tr>
+        <tr style="background:rgba(240,144,80,0.04)">
+          <td><code>popup_free_gold_amount</code></td><td>const</td><td>10064</td>
+          <td class="num">800</td><td><strong>—</strong></td>
+          <td class="delta-neu">—</td><td><span class="tag tag-depr">deprecated</span></td>
+          <td><span class="tag tag-depr">rv_gold_ratio 대체</span></td>
+        </tr>
+        <tr style="background:rgba(91,142,240,0.04)">
+          <td><code>RV 골드 산식</code> (4채널 공통)</td><td>entry_tier</td><td>—</td>
+          <td>고정 단가</td><td><strong>entry_cost × rv_gold_ratio / 10000</strong></td>
+          <td class="delta-neu">레벨 비례</td><td><span class="tag tag-new">설계 변경</span></td>
+          <td><span class="tag tag-plus">✅ 완료</span></td>
+        </tr>
+        <tr style="background:rgba(91,142,240,0.04)">
+          <td><code>lobby RV 채널</code> (신규)</td><td>const</td><td>10076</td>
+          <td>없음</td><td><strong>3회/일</strong></td>
+          <td class="delta-neg">신규</td><td><span class="tag tag-new">Source 신규</span></td>
+          <td><span class="tag tag-plus">✅ 완료</span></td>
+        </tr>
+        <tr>
+          <td><code>shop AD pay_limit</code></td><td>product</td><td>190001</td>
+          <td class="num">1</td><td><strong>3</strong></td>
+          <td class="delta-neg">+200%</td><td><span class="tag tag-new">Source ↑</span></td>
+          <td><span class="tag tag-plus">✅ 완료</span></td>
+        </tr>
+        <tr style="background:rgba(240,144,80,0.04)">
+          <td><code>shop AD reward_amount</code></td><td>product</td><td>190001</td>
+          <td class="num">1,000</td><td><strong>0</strong> (rv_gold_ratio 사용)</td>
+          <td class="delta-neu">—</td><td><span class="tag tag-depr">deprecated</span></td>
+          <td><span class="tag tag-depr">0 = ratio 사용</span></td>
+        </tr>
+        <tr>
+          <td><code>daily_gift Day6 gold</code></td><td>daily_gift</td><td>150007</td>
+          <td class="num">5,000</td><td><strong>3,000</strong></td>
+          <td class="delta-neg">−40%</td><td><span class="tag tag-minus">Source ↓</span></td>
+          <td><span class="tag tag-plus">✅ 완료</span></td>
+        </tr>
+        <tr>
+          <td><code>level_entry_tier 전 구간</code></td><td>entry_tier</td><td>—</td>
+          <td>현재값</td><td><strong>+20% (floor 반올림)</strong></td>
+          <td class="delta-neg">+20%</td><td><span class="tag tag-sink">Sink ↑</span></td>
+          <td><span class="tag tag-plus">✅ 완료</span></td>
+        </tr>
+        <tr>
+          <td><code>is_album_collection_open</code></td><td>const</td><td>10061</td>
+          <td>0 (OFF)</td><td><strong>1 (ON)</strong></td>
+          <td class="delta-neg">활성</td><td><span class="tag tag-sink">Sink ↑</span></td>
+          <td><span class="tag tag-keep">시뮬에 ON 반영</span></td>
+        </tr>
+        <tr>
+          <td><code>is_deck_collection_open</code></td><td>const</td><td>10062</td>
+          <td>0 (OFF)</td><td><strong>1 (ON)</strong></td>
+          <td class="delta-neg">활성</td><td><span class="tag tag-sink">Sink ↑</span></td>
+          <td><span class="tag tag-keep">시뮬에 ON 반영</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── Section 2: rv_gold_ratio 테이블 ───────────────────────── -->
+<div class="section">
+  <div class="section-title">
+    <span class="snum">2</span> rv_gold_ratio 레벨 구간별 RV 지급량
+  </div>
+
+  <div class="callout callout-blue">
+    <strong>공식:</strong> <code>rv_gold_per_watch = entry_cost × rv_gold_ratio / 10000</code>
+    &nbsp;·&nbsp; 4채널 동일 적용 (INBOX 5회 + POPUP 10회 + SHOP 3회 + LOBBY 3회 = <strong>21회/일</strong>)
+  </div>
+
+  <div class="tbl-wrap mt16">
+    <table>
+      <thead>
+        <tr><th>키</th><th>레벨 구간</th><th>entry_cost (V4)</th><th>rv_gold_ratio</th><th>rv_gold/회</th><th>일 최대 RV (21회)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>220002</td><td>Lv 3–9</td><td class="num">1,200g</td><td>6,500 (65%)</td><td class="num bold">780g</td><td class="num">16,380g</td></tr>
+        <tr><td>220003</td><td>Lv 10–24</td><td class="num">1,800g</td><td>5,500 (55%)</td><td class="num bold">990g</td><td class="num">20,790g</td></tr>
+        <tr><td>220004</td><td>Lv 25–49</td><td class="num">2,100g</td><td>5,000 (50%)</td><td class="num bold">1,050g</td><td class="num">22,050g</td></tr>
+        <tr style="background:rgba(91,142,240,0.06)"><td>220005</td><td><strong>Lv 50–99 ★</strong></td><td class="num"><strong>2,400g</strong></td><td><strong>4,800 (48%)</strong></td><td class="num bold" style="color:var(--blue)">1,152g</td><td class="num bold" style="color:var(--blue)">24,192g</td></tr>
+        <tr><td>220006</td><td>Lv 100–199</td><td class="num">2,600g</td><td>4,500 (45%)</td><td class="num bold">1,170g</td><td class="num">24,570g</td></tr>
+        <tr><td>220007</td><td>Lv 200–349</td><td class="num">3,000g</td><td>4,200 (42%)</td><td class="num bold">1,260g</td><td class="num">26,460g</td></tr>
+        <tr><td>220008</td><td>Lv 350–549</td><td class="num">3,400g</td><td>4,000 (40%)</td><td class="num bold">1,360g</td><td class="num">28,560g</td></tr>
+        <tr><td>220009</td><td>Lv 550–799</td><td class="num">4,000g</td><td>3,800 (38%)</td><td class="num bold">1,520g</td><td class="num">31,920g</td></tr>
+        <tr><td>220010</td><td>Lv 800–1099</td><td class="num">4,600g</td><td>3,500 (35%)</td><td class="num bold">1,610g</td><td class="num">33,810g</td></tr>
+        <tr><td>220011</td><td>Lv 1100–1449</td><td class="num">5,400g</td><td>3,200 (32%)</td><td class="num bold">1,728g</td><td class="num">36,288g</td></tr>
+        <tr><td>220012</td><td>Lv 1450+</td><td class="num">6,000g</td><td>3,000 (30%)</td><td class="num bold">1,800g</td><td class="num">37,800g</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── Section 3: 보통 유저 일일 소득 구조 ───────────────────── -->
+<div class="section">
+  <div class="section-title">
+    <span class="snum">3</span> 보통(중반)★ 일일 소득 구조 분석
+  </div>
+  <div class="text2" style="margin-bottom:14px; font-size:12px">Lv75 · 15판/일 · 방치 3회 · AD율 70% · 승률 60%</div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>항목</th><th style="text-align:right">V3 현재</th><th style="text-align:right">V4 론칭안</th><th style="text-align:right">변화</th><th>비고</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>방치골드</td>
+          <td class="num" style="text-align:right">+12,600g</td>
+          <td class="num" style="text-align:right">+8,700g</td>
+          <td class="num delta-neg" style="text-align:right">−3,900g</td>
+          <td class="text2">idle_base 3000→1000, increase 400→300</td>
+        </tr>
+        <tr>
+          <td>인박스 RV <span class="text2">(5회)</span></td>
+          <td class="num" style="text-align:right">+2,800g</td>
+          <td class="num" style="text-align:right">+4,032g</td>
+          <td class="num delta-pos" style="text-align:right">+1,232g</td>
+          <td class="text2">800g×5×70% → 1,152g×5×70%</td>
+        </tr>
+        <tr>
+          <td>팝업 RV <span class="text2">(10회)</span></td>
+          <td class="num" style="text-align:right">+5,600g</td>
+          <td class="num" style="text-align:right">+8,064g</td>
+          <td class="num delta-pos" style="text-align:right">+2,464g</td>
+          <td class="text2">800g×10×70% → 1,152g×10×70%</td>
+        </tr>
+        <tr>
+          <td>상점 RV <span class="text2">(1→3회)</span></td>
+          <td class="num" style="text-align:right">+700g</td>
+          <td class="num" style="text-align:right">+2,419g</td>
+          <td class="num delta-pos" style="text-align:right">+1,719g</td>
+          <td class="text2">1,000g×1×70% → 1,152g×3×70%</td>
+        </tr>
+        <tr style="background:rgba(91,142,240,0.04)">
+          <td>로비 RV <span class="tag tag-new">신규</span> <span class="text2">(3회)</span></td>
+          <td class="num" style="text-align:right">—</td>
+          <td class="num" style="text-align:right; color:var(--blue)">+2,419g</td>
+          <td class="num" style="text-align:right; color:var(--blue)">+2,419g</td>
+          <td class="text2">1,152g×3×70% (신규)</td>
+        </tr>
+        <tr>
+          <td>데일리 휠 <span class="text2">(5회)</span></td>
+          <td class="num" style="text-align:right">+2,520g</td>
+          <td class="num" style="text-align:right">+2,520g</td>
+          <td class="num delta-neu" style="text-align:right">0g</td>
+          <td class="text2">변경 없음</td>
+        </tr>
+        <tr>
+          <td>출석 보상</td>
+          <td class="num" style="text-align:right">+1,571g</td>
+          <td class="num" style="text-align:right">+1,286g</td>
+          <td class="num delta-neg" style="text-align:right">−286g</td>
+          <td class="text2">Day6 5,000→3,000 (7일 평균)</td>
+        </tr>
+        <tr style="background:rgba(167,139,250,0.04)">
+          <td>게임플레이 EV</td>
+          <td class="num" style="text-align:right">−8,940g</td>
+          <td class="num" style="text-align:right">−10,728g</td>
+          <td class="num delta-neg" style="text-align:right">−1,788g</td>
+          <td class="text2">입장료 2,000→2,400 (+20%)</td>
+        </tr>
+        <tr style="background:rgba(167,139,250,0.04)">
+          <td>컬렉션 Sink</td>
+          <td class="num" style="text-align:right">0g</td>
+          <td class="num" style="text-align:right">−3,000g</td>
+          <td class="num delta-neg" style="text-align:right">−3,000g</td>
+          <td class="text2">album+deck ON (200g × 15판)</td>
+        </tr>
+        <tr style="background:var(--bg3)">
+          <td><strong>일일 순소득</strong></td>
+          <td class="num bold" style="text-align:right">+16,851g</td>
+          <td class="num bold" style="text-align:right; color:var(--yellow)">+15,712g</td>
+          <td class="num bold delta-neg" style="text-align:right">−1,139g (−6.8%)</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-yellow mt16">
+    <strong>핵심 관찰:</strong> rv_gold_ratio 시스템은 Lv75 기준 RV 단가를 800g → 1,152g으로
+    <strong>+44% 인상</strong>하며, LOBBY 채널(3회) 추가로 일일 RV 수입이
+    <strong>+7,834g 증가</strong>. 방치골드 감소분(−3,900g)과 컬렉션 Sink(−3,000g)를
+    상쇄하고도 남아 일일 순소득은 V3 대비 −6.8%에 그침.
+  </div>
+</div>
+
+<!-- ── Section 4: 유저 유형별 D30 ─────────────────────────────── -->
+<div class="section">
+  <div class="section-title">
+    <span class="snum">4</span> 유저 유형별 V3 vs V4 시뮬레이션 결과
+  </div>
+  <div class="text2" style="margin-bottom:14px; font-size:12px">Monte Carlo 300회 × 30일 | 시작 골드: 2,000g</div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>유저 유형</th><th>레벨</th><th>입장료</th>
+          <th style="text-align:right">V3 일소득</th><th style="text-align:right">V4 일소득</th>
+          <th style="text-align:right">V3 D30</th><th style="text-align:right">V4 D30</th>
+          <th style="text-align:right">D30 변화율</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>극소극(튜토리얼)</td><td>5</td><td class="num">1,200g</td>
+          <td class="num" style="text-align:right">+7,646g</td>
+          <td class="num" style="text-align:right">+6,588g</td>
+          <td class="num" style="text-align:right">65,844g</td>
+          <td class="num" style="text-align:right">43,353g</td>
+          <td class="num delta-neg" style="text-align:right">−34%</td>
+        </tr>
+        <tr>
+          <td>소극(초보)</td><td>15</td><td class="num">1,800g</td>
+          <td class="num" style="text-align:right">+11,976g</td>
+          <td class="num" style="text-align:right">+11,360g</td>
+          <td class="num" style="text-align:right">186,226g</td>
+          <td class="num" style="text-align:right">150,439g</td>
+          <td class="num delta-neg" style="text-align:right">−19%</td>
+        </tr>
+        <tr style="background:rgba(91,142,240,0.05)">
+          <td><strong>보통(중반)★</strong></td><td><strong>75</strong></td><td class="num"><strong>2,400g</strong></td>
+          <td class="num" style="text-align:right">+16,851g</td>
+          <td class="num bold" style="text-align:right">+15,712g</td>
+          <td class="num" style="text-align:right">278,373g</td>
+          <td class="num bold" style="text-align:right; color:var(--yellow)">211,493g</td>
+          <td class="num delta-neg" style="text-align:right"><strong>−24%</strong></td>
+        </tr>
+        <tr>
+          <td>활발(중반)</td><td>75</td><td class="num">2,400g</td>
+          <td class="num" style="text-align:right">+16,751g</td>
+          <td class="num" style="text-align:right">+12,239g</td>
+          <td class="num" style="text-align:right">261,277g</td>
+          <td class="num" style="text-align:right; color:var(--green)">91,384g</td>
+          <td class="num delta-neg" style="text-align:right">−65%</td>
+        </tr>
+        <tr>
+          <td>헌신(고레벨)</td><td>200</td><td class="num">3,000g</td>
+          <td class="num" style="text-align:right">+20,318g</td>
+          <td class="num" style="text-align:right">+8,907g</td>
+          <td class="num" style="text-align:right">235,590g</td>
+          <td class="num" style="text-align:right; color:var(--green)">−124,723g</td>
+          <td class="num delta-neg" style="text-align:right">−153%</td>
+        </tr>
+        <tr>
+          <td>하드코어</td><td>300</td><td class="num">3,000g</td>
+          <td class="num" style="text-align:right">+36,521g</td>
+          <td class="num" style="text-align:right">+16,566g</td>
+          <td class="num" style="text-align:right">600,158g</td>
+          <td class="num" style="text-align:right; color:var(--green)">22,734g</td>
+          <td class="num delta-neg" style="text-align:right">−96%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-green mt16">
+    <strong>긍정적 발견:</strong>
+    활발 −65%, 헌신 적자 전환, 하드코어 −96% — 고스펜더·고활동 유저의 골드 누적 억제 효과는
+    충분함. IAP 전환 압박 설계 의도 부합.
+  </div>
+
+  <div class="callout callout-yellow">
+    <strong>주목:</strong>
+    보통★ 유저 D30이 211,493g으로 V3(278K) 대비 −24% 감소했으나,
+    기존 V4 목표(≤10,356g)와는 여전히 큰 차이가 있음.
+    rv_gold_ratio 시스템의 RV 증가분이 방치골드 감소분을 일부 상쇄한 결과임.
+  </div>
+</div>
+
+<!-- ── Section 5: IAP 가치 분석 ─────────────────────────────── -->
+<div class="section">
+  <div class="section-title">
+    <span class="snum">5</span> IAP 가치 분석 (보통★ V4 기준)
+  </div>
+  <div class="text2" style="margin-bottom:14px; font-size:12px">보통(중반) V4 일일 순소득 기준: 15,712g/일 (이론값)</div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>상품</th><th>가격</th><th style="text-align:right">골드</th>
+          <th style="text-align:right">V3 일수</th><th style="text-align:right">V4 일수</th><th>비고</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>gold_iap_1</code></td><td>$1.99</td>
+          <td class="num" style="text-align:right">10,000g</td>
+          <td class="num" style="text-align:right">0.6일</td>
+          <td class="num" style="text-align:right; color:var(--yellow)"><strong>0.6일</strong></td>
+          <td class="text2">목표 ≥1.0일 — 미달</td>
+        </tr>
+        <tr>
+          <td><code>bundle_iap_1</code></td><td>$4.99</td>
+          <td class="num" style="text-align:right">27,000g</td>
+          <td class="num" style="text-align:right">1.6일</td>
+          <td class="num" style="text-align:right">1.7일</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>bundle_iap_2</code> <span class="tag tag-keep">most popular</span></td><td>$8.99</td>
+          <td class="num" style="text-align:right">45,000g</td>
+          <td class="num" style="text-align:right">2.7일</td>
+          <td class="num" style="text-align:right">2.9일</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>bundle_iap_3</code></td><td>$14.99</td>
+          <td class="num" style="text-align:right">85,000g</td>
+          <td class="num" style="text-align:right">5.0일</td>
+          <td class="num" style="text-align:right">5.4일</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>bundle_iap_4</code></td><td>$26.99</td>
+          <td class="num" style="text-align:right">170,000g</td>
+          <td class="num" style="text-align:right">10.1일</td>
+          <td class="num" style="text-align:right">10.8일</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>bundle_iap_5</code> <span class="tag tag-keep">best value</span></td><td>$49.99</td>
+          <td class="num" style="text-align:right">370,000g</td>
+          <td class="num" style="text-align:right">22.0일</td>
+          <td class="num" style="text-align:right">23.5일</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-yellow mt16">
+    <strong>IAP 가치 판정:</strong> V4 보통★ 일일 순소득이 15,712g으로 높아
+    $1.99 상품(10,000g)이 0.6일치에 그침. 목표 ≥1.0일 <strong>미달</strong>.
+    rv_gold_ratio 기반 RV 소득이 높아 보통 유저의 체감 일일 소득이 크게 유지되기 때문.
+  </div>
+</div>
+
+<!-- ── Section 6: 경제 건강 KPI ───────────────────────────────── -->
+<div class="section">
+  <div class="section-title">
+    <span class="snum">6</span> 경제 건강 KPI
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">보통★ D30 잔액 (V4)</div>
+      <div class="kpi-val kpi-fail">211,493g</div>
+      <div class="kpi-sub">목표 ≤10,356g | V3: 278,373g</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">D30 감소율 (보통★)</div>
+      <div class="kpi-val kpi-warn">−24%</div>
+      <div class="kpi-sub">V3 대비 | 구 V4: −92%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">$1.99 IAP 가치</div>
+      <div class="kpi-val kpi-fail">0.6일치</div>
+      <div class="kpi-sub">목표 ≥1.0일 | V3: 0.6일</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">하드코어 D30</div>
+      <div class="kpi-val kpi-pass">22,734g</div>
+      <div class="kpi-sub">V3: 600,158g → −96%</div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>지표</th><th>V3</th><th>V4 (구 고정단가)</th><th>V4 (정정 rv_ratio)</th><th>목표</th><th>판정</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>D30 잔액 (보통★)</td>
+          <td class="num">278,373g</td>
+          <td class="num">23,602g</td>
+          <td class="num bold">211,493g</td>
+          <td class="num">≤10,356g</td>
+          <td><span class="tag tag-minus">❌ 미달</span></td>
+        </tr>
+        <tr>
+          <td>$1.99 IAP 가치</td>
+          <td>0.6일</td>
+          <td>1.5일</td>
+          <td class="bold">0.6일</td>
+          <td>≥1.0일</td>
+          <td><span class="tag tag-minus">❌ 미달</span></td>
+        </tr>
+        <tr>
+          <td>헌신 D30</td>
+          <td class="num">235,590g</td>
+          <td class="num">−427,175g</td>
+          <td class="num bold; color:var(--green)">−124,723g</td>
+          <td>적자 (IAP 유도)</td>
+          <td><span class="tag tag-plus">✅ 달성</span></td>
+        </tr>
+        <tr>
+          <td>하드코어 D30</td>
+          <td class="num">600,158g</td>
+          <td class="num">−314,735g</td>
+          <td class="num bold; color:var(--green)">22,734g</td>
+          <td>억제</td>
+          <td><span class="tag tag-plus">✅ 달성</span></td>
+        </tr>
+        <tr>
+          <td>활발 D30</td>
+          <td class="num">261,277g</td>
+          <td class="num">−129,647g</td>
+          <td class="num bold; color:var(--green)">91,384g</td>
+          <td>억제</td>
+          <td><span class="tag tag-plus">✅ 달성</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── Section 7: 요약 및 분석 ───────────────────────────────── -->
+<div class="section">
+  <div class="section-title">
+    <span class="snum">7</span> 핵심 발견 요약
+  </div>
+
+  <div class="card highlight">
+    <div class="card-title">① rv_gold_ratio 전환의 경제적 영향</div>
+    <p>Lv75 기준 RV 단가가 800g → 1,152g으로 <strong>+44% 인상</strong>되고 LOBBY 채널(3회)이 추가되며,
+    일일 RV 수입이 <strong>9,000g → 16,934g (+88%)</strong>로 증가.
+    방치골드 감소(−3,900g) · 게임플레이 Sink 증가(−1,788g) · 컬렉션 Sink(−3,000g)를 모두 상쇄.
+    결과: 보통★ 일일 순소득 16,851g → 15,712g (<strong>−6.8%에 그침</strong>).</p>
+  </div>
+
+  <div class="card warn mt8">
+    <div class="card-title">② 보통 유저 D30/IAP 목표 재검토 필요</div>
+    <p>rv_gold_ratio 시스템 적용 시 보통★ D30이 211K로 기존 목표(10,356g)와 큰 차이.
+    목표값이 구 고정단가 기준으로 산출된 것이므로,
+    <strong>rv_gold_ratio 시스템 기준의 새 목표값 설정 필요</strong>.</p>
+  </div>
+
+  <div class="card good mt8">
+    <div class="card-title">③ 고레벨·활발 유저 억제 효과 유효</div>
+    <p>활발 −65%, 헌신 적자 전환(−124K), 하드코어 −96%.
+    rv_gold_ratio는 레벨이 높아질수록 절대 RV 수입은 늘지만 게임플레이 Sink가 더 크게 증가하여
+    실질적인 억제 효과가 유지됨. <strong>IAP 전환 압박 설계 의도 부합</strong>.</p>
+  </div>
+
+  <div class="card highlight mt8">
+    <div class="card-title">④ V4 파라미터 적용 현황 (13개 기준)</div>
+    <p>
+      <span class="tag tag-plus">✅ 10개 완료</span>&nbsp;
+      idle 3종, RV 산식 전환, lobby 신규, shop pay_limit, daily_gift Day6, entry_tier +20%, popup_limit/inbox_limit 유지<br>
+      <span class="tag tag-keep" style="margin-top:6px; display:inline-block">⏳ 2개 시뮬 반영</span>&nbsp;
+      is_album_collection_open, is_deck_collection_open (시트 0이나 ON으로 처리)<br>
+      <span class="tag tag-depr" style="margin-top:6px; display:inline-block">🚫 3개 deprecated</span>&nbsp;
+      inbox/popup_free_gold_amount, shop reward_amount (rv_gold_ratio 공식 대체)
+    </p>
+  </div>
+</div>
+
+<footer>
+  PST Economy Change Report V5 — rv_gold_ratio 정정판 &nbsp;·&nbsp;
+  생성: 2026-04-07 &nbsp;·&nbsp;
+  Monte Carlo 300회 × 6개 유저 유형 × 30일 &nbsp;·&nbsp;
+  ref: 05_system_result.md · 09_gold_inflation_report.html
+</footer>
+
+</div>
+</body>
+</html>
