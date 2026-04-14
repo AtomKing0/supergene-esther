@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-012 · 레벨 구간별 Help Rate 배율 시스템</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #a78bfa;
+  --accent2: #c4b5fd;
+  --green: #34d399;   --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;     --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;    --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;  --purple-bg: rgba(167,139,250,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #1e1a35 45%, #1a1d27 100%);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #7c3aed; --accent2: #6d28d9;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626;   --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb;  --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --hero-bg: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 45%, #e0e7ff 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { position:fixed;left:16px;top:16px;z-index:300;background:var(--surface2);border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:10px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s; }
+.nav-toggle:hover { border-color:var(--accent); }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200;transform:translateX(-100%);transition:transform 0.25s; }
+.nav-sidebar.open { transform:translateX(0); }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.1) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--accent),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-purple { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+
+.container { max-width:1100px;margin:0 auto;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-dev { background:var(--green-bg);color:var(--green); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+h4 { font-size:0.95rem;font-weight:700;margin:24px 0 10px;color:var(--accent); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-purple { background:var(--purple-bg);border-left:3px solid var(--purple); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.86rem; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var     { font-family:monospace;color:var(--blue);font-weight:600;min-width:320px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:72px; }
+.sheet-row-unit    { font-size:0.75rem;color:var(--text2);min-width:100px; }
+.sheet-row-desc    { color:var(--text2);font-size:0.82rem;flex:1; }
+
+code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 6px;color:var(--accent2); }
+pre  { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin:16px 0;overflow-x:auto;font-size:0.83rem;color:var(--text2);line-height:1.6; }
+pre code { background:none;border:none;padding:0;color:inherit; }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">☰</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-012</div>
+  <a href="#s1">① 기획 의도</a>
+  <a href="#s2">② 개발 스펙</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-012</span>
+      <span class="badge badge-yellow" id="hero-tag"      style="cursor:pointer" title="태그 변경">⚖️ 밸런스</span>
+      <span class="badge badge-blue"   id="hero-priority" style="cursor:pointer" title="우선순위 변경">⚪ 낮은 우선순위</span>
+      <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">⏸ 보류</span>
+      <span class="badge badge-green">2026. 4. 13.</span>
+    </div>
+    <h1>레벨 구간별 Help Rate 배율 시스템<br><span>DDA — level_entry_tier × difficulty_tier 연동</span></h1>
+    <p class="hero-sub">초반 레벨에 도움패 확률을 높게, 후반 레벨에 낮게 — level_entry_tier 시트에 배율 컬럼을 추가해 구간별로 조정한다.</p>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">적용 시트</div>
+        <div class="kpi-value" style="color:var(--blue);font-size:1.1rem">level_entry_tier</div>
+        <div class="kpi-sub">신규 컬럼 2개 추가</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">관리 행 수</div>
+        <div class="kpi-value" style="color:var(--accent)">12</div>
+        <div class="kpi-sub">220001 ~ 220012</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">배율 범위</div>
+        <div class="kpi-value" style="color:var(--yellow)">50 ~ 150%</div>
+        <div class="kpi-sub">ratio 5000 ~ 15000</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════
+  SECTION 1 — 기획 의도
+════════════════════════════════════ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">①</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도</div>
+      <span class="section-audience aud-all">전체 공유</span>
+    </div>
+  </div>
+
+  <h3>배경 — 현재 구조의 한계</h3>
+  <p>현재 <code>difficulty_tier</code> 시트에는 <strong>deck_help_rate</strong>, <strong>field_help_rate</strong> 값이 난이도 구간(Easy/Normal/Hard)별로 고정되어 있다. 레벨 번호와 무관하게 동일 구간이면 동일 확률이 적용된다.</p>
+  <p>그러나 <strong>초반 레벨(Lv.1~30 권)의 신규 유저</strong>와 <strong>후반 레벨(Lv.200+)의 숙련 유저</strong>는 동일 help_rate를 체감하는 방식이 매우 다르다. 초반에는 도움이 자주 나와야 진입 장벽이 낮아지고, 후반에는 도움 빈도를 줄여 긴장감·과금 동기를 유지할 수 있다.</p>
+
+  <h3>목표</h3>
+  <ul>
+    <li><strong>초반 구간(220001~220004):</strong> help_rate를 기본값 대비 120~150%로 높여 NRU 이탈 방지</li>
+    <li><strong>중반 구간(220005):</strong> 기본값(100%) 유지 — 기준선</li>
+    <li><strong>후반 구간(220008~220012):</strong> help_rate를 50~70%로 낮춰 도전 지속성 및 부스터 소비 유도</li>
+  </ul>
+
+  <div class="callout callout-yellow">
+    <p><strong>추후 개선 항목</strong> — 현재 추천안(Option B)을 채택하되 실서비스 승률 데이터 수집 후 정밀 튜닝 예정. 초기 출시에는 기본 help_rate만 적용.</p>
+  </div>
+
+  <h3>설계 선택 — Option B (level_entry_tier 배율 컬럼)</h3>
+  <p>검토한 옵션 3가지 중 <strong>Option B</strong>를 채택한다.</p>
+
+  <table>
+    <thead>
+      <tr><th>옵션</th><th>방식</th><th>장점</th><th>단점</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>A — difficulty_tier 행 분리</td>
+        <td>레벨 구간별로 difficulty_tier 행 복제 후 수치 직접 수정</td>
+        <td>명시적</td>
+        <td>행 폭발, 다른 수치(gold ratio 등)까지 뒤섞임</td>
+      </tr>
+      <tr>
+        <td><strong>B — level_entry_tier 배율 컬럼</strong></td>
+        <td>level_entry_tier에 배율 컬럼 추가, 런타임 곱셈</td>
+        <td>기존 패턴(rv_gold_ratio)과 동일, 12행 관리</td>
+        <td>런타임 계산 추가 (미미)</td>
+      </tr>
+      <tr>
+        <td>C — 별도 시트</td>
+        <td>help_rate_override 시트 신설</td>
+        <td>완전 분리</td>
+        <td>조인 복잡도 증가, 오버 엔지니어링</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Option B는 이미 <code>rv_gold_ratio</code> 컬럼이 동일 패턴으로 구현되어 있어 <strong>개발 비용이 가장 낮다.</strong></p>
+</section>
+
+<!-- ════════════════════════════════════
+  SECTION 2 — 개발 스펙
+════════════════════════════════════ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">②</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀</span>
+    </div>
+  </div>
+
+  <h3>시트 변경 — level_entry_tier</h3>
+  <p>기존 컬럼 뒤에 2개 컬럼을 추가한다. <code>rv_gold_ratio</code>와 동일한 단위·범위 규칙을 따른다.</p>
+
+  <div class="sheet-block">
+    <div class="sheet-block-title">신규 컬럼 정의</div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">deck_help_rate_ratio</span>
+      <span class="sheet-row-default">10000</span>
+      <span class="sheet-row-unit">정수 (1/10000)</span>
+      <span class="sheet-row-desc">덱 도움패 출현율 배율. 10000 = 100% (기본값 유지)</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">field_help_rate_ratio</span>
+      <span class="sheet-row-default">10000</span>
+      <span class="sheet-row-unit">정수 (1/10000)</span>
+      <span class="sheet-row-desc">필드 도움패 출현율 배율. 10000 = 100% (기본값 유지)</span>
+    </div>
+  </div>
+
+  <h3>계산식</h3>
+  <pre><code>effective_deck_help_rate  = difficulty_tier.deck_help_rate  × (level_entry_tier.deck_help_rate_ratio  / 10000)
+effective_field_help_rate = difficulty_tier.field_help_rate × (level_entry_tier.field_help_rate_ratio / 10000)</code></pre>
+
+  <div class="callout callout-blue">
+    <p><strong>기존 패턴 참조:</strong> <code>rv_gold_ratio</code>와 동일한 방식. <code>effective_rv_gold = difficulty_tier.rv_gold × (level_entry_tier.rv_gold_ratio / 10000)</code></p>
+  </div>
+
+  <h3>초기 권장 수치 (예시)</h3>
+  <p>아래는 방향성 예시이며, 실서비스 데이터 수집 후 정밀 조정 필요.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>level_entry_tier ID</th>
+        <th>레벨 범위 (예시)</th>
+        <th>deck_help_rate_ratio</th>
+        <th>field_help_rate_ratio</th>
+        <th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>220001</td><td>Lv.1 ~ 10</td><td>15000</td><td>15000</td><td>NRU 진입 — 150%</td></tr>
+      <tr><td>220002</td><td>Lv.11 ~ 20</td><td>13000</td><td>13000</td><td>130%</td></tr>
+      <tr><td>220003</td><td>Lv.21 ~ 40</td><td>12000</td><td>12000</td><td>120%</td></tr>
+      <tr><td>220004</td><td>Lv.41 ~ 60</td><td>11000</td><td>11000</td><td>110%</td></tr>
+      <tr><td>220005</td><td>Lv.61 ~ 90</td><td>10000</td><td>10000</td><td>기준선 100%</td></tr>
+      <tr><td>220006</td><td>Lv.91 ~ 120</td><td>10000</td><td>10000</td><td>100%</td></tr>
+      <tr><td>220007</td><td>Lv.121 ~ 160</td><td>9000</td><td>9000</td><td>90%</td></tr>
+      <tr><td>220008</td><td>Lv.161 ~ 200</td><td>8000</td><td>8000</td><td>80%</td></tr>
+      <tr><td>220009</td><td>Lv.201 ~ 260</td><td>7000</td><td>7000</td><td>70%</td></tr>
+      <tr><td>220010</td><td>Lv.261 ~ 340</td><td>6500</td><td>6500</td><td>65%</td></tr>
+      <tr><td>220011</td><td>Lv.341 ~ 440</td><td>6000</td><td>6000</td><td>60%</td></tr>
+      <tr><td>220012</td><td>Lv.441+</td><td>5000</td><td>5000</td><td>50% — 고참 유저</td></tr>
+    </tbody>
+  </table>
+
+  <h3>구현 조건</h3>
+  <ul>
+    <li>ratio가 10000인 경우 기존 로직과 동일하게 동작 (배율 1.0 = 곱셈 생략 가능)</li>
+    <li>결과값이 0 미만이 되지 않도록 <code>max(0, effective)</code> 처리</li>
+    <li>결과값 상한: <code>difficulty_tier</code> 최대값 × 2.0 (= ratio 20000)으로 캡 권장</li>
+    <li>컬럼 없는 구버전 클라이언트 호환: ratio 미존재 시 10000으로 fallback</li>
+  </ul>
+
+  <h3>적용 범위</h3>
+  <ul>
+    <li><strong>deck_help_rate_ratio:</strong> 덱에서 다음 도움 카드가 나올 확률 보정</li>
+    <li><strong>field_help_rate_ratio:</strong> 필드 배치 시 도움 카드 위치 확률 보정</li>
+    <li>적용 시점: 레벨 진입 시 <code>level_entry_tier</code> 조회 → 해당 구간의 ratio 확정 → 난이도 결정 시 곱셈 적용</li>
+  </ul>
+
+  <div class="callout callout-purple">
+    <p><strong>시트 수정 시 주의:</strong> 컬럼 추가는 기존 컬럼 순서 뒤에 append. 중간 삽입 시 클라이언트 인덱스 오프셋 변경 위험. 추가 후 반드시 전체 행 숫자 포맷 확인.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function () {
+  const SPEC_ID = 'spec-012';
+
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',    cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',  cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',    cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',   cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',  cls: 'badge-yellow' },
+    etc:     { label: '📌 기타',    cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL  = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS  = { tag: 'balance', priority: 'low', status: 'hold' };
+  let ddField = null;
+
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+
+  function applyBadge(el, info) {
+    el.className = 'badge ' + info.cls;
+    el.textContent = info.label;
+    el.style.cursor = 'pointer';
+  }
+
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.low);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.hold);
+  }
+
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o =>
+        `<div class="dd-itm${o.val === cur ? ' active' : ''}" data-val="${o.val}">${o.label}</div>`
+      ).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    const fieldMap = { 'hero-tag': 'tag', 'hero-priority': 'priority', 'hero-status': 'status' };
+    Object.keys(fieldMap).forEach(elId => {
+      document.getElementById(elId).addEventListener('click', e => openDropdown(e, fieldMap[elId]));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none';
+      ddField = null;
+      updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
+
+  var links    = document.querySelectorAll('.nav-sidebar a');
+  var sections = document.querySelectorAll('section[id]');
+  function activate() {
+    var scrollY = window.pageYOffset + 120;
+    sections.forEach(function (s) {
+      if (s.offsetTop <= scrollY && s.offsetTop + s.offsetHeight > scrollY) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = document.querySelector('.nav-sidebar a[href="#' + s.id + '"]');
+        if (a) a.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', activate);
+  activate();
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.nav-sidebar') && !e.target.closest('.nav-toggle'))
+      document.querySelector('.nav-sidebar').classList.remove('open');
+  });
+})();
+</script>
+<script src="memo.js"></script>
+</body>
+</html>
