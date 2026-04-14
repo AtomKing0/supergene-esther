@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-011 · Peak Rankers — 자세히 보기 버튼 추가</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #60a5fa;
+  --accent2: #93c5fd;
+  --green: #34d399;
+  --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;
+  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;
+  --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,0.12);
+  --teal: #2dd4bf;
+  --teal-bg: rgba(45,212,191,0.12);
+  --gold: #fbbf24;
+  --gold-bg: rgba(251,191,36,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #1a2535 45%, #1a1d27 100%);
+  --nav-bg: rgba(15,17,23,0.92);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #2563eb; --accent2: #1d4ed8;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626; --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb; --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --teal: #0d9488; --teal-bg: rgba(13,148,136,0.1);
+  --gold: #d97706; --gold-bg: rgba(217,119,6,0.1);
+  --hero-bg: linear-gradient(135deg, #eff6ff 0%, #dbeafe 45%, #e0f2fe 100%);
+  --nav-bg: rgba(245,246,248,0.95);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { position:fixed;left:16px;top:16px;z-index:300;background:var(--surface2);border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:10px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s; }
+.nav-toggle:hover { border-color:var(--accent); }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200;transform:translateX(-100%);transition:transform 0.25s; }
+.nav-sidebar.open { transform:translateX(0); }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(96,165,250,0.1) 0%,transparent 60%); }
+.hero::after  { content:'';position:absolute;bottom:-30%;left:5%;width:400px;height:400px;background:radial-gradient(circle,rgba(251,191,36,0.07) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--blue-bg);border:1px solid rgba(96,165,250,0.3);padding:3px 10px;border-radius:6px; }
+.origin-badge { font-size:0.72rem;color:var(--text2);background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--blue),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge-row { display:flex;gap:8px;flex-wrap:wrap; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+.badge-purple { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-gold   { background:var(--gold-bg);color:var(--gold);border:1px solid rgba(251,191,36,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.4rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+
+.container { max-width:1100px;margin:0 auto;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--teal-bg);color:var(--teal);border:1px solid rgba(45,212,191,0.3); }
+.section-num-3 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;gap:4px;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--teal-bg);color:var(--teal); }
+.aud-dev { background:var(--blue-bg);color:var(--blue); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.code { font-family:monospace;font-size:0.82rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 7px;color:var(--accent2); }
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-green  { background:var(--green-bg);border-left:3px solid var(--green); }
+.callout-red    { background:var(--red-bg);border-left:3px solid var(--red); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.wireframe { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:20px 0; }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.86rem;flex-wrap:wrap; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var { font-family:monospace;color:var(--blue);font-weight:600;min-width:260px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:60px; }
+.sheet-row-unit { font-size:0.75rem;color:var(--text2);min-width:90px; }
+.sheet-row-desc { color:var(--text2);font-size:0.82rem; }
+
+/* 변경 전/후 비교 블록 */
+.diff-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0; }
+@media(max-width:640px){ .diff-grid { grid-template-columns:1fr; } }
+.diff-block { border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;background:var(--surface); }
+.diff-before { border-top:3px solid var(--text2); }
+.diff-after  { border-top:3px solid var(--green); }
+.diff-label { font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px; }
+.diff-label-before { color:var(--text2); }
+.diff-label-after  { color:var(--green); }
+
+/* 보상 테이블 강조 */
+.rank-1 td:first-child { color:var(--gold) !important; }
+.rank-2 td:first-child { color:#94a3b8 !important; }
+.rank-3 td:first-child { color:#cd7c4b !important; }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">☰</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-011</div>
+  <a href="#s1">① 기획 의도 &amp; 흐름</a>
+  <a href="#s2">② 아트 가이드</a>
+  <a href="#s3">③ 개발 스펙</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-011</span>
+      <span class="origin-badge">런칭 스펙 슬라이드 67 추가사항</span>
+    </div>
+    <h1>Peak Rankers<br><span>자세히 보기 버튼 추가</span></h1>
+    <p class="hero-sub">기존 Peak Rankers (clear_ranking, event_id 160004) UI에 "자세히 보기 (!)" 버튼을 추가. 탭 시 순위별 보상 리스트와 참여 조건 안내 문구를 표시합니다.</p>
+    <div class="badge-row">
+      <span id="hero-tag" class="badge badge-blue">🎨 UX/UI</span>
+      <span id="hero-priority" class="badge badge-yellow">🟡 보통 우선순위</span>
+      <span id="hero-status" class="badge badge-blue">🔵 검토중</span>
+      <span class="badge badge-gold">clear_ranking</span>
+      <span class="badge badge-purple">기존 UI 수정</span>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">대상 이벤트</div>
+        <div class="kpi-value" style="color:var(--blue)">160004</div>
+        <div class="kpi-sub">clear_ranking · 주말 금~일</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">보상 대상 순위</div>
+        <div class="kpi-value" style="color:var(--gold)">1~10위</div>
+        <div class="kpi-sub">event_ranking 170001~170005</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">신규 UI 요소</div>
+        <div class="kpi-value" style="color:var(--green)">버튼 1</div>
+        <div class="kpi-sub">자세히 보기 (!) + 팝업 시트</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════════
+  SECTION 1 — 기획 의도 & 콘텐츠 흐름
+════════════════════════════════════════ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">1</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도 &amp; 콘텐츠 흐름</div>
+      <span class="section-audience aud-all">개발 + 아트 공통</span>
+    </div>
+  </div>
+
+  <h3>왜 추가하는가</h3>
+  <p>현재 Peak Rankers 화면에는 순위 리스트(1~5위)만 보이고 <strong>각 순위에 어떤 보상이 주어지는지 확인할 방법이 없습니다.</strong> 유저는 무엇을 위해 경쟁하는지 알 수 없는 상태에서 이벤트에 참여하게 됩니다.</p>
+  <p>또한 현재 클리어 수가 없는 유저(이벤트 중 한 판도 클리어하지 않은 유저)가 순위권에 보이는 경우, 해당 유저가 실제로 보상을 받는지 여부가 불명확합니다. <strong>"1판이라도 클리어해야 순위 등록이 유효하다"는 조건을 명시적으로 안내해야</strong> 유저의 혼선을 방지할 수 있습니다.</p>
+
+  <h3>현재 UI 구성 (런칭 스펙 슬라이드 67 기준)</h3>
+  <table>
+    <thead><tr><th>영역</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td>상단 타이틀</td><td>"Peak Rankers" + "Win Levels &amp; Be at the Top!" 서브타이틀</td></tr>
+      <tr><td>중앙 좌측</td><td>시상대 3인 시각화 (1~3위 아바타 + 클리어 수)</td></tr>
+      <tr><td>중앙 우측</td><td>1~5위 랭킹 리스트 (순위, 닉네임, 클리어 수)</td></tr>
+      <tr><td>하단</td><td>내 현재 레벨 (Level 15), 남은 시간 (3days)</td></tr>
+      <tr><td>우상단</td><td>X 닫기 버튼</td></tr>
+      <tr><td>신규 추가</td><td><strong>자세히 보기 (!) 버튼</strong> — 이 스펙의 대상</td></tr>
+    </tbody>
+  </table>
+
+  <h3>플레이어 경험 흐름 (추가분)</h3>
+
+  <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+    <div style="width:28px;height:28px;border-radius:50%;background:var(--blue-bg);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--blue);flex-shrink:0;margin-top:2px;">1</div>
+    <div style="flex:1;"><strong style="color:var(--text);font-size:0.9rem;">Peak Rankers 화면 진입</strong><p style="margin:2px 0 0;font-size:0.84rem;color:var(--text2);">기존 흐름 그대로. 타이틀 옆 또는 우상단에 "!" 버튼이 추가로 표시됩니다.</p></div>
+  </div>
+  <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+    <div style="width:28px;height:28px;border-radius:50%;background:var(--blue-bg);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--blue);flex-shrink:0;margin-top:2px;">2</div>
+    <div style="flex:1;"><strong style="color:var(--text);font-size:0.9rem;">"!" 버튼 탭</strong><p style="margin:2px 0 0;font-size:0.84rem;color:var(--text2);">버튼을 탭하면 하단 시트 또는 중앙 팝업이 올라옵니다. 배경(Peak Rankers 화면)은 딤처리 유지.</p></div>
+  </div>
+  <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+    <div style="width:28px;height:28px;border-radius:50%;background:var(--blue-bg);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--blue);flex-shrink:0;margin-top:2px;">3</div>
+    <div style="flex:1;"><strong style="color:var(--text);font-size:0.9rem;">보상 정보 + 참여 조건 확인</strong><p style="margin:2px 0 0;font-size:0.84rem;color:var(--text2);">팝업에서 ① 순위별 보상 리스트(1위~그 외)와 ② 참여 조건 안내 문구를 확인합니다.</p></div>
+  </div>
+  <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+    <div style="width:28px;height:28px;border-radius:50%;background:var(--blue-bg);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--blue);flex-shrink:0;margin-top:2px;">4</div>
+    <div style="flex:1;"><strong style="color:var(--text);font-size:0.9rem;">닫기 → Peak Rankers 복귀</strong><p style="margin:2px 0 0;font-size:0.84rem;color:var(--text2);">팝업 내 닫기 버튼 또는 배경 탭으로 팝업 종료. Peak Rankers 화면으로 돌아옵니다.</p></div>
+  </div>
+
+  <h3>현재 확정된 순위 보상 (event_ranking, event_id 160004)</h3>
+  <table>
+    <thead><tr><th>순위</th><th>보상 1</th><th>보상 2</th><th>보상 3</th><th>key_number</th></tr></thead>
+    <tbody>
+      <tr class="rank-1"><td>🥇 1위</td><td>골든 티켓 ×3</td><td>골드 8,000</td><td>티켓 ×3</td><td>170001</td></tr>
+      <tr class="rank-2"><td>🥈 2위</td><td>골든 티켓 ×2</td><td>골드 4,000</td><td>티켓 ×2</td><td>170002</td></tr>
+      <tr class="rank-3"><td>🥉 3위</td><td>골든 티켓 ×1</td><td>골드 2,000</td><td>엑스트라 덱 ×1</td><td>170003</td></tr>
+      <tr><td>4~6위</td><td>골드 1,500</td><td>불꽃놀이 ×1</td><td>—</td><td>170004</td></tr>
+      <tr><td>7~10위</td><td>골드 1,000</td><td>—</td><td>—</td><td>170005</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow">
+    <p><strong>팝업 내 보상 표시 데이터 소스:</strong> 위 보상 값은 <code>event_ranking</code> 탭 key_number 170001~170005 기준. 향후 보상 변경 시 팝업 표시도 자동 반영되도록 서버 데이터를 참조하는 구조 권장. 하드코딩 금지.</p>
+  </div>
+
+  <h3>참여 조건 안내 문구 (확정)</h3>
+  <div class="callout callout-green">
+    <p><strong>"1판이라도 클리어해야 순위가 등록되어 보상을 받을 수 있습니다."</strong></p>
+  </div>
+  <p>이 문구는 팝업 하단 고정 표시입니다. 보상 리스트 아래에 명확히 구분된 영역으로 배치하며, 단순 정보 전달이므로 경고 스타일보다는 중립적인 안내 스타일로 처리합니다.</p>
+</section>
+
+<!-- ════════════════════════════════════════
+  SECTION 2 — 아트 가이드
+════════════════════════════════════════ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">2</div>
+    <div class="section-meta">
+      <div class="section-title">아트 가이드</div>
+      <span class="section-audience aud-art">아트팀 전용</span>
+    </div>
+  </div>
+
+  <h3>와이어프레임 1 — 기존 Peak Rankers UI + "!" 버튼 위치</h3>
+  <div class="wireframe">
+    <svg viewBox="0 0 600 380" width="100%" style="display:block;max-width:680px;margin:16px 0;">
+      <!-- 팝업 배경 -->
+      <rect x="20" y="10" width="380" height="360" rx="16" style="fill:var(--surface2);stroke:var(--border);stroke-width:1.5"/>
+
+      <!-- 상단 헤더 -->
+      <rect x="20" y="10" width="380" height="64" rx="16" style="fill:var(--blue-bg)"/>
+      <rect x="20" y="42" width="380" height="32" style="fill:var(--blue-bg)"/>
+
+      <!-- 타이틀 -->
+      <text x="120" y="38" style="fill:var(--blue);font-size:15px;font-family:sans-serif;font-weight:800;">🏆 Peak Rankers</text>
+      <text x="120" y="56" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">Win Levels &amp; Be at the Top!</text>
+
+      <!-- X 닫기 버튼 (기존) -->
+      <circle cx="376" cy="34" r="12" style="fill:var(--surface3);stroke:var(--border);stroke-width:1"/>
+      <text x="376" y="39" text-anchor="middle" style="fill:var(--text2);font-size:10px;font-family:sans-serif;">✕</text>
+
+      <!-- ★ 신규: "!" 버튼 — 타이틀 우측 -->
+      <circle cx="343" cy="34" r="12" style="fill:var(--blue);"/>
+      <text x="343" y="39" text-anchor="middle" style="fill:#fff;font-size:11px;font-family:sans-serif;font-weight:800;">!</text>
+
+      <!-- 시상대 영역 (좌측) -->
+      <!-- 2위 -->
+      <rect x="60" y="160" width="60" height="90" rx="4" style="fill:var(--surface3);stroke:#94a3b8;stroke-width:1.5"/>
+      <circle cx="90" cy="145" r="16" style="fill:var(--surface3);stroke:#94a3b8;stroke-width:1.5"/>
+      <text x="90" y="150" text-anchor="middle" style="fill:#94a3b8;font-size:9px;font-family:sans-serif;font-weight:700;">2위</text>
+      <text x="90" y="210" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">32클리어</text>
+
+      <!-- 1위 -->
+      <rect x="130" y="130" width="60" height="120" rx="4" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1.5"/>
+      <circle cx="160" cy="113" r="18" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:2"/>
+      <text x="160" y="118" text-anchor="middle" style="fill:var(--gold);font-size:10px;font-family:sans-serif;font-weight:800;">1위</text>
+      <text x="160" y="215" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;font-weight:700;">47클리어</text>
+
+      <!-- 3위 -->
+      <rect x="200" y="180" width="60" height="70" rx="4" style="fill:var(--surface3);stroke:#cd7c4b;stroke-width:1.5"/>
+      <circle cx="230" cy="165" r="14" style="fill:var(--surface3);stroke:#cd7c4b;stroke-width:1.5"/>
+      <text x="230" y="170" text-anchor="middle" style="fill:#cd7c4b;font-size:9px;font-family:sans-serif;font-weight:700;">3위</text>
+      <text x="230" y="220" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">28클리어</text>
+
+      <!-- 랭킹 리스트 (우측) -->
+      <rect x="274" y="90" width="112" height="160" rx="8" style="fill:var(--surface3);stroke:var(--border);stroke-width:1"/>
+      <text x="330" y="108" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;font-weight:700;">RANKING</text>
+      <!-- 1~5위 리스트 -->
+      <text x="282" y="124" style="fill:var(--gold);font-size:8px;font-family:sans-serif;font-weight:700;">1  PlayerA</text>
+      <text x="368" y="124" text-anchor="end" style="fill:var(--text2);font-size:7px;font-family:sans-serif;">47</text>
+      <text x="282" y="140" style="fill:#94a3b8;font-size:8px;font-family:sans-serif;">2  PlayerB</text>
+      <text x="368" y="140" text-anchor="end" style="fill:var(--text2);font-size:7px;font-family:sans-serif;">32</text>
+      <text x="282" y="156" style="fill:#cd7c4b;font-size:8px;font-family:sans-serif;">3  PlayerC</text>
+      <text x="368" y="156" text-anchor="end" style="fill:var(--text2);font-size:7px;font-family:sans-serif;">28</text>
+      <text x="282" y="172" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">4  PlayerD</text>
+      <text x="368" y="172" text-anchor="end" style="fill:var(--text2);font-size:7px;font-family:sans-serif;">21</text>
+      <text x="282" y="188" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">5  PlayerE</text>
+      <text x="368" y="188" text-anchor="end" style="fill:var(--text2);font-size:7px;font-family:sans-serif;">19</text>
+      <line x1="282" y1="210" x2="374" y2="210" style="stroke:var(--border);stroke-width:1;stroke-dasharray:3,2"/>
+      <text x="282" y="228" style="fill:var(--blue);font-size:8px;font-family:sans-serif;">나  Level 15</text>
+      <text x="368" y="228" text-anchor="end" style="fill:var(--text2);font-size:7px;font-family:sans-serif;">12</text>
+
+      <!-- 하단 -->
+      <rect x="30" y="300" width="360" height="60" rx="8" style="fill:var(--surface3);stroke:var(--border);stroke-width:1"/>
+      <text x="90" y="322" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">내 레벨</text>
+      <text x="90" y="342" text-anchor="middle" style="fill:var(--text);font-size:12px;font-family:sans-serif;font-weight:800;">Level 15</text>
+      <text x="310" y="322" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">남은 시간</text>
+      <text x="310" y="342" text-anchor="middle" style="fill:var(--red);font-size:12px;font-family:sans-serif;font-weight:800;">3 days</text>
+
+      <!-- 주석들 -->
+      <line x1="355" y1="22" x2="470" y2="16" style="stroke:var(--green);stroke-width:1.5;stroke-dasharray:4,3"/>
+      <rect x="420" y="4" width="170" height="26" rx="4" style="fill:var(--green-bg);stroke:var(--green);stroke-width:1.5"/>
+      <text x="505" y="21" text-anchor="middle" style="fill:var(--green);font-size:9px;font-family:sans-serif;font-weight:700;">★ 신규: "!" 버튼 (타이틀 우측)</text>
+
+      <line x1="388" y1="34" x2="470" y2="50" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="420" y="40" width="170" height="22" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="505" y="55" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">기존: X 닫기 버튼 (위치 유지)</text>
+
+      <line x1="343" y1="46" x2="420" y2="80" style="stroke:var(--blue);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="420" y="70" width="170" height="36" rx="4" style="fill:var(--blue-bg);stroke:var(--blue);stroke-width:1"/>
+      <text x="505" y="85" text-anchor="middle" style="fill:var(--blue);font-size:9px;font-family:sans-serif;">탭 시 보상 정보 팝업 표시</text>
+      <text x="505" y="98" text-anchor="middle" style="fill:var(--blue);font-size:8px;font-family:sans-serif;">(WF2 참조)</text>
+
+      <line x1="400" y1="250" x2="470" y2="230" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="420" y="218" width="170" height="26" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="505" y="235" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">기존 리스트 — 변경 없음</text>
+    </svg>
+  </div>
+
+  <h3>와이어프레임 2 — "!" 탭 시 표시되는 보상 정보 팝업</h3>
+  <div class="wireframe">
+    <svg viewBox="0 0 600 400" width="100%" style="display:block;max-width:680px;margin:16px 0;">
+      <!-- 배경 딤 -->
+      <rect x="0" y="0" width="430" height="400" style="fill:rgba(0,0,0,0.55)"/>
+
+      <!-- 팝업 카드 (하단 시트 스타일) -->
+      <rect x="30" y="80" width="370" height="300" rx="16" style="fill:var(--surface);stroke:var(--border);stroke-width:1.5"/>
+
+      <!-- 핸들 바 -->
+      <rect x="190" y="92" width="50" height="5" rx="3" style="fill:var(--border)"/>
+
+      <!-- 팝업 타이틀 -->
+      <text x="215" y="126" text-anchor="middle" style="fill:var(--text);font-size:13px;font-family:sans-serif;font-weight:800;">🏆 순위 보상</text>
+      <circle cx="378" cy="120" r="12" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="378" y="125" text-anchor="middle" style="fill:var(--text2);font-size:10px;font-family:sans-serif;">✕</text>
+      <line x1="44" y1="138" x2="386" y2="138" style="stroke:var(--border);stroke-width:1"/>
+
+      <!-- 보상 리스트 -->
+      <!-- 1위 -->
+      <rect x="44" y="148" width="342" height="32" rx="6" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1"/>
+      <text x="54" y="169" style="fill:var(--gold);font-size:10px;font-family:sans-serif;font-weight:800;">🥇 1위</text>
+      <text x="110" y="169" style="fill:var(--gold);font-size:9px;font-family:sans-serif;">골든 티켓 ×3 · 골드 8,000 · 티켓 ×3</text>
+
+      <!-- 2위 -->
+      <rect x="44" y="186" width="342" height="28" rx="6" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="54" y="205" style="fill:#94a3b8;font-size:10px;font-family:sans-serif;font-weight:700;">🥈 2위</text>
+      <text x="110" y="205" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">골든 티켓 ×2 · 골드 4,000 · 티켓 ×2</text>
+
+      <!-- 3위 -->
+      <rect x="44" y="220" width="342" height="28" rx="6" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="54" y="239" style="fill:#cd7c4b;font-size:10px;font-family:sans-serif;font-weight:700;">🥉 3위</text>
+      <text x="110" y="239" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">골든 티켓 ×1 · 골드 2,000 · 엑스트라 덱 ×1</text>
+
+      <!-- 4~6위 -->
+      <rect x="44" y="254" width="342" height="28" rx="6" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="54" y="273" style="fill:var(--text2);font-size:10px;font-family:sans-serif;font-weight:700;">4~6위</text>
+      <text x="110" y="273" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">골드 1,500 · 불꽃놀이 ×1</text>
+
+      <!-- 7~10위 -->
+      <rect x="44" y="288" width="342" height="28" rx="6" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="54" y="307" style="fill:var(--text2);font-size:10px;font-family:sans-serif;font-weight:700;">7~10위</text>
+      <text x="110" y="307" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">골드 1,000</text>
+
+      <!-- 구분선 -->
+      <line x1="44" y1="326" x2="386" y2="326" style="stroke:var(--border);stroke-width:1;stroke-dasharray:4,3"/>
+
+      <!-- 참여 조건 안내 문구 -->
+      <rect x="44" y="334" width="342" height="36" rx="8" style="fill:var(--blue-bg);"/>
+      <text x="215" y="349" text-anchor="middle" style="fill:var(--blue);font-size:8.5px;font-family:sans-serif;font-weight:700;">ℹ  1판이라도 클리어해야 순위가 등록되어</text>
+      <text x="215" y="362" text-anchor="middle" style="fill:var(--blue);font-size:8.5px;font-family:sans-serif;font-weight:700;">보상을 받을 수 있습니다.</text>
+
+      <!-- 주석들 -->
+      <line x1="400" y1="160" x2="470" y2="148" style="stroke:var(--gold);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="420" y="136" width="170" height="26" rx="4" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1"/>
+      <text x="505" y="153" text-anchor="middle" style="fill:var(--gold);font-size:9px;font-family:sans-serif;">1위 — 강조 배경</text>
+
+      <line x1="400" y1="200" x2="470" y2="196" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="420" y="184" width="170" height="26" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="505" y="201" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">2~10위 — 기본 배경</text>
+
+      <line x1="400" y1="350" x2="470" y2="340" style="stroke:var(--blue);stroke-width:1.5;stroke-dasharray:4,3"/>
+      <rect x="420" y="328" width="170" height="36" rx="4" style="fill:var(--blue-bg);stroke:var(--blue);stroke-width:1.5"/>
+      <text x="505" y="343" text-anchor="middle" style="fill:var(--blue);font-size:9px;font-family:sans-serif;font-weight:700;">★ 참여 조건 안내 문구</text>
+      <text x="505" y="356" text-anchor="middle" style="fill:var(--blue);font-size:8px;font-family:sans-serif;">하단 고정 · 항상 노출</text>
+
+      <line x1="390" y1="120" x2="470" y2="108" style="stroke:var(--text2);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="420" y="96" width="170" height="26" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="505" y="113" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">배경 탭으로도 닫기 가능</text>
+    </svg>
+  </div>
+
+  <h3>비주얼 방향성</h3>
+
+  <p><strong>"!" 버튼:</strong> 작고 명확해야 합니다. 원형 배지 스타일로, 타이틀 우측 또는 우상단 X 버튼 좌측에 배치합니다. 색상은 기존 UI 배경 대비 눈에 띄되, X 닫기 버튼보다는 시각적 우선순위가 낮아야 합니다. 게임 UI의 기존 정보 버튼 스타일이 있다면 통일해서 사용합니다.</p>
+
+  <ul>
+    <li><strong>팝업 스타일:</strong> 하단 슬라이드업 시트 또는 중앙 팝업 둘 다 가능. 기존 게임 팝업 컴포넌트와 동일한 형태를 사용하는 것을 권장합니다.</li>
+    <li><strong>보상 리스트:</strong> 1위는 골드/황금 강조 배경, 2~3위는 해당 메달 컬러 텍스트로 구분, 4위 이하는 동일한 일반 스타일.</li>
+    <li><strong>참여 조건 안내 영역:</strong> 보상 리스트 아래 구분선으로 분리. 경고(빨강)보다는 정보(파랑/중성) 색조. 작은 ℹ 아이콘과 함께 배치하면 명확합니다.</li>
+    <li><strong>닫기:</strong> 팝업 상단 X + 배경 탭 두 가지 모두 지원.</li>
+  </ul>
+
+  <h3>필요 에셋</h3>
+  <ul>
+    <li><strong>"!" 버튼:</strong> 기존 게임 내 정보 버튼 아이콘 재사용 가능 여부 확인. 없으면 원형 배지에 "!" 텍스트로 처리.</li>
+    <li><strong>팝업 배경:</strong> 기존 팝업 컴포넌트 재사용. 별도 신규 에셋 불필요.</li>
+    <li><strong>아이템 아이콘:</strong> 보상 리스트에 각 아이템 소형 아이콘 표시 가능 여부 개발팀 확인 (없어도 텍스트만으로 기능 충족).</li>
+  </ul>
+</section>
+
+<!-- ════════════════════════════════════════
+  SECTION 3 — 개발 스펙
+════════════════════════════════════════ -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">3</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+  </div>
+
+  <h3>신규 UI 요소 명세</h3>
+  <table>
+    <thead><tr><th>요소</th><th>식별자 (안)</th><th>역할</th><th>위치</th></tr></thead>
+    <tbody>
+      <tr><td>자세히 보기 버튼</td><td><span class="code">btn_ranking_info</span></td><td>탭 시 보상 정보 팝업 오픈</td><td>Peak Rankers 화면 타이틀 우측, X 버튼 좌측</td></tr>
+      <tr><td>보상 정보 팝업</td><td><span class="code">popup_ranking_info</span></td><td>순위 보상 리스트 + 참여 조건 표시</td><td>하단 슬라이드업 시트 또는 중앙 팝업</td></tr>
+      <tr><td>보상 리스트 뷰</td><td><span class="code">view_reward_list</span></td><td>event_ranking 데이터 렌더링</td><td>popup_ranking_info 내 상단</td></tr>
+      <tr><td>참여 조건 레이블</td><td><span class="code">label_entry_condition</span></td><td>안내 문구 고정 표시</td><td>popup_ranking_info 내 하단 고정</td></tr>
+    </tbody>
+  </table>
+
+  <h3>밸런스 시트 변수 (신규 추가 없음)</h3>
+  <p>이 기능은 기존 <span class="sheet-var">event_ranking</span> 탭 데이터(key_number 170001~170005)를 읽어 표시하는 것으로, <strong>새로운 밸런스 시트 변수 추가는 불필요합니다.</strong> 보상 내용 변경은 <span class="sheet-var">event_ranking</span> 탭 수정으로 반영되며 팝업에 자동 적용됩니다.</p>
+
+  <div class="sheet-block">
+    <div class="sheet-block-title">참조 탭: event_ranking &nbsp;·&nbsp; event_id = 160004 (clear_ranking)</div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">event_ranking.rank_start / rank_end</span>
+      <span class="sheet-row-desc">순위 범위 (1~1, 2~2, 3~3, 4~6, 7~10). 팝업은 이 범위를 그대로 표시.</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">event_ranking.reward_item_key_1~3</span>
+      <span class="sheet-row-desc">보상 아이템 키. 팝업에서 아이템명 또는 아이콘으로 변환하여 표시.</span>
+    </div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">event_ranking.reward_amount_1~3</span>
+      <span class="sheet-row-desc">보상 수량. 팝업에서 ×N 형식으로 표시.</span>
+    </div>
+  </div>
+
+  <h3>트리거 조건</h3>
+  <ul>
+    <li>Peak Rankers 화면 활성 상태에서 <span class="code">btn_ranking_info</span> 탭 이벤트 수신 시</li>
+    <li>→ <span class="code">event_ranking</span> 탭에서 <code>event_id = 160004</code>인 행 전체 조회</li>
+    <li>→ <span class="code">popup_ranking_info</span> 오픈 + 보상 데이터 렌더링</li>
+  </ul>
+
+  <h3>참여 조건 판정 로직</h3>
+  <p>팝업에서 안내 문구만 표시하며, <strong>실제 판정은 이벤트 종료 시 서버에서 처리합니다.</strong> 클라이언트는 "1판이라도 클리어해야 순위가 등록되어 보상을 받을 수 있습니다" 문구를 고정 텍스트(string_code)로 하드코딩하지 않고, 현지화 테이블에서 참조하도록 구현합니다.</p>
+
+  <div class="callout callout-blue">
+    <p><strong>string_code 키 신규 추가 필요:</strong> 참여 조건 안내 문구를 현지화 가능하도록 <code>ranking_entry_condition_notice</code> (가칭) string_code 신규 등록 필요. 11_translation 에이전트에 번역 요청 또는 기존 유사 문구 재사용 여부 확인.</p>
+  </div>
+
+  <h3>억제 조건 / 예외 처리</h3>
+  <table>
+    <thead><tr><th>상황</th><th>처리</th></tr></thead>
+    <tbody>
+      <tr><td>event_ranking 데이터 조회 실패</td><td>팝업 오픈 억제 또는 "정보를 불러올 수 없습니다" 메시지 표시. 빈 팝업 노출 금지.</td></tr>
+      <tr><td>이벤트 종료 후 팝업 접근</td><td>Peak Rankers 화면 자체가 비활성화되므로 btn_ranking_info도 함께 비활성. 별도 처리 불필요.</td></tr>
+      <tr><td>보상이 없는 순위 구간</td><td>reward_item_key = "none"인 경우 해당 슬롯은 "—"으로 표시 또는 렌더링에서 제외.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>z-index 관리</h3>
+  <table>
+    <thead><tr><th>레이어</th><th>z-index</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>Peak Rankers 팝업 (기존)</td><td>300</td><td>기존 팝업 레이어</td></tr>
+      <tr><td>popup_ranking_info (보상 정보)</td><td>310</td><td>Peak Rankers 위에 올라와야 함</td></tr>
+      <tr><td>딤 배경</td><td>305</td><td>popup_ranking_info와 Peak Rankers 사이</td></tr>
+    </tbody>
+  </table>
+
+  <h3>엣지 케이스</h3>
+  <ul>
+    <li><strong>보상 구간이 변경된 경우 (예: 11~20위 추가):</strong> event_ranking 탭에 행이 추가되면 팝업 리스트에 자동으로 추가됨. 서버 데이터 기반 렌더링이므로 클라이언트 코드 수정 불필요.</li>
+    <li><strong>팝업 열린 상태에서 이벤트 종료:</strong> 서버 이벤트 수신 시 팝업 강제 닫기 처리 또는 무시 (PM 결정 필요, 기본: 이미 열린 팝업은 자연 닫기까지 유지).</li>
+    <li><strong>매우 긴 아이템명:</strong> 보상 리스트 텍스트 말줄임 처리 또는 2줄 허용 여부 아트팀 결정 필요.</li>
+  </ul>
+</section>
+
+</div><!-- /container -->
+
+<script>
+(function () {
+  const SPEC_ID = 'spec-011';
+  const TAG_INFO = {
+    review:   { label: '🔍 리뷰',      cls: 'badge-blue'   },
+    feature:  { label: '✨ 기능',      cls: 'badge-green'  },
+    balance:  { label: '⚖️ 밸런스',   cls: 'badge-yellow' },
+    bug:      { label: '🐛 버그',      cls: 'badge-red'    },
+    ux:       { label: '🎨 UX/UI',    cls: 'badge-purple' },
+    content:  { label: '📦 콘텐츠',   cls: 'badge-yellow' },
+    monetize: { label: '💰 수익화',   cls: 'badge-gold'   },
+    etc:      { label: '📌 기타',      cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',     cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',     cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',       cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',       cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS = { tag: 'ux', priority: 'mid', status: 'open' };
+  let ddField = null;
+
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:160px;display:none;';
+  document.body.appendChild(dd);
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--blue-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+  function applyBadge(el, info) { if (!el) return; el.className = 'badge ' + info.cls; el.textContent = info.label; el.style.cursor = 'pointer'; }
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o => `<div class="dd-itm${o.val===cur?' active':''}" data-val="${o.val}">${o.label}</div>`).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 180) + 'px';
+    dd.style.top  = (rect.bottom + 6) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+  dd.addEventListener('click', e => {
+    const item = e.target.closest('.dd-itm');
+    if (!item || !ddField) return;
+    setVal(ddField, item.dataset.val);
+    updateHero();
+    dd.style.display = 'none';
+  });
+  document.addEventListener('click', () => { dd.style.display = 'none'; });
+
+  updateHero();
+  document.getElementById('hero-tag')     ?.addEventListener('click', e => openDropdown(e, 'tag'));
+  document.getElementById('hero-priority')?.addEventListener('click', e => openDropdown(e, 'priority'));
+  document.getElementById('hero-status')  ?.addEventListener('click', e => openDropdown(e, 'status'));
+
+  const links = document.querySelectorAll('.nav-sidebar a');
+  const sections = ['s1','s2','s3'].map(id => document.getElementById(id));
+  window.addEventListener('scroll', () => {
+    const mid = window.scrollY + window.innerHeight / 2;
+    sections.forEach((s, i) => {
+      if (!s) return;
+      if (s.offsetTop <= mid && (sections[i+1] ? sections[i+1].offsetTop > mid : true))
+        links.forEach((l,li) => l.classList.toggle('active', li===i));
+    });
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>
