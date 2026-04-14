@@ -32,6 +32,8 @@ for f in "${FILES[@]}"; do
   cp "$SRC/$f" "$DEST/$f"
   # reports/ 내부에서는 상대 경로 보정
   sed -i '' 's|href="reports/index.html"|href="index.html"|g' "$DEST/$f"
+  # Esther Only 섹션 링크: 루트 기준 경로 → reports/ 기준 상대 경로로 보정
+  sed -i '' "s|location.href='workspace/specs/index.html'|location.href='../../../workspace/specs/index.html'|g" "$DEST/$f"
   echo "  SYNC  $f"
   ((copied++))
 done
