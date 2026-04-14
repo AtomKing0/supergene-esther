@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-013 · 데일리 기프트 30일 확장</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #a78bfa;
+  --accent2: #c4b5fd;
+  --green: #34d399;   --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;     --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;    --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;  --purple-bg: rgba(167,139,250,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #1a2535 45%, #1a1d27 100%);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #7c3aed; --accent2: #6d28d9;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626;   --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb;  --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --hero-bg: linear-gradient(135deg, #ede9fe 0%, #dbeafe 45%, #e0e7ff 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { position:fixed;left:16px;top:16px;z-index:300;background:var(--surface2);border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:10px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s; }
+.nav-toggle:hover { border-color:var(--accent); }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200;transform:translateX(-100%);transition:transform 0.25s; }
+.nav-sidebar.open { transform:translateX(0); }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(96,165,250,0.1) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--blue),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-purple { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+
+.container { max-width:1100px;margin:0 auto;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-num-3 { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--blue-bg);color:var(--blue); }
+.aud-dev { background:var(--green-bg);color:var(--green); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+h4 { font-size:0.95rem;font-weight:700;margin:24px 0 10px;color:var(--accent); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+tbody tr.milestone td { background:rgba(251,191,36,0.06); }
+tbody tr.milestone td:first-child { color:var(--yellow); }
+tbody tr.super-day td { background:rgba(96,165,250,0.08); }
+tbody tr.super-day td:first-child { color:var(--blue); }
+
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-purple { background:var(--purple-bg);border-left:3px solid var(--purple); }
+.callout-green  { background:var(--green-bg);border-left:3px solid var(--green); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.86rem; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var     { font-family:monospace;color:var(--blue);font-weight:600;min-width:260px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:72px; }
+.sheet-row-unit    { font-size:0.75rem;color:var(--text2);min-width:100px; }
+.sheet-row-desc    { color:var(--text2);font-size:0.82rem;flex:1; }
+
+code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 6px;color:var(--accent2); }
+
+/* 30일 달력 그리드 */
+.calendar-grid { display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:20px 0; }
+.cal-day { background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;font-size:0.78rem; }
+.cal-day .day-num { font-size:0.68rem;color:var(--text-dim);margin-bottom:4px; }
+.cal-day .day-reward { font-size:0.75rem;color:var(--text2);line-height:1.4; }
+.cal-day.milestone { border-color:var(--yellow);background:rgba(251,191,36,0.07); }
+.cal-day.milestone .day-num { color:var(--yellow);font-weight:700; }
+.cal-day.super { border-color:var(--blue);background:rgba(96,165,250,0.1);box-shadow:0 0 12px rgba(96,165,250,0.2); }
+.cal-day.super .day-num { color:var(--blue);font-weight:700; }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">☰</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-013</div>
+  <a href="#s1">① 기획 의도</a>
+  <a href="#s2">② 아트 가이드</a>
+  <a href="#s3">③ 개발 스펙</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-013</span>
+      <span class="badge badge-green"  id="hero-tag"      style="cursor:pointer" title="태그 변경">✨ 기능</span>
+      <span class="badge badge-yellow" id="hero-priority" style="cursor:pointer" title="우선순위 변경">🟡 보통 우선순위</span>
+      <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">🔵 검토중</span>
+      <span class="badge badge-green">2026. 4. 13.</span>
+    </div>
+    <h1>데일리 기프트 <span>30일 확장</span></h1>
+    <p class="hero-sub">7일 출석 보상을 30일 사이클로 확장하여 장기 리텐션 루프를 구축한다. 매 7일 마다 마일스톤 보상, Day 30 SUPER 보상으로 이탈 방지 앵커 생성.</p>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">사이클 길이</div>
+        <div class="kpi-value" style="color:var(--blue)">30일</div>
+        <div class="kpi-sub">기존 7일 → 4.3배 확장</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">마일스톤</div>
+        <div class="kpi-value" style="color:var(--yellow)">4회</div>
+        <div class="kpi-sub">Day 7 / 14 / 21 / 30</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">SUPER 앵커</div>
+        <div class="kpi-value" style="color:var(--accent)">Day 30</div>
+        <div class="kpi-sub">최고 등급 복합 보상</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">기대 KPI</div>
+        <div class="kpi-value" style="color:var(--green)">D30</div>
+        <div class="kpi-sub">30일 리텐션 지표 개선</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════
+  SECTION 1 — 기획 의도
+════════════════════════════════════ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">①</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도</div>
+      <span class="section-audience aud-all">전체 공유</span>
+    </div>
+  </div>
+
+  <h3>문제 — 7일 사이클의 한계</h3>
+  <p>현재 <strong>7일 출석 보상</strong>은 한 번 완주하면 리텐션 동기가 소멸된다. 이탈 후 복귀하더라도 "이미 다 받아봤다"는 심리로 긴장감이 없다. 30일 사이클은 이 구조를 근본적으로 바꾼다.</p>
+
+  <h3>레퍼런스 — Solitaire Story (경쟁사)</h3>
+  <table>
+    <thead><tr><th>항목</th><th>Solitaire Story</th><th>현재 우리 게임</th></tr></thead>
+    <tbody>
+      <tr><td>사이클 길이</td><td>30일+</td><td>7일</td></tr>
+      <tr><td>마일스톤 구조</td><td>Day 30 "SUPER WOW"</td><td>Day 6만 특별 (ticket×2+golden×1)</td></tr>
+      <tr><td>보상 미공개 연출</td><td>커튼 가리기</td><td>없음 (모두 공개)</td></tr>
+      <tr><td>스크롤 UI</td><td>페이지 스크롤로 전체 진행도 확인</td><td>7칸 고정</td></tr>
+    </tbody>
+  </table>
+
+  <h3>리텐션 메커니즘</h3>
+  <ul>
+    <li><strong>Sunk Cost 효과:</strong> "25일 왔는데 5일 더"라는 심리로 이탈 방지</li>
+    <li><strong>앵커 보상:</strong> Day 7·14·21·30의 프리미엄 보상이 로그인 동기 제공</li>
+    <li><strong>복귀 유도:</strong> 이탈 후 복귀 시 남은 마일스톤이 명확한 복귀 이유가 됨</li>
+    <li><strong>진행감:</strong> 30일 달력을 통해 "얼마나 왔는지" 시각적 성취감 제공</li>
+  </ul>
+
+  <div class="callout callout-yellow">
+    <p><strong>설계 원칙:</strong> 일반 일차 보상은 소소하게 유지하되, 마일스톤(Day 7/14/21/30)에 집중 투자. 일반 보상의 과도한 상향은 골드 인플레이션 위험 — 마일스톤 앵커 효과를 희석시키지 않도록 한다.</p>
+  </div>
+
+  <h3>사이클 리셋 정책</h3>
+  <ul>
+    <li><strong>30일 완주 후:</strong> Day 1부터 재시작 (무한 반복 사이클)</li>
+    <li><strong>연속 로그인 기준:</strong> 하루 1회 수령 (UTC 기준 0시 리셋 또는 현지 자정)</li>
+    <li><strong>미수령일:</strong> 스킵 — 다음 날 수령 가능, 되돌아가기 불가. 단 진행도는 유지 (이탈·복귀 시 중단된 날부터 재개)</li>
+  </ul>
+
+  <div class="callout callout-blue">
+    <p><strong>미수령일 복구 여부 논의 필요:</strong> 경쟁사 일부는 gem 소비로 스킵 보상 구매 가능. 수익화 요소로 검토 가능하나 본 스펙 범위에서는 제외.</p>
+  </div>
+
+  <h3>30일 보상 달력 (안)</h3>
+  <p>아래는 방향성 초안. 실제 수치는 경제 시뮬레이션 후 확정.</p>
+
+  <div class="calendar-grid">
+    <div class="cal-day"><div class="day-num">Day 1</div><div class="day-reward">골드<br>500</div></div>
+    <div class="cal-day"><div class="day-num">Day 2</div><div class="day-reward">Undo<br>×1</div></div>
+    <div class="cal-day"><div class="day-num">Day 3</div><div class="day-reward">골드<br>800</div></div>
+    <div class="cal-day"><div class="day-num">Day 4</div><div class="day-reward">불꽃<br>×1</div></div>
+    <div class="cal-day"><div class="day-num">Day 5</div><div class="day-reward">골드<br>1,200</div></div>
+    <div class="cal-day"><div class="day-num">Day 6</div><div class="day-reward">티켓<br>×1</div></div>
+    <div class="cal-day milestone"><div class="day-num">★ Day 7</div><div class="day-reward">골드 2,000<br>와일드×1</div></div>
+
+    <div class="cal-day"><div class="day-num">Day 8</div><div class="day-reward">골드<br>600</div></div>
+    <div class="cal-day"><div class="day-num">Day 9</div><div class="day-reward">Undo<br>×2</div></div>
+    <div class="cal-day"><div class="day-num">Day 10</div><div class="day-reward">골드<br>1,000</div></div>
+    <div class="cal-day"><div class="day-num">Day 11</div><div class="day-reward">ExDeck<br>×1</div></div>
+    <div class="cal-day"><div class="day-num">Day 12</div><div class="day-reward">골드<br>1,500</div></div>
+    <div class="cal-day"><div class="day-num">Day 13</div><div class="day-reward">티켓<br>×1</div></div>
+    <div class="cal-day milestone"><div class="day-num">★ Day 14</div><div class="day-reward">골드 4,000<br>골든티켓×1</div></div>
+
+    <div class="cal-day"><div class="day-num">Day 15</div><div class="day-reward">골드<br>800</div></div>
+    <div class="cal-day"><div class="day-num">Day 16</div><div class="day-reward">불꽃<br>×2</div></div>
+    <div class="cal-day"><div class="day-num">Day 17</div><div class="day-reward">골드<br>1,500</div></div>
+    <div class="cal-day"><div class="day-num">Day 18</div><div class="day-reward">와일드<br>×1</div></div>
+    <div class="cal-day"><div class="day-num">Day 19</div><div class="day-reward">골드<br>2,000</div></div>
+    <div class="cal-day"><div class="day-num">Day 20</div><div class="day-reward">티켓<br>×2</div></div>
+    <div class="cal-day milestone"><div class="day-num">★ Day 21</div><div class="day-reward">골드 6,000<br>골든티켓×2</div></div>
+
+    <div class="cal-day"><div class="day-num">Day 22</div><div class="day-reward">골드<br>1,000</div></div>
+    <div class="cal-day"><div class="day-num">Day 23</div><div class="day-reward">Undo<br>×3</div></div>
+    <div class="cal-day"><div class="day-num">Day 24</div><div class="day-reward">골드<br>2,000</div></div>
+    <div class="cal-day"><div class="day-num">Day 25</div><div class="day-reward">ExDeck<br>×2</div></div>
+    <div class="cal-day"><div class="day-num">Day 26</div><div class="day-reward">골드<br>3,000</div></div>
+    <div class="cal-day"><div class="day-num">Day 27</div><div class="day-reward">불꽃×2<br>와일드×1</div></div>
+    <div class="cal-day"><div class="day-num">Day 28</div><div class="day-reward">골드<br>4,000</div></div>
+    <div class="cal-day"><div class="day-num">Day 29</div><div class="day-reward">티켓<br>×3</div></div>
+    <div class="cal-day super"><div class="day-num">🌟 Day 30</div><div class="day-reward">골드 12,000<br>골든티켓×3<br>티켓×5</div></div>
+  </div>
+
+  <div class="callout callout-purple">
+    <p><strong>골드 총량 (30일 기준, 초안):</strong> ~43,100g / 30일 = ~1,437g/일 — 기존 7일(~1,286g/일) 대비 약 +11%. 시뮬레이션 후 조정 필요.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+  SECTION 2 — 아트 가이드
+════════════════════════════════════ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">②</div>
+    <div class="section-meta">
+      <div class="section-title">아트 가이드</div>
+      <span class="section-audience aud-art">아트팀</span>
+    </div>
+  </div>
+
+  <h3>UI 레이아웃</h3>
+  <p>30칸을 한 화면에 다 표시할 수 없으므로 <strong>5열 × 스크롤 또는 페이지 방식</strong>으로 구성한다.</p>
+
+  <table>
+    <thead><tr><th>안</th><th>방식</th><th>장점</th><th>단점</th></tr></thead>
+    <tbody>
+      <tr><td>A — 수평 스크롤 (레퍼런스 동일)</td><td>5열 고정, 좌우 화살표로 페이지 이동</td><td>레퍼런스와 동일한 친숙한 UX</td><td>현재 위치 파악 어려움</td></tr>
+      <tr><td>B — 달력 그리드</td><td>전체 30칸을 한 화면에 축소 표시 (5×6)</td><td>전체 진행도 한눈에 파악</td><td>칸이 작아 보상 내용 표시 제한</td></tr>
+      <tr><td>C — 하이브리드</td><td>상단에 미니 달력(진행도), 하단에 현재 주차 확대 뷰</td><td>진행도 + 상세 동시 제공</td><td>개발 복잡도 증가</td></tr>
+    </tbody>
+  </table>
+
+  <h3>마일스톤 칸 연출</h3>
+  <ul>
+    <li><strong>Day 7·14·21:</strong> 금색 테두리 + 별 아이콘 — 일반 칸과 시각적 구분</li>
+    <li><strong>Day 30 (SUPER):</strong> 별도 이펙트(빛 방사 애니메이션) + "SUPER" 레이블 — 특별 최고 보상임을 명확히 전달</li>
+    <li><strong>미수령 미래 칸:</strong> 커튼(잠금) 연출 또는 보상 아이콘 표시 — PM 결정 필요</li>
+    <li><strong>수령 완료 칸:</strong> 체크마크 + 어두운 오버레이로 처리 완료 표시</li>
+    <li><strong>오늘 칸:</strong> 펄스 애니메이션 또는 하이라이트 테두리</li>
+  </ul>
+
+  <h3>에셋 요구사항</h3>
+  <ul>
+    <li>마일스톤 프레임 배경 ×1 (금색 계열)</li>
+    <li>SUPER Day 30 특수 프레임 배경 ×1 (고급 소재)</li>
+    <li>커튼/잠금 오버레이 ×1 (선택 시)</li>
+    <li>수령 완료 체크 오버레이 ×1</li>
+    <li>Day 30 수령 이펙트 (파티클 또는 광선 애니메이션)</li>
+  </ul>
+</section>
+
+<!-- ════════════════════════════════════
+  SECTION 3 — 개발 스펙
+════════════════════════════════════ -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">③</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀</span>
+    </div>
+  </div>
+
+  <h3>시트 변경 — daily_gift</h3>
+  <p>기존 7행(150001~150007)을 30행(150001~150030)으로 확장한다. 스키마 구조는 동일하되 <strong><code>is_milestone</code> 컬럼</strong>을 추가하여 마일스톤 칸을 명시적으로 구분한다.</p>
+
+  <div class="sheet-block">
+    <div class="sheet-block-title">신규 컬럼</div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">is_milestone</span>
+      <span class="sheet-row-default">0</span>
+      <span class="sheet-row-unit">boolean (0/1)</span>
+      <span class="sheet-row-desc">1이면 마일스톤 칸 UI 연출 적용. Day 7·14·21·30에 1 설정.</span>
+    </div>
+  </div>
+
+  <h3>확장 후 스키마 (전체)</h3>
+  <table>
+    <thead>
+      <tr><th>컬럼명</th><th>타입</th><th>설명</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>key_number</td><td>int</td><td>고유 키 (150001~150030)</td></tr>
+      <tr><td>day</td><td>int</td><td>일차 인덱스 (0~29)</td></tr>
+      <tr><td>reward_item_key_1</td><td>string</td><td>보상 아이템 키 1</td></tr>
+      <tr><td>reward_amount_1</td><td>int</td><td>보상 수량 1</td></tr>
+      <tr><td>reward_item_key_2</td><td>string</td><td>보상 아이템 키 2 (없으면 none)</td></tr>
+      <tr><td>reward_amount_2</td><td>int</td><td>보상 수량 2</td></tr>
+      <tr><td>reward_item_key_3</td><td>string</td><td>보상 아이템 키 3 (없으면 none)</td></tr>
+      <tr><td>reward_amount_3</td><td>int</td><td>보상 수량 3</td></tr>
+      <tr><td><strong>is_milestone</strong></td><td>int (0/1)</td><td>마일스톤 칸 여부 (신규)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>보상 데이터 초안 (30행)</h3>
+  <p>아래 수치는 방향성 초안. 경제 시뮬레이션 후 확정 전 수정 가능.</p>
+  <table>
+    <thead>
+      <tr><th>key</th><th>day</th><th>보상 1</th><th>보상 2</th><th>보상 3</th><th>is_milestone</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>150001</td><td>0</td><td>currency_gold × 500</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150002</td><td>1</td><td>booster_undo × 1</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150003</td><td>2</td><td>currency_gold × 800</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150004</td><td>3</td><td>booster_fireworks × 1</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150005</td><td>4</td><td>currency_gold × 1,200</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150006</td><td>5</td><td>currency_ticket × 1</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr class="milestone"><td>150007</td><td>6</td><td>currency_gold × 2,000</td><td>booster_wild_card × 1</td><td>—</td><td><strong>1</strong></td></tr>
+      <tr><td>150008</td><td>7</td><td>currency_gold × 600</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150009</td><td>8</td><td>booster_undo × 2</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150010</td><td>9</td><td>currency_gold × 1,000</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150011</td><td>10</td><td>booster_extra_deck × 1</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150012</td><td>11</td><td>currency_gold × 1,500</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150013</td><td>12</td><td>currency_ticket × 1</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr class="milestone"><td>150014</td><td>13</td><td>currency_gold × 4,000</td><td>booster_golden_ticket × 1</td><td>—</td><td><strong>1</strong></td></tr>
+      <tr><td>150015</td><td>14</td><td>currency_gold × 800</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150016</td><td>15</td><td>booster_fireworks × 2</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150017</td><td>16</td><td>currency_gold × 1,500</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150018</td><td>17</td><td>booster_wild_card × 1</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150019</td><td>18</td><td>currency_gold × 2,000</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150020</td><td>19</td><td>currency_ticket × 2</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr class="milestone"><td>150021</td><td>20</td><td>currency_gold × 6,000</td><td>booster_golden_ticket × 2</td><td>—</td><td><strong>1</strong></td></tr>
+      <tr><td>150022</td><td>21</td><td>currency_gold × 1,000</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150023</td><td>22</td><td>booster_undo × 3</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150024</td><td>23</td><td>currency_gold × 2,000</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150025</td><td>24</td><td>booster_extra_deck × 2</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150026</td><td>25</td><td>currency_gold × 3,000</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150027</td><td>26</td><td>booster_fireworks × 2</td><td>booster_wild_card × 1</td><td>—</td><td>0</td></tr>
+      <tr><td>150028</td><td>27</td><td>currency_gold × 4,000</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr><td>150029</td><td>28</td><td>currency_ticket × 3</td><td>—</td><td>—</td><td>0</td></tr>
+      <tr class="super-day"><td>150030</td><td>29</td><td>currency_gold × 12,000</td><td>booster_golden_ticket × 3</td><td>currency_ticket × 5</td><td><strong>1</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow">
+    <p><strong>기존 key 재사용 여부:</strong> 150001~150007을 Day 1~7로 재매핑할지, 새 key 범위(150031~)로 분리할지 개발팀 확인 필요. 기존 클라이언트 캐시 충돌 가능성 점검 필수.</p>
+  </div>
+
+  <h3>진행도 저장 로직</h3>
+  <ul>
+    <li><code>player.daily_gift_day</code>: 현재 수령 완료 일차 (0~29). 30 도달 시 0으로 리셋.</li>
+    <li><code>player.daily_gift_last_claimed_at</code>: 마지막 수령 UTC timestamp</li>
+    <li>수령 가능 조건: <code>now ≥ last_claimed_at + 24h</code> (또는 일 기준 자정 리셋 — 정책 결정 필요)</li>
+    <li>미수령일 처리: 진행도 정지 (day 증가 없음). 복귀 시 이어서 수령 가능.</li>
+  </ul>
+
+  <h3>엣지 케이스</h3>
+  <ul>
+    <li><strong>첫 진입 유저:</strong> day=0부터 시작, 수령 즉시 가능 (대기 없음)</li>
+    <li><strong>장기 이탈(30일+) 복귀:</strong> 중단된 day부터 재개 (리셋 없음). 복귀 유도 목적상 진행도 유지가 유리.</li>
+    <li><strong>Day 30 완주 후:</strong> 즉시 Day 1 재시작 — 팝업으로 "30일 완주 축하 + 새 사이클 시작" 알림</li>
+    <li><strong>is_milestone=1 칸 도달 시:</strong> 특수 연출 팝업 (일반 수령 팝업과 구분)</li>
+  </ul>
+</section>
+
+</div>
+
+<script>
+(function () {
+  const SPEC_ID = 'spec-013';
+
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',    cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',  cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',    cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',   cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',  cls: 'badge-yellow' },
+    etc:     { label: '📌 기타',    cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL  = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS  = { tag: 'feature', priority: 'mid', status: 'open' };
+  let ddField = null;
+
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+
+  function applyBadge(el, info) {
+    el.className = 'badge ' + info.cls;
+    el.textContent = info.label;
+    el.style.cursor = 'pointer';
+  }
+
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o =>
+        `<div class="dd-itm${o.val === cur ? ' active' : ''}" data-val="${o.val}">${o.label}</div>`
+      ).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    const fieldMap = { 'hero-tag': 'tag', 'hero-priority': 'priority', 'hero-status': 'status' };
+    Object.keys(fieldMap).forEach(elId => {
+      document.getElementById(elId).addEventListener('click', e => openDropdown(e, fieldMap[elId]));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none';
+      ddField = null;
+      updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
+
+  var links    = document.querySelectorAll('.nav-sidebar a');
+  var sections = document.querySelectorAll('section[id]');
+  function activate() {
+    var scrollY = window.pageYOffset + 120;
+    sections.forEach(function (s) {
+      if (s.offsetTop <= scrollY && s.offsetTop + s.offsetHeight > scrollY) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = document.querySelector('.nav-sidebar a[href="#' + s.id + '"]');
+        if (a) a.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', activate);
+  activate();
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.nav-sidebar') && !e.target.closest('.nav-toggle'))
+      document.querySelector('.nav-sidebar').classList.remove('open');
+  });
+})();
+</script>
+<script src="memo.js"></script>
+</body>
+</html>
