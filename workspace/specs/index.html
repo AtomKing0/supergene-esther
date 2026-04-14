@@ -261,6 +261,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .toast { position:fixed;left:50%;bottom:80px;transform:translateX(-50%);z-index:950;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-full);box-shadow:var(--shadow-md);color:var(--text);font-size:var(--text-sm);font-weight:700;padding:8px 14px;display:none; }
 .toast.open { display:block; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -485,38 +486,74 @@ let dragSrcId          = null;
 let dueEditId          = null;
 let toastTimer         = null;
 
-// ── 로컬 오버라이드 ────────────────────────────────────────
-function readJson(key, fallback) {
+// ── Supabase 설정 ────────────────────────────────────────
+const SB_URL  = 'https://hfiukhidqwhntdpmippt.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmaXVraGlkcXdobnRkcG1pcHB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4MTMyNzMsImV4cCI6MjA5MDM4OTI3M30.cLuCTE9IK6Mp_kVsRY3AFQ_wvE4X6YGkHvziz_6-sfs';
+const _sb = window.supabase.createClient(SB_URL, SB_ANON);
+
+// ── 인메모리 캐시 (Supabase 로드 전 localStorage fallback) ──
+function _readLS(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
   catch(e) { return fallback; }
 }
-function getOv() {
-  const ov = readJson('spec-ov', {});
-  let changed = false;
-  Object.keys(ov).forEach(id => {
-    const rec = ov[id] || {};
-    if (!rec || typeof rec !== 'object' || Array.isArray(rec)) {
-      ov[id] = {};
-      changed = true;
-      return;
+let _ov    = _readLS('spec-ov', {});
+let _order = _readLS('spec-order', []);
+
+async function initFromSupabase() {
+  try {
+    const [{ data: rows, error: e1 }, { data: ord, error: e2 }] = await Promise.all([
+      _sb.from('spec_overrides').select('*'),
+      _sb.from('spec_order').select('order_list').eq('id', 1).single(),
+    ]);
+    if (!e1 && rows) {
+      _ov = {};
+      for (const r of rows) {
+        _ov[r.spec_id] = {
+          tags: r.tags || [],
+          priority: r.priority,
+          status: r.status,
+          dueDate: r.due_date || null,
+          relatedTo: r.related_to || [],
+        };
+      }
+      localStorage.setItem('spec-ov', JSON.stringify(_ov));
     }
+    if (!e2 && ord) {
+      _order = ord.order_list || [];
+      localStorage.setItem('spec-order', JSON.stringify(_order));
+    }
+  } catch(e) {
+    console.warn('Supabase load failed, using localStorage:', e);
+  }
+  render();
+}
+
+function getOv() {
+  // localStorage 구버전 마이그레이션 적용
+  let changed = false;
+  Object.keys(_ov).forEach(id => {
+    const rec = _ov[id] || {};
+    if (!rec || typeof rec !== 'object' || Array.isArray(rec)) { _ov[id] = {}; changed = true; return; }
     if (rec.tag && !rec.tags) { rec.tags = [rec.tag]; changed = true; }
     if (typeof rec.tags === 'string') { rec.tags = [rec.tags]; changed = true; }
-    if (Array.isArray(rec.tags)) {
-      const clean = rec.tags.filter(Boolean);
-      if (clean.length !== rec.tags.length) changed = true;
-      rec.tags = clean;
-    }
+    if (Array.isArray(rec.tags)) { const c = rec.tags.filter(Boolean); if (c.length !== rec.tags.length) changed = true; rec.tags = c; }
     if (rec.tag) { delete rec.tag; changed = true; }
     if (typeof rec.relatedTo === 'string') { rec.relatedTo = [rec.relatedTo]; changed = true; }
     if (!Array.isArray(rec.relatedTo) && rec.relatedTo != null) { rec.relatedTo = []; changed = true; }
   });
-  if (changed) saveOv(ov);
-  return ov;
+  if (changed) saveOv(_ov);
+  return _ov;
 }
-function getOrder(){ return readJson('spec-order', []); }
-function saveOv(ov)   { localStorage.setItem('spec-ov',    JSON.stringify(ov));    }
-function saveOrder(o) { localStorage.setItem('spec-order', JSON.stringify(o));     }
+function getOrder() { return _order; }
+function saveOv(ov) {
+  _ov = ov;
+  localStorage.setItem('spec-ov', JSON.stringify(ov));
+}
+function saveOrder(o) {
+  _order = o;
+  localStorage.setItem('spec-order', JSON.stringify(o));
+  _sb.from('spec_order').upsert({ id: 1, order_list: o, updated_at: new Date().toISOString() });
+}
 function normalizeItem(item) {
   const tagVal = item.tag;
   if (!Array.isArray(item.tags)) item.tags = item.tags ? [item.tags] : (tagVal ? [tagVal] : ['etc']);
@@ -535,6 +572,9 @@ function applyOv(id, key, val) {
   if (key === 'status') {
     const from = ov[id].status || (SPECS.find(s => s.id === id) || {}).status || null;
     if (from !== val) {
+      // Supabase 상태 변경 이력
+      _sb.from('spec_status_log').insert({ spec_id: id, from_status: from, to_status: val });
+      // localStorage 이력 (호환)
       const logKey = id + '-log';
       let logs; try { logs = JSON.parse(localStorage.getItem(logKey) || '[]'); } catch(e) { logs = []; }
       const now = new Date();
@@ -543,7 +583,20 @@ function applyOv(id, key, val) {
       localStorage.setItem(logKey, JSON.stringify(logs));
     }
   }
-  ov[id][key] = val; saveOv(ov);
+  ov[id][key] = val;
+  _ov = ov;
+  localStorage.setItem('spec-ov', JSON.stringify(ov));
+  // Supabase write-through
+  const r = ov[id];
+  _sb.from('spec_overrides').upsert({
+    spec_id:    id,
+    tags:       r.tags       || [],
+    priority:   r.priority   || 'mid',
+    status:     r.status     || 'open',
+    due_date:   r.dueDate    || null,
+    related_to: r.relatedTo  || [],
+    updated_at: new Date().toISOString(),
+  });
 }
 
 function buildList() {
@@ -1213,7 +1266,7 @@ function renderArchiveModal() {
   list.innerHTML = archived.map(item => renderArchiveCard(item)).join('');
 }
 
-render();
+initFromSupabase();
 </script>
 
 <script src="memo.js"></script>
