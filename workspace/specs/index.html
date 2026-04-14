@@ -489,7 +489,9 @@ let toastTimer         = null;
 // ── Supabase 설정 ────────────────────────────────────────
 const SB_URL  = 'https://hfiukhidqwhntdpmippt.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmaXVraGlkcXdobnRkcG1pcHB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4MTMyNzMsImV4cCI6MjA5MDM4OTI3M30.cLuCTE9IK6Mp_kVsRY3AFQ_wvE4X6YGkHvziz_6-sfs';
-const _sb = window.supabase.createClient(SB_URL, SB_ANON);
+let _sb = null;
+try { _sb = window.supabase ? window.supabase.createClient(SB_URL, SB_ANON) : null; }
+catch(e) { console.warn('Supabase init failed:', e); }
 
 // ── 인메모리 캐시 (Supabase 로드 전 localStorage fallback) ──
 function _readLS(key, fallback) {
@@ -500,6 +502,7 @@ let _ov    = _readLS('spec-ov', {});
 let _order = _readLS('spec-order', []);
 
 async function initFromSupabase() {
+  if (!_sb) return;
   try {
     const [{ data: rows, error: e1 }, { data: ord, error: e2 }] = await Promise.all([
       _sb.from('spec_overrides').select('*'),
@@ -552,7 +555,7 @@ function saveOv(ov) {
 function saveOrder(o) {
   _order = o;
   localStorage.setItem('spec-order', JSON.stringify(o));
-  _sb.from('spec_order').upsert({ id: 1, order_list: o, updated_at: new Date().toISOString() });
+  if (_sb) _sb.from('spec_order').upsert({ id: 1, order_list: o, updated_at: new Date().toISOString() });
 }
 function normalizeItem(item) {
   const tagVal = item.tag;
@@ -573,7 +576,7 @@ function applyOv(id, key, val) {
     const from = ov[id].status || (SPECS.find(s => s.id === id) || {}).status || null;
     if (from !== val) {
       // Supabase 상태 변경 이력
-      _sb.from('spec_status_log').insert({ spec_id: id, from_status: from, to_status: val });
+      if (_sb) _sb.from('spec_status_log').insert({ spec_id: id, from_status: from, to_status: val });
       // localStorage 이력 (호환)
       const logKey = id + '-log';
       let logs; try { logs = JSON.parse(localStorage.getItem(logKey) || '[]'); } catch(e) { logs = []; }
@@ -588,7 +591,7 @@ function applyOv(id, key, val) {
   localStorage.setItem('spec-ov', JSON.stringify(ov));
   // Supabase write-through
   const r = ov[id];
-  _sb.from('spec_overrides').upsert({
+  if (_sb) _sb.from('spec_overrides').upsert({
     spec_id:    id,
     tags:       r.tags       || [],
     priority:   r.priority   || 'mid',
@@ -1266,6 +1269,7 @@ function renderArchiveModal() {
   list.innerHTML = archived.map(item => renderArchiveCard(item)).join('');
 }
 
+render();
 initFromSupabase();
 </script>
 
