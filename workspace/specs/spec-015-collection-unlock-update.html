@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-015 · 콜렉션 UNLOCK 시트 VALUE 수정</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #a78bfa;
+  --accent2: #c4b5fd;
+  --green: #34d399;   --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;     --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;    --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;  --purple-bg: rgba(167,139,250,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #2a1a1a 45%, #1a1d27 100%);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #7c3aed; --accent2: #6d28d9;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626;   --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb;  --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --hero-bg: linear-gradient(135deg, #fff1f0 0%, #ffe4e1 45%, #fff1f0 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { display:none; }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200; }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;margin-left:260px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(248,113,113,0.12) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--red),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-purple { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+
+.container { max-width:1100px;margin:0 0 0 260px;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+.section-num-2 { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-dev { background:var(--green-bg);color:var(--green); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-red    { background:var(--red-bg);border-left:3px solid var(--red); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-green  { background:var(--green-bg);border-left:3px solid var(--green); }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 6px;color:var(--accent2); }
+
+.checklist { list-style:none;padding:0; }
+.checklist li { display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:0.9rem;color:var(--text2); }
+.checklist li:last-child { border-bottom:none; }
+.checklist li .ck { width:18px;height:18px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;margin-top:2px; }
+.checklist li strong { color:var(--text); }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-015</div>
+  <a href="#s1">① 배경 및 주의사항</a>
+  <a href="#s2">② 작업 체크리스트</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-015</span>
+      <span class="badge badge-red"    id="hero-tag"      style="cursor:pointer" title="태그 변경">🐛 버그</span>
+      <span class="badge badge-red"    id="hero-priority" style="cursor:pointer" title="우선순위 변경">🔴 높은 우선순위</span>
+      <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">🔵 검토중</span>
+      <span class="badge badge-green">2026. 4. 21.</span>
+    </div>
+    <h1>콜렉션 <span>UNLOCK 시트 VALUE 수정</span></h1>
+    <p class="hero-sub">출시 시 콜렉션은 LEVEL 100 잠금으로 나간다. 출시 직후 업데이트 때 UNLOCK 시트의 VALUE를 실제 해금 레벨로 수정해야 한다. <strong>잊으면 콜렉션이 영구 잠금 상태로 방치됨.</strong></p>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">출시 시 상태</div>
+        <div class="kpi-value" style="color:var(--red)">LOCK</div>
+        <div class="kpi-sub">UNLOCK AT LEVEL 100 표시</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">작업 시점</div>
+        <div class="kpi-value" style="color:var(--yellow)">출시 후</div>
+        <div class="kpi-sub">첫 업데이트 배포 전 필수</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">작업 난이도</div>
+        <div class="kpi-value" style="color:var(--green)">단순</div>
+        <div class="kpi-sub">시트 VALUE 수치 변경만</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">①</div>
+    <div class="section-meta">
+      <div class="section-title">배경 및 주의사항</div>
+      <span class="section-audience aud-all">전체 공유</span>
+    </div>
+  </div>
+
+  <h3>현재 상태 (출시 빌드)</h3>
+  <p>콜렉션 기능은 출시 스펙상 <strong>잠금 아이콘 + "UNLOCK AT LEVEL 100"</strong> 안내 문구로 노출된다. 실제 콜렉션 콘텐츠는 준비되어 있으나 UNLOCK 시트의 VALUE가 100으로 설정되어 있어 해금되지 않는 상태.</p>
+
+  <div class="callout callout-red">
+    <p><strong>⚠️ 주의:</strong> 출시 직후 업데이트 때 이 작업을 빠뜨리면 콜렉션이 무기한 잠금 상태로 라이브 서비스된다. 반드시 첫 업데이트 배포 전 시트 수정 완료 확인 필수.</p>
+  </div>
+
+  <h3>작업 개요</h3>
+  <table>
+    <thead><tr><th>항목</th><th>현재값 (출시)</th><th>변경값 (업데이트)</th></tr></thead>
+    <tbody>
+      <tr><td>UNLOCK 시트 · 콜렉션 VALUE</td><td><code>100</code> (사실상 영구 잠금)</td><td>실제 해금 레벨 (확정 필요)</td></tr>
+      <tr><td>인게임 안내 문구</td><td>UNLOCK AT LEVEL 100</td><td>정상 해금 후 자동 제거</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow">
+    <p><strong>해금 레벨 미확정:</strong> 실제 목표 해금 레벨은 출시 후 지표(레벨 도달 분포, 리텐션 등)를 보고 확정한다. 본 스펙은 "수정 작업 자체를 잊지 말 것"을 목적으로 한다.</p>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">②</div>
+    <div class="section-meta">
+      <div class="section-title">작업 체크리스트</div>
+      <span class="section-audience aud-dev">개발팀</span>
+    </div>
+  </div>
+
+  <ul class="checklist">
+    <li><span class="ck"></span><div><strong>해금 레벨 확정</strong> — 출시 후 데이터 기반으로 PM이 목표 레벨 결정</div></li>
+    <li><span class="ck"></span><div><strong>UNLOCK 시트 VALUE 수정</strong> — 에이전트 시트 → 라이브 시트 순서로 시트 수정 워크플로우 준수</div></li>
+    <li><span class="ck"></span><div><strong>인게임 확인</strong> — 해당 레벨 도달 시 콜렉션 정상 해금 여부 QA</div></li>
+    <li><span class="ck"></span><div><strong>업데이트 배포 전 최종 확인</strong> — 배포 체크리스트에 본 항목 포함</div></li>
+  </ul>
+
+  <div class="callout callout-green">
+    <p><strong>시트 수정 순서:</strong> 에이전트 시트 수정 → 하이라이트 → PM 확인 → 라이브 시트 동기화 → 하이라이트 → PM 확인 → 하이라이트 제거 (CLAUDE.md 워크플로우 준수)</p>
+  </div>
+</section>
+
+</div>
+
+<script src="memo.js"></script>
+<script>
+(function(){
+  const SPEC_ID = 'spec-015';
+  const STATUS_INFO = {
+    open:    { label:'🔵 검토중',    cls:'badge-blue'   },
+    wip:     { label:'🟡 진행중',    cls:'badge-yellow' },
+    planned: { label:'🟣 진행 예정', cls:'badge-purple' },
+    hold:    { label:'⏸ 보류',      cls:'badge-purple' },
+    done:    { label:'✅ 완료',      cls:'badge-green'  },
+    archive: { label:'🗄️ 아카이브', cls:'badge-purple' },
+  };
+  const PRIORITY_INFO = {
+    high: { label:'🔴 높은 우선순위', cls:'badge-red'    },
+    mid:  { label:'🟡 보통 우선순위', cls:'badge-yellow' },
+    low:  { label:'🟢 낮은 우선순위', cls:'badge-green'  },
+  };
+  const TAG_INFO = {
+    bug:      { label:'🐛 버그',   cls:'badge-red'     },
+    feature:  { label:'✨ 기능',   cls:'badge-green'   },
+    ux:       { label:'🎨 UX/UI',  cls:'badge-purple'  },
+    balance:  { label:'⚖️ 밸런스', cls:'badge-blue'    },
+    content:  { label:'📦 콘텐츠', cls:'badge-yellow'  },
+    monetize: { label:'💰 수익화', cls:'badge-yellow'  },
+    etc:      { label:'📌 기타',   cls:'badge-purple'  },
+  };
+  function load(key, fb){ try{ return JSON.parse(localStorage.getItem(SPEC_ID+'-'+key)||'null')||fb; }catch(e){ return fb; } }
+  function save(key, val){ localStorage.setItem(SPEC_ID+'-'+key, JSON.stringify(val)); }
+  let state = { status: load('status','open'), priority: load('priority','high'), tag: load('tag','bug') };
+  function applyBadge(id, info, key){
+    const el = document.getElementById(id); if(!el) return;
+    const d = info[state[key]];
+    el.textContent = d.label; el.className = 'badge ' + d.cls;
+  }
+  function render(){
+    applyBadge('hero-status', STATUS_INFO, 'status');
+    applyBadge('hero-priority', PRIORITY_INFO, 'priority');
+    applyBadge('hero-tag', TAG_INFO, 'tag');
+  }
+  function cycle(obj, cur){ const keys=Object.keys(obj); return keys[(keys.indexOf(cur)+1)%keys.length]; }
+  document.getElementById('hero-status')  ?.addEventListener('click',()=>{ state.status  =cycle(STATUS_INFO,  state.status);   save('status',  state.status);   render(); });
+  document.getElementById('hero-priority')?.addEventListener('click',()=>{ state.priority=cycle(PRIORITY_INFO,state.priority); save('priority',state.priority); render(); });
+  document.getElementById('hero-tag')     ?.addEventListener('click',()=>{ state.tag     =cycle(TAG_INFO,     state.tag);      save('tag',     state.tag);      render(); });
+  render();
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks  = document.querySelectorAll('.nav-sidebar a');
+  window.addEventListener('scroll',()=>{
+    let cur='';
+    sections.forEach(s=>{ if(window.scrollY>=s.offsetTop-120) cur=s.id; });
+    navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href')==='#'+cur));
+  });
+})();
+</script>
+</body>
+</html>
