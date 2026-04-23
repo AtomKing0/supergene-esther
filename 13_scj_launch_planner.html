@@ -1121,6 +1121,21 @@ async function loadFromSupabase() {
         capacity = { ...DEFAULT_CAPACITY, ...data.capacity };
         ROLES = Object.keys(capacity);
       }
+      // Auto-migration: 온보딩개선(t9) ↔ FB빌드통합(t10) 병렬화
+      let _migrated = false;
+      const _t10 = tasks.find(t => t.id === 't10');
+      if (_t10 && Array.isArray(_t10.dependencies) && _t10.dependencies.length === 1 && _t10.dependencies[0] === 't9') {
+        _t10.dependencies = ['t8'];
+        if (!/병렬/.test(_t10.notes || '')) _t10.notes = ((_t10.notes || '') + ' (온보딩 개선과 병렬)').trim();
+        _migrated = true;
+      }
+      const _t10m = tasks.find(t => t.id === 't10m');
+      if (_t10m && Array.isArray(_t10m.dependencies) && _t10m.dependencies.length === 1 && _t10m.dependencies[0] === 't10') {
+        _t10m.dependencies = ['t9','t10'];
+        if (!/온보딩/.test(_t10m.notes || '')) _t10m.notes = 'EQRv4 통합 + 온보딩 개선 완료 = FB 런칭';
+        _migrated = true;
+      }
+      if (_migrated) { console.log('[migration] 온보딩개선/FB빌드통합 병렬화 적용 — 자동 저장됩니다.'); setTimeout(scheduleSave, 200); }
       setSyncState('synced', `로드됨 · ${data.updated_by || '?'} · ${data.updated_at ? new Date(data.updated_at).toLocaleString('ko-KR',{hour12:false}) : ''}`);
       return true;
     } else {
