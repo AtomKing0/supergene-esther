@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="scj-theme-init">(function(){var t=localStorage.getItem("scj-planner-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.getElementById("themeToggle");if(g)g.textContent=t==="light"?"\u2600\ufe0f":"\ud83c\udf19";});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCJ 런칭 일정 간트 플래너 v1.0</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a; --border: #2e3250;
+  --text: #e2e8f0; --muted: #8892b0; --accent: #64ffda; --blue: #57b6ff;
+  --yellow: #ffd166; --red: #ff6b6b; --green: #69db7c; --purple: #c77dff; --orange: #ff9f43;
+  --fb: #57b6ff; --toss: #4a7ce0; --cg: #ff9f43; --common: #8892b0;
+  --role-plan: #69db7c; --role-client: #57b6ff; --role-server: #c77dff; --role-qa: #ff9f43;
+  --day-width: 32px; --label-width: 340px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --border: #dfe1e6;
+  --text: #1a1d27; --muted: #5e6278; --accent: #059669; --blue: #2563eb;
+  --yellow: #d97706; --red: #dc2626; --green: #16a34a; --purple: #9333ea; --orange: #ea580c;
+  --fb: #2563eb; --toss: #1d4ed8; --cg: #ea580c; --common: #5e6278;
+  --role-plan: #16a34a; --role-client: #2563eb; --role-server: #9333ea; --role-qa: #ea580c;
+}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:100;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.theme-toggle:hover{border-color:var(--muted);transform:scale(1.1)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text)}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6}
+button{font-family:inherit;color:inherit;cursor:pointer}
+input,select{font-family:inherit;color:inherit}
+.container{max-width:1400px;margin:0 auto;padding:40px 24px 80px}
+
+/* ---------- Header ---------- */
+.report-header{text-align:center;padding:48px 0 32px;border-bottom:1px solid var(--border);margin-bottom:40px}
+.report-header .badge{display:inline-block;background:linear-gradient(135deg,var(--surface),var(--surface2));border:1px solid var(--accent);color:var(--accent);font-size:11px;letter-spacing:2px;padding:4px 14px;border-radius:20px;text-transform:uppercase;margin-bottom:16px}
+.report-header h1{font-size:2em;margin:12px 0 8px;font-weight:700}
+.report-header .subtitle{color:var(--muted);font-size:1.05em}
+.report-header .meta-row{display:flex;justify-content:center;gap:16px;margin-top:16px;flex-wrap:wrap}
+.report-header .meta-tag{background:var(--surface);border:1px solid var(--border);padding:4px 14px;border-radius:14px;font-size:.82em;color:var(--muted)}
+.report-header .meta-tag b{color:var(--text);font-weight:600}
+
+/* ---------- Section ---------- */
+.section{margin:48px 0}
+.section-title{font-size:1.4em;font-weight:700;margin-bottom:20px;padding-bottom:8px;border-bottom:2px solid var(--accent);display:flex;align-items:center;gap:10px}
+.section-num{color:var(--accent);font-size:.8em;font-weight:800}
+.section-desc{color:var(--muted);font-size:.9em;margin-bottom:16px}
+
+/* ---------- KPI Grid ---------- */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:20px 0}
+.kpi-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;text-align:left;transition:border-color .2s}
+.kpi-box:hover{border-color:var(--muted)}
+.kpi-box.warn{border-color:var(--yellow)}
+.kpi-box.danger{border-color:var(--red)}
+.kpi-box .label{font-size:.72em;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.kpi-box .value{font-size:1.6em;font-weight:800;line-height:1.2}
+.kpi-box .sub{font-size:.8em;color:var(--muted);margin-top:6px}
+.kpi-box.warn .value{color:var(--yellow)}
+.kpi-box.danger .value{color:var(--red)}
+.kpi-box .ms-list{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.kpi-box .ms-row{display:flex;justify-content:space-between;font-size:.85em;gap:8px}
+.kpi-box .ms-row .n{color:var(--text)}
+.kpi-box .ms-row .d{color:var(--muted);font-variant-numeric:tabular-nums}
+.kpi-box .pf-row{display:flex;justify-content:space-between;align-items:center;font-size:.85em;gap:8px;padding:2px 0}
+.kpi-box .pf-row .pf-name{display:flex;align-items:center;gap:6px}
+.kpi-box .pf-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.kpi-box .pf-date{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.88em}
+
+/* ---------- Callout ---------- */
+.callout{background:var(--surface);border-left:4px solid var(--accent);padding:14px 18px;margin:16px 0;border-radius:0 8px 8px 0;font-size:.92em}
+.callout.warn{border-left-color:var(--yellow)}
+.callout.danger{border-left-color:var(--red)}
+.callout strong{color:var(--accent)}
+.callout.warn strong{color:var(--yellow)}
+.callout.danger strong{color:var(--red)}
+
+/* ---------- Controls ---------- */
+.ctrl-row{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0;align-items:stretch}
+.ctrl-group{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ctrl-group-label{font-size:.72em;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.ctrl-group .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.pill-group{display:inline-flex;border:1px solid var(--border);background:var(--surface);border-radius:20px;padding:3px;gap:2px}
+.pill-group button{background:transparent;border:none;color:var(--muted);padding:5px 14px;border-radius:16px;font-size:.82em;cursor:pointer;transition:all .15s;font-weight:600}
+.pill-group button:hover{color:var(--text)}
+.pill-group button.active{background:var(--accent);color:var(--bg);font-weight:700}
+
+.cap-field{display:inline-flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:.82em}
+.cap-field span{color:var(--muted)}
+.cap-field input{width:32px;border:none;background:transparent;color:var(--text);text-align:center;font-weight:700;outline:none}
+
+.btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:6px;font-size:.85em;cursor:pointer;transition:all .2s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{border-color:var(--accent);color:var(--accent)}
+.btn.primary:hover{background:var(--accent);color:var(--bg)}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.btn.danger:hover{background:var(--red);color:#fff}
+
+/* ---------- Gantt ---------- */
+.gantt-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.gantt-scroll{overflow-x:auto;overflow-y:visible}
+.gantt-inner{display:flex;flex-direction:column;min-width:max-content}
+
+.gantt-header{display:flex;position:sticky;top:0;z-index:5;background:var(--surface2);border-bottom:1px solid var(--border)}
+.gantt-labels-header{width:var(--label-width);flex:0 0 var(--label-width);padding:10px 16px;font-size:.72em;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:700;display:flex;align-items:flex-end;border-right:1px solid var(--border)}
+.timeline-header{position:relative;height:48px;display:flex;flex-direction:column;justify-content:flex-end}
+.timeline-month{position:absolute;top:4px;font-size:.85em;font-weight:700;color:var(--text);padding:0 6px;border-left:1px solid var(--border);pointer-events:none}
+.timeline-days{display:flex;position:absolute;bottom:0;left:0}
+.timeline-day{width:var(--day-width);flex:0 0 var(--day-width);text-align:center;font-size:.7em;color:var(--muted);padding:0 0 6px;border-left:1px solid var(--border)}
+.timeline-day .day-num{display:block;font-size:.95em;color:var(--text);font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.timeline-day.weekend{color:var(--muted);opacity:.6}
+.timeline-day.weekend .day-num{color:var(--muted)}
+
+.task-row{display:flex;min-height:52px;border-bottom:1px solid var(--border);align-items:stretch}
+.task-row:last-child{border-bottom:none}
+.task-row:hover .label-cell{background:var(--surface2)}
+.label-cell{width:var(--label-width);flex:0 0 var(--label-width);padding:10px 14px 10px 16px;border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;gap:5px;background:var(--surface);transition:background .15s;position:sticky;left:0;z-index:2}
+.task-name{font-size:.95em;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;cursor:text}
+.task-name .ms-icon{color:var(--red);font-size:1em}
+.task-name .name-text[contenteditable="true"]{background:var(--bg);outline:1px solid var(--accent);padding:1px 4px;border-radius:3px;font-weight:600}
+.task-meta{display:flex;flex-wrap:wrap;align-items:center;gap:5px;font-size:.72em;color:var(--muted)}
+.platform-chip{display:inline-block;padding:2px 8px;border-radius:10px;color:#fff;font-size:.98em;font-weight:700;letter-spacing:.04em}
+.platform-chip.FB{background:var(--fb)}.platform-chip.Toss{background:var(--toss)}.platform-chip.CG{background:var(--cg)}.platform-chip.공통{background:var(--common)}
+.role-chip{display:inline-block;padding:1px 7px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:.95em;font-weight:600}
+.role-chip.기획{border-color:var(--role-plan);color:var(--role-plan)}
+.role-chip.클라{border-color:var(--role-client);color:var(--role-client)}
+.role-chip.서버{border-color:var(--role-server);color:var(--role-server)}
+.role-chip.QA{border-color:var(--role-qa);color:var(--role-qa)}
+.duration-chip{display:inline-flex;align-items:center;gap:0;padding:0;border:1px solid var(--border);border-radius:10px;background:var(--bg);overflow:hidden;height:22px}
+.duration-chip .dur-btn{width:18px;height:20px;background:transparent;border:none;color:var(--muted);font-size:.95em;font-weight:700;cursor:pointer;line-height:1;padding:0;transition:all .1s}
+.duration-chip .dur-btn:hover{background:var(--surface2);color:var(--accent)}
+.duration-chip .dur-btn:disabled{opacity:.35;cursor:not-allowed}
+.duration-chip .dur-val{min-width:22px;text-align:center;color:var(--text);font-size:.95em;font-weight:700;padding:0 2px;font-variant-numeric:tabular-nums}
+.duration-chip .unit{color:var(--muted);font-size:.9em;padding:0 6px 0 2px}
+.edit-btn,.del-btn{font-size:.92em;color:var(--muted);padding:1px 6px;border:1px solid transparent;border-radius:10px;background:transparent;transition:all .15s}
+.edit-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border)}
+.del-btn:hover{background:var(--red);color:#fff}
+.dates-line{font-size:.72em;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+
+.timeline-cell{flex:1 0 auto;position:relative;min-height:52px;background-image:linear-gradient(to right,var(--border) 1px,transparent 1px);background-size:var(--day-width) 100%;background-color:var(--surface)}
+.weekend-overlay{position:absolute;top:0;bottom:0;background:var(--surface2);opacity:.5;pointer-events:none;z-index:0}
+.today-line{position:absolute;top:0;bottom:0;width:0;border-left:1.5px dashed var(--red);pointer-events:none;z-index:2}
+.today-dot{position:absolute;top:2px;width:6px;height:6px;border-radius:50%;background:var(--red);transform:translateX(-3px);z-index:3}
+
+.bar{position:absolute;top:11px;height:30px;border-radius:6px;display:flex;align-items:center;padding:0 10px;color:#fff;font-size:.82em;font-weight:600;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:1;cursor:default}
+.bar.FB{background:var(--fb)}.bar.Toss{background:var(--toss)}.bar.CG{background:var(--cg)}.bar.공통{background:var(--common)}
+.bar.conflict{outline:2px solid var(--red);outline-offset:1px;box-shadow:0 0 0 1px rgba(255,107,107,.3),0 2px 6px rgba(0,0,0,.25)}
+.bar-roles{margin-left:8px;font-size:.92em;opacity:.88;font-weight:500;letter-spacing:.02em}
+
+.milestone{position:absolute;top:16px;width:20px;height:20px;transform:translateX(-10px) rotate(45deg);background:var(--red);border:1.5px solid var(--bg);z-index:1;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.milestone.conflict{outline:2px solid var(--red);outline-offset:2px}
+.milestone-label{position:absolute;top:12px;font-size:.82em;font-weight:600;color:var(--text);white-space:nowrap;z-index:1;padding-left:14px}
+
+/* ---------- Conflict panel ---------- */
+.conflict-panel{margin-top:16px;background:var(--surface);border:1px solid var(--red);border-radius:10px;padding:18px;display:none}
+.conflict-panel.open{display:block}
+.conflict-panel h3{font-size:1em;color:var(--red);margin-bottom:12px;font-weight:700;display:flex;align-items:center;gap:8px}
+.conflict-list{display:flex;flex-direction:column;gap:6px}
+.conflict-item{font-size:.88em;padding:8px 12px;background:var(--bg);border-left:3px solid var(--red);border-radius:0 6px 6px 0;font-variant-numeric:tabular-nums}
+.conflict-item b{color:var(--red);font-weight:700}
+
+/* ---------- Popover ---------- */
+.popover-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:1000}
+.popover-backdrop.open{display:flex;align-items:center;justify-content:center}
+.popover{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;min-width:460px;max-width:560px;box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.popover h3{font-size:1.1em;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);font-weight:700}
+.pop-field{margin-bottom:14px}
+.pop-field label.flabel{display:block;font-size:.72em;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;font-weight:700}
+.pop-field input[type=text],.pop-field input[type=number],.pop-field select{width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.9em;outline:none;transition:border-color .15s}
+.pop-field input:focus,.pop-field select:focus{border-color:var(--accent)}
+.pop-field select[multiple]{height:120px}
+.pop-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.role-checks{display:flex;flex-wrap:wrap;gap:8px}
+.role-checks label{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.85em;color:var(--text);text-transform:none;letter-spacing:normal;margin:0;font-weight:500}
+.role-checks label:has(input:checked){border-color:var(--accent);color:var(--accent)}
+.role-checks input{margin:0}
+.pop-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* ---------- Legend ---------- */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0 4px;font-size:.82em;color:var(--muted)}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:12px;height:12px;border-radius:3px}
+.legend-diamond{width:12px;height:12px;transform:rotate(45deg);background:var(--red)}
+
+/* ---------- Footer ---------- */
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid var(--border);font-size:.78em;color:var(--muted);text-align:center;letter-spacing:.04em}
+
+/* ---------- Sync UI ---------- */
+.back-btn{position:fixed;top:16px;right:68px;z-index:200;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.2);text-decoration:none}
+.back-btn:hover{border-color:var(--muted);color:var(--text);transform:translateY(-1px);text-decoration:none}
+.sync-tag{display:inline-flex;align-items:center;gap:5px}
+.sync-tag .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:all .2s}
+.sync-tag.synced .sync-dot{background:var(--green);box-shadow:0 0 6px rgba(105,219,124,.6)}
+.sync-tag.syncing .sync-dot{background:var(--yellow);animation:sync-pulse 1s ease-in-out infinite}
+.sync-tag.error .sync-dot{background:var(--red)}
+.sync-tag.local .sync-dot{background:var(--muted)}
+@keyframes sync-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes toastOut{from{opacity:1}to{opacity:0}}
+#toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:24px;font-size:.85em;pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4);display:none}
+
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.report-header h1{font-size:1.5em}}
+</style>
+</head>
+<body>
+<button id="themeToggle" class="theme-toggle" title="라이트/다크 모드 전환">🌙</button>
+<a id="backBtn" class="back-btn" href="index.html" title="보고서 인덱스로 이동">← 목록</a>
+
+<div class="container">
+
+<!-- Header -->
+<div class="report-header">
+  <div class="badge">SCJ Launch Planner v1.0</div>
+  <h1>Solitaire City Journey 런칭 일정</h1>
+  <div class="subtitle">Interactive Gantt · 자동 재계산 · 리소스 충돌 감지 · 직군/태스크 2중 뷰</div>
+  <div class="meta-row">
+    <span class="meta-tag">BASE <b id="meta-base">2026-04-21</b></span>
+    <span class="meta-tag">TASKS <b id="meta-tasks">18</b></span>
+    <span class="meta-tag">UPDATED <b id="meta-updated">—</b></span>
+    <span class="meta-tag sync-tag local" id="sync-tag"><span class="sync-dot"></span><b id="sync-label">대기</b></span>
+    <span class="meta-tag">EDITOR <b id="editor-name" contenteditable="true" title="클릭해 이름 입력">익명</b></span>
+  </div>
+</div>
+
+<!-- Section 1: Overview -->
+<div class="section" id="s1">
+  <div class="section-title"><span class="section-num">01</span> 핵심 일정 & Overview</div>
+  <div class="section-desc">태스크/capacity 변경 시 자동 재계산됩니다. 상세 충돌 내역은 <strong>"리소스 충돌"</strong> 박스를 클릭하세요.</div>
+  <div class="kpi-grid" id="kpi-area"></div>
+</div>
+
+<!-- Section 2: Gantt -->
+<div class="section" id="s2">
+  <div class="section-title"><span class="section-num">02</span> 인터랙티브 간트 차트</div>
+  <div class="section-desc">
+    태스크명·소요일수·직군은 클릭하여 수정할 수 있습니다. <strong>⚙</strong> 버튼으로 의존성/메모 포함 전체 편집.
+  </div>
+
+  <!-- Controls -->
+  <div class="ctrl-row">
+    <div class="ctrl-group">
+      <div class="ctrl-group-label">👁 뷰 전환</div>
+      <div class="pill-group" id="view-toggle">
+        <button data-view="task" class="active">태스크 뷰</button>
+        <button data-view="platform">플랫폼 뷰</button>
+      </div>
+    </div>
+    <div class="ctrl-group">
+      <div class="ctrl-group-label">🏷 플랫폼 필터</div>
+      <div class="pill-group" id="platform-tabs">
+        <button data-filter="all" class="active">전체</button>
+        <button data-filter="FB">FB</button>
+        <button data-filter="Toss">Toss</button>
+        <button data-filter="CG">CG</button>
+      </div>
+    </div>
+    <div class="ctrl-group">
+      <div class="ctrl-group-label">👥 직군 Capacity (동시 처리)</div>
+      <div class="row" id="capacity-panel">
+        <div class="cap-field"><span>기획</span><input type="number" min="1" data-role="기획"></div>
+        <div class="cap-field"><span>클라</span><input type="number" min="1" data-role="클라"></div>
+        <div class="cap-field"><span>서버</span><input type="number" min="1" data-role="서버"></div>
+        <div class="cap-field"><span>QA</span><input type="number" min="1" data-role="QA"></div>
+      </div>
+    </div>
+    <div class="ctrl-group" style="justify-content:flex-end">
+      <div class="ctrl-group-label">⚙️ 작업</div>
+      <div class="row">
+        <button class="btn primary" id="btn-add">+ 새 태스크</button>
+        <button class="btn danger" id="btn-reset">초기 데이터로 리셋</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--fb)"></div>FB</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--toss)"></div>Toss</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cg)"></div>CG</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--common)"></div>공통</div>
+    <div class="legend-item"><div class="legend-diamond"></div>마일스톤</div>
+    <div class="legend-item"><div style="width:12px;height:2px;border-top:1.5px dashed var(--red)"></div>오늘</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--surface2);border:1px solid var(--border)"></div>주말</div>
+    <div class="legend-item"><div class="legend-dot" style="border:2px solid var(--red);background:transparent"></div>충돌</div>
+  </div>
+
+  <div class="gantt-wrap">
+    <div class="gantt-scroll">
+      <div class="gantt-inner" id="gantt"></div>
+    </div>
+  </div>
+
+  <div class="conflict-panel" id="conflict-panel">
+    <h3>⚠ 리소스 충돌 상세</h3>
+    <div class="conflict-list" id="conflict-list"></div>
+  </div>
+</div>
+
+<!-- Section 3: Notes -->
+<div class="section" id="s3">
+  <div class="section-title"><span class="section-num">03</span> 읽는 법 & 주의사항</div>
+  <div class="callout">
+    <strong>자동 푸시</strong>: 선행 태스크의 종료일이 바뀌면 모든 후행 태스크가 영업일 기준으로 밀립니다. 주말(토/일)은 자동으로 제외됩니다.
+  </div>
+  <div class="callout warn">
+    <strong>리소스 충돌</strong>: 어떤 날짜에 특정 직군이 배정된 태스크 수가 capacity를 초과하면 해당 태스크 바에 붉은 테두리가 그려집니다. 충돌 요약 박스를 클릭해 상세 내역을 확인하세요.
+  </div>
+  <div class="callout danger">
+    <strong>저장 주의</strong>: 상태는 브라우저 메모리에만 유지됩니다. 새로고침하면 초기 데이터로 복원됩니다.
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<div class="popover-backdrop" id="popover-backdrop">
+  <div class="popover" id="popover"></div>
+</div>
+
+<div class="footer">SCJ Gantt Planner · 단일 HTML · localStorage 미사용 (테마 외)</div>
+
+<script>
+// ===== Theme toggle =====
+document.getElementById('themeToggle').addEventListener('click',function(){
+  var l=document.documentElement.getAttribute('data-theme')==='light';
+  if(l){document.documentElement.removeAttribute('data-theme');this.textContent='🌙';localStorage.setItem('scj-planner-theme','dark');}
+  else{document.documentElement.setAttribute('data-theme','light');this.textContent='☀️';localStorage.setItem('scj-planner-theme','light');}
+});
+
+// ===== Constants & Initial Data =====
+const BASE_START = '2026-04-21';
+const ROLES = ['기획', '클라', '서버', 'QA'];
+const PLATFORMS = ['FB', 'Toss', 'CG', '공통'];
+const DEFAULT_CAPACITY = { '기획': 1, '클라': 2, '서버': 1, 'QA': 1 };
+
+// IG = FB (merged). FB 빌드 통합 완료 = FB 런칭 마일스톤. CG는 Basic 런칭 1주일 후 Full 런칭.
+const INITIAL_TASKS = [
+  { id: 't1',   name: 'FB 출시 스펙 마무리',           platform: 'FB',   roles: ['기획','클라'], durationDays: 1, dependencies: [],              type: 'task',      notes: '' },
+  { id: 't2',   name: 'Toss 빌드 제작',                 platform: 'Toss', roles: ['클라','서버'], durationDays: 3, dependencies: ['t1'],          type: 'task',      notes: '' },
+  { id: 't3',   name: 'FB 업데이트 개발 (컬렉션/룰렛)',  platform: 'FB',   roles: ['클라'],        durationDays: 3, dependencies: ['t1'],          type: 'task',      notes: '' },
+  { id: 't4',   name: 'QA',                             platform: 'Toss', roles: ['QA'],          durationDays: 3, dependencies: ['t2'],          type: 'task',      notes: '' },
+  { id: 't5',   name: '게임위 등급 신청',                platform: 'Toss', roles: ['기획'],        durationDays: 3, dependencies: ['t2'],          type: 'task',      notes: '' },
+  { id: 't6',   name: '[M] Toss 리뷰 제출',              platform: 'Toss', roles: [],              durationDays: 0, dependencies: ['t4','t5'],     type: 'milestone', notes: '' },
+  { id: 't7',   name: '심사 대기',                      platform: 'Toss', roles: [],              durationDays: 4, dependencies: ['t6'],          type: 'task',      notes: '' },
+  { id: 't8',   name: '[M] Toss 런칭',                   platform: 'Toss', roles: [],              durationDays: 0, dependencies: ['t7'],          type: 'milestone', notes: '' },
+  { id: 't9',   name: '온보딩 개선',                     platform: 'FB',   roles: ['클라','기획'], durationDays: 7, dependencies: ['t8'],          type: 'task',      notes: '' },
+  { id: 't10',  name: 'FB 빌드 통합 (EQRv4)',            platform: 'FB',   roles: ['클라'],        durationDays: 2, dependencies: ['t9'],          type: 'task',      notes: 'IG=FB 통합' },
+  { id: 't10m', name: '[M] FB 런칭',                     platform: 'FB',   roles: [],              durationDays: 0, dependencies: ['t10'],         type: 'milestone', notes: 'EQRv4 통합 완료 = FB 런칭' },
+  { id: 't11',  name: 'CG Basic Launch 개발',            platform: 'CG',   roles: ['클라','서버'], durationDays: 1, dependencies: ['t10m'],        type: 'task',      notes: '' },
+  { id: 't12',  name: 'CG Basic Launch QA',              platform: 'CG',   roles: ['QA'],          durationDays: 4, dependencies: ['t11'],         type: 'task',      notes: '' },
+  { id: 't12m', name: '[M] CG Basic 런칭',                platform: 'CG',   roles: [],              durationDays: 0, dependencies: ['t12'],         type: 'milestone', notes: '' },
+  { id: 'twait',name: 'CG Basic→Full 대기 (1주)',        platform: 'CG',   roles: [],              durationDays: 5, dependencies: ['t12m'],        type: 'task',      notes: '릴리즈 간격 확보' },
+  { id: 't13',  name: 'CG Full Launch 개발 (IAA/IAP)',   platform: 'CG',   roles: ['클라','서버'], durationDays: 4, dependencies: ['twait'],       type: 'task',      notes: '대기 1주 후 착수' },
+  { id: 't14',  name: 'CG Full Launch QA',               platform: 'CG',   roles: ['QA'],          durationDays: 2, dependencies: ['t13'],         type: 'task',      notes: '' },
+  { id: 't14m', name: '[M] CG Full 런칭',                 platform: 'CG',   roles: [],              durationDays: 0, dependencies: ['t14'],         type: 'milestone', notes: 'Full QA 완료 후' },
+];
+
+// ===== State =====
+let tasks = deepClone(INITIAL_TASKS);
+let capacity = { ...DEFAULT_CAPACITY };
+let view = 'task';
+let filter = 'all';
+let openConflictPanel = false;
+
+// ===== Utils =====
+function deepClone(x) { return JSON.parse(JSON.stringify(x)); }
+function parseDate(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function fmtDate(d) { const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+function fmtShort(d) { return `${d.getMonth()+1}/${d.getDate()}`; }
+function isWeekend(d) { const g = d.getDay(); return g === 0 || g === 6; }
+function nextBusinessDay(d) { const r = new Date(d); do { r.setDate(r.getDate()+1); } while (isWeekend(r)); return r; }
+function addBusinessDays(start, n) {
+  let r = new Date(start); while (isWeekend(r)) r.setDate(r.getDate()+1);
+  let rem = n; while (rem > 0) { r.setDate(r.getDate()+1); if (!isWeekend(r)) rem--; } return r;
+}
+function diffDays(a, b) {
+  const MS = 86400000;
+  const A = new Date(a.getFullYear(), a.getMonth(), a.getDate()).getTime();
+  const B = new Date(b.getFullYear(), b.getMonth(), b.getDate()).getTime();
+  return Math.round((A - B) / MS);
+}
+function eachDay(from, to) { const ds=[]; const c=new Date(from); while (c<=to){ds.push(new Date(c));c.setDate(c.getDate()+1);} return ds; }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+// ===== Schedule =====
+function calculateSchedule() {
+  const map = new Map(tasks.map(t => [t.id, t]));
+  tasks.forEach(t => { t.startDate = null; t.endDate = null; });
+  const base = parseDate(BASE_START);
+  let changed = true, iter = 0;
+  const maxIter = tasks.length * 3 + 5;
+  while (changed && iter < maxIter) {
+    changed = false; iter++;
+    for (const t of tasks) {
+      let newStart;
+      if (!t.dependencies.length) newStart = new Date(base);
+      else {
+        const deps = t.dependencies.map(id => map.get(id)).filter(Boolean);
+        if (!deps.every(d => d.endDate)) continue;
+        const maxEnd = new Date(Math.max(...deps.map(d => d.endDate.getTime())));
+        newStart = nextBusinessDay(maxEnd);
+      }
+      const newEnd = (t.type === 'milestone' || t.durationDays <= 0) ? new Date(newStart) : addBusinessDays(newStart, t.durationDays - 1);
+      if (!t.startDate || t.startDate.getTime() !== newStart.getTime() || t.endDate.getTime() !== newEnd.getTime()) {
+        t.startDate = newStart; t.endDate = newEnd; changed = true;
+      }
+    }
+  }
+}
+
+// ===== Conflict detection =====
+function detectConflicts() {
+  const perDayRole = new Map();
+  for (const t of tasks) {
+    if (t.type === 'milestone' || !t.roles?.length || !t.startDate || !t.endDate) continue;
+    for (const d of eachDay(t.startDate, t.endDate)) {
+      if (isWeekend(d)) continue;
+      for (const r of t.roles) {
+        const k = `${fmtDate(d)}|${r}`;
+        if (!perDayRole.has(k)) perDayRole.set(k, []);
+        perDayRole.get(k).push(t.id);
+      }
+    }
+  }
+  const conflictDays = [];
+  const conflictTaskIds = new Set();
+  for (const [k, ids] of perDayRole) {
+    const [dateStr, role] = k.split('|');
+    const cap = capacity[role] || 1;
+    if (ids.length > cap) {
+      conflictDays.push({ date: dateStr, role, taskIds: ids.slice().sort(), cap });
+      ids.forEach(id => conflictTaskIds.add(id));
+    }
+  }
+  conflictDays.sort((a,b) => a.role.localeCompare(b.role) || a.date.localeCompare(b.date));
+  const grouped = [];
+  for (const c of conflictDays) {
+    const last = grouped[grouped.length-1];
+    if (last && last.role === c.role && last.cap === c.cap &&
+        JSON.stringify(last.taskIds) === JSON.stringify(c.taskIds) &&
+        diffDays(parseDate(c.date), parseDate(last.endDate)) === 1) {
+      last.endDate = c.date;
+    } else {
+      grouped.push({ role: c.role, cap: c.cap, taskIds: [...c.taskIds], startDate: c.date, endDate: c.date });
+    }
+  }
+  return { grouped, conflictTaskIds };
+}
+
+function visibleTasks() { return filter === 'all' ? tasks : tasks.filter(t => t.platform === filter); }
+
+// ===== Render =====
+function render() {
+  calculateSchedule();
+  const conflicts = detectConflicts();
+  renderKPIs(conflicts);
+  renderCapacityInputs();
+  if (view === 'task') renderTaskView(conflicts);
+  else renderPlatformView(conflicts);
+  renderConflictPanel(conflicts);
+  document.getElementById('meta-updated').textContent = new Date().toLocaleTimeString('ko-KR', { hour12: false });
+  document.getElementById('meta-tasks').textContent = tasks.length;
+}
+
+function renderKPIs(conflicts) {
+  const all = tasks.filter(t => t.startDate && t.endDate);
+  const minStart = all.length ? new Date(Math.min(...all.map(t => t.startDate.getTime()))) : parseDate(BASE_START);
+  const maxEnd   = all.length ? new Date(Math.max(...all.map(t => t.endDate.getTime())))   : parseDate(BASE_START);
+  let bdays = 0;
+  for (let d = new Date(minStart); d <= maxEnd; d.setDate(d.getDate()+1)) if (!isWeekend(d)) bdays++;
+
+  const milestones = tasks.filter(t => t.type === 'milestone');
+  const pfColor = { FB:'var(--fb)', Toss:'var(--toss)', CG:'var(--cg)', '공통':'var(--common)' };
+  const platforms = PLATFORMS.filter(p => tasks.some(t => t.platform === p));
+
+  const kpi = document.getElementById('kpi-area');
+  kpi.innerHTML = `
+    <div class="kpi-box">
+      <div class="label">프로젝트 기간</div>
+      <div class="value">${fmtShort(minStart)} → ${fmtShort(maxEnd)}</div>
+      <div class="sub">총 ${bdays}영업일 · ${all.length}개 태스크</div>
+    </div>
+    <div class="kpi-box">
+      <div class="label">주요 마일스톤</div>
+      <div class="ms-list">
+        ${milestones.map(m => `<div class="ms-row"><span class="n">${escapeHtml(m.name.replace(/^\[M\]\s*/, '◆ '))}</span><span class="d">${m.startDate ? fmtDate(m.startDate) : '—'}</span></div>`).join('') || '<div class="sub">—</div>'}
+      </div>
+    </div>
+    <div class="kpi-box ${conflicts.grouped.length ? 'danger' : ''}" id="kpi-conflict" style="cursor:${conflicts.grouped.length?'pointer':'default'}">
+      <div class="label">리소스 충돌</div>
+      <div class="value">${conflicts.grouped.length ? `⚠ ${conflicts.grouped.length}건` : '없음'}</div>
+      <div class="sub">${conflicts.grouped.length ? `클릭하여 상세 보기 ${openConflictPanel ? '▲' : '▼'}` : 'capacity 충족'}</div>
+    </div>
+    <div class="kpi-box">
+      <div class="label">플랫폼별 마지막 완료일</div>
+      <div class="ms-list">
+        ${platforms.map(p => {
+          const pts = tasks.filter(t => t.platform === p && t.endDate);
+          if (!pts.length) return '';
+          const latest = new Date(Math.max(...pts.map(t => t.endDate.getTime())));
+          return `<div class="pf-row"><span class="pf-name"><span class="pf-dot" style="background:${pfColor[p]}"></span>${p}</span><span class="pf-date">${fmtDate(latest)}</span></div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+  const kc = document.getElementById('kpi-conflict');
+  if (kc && conflicts.grouped.length) {
+    kc.addEventListener('click', () => { openConflictPanel = !openConflictPanel; render(); });
+  }
+}
+
+function renderCapacityInputs() {
+  document.querySelectorAll('#capacity-panel input').forEach(inp => { inp.value = capacity[inp.dataset.role]; });
+}
+
+function computeTimelineRange() {
+  const all = tasks.filter(t => t.startDate && t.endDate);
+  let minStart = parseDate(BASE_START), maxEnd = parseDate(BASE_START);
+  if (all.length) {
+    minStart = new Date(Math.min(...all.map(t => t.startDate.getTime())));
+    maxEnd   = new Date(Math.max(...all.map(t => t.endDate.getTime())));
+  }
+  const start = new Date(minStart); start.setDate(start.getDate() - 2);
+  const end = new Date(maxEnd); end.setDate(end.getDate() + 3);
+  return { start, end, days: eachDay(start, end) };
+}
+
+function renderTimelineHeader(range) {
+  const { days } = range; const dayW = 32;
+  const months = []; let cur = null;
+  days.forEach((d, i) => {
+    const key = `${d.getFullYear()}-${d.getMonth()+1}`;
+    if (!cur || cur.key !== key) { cur = { key, label: `${d.getFullYear()}년 ${d.getMonth()+1}월`, startIdx: i, count: 1 }; months.push(cur); }
+    else cur.count++;
+  });
+  const monthBands = months.map(m => `<div class="timeline-month" style="left:${m.startIdx*dayW}px;width:${m.count*dayW}px;">${m.label}</div>`).join('');
+  const dayCells = days.map(d => {
+    const wknd = isWeekend(d);
+    const dow = ['일','월','화','수','목','금','토'][d.getDay()];
+    return `<div class="timeline-day ${wknd?'weekend':''}"><span class="day-num">${d.getDate()}</span>${dow}</div>`;
+  }).join('');
+  return {
+    html: `<div class="timeline-header" style="width:${days.length*dayW}px;">${monthBands}<div class="timeline-days">${dayCells}</div></div>`,
+    width: days.length * dayW
+  };
+}
+
+function renderWeekendOverlays(range) {
+  const { days } = range; const dayW = 32; let html = '';
+  days.forEach((d, i) => { if (isWeekend(d)) html += `<div class="weekend-overlay" style="left:${i*dayW}px;width:${dayW}px;"></div>`; });
+  const today = new Date(); today.setHours(0,0,0,0);
+  const idx = diffDays(today, range.start);
+  if (idx >= 0 && idx < days.length) {
+    html += `<div class="today-line" style="left:${idx*dayW + dayW/2}px;"></div>`;
+    html += `<div class="today-dot" style="left:${idx*dayW + dayW/2}px;"></div>`;
+  }
+  return html;
+}
+
+function renderTaskView(conflicts) {
+  const range = computeTimelineRange();
+  const header = renderTimelineHeader(range);
+  const vis = visibleTasks();
+  const dayW = 32;
+
+  const rows = vis.map(t => {
+    const leftIdx = t.startDate ? diffDays(t.startDate, range.start) : 0;
+    const span = t.startDate && t.endDate ? diffDays(t.endDate, t.startDate) + 1 : 1;
+    const cCls = conflicts.conflictTaskIds.has(t.id) ? 'conflict' : '';
+    let bar = '';
+    if (t.type === 'milestone') {
+      bar = `<div class="milestone ${cCls}" style="left:${leftIdx*dayW + dayW/2}px;" title="${escapeAttr(t.name)} · ${t.startDate?fmtDate(t.startDate):''}"></div>
+             <div class="milestone-label" style="left:${leftIdx*dayW + dayW/2}px;">${escapeHtml(t.name.replace(/^\[M\]\s*/, '◆ '))}</div>`;
+    } else {
+      bar = `<div class="bar ${t.platform} ${cCls}" style="left:${leftIdx*dayW}px;width:${Math.max(dayW-4, span*dayW - 4)}px;" title="${escapeAttr(t.name)} · ${t.startDate?fmtDate(t.startDate):''} → ${t.endDate?fmtDate(t.endDate):''}">
+              <span>${escapeHtml(t.name)}</span>
+              ${t.roles.length ? `<span class="bar-roles">${t.roles.join('·')}</span>` : ''}
+             </div>`;
+    }
+    return `
+      <div class="task-row" data-id="${t.id}">
+        <div class="label-cell">
+          <div class="task-name" data-field="name" data-id="${t.id}">
+            ${t.type === 'milestone' ? '<span class="ms-icon">◆</span>' : ''}
+            <span class="name-text">${escapeHtml(t.name)}</span>
+          </div>
+          <div class="task-meta">
+            <span class="platform-chip ${t.platform}">${t.platform}</span>
+            ${t.roles.length ? t.roles.map(r => `<span class="role-chip ${r}">${r}</span>`).join('') : '<span class="role-chip" style="opacity:.5;">직군 없음</span>'}
+            ${t.type === 'milestone' ? '<span class="duration-chip" style="opacity:.5;padding:1px 7px;">◆</span>' :
+              `<span class="duration-chip" title="소요일수">
+                 <button class="dur-btn" data-dur-dec="${t.id}" ${t.durationDays<=1?'disabled':''} aria-label="감소">−</button>
+                 <span class="dur-val">${t.durationDays}</span>
+                 <button class="dur-btn" data-dur-inc="${t.id}" aria-label="증가">+</button>
+                 <span class="unit">d</span>
+               </span>`}
+            <button class="edit-btn" data-edit="${t.id}" title="상세 편집">⚙</button>
+            <button class="del-btn" data-del="${t.id}" title="삭제">×</button>
+          </div>
+        </div>
+        <div class="timeline-cell" style="width:${header.width}px;">
+          ${renderWeekendOverlays(range)}
+          ${bar}
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('gantt').innerHTML = `
+    <div class="gantt-header">
+      <div class="gantt-labels-header">Tasks · ${vis.length}</div>
+      ${header.html}
+    </div>
+    ${rows}`;
+  attachTaskRowHandlers();
+}
+
+function renderPlatformView(conflicts) {
+  const range = computeTimelineRange();
+  const header = renderTimelineHeader(range);
+  const dayW = 32;
+  const platforms = PLATFORMS.filter(p => tasks.some(t => t.platform === p));
+
+  const rows = platforms.map(platform => {
+    const pts = tasks.filter(t => t.platform === platform && t.startDate && t.endDate);
+    // Stack tasks (including milestones) into lanes to avoid overlap
+    const sorted = [...pts].sort((a,b) => a.startDate.getTime() - b.startDate.getTime());
+    const lanes = []; const laneOf = new Map();
+    for (const t of sorted) {
+      let idx = -1;
+      for (let i=0; i<lanes.length; i++) if (lanes[i] < t.startDate.getTime()) { idx = i; break; }
+      if (idx === -1) { idx = lanes.length; lanes.push(0); }
+      lanes[idx] = t.endDate.getTime();
+      laneOf.set(t.id, idx);
+    }
+    const laneCount = Math.max(1, lanes.length);
+    const rowHeight = Math.max(54, laneCount * 38 + 10);
+    const bars = sorted.map(t => {
+      const lane = laneOf.get(t.id);
+      const leftIdx = diffDays(t.startDate, range.start);
+      const span = diffDays(t.endDate, t.startDate) + 1;
+      const cCls = conflicts.conflictTaskIds.has(t.id) ? 'conflict' : '';
+      const topPx = lane*36 + 6;
+      if (t.type === 'milestone') {
+        return `<div class="milestone ${cCls}" style="left:${leftIdx*dayW + dayW/2}px;top:${topPx + 5}px;" title="${escapeAttr(t.name)} · ${fmtDate(t.startDate)}"></div>
+                <div class="milestone-label" style="left:${leftIdx*dayW + dayW/2}px;top:${topPx + 3}px;">${escapeHtml(t.name.replace(/^\[M\]\s*/, '◆ '))}</div>`;
+      }
+      return `<div class="bar ${t.platform} ${cCls}" style="left:${leftIdx*dayW}px;top:${topPx}px;width:${Math.max(dayW-4, span*dayW - 4)}px;height:30px;" title="${escapeAttr(t.name)} · ${fmtDate(t.startDate)} → ${fmtDate(t.endDate)}">
+        <span>${escapeHtml(t.name)}</span>
+        ${t.roles.length ? `<span class="bar-roles">${t.roles.join('·')}</span>` : ''}
+      </div>`;
+    }).join('');
+    const realTasks = pts.filter(t => t.type !== 'milestone').length;
+    const milestoneCount = pts.filter(t => t.type === 'milestone').length;
+    return `
+      <div class="task-row" style="min-height:${rowHeight}px;">
+        <div class="label-cell">
+          <div class="task-name"><span class="platform-chip ${platform}" style="font-size:.95em;padding:3px 12px;">${platform}</span></div>
+          <div class="task-meta">
+            <span>태스크 <b style="color:var(--text)">${realTasks}</b></span>
+            <span>· 마일스톤 <b style="color:var(--text)">${milestoneCount}</b></span>
+            <span>· 레인 <b style="color:var(--text)">${laneCount}</b></span>
+          </div>
+        </div>
+        <div class="timeline-cell" style="width:${header.width}px;min-height:${rowHeight}px;">
+          ${renderWeekendOverlays(range)}
+          ${bars}
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('gantt').innerHTML = `
+    <div class="gantt-header">
+      <div class="gantt-labels-header">Platforms · ${platforms.length}</div>
+      ${header.html}
+    </div>
+    ${rows}`;
+}
+
+function renderConflictPanel(conflicts) {
+  const panel = document.getElementById('conflict-panel');
+  const list = document.getElementById('conflict-list');
+  if (!openConflictPanel || !conflicts.grouped.length) { panel.classList.remove('open'); return; }
+  panel.classList.add('open');
+  list.innerHTML = conflicts.grouped.map(c => {
+    const names = c.taskIds.map(id => tasks.find(x => x.id === id)?.name || id);
+    const range = c.startDate === c.endDate ? c.startDate : `${c.startDate} → ${c.endDate}`;
+    return `<div class="conflict-item"><b>${range}</b> · ${c.role}에 ${c.taskIds.length}개 배정 (${names.map(escapeHtml).join(', ')}) → capacity ${c.cap} 초과</div>`;
+  }).join('');
+}
+
+// ===== Handlers =====
+function attachTaskRowHandlers() {
+  document.querySelectorAll('.task-name[data-field="name"]').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.classList.contains('editing')) return;
+      el.classList.add('editing');
+      const id = el.dataset.id;
+      const t = tasks.find(x => x.id === id);
+      const textSpan = el.querySelector('.name-text');
+      const cur = t.name;
+      textSpan.setAttribute('contenteditable', 'true');
+      textSpan.focus();
+      const sel = window.getSelection(); const range = document.createRange();
+      range.selectNodeContents(textSpan); sel.removeAllRanges(); sel.addRange(range);
+      const finish = (commit) => {
+        textSpan.removeAttribute('contenteditable');
+        el.classList.remove('editing');
+        if (commit) {
+          const v = textSpan.textContent.trim();
+          if (v && v !== cur) { t.name = v; render(); return; }
+        }
+        textSpan.textContent = cur;
+      };
+      textSpan.addEventListener('blur', () => finish(true), { once: true });
+      textSpan.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter') { ev.preventDefault(); textSpan.blur(); }
+        else if (ev.key === 'Escape') { ev.preventDefault(); finish(false); }
+      });
+    });
+  });
+  document.querySelectorAll('[data-dur-dec]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const t = tasks.find(x => x.id === btn.dataset.durDec);
+      if (t && t.durationDays > 1) { t.durationDays -= 1; render(); }
+    });
+  });
+  document.querySelectorAll('[data-dur-inc]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const t = tasks.find(x => x.id === btn.dataset.durInc);
+      if (t) { t.durationDays += 1; render(); }
+    });
+  });
+  document.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openEditPopover(btn.dataset.edit)));
+  document.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', () => deleteTask(btn.dataset.del)));
+}
+
+function deleteTask(id) {
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  const dependents = tasks.filter(x => x.dependencies.includes(id));
+  if (dependents.length) {
+    const msg = `이 태스크를 선행으로 가진 태스크 ${dependents.length}개가 있습니다.\n(${dependents.map(d => d.name).join(', ')})\n\n삭제하면 해당 태스크들의 시작일이 영향을 받습니다.\n\n계속하시겠습니까?`;
+    if (!confirm(msg)) return;
+    dependents.forEach(d => d.dependencies = d.dependencies.filter(x => x !== id));
+  } else if (!confirm(`"${t.name}"을(를) 삭제할까요?`)) return;
+  tasks = tasks.filter(x => x.id !== id);
+  render();
+}
+
+function openEditPopover(id) {
+  const t = id ? tasks.find(x => x.id === id) : null;
+  const isNew = !t;
+  const ed = t || {
+    id: 't' + (tasks.length ? Math.max(...tasks.map(x => parseInt(x.id.replace(/\D/g,''),10) || 0)) + 1 : 1),
+    name: '', platform: '공통', roles: [], durationDays: 1, dependencies: [], type: 'task', notes: ''
+  };
+  const pop = document.getElementById('popover');
+  const bd = document.getElementById('popover-backdrop');
+  pop.innerHTML = `
+    <h3>${isNew ? '+ 새 태스크 추가' : '⚙ 태스크 편집'}</h3>
+    <div class="pop-field">
+      <label class="flabel">태스크명</label>
+      <input type="text" id="pop-name" value="${escapeAttr(ed.name)}">
+    </div>
+    <div class="pop-field pop-grid3">
+      <div><label class="flabel">플랫폼</label>
+        <select id="pop-platform">${PLATFORMS.map(p => `<option value="${p}" ${ed.platform===p?'selected':''}>${p}</option>`).join('')}</select></div>
+      <div><label class="flabel">타입</label>
+        <select id="pop-type">
+          <option value="task" ${ed.type==='task'?'selected':''}>태스크</option>
+          <option value="milestone" ${ed.type==='milestone'?'selected':''}>마일스톤</option>
+        </select></div>
+      <div><label class="flabel">소요일</label>
+        <input type="number" id="pop-duration" min="0" value="${ed.durationDays}"></div>
+    </div>
+    <div class="pop-field">
+      <label class="flabel">담당 직군</label>
+      <div class="role-checks">${ROLES.map(r => `<label><input type="checkbox" value="${r}" ${ed.roles.includes(r)?'checked':''}>${r}</label>`).join('')}</div>
+    </div>
+    <div class="pop-field">
+      <label class="flabel">선행 태스크 (의존성)</label>
+      <select id="pop-deps" multiple>${tasks.filter(x => x.id !== ed.id).map(x => `<option value="${x.id}" ${ed.dependencies.includes(x.id)?'selected':''}>${escapeHtml(x.name)}</option>`).join('')}</select>
+    </div>
+    <div class="pop-field">
+      <label class="flabel">메모 (선택)</label>
+      <input type="text" id="pop-notes" value="${escapeAttr(ed.notes || '')}">
+    </div>
+    <div class="pop-actions">
+      <button class="btn" id="pop-cancel">취소</button>
+      <button class="btn primary" id="pop-save">${isNew ? '추가' : '저장'}</button>
+    </div>`;
+  bd.classList.add('open');
+  document.getElementById('pop-cancel').addEventListener('click', closePopover);
+  bd.addEventListener('click', e => { if (e.target === bd) closePopover(); });
+  document.getElementById('pop-save').addEventListener('click', () => {
+    const name = document.getElementById('pop-name').value.trim();
+    if (!name) { alert('태스크명을 입력하세요.'); return; }
+    const platform = document.getElementById('pop-platform').value;
+    const type = document.getElementById('pop-type').value;
+    const dur = Math.max(0, parseInt(document.getElementById('pop-duration').value, 10) || 0);
+    const roles = Array.from(pop.querySelectorAll('.role-checks input:checked')).map(i => i.value);
+    const deps = Array.from(document.getElementById('pop-deps').selectedOptions).map(o => o.value);
+    const notes = document.getElementById('pop-notes').value;
+    const payload = { name, platform, roles, durationDays: type==='milestone'?0:dur, dependencies: deps, type, notes };
+    if (isNew) tasks.push({ id: ed.id, ...payload });
+    else Object.assign(t, payload);
+    closePopover(); render();
+  });
+}
+function closePopover() { document.getElementById('popover-backdrop').classList.remove('open'); }
+
+// ===== Wire controls =====
+document.querySelectorAll('#view-toggle button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#view-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); view = btn.dataset.view; render();
+  });
+});
+document.querySelectorAll('#platform-tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#platform-tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); filter = btn.dataset.filter; render();
+  });
+});
+document.querySelectorAll('#capacity-panel input').forEach(inp => {
+  inp.addEventListener('change', () => {
+    capacity[inp.dataset.role] = Math.max(1, parseInt(inp.value, 10) || 1);
+    render();
+  });
+});
+document.getElementById('btn-add').addEventListener('click', () => openEditPopover(null));
+document.getElementById('btn-reset').addEventListener('click', () => {
+  if (!confirm('모든 변경사항을 버리고 초기 데이터로 복원합니다. 계속할까요?')) return;
+  tasks = deepClone(INITIAL_TASKS); capacity = { ...DEFAULT_CAPACITY };
+  filter = 'all'; view = 'task'; openConflictPanel = false;
+  document.querySelectorAll('#view-toggle button').forEach(b => b.classList.toggle('active', b.dataset.view === 'task'));
+  document.querySelectorAll('#platform-tabs button').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+  render();
+});
+
+// ===== Self-validate (console) =====
+function selfValidate() {
+  const log = [];
+  calculateSchedule();
+  log.push(`[1] 태스크 수: ${tasks.length} (expect 18) → ${tasks.length === 18 ? 'PASS' : 'FAIL'}`);
+  log.push(`[1] 모든 태스크 일정 계산: ${tasks.every(t => t.startDate && t.endDate) ? 'PASS' : 'FAIL'}`);
+  const snap = tasks.find(t => t.id==='t8').endDate.getTime();
+  tasks.find(t => t.id==='t2').durationDays = 6; calculateSchedule();
+  const pushed = tasks.find(t => t.id==='t8').endDate.getTime();
+  log.push(`[2] t2 3→6 시 t8 뒤로 밀림: ${pushed > snap ? 'PASS' : 'FAIL'}`);
+  tasks.find(t => t.id==='t2').durationDays = 3; calculateSchedule();
+  let c = detectConflicts();
+  log.push(`[3] 기본 상태 충돌 없음: ${c.grouped.length === 0 ? 'PASS' : 'FAIL'}`);
+  const t3 = tasks.find(t => t.id==='t3'); const orig = [...t3.roles];
+  t3.roles = ['클라', '서버']; calculateSchedule();
+  c = detectConflicts();
+  log.push(`[3] t3에 서버 추가 시 충돌: ${c.grouped.length > 0 && c.conflictTaskIds.has('t2') && c.conflictTaskIds.has('t3') ? 'PASS' : 'FAIL'}`);
+  t3.roles = orig; calculateSchedule();
+  filter = 'CG';
+  const cgIds = visibleTasks().map(t => t.id).sort();
+  const expectCG = ['t11','t12','t12m','t13','t14','t14m','twait'].sort();
+  log.push(`[4] CG 필터: ${cgIds.join(',')} → ${JSON.stringify(cgIds) === JSON.stringify(expectCG) ? 'PASS' : 'FAIL'}`);
+  filter = 'all';
+  capacity['클라'] = 1; c = detectConflicts();
+  log.push(`[7] 클라 capacity 2→1 시 충돌 발생: ${c.grouped.length > 0 ? 'PASS' : 'FAIL'}`);
+  capacity['클라'] = 2;
+  // FB 런칭 ~ CG Basic 런칭 ~ CG Full 런칭 날짜 확인
+  calculateSchedule();
+  const fbLaunch = tasks.find(t => t.id==='t10m').startDate;
+  const cgBasic = tasks.find(t => t.id==='t12m').startDate;
+  const cgFull = tasks.find(t => t.id==='t14m').startDate;
+  const bdayGap = (from, to) => { let n=0; for (let d=new Date(from); d<to; d.setDate(d.getDate()+1)) if (!isWeekend(d)) n++; return n; };
+  const gap = bdayGap(cgBasic, cgFull);
+  log.push(`[5] FB 런칭: ${fmtDate(fbLaunch)}, CG Basic: ${fmtDate(cgBasic)}, CG Full: ${fmtDate(cgFull)}`);
+  log.push(`[5] Basic→Full 간격: ${gap}영업일 (target ≥5)  → ${gap >= 5 ? 'PASS' : 'FAIL'}`);
+  console.group('%cSCJ Planner · Self-Validation', 'font-weight:bold;color:#64ffda;');
+  log.forEach(l => console.log(l));
+  console.groupEnd();
+}
+
+// ===== Supabase sync (matches 12_art_production_schedule.html pattern) =====
+const SUPABASE_URL = 'https://hfiukhidqwhntdpmippt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_xBec1mH6Vdlm08vNtlYmbA_EMgH8Ui9';
+const STATE_ID = 'main';
+const EDITOR_LS_KEY = 'scj-planner-editor';
+let _sb = null;
+try { _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.warn('Supabase init failed', e); }
+
+let editorName = localStorage.getItem(EDITOR_LS_KEY) || '익명';
+const editorEl = document.getElementById('editor-name');
+editorEl.textContent = editorName;
+editorEl.addEventListener('blur', () => {
+  const v = editorEl.textContent.trim() || '익명';
+  editorEl.textContent = v;
+  editorName = v;
+  localStorage.setItem(EDITOR_LS_KEY, v);
+});
+editorEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); editorEl.blur(); } });
+
+function setSyncState(state, label) {
+  const tag = document.getElementById('sync-tag');
+  tag.classList.remove('local','syncing','synced','error');
+  tag.classList.add(state);
+  document.getElementById('sync-label').textContent = label;
+}
+
+let _toastTimer = null;
+function showToast(msg, color) {
+  let el = document.getElementById('toast');
+  if (!el) { el = document.createElement('div'); el.id = 'toast'; document.body.appendChild(el); }
+  el.textContent = msg;
+  el.style.borderColor = color || 'var(--border)';
+  el.style.animation = 'none'; el.offsetHeight;
+  el.style.animation = 'toastIn .25s ease forwards';
+  el.style.display = 'block';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.style.animation = 'toastOut .3s ease forwards'; setTimeout(() => { el.style.display = 'none'; }, 300); }, 2200);
+}
+
+// Restore Date objects after JSON deserialization
+function reviveTasks(arr) {
+  return arr.map(t => ({ ...t, startDate: null, endDate: null }));
+}
+
+async function loadFromSupabase() {
+  if (!_sb) return false;
+  setSyncState('syncing', '로딩…');
+  try {
+    const { data, error } = await _sb.from('scj_planner_state').select('tasks, capacity, updated_at, updated_by').eq('id', STATE_ID).maybeSingle();
+    if (error) throw error;
+    if (data && data.tasks) {
+      tasks = reviveTasks(data.tasks);
+      if (data.capacity) capacity = { ...DEFAULT_CAPACITY, ...data.capacity };
+      setSyncState('synced', `로드됨 · ${data.updated_by || '?'} · ${data.updated_at ? new Date(data.updated_at).toLocaleString('ko-KR',{hour12:false}) : ''}`);
+      return true;
+    } else {
+      // No existing state → seed with initial data so other clients pick it up
+      await saveToSupabase(true);
+      return true;
+    }
+  } catch (e) {
+    console.warn('Supabase load failed, using initial data', e);
+    setSyncState('error', '오프라인 (로컬)');
+    return false;
+  }
+}
+
+let _saveTimer = null;
+let _savePending = false;
+function scheduleSave() {
+  if (!_sb) return;
+  _savePending = true;
+  setSyncState('syncing', '저장 중…');
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(() => saveToSupabase(false), 600);
+}
+
+async function saveToSupabase(silent) {
+  if (!_sb) return;
+  try {
+    const payload = {
+      id: STATE_ID,
+      tasks: tasks.map(t => ({ id: t.id, name: t.name, platform: t.platform, roles: t.roles, durationDays: t.durationDays, dependencies: t.dependencies, type: t.type, notes: t.notes || '' })),
+      capacity,
+      updated_at: new Date().toISOString(),
+      updated_by: editorName
+    };
+    const { error } = await _sb.from('scj_planner_state').upsert(payload);
+    if (error) throw error;
+    _savePending = false;
+    setSyncState('synced', `저장됨 · ${new Date().toLocaleTimeString('ko-KR',{hour12:false})}`);
+    if (!silent) showToast('☁️ 저장됨', 'var(--green)');
+  } catch (e) {
+    console.error('Supabase save failed', e);
+    setSyncState('error', '저장 실패');
+    if (!silent) showToast('⚠️ 저장 실패: ' + e.message, 'var(--red)');
+  }
+}
+
+// Hook scheduleSave into render() so any state mutation persists
+const _origRender = render;
+render = function() { _origRender(); scheduleSave(); };
+
+// Manual reload button (Ctrl/Cmd + R already reloads page; but offer a re-fetch via console too)
+window.scjReload = async () => { await loadFromSupabase(); _origRender(); };
+
+// Init: load remote state, then render. Skip selfValidate if data was loaded (it would mutate state).
+let _loadedRemote = false;
+(async () => {
+  if (_sb) {
+    _loadedRemote = await loadFromSupabase();
+    if (!_loadedRemote) setSyncState('local', '로컬만');
+  } else {
+    setSyncState('local', 'Supabase 없음');
+  }
+  _origRender();
+  if (!_loadedRemote) { selfValidate(); _origRender(); }
+})();
+</script>
+</body>
+</html>
