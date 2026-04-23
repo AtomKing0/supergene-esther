@@ -116,6 +116,12 @@ input,select{font-family:inherit;color:inherit}
 .task-row{display:flex;min-height:52px;border-bottom:1px solid var(--border);align-items:stretch}
 .task-row:last-child{border-bottom:none}
 .task-row:hover .label-cell{background:var(--surface2)}
+.task-row.row-dragging{opacity:.45}
+.task-row.row-drop-above{border-top:2px solid var(--accent)}
+.task-row.row-drop-below{border-bottom:2px solid var(--accent)}
+.row-grip{display:inline-block;cursor:grab;color:var(--muted);font-weight:700;padding:0 6px 0 0;user-select:none}
+.row-grip:hover{color:var(--accent)}
+.task-row[draggable="true"]:hover .row-grip{color:var(--text)}
 .label-cell{width:var(--label-width);flex:0 0 var(--label-width);padding:10px 14px 10px 16px;border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;gap:5px;background:var(--surface);transition:background .15s;position:sticky;left:0;z-index:2}
 .task-name{font-size:.95em;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;cursor:text}
 .task-name .ms-icon{color:var(--red);font-size:1em}
@@ -280,7 +286,8 @@ input,select{font-family:inherit;color:inherit}
         <button class="btn primary" id="btn-add">+ 새 태스크</button>
         <button class="btn" id="btn-freemode" title="ON: 의존성 무시하고 자유 배치 / OFF: 의존성 제약 적용">🔓 자유 배치</button>
         <button class="btn" id="btn-clear-manual" title="모든 태스크/마일스톤의 수동 위치를 지우고 자동 스케줄로 복귀">🧹 수동 위치 초기화</button>
-        <button class="btn danger" id="btn-reset">초기 데이터로 리셋</button>
+        <button class="btn" id="btn-save-baseline" title="현재 tasks/capacity/ROLES 상태를 내 초기값으로 저장 (브라우저에 저장)">💾 초기값 저장</button>
+        <button class="btn danger" id="btn-reset" title="저장된 내 초기값이 있으면 그것으로, 없으면 원본으로 리셋">초기 데이터로 리셋</button>
       </div>
     </div>
   </div>
@@ -659,9 +666,10 @@ function renderTaskView(conflicts) {
              </div>`;
     }
     return `
-      <div class="task-row" data-id="${t.id}">
+      <div class="task-row" data-id="${t.id}" draggable="${filter==='all'?'true':'false'}">
         <div class="label-cell">
           <div class="task-name" data-field="name" data-id="${t.id}">
+            ${filter==='all' ? `<span class="row-grip" title="드래그로 순서 변경">≡</span>` : ''}
             ${t.type === 'milestone' ? '<span class="ms-icon">◆</span>' : ''}
             <span class="name-text">${escapeHtml(t.name)}</span>
           </div>
@@ -820,7 +828,51 @@ function attachTaskRowHandlers() {
   });
   document.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openEditPopover(btn.dataset.edit)));
   document.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', () => deleteTask(btn.dataset.del)));
+  attachRowReorderHandlers();
   attachBarDragHandlers();
+}
+
+function attachRowReorderHandlers() {
+  let draggedId = null;
+  document.querySelectorAll('.task-row[draggable="true"]').forEach(row => {
+    row.addEventListener('dragstart', (e) => {
+      draggedId = row.dataset.id;
+      row.classList.add('row-dragging');
+      try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', draggedId); } catch {}
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('row-dragging');
+      document.querySelectorAll('.row-drop-above,.row-drop-below').forEach(el => el.classList.remove('row-drop-above','row-drop-below'));
+      draggedId = null;
+    });
+    row.addEventListener('dragover', (e) => {
+      if (!draggedId || row.dataset.id === draggedId) return;
+      e.preventDefault();
+      try { e.dataTransfer.dropEffect = 'move'; } catch {}
+      const rect = row.getBoundingClientRect();
+      const above = (e.clientY - rect.top) < rect.height / 2;
+      row.classList.toggle('row-drop-above', above);
+      row.classList.toggle('row-drop-below', !above);
+    });
+    row.addEventListener('dragleave', () => {
+      row.classList.remove('row-drop-above','row-drop-below');
+    });
+    row.addEventListener('drop', (e) => {
+      if (!draggedId) return;
+      e.preventDefault();
+      const targetId = row.dataset.id;
+      if (targetId === draggedId) return;
+      const above = row.classList.contains('row-drop-above');
+      const fromIdx = tasks.findIndex(t => t.id === draggedId);
+      let toIdx = tasks.findIndex(t => t.id === targetId);
+      if (fromIdx < 0 || toIdx < 0) return;
+      const [moved] = tasks.splice(fromIdx, 1);
+      // After splice, recompute target index
+      toIdx = tasks.findIndex(t => t.id === targetId);
+      tasks.splice(above ? toIdx : toIdx + 1, 0, moved);
+      render();
+    });
+  });
 }
 
 function attachBarDragHandlers() {
@@ -1048,6 +1100,36 @@ document.getElementById('btn-add-role').addEventListener('click', () => {
   if (name) addRole(name);
 });
 document.getElementById('btn-add').addEventListener('click', () => openEditPopover(null));
+
+// ===== User baseline (localStorage) — 사용자가 저장한 초기값 =====
+const BASELINE_LS_KEY = 'scj-planner-baseline';
+function readBaseline() {
+  try { const s = localStorage.getItem(BASELINE_LS_KEY); return s ? JSON.parse(s) : null; } catch(e){ return null; }
+}
+function refreshResetBtn() {
+  const b = document.getElementById('btn-reset');
+  if (!b) return;
+  const has = !!readBaseline();
+  b.textContent = has ? '초기값으로 리셋 (저장본)' : '초기 데이터로 리셋';
+  b.title = has ? '브라우저에 저장된 내 초기값으로 복원' : '코드에 박힌 원본 INITIAL_TASKS로 복원';
+}
+refreshResetBtn();
+document.getElementById('btn-save-baseline').addEventListener('click', () => {
+  const snap = {
+    tasks: tasks.map(t => ({ id: t.id, name: t.name, platform: t.platform, roles: [...t.roles], durationDays: t.durationDays, dependencies: [...t.dependencies], type: t.type, notes: t.notes || '', manualStart: t.manualStart || null })),
+    capacity: { ...capacity },
+    roles: [...ROLES],
+    savedAt: new Date().toISOString()
+  };
+  try {
+    localStorage.setItem(BASELINE_LS_KEY, JSON.stringify(snap));
+    refreshResetBtn();
+    showToast(`💾 초기값 저장됨 (${snap.tasks.length}개 태스크)`, 'var(--accent)');
+  } catch (e) {
+    alert('저장 실패: ' + e.message);
+  }
+});
+
 function refreshFreeModeBtn() {
   const b = document.getElementById('btn-freemode');
   b.textContent = freeMode ? '🔓 자유 배치 ON' : '🔒 자유 배치 OFF';
@@ -1067,9 +1149,19 @@ document.getElementById('btn-clear-manual').addEventListener('click', () => {
   tasks.forEach(t => { t.manualStart = null; });
   render();
 });
-document.getElementById('btn-reset').addEventListener('click', () => {
-  if (!confirm('모든 변경사항을 버리고 초기 데이터로 복원합니다. 계속할까요?')) return;
-  tasks = deepClone(INITIAL_TASKS); capacity = { ...DEFAULT_CAPACITY }; ROLES = [...INITIAL_ROLES];
+document.getElementById('btn-reset').addEventListener('click', (ev) => {
+  const baseline = readBaseline();
+  const forceOriginal = !!ev.shiftKey;
+  const useBaseline = !!baseline && !forceOriginal;
+  const label = useBaseline ? `브라우저에 저장된 초기값(${baseline.tasks?.length || 0}개)` : '코드 원본 데이터';
+  if (!confirm(`모든 변경사항을 버리고 ${label}으로 복원합니다. 계속할까요?\n\n(원본으로 강제 리셋하려면 Shift+클릭)`)) return;
+  if (useBaseline) {
+    tasks = baseline.tasks.map(t => ({ ...t, roles: [...(t.roles||[])], dependencies: [...(t.dependencies||[])], startDate: null, endDate: null }));
+    capacity = { ...DEFAULT_CAPACITY, ...(baseline.capacity || {}) };
+    ROLES = Array.isArray(baseline.roles) && baseline.roles.length ? [...baseline.roles] : Object.keys(capacity);
+  } else {
+    tasks = deepClone(INITIAL_TASKS); capacity = { ...DEFAULT_CAPACITY }; ROLES = [...INITIAL_ROLES];
+  }
   filter = 'all'; view = 'task'; openConflictPanel = false;
   document.querySelectorAll('#view-toggle button').forEach(b => b.classList.toggle('active', b.dataset.view === 'task'));
   document.querySelectorAll('#platform-tabs button').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
