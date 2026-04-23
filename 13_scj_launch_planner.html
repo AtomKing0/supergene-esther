@@ -526,9 +526,10 @@ function detectConflicts() {
     const [dateStr, role] = k.split('|');
     const cap = capacity[role] || 1;
     if (ids.length > cap) {
-      // 사용자가 모든 충돌 태스크를 수동 배치한 경우 = 의도된 충돌 → 무시
-      const allManual = ids.every(id => taskMap.get(id)?.manualStart);
-      if (allManual) continue;
+      // 충돌하는 태스크 중 하나라도 수동 배치된 경우 = 사용자가 의도한 배치 → 무시
+      // (수동 배치 = 사용자가 의존성/충돌을 인지하고 그 위치에 둔 것)
+      const anyManual = ids.some(id => taskMap.get(id)?.manualStart);
+      if (anyManual) continue;
       conflictDays.push({ date: dateStr, role, taskIds: ids.slice().sort(), cap });
       ids.forEach(id => conflictTaskIds.add(id));
     }
