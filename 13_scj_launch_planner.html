@@ -141,6 +141,9 @@ input,select{font-family:inherit;color:inherit}
 
 .timeline-cell{flex:1 0 auto;position:relative;min-height:52px;background-image:linear-gradient(to right,var(--border) 1px,transparent 1px);background-size:var(--day-width) 100%;background-color:var(--surface)}
 .weekend-overlay{position:absolute;top:0;bottom:0;background:var(--surface2);opacity:.5;pointer-events:none;z-index:0}
+.holiday-overlay{position:absolute;top:0;bottom:0;background:var(--red);opacity:.18;pointer-events:none;z-index:0}
+.timeline-day.holiday{color:var(--red);font-weight:700}
+.timeline-day.holiday .day-num{color:var(--red)}
 .today-line{position:absolute;top:0;bottom:0;width:0;border-left:1.5px dashed var(--red);pointer-events:none;z-index:2}
 .today-dot{position:absolute;top:2px;width:6px;height:6px;border-radius:50%;background:var(--red);transform:translateX(-3px);z-index:3}
 
@@ -158,7 +161,9 @@ input,select{font-family:inherit;color:inherit}
 .drag-tooltip{position:fixed;background:var(--surface2);border:1px solid var(--accent);color:var(--text);padding:6px 12px;border-radius:6px;font-size:.82em;font-variant-numeric:tabular-nums;pointer-events:none;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.4);white-space:nowrap;font-family:'Segoe UI',monospace}
 .drag-tooltip b{color:var(--accent)}
 
-.milestone{position:absolute;top:16px;width:20px;height:20px;transform:translateX(-10px) rotate(45deg);background:var(--red);border:1.5px solid var(--bg);z-index:1;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.milestone{position:absolute;top:16px;width:20px;height:20px;transform:translateX(-10px) rotate(45deg);background:var(--red);border:1.5px solid var(--bg);z-index:1;box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:grab}
+.milestone.dragging{cursor:grabbing!important;opacity:.85;z-index:50}
+.milestone.has-manual{outline:1.5px dashed var(--accent);outline-offset:2px}
 .milestone.conflict{outline:2px solid var(--red);outline-offset:2px}
 .milestone-label{position:absolute;top:12px;font-size:.82em;font-weight:600;color:var(--text);white-space:nowrap;z-index:1;padding-left:14px}
 
@@ -287,6 +292,7 @@ input,select{font-family:inherit;color:inherit}
     <div class="legend-item"><div class="legend-diamond"></div>마일스톤</div>
     <div class="legend-item"><div style="width:12px;height:2px;border-top:1.5px dashed var(--red)"></div>오늘</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--surface2);border:1px solid var(--border)"></div>주말</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red);opacity:.5"></div>공휴일 (5/1, 5/5)</div>
     <div class="legend-item"><div class="legend-dot" style="border:2px solid var(--red);background:transparent"></div>충돌</div>
   </div>
 
@@ -375,10 +381,17 @@ function parseDate(s) { const [y,m,d] = s.split('-').map(Number); return new Dat
 function fmtDate(d) { const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
 function fmtShort(d) { return `${d.getMonth()+1}/${d.getDate()}`; }
 function isWeekend(d) { const g = d.getDay(); return g === 0 || g === 6; }
-function nextBusinessDay(d) { const r = new Date(d); do { r.setDate(r.getDate()+1); } while (isWeekend(r)); return r; }
+const HOLIDAYS = {
+  '2026-05-01': '근로자의날',
+  '2026-05-05': '어린이날'
+};
+function isHoliday(d) { return Object.prototype.hasOwnProperty.call(HOLIDAYS, fmtDate(d)); }
+function holidayName(d) { return HOLIDAYS[fmtDate(d)] || ''; }
+function isNonBusinessDay(d) { return isWeekend(d) || isHoliday(d); }
+function nextBusinessDay(d) { const r = new Date(d); do { r.setDate(r.getDate()+1); } while (isNonBusinessDay(r)); return r; }
 function addBusinessDays(start, n) {
-  let r = new Date(start); while (isWeekend(r)) r.setDate(r.getDate()+1);
-  let rem = n; while (rem > 0) { r.setDate(r.getDate()+1); if (!isWeekend(r)) rem--; } return r;
+  let r = new Date(start); while (isNonBusinessDay(r)) r.setDate(r.getDate()+1);
+  let rem = n; while (rem > 0) { r.setDate(r.getDate()+1); if (!isNonBusinessDay(r)) rem--; } return r;
 }
 function diffDays(a, b) {
   const MS = 86400000;
@@ -414,13 +427,16 @@ function calculateSchedule() {
       let newStart = depMinStart;
       if (t.manualStart) {
         let m = parseDate(t.manualStart);
-        if (isWeekend(m)) m = nextBusinessDay(m);
         if (freeMode) {
+          // 자유 배치: 주말/공휴일/의존성 모두 무시하고 사용자 지정값 그대로 사용
           newStart = m;
-        } else if (m.getTime() > depMinStart.getTime()) newStart = m;
-        else if (m.getTime() < depMinStart.getTime()) {
-          // Manual start was earlier than allowed → clamped, clear the override
-          t.manualStart = null;
+        } else {
+          if (isNonBusinessDay(m)) m = nextBusinessDay(m);
+          if (m.getTime() > depMinStart.getTime()) newStart = m;
+          else if (m.getTime() < depMinStart.getTime()) {
+            // Manual start was earlier than allowed → clamped, clear the override
+            t.manualStart = null;
+          }
         }
       }
       const newEnd = (t.type === 'milestone' || t.durationDays <= 0) ? new Date(newStart) : addBusinessDays(newStart, t.durationDays - 1);
@@ -437,7 +453,7 @@ function detectConflicts() {
   for (const t of tasks) {
     if (t.type === 'milestone' || !t.roles?.length || !t.startDate || !t.endDate) continue;
     for (const d of eachDay(t.startDate, t.endDate)) {
-      if (isWeekend(d)) continue;
+      if (isNonBusinessDay(d)) continue;
       for (const r of t.roles) {
         const k = `${fmtDate(d)}|${r}`;
         if (!perDayRole.has(k)) perDayRole.set(k, []);
@@ -590,8 +606,11 @@ function renderTimelineHeader(range) {
   const monthBands = months.map(m => `<div class="timeline-month" style="left:${m.startIdx*dayW}px;width:${m.count*dayW}px;">${m.label}</div>`).join('');
   const dayCells = days.map(d => {
     const wknd = isWeekend(d);
+    const hol = isHoliday(d);
     const dow = ['일','월','화','수','목','금','토'][d.getDay()];
-    return `<div class="timeline-day ${wknd?'weekend':''}"><span class="day-num">${d.getDate()}</span>${dow}</div>`;
+    const cls = ['timeline-day', wknd && 'weekend', hol && 'holiday'].filter(Boolean).join(' ');
+    const tip = hol ? ` title="${escapeAttr(holidayName(d))}"` : '';
+    return `<div class="${cls}"${tip}><span class="day-num">${d.getDate()}</span>${dow}</div>`;
   }).join('');
   return {
     html: `<div class="timeline-header" style="width:${days.length*dayW}px;">${monthBands}<div class="timeline-days">${dayCells}</div></div>`,
@@ -601,7 +620,10 @@ function renderTimelineHeader(range) {
 
 function renderWeekendOverlays(range) {
   const { days } = range; const dayW = 32; let html = '';
-  days.forEach((d, i) => { if (isWeekend(d)) html += `<div class="weekend-overlay" style="left:${i*dayW}px;width:${dayW}px;"></div>`; });
+  days.forEach((d, i) => {
+    if (isHoliday(d)) html += `<div class="holiday-overlay" style="left:${i*dayW}px;width:${dayW}px;" title="${escapeAttr(holidayName(d))}"></div>`;
+    else if (isWeekend(d)) html += `<div class="weekend-overlay" style="left:${i*dayW}px;width:${dayW}px;"></div>`;
+  });
   const today = new Date(); today.setHours(0,0,0,0);
   const idx = diffDays(today, range.start);
   if (idx >= 0 && idx < days.length) {
@@ -623,7 +645,8 @@ function renderTaskView(conflicts) {
     const cCls = conflicts.conflictTaskIds.has(t.id) ? 'conflict' : '';
     let bar = '';
     if (t.type === 'milestone') {
-      bar = `<div class="milestone ${cCls}" style="left:${leftIdx*dayW + dayW/2}px;" title="${escapeAttr(t.name)} · ${t.startDate?fmtDate(t.startDate):''}"></div>
+      const mManCls = t.manualStart ? 'has-manual' : '';
+      bar = `<div class="milestone ${cCls} ${mManCls}" data-task="${t.id}" style="left:${leftIdx*dayW + dayW/2}px;" title="${escapeAttr(t.name)} · ${t.startDate?fmtDate(t.startDate):''}${t.manualStart?' (수동)':''}"></div>
              <div class="milestone-label" style="left:${leftIdx*dayW + dayW/2}px;">${escapeHtml(t.name.replace(/^\[M\]\s*/, '◆ '))}</div>`;
     } else {
       const manCls = t.manualStart ? 'has-manual' : '';
@@ -698,7 +721,8 @@ function renderPlatformView(conflicts) {
       const cCls = conflicts.conflictTaskIds.has(t.id) ? 'conflict' : '';
       const topPx = lane*36 + 6;
       if (t.type === 'milestone') {
-        return `<div class="milestone ${cCls}" style="left:${leftIdx*dayW + dayW/2}px;top:${topPx + 5}px;" title="${escapeAttr(t.name)} · ${fmtDate(t.startDate)}"></div>
+        const mManCls = t.manualStart ? 'has-manual' : '';
+        return `<div class="milestone ${cCls} ${mManCls}" data-task="${t.id}" style="left:${leftIdx*dayW + dayW/2}px;top:${topPx + 5}px;" title="${escapeAttr(t.name)} · ${fmtDate(t.startDate)}${t.manualStart?' (수동)':''}"></div>
                 <div class="milestone-label" style="left:${leftIdx*dayW + dayW/2}px;top:${topPx + 3}px;">${escapeHtml(t.name.replace(/^\[M\]\s*/, '◆ '))}</div>`;
       }
       const manCls = t.manualStart ? 'has-manual' : '';
@@ -800,7 +824,7 @@ function attachTaskRowHandlers() {
 
 function attachBarDragHandlers() {
   const dayW = 32;
-  document.querySelectorAll('.bar[data-task]').forEach(barEl => {
+  document.querySelectorAll('.bar[data-task], .milestone[data-task]').forEach(barEl => {
     const taskId = barEl.dataset.task;
     let drag = null;
     let tooltip = null;
@@ -809,10 +833,12 @@ function attachBarDragHandlers() {
       // Ignore right-click; let popover/buttons through
       if (e.button !== 0) return;
       const targetHandle = e.target.dataset?.handle;
-      const mode = targetHandle === 'left' ? 'resize-left' :
-                   targetHandle === 'right' ? 'resize-right' : 'move';
+      let mode = targetHandle === 'left' ? 'resize-left' :
+                 targetHandle === 'right' ? 'resize-right' : 'move';
       const t = tasks.find(x => x.id === taskId);
-      if (!t || t.type === 'milestone') return;
+      if (!t) return;
+      // 마일스톤: 이동만 허용 (리사이즈 없음 — 0일 길이)
+      if (t.type === 'milestone') mode = 'move';
       drag = {
         mode, startX: e.clientX,
         origLeft: parseFloat(barEl.style.left) || 0,
