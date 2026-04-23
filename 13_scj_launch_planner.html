@@ -142,10 +142,19 @@ input,select{font-family:inherit;color:inherit}
 .today-line{position:absolute;top:0;bottom:0;width:0;border-left:1.5px dashed var(--red);pointer-events:none;z-index:2}
 .today-dot{position:absolute;top:2px;width:6px;height:6px;border-radius:50%;background:var(--red);transform:translateX(-3px);z-index:3}
 
-.bar{position:absolute;top:11px;height:30px;border-radius:6px;display:flex;align-items:center;padding:0 10px;color:#fff;font-size:.82em;font-weight:600;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:1;cursor:default}
+.bar{position:absolute;top:11px;height:30px;border-radius:6px;display:flex;align-items:center;padding:0 10px;color:#fff;font-size:.82em;font-weight:600;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:1;cursor:grab;user-select:none;touch-action:none}
+.bar:hover{box-shadow:0 4px 10px rgba(0,0,0,.35);filter:brightness(1.05)}
+.bar.dragging{cursor:grabbing!important;opacity:.85;z-index:50;box-shadow:0 6px 14px rgba(0,0,0,.45)}
 .bar.FB{background:var(--fb)}.bar.Toss{background:var(--toss)}.bar.CG{background:var(--cg)}.bar.공통{background:var(--common)}
 .bar.conflict{outline:2px solid var(--red);outline-offset:1px;box-shadow:0 0 0 1px rgba(255,107,107,.3),0 2px 6px rgba(0,0,0,.25)}
+.bar.has-manual::before{content:"📌";position:absolute;top:-4px;right:-2px;font-size:11px;background:var(--bg);border-radius:50%;padding:0 2px;line-height:1;z-index:2}
 .bar-roles{margin-left:8px;font-size:.92em;opacity:.88;font-weight:500;letter-spacing:.02em}
+.bar-handle{position:absolute;top:0;bottom:0;width:7px;cursor:ew-resize;z-index:2}
+.bar-handle.left{left:0;border-radius:6px 0 0 6px}
+.bar-handle.right{right:0;border-radius:0 6px 6px 0}
+.bar-handle:hover{background:rgba(255,255,255,.25)}
+.drag-tooltip{position:fixed;background:var(--surface2);border:1px solid var(--accent);color:var(--text);padding:6px 12px;border-radius:6px;font-size:.82em;font-variant-numeric:tabular-nums;pointer-events:none;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.4);white-space:nowrap;font-family:'Segoe UI',monospace}
+.drag-tooltip b{color:var(--accent)}
 
 .milestone{position:absolute;top:16px;width:20px;height:20px;transform:translateX(-10px) rotate(45deg);background:var(--red);border:1.5px solid var(--bg);z-index:1;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .milestone.conflict{outline:2px solid var(--red);outline-offset:2px}
@@ -391,13 +400,25 @@ function calculateSchedule() {
   while (changed && iter < maxIter) {
     changed = false; iter++;
     for (const t of tasks) {
-      let newStart;
-      if (!t.dependencies.length) newStart = new Date(base);
+      // Dependency-derived earliest start
+      let depMinStart;
+      if (!t.dependencies.length) depMinStart = new Date(base);
       else {
         const deps = t.dependencies.map(id => map.get(id)).filter(Boolean);
         if (!deps.every(d => d.endDate)) continue;
         const maxEnd = new Date(Math.max(...deps.map(d => d.endDate.getTime())));
-        newStart = nextBusinessDay(maxEnd);
+        depMinStart = nextBusinessDay(maxEnd);
+      }
+      // Apply manual override (only if it pushes start LATER than dep-min; earlier values are clamped)
+      let newStart = depMinStart;
+      if (t.manualStart) {
+        let m = parseDate(t.manualStart);
+        if (isWeekend(m)) m = nextBusinessDay(m);
+        if (m.getTime() > depMinStart.getTime()) newStart = m;
+        else if (m.getTime() < depMinStart.getTime()) {
+          // Manual start was earlier than allowed → clamped, clear the override
+          t.manualStart = null;
+        }
       }
       const newEnd = (t.type === 'milestone' || t.durationDays <= 0) ? new Date(newStart) : addBusinessDays(newStart, t.durationDays - 1);
       if (!t.startDate || t.startDate.getTime() !== newStart.getTime() || t.endDate.getTime() !== newEnd.getTime()) {
@@ -571,9 +592,12 @@ function renderTaskView(conflicts) {
       bar = `<div class="milestone ${cCls}" style="left:${leftIdx*dayW + dayW/2}px;" title="${escapeAttr(t.name)} · ${t.startDate?fmtDate(t.startDate):''}"></div>
              <div class="milestone-label" style="left:${leftIdx*dayW + dayW/2}px;">${escapeHtml(t.name.replace(/^\[M\]\s*/, '◆ '))}</div>`;
     } else {
-      bar = `<div class="bar ${t.platform} ${cCls}" style="left:${leftIdx*dayW}px;width:${Math.max(dayW-4, span*dayW - 4)}px;" title="${escapeAttr(t.name)} · ${t.startDate?fmtDate(t.startDate):''} → ${t.endDate?fmtDate(t.endDate):''}">
+      const manCls = t.manualStart ? 'has-manual' : '';
+      bar = `<div class="bar ${t.platform} ${cCls} ${manCls}" data-task="${t.id}" style="left:${leftIdx*dayW}px;width:${Math.max(dayW-4, span*dayW - 4)}px;" title="${escapeAttr(t.name)} · ${t.startDate?fmtDate(t.startDate):''} → ${t.endDate?fmtDate(t.endDate):''}${t.manualStart?' (수동 시작)':''}">
+              <div class="bar-handle left" data-handle="left" data-task="${t.id}"></div>
               <span>${escapeHtml(t.name)}</span>
               ${t.roles.length ? `<span class="bar-roles">${t.roles.join('·')}</span>` : ''}
+              <div class="bar-handle right" data-handle="right" data-task="${t.id}"></div>
              </div>`;
     }
     return `
@@ -643,9 +667,12 @@ function renderPlatformView(conflicts) {
         return `<div class="milestone ${cCls}" style="left:${leftIdx*dayW + dayW/2}px;top:${topPx + 5}px;" title="${escapeAttr(t.name)} · ${fmtDate(t.startDate)}"></div>
                 <div class="milestone-label" style="left:${leftIdx*dayW + dayW/2}px;top:${topPx + 3}px;">${escapeHtml(t.name.replace(/^\[M\]\s*/, '◆ '))}</div>`;
       }
-      return `<div class="bar ${t.platform} ${cCls}" style="left:${leftIdx*dayW}px;top:${topPx}px;width:${Math.max(dayW-4, span*dayW - 4)}px;height:30px;" title="${escapeAttr(t.name)} · ${fmtDate(t.startDate)} → ${fmtDate(t.endDate)}">
+      const manCls = t.manualStart ? 'has-manual' : '';
+      return `<div class="bar ${t.platform} ${cCls} ${manCls}" data-task="${t.id}" style="left:${leftIdx*dayW}px;top:${topPx}px;width:${Math.max(dayW-4, span*dayW - 4)}px;height:30px;" title="${escapeAttr(t.name)} · ${fmtDate(t.startDate)} → ${fmtDate(t.endDate)}${t.manualStart?' (수동 시작)':''}">
+        <div class="bar-handle left" data-handle="left" data-task="${t.id}"></div>
         <span>${escapeHtml(t.name)}</span>
         ${t.roles.length ? `<span class="bar-roles">${t.roles.join('·')}</span>` : ''}
+        <div class="bar-handle right" data-handle="right" data-task="${t.id}"></div>
       </div>`;
     }).join('');
     const realTasks = pts.filter(t => t.type !== 'milestone').length;
@@ -673,6 +700,7 @@ function renderPlatformView(conflicts) {
       ${header.html}
     </div>
     ${rows}`;
+  attachBarDragHandlers();
 }
 
 function renderConflictPanel(conflicts) {
@@ -733,6 +761,119 @@ function attachTaskRowHandlers() {
   });
   document.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openEditPopover(btn.dataset.edit)));
   document.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', () => deleteTask(btn.dataset.del)));
+  attachBarDragHandlers();
+}
+
+function attachBarDragHandlers() {
+  const dayW = 32;
+  document.querySelectorAll('.bar[data-task]').forEach(barEl => {
+    const taskId = barEl.dataset.task;
+    let drag = null;
+    let tooltip = null;
+
+    const onDown = (e) => {
+      // Ignore right-click; let popover/buttons through
+      if (e.button !== 0) return;
+      const targetHandle = e.target.dataset?.handle;
+      const mode = targetHandle === 'left' ? 'resize-left' :
+                   targetHandle === 'right' ? 'resize-right' : 'move';
+      const t = tasks.find(x => x.id === taskId);
+      if (!t || t.type === 'milestone') return;
+      drag = {
+        mode, startX: e.clientX,
+        origLeft: parseFloat(barEl.style.left) || 0,
+        origWidth: parseFloat(barEl.style.width) || dayW,
+        origStart: new Date(t.startDate),
+        origEnd: new Date(t.endDate),
+        origDuration: t.durationDays,
+      };
+      barEl.classList.add('dragging');
+      barEl.setPointerCapture(e.pointerId);
+      tooltip = document.createElement('div');
+      tooltip.className = 'drag-tooltip';
+      document.body.appendChild(tooltip);
+      updateTooltip(e);
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const updateTooltip = (e) => {
+      if (!tooltip || !drag) return;
+      const dx = e.clientX - drag.startX;
+      const days = Math.round(dx / dayW);
+      const t = tasks.find(x => x.id === taskId);
+      let s = new Date(drag.origStart), eD = new Date(drag.origEnd), dur = drag.origDuration;
+      if (drag.mode === 'move') {
+        s.setDate(s.getDate() + days); eD.setDate(eD.getDate() + days);
+      } else if (drag.mode === 'resize-right') {
+        dur = Math.max(1, drag.origDuration + days);
+        eD = addBusinessDays(s, dur - 1);
+      } else if (drag.mode === 'resize-left') {
+        s.setDate(s.getDate() + days);
+        dur = Math.max(1, drag.origDuration - days);
+        eD = addBusinessDays(s, dur - 1);
+      }
+      const labelMode = drag.mode === 'move' ? '이동' : drag.mode === 'resize-right' ? '종료' : '시작';
+      tooltip.innerHTML = `<b>${labelMode}</b> · ${fmtDate(s)} → ${fmtDate(eD)} · <b>${dur}d</b>`;
+      tooltip.style.left = (e.clientX + 14) + 'px';
+      tooltip.style.top = (e.clientY - 30) + 'px';
+    };
+
+    const onMove = (e) => {
+      if (!drag) return;
+      const dx = e.clientX - drag.startX;
+      const daysDelta = Math.round(dx / dayW);
+      if (drag.mode === 'move') {
+        barEl.style.left = (drag.origLeft + daysDelta * dayW) + 'px';
+      } else if (drag.mode === 'resize-right') {
+        const nw = drag.origWidth + daysDelta * dayW;
+        if (nw >= dayW - 4) barEl.style.width = nw + 'px';
+      } else if (drag.mode === 'resize-left') {
+        const nl = drag.origLeft + daysDelta * dayW;
+        const nw = drag.origWidth - daysDelta * dayW;
+        if (nw >= dayW - 4) {
+          barEl.style.left = nl + 'px';
+          barEl.style.width = nw + 'px';
+        }
+      }
+      updateTooltip(e);
+    };
+
+    const onUp = (e) => {
+      if (!drag) return;
+      const dx = e.clientX - drag.startX;
+      const daysDelta = Math.round(dx / dayW);
+      barEl.classList.remove('dragging');
+      try { barEl.releasePointerCapture(e.pointerId); } catch {}
+      if (tooltip) { tooltip.remove(); tooltip = null; }
+
+      const t = tasks.find(x => x.id === taskId);
+      if (t && daysDelta !== 0) {
+        if (drag.mode === 'move') {
+          const ns = new Date(drag.origStart);
+          ns.setDate(ns.getDate() + daysDelta);
+          t.manualStart = fmtDate(ns);
+        } else if (drag.mode === 'resize-right') {
+          t.durationDays = Math.max(1, drag.origDuration + daysDelta);
+        } else if (drag.mode === 'resize-left') {
+          const ns = new Date(drag.origStart);
+          ns.setDate(ns.getDate() + daysDelta);
+          const newDur = Math.max(1, drag.origDuration - daysDelta);
+          t.manualStart = fmtDate(ns);
+          t.durationDays = newDur;
+        }
+        drag = null;
+        render();
+      } else {
+        drag = null;
+      }
+    };
+
+    barEl.addEventListener('pointerdown', onDown);
+    barEl.addEventListener('pointermove', onMove);
+    barEl.addEventListener('pointerup', onUp);
+    barEl.addEventListener('pointercancel', onUp);
+  });
 }
 
 function deleteTask(id) {
@@ -785,6 +926,10 @@ function openEditPopover(id) {
       <label class="flabel">메모 (선택)</label>
       <input type="text" id="pop-notes" value="${escapeAttr(ed.notes || '')}">
     </div>
+    ${ed.manualStart ? `<div class="pop-field" style="background:var(--surface2);border-radius:6px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <span style="font-size:.85em;color:var(--muted);">📌 수동 시작일: <b style="color:var(--text);font-variant-numeric:tabular-nums;">${ed.manualStart}</b></span>
+      <button class="btn" id="pop-clear-manual" style="padding:4px 10px;font-size:.78em;">초기화</button>
+    </div>` : ''}
     <div class="pop-actions">
       <button class="btn" id="pop-cancel">취소</button>
       <button class="btn primary" id="pop-save">${isNew ? '추가' : '저장'}</button>
@@ -792,6 +937,10 @@ function openEditPopover(id) {
   bd.classList.add('open');
   document.getElementById('pop-cancel').addEventListener('click', closePopover);
   bd.addEventListener('click', e => { if (e.target === bd) closePopover(); });
+  const clearBtn = document.getElementById('pop-clear-manual');
+  if (clearBtn) clearBtn.addEventListener('click', () => {
+    if (t) { t.manualStart = null; closePopover(); render(); }
+  });
   document.getElementById('pop-save').addEventListener('click', () => {
     const name = document.getElementById('pop-name').value.trim();
     if (!name) { alert('태스크명을 입력하세요.'); return; }
@@ -960,7 +1109,7 @@ async function saveToSupabase(silent) {
   try {
     const payload = {
       id: STATE_ID,
-      tasks: tasks.map(t => ({ id: t.id, name: t.name, platform: t.platform, roles: t.roles, durationDays: t.durationDays, dependencies: t.dependencies, type: t.type, notes: t.notes || '' })),
+      tasks: tasks.map(t => ({ id: t.id, name: t.name, platform: t.platform, roles: t.roles, durationDays: t.durationDays, dependencies: t.dependencies, type: t.type, notes: t.notes || '', manualStart: t.manualStart || null })),
       capacity,
       updated_at: new Date().toISOString(),
       updated_by: editorName
