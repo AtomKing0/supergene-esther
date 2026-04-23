@@ -100,7 +100,7 @@ input,select{font-family:inherit;color:inherit}
 
 /* ---------- Gantt ---------- */
 .gantt-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.gantt-scroll{overflow-x:auto;overflow-y:visible}
+.gantt-scroll{overflow:auto;max-height:calc(100vh - 240px);min-height:400px}
 .gantt-inner{display:flex;flex-direction:column;min-width:max-content}
 
 .gantt-header{display:flex;position:sticky;top:0;z-index:5;background:var(--surface2);border-bottom:1px solid var(--border)}
@@ -122,6 +122,20 @@ input,select{font-family:inherit;color:inherit}
 .row-grip{display:inline-block;cursor:grab;color:var(--muted);font-weight:700;padding:0 6px 0 0;user-select:none}
 .row-grip:hover{color:var(--accent)}
 .task-row[draggable="true"]:hover .row-grip{color:var(--text)}
+/* ===== View-only mode (편집 컨트롤 숨김) ===== */
+body.view-only #ctrl-capacity,
+body.view-only #ctrl-actions,
+body.view-only .row-grip,
+body.view-only .edit-btn,
+body.view-only .del-btn,
+body.view-only .duration-chip button,
+body.view-only .cap-rm{display:none!important}
+body.view-only #editor-name{pointer-events:none;opacity:.7}
+body.view-only .duration-chip{padding:1px 7px}
+body.view-only .bar,body.view-only .milestone{cursor:default!important}
+body.view-only .bar-handle{display:none!important}
+body.view-only .task-name{cursor:default}
+body.view-only #role-badge{display:inline-flex!important;background:rgba(100,255,218,.1);border-color:var(--accent);color:var(--accent)}
 .label-cell{width:var(--label-width);flex:0 0 var(--label-width);padding:10px 14px 10px 16px;border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;gap:5px;background:var(--surface);transition:background .15s;position:sticky;left:0;z-index:2}
 .task-name{font-size:.95em;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;cursor:text}
 .task-name .ms-icon{color:var(--red);font-size:1em}
@@ -240,6 +254,7 @@ input,select{font-family:inherit;color:inherit}
     <span class="meta-tag">TASKS <b id="meta-tasks">18</b></span>
     <span class="meta-tag">UPDATED <b id="meta-updated">—</b></span>
     <span class="meta-tag sync-tag local" id="sync-tag"><span class="sync-dot"></span><b id="sync-label">대기</b></span>
+    <span class="meta-tag" id="role-badge" style="display:none;"><b id="role-label">👁 보기 전용</b></span>
     <span class="meta-tag">EDITOR <b id="editor-name" contenteditable="true" title="클릭해 이름 입력">익명</b></span>
   </div>
 </div>
@@ -276,11 +291,11 @@ input,select{font-family:inherit;color:inherit}
         <button data-filter="CG">CG</button>
       </div>
     </div>
-    <div class="ctrl-group">
+    <div class="ctrl-group" id="ctrl-capacity">
       <div class="ctrl-group-label">👥 직군 Capacity (동시 처리) <button class="btn" id="btn-add-role" style="padding:2px 8px;font-size:.78em;margin-left:6px;">+ 직군</button></div>
       <div class="row" id="capacity-panel"></div>
     </div>
-    <div class="ctrl-group" style="justify-content:flex-end">
+    <div class="ctrl-group" id="ctrl-actions" style="justify-content:flex-end">
       <div class="ctrl-group-label">⚙️ 작업</div>
       <div class="row">
         <button class="btn primary" id="btn-add">+ 새 태스크</button>
@@ -339,6 +354,40 @@ input,select{font-family:inherit;color:inherit}
 <div class="footer">SCJ Gantt Planner · 단일 HTML · localStorage 미사용 (테마 외)</div>
 
 <script>
+// ===== Editor 권한 (URL ?editor=esther 또는 localStorage 저장) =====
+// 편집 권한이 있는 사용자만 컨트롤이 보이고, Supabase 저장이 가능합니다.
+const EDITOR_PASS = 'esther';
+const EDITOR_FLAG_LS = 'scj-planner-editor-pass';
+const isEditor = (() => {
+  try {
+    const url = new URL(location.href);
+    const p = url.searchParams.get('editor');
+    if (p === EDITOR_PASS) {
+      try { localStorage.setItem(EDITOR_FLAG_LS, '1'); } catch {}
+      return true;
+    }
+    if (p === 'logout') {
+      try { localStorage.removeItem(EDITOR_FLAG_LS); } catch {}
+      return false;
+    }
+    return localStorage.getItem(EDITOR_FLAG_LS) === '1';
+  } catch { return false; }
+})();
+if (!isEditor) document.body.classList.add('view-only');
+// Badge 표시 — 보기 전용 모드는 CSS에서 자동 표시. 편집 모드는 작은 아이콘만 노출.
+window.addEventListener('DOMContentLoaded', () => {
+  const badge = document.getElementById('role-badge');
+  const label = document.getElementById('role-label');
+  if (!badge || !label) return;
+  if (isEditor) {
+    badge.style.display = 'inline-flex';
+    badge.style.background = 'rgba(255,209,102,.12)';
+    badge.style.borderColor = 'var(--yellow)';
+    badge.style.color = 'var(--yellow)';
+    label.textContent = '✏️ 편집 모드';
+  }
+});
+
 // ===== Theme toggle =====
 document.getElementById('themeToggle').addEventListener('click',function(){
   var l=document.documentElement.getAttribute('data-theme')==='light';
@@ -791,6 +840,7 @@ function renderConflictPanel(conflicts) {
 function attachTaskRowHandlers() {
   document.querySelectorAll('.task-name[data-field="name"]').forEach(el => {
     el.addEventListener('click', () => {
+      if (!isEditor) return;
       if (el.classList.contains('editing')) return;
       el.classList.add('editing');
       const id = el.dataset.id;
@@ -838,6 +888,7 @@ function attachTaskRowHandlers() {
 }
 
 function attachRowReorderHandlers() {
+  if (!isEditor) return;
   let draggedId = null;
   document.querySelectorAll('.task-row[draggable="true"]').forEach(row => {
     row.addEventListener('dragstart', (e) => {
@@ -881,6 +932,7 @@ function attachRowReorderHandlers() {
 }
 
 function attachBarDragHandlers() {
+  if (!isEditor) return;
   const dayW = 32;
   document.querySelectorAll('.bar[data-task], .milestone[data-task]').forEach(barEl => {
     const taskId = barEl.dataset.task;
@@ -1302,6 +1354,7 @@ let _saveTimer = null;
 let _savePending = false;
 function scheduleSave() {
   if (!_sb) return;
+  if (!isEditor) return; // 보기 전용: 저장 안 함
   _savePending = true;
   setSyncState('syncing', '저장 중…');
   clearTimeout(_saveTimer);
