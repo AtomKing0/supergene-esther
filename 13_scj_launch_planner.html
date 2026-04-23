@@ -279,6 +279,7 @@ input,select{font-family:inherit;color:inherit}
       <div class="row">
         <button class="btn primary" id="btn-add">+ 새 태스크</button>
         <button class="btn" id="btn-freemode" title="ON: 의존성 무시하고 자유 배치 / OFF: 의존성 제약 적용">🔓 자유 배치</button>
+        <button class="btn" id="btn-clear-manual" title="모든 태스크/마일스톤의 수동 위치를 지우고 자동 스케줄로 복귀">🧹 수동 위치 초기화</button>
         <button class="btn danger" id="btn-reset">초기 데이터로 리셋</button>
       </div>
     </div>
@@ -373,7 +374,7 @@ let capacity = { ...DEFAULT_CAPACITY };
 let view = 'task';
 let filter = 'all';
 let openConflictPanel = false;
-let freeMode = (function(){ try { const v = localStorage.getItem('scj-planner-freemode'); return v === null ? true : v === '1'; } catch(e){ return true; } })();
+let freeMode = (function(){ try { const v = localStorage.getItem('scj-planner-freemode'); return v === '1'; } catch(e){ return false; } })();
 
 // ===== Utils =====
 function deepClone(x) { return JSON.parse(JSON.stringify(x)); }
@@ -1057,6 +1058,13 @@ document.getElementById('btn-freemode').addEventListener('click', () => {
   freeMode = !freeMode;
   try { localStorage.setItem('scj-planner-freemode', freeMode ? '1' : '0'); } catch(e){}
   refreshFreeModeBtn();
+  render();
+});
+document.getElementById('btn-clear-manual').addEventListener('click', () => {
+  const n = tasks.filter(t => t.manualStart).length;
+  if (n === 0) { alert('수동 위치가 설정된 태스크가 없습니다.'); return; }
+  if (!confirm(`${n}개 태스크/마일스톤의 수동 위치를 모두 지웁니다. 계속할까요?`)) return;
+  tasks.forEach(t => { t.manualStart = null; });
   render();
 });
 document.getElementById('btn-reset').addEventListener('click', () => {
