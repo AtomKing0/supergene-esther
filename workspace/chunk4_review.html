@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>chunk_4 맵 검토 (48개)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f5f6fa; color: #2d3436; padding: 24px; }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #636e72; margin-bottom: 20px; }
+
+  .toolbar {
+    display: flex; gap: 10px; align-items: center; margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 7px 14px; border-radius: 6px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: background 0.15s;
+  }
+  .btn-all    { background: #dfe6e9; color: #2d3436; }
+  .btn-none   { background: #dfe6e9; color: #2d3436; }
+  .btn-remove { background: #ff7675; color: #fff; }
+  .btn-remove:disabled { background: #b2bec3; cursor: not-allowed; }
+  .btn:hover:not(:disabled) { filter: brightness(0.93); }
+
+  .stat-bar {
+    display: flex; gap: 18px; background: #fff; border-radius: 10px;
+    padding: 12px 18px; margin-bottom: 16px; font-size: 13px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  .stat-bar span b { color: #0984e3; }
+  .stat-bar span.checked-count b { color: #d63031; }
+
+  .search-box {
+    padding: 7px 12px; border: 1px solid #dfe6e9; border-radius: 6px;
+    font-size: 13px; width: 240px; outline: none;
+  }
+  .search-box:focus { border-color: #74b9ff; }
+
+  table { width: 100%; border-collapse: collapse; background: #fff;
+          border-radius: 10px; overflow: hidden;
+          box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  thead { background: #2d3436; color: #fff; }
+  th { padding: 10px 12px; text-align: left; font-size: 12px;
+       font-weight: 600; letter-spacing: .4px; white-space: nowrap; }
+  th.num { text-align: right; }
+  td { padding: 9px 12px; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  tr.checked { background: #fff5f5; }
+  tr.hidden { display: none; }
+
+  .cb { width: 16px; height: 16px; cursor: pointer; accent-color: #d63031; }
+
+  .score-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 12px;
+    font-size: 11px; font-weight: 700;
+  }
+  .s-high { background: #fdcb6e; color: #6c5ce7; }
+  .s-mid  { background: #ffeaa7; color: #636e72; }
+  .s-low  { background: #dfe6e9; color: #636e72; }
+
+  .ratio-bar {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ratio-track {
+    width: 60px; height: 6px; background: #dfe6e9; border-radius: 3px; overflow: hidden;
+  }
+  .ratio-fill {
+    height: 100%; border-radius: 3px;
+  }
+  .r-low  { background: #74b9ff; }
+  .r-mid  { background: #00b894; }
+  .r-high { background: #fdcb6e; }
+
+  .removed-list {
+    margin-top: 20px; background: #fff; border-radius: 10px; padding: 16px 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08); display: none;
+  }
+  .removed-list h3 { font-size: 14px; margin-bottom: 10px; color: #d63031; }
+  .removed-list code {
+    display: block; font-size: 12px; color: #636e72; padding: 3px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .removed-list code:last-child { border-bottom: none; }
+
+  .copy-btn {
+    margin-top: 10px; padding: 5px 12px; background: #0984e3; color: #fff;
+    border: none; border-radius: 5px; cursor: pointer; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<h1>chunk_4 맵 검토</h1>
+<p class="subtitle">week_00_launch/chunk_4 · Hard tier · 48개 · 스코어 875~1000</p>
+
+<div class="stat-bar">
+  <span>총 <b id="totalCount">48</b>개</span>
+  <span class="checked-count">선택됨 <b id="checkedCount">0</b>개</span>
+  <span>스코어 avg <b id="avgScore">-</b></span>
+  <span>ratio avg <b id="avgRatio">-</b></span>
+</div>
+
+<div class="toolbar">
+  <input class="search-box" type="text" id="searchInput" placeholder="파일명 검색...">
+  <button class="btn btn-all" onclick="selectAll()">전체 선택</button>
+  <button class="btn btn-none" onclick="selectNone()">전체 해제</button>
+  <button class="btn btn-remove" id="removeBtn" onclick="confirmRemove()" disabled>선택 항목 제거 목록 생성</button>
+</div>
+
+<table id="mapTable">
+  <thead>
+    <tr>
+      <th style="width:36px"></th>
+      <th>#</th>
+      <th>파일명</th>
+      <th class="num">Score</th>
+      <th class="num">Field</th>
+      <th class="num">Depth</th>
+      <th class="num">FaceDown</th>
+      <th class="num">Deck (현재)</th>
+      <th class="num">Clear</th>
+      <th>Ratio</th>
+      <th>Deck 조정</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<div class="removed-list" id="removedList">
+  <h3>제거 목록 (<span id="removedCount">0</span>개)</h3>
+  <div id="removedItems"></div>
+  <button class="copy-btn" onclick="copyList()">클립보드 복사</button>
+</div>
+
+<script>
+const DATA = [{"fname":"Hard_obj_-5052073614748155716_-5052073614748155716.json","field":35,"deck":15,"clear":8,"ratio":0.429,"depth":4,"face_down":28,"score":1000,"stage_id":"CC_0256"},{"fname":"Hard_obj_-2584308845143270527_-2584308845143270527.json","field":35,"deck":11,"clear":8,"ratio":0.314,"depth":4,"face_down":27,"score":990,"stage_id":"CC_0251"},{"fname":"Hard_obj_-5831820742631492957_-5831820742631492957.json","field":34,"deck":11,"clear":8,"ratio":0.324,"depth":4,"face_down":26,"score":960,"stage_id":"CC_0257"},{"fname":"Hard_obj_7710084902751132835_7710084902751132835.json","field":32,"deck":18,"clear":15,"ratio":0.562,"depth":7,"face_down":28,"score":955,"stage_id":"CC_0287"},{"fname":"Hard_obj_-8581124268425051125_-8581124268425051125.json","field":32,"deck":10,"clear":8,"ratio":0.312,"depth":5,"face_down":28,"score":945,"stage_id":"CC_0267"},{"fname":"Hard_obj_3359574634543574482_3359574634543574482.json","field":32,"deck":17,"clear":8,"ratio":0.531,"depth":5,"face_down":28,"score":945,"stage_id":"CC_0276"},{"fname":"Hard_obj_-587834331763827095_-587834331763827095.json","field":32,"deck":18,"clear":12,"ratio":0.562,"depth":6,"face_down":26,"score":930,"stage_id":"CC_0247"},{"fname":"Hard_obj_-440283477310521795_-440283477310521795.json","field":32,"deck":11,"clear":8,"ratio":0.344,"depth":5,"face_down":26,"score":925,"stage_id":"CC_0245"},{"fname":"Hard_obj_-6338097126169537202_-6338097126169537202.json","field":32,"deck":19,"clear":12,"ratio":0.594,"depth":5,"face_down":26,"score":925,"stage_id":"CC_0259"},{"fname":"Hard_obj_-7292222822313839875_-7292222822313839875.json","field":32,"deck":10,"clear":5,"ratio":0.312,"depth":5,"face_down":26,"score":925,"stage_id":"CC_0264"},{"fname":"Hard_obj_-2535467368716262032_-2535467368716262032.json","field":31,"deck":10,"clear":6,"ratio":0.323,"depth":6,"face_down":26,"score":910,"stage_id":"CC_0250"},{"fname":"Hard_obj_5692771625035672355_5692771625035672355.json","field":31,"deck":11,"clear":6,"ratio":0.355,"depth":6,"face_down":26,"score":910,"stage_id":"CC_0280"},{"fname":"Hard_obj_8345808346071724063_8345808346071724063.json","field":31,"deck":15,"clear":8,"ratio":0.484,"depth":6,"face_down":26,"score":910,"stage_id":"CC_0290"},{"fname":"Hard_obj_-4476877194344761137_-4476877194344761137.json","field":32,"deck":10,"clear":8,"ratio":0.312,"depth":5,"face_down":24,"score":905,"stage_id":"CC_0254"},{"fname":"Hard_obj_-6858756943211057750_-6858756943211057750.json","field":31,"deck":10,"clear":6,"ratio":0.323,"depth":7,"face_down":25,"score":905,"stage_id":"CC_0263"},{"fname":"Hard_obj_-7527138674885590045_-7527138674885590045.json","field":30,"deck":20,"clear":13,"ratio":0.667,"depth":9,"face_down":26,"score":905,"stage_id":"CC_0265"},{"fname":"Hard_obj_2408438036868712511_2408438036868712511.json","field":31,"deck":10,"clear":6,"ratio":0.323,"depth":5,"face_down":26,"score":905,"stage_id":"CC_0272"},{"fname":"Hard_obj_7114691057902189312_7114691057902189312.json","field":31,"deck":11,"clear":6,"ratio":0.355,"depth":5,"face_down":26,"score":905,"stage_id":"CC_0283"},{"fname":"Hard_obj_2614617043532549192_2614617043532549192.json","field":31,"deck":10,"clear":6,"ratio":0.323,"depth":6,"face_down":25,"score":900,"stage_id":"CC_0274"},{"fname":"Hard_obj_-4930359017288338014_-4930359017288338014.json","field":30,"deck":10,"clear":8,"ratio":0.333,"depth":7,"face_down":26,"score":895,"stage_id":"CC_0255"},{"fname":"Hard_obj_3015781939616589612_3015781939616589612.json","field":30,"deck":10,"clear":8,"ratio":0.333,"depth":7,"face_down":26,"score":895,"stage_id":"CC_0275"},{"fname":"Hard_obj_269226819039724544_269226819039724544.json","field":31,"deck":10,"clear":6,"ratio":0.323,"depth":6,"face_down":24,"score":890,"stage_id":"CC_0269"},{"fname":"Hard_obj_4825420391306583281_4825420391306583281.json","field":30,"deck":20,"clear":10,"ratio":0.667,"depth":6,"face_down":26,"score":890,"stage_id":"CC_0278"},{"fname":"Hard_obj_7510168185525752238_7510168185525752238.json","field":31,"deck":10,"clear":8,"ratio":0.323,"depth":4,"face_down":25,"score":890,"stage_id":"CC_0285"},{"fname":"Hard_obj_-4085239007266526198_-4085239007266526198.json","field":32,"deck":10,"clear":8,"ratio":0.312,"depth":5,"face_down":22,"score":885,"stage_id":"CC_0252"},{"fname":"Hard_obj_-5936488566595491839_-5936488566595491839.json","field":30,"deck":11,"clear":7,"ratio":0.367,"depth":7,"face_down":25,"score":885,"stage_id":"CC_0258"},{"fname":"Hard_obj_6482808623463430949_6482808623463430949.json","field":31,"deck":13,"clear":10,"ratio":0.419,"depth":5,"face_down":24,"score":885,"stage_id":"CC_0282"},{"fname":"Hard_obj_7150741962077567140_7150741962077567140.json","field":32,"deck":10,"clear":8,"ratio":0.312,"depth":5,"face_down":22,"score":885,"stage_id":"CC_0284"},{"fname":"Hard_obj_8231807778343883359_8231807778343883359.json","field":30,"deck":10,"clear":5,"ratio":0.333,"depth":7,"face_down":25,"score":885,"stage_id":"CC_0289"},{"fname":"Hard_obj_-476816179683867428_-476816179683867428.json","field":30,"deck":11,"clear":7,"ratio":0.367,"depth":6,"face_down":25,"score":880,"stage_id":"CC_0246"},{"fname":"Hard_obj_-6620684931497034085_-6620684931497034085.json","field":31,"deck":18,"clear":9,"ratio":0.581,"depth":4,"face_down":24,"score":880,"stage_id":"CC_0260"},{"fname":"Hard_obj_-6826458782616517198_-6826458782616517198.json","field":30,"deck":22,"clear":14,"ratio":0.733,"depth":6,"face_down":25,"score":880,"stage_id":"CC_0262"},{"fname":"Hard_obj_-8085993676552886899_-8085993676552886899.json","field":31,"deck":10,"clear":5,"ratio":0.323,"depth":6,"face_down":23,"score":880,"stage_id":"CC_0266"},{"fname":"Hard_obj_-9070411430884785648_-9070411430884785648.json","field":31,"deck":10,"clear":8,"ratio":0.323,"depth":4,"face_down":24,"score":880,"stage_id":"CC_0268"},{"fname":"Hard_obj_1051189589259311343_1051189589259311343.json","field":32,"deck":12,"clear":4,"ratio":0.375,"depth":4,"face_down":22,"score":880,"stage_id":"CC_0270"},{"fname":"Hard_obj_2136597098790465194_2136597098790465194.json","field":30,"deck":10,"clear":6,"ratio":0.333,"depth":6,"face_down":25,"score":880,"stage_id":"CC_0271"},{"fname":"Hard_obj_2519617144431508815_2519617144431508815.json","field":30,"deck":10,"clear":8,"ratio":0.333,"depth":8,"face_down":24,"score":880,"stage_id":"CC_0273"},{"fname":"Hard_obj_3583963274032080926_3583963274032080926.json","field":31,"deck":10,"clear":8,"ratio":0.323,"depth":6,"face_down":23,"score":880,"stage_id":"CC_0277"},{"fname":"Hard_obj_5817092195126959395_5817092195126959395.json","field":32,"deck":20,"clear":13,"ratio":0.625,"depth":4,"face_down":22,"score":880,"stage_id":"CC_0281"},{"fname":"Hard_obj_-2303210174799019365_-2303210174799019365.json","field":29,"deck":17,"clear":13,"ratio":0.586,"depth":7,"face_down":26,"score":875,"stage_id":"CC_0248"},{"fname":"Hard_obj_-2397008531233033957_-2397008531233033957.json","field":30,"deck":20,"clear":15,"ratio":0.667,"depth":7,"face_down":24,"score":875,"stage_id":"CC_0249"},{"fname":"Hard_obj_-4367956446511700689_-4367956446511700689.json","field":29,"deck":10,"clear":6,"ratio":0.345,"depth":9,"face_down":25,"score":875,"stage_id":"CC_0253"},{"fname":"Hard_obj_-6775005880827077657_-6775005880827077657.json","field":30,"deck":14,"clear":10,"ratio":0.467,"depth":7,"face_down":24,"score":875,"stage_id":"CC_0261"},{"fname":"Hard_obj_4967511773866997684_4967511773866997684.json","field":30,"deck":12,"clear":9,"ratio":0.4,"depth":7,"face_down":24,"score":875,"stage_id":"CC_0279"},{"fname":"Hard_obj_7629362497685869891_7629362497685869891.json","field":31,"deck":10,"clear":5,"ratio":0.323,"depth":5,"face_down":23,"score":875,"stage_id":"CC_0286"},{"fname":"Hard_obj_7749217512935342267_7749217512935342267.json","field":30,"deck":13,"clear":8,"ratio":0.433,"depth":7,"face_down":24,"score":875,"stage_id":"CC_0288"},{"fname":"Hard_obj_8414211997008221011_8414211997008221011.json","field":30,"deck":17,"clear":14,"ratio":0.567,"depth":7,"face_down":24,"score":875,"stage_id":"CC_0291"},{"fname":"Hard_obj_9123945858537713509_9123945858537713509.json","field":32,"deck":10,"clear":6,"ratio":0.312,"depth":5,"face_down":21,"score":875,"stage_id":"CC_0292"}];
+
+function scoreClass(s) {
+  if (s >= 950) return 's-high';
+  if (s >= 900) return 's-mid';
+  return 's-low';
+}
+function ratioClass(r) {
+  if (r >= 0.60) return 'r-high';
+  if (r >= 0.40) return 'r-mid';
+  return 'r-low';
+}
+
+// Hard tier bounds: ratio > 0.30 (min), ratio <= 0.75 (max)
+const RATIO_MIN = 0.30, RATIO_MAX = 0.75;
+
+function deckAdjust(d) {
+  const minDeck = Math.floor(d.field * RATIO_MIN) + 1;  // ratio > 0.30
+  const maxDeck = Math.floor(d.field * RATIO_MAX);       // ratio <= 0.75
+  const cur = d.deck;
+
+  if (cur < minDeck) {
+    return `<span style="background:#ff7675;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px">
+      ${cur} → <b>${minDeck}</b> <span style="font-weight:400;opacity:.85">(ratio 낮음)</span>
+    </span>`;
+  }
+  if (cur > maxDeck) {
+    return `<span style="background:#fdcb6e;color:#2d3436;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px">
+      ${cur} → <b>${maxDeck}</b> <span style="font-weight:400;opacity:.75">(ratio 높음)</span>
+    </span>`;
+  }
+  return `<span style="color:#00b894;font-size:12px;font-weight:700">✓ OK</span>
+    <span style="font-size:11px;color:#b2bec3;margin-left:4px">범위 ${minDeck}~${maxDeck}</span>`;
+}
+
+function render() {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  DATA.forEach((d, i) => {
+    const tr = document.createElement('tr');
+    tr.id = 'row_' + i;
+    tr.innerHTML = `
+      <td><input class="cb" type="checkbox" onchange="onCheck(${i})" id="cb_${i}"></td>
+      <td>${i+1}</td>
+      <td>
+        <span style="display:inline-block;background:#6c5ce7;color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;margin-right:7px;font-family:monospace">${d.stage_id}</span>
+        <span style="font-size:11px;color:#636e72;font-family:monospace">${d.fname.replace('Hard_obj_','').replace('.json','')}</span>
+      </td>
+      <td class="num"><span class="score-badge ${scoreClass(d.score)}">${d.score}</span></td>
+      <td class="num">${d.field}</td>
+      <td class="num">${d.depth}</td>
+      <td class="num">${d.face_down}</td>
+      <td class="num">${d.deck}</td>
+      <td class="num">${d.clear}</td>
+      <td>
+        <div class="ratio-bar">
+          <div class="ratio-track"><div class="ratio-fill ${ratioClass(d.ratio)}" style="width:${d.ratio/0.75*100}%"></div></div>
+          <span style="font-size:12px">${d.ratio.toFixed(3)}</span>
+        </div>
+      </td>
+      <td>${deckAdjust(d)}</td>`;
+    tbody.appendChild(tr);
+  });
+  updateStats();
+}
+
+function onCheck(i) {
+  const tr = document.getElementById('row_' + i);
+  tr.classList.toggle('checked', document.getElementById('cb_' + i).checked);
+  updateStats();
+}
+
+function updateStats() {
+  const checked = DATA.filter((_, i) => document.getElementById('cb_' + i)?.checked);
+  document.getElementById('checkedCount').textContent = checked.length;
+  document.getElementById('removeBtn').disabled = checked.length === 0;
+  const visible = DATA.filter((_, i) => {
+    const row = document.getElementById('row_' + i);
+    return row && !row.classList.contains('hidden');
+  });
+  const avgS = visible.length ? (visible.reduce((a,d)=>a+d.score,0)/visible.length).toFixed(0) : '-';
+  const avgR = visible.length ? (visible.reduce((a,d)=>a+d.ratio,0)/visible.length).toFixed(3) : '-';
+  document.getElementById('avgScore').textContent = avgS;
+  document.getElementById('avgRatio').textContent = avgR;
+  document.getElementById('totalCount').textContent = visible.length;
+}
+
+function selectAll() {
+  DATA.forEach((_, i) => {
+    const cb = document.getElementById('cb_' + i);
+    const row = document.getElementById('row_' + i);
+    if (cb && !row.classList.contains('hidden')) cb.checked = true;
+    if (row) row.classList.toggle('checked', cb.checked);
+  });
+  updateStats();
+}
+
+function selectNone() {
+  DATA.forEach((_, i) => {
+    const cb = document.getElementById('cb_' + i);
+    if (cb) cb.checked = false;
+    const row = document.getElementById('row_' + i);
+    if (row) row.classList.remove('checked');
+  });
+  updateStats();
+}
+
+function confirmRemove() {
+  const items = DATA.filter((_, i) => document.getElementById('cb_' + i)?.checked);
+  const container = document.getElementById('removedItems');
+  container.innerHTML = items.map(d => `<code>${d.fname}</code>`).join('');
+  document.getElementById('removedCount').textContent = items.length;
+  document.getElementById('removedList').style.display = 'block';
+  document.getElementById('removedList').scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyList() {
+  const items = DATA.filter((_, i) => document.getElementById('cb_' + i)?.checked);
+  const text = items.map(d => d.fname).join('\n');
+  navigator.clipboard.writeText(text).then(() => alert('클립보드에 복사됐습니다.'));
+}
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  DATA.forEach((d, i) => {
+    const row = document.getElementById('row_' + i);
+    if (!row) return;
+    row.classList.toggle('hidden', q && !d.fname.toLowerCase().includes(q));
+  });
+  updateStats();
+});
+
+render();
+</script>
+</body>
+</html>

@@ -434,6 +434,66 @@ cc_path = f"CC_DATA/level_data/{cc_name}"
 
 ---
 
+## deckCount 운영 밸런스 (2026-04-20 확정)
+
+### DIFFICULTY_TIER 기준
+실제 게임 내 tier는 맵의 `mapScore`로 결정 (`workspace/balance_sheet/difficulty_tier.json`):
+
+| tier | score 범위 | hammer | help_rate |
+|------|-----------|--------|-----------|
+| Tutorial | 0 | 1 | 10000 |
+| Normal | 1~700 | 1 | 4875 |
+| Hard | 701~900 | 2 | 3000 |
+| Super Hard | 901~1400 | 3 | 625 |
+
+**schedule 폴더 내 파일명 tier 접두사(VeryEasy/Easy/...) 는 무의미** — 실제 tier는 mapScore로만 결정.
+
+### deck/total 비율 분포 (CSV _0609 실측, 2026-04-20)
+| tier | N | median | p75 | p90 | max |
+|------|---|--------|-----|-----|-----|
+| Normal | 130 | 0.55 | 0.64 | 0.65 | 0.67 |
+| Hard | 118 | 0.42 | 0.54 | 0.56 | 0.57 |
+| Super Hard | 22 | 0.39 | 0.53 | 0.53 | 0.53 |
+
+### 과다/과소 감지 공식
+```python
+ratio = deckCount / totalCardCount
+if ratio > tier_p75:
+    suggested_deck = max(3, round(totalCardCount * tier_p75))  # 메인 제안 (완화)
+    floor_deck = max(3, round(totalCardCount * tier_median))   # 공격적 대안
+if ratio < tier_median * 0.5:
+    suggested_deck = max(3, round(totalCardCount * tier_median))
+```
+- CR_a<30% + ratio>p90 → 맵 구조 블로킹 가능성 별도 검토
+- 1단위 차이는 플레이 체감 미미 (policy plateau 도달 시 마무리)
+
+### JSON 싱크 원칙
+- **CSV가 진실의 원천** — `workspace/archive/solitaire-tripeaks-stages-YYYY-MM-DD*.csv` 최신 버전
+- **JSON 3개 사본(test/schedule/level_data)은 CSV 기준 동기화**
+- **obj_id로 매칭** (파일명 tier 접두사가 schedule에서 재분류돼 다를 수 있음)
+- `randomCardCount`만 수정, `clearRandomCardCount`는 `cr≥new_rc`일 때만 `max(1, new_rc-1)` 보정 (cr 시트 미사용)
+- `_excluded/`, `temp_unchecked/` 제외
+
+### 서버 엔드포인트 (docs/server.py, port 8080)
+- `/api/apply-deck-suggestions` — 체크 안 된 item의 JSON에 new_deck 적용
+- `/api/organize-unchecked-maps` — 체크 안 된 맵 JSON을 `schedule/week_00_launch/temp_unchecked/`로 복사
+- `/api/save-deck-feedback` — 선택 저장 (`deck_feedback.json`)
+
+### 체크리스트 HTML 패턴
+산출물 위치: `solitaire-maps/deck_*_checklist.html` 계열
+- localStorage 키 버전별 분리 (`deck_unified_v2`, `deck_over_review_v3`, `deck_normal_v5` 등)
+- 각 행: old → p75 제안(클릭 복사+체크) + median 보조 pill + 직접 입력칸
+- `⚙️ JSON 적용` 버튼 / `📁 체크 안 된 맵 정리` 버튼 / 진행률 표시
+
+### iteration 사이클
+1. CSV 신규 버전 수신 (플레이 테스트 반영)
+2. 이전 CSV 대비 변화 분석
+3. JSON 싱크 체크 → 불일치 건 CSV 값으로 일괄 업데이트
+4. 잔존 과다 후보 분석 → 체크리스트 생성 → 사용자 검토
+5. 수용된 값이 다음 CSV 버전에 반영 → 반복
+
+---
+
 ## ⛔ NOT-TO-DO LIST
 
 ### 난이도 분류

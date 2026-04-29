@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>deckCount 과다 맵 점검</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,sans-serif;background:#0f0f13;color:#e0e0e0;padding:12px}
+header{background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:15px}
+.badge{background:#ff9800;color:#000;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700}
+.tag{background:#2e2e50;color:#aac8ff;padding:3px 9px;border-radius:5px;font-size:11px;font-family:monospace}
+.note{color:#888;font-size:11px}
+.prog{margin-left:auto;font-size:13px}.prog strong{color:#4caf50;font-size:16px}
+.tier-sec{background:#1a1a24;border:1px solid #2a2a3a;border-radius:10px;margin-bottom:10px;overflow:hidden}
+.tier-hd{padding:10px 14px;display:flex;gap:12px;align-items:center;cursor:pointer;user-select:none}
+.tier-hd:hover{background:#22222e}
+.tier-lbl{font-weight:800;padding:3px 12px;border-radius:5px;color:#000;font-size:12px}
+.tier-cnt{background:#2a2a3a;color:#aaa;padding:2px 8px;border-radius:10px;font-size:11px}
+.tier-prog{margin-left:auto;color:#4caf50;font-size:12px;font-family:monospace}
+.row{display:flex;align-items:center;padding:10px 16px;border-top:1px solid #1e1e2a;gap:12px;flex-wrap:wrap}
+.row:hover{background:#1e1e2c}
+.row.done{opacity:.35}.row.done .sid{text-decoration:line-through;color:#555}
+.chk{width:20px;height:20px;border:2px solid #444;border-radius:5px;flex-shrink:0;cursor:pointer;position:relative}
+.chk.on{background:#4caf50;border-color:#4caf50}
+.chk.on::after{content:'';position:absolute;left:5px;top:1px;width:6px;height:12px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.sid{font-family:monospace;font-weight:700;color:#7ec8ff;min-width:78px;font-size:13px}
+.score{background:#2e2e50;color:#aac8ff;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;min-width:58px;text-align:center}
+.deck{display:flex;align-items:center;gap:5px;font-family:monospace;font-size:14px;min-width:130px}
+.deck .lbl{color:#666;font-size:10px;margin-right:4px}
+.deck .old{color:#ff9988}
+.deck .arr{color:#555}
+.deck .new{background:#2a3a1e;color:#ffe0aa;padding:3px 12px;border-radius:4px;font-weight:700;cursor:pointer;box-shadow:0 0 0 1px #80803e}
+.deck .new:hover{background:#4a4a2e;color:#fff3cc}
+.metric{font-family:monospace;font-size:10px;color:#888;min-width:170px}
+.metric .m-r{color:#ff9988;font-weight:700}
+.metric .m-t{color:#aaa}
+.fn{font-family:monospace;font-size:10px;color:#666;margin-left:auto;max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.fn:hover{color:#aac8ff}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#23233a;border:1px solid #4caf50;color:#4caf50;padding:8px 20px;border-radius:8px;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999}
+#toast.show{opacity:1}
+.ctrl{display:flex;gap:6px;margin-bottom:12px;background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 12px}
+.btn{background:#23233a;border:1px solid #3a3a55;color:#aaa;padding:4px 12px;border-radius:5px;font-size:12px;cursor:pointer}
+.btn.danger{color:#ff8888}
+</style></head><body>
+<header>
+  <h1>⚠️ deckCount 과다 맵 점검</h1>
+  <span class="badge">23개 과다 의심</span>
+  <span class="tag">DIFFICULTY_TIER 기준</span>
+  <span class="note">각 tier 내 deck/total 비율 p90 초과 → p75 수준으로 감축 제안</span>
+  <span class="prog">완료: <strong id="done">0</strong> / 23</span>
+</header>
+<div class="ctrl">
+  <button class="btn" onclick="expand(1)">모두 펼침</button>
+  <button class="btn" onclick="expand(0)">모두 접음</button>
+  <button class="btn danger" onclick="reset()">초기화</button>
+</div>
+
+<div class="tier-sec"><div class="tier-hd" onclick="toggleSec(this)">
+<span class="tier-lbl" style="background:#ffc107">Normal</span>
+<span class="tier-cnt">12개</span>
+<span class="note">median ratio 0.55 / p75 0.70 / p90 0.78</span>
+<span class="tier-prog" data-tier="Normal">0/12</span><span style="color:#555">▼</span></div><div class="tier-body">
+<div class="row" id="row-CC_0151">
+<div class="chk" onclick="toggle('CC_0151')"></div>
+<div class="sid">CC_0151</div>
+<div class="score">score 555</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">17</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0151','13')">13</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-4)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 19</span> | 
+  <span class="m-r">ratio 0.89</span> | 
+  excess +63%
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_1989463773178151793_1989463773178151793.json')" title="VeryEasy_obj_1989463773178151793_1989463773178151793.json">VeryEasy_obj_1989463773178151793_1989463773178151793.json</div>
+</div>
+<div class="row" id="row-CC_0064">
+<div class="chk" onclick="toggle('CC_0064')"></div>
+<div class="sid">CC_0064</div>
+<div class="score">score 665</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">19</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0064','16')">16</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-3)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 23</span> | 
+  <span class="m-r">ratio 0.83</span> | 
+  excess +50%
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-4759351362199196674_-4759351362199196674.json')" title="VeryEasy_obj_-4759351362199196674_-4759351362199196674.json">VeryEasy_obj_-4759351362199196674_-4759351362199196674.json</div>
+</div>
+<div class="row" id="row-CC_0239">
+<div class="chk" onclick="toggle('CC_0239')"></div>
+<div class="sid">CC_0239</div>
+<div class="score">score 570</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">16</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0239','14')">14</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-2)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 20</span> | 
+  <span class="m-r">ratio 0.80</span> | 
+  excess +45%
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_8183832228153130394_8183832228153130394.json')" title="VeryEasy_obj_8183832228153130394_8183832228153130394.json">VeryEasy_obj_8183832228153130394_8183832228153130394.json</div>
+</div>
+<div class="row" id="row-CC_0158">
+<div class="chk" onclick="toggle('CC_0158')"></div>
+<div class="sid">CC_0158</div>
+<div class="score">score 530</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">16</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0158','14')">14</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-2)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 20</span> | 
+  <span class="m-r">ratio 0.80</span> | 
+  excess +45%
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_5796040279894980159_5796040279894980159.json')" title="VeryEasy_obj_5796040279894980159_5796040279894980159.json">VeryEasy_obj_5796040279894980159_5796040279894980159.json</div>
+</div>
+<div class="row" id="row-CC_0087">
+<div class="chk" onclick="toggle('CC_0087')"></div>
+<div class="sid">CC_0087</div>
+<div class="score">score 580</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">16</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0087','14')">14</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-2)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 20</span> | 
+  <span class="m-r">ratio 0.80</span> | 
+  excess +45%
+</div>
+<div class="fn" onclick="copyText('Easy_obj_-1212175505283961025_-1212175505283961025.json')" title="Easy_obj_-1212175505283961025_-1212175505283961025.json">Easy_obj_-1212175505283961025_-1212175505283961025.json</div>
+</div>
+<div class="row" id="row-CC_0217">
+<div class="chk" onclick="toggle('CC_0217')"></div>
+<div class="sid">CC_0217</div>
+<div class="score">score 435</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">12</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0217','10')">10</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-2)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 15</span> | 
+  <span class="m-r">ratio 0.80</span> | 
+  excess +45%
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-3051279091057409727_-3051279091057409727.json')" title="VeryEasy_obj_-3051279091057409727_-3051279091057409727.json">VeryEasy_obj_-3051279091057409727_-3051279091057409727.json</div>
+</div>
+<div class="row" id="row-CC_0061">
+<div class="chk" onclick="toggle('CC_0061')"></div>
+<div class="sid">CC_0061</div>
+<div class="score">score 505</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">16</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0061','14')">14</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-2)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 20</span> | 
+  <span class="m-r">ratio 0.80</span> | 
+  excess +45%
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-3534925251702251949_-3534925251702251949.json')" title="VeryEasy_obj_-3534925251702251949_-3534925251702251949.json">VeryEasy_obj_-3534925251702251949_-3534925251702251949.json</div>
+</div>
+<div class="row" id="row-CC_0077">
+<div class="chk" onclick="toggle('CC_0077')"></div>
+<div class="sid">CC_0077</div>
+<div class="score">score 550</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">16</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0077','14')">14</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-2)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 20</span> | 
+  <span class="m-r">ratio 0.80</span> | 
+  excess +45%
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_5427339981448508288_5427339981448508288.json')" title="VeryEasy_obj_5427339981448508288_5427339981448508288.json">VeryEasy_obj_5427339981448508288_5427339981448508288.json</div>
+</div>
+<div class="row" id="row-CC_0203">
+<div class="chk" onclick="toggle('CC_0203')"></div>
+<div class="sid">CC_0203</div>
+<div class="score">score 655</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">20</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0203','18')">18</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-2)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 25</span> | 
+  <span class="m-r">ratio 0.80</span> | 
+  excess +45%
+</div>
+<div class="fn" onclick="copyText('Normal_obj_3385651925592553098_3385651925592553098.json')" title="Normal_obj_3385651925592553098_3385651925592553098.json">Normal_obj_3385651925592553098_3385651925592553098.json</div>
+</div>
+<div class="row" id="row-CC_0110">
+<div class="chk" onclick="toggle('CC_0110')"></div>
+<div class="sid">CC_0110</div>
+<div class="score">score 630</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">19</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0110','17')">17</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-2)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 24</span> | 
+  <span class="m-r">ratio 0.79</span> | 
+  excess +44%
+</div>
+<div class="fn" onclick="copyText('Easy_obj_8923723070358247254_8923723070358247254.json')" title="Easy_obj_8923723070358247254_8923723070358247254.json">Easy_obj_8923723070358247254_8923723070358247254.json</div>
+</div>
+<div class="row" id="row-CC_0074">
+<div class="chk" onclick="toggle('CC_0074')"></div>
+<div class="sid">CC_0074</div>
+<div class="score">score 540</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">15</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0074','13')">13</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-2)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 19</span> | 
+  <span class="m-r">ratio 0.79</span> | 
+  excess +44%
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_2406463454516795606_2406463454516795606.json')" title="VeryEasy_obj_2406463454516795606_2406463454516795606.json">VeryEasy_obj_2406463454516795606_2406463454516795606.json</div>
+</div>
+<div class="row" id="row-CC_0168">
+<div class="chk" onclick="toggle('CC_0168')"></div>
+<div class="sid">CC_0168</div>
+<div class="score">score 670</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">18</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0168','16')">16</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-2)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 23</span> | 
+  <span class="m-r">ratio 0.78</span> | 
+  excess +42%
+</div>
+<div class="fn" onclick="copyText('Easy_obj_-3533632972129963899_-3533632972129963899.json')" title="Easy_obj_-3533632972129963899_-3533632972129963899.json">Easy_obj_-3533632972129963899_-3533632972129963899.json</div>
+</div>
+</div></div>
+<div class="tier-sec"><div class="tier-hd" onclick="toggleSec(this)">
+<span class="tier-lbl" style="background:#ff5722">Hard</span>
+<span class="tier-cnt">9개</span>
+<span class="note">median ratio 0.40 / p75 0.57 / p90 0.67</span>
+<span class="tier-prog" data-tier="Hard">0/9</span><span style="color:#555">▼</span></div><div class="tier-body">
+<div class="row" id="row-CC_0046">
+<div class="chk" onclick="toggle('CC_0046')"></div>
+<div class="sid">CC_0046</div>
+<div class="score">score 805</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">22</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0046','16')">16</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-6)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 28</span> | 
+  <span class="m-r">ratio 0.79</span> | 
+  excess +96%
+</div>
+<div class="fn" onclick="copyText('Normal_obj_3867808652033317403_3867808652033317403.json')" title="Normal_obj_3867808652033317403_3867808652033317403.json">Normal_obj_3867808652033317403_3867808652033317403.json</div>
+</div>
+<div class="row" id="row-CC_0204">
+<div class="chk" onclick="toggle('CC_0204')"></div>
+<div class="sid">CC_0204</div>
+<div class="score">score 740</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">21</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0204','15')">15</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-6)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 27</span> | 
+  <span class="m-r">ratio 0.78</span> | 
+  excess +94%
+</div>
+<div class="fn" onclick="copyText('Normal_obj_4464694600886160020_4464694600886160020.json')" title="Normal_obj_4464694600886160020_4464694600886160020.json">Normal_obj_4464694600886160020_4464694600886160020.json</div>
+</div>
+<div class="row" id="row-CC_0101">
+<div class="chk" onclick="toggle('CC_0101')"></div>
+<div class="sid">CC_0101</div>
+<div class="score">score 715</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">19</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0101','14')">14</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-5)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 25</span> | 
+  <span class="m-r">ratio 0.76</span> | 
+  excess +90%
+</div>
+<div class="fn" onclick="copyText('Easy_obj_-9198569455254594242_-9198569455254594242.json')" title="Easy_obj_-9198569455254594242_-9198569455254594242.json">Easy_obj_-9198569455254594242_-9198569455254594242.json</div>
+</div>
+<div class="row" id="row-CC_0013">
+<div class="chk" onclick="toggle('CC_0013')"></div>
+<div class="sid">CC_0013</div>
+<div class="score">score 705</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">18</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0013','14')">14</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-4)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 24</span> | 
+  <span class="m-r">ratio 0.75</span> | 
+  excess +88%
+</div>
+<div class="fn" onclick="copyText('Easy_obj_-5589298110739892495_-5589298110739892495.json')" title="Easy_obj_-5589298110739892495_-5589298110739892495.json">Easy_obj_-5589298110739892495_-5589298110739892495.json</div>
+</div>
+<div class="row" id="row-CC_0024">
+<div class="chk" onclick="toggle('CC_0024')"></div>
+<div class="sid">CC_0024</div>
+<div class="score">score 785</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">20</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0024','15')">15</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-5)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 27</span> | 
+  <span class="m-r">ratio 0.74</span> | 
+  excess +85%
+</div>
+<div class="fn" onclick="copyText('Easy_obj_4100481430150713381_4100481430150713381.json')" title="Easy_obj_4100481430150713381_4100481430150713381.json">Easy_obj_4100481430150713381_4100481430150713381.json</div>
+</div>
+<div class="row" id="row-CC_0262">
+<div class="chk" onclick="toggle('CC_0262')"></div>
+<div class="sid">CC_0262</div>
+<div class="score">score 880</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">22</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0262','17')">17</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-5)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 30</span> | 
+  <span class="m-r">ratio 0.73</span> | 
+  excess +83%
+</div>
+<div class="fn" onclick="copyText('Hard_obj_-6826458782616517198_-6826458782616517198.json')" title="Hard_obj_-6826458782616517198_-6826458782616517198.json">Hard_obj_-6826458782616517198_-6826458782616517198.json</div>
+</div>
+<div class="row" id="row-CC_0030">
+<div class="chk" onclick="toggle('CC_0030')"></div>
+<div class="sid">CC_0030</div>
+<div class="score">score 745</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">18</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0030','14')">14</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-4)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 25</span> | 
+  <span class="m-r">ratio 0.72</span> | 
+  excess +80%
+</div>
+<div class="fn" onclick="copyText('Easy_obj_8221025276977201725_8221025276977201725.json')" title="Easy_obj_8221025276977201725_8221025276977201725.json">Easy_obj_8221025276977201725_8221025276977201725.json</div>
+</div>
+<div class="row" id="row-CC_0191">
+<div class="chk" onclick="toggle('CC_0191')"></div>
+<div class="sid">CC_0191</div>
+<div class="score">score 900</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">22</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0191','18')">18</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-4)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 31</span> | 
+  <span class="m-r">ratio 0.71</span> | 
+  excess +77%
+</div>
+<div class="fn" onclick="copyText('Hard_obj_5393874784883519988_5393874784883519988.json')" title="Hard_obj_5393874784883519988_5393874784883519988.json">Hard_obj_5393874784883519988_5393874784883519988.json</div>
+</div>
+<div class="row" id="row-CC_0205">
+<div class="chk" onclick="toggle('CC_0205')"></div>
+<div class="sid">CC_0205</div>
+<div class="score">score 800</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">19</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0205','15')">15</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-4)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 27</span> | 
+  <span class="m-r">ratio 0.70</span> | 
+  excess +76%
+</div>
+<div class="fn" onclick="copyText('Normal_obj_5266965173792630696_5266965173792630696.json')" title="Normal_obj_5266965173792630696_5266965173792630696.json">Normal_obj_5266965173792630696_5266965173792630696.json</div>
+</div>
+</div></div>
+<div class="tier-sec"><div class="tier-hd" onclick="toggleSec(this)">
+<span class="tier-lbl" style="background:#9c27b0">Super Hard</span>
+<span class="tier-cnt">2개</span>
+<span class="note">median ratio 0.35 / p75 0.53 / p90 0.56</span>
+<span class="tier-prog" data-tier="Super Hard">0/2</span><span style="color:#555">▼</span></div><div class="tier-body">
+<div class="row" id="row-CC_0265">
+<div class="chk" onclick="toggle('CC_0265')"></div>
+<div class="sid">CC_0265</div>
+<div class="score">score 905</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">20</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0265','16')">16</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-4)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 30</span> | 
+  <span class="m-r">ratio 0.67</span> | 
+  excess +91%
+</div>
+<div class="fn" onclick="copyText('Hard_obj_-7527138674885590045_-7527138674885590045.json')" title="Hard_obj_-7527138674885590045_-7527138674885590045.json">Hard_obj_-7527138674885590045_-7527138674885590045.json</div>
+</div>
+<div class="row" id="row-CC_0259">
+<div class="chk" onclick="toggle('CC_0259')"></div>
+<div class="sid">CC_0259</div>
+<div class="score">score 925</div>
+<div class="deck">
+  <span class="lbl">deck</span>
+  <span class="old">19</span><span class="arr">→</span><span class="new" onclick="copyAndCheck('CC_0259','17')">17</span>
+  <span style="color:#aa6666;font-size:10px;margin-left:4px">(-2)</span>
+</div>
+<div class="metric">
+  <span class="m-t">total 32</span> | 
+  <span class="m-r">ratio 0.59</span> | 
+  excess +70%
+</div>
+<div class="fn" onclick="copyText('Hard_obj_-6338097126169537202_-6338097126169537202.json')" title="Hard_obj_-6338097126169537202_-6338097126169537202.json">Hard_obj_-6338097126169537202_-6338097126169537202.json</div>
+</div>
+</div></div>
+
+<div id="toast"></div>
+<script>
+const KEY='deck_excess_v1';
+const state=JSON.parse(localStorage.getItem(KEY)||'{}');
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1200);}
+function updateProg(){
+  document.getElementById('done').textContent=document.querySelectorAll('.row.done').length;
+  document.querySelectorAll('.tier-prog').forEach(el=>{
+    const sec=el.closest('.tier-sec');
+    el.textContent=`${sec.querySelectorAll('.row.done').length}/${sec.querySelectorAll('.row').length}`;
+  });
+}
+function toggle(sid){
+  const row=document.getElementById('row-'+sid);
+  const c=row.querySelector('.chk');
+  if(row.classList.contains('done')){row.classList.remove('done');c.classList.remove('on');delete state[sid];}
+  else{row.classList.add('done');c.classList.add('on');state[sid]=true;}
+  save();updateProg();
+}
+function copyAndCheck(sid,val){
+  navigator.clipboard.writeText(val).then(()=>{
+    toast('복사: '+val);
+    const row=document.getElementById('row-'+sid);
+    if(!row.classList.contains('done')){row.classList.add('done');row.querySelector('.chk').classList.add('on');state[sid]=true;save();updateProg();}
+  });
+}
+function copyText(txt){navigator.clipboard.writeText(txt).then(()=>toast('복사: '+txt.slice(0,40)));}
+function toggleSec(h){h.nextElementSibling.style.display=h.nextElementSibling.style.display==='none'?'':'none';}
+function expand(o){document.querySelectorAll('.tier-body').forEach(b=>b.style.display=o?'':'none');}
+function reset(){if(!confirm('초기화?'))return;localStorage.removeItem(KEY);location.reload();}
+document.querySelectorAll('.row').forEach(r=>{const sid=r.id.replace('row-','');if(state[sid]){r.classList.add('done');r.querySelector('.chk').classList.add('on');}});
+updateProg();
+</script></body></html>

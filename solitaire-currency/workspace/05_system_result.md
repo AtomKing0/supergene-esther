@@ -889,3 +889,42 @@ data_sources:
 | 덱 보너스 avg 5장 잔존           | simulation v2                | 가설      |
 | 스트릭 미터 달성률 70%           | simulation v2                | 가설      |
 | 메타 총 sink 283,600g / 924해머  | simulation v2 (시트 집계)    | 확정      |
+
+---
+
+## required_gimmick_count — 기믹 최소 보장 (2026-04-13 추가)
+
+### 컬럼 정의
+
+| 컬럼명 | 테이블 | 타입 | 설명 |
+|--------|--------|------|------|
+| `required_gimmick_count` | difficulty_tier | INT | 해당 티어 맵 생성 시 배치해야 하는 기믹 카드 최소 개수. plus_card 제외. |
+
+### 현재 확정값
+
+| tier_id | display_name | required_gimmick_count |
+|---------|-------------|----------------------|
+| 1 | Tutorial | 0 |
+| 2 | Normal | 0 |
+| 3 | Hard | 3 |
+| 4 | Super Hard | 4 |
+
+### 동작 원칙
+
+기믹 배치 로직은 일반적으로 `base_score + gimmick_score ≥ tier.score_min` 조건을 충족하면 기믹 배치를 종료한다.
+
+그러나 **base_score 자체가 이미 해당 티어의 score_min을 초과하는 경우**, 조건만 보면 기믹을 0개 붙여도 통과된다. 이때 `required_gimmick_count`가 강제 실행된다.
+
+```
+예시 — Hard 티어 맵 생성:
+  base_score = 900  (Hard score_min=871 이미 충족)
+  점수 조건만으로는 기믹 0개 가능
+  → required_gimmick_count = 3 이므로 기믹 최소 3개 강제 배치
+  → rope_card / runner_card / lock_key 중 3개 이상 반드시 포함
+  → plus_card는 카운트에서 제외
+```
+
+### 설계 의도
+
+Hard·SH 맵이 점수 조건만 충족하고 기믹이 없는 **"빈 껍데기 Hard"** 가 되는 상황을 방지한다.
+기믹 카드는 맵스코어 외에도 **플레이어 체감 난이도의 핵심 요소**이므로, 점수 조건과 별개로 최소 기믹 존재감을 보장한다.

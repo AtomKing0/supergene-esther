@@ -1,0 +1,285 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Stealth v2 Viz</title>
+<style>
+body{background:#0e1525;color:#eee;font-family:sans-serif;padding:12px;margin:0}
+h1{text-align:center;font-size:16px;color:#ffd;margin:0 0 6px}
+.lead{text-align:center;font-size:11px;color:#aac;margin-bottom:6px}
+.thresh{text-align:center;font-size:11px;color:#fc6;margin-bottom:6px;font-family:monospace}
+.legend{text-align:center;font-size:10px;color:#bbb;margin:6px 0}
+.legend span{margin:0 6px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}
+.card{background:#1a2138;border-radius:8px;padding:10px;border:1px solid #2a3658}
+.card.stealth{border-color:#f44;background:#2a1a1a}
+.card.example{border-color:#7a7;background:#1a2a1d}
+h2{font-size:12px;color:#ffd;margin:0 0 4px;word-break:break-all}
+.tag{display:inline-block;font-size:9px;padding:2px 6px;border-radius:3px;margin-right:6px}
+.tag.s{background:#f44;color:#fff}
+.tag.e{background:#7a7;color:#fff}
+.meta{font-size:10px;font-family:monospace;color:#9cf;margin-bottom:4px}
+.pairs{font-size:9px;font-family:monospace;color:#ccc;margin-bottom:6px;max-height:80px;overflow:auto;line-height:1.5}
+.pairs .stealth{color:#f66;font-weight:bold}
+.pairs .excluded{color:#7c7}
+canvas{display:block;background:#1565c0;border-radius:4px;width:100%;height:auto}
+</style></head><body>
+<h1>Stealth Blocker v2 — SAT 상한 + 시야선 + 가림자 통합 검사</h1>
+<div class="lead">v1 stealth 85개 → v2 1개 (사용자 4개 FP 모두 EXCLUDED 통과)</div>
+<div class="thresh">v2 임계: SAT_MAX&lt;5.0 AND hi_ratio&lt;0.05 AND other_cov&lt;0.2 AND ray=None</div>
+<div class="thresh">제외 단계 카운트: sat_max=1023  hi_ratio=0  other_cov=10  ray=2</div>
+<div class="legend">
+<span style="color:#f44">■ lo (못 클릭)</span>
+<span style="color:#48f">■ hi (blocker 후보)</span>
+<span style="color:#888">▨ 다른 가림 카드</span>
+<span style="color:#fa0">··· 시야선(lo→hi)</span>
+<span><span class="tag s">STEALTH</span><span class="tag e">EXCLUDED-FP</span></span>
+</div>
+<div class="grid">
+<div class="card stealth">
+<h2><span class="tag s">STEALTH</span>#1 week_20/Normal_obj_7763283395983283931_7763283395983283931.json</h2>
+<div class="meta">cards=30 pairs=1 stealth=1</div>
+<div class="pairs"><span class="stealth">[9d2←3d3] sat=5.0px hi_r=0.0027 other=0.0933 d=170.0</span><br></div>
+<canvas id="c0" width="480" height="300"></canvas>
+<script>
+(function(){
+  var ctx=document.getElementById("c0").getContext("2d");
+  var SC=0.4678362573099415, OX=237.19298245614036, OY=150.23391812865498;
+  var CW=100*SC, CH=150*SC;
+  var DC=["#ffffff", "#cce4ff", "#74b9ff", "#0984e3", "#0d47a1", "#08306b", "#062654", "#04193a"];
+  var LO=new Set([9]), HI=new Set([3]), OTH=new Set([4, 5]);
+  var cards=[{"idx": 0, "x": -447, "y": 90, "angle": 15.000031, "depth": 0}, {"idx": 1, "x": -423, "y": 36, "angle": 45.0, "depth": 1}, {"idx": 2, "x": -447, "y": -9, "angle": 314.999996, "depth": 2}, {"idx": 3, "x": -429, "y": -63, "angle": 60.0, "depth": 3}, {"idx": 4, "x": -219, "y": -3, "angle": 60.0, "depth": 3}, {"idx": 5, "x": -242, "y": 108, "angle": 344.999999, "depth": 5}, {"idx": 6, "x": -203, "y": 129, "angle": 45.0, "depth": 6}, {"idx": 7, "x": -157, "y": -108, "angle": 45.0, "depth": 0}, {"idx": 8, "x": -217, "y": -126, "angle": 0.0, "depth": 1}, {"idx": 9, "x": -260, "y": -81, "angle": 45.0, "depth": 2}, {"idx": 10, "x": -362, "y": -117, "angle": 299.999996, "depth": 0}, {"idx": 11, "x": -6, "y": -18, "angle": 314.999996, "depth": 2}, {"idx": 12, "x": 30, "y": 90, "angle": 344.999999, "depth": 3}, {"idx": 13, "x": 109, "y": 108, "angle": 45.0, "depth": 4}, {"idx": 14, "x": -48, "y": -117, "angle": 45.0, "depth": 1}, {"idx": 15, "x": 30, "y": -81, "angle": 344.999999, "depth": 3}, {"idx": 16, "x": 97, "y": -126, "angle": 30.0, "depth": 4}, {"idx": 17, "x": 121, "y": -90, "angle": 344.999999, "depth": 5}, {"idx": 18, "x": 263, "y": 105, "angle": 45.0, "depth": 4}, {"idx": 19, "x": 254, "y": 45, "angle": 329.999998, "depth": 5}, {"idx": 20, "x": 290, "y": 36, "angle": 15.000031, "depth": 3}, {"idx": 21, "x": 278, "y": -72, "angle": 329.999998, "depth": 2}, {"idx": 22, "x": 277, "y": -128, "angle": 60.0, "depth": 1}, {"idx": 23, "x": 442, "y": -79, "angle": 329.999998, "depth": 1}, {"idx": 24, "x": 447, "y": -108, "angle": 0.0, "depth": 2}, {"idx": 25, "x": 447, "y": -126, "angle": 314.999996, "depth": 3}, {"idx": 26, "x": 447, "y": 18, "angle": 314.999996, "depth": 0}, {"idx": 27, "x": 459, "y": 108, "angle": 344.999999, "depth": 1}, {"idx": 28, "x": 459, "y": 108, "angle": 30.0, "depth": 2}, {"idx": 29, "x": 438, "y": 102, "angle": 60.0, "depth": 3}];
+  var rays=[{"lo_x": -260, "lo_y": -81, "hi_x": -429, "hi_y": -63, "stealth": true, "exc": ""}];
+  cards.sort(function(a,b){return a.depth-b.depth});
+  cards.forEach(function(c){
+    var px=OX+c.x*SC, py=OY-c.y*SC, rad=c.angle*Math.PI/180;
+    ctx.save(); ctx.translate(px,py); ctx.rotate(-rad);
+    var iL=LO.has(c.idx), iH=HI.has(c.idx), iO=OTH.has(c.idx);
+    if(iL){ ctx.fillStyle="rgba(255,68,68,0.9)"; ctx.strokeStyle="#ff1111"; ctx.lineWidth=2.5; }
+    else if(iH){ ctx.fillStyle="rgba(72,128,255,0.9)"; ctx.strokeStyle="#2244ff"; ctx.lineWidth=2.5; }
+    else if(iO){ ctx.fillStyle="rgba(150,150,150,0.55)"; ctx.strokeStyle="#444"; ctx.lineWidth=1; }
+    else { ctx.fillStyle=DC[Math.min(c.depth,DC.length-1)]; ctx.strokeStyle="#222"; ctx.lineWidth=0.7; }
+    ctx.fillRect(-CW/2,-CH/2,CW,CH);
+    ctx.strokeRect(-CW/2,-CH/2,CW,CH);
+    if(iO){
+      ctx.strokeStyle="rgba(255,255,255,0.5)"; ctx.lineWidth=0.6;
+      for(var k=-CW;k<CW;k+=6){ ctx.beginPath();ctx.moveTo(k,-CH/2);ctx.lineTo(k+CH,CH/2);ctx.stroke(); }
+    }
+    ctx.fillStyle=(iL||iH)?"#fff":(iO?"#222":(c.depth<2?"#333":"#eee"));
+    ctx.font="bold 11px sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(c.idx,0,-3);
+    ctx.font="8px sans-serif"; ctx.fillText("d"+c.depth,0,8);
+    ctx.restore();
+  });
+  // 시야선 (lo center → hi center) 점선
+  rays.forEach(function(r){
+    var x1=OX+r.lo_x*SC, y1=OY-r.lo_y*SC;
+    var x2=OX+r.hi_x*SC, y2=OY-r.hi_y*SC;
+    ctx.save();
+    ctx.strokeStyle = r.stealth ? "#ff8800" : "rgba(255,170,0,0.5)";
+    ctx.lineWidth = r.stealth ? 2 : 1;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.restore();
+  });
+})();
+</script>
+</div>
+<div class="card example">
+<h2><span class="tag e">EXCLUDED-EXAMPLE</span>#2 week_11/Normal_obj_-1304628814517371421_-1304628814517371421.json</h2>
+<div class="meta">cards=26 pairs=6 stealth=0</div>
+<div class="pairs"><span class="excluded">[21d0←12d3] sat=21.8px hi_r=- other=- d=151.5 exc=sat_max</span><br><span class="excluded">[22d0←13d3] sat=21.8px hi_r=- other=- d=151.5 exc=sat_max</span><br><span class="excluded">[10d2←18d4] sat=9.0px hi_r=- other=- d=150.7 exc=sat_max</span><br><span class="excluded">[11d2←18d4] sat=9.0px hi_r=- other=- d=150.7 exc=sat_max</span><br><span class="excluded">[14d2←19d4] sat=9.0px hi_r=- other=- d=150.7 exc=sat_max</span><br><span class="excluded">[15d2←19d4] sat=9.0px hi_r=- other=- d=150.7 exc=sat_max</span><br></div>
+<canvas id="c1" width="480" height="300"></canvas>
+<script>
+(function(){
+  var ctx=document.getElementById("c1").getContext("2d");
+  var SC=0.4752475247524752, OX=240.0, OY=150.0;
+  var CW=100*SC, CH=150*SC;
+  var DC=["#ffffff", "#cce4ff", "#74b9ff", "#0984e3", "#0d47a1", "#08306b", "#062654", "#04193a"];
+  var LO=new Set([10, 11, 14, 15, 21, 22]), HI=new Set([12, 13, 18, 19]), OTH=new Set([8, 9, 10, 11, 14, 15, 16, 17, 20, 23]);
+  var cards=[{"idx": 0, "x": -55, "y": -105, "angle": 0.0, "depth": 0}, {"idx": 1, "x": -70, "y": -105, "angle": 0.0, "depth": 1}, {"idx": 2, "x": 55, "y": 58, "angle": 0.0, "depth": 0}, {"idx": 3, "x": 70, "y": 58, "angle": 0.0, "depth": 1}, {"idx": 4, "x": -55, "y": 58, "angle": 0.0, "depth": 0}, {"idx": 5, "x": 55, "y": -105, "angle": 0.0, "depth": 0}, {"idx": 6, "x": -70, "y": 58, "angle": 0.0, "depth": 1}, {"idx": 7, "x": 70, "y": -105, "angle": 0.0, "depth": 1}, {"idx": 8, "x": -86, "y": -105, "angle": 0.0, "depth": 2}, {"idx": 9, "x": 86, "y": 58, "angle": 0.0, "depth": 2}, {"idx": 10, "x": -445, "y": 47, "angle": 344.999999, "depth": 2}, {"idx": 11, "x": -289, "y": 47, "angle": 15.000031, "depth": 2}, {"idx": 12, "x": -367, "y": 105, "angle": 0.0, "depth": 3}, {"idx": 13, "x": 367, "y": 105, "angle": 0.0, "depth": 3}, {"idx": 14, "x": 445, "y": 47, "angle": 15.000031, "depth": 2}, {"idx": 15, "x": 289, "y": 47, "angle": 344.999958, "depth": 2}, {"idx": 16, "x": -367, "y": -58, "angle": 0.0, "depth": 3}, {"idx": 17, "x": 367, "y": -58, "angle": 0.0, "depth": 3}, {"idx": 18, "x": -367, "y": -82, "angle": 0.0, "depth": 4}, {"idx": 19, "x": 367, "y": -82, "angle": 0.0, "depth": 4}, {"idx": 20, "x": -280, "y": 13, "angle": 15.000031, "depth": 1}, {"idx": 21, "x": -272, "y": -13, "angle": 15.000031, "depth": 0}, {"idx": 22, "x": 272, "y": -13, "angle": 344.999958, "depth": 0}, {"idx": 23, "x": 280, "y": 13, "angle": 344.999958, "depth": 1}, {"idx": 24, "x": -70, "y": -23, "angle": 0.0, "depth": 3}, {"idx": 25, "x": 70, "y": -23, "angle": 0.0, "depth": 3}];
+  var rays=[{"lo_x": -445, "lo_y": 47, "hi_x": -367, "hi_y": -82, "stealth": false, "exc": "sat_max"}, {"lo_x": -289, "lo_y": 47, "hi_x": -367, "hi_y": -82, "stealth": false, "exc": "sat_max"}, {"lo_x": -272, "lo_y": -13, "hi_x": -367, "hi_y": 105, "stealth": false, "exc": "sat_max"}, {"lo_x": 272, "lo_y": -13, "hi_x": 367, "hi_y": 105, "stealth": false, "exc": "sat_max"}, {"lo_x": 445, "lo_y": 47, "hi_x": 367, "hi_y": -82, "stealth": false, "exc": "sat_max"}, {"lo_x": 289, "lo_y": 47, "hi_x": 367, "hi_y": -82, "stealth": false, "exc": "sat_max"}];
+  cards.sort(function(a,b){return a.depth-b.depth});
+  cards.forEach(function(c){
+    var px=OX+c.x*SC, py=OY-c.y*SC, rad=c.angle*Math.PI/180;
+    ctx.save(); ctx.translate(px,py); ctx.rotate(-rad);
+    var iL=LO.has(c.idx), iH=HI.has(c.idx), iO=OTH.has(c.idx);
+    if(iL){ ctx.fillStyle="rgba(255,68,68,0.9)"; ctx.strokeStyle="#ff1111"; ctx.lineWidth=2.5; }
+    else if(iH){ ctx.fillStyle="rgba(72,128,255,0.9)"; ctx.strokeStyle="#2244ff"; ctx.lineWidth=2.5; }
+    else if(iO){ ctx.fillStyle="rgba(150,150,150,0.55)"; ctx.strokeStyle="#444"; ctx.lineWidth=1; }
+    else { ctx.fillStyle=DC[Math.min(c.depth,DC.length-1)]; ctx.strokeStyle="#222"; ctx.lineWidth=0.7; }
+    ctx.fillRect(-CW/2,-CH/2,CW,CH);
+    ctx.strokeRect(-CW/2,-CH/2,CW,CH);
+    if(iO){
+      ctx.strokeStyle="rgba(255,255,255,0.5)"; ctx.lineWidth=0.6;
+      for(var k=-CW;k<CW;k+=6){ ctx.beginPath();ctx.moveTo(k,-CH/2);ctx.lineTo(k+CH,CH/2);ctx.stroke(); }
+    }
+    ctx.fillStyle=(iL||iH)?"#fff":(iO?"#222":(c.depth<2?"#333":"#eee"));
+    ctx.font="bold 11px sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(c.idx,0,-3);
+    ctx.font="8px sans-serif"; ctx.fillText("d"+c.depth,0,8);
+    ctx.restore();
+  });
+  // 시야선 (lo center → hi center) 점선
+  rays.forEach(function(r){
+    var x1=OX+r.lo_x*SC, y1=OY-r.lo_y*SC;
+    var x2=OX+r.hi_x*SC, y2=OY-r.hi_y*SC;
+    ctx.save();
+    ctx.strokeStyle = r.stealth ? "#ff8800" : "rgba(255,170,0,0.5)";
+    ctx.lineWidth = r.stealth ? 2 : 1;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.restore();
+  });
+})();
+</script>
+</div>
+<div class="card example">
+<h2><span class="tag e">EXCLUDED-EXAMPLE</span>#3 week_16/Normal_obj_7268273347518113960_7268273347518113960.json</h2>
+<div class="meta">cards=26 pairs=4 stealth=0</div>
+<div class="pairs"><span class="excluded">[14d0←19d2] sat=22.7px hi_r=- other=- d=151.9 exc=sat_max</span><br><span class="excluded">[0d0←4d2] sat=22.4px hi_r=- other=- d=152.5 exc=sat_max</span><br><span class="excluded">[2d0←4d2] sat=14.4px hi_r=- other=- d=159.9 exc=sat_max</span><br><span class="excluded">[18d0←19d2] sat=13.4px hi_r=- other=- d=161.2 exc=sat_max</span><br></div>
+<canvas id="c2" width="480" height="300"></canvas>
+<script>
+(function(){
+  var ctx=document.getElementById("c2").getContext("2d");
+  var SC=0.53156146179402, OX=240.265780730897, OY=150.0;
+  var CW=100*SC, CH=150*SC;
+  var DC=["#ffffff", "#cce4ff", "#74b9ff", "#0984e3", "#0d47a1", "#08306b", "#062654", "#04193a"];
+  var LO=new Set([0, 2, 14, 18]), HI=new Set([4, 19]), OTH=new Set([1, 3, 5, 6, 13, 15, 16, 17]);
+  var cards=[{"idx": 0, "x": 333, "y": 145, "angle": 45.0, "depth": 0}, {"idx": 1, "x": 375, "y": 89, "angle": 20.0, "depth": 1}, {"idx": 2, "x": 333, "y": -145, "angle": 314.999996, "depth": 0}, {"idx": 3, "x": 305, "y": -144, "angle": 329.999989, "depth": 2}, {"idx": 4, "x": 391, "y": 4, "angle": 0.0, "depth": 2}, {"idx": 5, "x": 305, "y": 144, "angle": 30.0, "depth": 2}, {"idx": 6, "x": 375, "y": -89, "angle": 339.999985, "depth": 1}, {"idx": 7, "x": 125, "y": 97, "angle": 0.0, "depth": 1}, {"idx": 8, "x": 125, "y": 97, "angle": 30.0, "depth": 2}, {"idx": 9, "x": 125, "y": 97, "angle": 329.999998, "depth": 3}, {"idx": 10, "x": -125, "y": 97, "angle": 329.999989, "depth": 2}, {"idx": 11, "x": -125, "y": 97, "angle": 30.0, "depth": 3}, {"idx": 12, "x": -125, "y": 97, "angle": 0.0, "depth": 1}, {"idx": 13, "x": -306, "y": 145, "angle": 329.999989, "depth": 2}, {"idx": 14, "x": -333, "y": 145, "angle": 314.999996, "depth": 0}, {"idx": 15, "x": -375, "y": 89, "angle": 339.999985, "depth": 1}, {"idx": 16, "x": -375, "y": -89, "angle": 20.0, "depth": 1}, {"idx": 17, "x": -305, "y": -144, "angle": 30.0, "depth": 2}, {"idx": 18, "x": -333, "y": -145, "angle": 45.0, "depth": 0}, {"idx": 19, "x": -392, "y": 5, "angle": 0.0, "depth": 2}, {"idx": 20, "x": 126, "y": 97, "angle": 299.999992, "depth": 0}, {"idx": 21, "x": 126, "y": -101, "angle": 299.999992, "depth": 1}, {"idx": 22, "x": -126, "y": 97, "angle": 60.0, "depth": 0}, {"idx": 23, "x": -126, "y": -101, "angle": 60.0, "depth": 1}, {"idx": 24, "x": -55, "y": -113, "angle": 0.0, "depth": 0}, {"idx": 25, "x": 55, "y": -113, "angle": 0.0, "depth": 0}];
+  var rays=[{"lo_x": 333, "lo_y": 145, "hi_x": 391, "hi_y": 4, "stealth": false, "exc": "sat_max"}, {"lo_x": 333, "lo_y": -145, "hi_x": 391, "hi_y": 4, "stealth": false, "exc": "sat_max"}, {"lo_x": -333, "lo_y": 145, "hi_x": -392, "hi_y": 5, "stealth": false, "exc": "sat_max"}, {"lo_x": -333, "lo_y": -145, "hi_x": -392, "hi_y": 5, "stealth": false, "exc": "sat_max"}];
+  cards.sort(function(a,b){return a.depth-b.depth});
+  cards.forEach(function(c){
+    var px=OX+c.x*SC, py=OY-c.y*SC, rad=c.angle*Math.PI/180;
+    ctx.save(); ctx.translate(px,py); ctx.rotate(-rad);
+    var iL=LO.has(c.idx), iH=HI.has(c.idx), iO=OTH.has(c.idx);
+    if(iL){ ctx.fillStyle="rgba(255,68,68,0.9)"; ctx.strokeStyle="#ff1111"; ctx.lineWidth=2.5; }
+    else if(iH){ ctx.fillStyle="rgba(72,128,255,0.9)"; ctx.strokeStyle="#2244ff"; ctx.lineWidth=2.5; }
+    else if(iO){ ctx.fillStyle="rgba(150,150,150,0.55)"; ctx.strokeStyle="#444"; ctx.lineWidth=1; }
+    else { ctx.fillStyle=DC[Math.min(c.depth,DC.length-1)]; ctx.strokeStyle="#222"; ctx.lineWidth=0.7; }
+    ctx.fillRect(-CW/2,-CH/2,CW,CH);
+    ctx.strokeRect(-CW/2,-CH/2,CW,CH);
+    if(iO){
+      ctx.strokeStyle="rgba(255,255,255,0.5)"; ctx.lineWidth=0.6;
+      for(var k=-CW;k<CW;k+=6){ ctx.beginPath();ctx.moveTo(k,-CH/2);ctx.lineTo(k+CH,CH/2);ctx.stroke(); }
+    }
+    ctx.fillStyle=(iL||iH)?"#fff":(iO?"#222":(c.depth<2?"#333":"#eee"));
+    ctx.font="bold 11px sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(c.idx,0,-3);
+    ctx.font="8px sans-serif"; ctx.fillText("d"+c.depth,0,8);
+    ctx.restore();
+  });
+  // 시야선 (lo center → hi center) 점선
+  rays.forEach(function(r){
+    var x1=OX+r.lo_x*SC, y1=OY-r.lo_y*SC;
+    var x2=OX+r.hi_x*SC, y2=OY-r.hi_y*SC;
+    ctx.save();
+    ctx.strokeStyle = r.stealth ? "#ff8800" : "rgba(255,170,0,0.5)";
+    ctx.lineWidth = r.stealth ? 2 : 1;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.restore();
+  });
+})();
+</script>
+</div>
+<div class="card example">
+<h2><span class="tag e">EXCLUDED-EXAMPLE</span>#4 week_00_launch/chunk_3/Easy_obj_7439937634274103084_7439937634274103084.json</h2>
+<div class="meta">cards=20 pairs=2 stealth=0</div>
+<div class="pairs"><span class="excluded">[10d0←7d2] sat=20.0px hi_r=- other=- d=150.1 exc=sat_max</span><br><span class="excluded">[9d0←16d2] sat=20.0px hi_r=- other=- d=150.1 exc=sat_max</span><br></div>
+<canvas id="c3" width="480" height="300"></canvas>
+<script>
+(function(){
+  var ctx=document.getElementById("c3").getContext("2d");
+  var SC=0.4444444444444444, OX=240.0, OY=150.0;
+  var CW=100*SC, CH=150*SC;
+  var DC=["#ffffff", "#cce4ff", "#74b9ff", "#0984e3", "#0d47a1", "#08306b", "#062654", "#04193a"];
+  var LO=new Set([9, 10]), HI=new Set([7, 16]), OTH=new Set([5, 14, 17, 18]);
+  var cards=[{"idx": 0, "x": 284, "y": 26, "angle": 0.0, "depth": 2}, {"idx": 1, "x": 424, "y": 65, "angle": 0.0, "depth": 2}, {"idx": 2, "x": -480, "y": -65, "angle": 0.0, "depth": 0}, {"idx": 3, "x": -352, "y": -65, "angle": 0.0, "depth": 0}, {"idx": 4, "x": 284, "y": -9, "angle": 0.0, "depth": 1}, {"idx": 5, "x": 145, "y": 30, "angle": 0.0, "depth": 1}, {"idx": 6, "x": -70, "y": -65, "angle": 0.0, "depth": 0}, {"idx": 7, "x": 145, "y": 65, "angle": 0.0, "depth": 2}, {"idx": 8, "x": 424, "y": 30, "angle": 0.0, "depth": 1}, {"idx": 9, "x": -211, "y": -65, "angle": 0.0, "depth": 0}, {"idx": 10, "x": 70, "y": -65, "angle": 0.0, "depth": 0}, {"idx": 11, "x": 211, "y": -65, "angle": 0.0, "depth": 0}, {"idx": 12, "x": 352, "y": -65, "angle": 0.0, "depth": 0}, {"idx": 13, "x": 480, "y": -65, "angle": 0.0, "depth": 0}, {"idx": 14, "x": -279, "y": 26, "angle": 0.0, "depth": 2}, {"idx": 15, "x": -417, "y": 30, "angle": 0.0, "depth": 1}, {"idx": 16, "x": -136, "y": 65, "angle": 0.0, "depth": 2}, {"idx": 17, "x": -136, "y": 30, "angle": 0.0, "depth": 1}, {"idx": 18, "x": -279, "y": -9, "angle": 0.0, "depth": 1}, {"idx": 19, "x": -417, "y": 65, "angle": 0.0, "depth": 2}];
+  var rays=[{"lo_x": 70, "lo_y": -65, "hi_x": 145, "hi_y": 65, "stealth": false, "exc": "sat_max"}, {"lo_x": -211, "lo_y": -65, "hi_x": -136, "hi_y": 65, "stealth": false, "exc": "sat_max"}];
+  cards.sort(function(a,b){return a.depth-b.depth});
+  cards.forEach(function(c){
+    var px=OX+c.x*SC, py=OY-c.y*SC, rad=c.angle*Math.PI/180;
+    ctx.save(); ctx.translate(px,py); ctx.rotate(-rad);
+    var iL=LO.has(c.idx), iH=HI.has(c.idx), iO=OTH.has(c.idx);
+    if(iL){ ctx.fillStyle="rgba(255,68,68,0.9)"; ctx.strokeStyle="#ff1111"; ctx.lineWidth=2.5; }
+    else if(iH){ ctx.fillStyle="rgba(72,128,255,0.9)"; ctx.strokeStyle="#2244ff"; ctx.lineWidth=2.5; }
+    else if(iO){ ctx.fillStyle="rgba(150,150,150,0.55)"; ctx.strokeStyle="#444"; ctx.lineWidth=1; }
+    else { ctx.fillStyle=DC[Math.min(c.depth,DC.length-1)]; ctx.strokeStyle="#222"; ctx.lineWidth=0.7; }
+    ctx.fillRect(-CW/2,-CH/2,CW,CH);
+    ctx.strokeRect(-CW/2,-CH/2,CW,CH);
+    if(iO){
+      ctx.strokeStyle="rgba(255,255,255,0.5)"; ctx.lineWidth=0.6;
+      for(var k=-CW;k<CW;k+=6){ ctx.beginPath();ctx.moveTo(k,-CH/2);ctx.lineTo(k+CH,CH/2);ctx.stroke(); }
+    }
+    ctx.fillStyle=(iL||iH)?"#fff":(iO?"#222":(c.depth<2?"#333":"#eee"));
+    ctx.font="bold 11px sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(c.idx,0,-3);
+    ctx.font="8px sans-serif"; ctx.fillText("d"+c.depth,0,8);
+    ctx.restore();
+  });
+  // 시야선 (lo center → hi center) 점선
+  rays.forEach(function(r){
+    var x1=OX+r.lo_x*SC, y1=OY-r.lo_y*SC;
+    var x2=OX+r.hi_x*SC, y2=OY-r.hi_y*SC;
+    ctx.save();
+    ctx.strokeStyle = r.stealth ? "#ff8800" : "rgba(255,170,0,0.5)";
+    ctx.lineWidth = r.stealth ? 2 : 1;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.restore();
+  });
+})();
+</script>
+</div>
+<div class="card example">
+<h2><span class="tag e">EXCLUDED-EXAMPLE</span>#5 week_17/Hard_obj_-1897730391061706826_-1897730391061706826.json</h2>
+<div class="meta">cards=30 pairs=4 stealth=0</div>
+<div class="pairs"><span class="excluded">[2d1←11d4] sat=18.1px hi_r=- other=- d=150.7 exc=sat_max</span><br><span class="excluded">[2d1←29d5] sat=18.1px hi_r=- other=- d=150.7 exc=sat_max</span><br><span class="excluded">[20d1←22d4] sat=18.1px hi_r=- other=- d=150.7 exc=sat_max</span><br><span class="excluded">[20d1←28d5] sat=18.1px hi_r=- other=- d=150.7 exc=sat_max</span><br></div>
+<canvas id="c4" width="480" height="300"></canvas>
+<script>
+(function(){
+  var ctx=document.getElementById("c4").getContext("2d");
+  var SC=0.48484848484848486, OX=240.0, OY=150.0;
+  var CW=100*SC, CH=150*SC;
+  var DC=["#ffffff", "#cce4ff", "#74b9ff", "#0984e3", "#0d47a1", "#08306b", "#062654", "#04193a"];
+  var LO=new Set([2, 20]), HI=new Set([11, 22, 28, 29]), OTH=new Set([]);
+  var cards=[{"idx": 0, "x": -78, "y": 54, "angle": 0.0, "depth": 4}, {"idx": 1, "x": -205, "y": 36, "angle": 0.0, "depth": 4}, {"idx": 2, "x": 435, "y": 126, "angle": 15.000031, "depth": 1}, {"idx": 3, "x": 435, "y": -126, "angle": 344.999969, "depth": 0}, {"idx": 4, "x": -284, "y": -126, "angle": 0.0, "depth": 3}, {"idx": 5, "x": -435, "y": -126, "angle": 15.000031, "depth": 0}, {"idx": 6, "x": 362, "y": -117, "angle": 0.0, "depth": 1}, {"idx": 7, "x": 205, "y": -45, "angle": 0.0, "depth": 2}, {"idx": 8, "x": 362, "y": 117, "angle": 0.0, "depth": 0}, {"idx": 9, "x": -362, "y": -117, "angle": 0.0, "depth": 1}, {"idx": 10, "x": 205, "y": -117, "angle": 0.0, "depth": 1}, {"idx": 11, "x": 368, "y": -9, "angle": 0.0, "depth": 4}, {"idx": 12, "x": 0, "y": 54, "angle": 0.0, "depth": 1}, {"idx": 13, "x": -133, "y": -54, "angle": 344.999999, "depth": 0}, {"idx": 14, "x": -205, "y": -45, "angle": 0.0, "depth": 2}, {"idx": 15, "x": 284, "y": -126, "angle": 0.0, "depth": 3}, {"idx": 16, "x": 0, "y": -72, "angle": 0.0, "depth": 0}, {"idx": 17, "x": -127, "y": 108, "angle": 0.0, "depth": 3}, {"idx": 18, "x": -205, "y": -117, "angle": 0.0, "depth": 1}, {"idx": 19, "x": -78, "y": 108, "angle": 0.0, "depth": 0}, {"idx": 20, "x": -435, "y": 126, "angle": 344.999969, "depth": 1}, {"idx": 21, "x": -362, "y": 117, "angle": 0.0, "depth": 0}, {"idx": 22, "x": -368, "y": -9, "angle": 0.0, "depth": 4}, {"idx": 23, "x": 205, "y": 36, "angle": 0.0, "depth": 4}, {"idx": 24, "x": 133, "y": -54, "angle": 15.000031, "depth": 0}, {"idx": 25, "x": 127, "y": 108, "angle": 0.0, "depth": 3}, {"idx": 26, "x": 78, "y": 108, "angle": 0.0, "depth": 0}, {"idx": 27, "x": 78, "y": 54, "angle": 0.0, "depth": 4}, {"idx": 28, "x": -368, "y": -9, "angle": 0.0, "depth": 5}, {"idx": 29, "x": 368, "y": -9, "angle": 0.0, "depth": 5}];
+  var rays=[{"lo_x": 435, "lo_y": 126, "hi_x": 368, "hi_y": -9, "stealth": false, "exc": "sat_max"}, {"lo_x": 435, "lo_y": 126, "hi_x": 368, "hi_y": -9, "stealth": false, "exc": "sat_max"}, {"lo_x": -435, "lo_y": 126, "hi_x": -368, "hi_y": -9, "stealth": false, "exc": "sat_max"}, {"lo_x": -435, "lo_y": 126, "hi_x": -368, "hi_y": -9, "stealth": false, "exc": "sat_max"}];
+  cards.sort(function(a,b){return a.depth-b.depth});
+  cards.forEach(function(c){
+    var px=OX+c.x*SC, py=OY-c.y*SC, rad=c.angle*Math.PI/180;
+    ctx.save(); ctx.translate(px,py); ctx.rotate(-rad);
+    var iL=LO.has(c.idx), iH=HI.has(c.idx), iO=OTH.has(c.idx);
+    if(iL){ ctx.fillStyle="rgba(255,68,68,0.9)"; ctx.strokeStyle="#ff1111"; ctx.lineWidth=2.5; }
+    else if(iH){ ctx.fillStyle="rgba(72,128,255,0.9)"; ctx.strokeStyle="#2244ff"; ctx.lineWidth=2.5; }
+    else if(iO){ ctx.fillStyle="rgba(150,150,150,0.55)"; ctx.strokeStyle="#444"; ctx.lineWidth=1; }
+    else { ctx.fillStyle=DC[Math.min(c.depth,DC.length-1)]; ctx.strokeStyle="#222"; ctx.lineWidth=0.7; }
+    ctx.fillRect(-CW/2,-CH/2,CW,CH);
+    ctx.strokeRect(-CW/2,-CH/2,CW,CH);
+    if(iO){
+      ctx.strokeStyle="rgba(255,255,255,0.5)"; ctx.lineWidth=0.6;
+      for(var k=-CW;k<CW;k+=6){ ctx.beginPath();ctx.moveTo(k,-CH/2);ctx.lineTo(k+CH,CH/2);ctx.stroke(); }
+    }
+    ctx.fillStyle=(iL||iH)?"#fff":(iO?"#222":(c.depth<2?"#333":"#eee"));
+    ctx.font="bold 11px sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(c.idx,0,-3);
+    ctx.font="8px sans-serif"; ctx.fillText("d"+c.depth,0,8);
+    ctx.restore();
+  });
+  // 시야선 (lo center → hi center) 점선
+  rays.forEach(function(r){
+    var x1=OX+r.lo_x*SC, y1=OY-r.lo_y*SC;
+    var x2=OX+r.hi_x*SC, y2=OY-r.hi_y*SC;
+    ctx.save();
+    ctx.strokeStyle = r.stealth ? "#ff8800" : "rgba(255,170,0,0.5)";
+    ctx.lineWidth = r.stealth ? 2 : 1;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.restore();
+  });
+})();
+</script>
+</div>
+</div></body></html>

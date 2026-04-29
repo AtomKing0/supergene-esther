@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>수직 스택 맵 점검 (CC_0010 패턴)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,sans-serif;background:#0f0f13;color:#e0e0e0;padding:12px}
+header{background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:15px}
+.badge{background:#c62828;color:#fff;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700}
+.tag{background:#2e2e50;color:#aac8ff;padding:3px 9px;border-radius:5px;font-size:11px;font-family:monospace}
+.note{color:#888;font-size:11px}
+.prog{margin-left:auto;font-size:13px}.prog strong{color:#4caf50;font-size:16px}
+.cat{background:#1a1a24;border:1px solid #2a2a3a;border-radius:10px;margin-bottom:10px;overflow:hidden}
+.cat-hd{padding:10px 14px;display:flex;gap:12px;align-items:center;cursor:pointer;user-select:none}
+.cat-hd:hover{background:#22222e}
+.cat-lbl{font-weight:800;padding:3px 12px;border-radius:5px;color:#fff;font-size:11px}
+.cat-cnt{background:#2a2a3a;color:#aaa;padding:2px 8px;border-radius:10px;font-size:10px}
+.cat-prog{margin-left:auto;color:#4caf50;font-size:11px;font-family:monospace}
+.row{display:flex;align-items:center;padding:9px 14px;border-top:1px solid #1e1e2a;gap:10px;flex-wrap:wrap}
+.row:hover{background:#1e1e2c}
+.row.done{opacity:.35}.row.done .sid{text-decoration:line-through;color:#555}
+.chk{width:19px;height:19px;border:2px solid #444;border-radius:5px;flex-shrink:0;cursor:pointer;position:relative}
+.chk.on{background:#4caf50;border-color:#4caf50}
+.chk.on::after{content:'';position:absolute;left:5px;top:1px;width:5px;height:11px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.sid{font-family:monospace;font-weight:700;color:#7ec8ff;min-width:74px;font-size:13px;cursor:pointer;padding:2px 6px;border-radius:3px}
+.sid:hover{background:#1e3a55}
+.score{background:#2e2e50;color:#aac8ff;padding:2px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:48px;text-align:center}
+.tier{padding:2px 9px;border-radius:4px;font-size:10px;font-weight:800;color:#000;min-width:64px;text-align:center}
+.metric{font-family:monospace;font-size:10px;color:#888;min-width:210px}
+.metric .hi{color:#ff8888;font-weight:700}
+.metric .md{color:#ffcc66}
+.metric .lbl{color:#555}
+.stack-viz{display:inline-flex;gap:1px;align-items:flex-end;height:22px;margin-right:4px}
+.stack-viz .bar{width:3px;background:#ff5722;border-radius:1px}
+.fn{font-family:monospace;font-size:9px;color:#555;margin-left:auto;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.fn:hover{color:#aac8ff}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#23233a;border:1px solid #4caf50;color:#4caf50;padding:8px 20px;border-radius:8px;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999}
+#toast.show{opacity:1}
+.ctrl{display:flex;gap:6px;margin-bottom:12px;background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 12px;flex-wrap:wrap}
+.btn{background:#23233a;border:1px solid #3a3a55;color:#aaa;padding:4px 12px;border-radius:5px;font-size:11px;cursor:pointer}
+.btn.danger{color:#ff8888}
+.legend{background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:10px;color:#888;display:flex;gap:16px;flex-wrap:wrap}
+.legend b{color:#aac}
+.action-group{display:inline-flex;gap:3px;margin-left:4px}
+.btn-act{background:#23233a;border:1px solid #3a3a55;color:#888;padding:2px 8px;border-radius:4px;font-size:10px;cursor:pointer;font-weight:700;min-width:46px}
+.btn-act:hover{background:#3a3a55;color:#ddd}
+.btn-act.remove.on{background:#5a1a1a;color:#ff9999;border-color:#8a2a2a}
+.btn-act.replace.on{background:#1a3a5a;color:#9999ff;border-color:#2a4a8a}
+.row.act-remove{background:#241414 !important;border-left:3px solid #c62828}
+.row.act-replace{background:#14202a !important;border-left:3px solid #2196f3}
+.summary{background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;gap:18px;align-items:center;font-size:12px;font-family:monospace}
+.summary .cnt{padding:3px 10px;border-radius:4px;font-weight:700}
+.summary .cnt-remove{background:#5a1a1a;color:#ff9999}
+.summary .cnt-replace{background:#1a3a5a;color:#9999ff}
+.summary .cnt-done{background:#1e3a1e;color:#aaffaa}
+</style></head><body>
+<header>
+  <h1>🧱 수직 스택 맵 점검 (CC_0010 패턴)</h1>
+  <span class="badge">20개 후보</span>
+  <span class="note">카드 제거/대체 검토 · DIFFICULTY_TIER 기준 난이도 표시</span>
+  <span class="prog">완료: <strong id="done">0</strong> / 20</span>
+</header>
+<div class="legend">
+  <span><b>tier</b>=DIFFICULTY_TIER (Normal 1-700 / Hard 701-900 / SH 901-1400) · <b>mS</b>=max_stack · <b>range</b>=스택 depth 범위 · <b>t4/5</b>=4/5층 tall 스택 개수 · <b>dpf</b>=max_depth/field</span>
+  <span><b>조치</b>: 🚨=상위 카드 삭제 또는 대체 / 📏=구조 단순화 / 🔻=field 추가 또는 tier 재분류</span>
+</div>
+<div class="ctrl">
+  <button class="btn" onclick="expand(1)">모두 펼침</button>
+  <button class="btn" onclick="expand(0)">모두 접음</button>
+  <button class="btn" onclick="organizeUnchecked()" style="background:#2a4a6a;color:#aac8ff;border-color:#3a5a80">📁 체크 안 된 맵 정리</button>
+  <button class="btn danger" onclick="reset()">초기화</button>
+</div>
+<div class="summary">
+  <span class="cnt cnt-remove">🗑 제거 <strong id="cnt-remove">0</strong></span>
+  <span class="cnt cnt-replace">🔄 대체 <strong id="cnt-replace">0</strong></span>
+  <span class="cnt cnt-done">✓ 완료 <strong id="cnt-done">0</strong></span>
+  <span style="margin-left:auto">
+    <button class="btn" onclick="exportActions()" style="background:#2a5a2a;color:#aaffaa;border-color:#3a7a3a">📋 액션 리스트 복사</button>
+  </span>
+</div>
+<div class="cat" data-cat="severe"><div class="cat-hd" onclick="toggleCat(this)">
+<span class="cat-lbl" style="background:#c62828">🚨 심각 (수직 5+스택)</span>
+<span class="cat-cnt">3개</span>
+<span class="cat-prog" data-cat="severe">0/3</span><span style="color:#555">▼</span></div><div class="cat-body">
+<div class="row" id="row-CC_0222">
+<div class="chk" onclick="toggle('CC_0222')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0222" onclick="setAction('CC_0222','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0222" onclick="setAction('CC_0222','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0222')">CC_0222</span>
+<div class="score">sc 575</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:13px;opacity:0.5"></span><span class="bar" style="height:13px;opacity:0.5"></span><span class="bar" style="height:13px;opacity:0.5"></span><span class="bar" style="height:13px;opacity:0.5"></span><span class="bar" style="height:13px;opacity:0.5"></span><span class="bar" style="height:13px;opacity:0.5"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>20 · <span class="lbl">mD</span><span class="">5</span> · 
+  <span class="lbl">mS</span><span class="hi">6</span> · 
+  <span class="lbl">rg</span>5 · 
+  <span class="lbl">t4/5</span>1/1 · 
+  <span class="lbl">dpf</span><span class="">0.25</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-6941315819392539970_-6941315819392539970.json')" title="VeryEasy_obj_-6941315819392539970_-6941315819392539970.json">VeryEasy_obj_-6941315819392539970_-6941315819392539970.json</div>
+</div>
+<div class="row" id="row-CC_0010">
+<div class="chk" onclick="toggle('CC_0010')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0010" onclick="setAction('CC_0010','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0010" onclick="setAction('CC_0010','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0010')">CC_0010</span>
+<div class="score">sc 645</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:17px;opacity:0.7"></span><span class="bar" style="height:17px;opacity:0.7"></span><span class="bar" style="height:17px;opacity:0.7"></span><span class="bar" style="height:17px;opacity:0.7"></span><span class="bar" style="height:17px;opacity:0.7"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>22 · <span class="lbl">mD</span><span class="md">7</span> · 
+  <span class="lbl">mS</span><span class="hi">5</span> · 
+  <span class="lbl">rg</span>7 · 
+  <span class="lbl">t4/5</span>2/2 · 
+  <span class="lbl">dpf</span><span class="md">0.32</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-3944058996604576779_-3944058996604576779.json')" title="Easy_obj_-3944058996604576779_-3944058996604576779.json">Easy_obj_-3944058996604576779_-3944058996604576779.json</div>
+</div>
+<div class="row" id="row-CC_0277">
+<div class="chk" onclick="toggle('CC_0277')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0277" onclick="setAction('CC_0277','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0277" onclick="setAction('CC_0277','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0277')">CC_0277</span>
+<div class="score">sc 880</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<span class="stack-viz"><span class="bar" style="height:15px;opacity:1"></span><span class="bar" style="height:15px;opacity:1"></span><span class="bar" style="height:15px;opacity:1"></span><span class="bar" style="height:15px;opacity:1"></span><span class="bar" style="height:15px;opacity:1"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>31 · <span class="lbl">mD</span><span class="md">6</span> · 
+  <span class="lbl">mS</span><span class="hi">5</span> · 
+  <span class="lbl">rg</span>5 · 
+  <span class="lbl">t4/5</span>4/4 · 
+  <span class="lbl">dpf</span><span class="">0.19</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_3583963274032080926_3583963274032080926.json')" title="Hard_obj_3583963274032080926_3583963274032080926.json">Hard_obj_3583963274032080926_3583963274032080926.json</div>
+</div>
+</div></div>
+<div class="cat" data-cat="deep"><div class="cat-hd" onclick="toggleCat(this)">
+<span class="cat-lbl" style="background:#2196f3">📏 깊은 (max_depth≥8)</span>
+<span class="cat-cnt">8개</span>
+<span class="cat-prog" data-cat="deep">0/8</span><span style="color:#555">▼</span></div><div class="cat-body">
+<div class="row" id="row-CC_0273">
+<div class="chk" onclick="toggle('CC_0273')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0273" onclick="setAction('CC_0273','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0273" onclick="setAction('CC_0273','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0273')">CC_0273</span>
+<div class="score">sc 880</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<span class="stack-viz"><span class="bar" style="height:19px;opacity:0.3"></span><span class="bar" style="height:19px;opacity:0.3"></span><span class="bar" style="height:19px;opacity:0.3"></span><span class="bar" style="height:19px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>30 · <span class="lbl">mD</span><span class="hi">8</span> · 
+  <span class="lbl">mS</span><span class="md">4</span> · 
+  <span class="lbl">rg</span>3 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="">0.27</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_2519617144431508815_2519617144431508815.json')" title="Hard_obj_2519617144431508815_2519617144431508815.json">Hard_obj_2519617144431508815_2519617144431508815.json</div>
+</div>
+<div class="row" id="row-CC_0091">
+<div class="chk" onclick="toggle('CC_0091')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0091" onclick="setAction('CC_0091','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0091" onclick="setAction('CC_0091','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0091')">CC_0091</span>
+<div class="score">sc 640</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:19px;opacity:0.3"></span><span class="bar" style="height:19px;opacity:0.3"></span><span class="bar" style="height:19px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>21 · <span class="lbl">mD</span><span class="hi">8</span> · 
+  <span class="lbl">mS</span><span class="">3</span> · 
+  <span class="lbl">rg</span>5 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="hi">0.38</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-4112116539429186425_-4112116539429186425.json')" title="Easy_obj_-4112116539429186425_-4112116539429186425.json">Easy_obj_-4112116539429186425_-4112116539429186425.json</div>
+</div>
+<div class="row" id="row-CC_0136">
+<div class="chk" onclick="toggle('CC_0136')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0136" onclick="setAction('CC_0136','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0136" onclick="setAction('CC_0136','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0136')">CC_0136</span>
+<div class="score">sc 755</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<span class="stack-viz"><span class="bar" style="height:21px;opacity:0.3"></span><span class="bar" style="height:21px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>26 · <span class="lbl">mD</span><span class="hi">9</span> · 
+  <span class="lbl">mS</span><span class="">2</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="hi">0.35</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Normal_obj_9005262734481547871_9005262734481547871.json')" title="Normal_obj_9005262734481547871_9005262734481547871.json">Normal_obj_9005262734481547871_9005262734481547871.json</div>
+</div>
+<div class="row" id="row-CC_0253">
+<div class="chk" onclick="toggle('CC_0253')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0253" onclick="setAction('CC_0253','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0253" onclick="setAction('CC_0253','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0253')">CC_0253</span>
+<div class="score">sc 875</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<span class="stack-viz"><span class="bar" style="height:21px;opacity:0.3"></span><span class="bar" style="height:21px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>29 · <span class="lbl">mD</span><span class="hi">9</span> · 
+  <span class="lbl">mS</span><span class="">2</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="md">0.31</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_-4367956446511700689_-4367956446511700689.json')" title="Hard_obj_-4367956446511700689_-4367956446511700689.json">Hard_obj_-4367956446511700689_-4367956446511700689.json</div>
+</div>
+<div class="row" id="row-CC_0265">
+<div class="chk" onclick="toggle('CC_0265')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0265" onclick="setAction('CC_0265','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0265" onclick="setAction('CC_0265','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0265')">CC_0265</span>
+<div class="score">sc 905</div>
+<div class="tier" style="background:#9c27b0">Super Hard</div>
+<span class="stack-viz"><span class="bar" style="height:21px;opacity:0.3"></span><span class="bar" style="height:21px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>30 · <span class="lbl">mD</span><span class="hi">9</span> · 
+  <span class="lbl">mS</span><span class="">2</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="md">0.30</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_-7527138674885590045_-7527138674885590045.json')" title="Hard_obj_-7527138674885590045_-7527138674885590045.json">Hard_obj_-7527138674885590045_-7527138674885590045.json</div>
+</div>
+<div class="row" id="row-CC_0206">
+<div class="chk" onclick="toggle('CC_0206')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0206" onclick="setAction('CC_0206','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0206" onclick="setAction('CC_0206','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0206')">CC_0206</span>
+<div class="score">sc 785</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<span class="stack-viz"><span class="bar" style="height:21px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>27 · <span class="lbl">mD</span><span class="hi">9</span> · 
+  <span class="lbl">mS</span><span class="">1</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="hi">0.33</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Normal_obj_5370209783260445704_5370209783260445704.json')" title="Normal_obj_5370209783260445704_5370209783260445704.json">Normal_obj_5370209783260445704_5370209783260445704.json</div>
+</div>
+<div class="row" id="row-CC_0035">
+<div class="chk" onclick="toggle('CC_0035')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0035" onclick="setAction('CC_0035','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0035" onclick="setAction('CC_0035','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0035')">CC_0035</span>
+<div class="score">sc 845</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<span class="stack-viz"><span class="bar" style="height:21px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>28 · <span class="lbl">mD</span><span class="hi">9</span> · 
+  <span class="lbl">mS</span><span class="">1</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="md">0.32</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_-8120975917250142898_-8120975917250142898.json')" title="Hard_obj_-8120975917250142898_-8120975917250142898.json">Hard_obj_-8120975917250142898_-8120975917250142898.json</div>
+</div>
+<div class="row" id="row-CC_0113">
+<div class="chk" onclick="toggle('CC_0113')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0113" onclick="setAction('CC_0113','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0113" onclick="setAction('CC_0113','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0113')">CC_0113</span>
+<div class="score">sc 830</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<span class="stack-viz"><span class="bar" style="height:19px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>28 · <span class="lbl">mD</span><span class="hi">8</span> · 
+  <span class="lbl">mS</span><span class="">1</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="md">0.29</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_-1971797449831386605_-1971797449831386605.json')" title="Hard_obj_-1971797449831386605_-1971797449831386605.json">Hard_obj_-1971797449831386605_-1971797449831386605.json</div>
+</div>
+</div></div>
+<div class="cat" data-cat="sparse"><div class="cat-hd" onclick="toggleCat(this)">
+<span class="cat-lbl" style="background:#7b1fa2">🔻 희박 (dpf≥0.30)</span>
+<span class="cat-cnt">9개</span>
+<span class="cat-prog" data-cat="sparse">0/9</span><span style="color:#555">▼</span></div><div class="cat-body">
+<div class="row" id="row-CC_0173">
+<div class="chk" onclick="toggle('CC_0173')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0173" onclick="setAction('CC_0173','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0173" onclick="setAction('CC_0173','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0173')">CC_0173</span>
+<div class="score">sc 575</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:17px;opacity:0.3"></span><span class="bar" style="height:17px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>20 · <span class="lbl">mD</span><span class="md">7</span> · 
+  <span class="lbl">mS</span><span class="">2</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="hi">0.35</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-9034849251228621764_-9034849251228621764.json')" title="Easy_obj_-9034849251228621764_-9034849251228621764.json">Easy_obj_-9034849251228621764_-9034849251228621764.json</div>
+</div>
+<div class="row" id="row-CC_0157">
+<div class="chk" onclick="toggle('CC_0157')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0157" onclick="setAction('CC_0157','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0157" onclick="setAction('CC_0157','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0157')">CC_0157</span>
+<div class="score">sc 520</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:15px;opacity:0.3"></span><span class="bar" style="height:15px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>18 · <span class="lbl">mD</span><span class="md">6</span> · 
+  <span class="lbl">mS</span><span class="">2</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="hi">0.33</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_5725686889629278630_5725686889629278630.json')" title="VeryEasy_obj_5725686889629278630_5725686889629278630.json">VeryEasy_obj_5725686889629278630_5725686889629278630.json</div>
+</div>
+<div class="row" id="row-CC_0074">
+<div class="chk" onclick="toggle('CC_0074')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0074" onclick="setAction('CC_0074','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0074" onclick="setAction('CC_0074','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0074')">CC_0074</span>
+<div class="score">sc 540</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:15px;opacity:0.3"></span><span class="bar" style="height:15px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>19 · <span class="lbl">mD</span><span class="md">6</span> · 
+  <span class="lbl">mS</span><span class="">2</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="md">0.32</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_2406463454516795606_2406463454516795606.json')" title="VeryEasy_obj_2406463454516795606_2406463454516795606.json">VeryEasy_obj_2406463454516795606_2406463454516795606.json</div>
+</div>
+<div class="row" id="row-CC_0066">
+<div class="chk" onclick="toggle('CC_0066')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0066" onclick="setAction('CC_0066','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0066" onclick="setAction('CC_0066','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0066')">CC_0066</span>
+<div class="score">sc 530</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:15px;opacity:0.3"></span><span class="bar" style="height:15px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>20 · <span class="lbl">mD</span><span class="md">6</span> · 
+  <span class="lbl">mS</span><span class="">2</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="md">0.30</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-5421982700066424561_-5421982700066424561.json')" title="VeryEasy_obj_-5421982700066424561_-5421982700066424561.json">VeryEasy_obj_-5421982700066424561_-5421982700066424561.json</div>
+</div>
+<div class="row" id="row-CC_0218">
+<div class="chk" onclick="toggle('CC_0218')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0218" onclick="setAction('CC_0218','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0218" onclick="setAction('CC_0218','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0218')">CC_0218</span>
+<div class="score">sc 600</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:15px;opacity:0.3"></span><span class="bar" style="height:15px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>20 · <span class="lbl">mD</span><span class="md">6</span> · 
+  <span class="lbl">mS</span><span class="">2</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="md">0.30</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-4001980453628435627_-4001980453628435627.json')" title="VeryEasy_obj_-4001980453628435627_-4001980453628435627.json">VeryEasy_obj_-4001980453628435627_-4001980453628435627.json</div>
+</div>
+<div class="row" id="row-CC_0087">
+<div class="chk" onclick="toggle('CC_0087')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0087" onclick="setAction('CC_0087','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0087" onclick="setAction('CC_0087','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0087')">CC_0087</span>
+<div class="score">sc 580</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:15px;opacity:0.3"></span><span class="bar" style="height:15px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>20 · <span class="lbl">mD</span><span class="md">6</span> · 
+  <span class="lbl">mS</span><span class="">2</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="md">0.30</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-1212175505283961025_-1212175505283961025.json')" title="Easy_obj_-1212175505283961025_-1212175505283961025.json">Easy_obj_-1212175505283961025_-1212175505283961025.json</div>
+</div>
+<div class="row" id="row-CC_0014">
+<div class="chk" onclick="toggle('CC_0014')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0014" onclick="setAction('CC_0014','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0014" onclick="setAction('CC_0014','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0014')">CC_0014</span>
+<div class="score">sc 545</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:17px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>20 · <span class="lbl">mD</span><span class="md">7</span> · 
+  <span class="lbl">mS</span><span class="">1</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="hi">0.35</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-6253912204719183690_-6253912204719183690.json')" title="Easy_obj_-6253912204719183690_-6253912204719183690.json">Easy_obj_-6253912204719183690_-6253912204719183690.json</div>
+</div>
+<div class="row" id="row-CC_0227">
+<div class="chk" onclick="toggle('CC_0227')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0227" onclick="setAction('CC_0227','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0227" onclick="setAction('CC_0227','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0227')">CC_0227</span>
+<div class="score">sc 490</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:15px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>17 · <span class="lbl">mD</span><span class="md">6</span> · 
+  <span class="lbl">mS</span><span class="">1</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="hi">0.35</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-7842558416730208040_-7842558416730208040.json')" title="VeryEasy_obj_-7842558416730208040_-7842558416730208040.json">VeryEasy_obj_-7842558416730208040_-7842558416730208040.json</div>
+</div>
+<div class="row" id="row-CC_0239">
+<div class="chk" onclick="toggle('CC_0239')"></div>
+<div class="action-group">
+  <button class="btn-act remove" data-sid="CC_0239" onclick="setAction('CC_0239','remove')">🗑 제거</button>
+  <button class="btn-act replace" data-sid="CC_0239" onclick="setAction('CC_0239','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0239')">CC_0239</span>
+<div class="score">sc 570</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<span class="stack-viz"><span class="bar" style="height:15px;opacity:0.3"></span></span>
+<div class="metric">
+  <span class="lbl">f</span>20 · <span class="lbl">mD</span><span class="md">6</span> · 
+  <span class="lbl">mS</span><span class="">1</span> · 
+  <span class="lbl">rg</span>0 · 
+  <span class="lbl">t4/5</span>0/0 · 
+  <span class="lbl">dpf</span><span class="md">0.30</span>
+</div>
+<div class="metric" style="min-width:70px">CR <span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_8183832228153130394_8183832228153130394.json')" title="VeryEasy_obj_8183832228153130394_8183832228153130394.json">VeryEasy_obj_8183832228153130394_8183832228153130394.json</div>
+</div>
+</div></div>
+
+<div id="toast"></div>
+<script>
+const KEY='stack_review_v3';
+const state=JSON.parse(localStorage.getItem(KEY)||'{}');
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1200);}
+function updateProg(){
+  const rows=document.querySelectorAll('.row');
+  let d=0,r=0,p=0;
+  rows.forEach(x=>{
+    if(x.classList.contains('done'))d++;
+    if(x.classList.contains('act-remove'))r++;
+    if(x.classList.contains('act-replace'))p++;
+  });
+  document.getElementById('done').textContent=d;
+  document.getElementById('cnt-done').textContent=d;
+  document.getElementById('cnt-remove').textContent=r;
+  document.getElementById('cnt-replace').textContent=p;
+  document.querySelectorAll('.cat').forEach(c=>{
+    c.querySelector('.cat-prog').textContent=`${c.querySelectorAll('.row.done').length}/${c.querySelectorAll('.row').length}`;
+  });
+}
+function ensureState(sid){if(!state[sid])state[sid]={};}
+function toggle(sid){
+  ensureState(sid);
+  const row=document.getElementById('row-'+sid);const c=row.querySelector('.chk');
+  if(state[sid].done){row.classList.remove('done');c.classList.remove('on');state[sid].done=false;}
+  else{row.classList.add('done');c.classList.add('on');state[sid].done=true;}
+  save();updateProg();
+}
+function setAction(sid,act){
+  ensureState(sid);
+  const row=document.getElementById('row-'+sid);
+  const btnR=row.querySelector('.btn-act.remove'),btnP=row.querySelector('.btn-act.replace');
+  if(state[sid].action===act){
+    state[sid].action=null;row.classList.remove('act-remove','act-replace');
+    btnR.classList.remove('on');btnP.classList.remove('on');
+    toast('액션 해제: '+sid);
+  }else{
+    state[sid].action=act;row.classList.remove('act-remove','act-replace');
+    btnR.classList.remove('on');btnP.classList.remove('on');
+    row.classList.add('act-'+act);row.querySelector('.btn-act.'+act).classList.add('on');
+    toast((act==='remove'?'🗑 제거: ':'🔄 대체: ')+sid);
+  }
+  save();updateProg();
+}
+async function exportActions(){
+  const rows=document.querySelectorAll('.row');
+  const items=[];
+  rows.forEach(r=>{
+    const sid=r.id.replace('row-','');
+    const fn=r.querySelector('.fn')?.getAttribute('title')||'';
+    const tier=r.querySelector('.tier')?.textContent||'';
+    const score=r.querySelector('.score')?.textContent||'';
+    const action=state[sid]?.action;
+    if(action) items.push({sid,fn,tier,score,action});
+  });
+  const rm=items.filter(x=>x.action==='remove'), rp=items.filter(x=>x.action==='replace');
+  let txt='# 맵 액션 리스트\n\n## 🗑 제거 (카드 깎기): '+rm.length+'개\n';
+  rm.forEach(x=>txt+=`- ${x.sid} [${x.tier}, ${x.score}]  ${x.fn}\n`);
+  txt+='\n## 🔄 대체 (다른 맵으로 교체): '+rp.length+'개\n';
+  rp.forEach(x=>txt+=`- ${x.sid} [${x.tier}, ${x.score}]  ${x.fn}\n`);
+  // 서버 저장 + 클립보드 복사 병행
+  try{
+    const res=await fetch('/api/save-stack-actions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items})});
+    const j=await res.json();
+    navigator.clipboard.writeText(txt);
+    toast(`✅ 서버 저장 + 클립보드: 제거${j.remove} / 대체${j.replace}`);
+  }catch(e){
+    navigator.clipboard.writeText(txt);
+    toast(`⚠️ 클립보드만 복사 (서버 오류)`);
+  }
+}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('복사: '+t.slice(0,60)));}
+function toggleCat(h){h.nextElementSibling.style.display=h.nextElementSibling.style.display==='none'?'':'none';}
+function expand(o){document.querySelectorAll('.cat-body').forEach(b=>b.style.display=o?'':'none');}
+function reset(){if(!confirm('초기화?'))return;localStorage.removeItem(KEY);location.reload();}
+async function organizeUnchecked(){
+  const rows=document.querySelectorAll('.row');const items=[];
+  rows.forEach(r=>{const sid=r.id.replace('row-','');const fn=r.querySelector('.fn')?.getAttribute('title')||'';items.push({sid,fn,checked:r.classList.contains('done')});});
+  const un=items.filter(x=>!x.checked).length;
+  if(!confirm(`체크 안 된 ${un}개 복사?`))return;
+  try{const res=await fetch('/api/organize-unchecked-maps',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items})});const j=await res.json();toast(`✅ ${j.copied}개 복사`);}catch(e){toast('❌ '+e.message);}
+}
+document.querySelectorAll('.row').forEach(r=>{
+  const sid=r.id.replace('row-','');const s=state[sid]||{};
+  if(s.done){r.classList.add('done');r.querySelector('.chk').classList.add('on');}
+  if(s.action){r.classList.add('act-'+s.action);r.querySelector('.btn-act.'+s.action).classList.add('on');}
+});
+updateProg();
+</script></body></html>

@@ -1,0 +1,334 @@
+import json
+from pathlib import Path
+
+
+RESULT_PATH = Path("workspace/live_currency_simulation_result.json")
+REPORT_PATH = Path("15_live_currency_simulation_report.html")
+
+
+def fmt_num(value):
+    return f"{round(value):,}"
+
+
+def fmt_signed(value):
+    sign = "+" if value >= 0 else "-"
+    return f"{sign}{abs(round(value)):,}"
+
+
+def cls_for(value):
+    return "pos" if value >= 0 else "neg"
+
+
+def pct(value):
+    return f"{value * 100:.0f}%"
+
+
+def build_report(data):
+    facts = data["live_sheet_facts"]
+    segments = data["segments"]
+
+    summary_rows = []
+    for segment in segments:
+        d30 = segment["d30"]
+        summary_rows.append(
+            f"""
+          <tr>
+            <td><strong>{segment['segment']}</strong></td>
+            <td class="numc">{segment['level']}</td>
+            <td class="numc">{fmt_num(segment['entry_cost'])}</td>
+            <td class="numc">{fmt_num(segment['rv_gold_per_claim'])}</td>
+            <td class="numc">{fmt_num(segment['idle_gold_per_claim'])}</td>
+            <td class="numc">{fmt_num(d30['avg_source'])}</td>
+            <td class="numc">{fmt_num(d30['avg_sink'])}</td>
+            <td class="numc {cls_for(d30['avg_net'])}"><strong>{fmt_signed(d30['avg_net'])}</strong></td>
+            <td class="numc {cls_for(d30['avg_balance'])}">{fmt_signed(d30['avg_balance'])}</td>
+          </tr>"""
+        )
+
+    assumption_rows = []
+    for segment in segments:
+        a = segment["assumptions"]
+        assumption_rows.append(
+            f"""
+          <tr>
+            <td><strong>{segment['segment']}</strong></td>
+            <td class="numc">{a['plays_per_day']}</td>
+            <td class="numc">{pct(a['win_rate'])}</td>
+            <td class="numc">{a['idle_claims_per_day']}</td>
+            <td class="numc">{pct(a['rv_claim_rate'])}</td>
+            <td class="numc">{a['shop_ad_claims_per_day']}</td>
+            <td class="numc">{a['wheel_spins_per_day']}</td>
+            <td class="numc">{a['undo_uses_per_loss']}</td>
+            <td class="numc">{a['extra_deck_uses_per_loss']}</td>
+            <td class="numc">{a['fixed_boosters_per_day']}</td>
+            <td class="numc">{fmt_num(a['meta_spend_gold_per_day'])}</td>
+          </tr>"""
+        )
+
+    percentile_rows = []
+    for segment in segments:
+        d30 = segment["d30"]
+        percentile_rows.append(
+            f"""
+          <tr>
+            <td><strong>{segment['segment']}</strong></td>
+            <td class="numc {cls_for(d30['p10_balance'])}">{fmt_signed(d30['p10_balance'])}</td>
+            <td class="numc {cls_for(d30['p50_balance'])}">{fmt_signed(d30['p50_balance'])}</td>
+            <td class="numc {cls_for(d30['p90_balance'])}">{fmt_signed(d30['p90_balance'])}</td>
+          </tr>"""
+        )
+
+    # Use the middle segment as a readable daily trace.
+    daily_segment = next(item for item in segments if item["segment"] == "보통 Lv75")
+    daily_rows = []
+    for row in daily_segment["sample_daily"]:
+        if row["day"] <= 10 or row["day"] in (14, 21, 30):
+            daily_rows.append(
+                f"""
+          <tr>
+            <td class="numc">{row['day']}</td>
+            <td class="numc">{fmt_num(row['source'])}</td>
+            <td class="numc">{fmt_num(row['sink'])}</td>
+            <td class="numc {cls_for(row['net'])}">{fmt_signed(row['net'])}</td>
+            <td class="numc {cls_for(row['balance'])}">{fmt_signed(row['balance'])}</td>
+          </tr>"""
+            )
+
+    html = f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCJ 라이브 재화 순환 시뮬레이션 보고서</title>
+<style>
+  :root {{
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#222635; --border:#2e3348;
+    --text:#e2e4f0; --muted:#8890a8; --accent:#4f7cff; --green:#3ecf8e;
+    --yellow:#f5a623; --red:#e05c5c; --tag-bg:#252a3d;
+  }}
+  [data-theme="light"] {{
+    --bg:#f5f6f8; --surface:#fff; --surface2:#f0f1f4; --border:#dfe1e6;
+    --text:#1a1d27; --muted:#5e6278; --accent:#2563eb; --green:#16a34a;
+    --yellow:#d97706; --red:#dc2626; --tag-bg:#e8eaef;
+  }}
+  * {{ box-sizing:border-box; margin:0; padding:0; }}
+  html {{ scroll-behavior:smooth; }}
+  body {{ background:var(--bg); color:var(--text); font-family:'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; font-size:14px; line-height:1.65; }}
+  .theme-toggle {{ position:fixed; top:16px; right:16px; z-index:200; width:40px; height:40px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.2); }}
+  .back-btn {{ position:fixed; top:16px; right:68px; z-index:200; height:40px; padding:0 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--muted); display:flex; align-items:center; text-decoration:none; font-size:13px; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,.2); }}
+  .back-btn:hover, .theme-toggle:hover {{ border-color:var(--muted); color:var(--text); }}
+  nav {{ position:sticky; top:0; z-index:100; display:flex; align-items:center; gap:4px; flex-wrap:wrap; padding:0 32px; border-bottom:1px solid var(--border); background:rgba(15,17,23,.96); backdrop-filter:blur(8px); }}
+  [data-theme="light"] nav {{ background:rgba(245,246,248,.96); }}
+  nav .logo {{ color:var(--accent); font-weight:800; margin-right:16px; padding:14px 0; }}
+  nav a {{ color:var(--muted); text-decoration:none; padding:14px 10px; font-size:13px; white-space:nowrap; }}
+  nav a:hover {{ color:var(--text); }}
+  .container {{ max-width:1280px; margin:0 auto; padding:40px 32px 72px; }}
+  .hero {{ background:linear-gradient(135deg,#1a1d27 0%,#1e2234 55%,#17223a 100%); border:1px solid var(--border); border-radius:16px; padding:46px; margin-bottom:56px; position:relative; overflow:hidden; }}
+  [data-theme="light"] .hero {{ background:linear-gradient(135deg,#eef0f5 0%,#e8eaf2 55%,#eef3ff 100%); }}
+  .hero:before {{ content:""; position:absolute; right:-120px; top:-120px; width:420px; height:420px; background:radial-gradient(circle,rgba(79,124,255,.13),transparent 68%); }}
+  .eyebrow {{ color:var(--accent); font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; margin-bottom:10px; position:relative; }}
+  h1 {{ font-size:32px; line-height:1.2; margin-bottom:8px; position:relative; }}
+  .subtitle {{ color:var(--muted); position:relative; max-width:850px; }}
+  .hero-grid, .grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; }}
+  .hero-grid {{ margin-top:28px; position:relative; }}
+  .stat, .card, .mini {{ background:var(--surface); border:1px solid var(--border); border-radius:12px; }}
+  .stat {{ padding:16px; }}
+  .label {{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }}
+  .value {{ font-size:24px; font-weight:800; line-height:1.2; }}
+  .g {{ color:var(--green); }} .b {{ color:var(--accent); }} .y {{ color:var(--yellow); }} .r {{ color:var(--red); }}
+  .sub {{ color:var(--muted); font-size:12px; margin-top:4px; }}
+  section {{ scroll-margin-top:62px; margin-bottom:58px; }}
+  h2 {{ display:flex; align-items:center; gap:10px; font-size:20px; margin-bottom:20px; }}
+  h2 .num {{ width:28px; height:28px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; background:var(--accent); color:white; font-size:13px; font-weight:800; flex-shrink:0; }}
+  h3 {{ font-size:15px; margin:26px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--border); }}
+  .card {{ padding:22px; margin-bottom:16px; }}
+  .mini {{ padding:16px; }}
+  .mini .title {{ font-size:12px; color:var(--muted); font-weight:800; margin-bottom:8px; }}
+  .mini .big {{ font-size:22px; font-weight:800; }}
+  .mini .desc {{ font-size:12px; color:var(--muted); margin-top:4px; }}
+  .table-wrap {{ overflow-x:auto; border:1px solid var(--border); border-radius:10px; margin-bottom:18px; }}
+  table {{ width:100%; border-collapse:collapse; }}
+  th {{ text-align:left; padding:10px 13px; background:var(--surface2); color:var(--muted); border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }}
+  td {{ padding:9px 13px; border-bottom:1px solid rgba(46,51,72,.55); vertical-align:top; }}
+  tr:last-child td {{ border-bottom:none; }}
+  tr:hover td {{ background:rgba(79,124,255,.04); }}
+  .numc {{ font-variant-numeric:tabular-nums; font-family:Consolas, monospace; color:#a8bfff; white-space:nowrap; text-align:right; }}
+  [data-theme="light"] .numc {{ color:#2563eb; }}
+  code {{ background:var(--tag-bg); color:#b8c8ff; border-radius:4px; padding:2px 6px; font-size:12px; }}
+  [data-theme="light"] code {{ color:#1e40af; }}
+  .pos {{ color:var(--green); }}
+  .neg {{ color:var(--red); }}
+  .note {{ border-radius:10px; padding:13px 16px; margin:14px 0; font-size:13px; background:rgba(79,124,255,.07); border:1px solid rgba(79,124,255,.24); }}
+  .note.warn {{ background:rgba(245,166,35,.07); border-color:rgba(245,166,35,.24); }}
+  .note.good {{ background:rgba(62,207,142,.07); border-color:rgba(62,207,142,.24); }}
+  .formula {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px; }}
+  .formula .box {{ background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px; }}
+  .formula strong {{ display:block; margin-bottom:6px; }}
+  .footer {{ margin-top:60px; padding-top:22px; border-top:1px solid var(--border); color:var(--muted); font-size:12px; }}
+  @media (max-width:700px) {{ nav {{ padding:0 14px; }} .container {{ padding:24px 14px 56px; }} .hero {{ padding:28px 18px; }} h1 {{ font-size:26px; }} }}
+</style>
+<script>
+  (function(){{
+    var theme = localStorage.getItem("pst-report-theme");
+    if (theme === "light") document.documentElement.setAttribute("data-theme", "light");
+    document.addEventListener("DOMContentLoaded", function(){{
+      var back = document.createElement("a");
+      back.className = "back-btn";
+      back.href = "index.html";
+      back.textContent = "← 목록";
+      document.body.prepend(back);
+      var btn = document.createElement("button");
+      btn.className = "theme-toggle";
+      btn.title = "라이트/다크 모드 전환";
+      btn.textContent = theme === "light" ? "☀" : "☾";
+      document.body.prepend(btn);
+      btn.addEventListener("click", function(){{
+        var light = document.documentElement.getAttribute("data-theme") === "light";
+        if (light) {{
+          document.documentElement.removeAttribute("data-theme");
+          localStorage.setItem("pst-report-theme", "dark");
+          btn.textContent = "☾";
+        }} else {{
+          document.documentElement.setAttribute("data-theme", "light");
+          localStorage.setItem("pst-report-theme", "light");
+          btn.textContent = "☀";
+        }}
+      }});
+    }});
+  }})();
+</script>
+</head>
+<body>
+<nav>
+  <span class="logo">Live Currency Simulation</span>
+  <a href="#summary">요약</a>
+  <a href="#facts">라이브값</a>
+  <a href="#model">모델</a>
+  <a href="#assumptions">가정</a>
+  <a href="#results">결과</a>
+  <a href="#trace">일별 흐름</a>
+  <a href="#limits">한계</a>
+</nav>
+
+<div class="container">
+  <header class="hero">
+    <div class="eyebrow">Simulation Report · Live Sheet Only</div>
+    <h1>SCJ 라이브 재화 순환 시뮬레이션 보고서</h1>
+    <p class="subtitle">Google Sheet 라이브 <strong>{data['source']['spreadsheet']}</strong>에서 직접 읽은 값을 기준으로 30일 골드 지갑 순환을 시뮬레이션했다. 다른 HTML/MD 문서의 수치는 사용하지 않았다.</p>
+    <div class="hero-grid">
+      <div class="stat"><div class="label">시뮬레이션</div><div class="value b">30일 × 500회</div><div class="sub">세그먼트 6종</div></div>
+      <div class="stat"><div class="label">Lv75 방치골드</div><div class="value b">5,700g</div><div class="sub">1,900g × 3회/일</div></div>
+      <div class="stat"><div class="label">Daily Wheel EV</div><div class="value g">{fmt_num(facts['daily_wheel_gold_ev_per_spin'])}g</div><div class="sub">1회 골드 기대값</div></div>
+      <div class="stat"><div class="label">데코 Sink</div><div class="value g">{fmt_num(facts['meta_gold_total'])}g</div><div class="sub">해머 {fmt_num(facts['meta_hammer_total'])}개</div></div>
+    </div>
+  </header>
+
+  <section id="summary">
+    <h2><span class="num">1</span> 결론 요약</h2>
+    <div class="note warn"><strong>요약:</strong> 현재 라이브값과 아래 행동 가정에서는 극소극 유저만 30일 골드가 증가하고, 소극 이상 세그먼트는 입장료·부스터·메타 지출로 순감한다. 단, 인게임 클리어 보상 EV는 이번 모델에서 제외했기 때문에 실제 운영 판단에는 클리어 보상 공식/로그를 추가해야 한다.</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>세그먼트</th><th>Lv</th><th>입장료</th><th>RV 1회</th><th>방치 1회</th><th>D30 Source</th><th>D30 Sink</th><th>D30 Net</th><th>D30 Balance</th></tr></thead>
+        <tbody>
+          {''.join(summary_rows)}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="facts">
+    <h2><span class="num">2</span> 라이브 시트 입력값</h2>
+    <div class="grid">
+      <div class="mini"><div class="title">nru_start_gold</div><div class="big">{fmt_num(facts['nru_start_gold'])}g</div><div class="desc">신규 유저 최초 지급</div></div>
+      <div class="mini"><div class="title">방치골드 공식</div><div class="big">Level 기반</div><div class="desc"><code>{facts['idle_gold_formula']}</code></div></div>
+      <div class="mini"><div class="title">Daily Wheel</div><div class="big">{fmt_num(facts['daily_wheel_gold_ev_per_spin'])}g × {facts['daily_wheel_limit']}</div><div class="desc">골드 EV 기준</div></div>
+      <div class="mini"><div class="title">Shop AD</div><div class="big">{fmt_num(facts['shop_ad_gold'])}g × {facts['shop_ad_limit']}</div><div class="desc">product 시트 gold_ad_1</div></div>
+      <div class="mini"><div class="title">컬렉션 플래그</div><div class="big">album {facts['collection_flags']['is_album_collection_open']} / deck {facts['collection_flags']['is_deck_collection_open']}</div><div class="desc">현재 시뮬레이션에서 컬렉션 Sink 제외</div></div>
+    </div>
+    <div class="note">사용 시트: <code>{'</code>, <code>'.join(data['source']['sheets_used'])}</code></div>
+  </section>
+
+  <section id="model">
+    <h2><span class="num">3</span> 계산 모델</h2>
+    <div class="formula">
+      <div class="box"><strong>방치골드</strong><code>min(1000 + floor(level / 20) * 300, 6000) × 일 수령 횟수</code></div>
+      <div class="box"><strong>RV free gold</strong><code>round(entry_cost × rv_gold_ratio / 10000) × RV 사용 횟수</code></div>
+      <div class="box"><strong>Shop AD</strong><code>1000g × min(사용 횟수, 3)</code></div>
+      <div class="box"><strong>Daily Wheel</strong><code>daily_wheel 확률표 기반 Monte Carlo 샘플링</code></div>
+      <div class="box"><strong>입장료 Sink</strong><code>entry_cost × plays_per_day</code></div>
+      <div class="box"><strong>부스터 Sink</strong><code>패배 수 × 사용률 × tier/fixed 가격</code></div>
+    </div>
+    <div class="note warn"><strong>분리 원칙:</strong> 시트에서 읽은 값은 상수/가격/보상표이고, 플레이 횟수·승률·광고 소진율·부스터 사용률은 모델 가정이다. 아래 표에서 두 영역을 분리했다.</div>
+  </section>
+
+  <section id="assumptions">
+    <h2><span class="num">4</span> 행동 가정</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>세그먼트</th><th>판/일</th><th>승률</th><th>방치</th><th>RV 소진</th><th>Shop AD</th><th>Wheel</th><th>Undo/패</th><th>Extra/패</th><th>Fixed/일</th><th>Meta/일</th></tr></thead>
+        <tbody>
+          {''.join(assumption_rows)}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="results">
+    <h2><span class="num">5</span> 결과 상세</h2>
+    <h3>D30 잔액 분위수</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>세그먼트</th><th>P10</th><th>P50</th><th>P90</th></tr></thead>
+        <tbody>
+          {''.join(percentile_rows)}
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><strong>해석:</strong> Daily Wheel만 확률 샘플링되므로 분위수 폭은 크지 않다. 실제 플레이에서는 클리어 보상, 이벤트 참여, 실패 후 이탈, 부스터 인벤토리 사용 여부가 들어가면 분포가 더 넓어진다.</div>
+  </section>
+
+  <section id="trace">
+    <h2><span class="num">6</span> 일별 흐름 예시</h2>
+    <h3>보통 Lv75 샘플 런</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Day</th><th>Source</th><th>Sink</th><th>Net</th><th>Balance</th></tr></thead>
+        <tbody>
+          {''.join(daily_rows)}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="limits">
+    <h2><span class="num">7</span> 한계와 다음 작업</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>항목</th><th>이번 모델 처리</th><th>다음 단계</th></tr></thead>
+        <tbody>
+          <tr><td>인게임 클리어 보상 EV</td><td>제외</td><td>combo/remaining deck 공식 또는 실제 플레이 로그로 추가</td></tr>
+          <tr><td>이벤트 보상</td><td>일반 모델에서 제외</td><td>event_schedule + event_milestone 기반 주간 시뮬레이션 추가</td></tr>
+          <tr><td>부스터 인벤토리</td><td>골드 환산 제외</td><td>지급 부스터를 미래 Sink 절감분으로 환산하는 모델 추가</td></tr>
+          <tr><td>컬렉션</td><td>라이브 플래그 OFF라 제외</td><td>album/deck 오픈 시나리오 별도 비교</td></tr>
+          <tr><td>행동량</td><td>가정값</td><td>실제 DAU 세그먼트/승률/광고 소진율로 보정</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note good"><strong>재현 파일:</strong> 계산 스크립트 <code>workspace/live_currency_simulation.py</code>, 원본 결과 <code>workspace/live_currency_simulation_result.json</code>.</div>
+  </section>
+
+  <div class="footer">SCJ Live Currency Simulation Report · 작성일 2026-04-23 · Google Sheet 라이브값 기준</div>
+</div>
+</body>
+</html>"""
+    return html
+
+
+def main():
+    data = json.loads(RESULT_PATH.read_text(encoding="utf-8"))
+    REPORT_PATH.write_text(build_report(data), encoding="utf-8")
+    print("WROTE", REPORT_PATH)
+
+
+if __name__ == "__main__":
+    main()

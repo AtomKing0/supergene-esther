@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>Normal deck 과다 v5</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,sans-serif;background:#0f0f13;color:#e0e0e0;padding:12px}
+header{background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:15px}
+.badge{background:#ffc107;color:#000;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700}
+.tag{background:#2e2e50;color:#aac8ff;padding:3px 9px;border-radius:5px;font-size:11px;font-family:monospace}
+.note{color:#888;font-size:11px}
+.prog{margin-left:auto;font-size:13px}.prog strong{color:#4caf50;font-size:16px}
+.row{display:flex;align-items:center;padding:9px 14px;border-top:1px solid #1e1e2a;gap:10px;flex-wrap:wrap;background:#1a1a24}
+.row:first-of-type{border-top:none;border-radius:10px 10px 0 0;border-top:1px solid #2a2a3a}
+.row:last-of-type{border-radius:0 0 10px 10px;margin-bottom:10px;border-bottom:1px solid #2a2a3a}
+.row:hover{background:#1e1e2c}
+.row.done{opacity:.35}.row.done .sid{text-decoration:line-through;color:#555}
+.chk{width:19px;height:19px;border:2px solid #444;border-radius:5px;flex-shrink:0;cursor:pointer;position:relative}
+.chk.on{background:#4caf50;border-color:#4caf50}
+.chk.on::after{content:'';position:absolute;left:5px;top:1px;width:5px;height:11px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.sid{font-family:monospace;font-weight:700;color:#7ec8ff;min-width:74px;font-size:12px}
+.score{background:#2e2e50;color:#aac8ff;padding:2px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:50px;text-align:center}
+.deck{display:flex;align-items:center;gap:5px;font-family:monospace;font-size:13px}
+.deck .old{color:#ff9988;padding:1px 7px;background:#23233a;border-radius:3px;min-width:26px;text-align:center}
+.deck .arr{color:#555}
+.new{padding:3px 13px;border-radius:4px;font-weight:700;cursor:pointer;min-width:30px;text-align:center;background:#2a3a1e;color:#ffe0aa;box-shadow:0 0 0 1px #80803e}
+.new:hover{background:#4a4a2e}
+.floor{padding:1px 8px;border-radius:3px;font-size:10px;color:#886;background:#2a2a14;cursor:pointer;margin-left:2px}
+.floor:hover{color:#ccc;background:#4a4a24}
+.delta{font-size:10px;font-family:monospace;padding:1px 5px;border-radius:3px;color:#ffccaa;background:#3a2a1e}
+.metric{font-family:monospace;font-size:10px;color:#888;min-width:140px}
+.metric .m-r{color:#ff8888}
+.cr-group{font-family:monospace;font-size:10px}
+.fn{font-family:monospace;font-size:9px;color:#555;margin-left:auto;max-width:270px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.fn:hover{color:#aac8ff}
+.custom input{width:46px;background:#23233a;border:1px solid #3a3a55;color:#ffcc99;padding:2px 5px;border-radius:3px;font-family:monospace;font-size:11px;text-align:center;margin-left:4px}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#23233a;border:1px solid #4caf50;color:#4caf50;padding:8px 20px;border-radius:8px;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999}
+#toast.show{opacity:1}
+.ctrl{display:flex;gap:6px;margin-bottom:12px;background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 12px;flex-wrap:wrap}
+.btn{background:#23233a;border:1px solid #3a3a55;color:#aaa;padding:4px 12px;border-radius:5px;font-size:11px;cursor:pointer}
+.btn.danger{color:#ff8888}
+</style></head><body>
+<header>
+  <h1>📉 Normal deck 과다 v5 (CSV _0601)</h1>
+  <span class="badge">7개</span>
+  <span class="tag">Normal: med 0.55 / p75 0.65</span>
+  <span class="note">Hard/SH는 정책적 여유 인정, Normal만 검토</span>
+  <span class="prog">완료: <strong id="done">0</strong> / 7</span>
+</header>
+<div class="ctrl">
+  <button class="btn" onclick="applyUnchecked()" style="background:#5a2a2a;color:#ffaaaa;border-color:#7a3a3a">⚙️ 체크 안 된 것 JSON 적용</button>
+  <button class="btn" onclick="organizeUnchecked()" style="background:#2a4a6a;color:#aac8ff;border-color:#3a5a80">📁 체크 안 된 맵 정리</button>
+  <button class="btn danger" onclick="reset()">초기화</button>
+</div>
+<div class="row" id="row-CC_0023">
+<div class="chk" onclick="toggle('CC_0023')"></div>
+<div class="sid">CC_0023</div>
+<div class="score">440</div>
+<div class="deck">
+  <span class="old">11</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0023" data-val="10" onclick="copyVal(this)" title="p75">10</span>
+  <span class="floor" data-sid="CC_0023" data-val="9" onclick="copyFloor(this)" title="median">(9)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0023" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0023')"></span>
+</div>
+<div class="metric">tot 16 · <span class="m-r">ratio 0.69</span> (+25%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Easy_obj_3831311201260693714_3831311201260693714.json')" title="Easy_obj_3831311201260693714_3831311201260693714.json">Easy_obj_3831311201260693714_3831311201260693714.json</div>
+</div>
+<div class="row" id="row-CC_0058">
+<div class="chk" onclick="toggle('CC_0058')"></div>
+<div class="sid">CC_0058</div>
+<div class="score">515</div>
+<div class="deck">
+  <span class="old">13</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0058" data-val="12" onclick="copyVal(this)" title="p75">12</span>
+  <span class="floor" data-sid="CC_0058" data-val="10" onclick="copyFloor(this)" title="median">(10)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0058" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0058')"></span>
+</div>
+<div class="metric">tot 19 · <span class="m-r">ratio 0.68</span> (+24%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-1470323015904512967_-1470323015904512967.json')" title="VeryEasy_obj_-1470323015904512967_-1470323015904512967.json">VeryEasy_obj_-1470323015904512967_-1470323015904512967.json</div>
+</div>
+<div class="row" id="row-CC_0151">
+<div class="chk" onclick="toggle('CC_0151')"></div>
+<div class="sid">CC_0151</div>
+<div class="score">555</div>
+<div class="deck">
+  <span class="old">13</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0151" data-val="12" onclick="copyVal(this)" title="p75">12</span>
+  <span class="floor" data-sid="CC_0151" data-val="10" onclick="copyFloor(this)" title="median">(10)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0151" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0151')"></span>
+</div>
+<div class="metric">tot 19 · <span class="m-r">ratio 0.68</span> (+24%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_1989463773178151793_1989463773178151793.json')" title="VeryEasy_obj_1989463773178151793_1989463773178151793.json">VeryEasy_obj_1989463773178151793_1989463773178151793.json</div>
+</div>
+<div class="row" id="row-CC_0074">
+<div class="chk" onclick="toggle('CC_0074')"></div>
+<div class="sid">CC_0074</div>
+<div class="score">540</div>
+<div class="deck">
+  <span class="old">13</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0074" data-val="12" onclick="copyVal(this)" title="p75">12</span>
+  <span class="floor" data-sid="CC_0074" data-val="10" onclick="copyFloor(this)" title="median">(10)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0074" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0074')"></span>
+</div>
+<div class="metric">tot 19 · <span class="m-r">ratio 0.68</span> (+24%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_2406463454516795606_2406463454516795606.json')" title="VeryEasy_obj_2406463454516795606_2406463454516795606.json">VeryEasy_obj_2406463454516795606_2406463454516795606.json</div>
+</div>
+<div class="row" id="row-CC_0103">
+<div class="chk" onclick="toggle('CC_0103')"></div>
+<div class="sid">CC_0103</div>
+<div class="score">590</div>
+<div class="deck">
+  <span class="old">15</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0103" data-val="14" onclick="copyVal(this)" title="p75">14</span>
+  <span class="floor" data-sid="CC_0103" data-val="12" onclick="copyFloor(this)" title="median">(12)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0103" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0103')"></span>
+</div>
+<div class="metric">tot 22 · <span class="m-r">ratio 0.68</span> (+24%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Easy_obj_421220124618729722_421220124618729722.json')" title="Easy_obj_421220124618729722_421220124618729722.json">Easy_obj_421220124618729722_421220124618729722.json</div>
+</div>
+<div class="row" id="row-CC_0010">
+<div class="chk" onclick="toggle('CC_0010')"></div>
+<div class="sid">CC_0010</div>
+<div class="score">645</div>
+<div class="deck">
+  <span class="old">15</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0010" data-val="14" onclick="copyVal(this)" title="p75">14</span>
+  <span class="floor" data-sid="CC_0010" data-val="12" onclick="copyFloor(this)" title="median">(12)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0010" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0010')"></span>
+</div>
+<div class="metric">tot 22 · <span class="m-r">ratio 0.68</span> (+24%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-3944058996604576779_-3944058996604576779.json')" title="Easy_obj_-3944058996604576779_-3944058996604576779.json">Easy_obj_-3944058996604576779_-3944058996604576779.json</div>
+</div>
+<div class="row" id="row-CC_0203">
+<div class="chk" onclick="toggle('CC_0203')"></div>
+<div class="sid">CC_0203</div>
+<div class="score">655</div>
+<div class="deck">
+  <span class="old">17</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0203" data-val="16" onclick="copyVal(this)" title="p75">16</span>
+  <span class="floor" data-sid="CC_0203" data-val="14" onclick="copyFloor(this)" title="median">(14)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0203" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0203')"></span>
+</div>
+<div class="metric">tot 25 · <span class="m-r">ratio 0.68</span> (+24%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Normal_obj_3385651925592553098_3385651925592553098.json')" title="Normal_obj_3385651925592553098_3385651925592553098.json">Normal_obj_3385651925592553098_3385651925592553098.json</div>
+</div>
+
+<div id="toast"></div>
+<script>
+const KEY='deck_normal_v5';
+const state=JSON.parse(localStorage.getItem(KEY)||'{}');
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1200);}
+function updateProg(){document.getElementById('done').textContent=document.querySelectorAll('.row.done').length;}
+function markDone(sid){const row=document.getElementById('row-'+sid);if(!row.classList.contains('done')){row.classList.add('done');row.querySelector('.chk').classList.add('on');}state[sid]=true;save();updateProg();}
+function toggle(sid){const row=document.getElementById('row-'+sid);const c=row.querySelector('.chk');if(row.classList.contains('done')){row.classList.remove('done');c.classList.remove('on');delete state[sid];save();updateProg();}else markDone(sid);}
+function copyVal(el){navigator.clipboard.writeText(el.dataset.val).then(()=>{toast('p75: '+el.dataset.val);markDone(el.dataset.sid);});}
+function copyFloor(el){navigator.clipboard.writeText(el.dataset.val).then(()=>{toast('median: '+el.dataset.val);markDone(el.dataset.sid);});}
+function copyIn(sid){const v=document.getElementById('in-'+sid).value;if(!v)return;navigator.clipboard.writeText(v).then(()=>{toast('직접: '+v);markDone(sid);});}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('복사: '+t.slice(0,40)));}
+function reset(){if(!confirm('초기화?'))return;localStorage.removeItem(KEY);location.reload();}
+async function applyUnchecked(){const rows=document.querySelectorAll('.row');const items=[];rows.forEach(r=>{const sid=r.id.replace('row-','');const fn=r.querySelector('.fn')?.getAttribute('title')||'';const pill=r.querySelector('.new');items.push({sid,fn,new_deck:pill?parseInt(pill.dataset.val):0,checked:r.classList.contains('done')});});const un=items.filter(x=>!x.checked).length;if(!confirm(`체크 안 된 ${un}개 JSON 적용?`))return;try{const res=await fetch('/api/apply-deck-suggestions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items})});const j=await res.json();toast(`✅ ${j.updated_files}개 파일`);}catch(e){toast('❌ '+e.message);}}
+async function organizeUnchecked(){const rows=document.querySelectorAll('.row');const items=[];rows.forEach(r=>{const sid=r.id.replace('row-','');const fn=r.querySelector('.fn')?.getAttribute('title')||'';items.push({sid,fn,checked:r.classList.contains('done')});});const un=items.filter(x=>!x.checked).length;if(!confirm(`체크 안 된 ${un}개 복사?`))return;try{const res=await fetch('/api/organize-unchecked-maps',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items})});const j=await res.json();toast(`✅ ${j.copied}개 복사`);}catch(e){toast('❌ '+e.message);}}
+document.querySelectorAll('.row').forEach(r=>{const sid=r.id.replace('row-','');if(state[sid]){r.classList.add('done');r.querySelector('.chk').classList.add('on');}});
+updateProg();
+</script></body></html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Solitaire Tripeaks · UI Kit (Landscape 1280×720)</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #1a1610; font-family: var(--font-ui); overflow: hidden; }
+  .stage-wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .stage { width: 1280px; height: 720px; flex: none; position: relative;
+    background: #000; border-radius: 12px;
+    box-shadow: 0 30px 100px rgba(0,0,0,.8), 0 0 0 2px #2a241a; overflow: hidden;
+    transform-origin: center center; }
+  @keyframes fadeIn { from {opacity: 0} to {opacity: 1} }
+  @keyframes popIn { 0% {opacity: 0; transform: scale(0.8) translateY(10px)} 100% {opacity: 1; transform: scale(1) translateY(0)} }
+  @keyframes shake { 0%,100% {transform: translateX(0)} 25% {transform: translateX(-6px)} 50% {transform: translateX(6px)} 75% {transform: translateX(-4px)} }
+  @keyframes cardRemove { to { transform: scale(1.3) translateY(-20px); opacity: 0; } }
+  @keyframes pulse { 0%,100% { box-shadow: var(--shadow-stamp-md), 0 0 16px rgba(255,225,138,.6); } 50% { box-shadow: var(--shadow-stamp-md), 0 0 28px rgba(255,225,138,.95); } }
+  @keyframes streakHintBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  @keyframes rewardBoxPulse { 0%,100% { transform: scale(1) rotate(0deg); } 25% { transform: scale(1.05) rotate(-2deg); } 75% { transform: scale(1.05) rotate(2deg); } }
+  .dev-bar { position: fixed; top: 14px; right: 14px;
+    display: flex; flex-direction: column; gap: 4px; background: rgba(0,0,0,.78); backdrop-filter: blur(6px);
+    padding: 8px; border-radius: 14px; font-family: var(--font-ui); z-index: 999;
+    max-height: calc(100vh - 28px); overflow: auto;
+    transition: all .25s ease; }
+  .dev-bar.collapsed { padding: 0; background: transparent; backdrop-filter: none; }
+  .dev-bar .row { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .dev-bar button { border: 0; background: rgba(255,255,255,.08); color: #fff;
+    padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 600; }
+  .dev-bar button:hover { background: rgba(255,255,255,.18); }
+  .dev-bar button.active { background: var(--brand-orange-400); }
+  .dev-bar .sep { height: 1px; background: rgba(255,255,255,.15); margin: 4px 0; }
+  .dev-bar .meta { color: #9a9a9a; font-size: 9px; padding: 4px 2px 2px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+  .dev-toggle { position: fixed; top: 14px; right: 14px; z-index: 1000;
+    width: 34px; height: 34px; border-radius: 999px; border: 0; cursor: pointer;
+    background: rgba(0,0,0,.55); color: #fff; font-size: 16px; backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center; padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+  .dev-toggle:hover { background: rgba(0,0,0,.75); }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="stage" id="stage"></div>
+</div>
+
+<script type="text/babel" src="./components/Icons.jsx"></script>
+<script type="text/babel" src="./components/Primitives.jsx"></script>
+<script type="text/babel" src="./components/RoyalColorCollection.jsx"></script>
+<script type="text/babel" src="./components/DailyRoulette.jsx"></script>
+<script type="text/babel" src="./components/LobbyScreen.jsx"></script>
+<script type="text/babel" src="./components/PreLevelPopup.jsx"></script>
+<script type="text/babel" src="./components/IngameScreen.jsx"></script>
+<script type="text/babel" src="./components/ResultScreen.jsx"></script>
+<script type="text/babel" src="./components/CityDecorateScreen.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+const App = () => {
+  const [screen, setScreen] = React.useState(() => localStorage.getItem('pst_screen') || 'lobby');
+  const [devOpen, setDevOpen] = React.useState(() => localStorage.getItem('pst_dev_open') !== '0');
+  React.useEffect(() => { localStorage.setItem('pst_dev_open', devOpen ? '1' : '0'); }, [devOpen]);
+  const [gold, setGold] = React.useState(2000);
+  const [hammers, setHammers] = React.useState(1);
+  const [level, setLevel] = React.useState(3);
+  const [cityIdx, setCityIdx] = React.useState(0);
+  const [upgrades, setUpgrades] = React.useState({});
+  const [showPrelevel, setShowPrelevel] = React.useState(false);
+  const [resultVariant, setResultVariant] = React.useState('clear');
+  const [currentBet, setCurrentBet] = React.useState(1);
+
+  // --- Royal Color Collection state ---
+  const [royalVariant, setRoyalVariant] = React.useState(() => localStorage.getItem('pst_royal_variant') || 'A');
+  const [showRoyal, setShowRoyal] = React.useState(false);
+  const [royalPart, setRoyalPart] = React.useState(() => detectPart());
+  const [royalProgress, setRoyalProgress] = React.useState(42);
+  const [claimedReward, setClaimedReward] = React.useState(null);
+
+  // --- Daily Roulette state ---
+  const [rouletteVariant, setRouletteVariant] = React.useState(() => localStorage.getItem('pst_roulette_variant') || 'A');
+  const [rouletteWinFlow, setRouletteWinFlow] = React.useState(() => localStorage.getItem('pst_roulette_winflow') || 'popup');
+  const [showRoulette, setShowRoulette] = React.useState(false);
+  const [rouletteResetKey, setRouletteResetKey] = React.useState(0);
+  React.useEffect(() => { localStorage.setItem('pst_roulette_variant', rouletteVariant); }, [rouletteVariant]);
+  React.useEffect(() => { localStorage.setItem('pst_roulette_winflow', rouletteWinFlow); }, [rouletteWinFlow]);
+
+  React.useEffect(() => { localStorage.setItem('pst_screen', screen); }, [screen]);
+  React.useEffect(() => { localStorage.setItem('pst_royal_variant', royalVariant); }, [royalVariant]);
+  const go = (s) => setScreen(s);
+
+  // Auto-claim milestone whenever progress crosses a threshold
+  const prevProgressRef = React.useRef(royalProgress);
+  React.useEffect(() => {
+    const prev = prevProgressRef.current;
+    const justCrossed = THRESHOLDS.findIndex((t, i) => prev < t && royalProgress >= t);
+    if (justCrossed >= 0) {
+      const r = REWARDS[justCrossed];
+      setClaimedReward(r);
+      // apply reward
+      if (r.type === 'g') setGold(g => g + r.amount);
+      if (r.type === 'h') setHammers(h => h + r.amount);
+    }
+    prevProgressRef.current = royalProgress;
+  }, [royalProgress]);
+
+  return (
+    <>
+      <div data-screen-label={`01 ${screen}`} style={{position:'absolute', inset:0}}>
+        {screen === 'lobby' && (
+          <LobbyScreen
+            gold={gold} hammers={hammers} level={level} cityIdx={cityIdx}
+            onPlay={() => setShowPrelevel(true)}
+            onDecorate={() => go('decorate')}
+            onAddGold={() => setGold(g => g + 500)}
+            onOpenEvent={() => setShowRoyal(true)}
+            onOpenRoulette={() => setShowRoulette(true)}
+          />
+        )}
+        {screen === 'ingame' && (
+          <IngameScreen level={level} gold={gold}
+            onClear={() => { setResultVariant('clear'); setRoyalProgress(p => p + 8); go('result'); }}
+            onHome={() => go('lobby')} />
+        )}
+        {screen === 'result' && (
+          <ResultScreen variant={resultVariant} level={level}
+            goldReward={200 * currentBet} hammerReward={1}
+            onNext={() => { setGold(g => g + 200 * currentBet); setHammers(h => h + 1); setLevel(l => l + 1); go('lobby'); }}
+            onHome={() => {
+              if (resultVariant === 'clear') {
+                setGold(g => g + 200 * currentBet); setHammers(h => h + 1); setLevel(l => l + 1);
+              }
+              go('lobby');
+            }}
+            onContinue={() => go('ingame')} />
+        )}
+        {screen === 'decorate' && (
+          <CityDecorateScreen hammers={hammers} gold={gold} cityIdx={cityIdx} upgrades={upgrades}
+            onUpgrade={(id, hCost, gCost) => {
+              setHammers(h => h - hCost); setGold(g => g - gCost);
+              setUpgrades(u => ({...u, [id]: (u[id] || 0) + 1}));
+            }}
+            onHome={() => go('lobby')} />
+        )}
+        {showPrelevel && screen === 'lobby' && (
+          <PreLevelPopup level={level}
+            onClose={() => setShowPrelevel(false)}
+            onPlay={(bet) => { setCurrentBet(bet); setGold(g => g - 50 * bet); setShowPrelevel(false); go('ingame'); }} />
+        )}
+        {showRoyal && (
+          <RoyalColorCollection
+            variant={royalVariant}
+            part={royalPart} progress={royalProgress} level={level}
+            onClose={() => setShowRoyal(false)}
+            onPlay={() => { setShowRoyal(false); setShowPrelevel(true); }} />
+        )}
+        {claimedReward && <ClaimToast reward={claimedReward} onDone={() => setClaimedReward(null)} />}
+        {showRoulette && (
+          <DailyRoulette
+            key={rouletteResetKey}
+            variant={rouletteVariant}
+            winningFlow={rouletteWinFlow}
+            onClose={() => setShowRoulette(false)}
+            onSpin={(reward) => {
+              if (reward.type === 'gold') setGold(g => g + reward.amount);
+              if (reward.type === 'hammer') setHammers(h => h + reward.amount);
+            }} />
+        )}
+      </div>
+
+      <div className="dev-bar" style={{display: devOpen ? 'flex' : 'none'}}>
+        <div className="row" style={{justifyContent:'flex-end'}}>
+          <button onClick={() => setDevOpen(false)} style={{background:'transparent', padding:'2px 6px', fontSize:14}}>✕</button>
+        </div>
+        <span className="meta">Screens</span>
+        <div className="row">
+          <button className={screen==='lobby'?'active':''} onClick={() => go('lobby')}>Lobby</button>
+          <button onClick={() => setShowPrelevel(true)}>Pre-Level</button>
+          <button className={screen==='ingame'?'active':''} onClick={() => go('ingame')}>Ingame</button>
+          <button className={screen==='result'?'active':''} onClick={() => { setResultVariant('clear'); go('result'); }}>Clear</button>
+          <button onClick={() => { setResultVariant('fail'); go('result'); }}>Fail</button>
+          <button className={screen==='decorate'?'active':''} onClick={() => go('decorate')}>Decorate</button>
+        </div>
+        <div className="sep"></div>
+        <span className="meta">Royal</span>
+        <div className="row">
+          {['A','B','C','D'].map(v => (
+            <button key={v} className={royalVariant===v?'active':''}
+              onClick={() => { setRoyalVariant(v); setShowRoyal(true); }}>{v}</button>
+          ))}
+        </div>
+        <div className="row">
+          <button onClick={() => setRoyalPart(p => p === 1 ? 2 : 1)}>Part {royalPart}</button>
+          <button onClick={() => setRoyalProgress(p => Math.min(500, p + 20))}>+20 cards</button>
+          <button onClick={() => setRoyalProgress(0)}>Reset</button>
+        </div>
+        <div className="sep"></div>
+        <span className="meta">Roulette</span>
+        <div className="row">
+          {['A','B','C'].map(v => (
+            <button key={v} className={rouletteVariant===v?'active':''}
+              onClick={() => { setRouletteVariant(v); setShowRoulette(true); }}>{v}</button>
+          ))}
+        </div>
+        <div className="row">
+          <button className={rouletteWinFlow==='popup'?'active':''}
+            onClick={() => setRouletteWinFlow('popup')}>Popup flow</button>
+          <button className={rouletteWinFlow==='highlight'?'active':''}
+            onClick={() => setRouletteWinFlow('highlight')}>Toast flow</button>
+          <button onClick={() => { setRouletteResetKey(k => k + 1); setShowRoulette(true); }}>Reset</button>
+        </div>
+      </div>
+      {!devOpen && (
+        <button className="dev-toggle" onClick={() => setDevOpen(true)} title="Dev tools">⚙</button>
+      )}
+    </>
+  );
+};
+
+const stage = document.getElementById('stage');
+ReactDOM.createRoot(stage).render(<App />);
+
+function fit() {
+  const pad = 40;
+  const sx = (window.innerWidth - pad) / 1280;
+  const sy = (window.innerHeight - 100) / 720;
+  const s = Math.min(sx, sy, 1);
+  stage.style.transform = `scale(${s})`;
+}
+window.addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

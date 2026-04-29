@@ -1,0 +1,2602 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Deck Count v6 (87개)</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f0f13;color:#e0e0e0;min-height:100vh}
+  header{background:#1a1a24;border-bottom:1px solid #2a2a3a;padding:12px 18px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  header h1{font-size:16px;font-weight:700;color:#fff}
+  .ver-badge{background:#2e2e50;color:#aac8ff;border-radius:4px;padding:1px 7px;font-size:11px;font-weight:700}
+  .total-badge{background:#f44336;color:#fff;border-radius:12px;padding:2px 10px;font-size:13px;font-weight:700}
+  .model-note{font-size:11px;color:#7ec87e;background:#1e2e1e;border:1px solid #3a553a;border-radius:6px;padding:4px 9px;font-family:monospace}
+  .feedback-note{font-size:11px;color:#ffcc99;background:#2a1e1a;border:1px solid #553a3a;border-radius:6px;padding:4px 9px}
+  .legend{font-size:10px;color:#888;line-height:1.5}
+  .legend b{color:#ccc}
+  .legend .hi{color:#ff9999;font-weight:700}
+  .legend .md{color:#ffcc99;font-weight:700}
+  .legend .lo{color:#aadd99;font-weight:700}
+  .global-prog{margin-left:auto;font-size:13px;color:#888}
+  .global-prog strong{color:#4caf50;font-size:15px}
+  .container{max-width:1180px;margin:0 auto;padding:14px 10px 60px}
+  .filter-bar{display:flex;gap:6px;margin-bottom:10px;align-items:center;flex-wrap:wrap;background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 12px}
+  .filter-bar label{font-size:11px;color:#888;margin-right:2px}
+  .filter-btn{background:#23233a;border:1px solid #3a3a55;color:#aaa;padding:3px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600}
+  .filter-btn.active{background:#2e2e50;color:#fff;border-color:#5e5e80}
+  .filter-btn.high.active{background:#5a1a1a;color:#ff9999;border-color:#7a2a2a}
+  .filter-btn.med.active{background:#4a3a1a;color:#ffcc99;border-color:#6a5a2a}
+  .filter-btn.low.active{background:#2a3a2a;color:#aadd99;border-color:#4a5a4a}
+  .tier-section{background:#1a1a24;border-radius:10px;margin-bottom:10px;overflow:hidden;border:1px solid #2a2a3a}
+  .tier-header{display:flex;align-items:center;gap:10px;padding:9px 13px;cursor:pointer;user-select:none}
+  .tier-header:hover{background:#22222e}
+  .tier-label{font-weight:800;font-size:12px;padding:2px 10px;border-radius:5px;color:#fff}
+  .tier-title{font-weight:600;font-size:11px;color:#888;flex:1}
+  .tier-count{background:#2a2a3a;border-radius:10px;padding:2px 8px;font-size:10px;color:#aaa}
+  .tier-progress{font-size:10px;color:#4caf50;min-width:44px;text-align:right}
+  .toggle-icon{color:#555;font-size:10px;transition:transform .2s}
+  .tier-header.collapsed .toggle-icon{transform:rotate(-90deg)}
+  .tier-body.hidden{display:none}
+  .map-item{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;border-top:1px solid #1e1e2a}
+  .map-item:hover{background:#1e1e2c}
+  .map-item.done{opacity:.35}
+  .map-item.done .map-id{text-decoration:line-through;color:#555}
+  .map-item.hidden{display:none}
+  .checkbox-wrap{position:relative;flex-shrink:0;margin-top:2px}
+  .checkbox-wrap input{position:absolute;opacity:0;width:0;height:0}
+  .checkmark{display:block;width:17px;height:17px;border:2px solid #444;border-radius:4px;cursor:pointer}
+  .checkbox-wrap input:checked~.checkmark{background:#4caf50;border-color:#4caf50}
+  .checkmark::after{content:'';display:none;position:absolute;left:4px;top:1px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .checkbox-wrap input:checked~.checkmark::after{display:block}
+  .map-body{flex:1;min-width:0}
+  .map-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .conf-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:4px;letter-spacing:.5px;min-width:42px;text-align:center}
+  .anchor-badge{background:#2a4a6a;color:#aac8ff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.3px}
+  .map-id{font-size:13px;font-weight:700;color:#7ec8ff;font-family:monospace;cursor:pointer;padding:2px 6px;border-radius:4px;min-width:72px;text-align:center}
+  .map-id:hover{background:#1e3a55}
+  .deck-change{font-family:monospace;font-size:13px;color:#ccc;padding:2px 4px}
+  .deck-change .old{color:#888}
+  .deck-change .arrow{color:#666;margin:0 3px}
+  .deck-change .new{color:#4caf50;font-weight:700;cursor:pointer;padding:1px 5px;border-radius:3px}
+  .deck-change .new:hover{background:#1e3a1e;color:#aaffaa}
+  .delta-pill{padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;font-family:monospace}
+  .delta-big{background:#5a1a1a;color:#ff9999}
+  .delta-med{background:#4a3a1a;color:#ffcc99}
+  .delta-sml{background:#2a3a2a;color:#aadd99}
+  .metric-row{font-size:10px;color:#666;margin-top:4px;font-family:monospace;line-height:1.5}
+  .metric-row .m-lbl{color:#555}
+  .metric-row .m-val{color:#aaa}
+  .metric-row .m-warn{color:#ff8888;font-weight:700}
+  .metric-row .m-good{color:#88cc88;font-weight:700}
+  .metric-row .m-mid{color:#ffcc66}
+  .metric-row .sep{color:#333;margin:0 6px}
+  .btn-fn{margin-left:auto;background:#23233a;border:1px solid #3a3a55;color:#a0a0c0;padding:2px 8px;border-radius:5px;font-size:10px;cursor:pointer;font-family:monospace}
+  .fb-group{display:inline-flex;border:1px solid #3a3a55;border-radius:4px;overflow:hidden}
+  .btn-fb{background:#2a2a3a;border:none;border-right:1px solid #3a3a55;color:#888;padding:2px 7px;font-size:10px;cursor:pointer;font-weight:700;min-width:36px}
+  .btn-fb:last-child{border-right:none}
+  .btn-fb:hover{background:#3a3a55;color:#ddd}
+  .btn-fb.on.fb-easy{background:#2a4a6a;color:#aaccff}
+  .btn-fb.on.fb-ok{background:#2a5a2a;color:#aaffaa}
+  .btn-fb.on.fb-hard{background:#6a2a2a;color:#ffaaaa}
+  .map-item.fb-easy{background:#14202a !important}
+  .map-item.fb-ok{background:#1a241a !important}
+  .map-item.fb-hard{background:#241414 !important}
+  #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#23233a;border:1px solid #4caf50;color:#4caf50;padding:8px 18px;border-radius:8px;font-size:12px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9999}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style></head><body>
+<header>
+  <h1>Deck Count Adjustment <span class="ver-badge">v6 (42 anchor · 간소화 모델)</span></h1>
+  <span class="total-badge">87개</span>
+  <span class="model-note">est = 0.40×field + 0.40×depth − 0.40×frnt + 1.0</span>
+  <span class="feedback-note">💡 42개 anchor 학습 · 4-term 단순화 · all-tier 적용</span>
+  <span class="legend">
+    <span class="hi">HIGH</span>=diff&lt;-25% · <span class="md">MED</span>=diff&lt;-10% · <span class="lo">LOW</span>=borderline
+  </span>
+  <span class="global-prog">완료: <strong id="done-count">0</strong> / 94</span>
+</header>
+<div class="container">
+  <div class="filter-bar">
+    <label>신뢰도:</label>
+    <button class="filter-btn high active" onclick="toggleFilter(this,'HIGH')">HIGH</button>
+    <button class="filter-btn med active" onclick="toggleFilter(this,'MEDIUM')">MED</button>
+    <button class="filter-btn low active" onclick="toggleFilter(this,'LOW')">LOW</button>
+    <label style="margin-left:8px">피드백:</label>
+    <button class="filter-btn" id="btn-hide-easy" onclick="toggleHideFb(this,'easy')">쉬움 숨김</button>
+    <button class="filter-btn" id="btn-hide-ok" onclick="toggleHideFb(this,'ok')">OK 숨김</button>
+    <button class="filter-btn" id="btn-hide-hard" onclick="toggleHideFb(this,'hard')">어려움 숨김</button>
+    <label style="margin-left:8px">보기:</label>
+    <button class="filter-btn active" id="btn-undone" onclick="toggleUndone(this)">미완료</button>
+    <button class="filter-btn" onclick="expandAll()">펼침</button>
+    <button class="filter-btn" onclick="collapseAll()">접음</button>
+    <button class="filter-btn" onclick="exportFb()" style="margin-left:auto;background:#2a5a2a;color:#aaffaa;border-color:#3a7a3a;font-size:12px;padding:4px 14px">💾 선택 저장</button>
+    <button class="filter-btn" onclick="resetAll()" style="color:#ff8888">초기화</button>
+  </div>
+
+    <div class="tier-section" data-tier="VeryEasy">
+      <div class="tier-header" onclick="toggleTier(this)">
+        <span class="tier-label" style="background:#4caf50">VeryEasy</span>
+        <span class="tier-title">HIGH 6 · MED 0 · LOW 0</span>
+        <span class="tier-count">6개</span>
+        <span class="tier-progress">0/6</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="tier-body">
+        <div class="map-item fb-hard" id="item-CC_0071" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0071')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0071')">CC_0071</span>
+              <span class="deck-change"><span class="old">7</span><span class="arrow">→</span><span class="new" onclick="copyTxt('12')" title="최종 deckCount 복사">12</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0071">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0071','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0071','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0071','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('VeryEasy_obj_1505846800031349250_1505846800031349250.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">20</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">9.5</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.5</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">6/20</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.65</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0234" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0234')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0234')">CC_0234</span>
+              <span class="deck-change"><span class="old">7</span><span class="arrow">→</span><span class="new" onclick="copyTxt('12')" title="최종 deckCount 복사">12</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0234">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0234','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0234','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0234','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('VeryEasy_obj_2825736920963069881_2825736920963069881.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">23</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">2</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">8.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.8</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">8/23</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.61</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0232" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0232')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0232')">CC_0232</span>
+              <span class="deck-change"><span class="old">6</span><span class="arrow">→</span><span class="new" onclick="copyTxt('11')" title="최종 deckCount 복사">11</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0232">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0232','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0232','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0232','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('VeryEasy_obj_2533780747040595241_2533780747040595241.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">20</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">8.7</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.7</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/20</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.65</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0242" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0242')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0242')">CC_0242</span>
+              <span class="deck-change"><span class="old">6</span><span class="arrow">→</span><span class="new" onclick="copyTxt('11')" title="최종 deckCount 복사">11</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0242">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0242','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0242','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0242','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('VeryEasy_obj_8554537005776796579_8554537005776796579.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">18</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">8.3</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.3</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">7/18</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.83</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0164" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0164')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0164')">CC_0164</span>
+              <span class="deck-change"><span class="old">7</span><span class="arrow">→</span><span class="new" onclick="copyTxt('12')" title="최종 deckCount 복사">12</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0164">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0164','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0164','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0164','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('VeryEasy_obj_9170902172408887236_9170902172408887236.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">19</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">8.3</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.3</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">6/19</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.84</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">71%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0219" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0219')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0219')">CC_0219</span>
+              <span class="deck-change"><span class="old">6</span><span class="arrow">→</span><span class="new" onclick="copyTxt('11')" title="최종 deckCount 복사">11</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0219">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0219','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0219','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0219','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('VeryEasy_obj_-5924488609331911666_-5924488609331911666.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">15</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">7.1</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.1</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">4/15</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">2.67</span>
+              
+            </div>
+          </div>
+        </div>      </div>
+    </div>
+    <div class="tier-section" data-tier="Easy">
+      <div class="tier-header" onclick="toggleTier(this)">
+        <span class="tier-label" style="background:#8bc34a">Easy</span>
+        <span class="tier-title">HIGH 16 · MED 2 · LOW 3</span>
+        <span class="tier-count">21개</span>
+        <span class="tier-progress">0/21</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="tier-body">
+        <div class="map-item fb-hard" id="item-CC_0017" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0017')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0017')">CC_0017</span>
+              <span class="deck-change"><span class="old">5</span><span class="arrow">→</span><span class="new" onclick="copyTxt('13')" title="최종 deckCount 복사">13</span></span>
+              <span class="delta-pill delta-big">+8</span>
+              <span class="fb-group" data-sid="CC_0017">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0017','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0017','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0017','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-9170708446745828065_-9170708446745828065.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">25</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">10.0</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-5.0</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">11/25</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.48</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">7%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0025" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0025')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0025')">CC_0025</span>
+              <span class="deck-change"><span class="old">6</span><span class="arrow">→</span><span class="new" onclick="copyTxt('13')" title="최종 deckCount 복사">13</span></span>
+              <span class="delta-pill delta-big">+7</span>
+              <span class="fb-group" data-sid="CC_0025">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0025','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0025','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0025','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_4128039804169441458_4128039804169441458.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">28</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">2</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">10.9</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">10/28</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.14</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">70%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0007" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0007')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0007')">CC_0007</span>
+              <span class="deck-change"><span class="old">8</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-big">+6</span>
+              <span class="fb-group" data-sid="CC_0007">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0007','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0007','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0007','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-3577985653752088467_-3577985653752088467.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">25</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">11.4</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.4</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/25</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.96</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">75%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0090" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0090')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0090')">CC_0090</span>
+              <span class="deck-change"><span class="old">8</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-big">+6</span>
+              <span class="fb-group" data-sid="CC_0090">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0090','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0090','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0090','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-3890466614938630821_-3890466614938630821.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">25</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">11.1</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.1</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/25</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.64</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">68%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0019" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0019')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0019')">CC_0019</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0019">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0019','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0019','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0019','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_1970069471253374735_1970069471253374735.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">25</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">10.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.8</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">10/25</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.48</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">0%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0002" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0002')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0002')">CC_0002</span>
+              <span class="deck-change"><span class="old">7</span><span class="arrow">→</span><span class="new" onclick="copyTxt('12')" title="최종 deckCount 복사">12</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0002">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0002','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0002','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0002','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-1076113912418926872_-1076113912418926872.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">22</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">2</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">7.7</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.7</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-good">14/22</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">7.18</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">4%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0183" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0183')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0183')">CC_0183</span>
+              <span class="deck-change"><span class="old">5</span><span class="arrow">→</span><span class="new" onclick="copyTxt('10')" title="최종 deckCount 복사">10</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0183">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0183','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0183','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0183','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_5917400523554303550_5917400523554303550.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">20</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">7.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.8</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-good">12/20</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">6.05</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-mid">49%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0016" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0016')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0016')">CC_0016</span>
+              <span class="deck-change"><span class="old">14</span><span class="arrow">→</span><span class="new" onclick="copyTxt('19')" title="최종 deckCount 복사">19</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0016">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0016','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0016','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0016','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-6845371592253495967_-6845371592253495967.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">23</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">6</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">10.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-good">+3.2</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">7/23</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.57</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">64%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0171" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0171')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0171')">CC_0171</span>
+              <span class="deck-change"><span class="old">7</span><span class="arrow">→</span><span class="new" onclick="copyTxt('12')" title="최종 deckCount 복사">12</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0171">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0171','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0171','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0171','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-8228455277662928550_-8228455277662928550.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">22</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">9.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">8/22</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.86</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">62%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0182" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0182')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0182')">CC_0182</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0182">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0182','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0182','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0182','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_5582524774713652387_5582524774713652387.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">28</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">12.3</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.3</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/28</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.64</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">76%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0004" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0004')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0004')">CC_0004</span>
+              <span class="deck-change"><span class="old">12</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0004">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0004','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0004','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0004','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-1810722570242081567_-1810722570242081567.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">26</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">11.4</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-good">+0.6</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/26</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.00</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">0%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0020" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0020')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0020')">CC_0020</span>
+              <span class="deck-change"><span class="old">18</span><span class="arrow">→</span><span class="new" onclick="copyTxt('21')" title="최종 deckCount 복사">21</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0020">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0020','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0020','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0020','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_2641590008734069844_2641590008734069844.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">28</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">2</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">11.3</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-good">+6.7</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/28</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.29</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">0%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0103" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0103')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0103')">CC_0103</span>
+              <span class="deck-change"><span class="old">16</span><span class="arrow">→</span><span class="new" onclick="copyTxt('19')" title="최종 deckCount 복사">19</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0103">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0103','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0103','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0103','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_421220124618729722_421220124618729722.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">22</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">9.4</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-good">+6.6</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">9/22</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.00</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">3%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0167" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0167')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0167')">CC_0167</span>
+              <span class="deck-change"><span class="old">14</span><span class="arrow">→</span><span class="new" onclick="copyTxt('17')" title="최종 deckCount 복사">17</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0167">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0167','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0167','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0167','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-3217003002116541924_-3217003002116541924.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">20</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">9.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-good">+4.2</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">6/20</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">3.00</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">0%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0023" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0023')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0023')">CC_0023</span>
+              <span class="deck-change"><span class="old">12</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0023">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0023','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0023','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0023','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_3831311201260693714_3831311201260693714.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">16</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">7.2</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-good">+4.8</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">6/16</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.44</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">12%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0009" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0009')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0009')">CC_0009</span>
+              <span class="deck-change"><span class="old">12</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0009">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0009','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0009','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0009','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-3819987064685043330_-3819987064685043330.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">26</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">11.2</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-good">+0.8</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">8/26</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.50</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">0%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0166" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0166')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0166')">CC_0166</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-med">+4</span>
+              <span class="fb-group" data-sid="CC_0166">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0166','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0166','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0166','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-1911471411139201695_-1911471411139201695.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">26</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">6</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">12.1</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.1</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/26</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.15</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">78%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0109" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0109')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0109')">CC_0109</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('13')" title="최종 deckCount 복사">13</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0109">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0109','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0109','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0109','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_8056353492817243643_8056353492817243643.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">28</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">11.2</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.2</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/28</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.61</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0014" data-conf="LOW">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0014')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#2a3a2a;color:#aadd99">LOW</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0014')">CC_0014</span>
+              <span class="deck-change"><span class="old">9</span><span class="arrow">→</span><span class="new" onclick="copyTxt('11')" title="최종 deckCount 복사">11</span></span>
+              <span class="delta-pill delta-sml">+2</span>
+              <span class="fb-group" data-sid="CC_0014">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0014','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0014','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0014','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-6253912204719183690_-6253912204719183690.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">20</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">7</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">9.9</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-good">9/20</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.75</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">78%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0169" data-conf="LOW">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0169')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#2a3a2a;color:#aadd99">LOW</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0169')">CC_0169</span>
+              <span class="deck-change"><span class="old">8</span><span class="arrow">→</span><span class="new" onclick="copyTxt('10')" title="최종 deckCount 복사">10</span></span>
+              <span class="delta-pill delta-sml">+2</span>
+              <span class="fb-group" data-sid="CC_0169">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0169','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0169','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0169','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-4720816346241619179_-4720816346241619179.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">24</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">8.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.8</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">9/24</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">7.50</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">72%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0095" data-conf="LOW">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0095')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#2a3a2a;color:#aadd99">LOW</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0095')">CC_0095</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('12')" title="최종 deckCount 복사">12</span></span>
+              <span class="delta-pill delta-sml">+2</span>
+              <span class="fb-group" data-sid="CC_0095">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0095','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0095','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0095','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Easy_obj_-6047974373355539936_-6047974373355539936.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">26</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">10.9</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">9/26</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.15</span>
+              
+            </div>
+          </div>
+        </div>      </div>
+    </div>
+    <div class="tier-section" data-tier="Normal">
+      <div class="tier-header" onclick="toggleTier(this)">
+        <span class="tier-label" style="background:#ff9800">Normal</span>
+        <span class="tier-title">HIGH 14 · MED 11 · LOW 1</span>
+        <span class="tier-count">26개</span>
+        <span class="tier-progress">0/26</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="tier-body">
+        <div class="map-item fb-hard" id="item-CC_0212" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0212')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0212')">CC_0212</span>
+              <span class="deck-change"><span class="old">6</span><span class="arrow">→</span><span class="new" onclick="copyTxt('13')" title="최종 deckCount 복사">13</span></span>
+              <span class="delta-pill delta-big">+7</span>
+              <span class="fb-group" data-sid="CC_0212">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0212','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0212','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0212','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_7439413060091581926_7439413060091581926.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">27</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">2</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">10.9</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">9/27</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.22</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0121" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0121')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0121')">CC_0121</span>
+              <span class="deck-change"><span class="old">8</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-big">+6</span>
+              <span class="fb-group" data-sid="CC_0121">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0121','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0121','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0121','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_-949791933841341856_-949791933841341856.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">27</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">11.7</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.7</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/27</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.30</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">74%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0135" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0135')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0135')">CC_0135</span>
+              <span class="deck-change"><span class="old">9</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0135">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0135','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0135','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0135','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_6590097658921723082_6590097658921723082.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">12.5</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.5</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.23</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">64%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0200" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0200')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0200')">CC_0200</span>
+              <span class="deck-change"><span class="old">9</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0200">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0200','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0200','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0200','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_2381993396820737367_2381993396820737367.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.0</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.0</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">9/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.07</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0199" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0199')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0199')">CC_0199</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0199">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0199','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0199','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0199','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_1013913111840760766_1013913111840760766.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.4</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.4</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.90</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0053" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0053')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0053')">CC_0053</span>
+              <span class="deck-change"><span class="old">12</span><span class="arrow">→</span><span class="new" onclick="copyTxt('17')" title="최종 deckCount 복사">17</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0053">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0053','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0053','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0053','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_7498578966834877293_7498578966834877293.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.2</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.2</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.57</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">13%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0054" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0054')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0054')">CC_0054</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0054">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0054','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0054','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0054','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_8531102714590821791_8531102714590821791.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.4</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.4</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.03</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">78%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0137" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0137')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0137')">CC_0137</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0137">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0137','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0137','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0137','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_9109329256775260811_9109329256775260811.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">28</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">7</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.5</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.5</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/28</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.75</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0136" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0136')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0136')">CC_0136</span>
+              <span class="deck-change"><span class="old">13</span><span class="arrow">→</span><span class="new" onclick="copyTxt('18')" title="최종 deckCount 복사">18</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0136">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0136','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0136','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0136','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_9005262734481547871_9005262734481547871.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">26</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">9</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.5</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.5</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/26</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.73</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">0%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0119" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0119')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0119')">CC_0119</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0119">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0119','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0119','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0119','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_-45362167705950980_-45362167705950980.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">20</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">9.3</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-good">+0.7</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">6/20</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">3.15</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">75%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0129" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0129')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0129')">CC_0129</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-med">+4</span>
+              <span class="fb-group" data-sid="CC_0129">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0129','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0129','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0129','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_290478911730800373_290478911730800373.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">12.5</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.5</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">6.17</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">1%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0044" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0044')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0044')">CC_0044</span>
+              <span class="deck-change"><span class="old">8</span><span class="arrow">→</span><span class="new" onclick="copyTxt('12')" title="최종 deckCount 복사">12</span></span>
+              <span class="delta-pill delta-med">+4</span>
+              <span class="fb-group" data-sid="CC_0044">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0044','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0044','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0044','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_1831427186976436287_1831427186976436287.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">10.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.8</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-good">14/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">10.50</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">74%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0125" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0125')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0125')">CC_0125</span>
+              <span class="deck-change"><span class="old">13</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0125">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0125','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0125','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0125','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_-2471577862588440368_-2471577862588440368.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">28</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">12.0</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-good">+1.0</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/28</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.54</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">5%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0038" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0038')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0038')">CC_0038</span>
+              <span class="deck-change"><span class="old">20</span><span class="arrow">→</span><span class="new" onclick="copyTxt('23')" title="최종 deckCount 복사">23</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0038">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0038','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0038','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0038','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_-980244589156319485_-980244589156319485.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.7</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-good">+6.3</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">3.23</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">1%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0042" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0042')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0042')">CC_0042</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0042">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0042','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0042','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0042','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_-5087021377552378296_-5087021377552378296.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">29</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">6</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.0</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.0</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/29</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.97</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0133" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0133')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0133')">CC_0133</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-med">+4</span>
+              <span class="fb-group" data-sid="CC_0133">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0133','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0133','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0133','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_4533743168158959430_4533743168158959430.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">29</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">12.5</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.5</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">9/29</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.21</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">74%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0128" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0128')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0128')">CC_0128</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-med">+4</span>
+              <span class="fb-group" data-sid="CC_0128">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0128','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0128','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0128','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_-9075794490093729707_-9075794490093729707.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">12.4</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.5</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">7/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.37</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">80%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0209" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0209')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0209')">CC_0209</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-med">+4</span>
+              <span class="fb-group" data-sid="CC_0209">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0209','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0209','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0209','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_6352701654334186823_6352701654334186823.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">12.6</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.6</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">9/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.07</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0202" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0202')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0202')">CC_0202</span>
+              <span class="deck-change"><span class="old">12</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0202">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0202','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0202','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0202','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_3156347889945336561_3156347889945336561.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.9</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.61</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0198" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0198')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0198')">CC_0198</span>
+              <span class="deck-change"><span class="old">9</span><span class="arrow">→</span><span class="new" onclick="copyTxt('12')" title="최종 deckCount 복사">12</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0198">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0198','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0198','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0198','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_-7517629322815613110_-7517629322815613110.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">25</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">10.7</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.7</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/25</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.72</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0201" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0201')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0201')">CC_0201</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('13')" title="최종 deckCount 복사">13</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0201">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0201','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0201','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0201','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_2585815236453019605_2585815236453019605.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">28</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">11.6</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.6</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/28</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.54</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0123" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0123')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0123')">CC_0123</span>
+              <span class="deck-change"><span class="old">12</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0123">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0123','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0123','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0123','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_-1656778296819317915_-1656778296819317915.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">28</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">7</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.5</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.5</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/28</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.79</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0197" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0197')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0197')">CC_0197</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('13')" title="최종 deckCount 복사">13</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0197">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0197','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0197','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0197','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_-6094004898048360566_-6094004898048360566.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">28</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">11.7</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.7</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/28</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.14</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0040" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0040')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0040')">CC_0040</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('13')" title="최종 deckCount 복사">13</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0040">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0040','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0040','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0040','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_-4683521763437329335_-4683521763437329335.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">29</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">11.9</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">12/29</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.79</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-mid">55%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0127" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0127')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0127')">CC_0127</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('13')" title="최종 deckCount 복사">13</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0127">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0127','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0127','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0127','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_-4896860215059842360_-4896860215059842360.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">28</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">11.9</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/28</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.64</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">75%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0045" data-conf="LOW">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0045')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#2a3a2a;color:#aadd99">LOW</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0045')">CC_0045</span>
+              <span class="deck-change"><span class="old">12</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-sml">+2</span>
+              <span class="fb-group" data-sid="CC_0045">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0045','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0045','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0045','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Normal_obj_3769052602463786627_3769052602463786627.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">28</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">12.7</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.7</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/28</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.79</span>
+              
+            </div>
+          </div>
+        </div>      </div>
+    </div>
+    <div class="tier-section" data-tier="Hard">
+      <div class="tier-header" onclick="toggleTier(this)">
+        <span class="tier-label" style="background:#f44336">Hard</span>
+        <span class="tier-title">HIGH 19 · MED 10 · LOW 5</span>
+        <span class="tier-count">34개</span>
+        <span class="tier-progress">0/34</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="tier-body">
+        <div class="map-item fb-hard" id="item-CC_0267" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0267')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0267')">CC_0267</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('17')" title="최종 deckCount 복사">17</span></span>
+              <span class="delta-pill delta-big">+7</span>
+              <span class="fb-group" data-sid="CC_0267">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0267','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0267','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0267','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-8581124268425051125_-8581124268425051125.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">32</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.6</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.6</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">4/32</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">2.94</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item fb-hard" id="item-CC_0263" data-conf="HIGH" data-fb="hard">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0263')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              <span class="anchor-badge">⚓ hard</span>
+              <span class="map-id" onclick="copyTxt('CC_0263')">CC_0263</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('17')" title="최종 deckCount 복사">17</span></span>
+              <span class="delta-pill delta-big">+7</span>
+              <span class="fb-group" data-sid="CC_0263">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0263','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0263','ok',event)">OK</button>
+                <button class="btn-fb fb-hard on" onclick="setFb('CC_0263','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-6858756943211057750_-6858756943211057750.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">7</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.9</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">3.32</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0253" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0253')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0253')">CC_0253</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+6</span>
+              <span class="fb-group" data-sid="CC_0253">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0253','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0253','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0253','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-4367956446511700689_-4367956446511700689.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">29</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">9</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.6</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.6</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">4/29</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.90</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0275" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0275')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0275')">CC_0275</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+6</span>
+              <span class="fb-group" data-sid="CC_0275">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0275','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0275','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0275','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_3015781939616589612_3015781939616589612.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">7</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.4</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.4</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">4/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">3.43</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0266" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0266')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0266')">CC_0266</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+6</span>
+              <span class="fb-group" data-sid="CC_0266">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0266','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0266','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0266','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-8085993676552886899_-8085993676552886899.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">6</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.1</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.1</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.23</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0250" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0250')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0250')">CC_0250</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+6</span>
+              <span class="fb-group" data-sid="CC_0250">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0250','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0250','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0250','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-2535467368716262032_-2535467368716262032.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">6</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.1</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.1</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.19</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0272" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0272')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0272')">CC_0272</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+6</span>
+              <span class="fb-group" data-sid="CC_0272">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0272','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0272','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0272','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_2408438036868712511_2408438036868712511.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.2</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.2</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">3.06</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0269" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0269')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0269')">CC_0269</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+6</span>
+              <span class="fb-group" data-sid="CC_0269">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0269','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0269','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0269','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_269226819039724544_269226819039724544.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">6</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.3</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.3</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">7/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.74</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0268" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0268')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0268')">CC_0268</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0268">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0268','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0268','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0268','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-9070411430884785648_-9070411430884785648.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.4</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.4</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">7/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.06</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0285" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0285')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0285')">CC_0285</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0285">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0285','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0285','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0285','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_7510168185525752238_7510168185525752238.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.8</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">3.03</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0292" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0292')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0292')">CC_0292</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0292">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0292','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0292','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0292','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_9123945858537713509_9123945858537713509.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">32</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.4</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.4</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">11/32</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">6.00</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0286" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0286')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0286')">CC_0286</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0286">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0286','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0286','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0286','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_7629362497685869891_7629362497685869891.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.6</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.6</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.48</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0271" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0271')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0271')">CC_0271</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0271">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0271','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0271','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0271','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_2136597098790465194_2136597098790465194.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">6</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.0</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.0</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.53</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0251" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0251')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0251')">CC_0251</span>
+              <span class="deck-change"><span class="old">11</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0251">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0251','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0251','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0251','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-2584308845143270527_-2584308845143270527.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">35</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.8</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/35</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.57</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0264" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0264')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0264')">CC_0264</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0264">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0264','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0264','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0264','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-7292222822313839875_-7292222822313839875.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">32</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.0</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.0</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/32</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.56</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0255" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0255')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0255')">CC_0255</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0255">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0255','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0255','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0255','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-4930359017288338014_-4930359017288338014.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">7</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.9</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.80</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0254" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0254')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0254')">CC_0254</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0254">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0254','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0254','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0254','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-4476877194344761137_-4476877194344761137.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">32</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.8</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/32</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.12</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0187" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0187')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0187')">CC_0187</span>
+              <span class="deck-change"><span class="old">9</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0187">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0187','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0187','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0187','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-4717586371069404904_-4717586371069404904.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">29</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">6</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.0</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-4.0</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">9/29</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.07</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">76%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0116" data-conf="HIGH">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0116')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#5a1a1a;color:#ff9999">HIGH</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0116')">CC_0116</span>
+              <span class="deck-change"><span class="old">18</span><span class="arrow">→</span><span class="new" onclick="copyTxt('21')" title="최종 deckCount 복사">21</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0116">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0116','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0116','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0116','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_4318439546011939075_4318439546011939075.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">32</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">6</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">15.1</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-good">+2.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/32</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">2.81</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-warn">20%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0280" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0280')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0280')">CC_0280</span>
+              <span class="deck-change"><span class="old">11</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0280">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0280','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0280','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0280','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_5692771625035672355_5692771625035672355.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">6</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.5</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.5</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">3.35</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0283" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0283')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0283')">CC_0283</span>
+              <span class="deck-change"><span class="old">11</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0283">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0283','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0283','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0283','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_7114691057902189312_7114691057902189312.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.0</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.0</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">3.42</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0258" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0258')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0258')">CC_0258</span>
+              <span class="deck-change"><span class="old">11</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0258">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0258','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0258','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0258','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-5936488566595491839_-5936488566595491839.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">7</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.6</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.6</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">5/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">2.93</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0245" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0245')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0245')">CC_0245</span>
+              <span class="deck-change"><span class="old">11</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0245">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0245','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0245','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0245','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-440283477310521795_-440283477310521795.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">32</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.2</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.2</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/32</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.88</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0257" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0257')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0257')">CC_0257</span>
+              <span class="deck-change"><span class="old">11</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0257">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0257','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0257','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0257','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-5831820742631492957_-5831820742631492957.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">34</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.2</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.2</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">8/34</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.09</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0284" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0284')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0284')">CC_0284</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0284">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0284','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0284','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0284','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_7150741962077567140_7150741962077567140.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">32</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.2</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.2</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">10/32</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">6.56</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0252" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0252')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0252')">CC_0252</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0252">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0252','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0252','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0252','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-4085239007266526198_-4085239007266526198.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">32</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.3</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.3</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">10/32</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">6.19</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0190" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0190')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0190')">CC_0190</span>
+              <span class="deck-change"><span class="old">10</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-big">+5</span>
+              <span class="fb-group" data-sid="CC_0190">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0190','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0190','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0190','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_3899271523029084104_3899271523029084104.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">32</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.2</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-3.2</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">11/32</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">6.44</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0279" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0279')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0279')">CC_0279</span>
+              <span class="deck-change"><span class="old">12</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-med">+4</span>
+              <span class="fb-group" data-sid="CC_0279">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0279','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0279','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0279','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_4967511773866997684_4967511773866997684.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">7</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.4</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-warn">-2.4</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-warn">3.40</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0111" data-conf="MEDIUM">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0111')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#4a3a1a;color:#ffcc99">MED</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0111')">CC_0111</span>
+              <span class="deck-change"><span class="old">7</span><span class="arrow">→</span><span class="new" onclick="copyTxt('10')" title="최종 deckCount 복사">10</span></span>
+              <span class="delta-pill delta-med">+3</span>
+              <span class="fb-group" data-sid="CC_0111">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0111','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0111','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0111','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_-1237604880740496036_-1237604880740496036.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">20</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">3</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">8.1</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-1.1</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">8/20</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.15</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0117" data-conf="LOW">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0117')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#2a3a2a;color:#aadd99">LOW</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0117')">CC_0117</span>
+              <span class="deck-change"><span class="old">14</span><span class="arrow">→</span><span class="new" onclick="copyTxt('16')" title="최종 deckCount 복사">16</span></span>
+              <span class="delta-pill delta-sml">+2</span>
+              <span class="fb-group" data-sid="CC_0117">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0117','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0117','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0117','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_4711607199540660698_4711607199540660698.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">33</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">6</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">14.6</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.6</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/33</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.94</span>
+              <span class="sep">|</span><span class="m-lbl">clr_a:</span><span class="m-good">73%</span>
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0270" data-conf="LOW">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0270')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#2a3a2a;color:#aadd99">LOW</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0270')">CC_0270</span>
+              <span class="deck-change"><span class="old">12</span><span class="arrow">→</span><span class="new" onclick="copyTxt('14')" title="최종 deckCount 복사">14</span></span>
+              <span class="delta-pill delta-sml">+2</span>
+              <span class="fb-group" data-sid="CC_0270">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0270','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0270','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0270','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_1051189589259311343_1051189589259311343.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">32</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">4</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">12.9</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-mid">10/32</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">6.25</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0288" data-conf="LOW">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0288')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#2a3a2a;color:#aadd99">LOW</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0288')">CC_0288</span>
+              <span class="deck-change"><span class="old">13</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-sml">+2</span>
+              <span class="fb-group" data-sid="CC_0288">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0288','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0288','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0288','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_7749217512935342267_7749217512935342267.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">30</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">7</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.7</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.7</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/30</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-good">5.33</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0282" data-conf="LOW">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0282')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#2a3a2a;color:#aadd99">LOW</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0282')">CC_0282</span>
+              <span class="deck-change"><span class="old">13</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-sml">+2</span>
+              <span class="fb-group" data-sid="CC_0282">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0282','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0282','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0282','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_6482808623463430949_6482808623463430949.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">31</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">5</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.8</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.8</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">7/31</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">4.13</span>
+              
+            </div>
+          </div>
+        </div>
+        <div class="map-item" id="item-CC_0192" data-conf="LOW">
+          <label class="checkbox-wrap"><input type="checkbox" onchange="onCheck(this,'CC_0192')"><span class="checkmark"></span></label>
+          <div class="map-body">
+            <div class="map-top">
+              <span class="conf-badge" style="background:#2a3a2a;color:#aadd99">LOW</span>
+              
+              <span class="map-id" onclick="copyTxt('CC_0192')">CC_0192</span>
+              <span class="deck-change"><span class="old">13</span><span class="arrow">→</span><span class="new" onclick="copyTxt('15')" title="최종 deckCount 복사">15</span></span>
+              <span class="delta-pill delta-sml">+2</span>
+              <span class="fb-group" data-sid="CC_0192">
+                <button class="btn-fb fb-easy" onclick="setFb('CC_0192','easy',event)">쉬움</button>
+                <button class="btn-fb fb-ok" onclick="setFb('CC_0192','ok',event)">OK</button>
+                <button class="btn-fb fb-hard" onclick="setFb('CC_0192','hard',event)">어려움</button>
+              </span>
+              <button class="btn-fn" onclick="copyTxt('Hard_obj_6427872015658360888_6427872015658360888.json')">fn</button>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">field:</span><span class="m-val">29</span>
+              <span class="sep">|</span><span class="m-lbl">depth:</span><span class="m-val">7</span>
+              <span class="sep">|</span><span class="m-lbl">est:</span><span class="m-val">13.9</span>
+              <span class="sep">|</span><span class="m-lbl">diff:</span><span class="m-mid">-0.9</span>
+              <span class="sep">|</span><span class="m-lbl">exp:</span><span class="m-warn">6/29</span>
+              <span class="sep">|</span><span class="m-lbl">frnt:</span><span class="m-mid">3.86</span>
+              
+            </div>
+          </div>
+        </div>      </div>
+    </div>
+</div>
+<div id="toast"></div>
+<script>
+const KEY='deck_adjust_v6';
+const FB_KEY='deck_adjust_v6_fb';
+const state = JSON.parse(localStorage.getItem(KEY) || '{}');
+const feedback = JSON.parse(localStorage.getItem(FB_KEY) || '{}');
+document.querySelectorAll('.map-item[data-fb]').forEach(item=>{
+  const sid = item.id.replace('item-','');
+  if(!feedback[sid]) feedback[sid] = item.dataset.fb;
+});
+const filters = {HIGH:true, MEDIUM:true, LOW:true};
+const hideFb = {easy:false, ok:false, hard:false};
+let hideDone = true;
+function save(){localStorage.setItem(KEY, JSON.stringify(state)); localStorage.setItem(FB_KEY, JSON.stringify(feedback));}
+function applyFilters(){
+  document.querySelectorAll('.map-item').forEach(it=>{
+    const conf = it.dataset.conf;
+    const isDone = it.classList.contains('done');
+    const fb = it.dataset.fb || '';
+    it.classList.toggle('hidden', !filters[conf] || (hideDone && isDone) || (hideFb[fb]===true));
+  });
+}
+function updateProgress(){
+  document.querySelectorAll('.tier-section').forEach(sec=>{
+    const items = sec.querySelectorAll('.map-item');
+    const d = sec.querySelectorAll('.map-item.done, .map-item.fb-easy, .map-item.fb-ok, .map-item.fb-hard').length;
+    const prog = sec.querySelector('.tier-progress');
+    if(prog) prog.textContent = `${d}/${items.length}`;
+  });
+  document.getElementById('done-count').textContent = document.querySelectorAll('.map-item.done, .map-item.fb-easy, .map-item.fb-ok, .map-item.fb-hard').length;
+}
+function onCheck(el, id){
+  const item = document.getElementById('item-'+id);
+  if(el.checked){ item.classList.add('done'); state[id]=true; }
+  else { item.classList.remove('done'); delete state[id]; }
+  save(); updateProgress(); applyFilters();
+}
+function setFb(id, kind, e){
+  e.stopPropagation();
+  const item = document.getElementById('item-'+id);
+  const group = item.querySelector('.fb-group');
+  item.classList.remove('fb-easy','fb-ok','fb-hard');
+  group.querySelectorAll('.btn-fb').forEach(b=>b.classList.remove('on'));
+  if(feedback[id]===kind){ delete feedback[id]; delete item.dataset.fb; }
+  else {
+    feedback[id] = kind;
+    item.classList.add('fb-'+kind); item.dataset.fb = kind;
+    group.querySelector('.fb-'+kind).classList.add('on');
+  }
+  save(); updateProgress(); applyFilters();
+}
+function toggleTier(el){ el.classList.toggle('collapsed'); el.nextElementSibling.classList.toggle('hidden'); }
+function toggleFilter(btn,conf){ filters[conf]=!filters[conf]; btn.classList.toggle('active',filters[conf]); applyFilters(); }
+function toggleHideFb(btn,kind){ hideFb[kind]=!hideFb[kind]; btn.classList.toggle('active',hideFb[kind]); applyFilters(); }
+function toggleUndone(btn){ hideDone=!hideDone; btn.classList.toggle('active',hideDone); btn.textContent = hideDone?'미완료':'전체'; applyFilters(); }
+function expandAll(){document.querySelectorAll('.tier-header').forEach(h=>{h.classList.remove('collapsed'); h.nextElementSibling.classList.remove('hidden');});}
+function collapseAll(){document.querySelectorAll('.tier-header').forEach(h=>{h.classList.add('collapsed'); h.nextElementSibling.classList.add('hidden');});}
+async function exportFb(){
+  const items = document.querySelectorAll('.map-item');
+  const result = [];
+  items.forEach(item=>{
+    const sid = item.id.replace('item-','');
+    if(!feedback[sid]) return;
+    const old = item.querySelector('.deck-change .old').textContent;
+    const nw = item.querySelector('.deck-change .new').textContent;
+    result.push({stage_id:sid, tier:item.closest('.tier-section').dataset.tier, confidence:item.dataset.conf,
+                 current_deck:parseInt(old), suggested_deck:parseInt(nw), feedback:feedback[sid]});
+  });
+  if(result.length===0){ alert('피드백이 표시된 맵이 없습니다.'); return; }
+  const payload = {exported_at:new Date().toISOString(), count:result.length, items:result};
+  const t = document.getElementById('toast');
+  try{
+    const res = await fetch('/api/save-deck-feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const j = await res.json();
+    t.innerHTML = `✅ ${j.saved}개 피드백 서버 저장 완료<br><span style="font-size:10px;color:#aadd99">Claude가 즉시 읽을 수 있음</span>`;
+    t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3500);
+  }catch(e){
+    const blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url = URL.createObjectURL(blob); const a = document.createElement('a');
+    a.href=url; a.download='deck_feedback.json'; a.click(); URL.revokeObjectURL(url);
+    t.innerHTML = `⚠️ 서버 미응답 — 파일 다운로드됨`;
+    t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000);
+  }
+}
+function resetAll(){if(!confirm('초기화?')) return; localStorage.removeItem(KEY); localStorage.removeItem(FB_KEY); location.reload();}
+function copyTxt(txt){
+  navigator.clipboard.writeText(txt).then(()=>{
+    const t = document.getElementById('toast');
+    t.textContent = '복사됨: '+txt; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 1000);
+  });
+}
+document.querySelectorAll('.map-item').forEach(item=>{
+  const id = item.id.replace('item-','');
+  if(state[id]){ item.classList.add('done'); const cb = item.querySelector('input[type=checkbox]'); if(cb) cb.checked=true; }
+});
+save(); updateProgress(); applyFilters();
+</script>
+</body></html>

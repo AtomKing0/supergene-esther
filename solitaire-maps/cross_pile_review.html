@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<title>Cross-pile Collision Review</title>
+<style>
+  body { background:#1a1a2e; color:#eee; font-family:sans-serif; padding:16px; }
+  h1 { text-align:center; font-size:16px; color:#aef; margin-bottom:20px; }
+  .map-block { margin-bottom:40px; }
+  .map-title { font-size:14px; font-weight:bold; color:#ffd; margin-bottom:6px; }
+  .pairs { font-size:11px; color:#aaa; margin-bottom:6px; font-family:monospace; }
+  canvas { display:block; background:#1a6fbf; border-radius:6px; }
+  .legend { font-size:10px; color:#ccc; margin-top:4px; }
+  .lo { color:#ff6666; } .hi { color:#6688ff; }
+</style>
+</head><body>
+<h1>Cross-pile Blocking 시각화 — CSV 내 문제 맵 6개</h1>
+<div class="legend" style="text-align:center;margin-bottom:20px">
+  <span class="lo">■ 빨강 = 블로킹 당하는 카드 (lo)</span> &nbsp;
+  <span class="hi">■ 파랑 = 블로킹 하는 카드 (hi)</span> &nbsp;
+  흰색/하늘 = 일반 카드
+</div>
+
+
+<div class="map-block">
+  <div class="map-title">CC_0128 &nbsp; <span style="color:#aaa;font-size:11px;font-weight:normal">Easy_obj_-9075794490093729707_-9075794490093729707</span> &nbsp; (30장)</div>
+  <div class="pairs">card[11](d2)←card[14](d3) | card[26](d2)←card[29](d3)</div>
+  <canvas id="c_CC_0128" width="900" height="560"></canvas>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('c_CC_0128');
+  const ctx = canvas.getContext('2d');
+  const OX = 450.0, OY = 280.0, SCALE = 0.3953;
+  const CX = 0.0, CY = 0.0;
+  function tx(x) { return OX + (x - CX) * SCALE; }
+  function ty(y) { return OY - (y - CY) * SCALE; }
+  const CW = 100 * SCALE, CH = 150 * SCALE;
+  const depthColors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c','#e91e63','#ff5722'];
+  const loSet = new Set([26, 11]);
+  const hiSet = new Set([29, 14]);
+  const cards = [{"idx": 0, "x": -289, "y": 89, "angle": 314.999996, "depth": 0}, {"idx": 1, "x": -105, "y": -93, "angle": 45.0, "depth": 0}, {"idx": 3, "x": -472, "y": 89, "angle": 314.999996, "depth": 0}, {"idx": 4, "x": -289, "y": -93, "angle": 45.0, "depth": 0}, {"idx": 5, "x": -472, "y": -86, "angle": 45.0, "depth": 0}, {"idx": 6, "x": -105, "y": 89, "angle": 314.999996, "depth": 0}, {"idx": 15, "x": 289, "y": 89, "angle": 45.0, "depth": 0}, {"idx": 16, "x": 112, "y": -95, "angle": 314.999996, "depth": 0}, {"idx": 18, "x": 472, "y": 86, "angle": 45.0, "depth": 0}, {"idx": 19, "x": 289, "y": -93, "angle": 314.999996, "depth": 0}, {"idx": 20, "x": 472, "y": -89, "angle": 314.999996, "depth": 0}, {"idx": 21, "x": 110, "y": 89, "angle": 45.0, "depth": 0}, {"idx": 2, "x": -262, "y": 117, "angle": 314.999996, "depth": 1}, {"idx": 7, "x": -446, "y": 117, "angle": 314.999996, "depth": 1}, {"idx": 9, "x": -262, "y": -121, "angle": 45.0, "depth": 1}, {"idx": 10, "x": -446, "y": -114, "angle": 45.0, "depth": 1}, {"idx": 17, "x": 262, "y": 117, "angle": 45.0, "depth": 1}, {"idx": 22, "x": 446, "y": 114, "angle": 45.0, "depth": 1}, {"idx": 24, "x": 262, "y": -121, "angle": 315.000004, "depth": 1}, {"idx": 25, "x": 446, "y": -117, "angle": 315.000004, "depth": 1}, {"idx": 8, "x": -420, "y": 145, "angle": 314.999996, "depth": 2}, {"idx": 11, "x": -420, "y": -142, "angle": 45.0, "depth": 2}, {"idx": 23, "x": 420, "y": 142, "angle": 45.0, "depth": 2}, {"idx": 26, "x": 420, "y": -145, "angle": 315.000004, "depth": 2}, {"idx": 12, "x": -315, "y": 5, "angle": 0.0, "depth": 3}, {"idx": 13, "x": -131, "y": 5, "angle": 0.0, "depth": 3}, {"idx": 14, "x": -472, "y": 5, "angle": 0.0, "depth": 3}, {"idx": 27, "x": 315, "y": 5, "angle": 0.0, "depth": 3}, {"idx": 28, "x": 131, "y": 5, "angle": 0.0, "depth": 3}, {"idx": 29, "x": 472, "y": 5, "angle": 0.0, "depth": 3}];
+  cards.forEach(card => {
+    const cx2 = tx(card.x), cy2 = ty(card.y);
+    const rad = card.angle * Math.PI / 180;
+    ctx.save();
+    ctx.translate(cx2, cy2);
+    ctx.rotate(-rad);
+    const isLo = loSet.has(card.idx);
+    const isHi = hiSet.has(card.idx);
+    if (isLo) {
+      ctx.fillStyle = 'rgba(255,80,80,0.85)';
+      ctx.strokeStyle = '#ff0000';
+      ctx.lineWidth = 3;
+    } else if (isHi) {
+      ctx.fillStyle = 'rgba(80,80,255,0.85)';
+      ctx.strokeStyle = '#0000ff';
+      ctx.lineWidth = 3;
+    } else {
+      ctx.fillStyle = card.depth === 0 ? '#fff' : '#d8ecff';
+      ctx.strokeStyle = depthColors[Math.min(card.depth, depthColors.length-1)];
+      ctx.lineWidth = card.depth === 0 ? 2.5 : 1.5;
+    }
+    ctx.beginPath();
+    ctx.roundRect(-CW/2, -CH/2, CW, CH, 4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = (isLo||isHi) ? '#fff' : depthColors[Math.min(card.depth, depthColors.length-1)];
+    ctx.font = `bold ${(isLo||isHi) ? 14*SCALE/0.7 : 12*SCALE/0.7}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(card.idx, 0, 0);
+    ctx.fillStyle = '#555';
+    ctx.font = `${8*SCALE/0.7}px sans-serif`;
+    ctx.fillText('d'+card.depth, 0, CH/2-6);
+    ctx.restore();
+  });
+})();
+</script>
+
+
+<div class="map-block">
+  <div class="map-title">CC_0252 &nbsp; <span style="color:#aaa;font-size:11px;font-weight:normal">Hard_obj_-4085239007266526198_-4085239007266526198</span> &nbsp; (32장)</div>
+  <div class="pairs">card[19](d1)←card[1](d4) | card[4](d1)←card[5](d3) | card[4](d1)←card[23](d3) | card[25](d1)←card[26](d4)</div>
+  <canvas id="c_CC_0252" width="900" height="560"></canvas>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('c_CC_0252');
+  const ctx = canvas.getContext('2d');
+  const OX = 450.0, OY = 280.0, SCALE = 0.4041;
+  const CX = 0.0, CY = 0.0;
+  function tx(x) { return OX + (x - CX) * SCALE; }
+  function ty(y) { return OY - (y - CY) * SCALE; }
+  const CW = 100 * SCALE, CH = 150 * SCALE;
+  const depthColors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c','#e91e63','#ff5722'];
+  const loSet = new Set([25, 19, 4]);
+  const hiSet = new Set([1, 26, 5, 23]);
+  const cards = [{"idx": 0, "x": 386, "y": -140, "angle": 0.0, "depth": 0}, {"idx": 3, "x": -386, "y": -140, "angle": 0.0, "depth": 0}, {"idx": 15, "x": 386, "y": 130, "angle": 0.0, "depth": 0}, {"idx": 16, "x": -386, "y": 130, "angle": 0.0, "depth": 0}, {"idx": 22, "x": -173, "y": 114, "angle": 329.999998, "depth": 0}, {"idx": 24, "x": 173, "y": 114, "angle": 30.0, "depth": 0}, {"idx": 30, "x": 0, "y": 140, "angle": 0.0, "depth": 0}, {"idx": 2, "x": 362, "y": -140, "angle": 0.0, "depth": 1}, {"idx": 4, "x": -2, "y": 125, "angle": 0.0, "depth": 1}, {"idx": 7, "x": -459, "y": 94, "angle": 0.0, "depth": 1}, {"idx": 8, "x": -314, "y": 94, "angle": 0.0, "depth": 1}, {"idx": 14, "x": 314, "y": 94, "angle": 0.0, "depth": 1}, {"idx": 19, "x": -157, "y": 80, "angle": 329.999998, "depth": 1}, {"idx": 25, "x": 157, "y": 80, "angle": 30.0, "depth": 1}, {"idx": 28, "x": -362, "y": -140, "angle": 0.0, "depth": 1}, {"idx": 29, "x": 459, "y": 94, "angle": 0.0, "depth": 1}, {"idx": 9, "x": -314, "y": 58, "angle": 0.0, "depth": 2}, {"idx": 13, "x": 459, "y": 58, "angle": 0.0, "depth": 2}, {"idx": 18, "x": 145, "y": 40, "angle": 30.0, "depth": 2}, {"idx": 20, "x": -145, "y": 40, "angle": 329.999998, "depth": 2}, {"idx": 21, "x": 314, "y": 58, "angle": 0.0, "depth": 2}, {"idx": 27, "x": -459, "y": 58, "angle": 0.0, "depth": 2}, {"idx": 5, "x": 119, "y": -2, "angle": 30.0, "depth": 3}, {"idx": 10, "x": -459, "y": 22, "angle": 0.0, "depth": 3}, {"idx": 11, "x": -314, "y": 22, "angle": 0.0, "depth": 3}, {"idx": 12, "x": 459, "y": 22, "angle": 0.0, "depth": 3}, {"idx": 23, "x": -117, "y": 2, "angle": 329.999998, "depth": 3}, {"idx": 31, "x": 314, "y": 22, "angle": 0.0, "depth": 3}, {"idx": 1, "x": -145, "y": -90, "angle": 0.0, "depth": 4}, {"idx": 17, "x": 0, "y": -122, "angle": 0.0, "depth": 4}, {"idx": 26, "x": 145, "y": -90, "angle": 0.0, "depth": 4}, {"idx": 6, "x": 0, "y": -86, "angle": 0.0, "depth": 5}];
+  cards.forEach(card => {
+    const cx2 = tx(card.x), cy2 = ty(card.y);
+    const rad = card.angle * Math.PI / 180;
+    ctx.save();
+    ctx.translate(cx2, cy2);
+    ctx.rotate(-rad);
+    const isLo = loSet.has(card.idx);
+    const isHi = hiSet.has(card.idx);
+    if (isLo) {
+      ctx.fillStyle = 'rgba(255,80,80,0.85)';
+      ctx.strokeStyle = '#ff0000';
+      ctx.lineWidth = 3;
+    } else if (isHi) {
+      ctx.fillStyle = 'rgba(80,80,255,0.85)';
+      ctx.strokeStyle = '#0000ff';
+      ctx.lineWidth = 3;
+    } else {
+      ctx.fillStyle = card.depth === 0 ? '#fff' : '#d8ecff';
+      ctx.strokeStyle = depthColors[Math.min(card.depth, depthColors.length-1)];
+      ctx.lineWidth = card.depth === 0 ? 2.5 : 1.5;
+    }
+    ctx.beginPath();
+    ctx.roundRect(-CW/2, -CH/2, CW, CH, 4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = (isLo||isHi) ? '#fff' : depthColors[Math.min(card.depth, depthColors.length-1)];
+    ctx.font = `bold ${(isLo||isHi) ? 14*SCALE/0.7 : 12*SCALE/0.7}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(card.idx, 0, 0);
+    ctx.fillStyle = '#555';
+    ctx.font = `${8*SCALE/0.7}px sans-serif`;
+    ctx.fillText('d'+card.depth, 0, CH/2-6);
+    ctx.restore();
+  });
+})();
+</script>
+
+
+<div class="map-block">
+  <div class="map-title">CC_0255 &nbsp; <span style="color:#aaa;font-size:11px;font-weight:normal">VeryHard_obj_-4930359017288338014_-4930359017288338014</span> &nbsp; (30장)</div>
+  <div class="pairs">card[8](d5)←card[3](d7) | card[16](d5)←card[14](d7)</div>
+  <canvas id="c_CC_0255" width="900" height="560"></canvas>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('c_CC_0255');
+  const ctx = canvas.getContext('2d');
+  const OX = 450.0, OY = 280.0, SCALE = 0.4533;
+  const CX = 0.0, CY = 0.0;
+  function tx(x) { return OX + (x - CX) * SCALE; }
+  function ty(y) { return OY - (y - CY) * SCALE; }
+  const CW = 100 * SCALE, CH = 150 * SCALE;
+  const depthColors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c','#e91e63','#ff5722'];
+  const loSet = new Set([8, 16]);
+  const hiSet = new Set([3, 14]);
+  const cards = [{"idx": 25, "x": -67, "y": 69, "angle": 314.999996, "depth": 0}, {"idx": 28, "x": 70, "y": -67, "angle": 314.999996, "depth": 0}, {"idx": 10, "x": 395, "y": 34, "angle": 20.0, "depth": 1}, {"idx": 19, "x": -395, "y": 34, "angle": 339.999989, "depth": 1}, {"idx": 20, "x": -141, "y": 102, "angle": 0.0, "depth": 1}, {"idx": 21, "x": 0, "y": -21, "angle": 0.0, "depth": 1}, {"idx": 22, "x": 141, "y": -94, "angle": 0.0, "depth": 1}, {"idx": 23, "x": 141, "y": 102, "angle": 0.0, "depth": 1}, {"idx": 24, "x": -141, "y": -94, "angle": 0.0, "depth": 1}, {"idx": 6, "x": -395, "y": -34, "angle": 20.0, "depth": 2}, {"idx": 9, "x": 395, "y": -34, "angle": 339.999985, "depth": 2}, {"idx": 27, "x": -70, "y": -67, "angle": 45.0, "depth": 2}, {"idx": 29, "x": 0, "y": 67, "angle": 0.0, "depth": 2}, {"idx": 1, "x": -328, "y": -133, "angle": 0.0, "depth": 3}, {"idx": 11, "x": 328, "y": 133, "angle": 0.0, "depth": 3}, {"idx": 15, "x": 328, "y": -133, "angle": 0.0, "depth": 3}, {"idx": 18, "x": -328, "y": 133, "angle": 0.0, "depth": 3}, {"idx": 2, "x": -305, "y": -112, "angle": 0.0, "depth": 4}, {"idx": 12, "x": 305, "y": 112, "angle": 0.0, "depth": 4}, {"idx": 13, "x": 305, "y": -112, "angle": 0.0, "depth": 4}, {"idx": 17, "x": -305, "y": 112, "angle": 0.0, "depth": 4}, {"idx": 26, "x": 67, "y": 69, "angle": 45.0, "depth": 4}, {"idx": 0, "x": -281, "y": -94, "angle": 0.0, "depth": 5}, {"idx": 7, "x": 281, "y": -94, "angle": 0.0, "depth": 5}, {"idx": 8, "x": 281, "y": 94, "angle": 0.0, "depth": 5}, {"idx": 16, "x": -281, "y": 94, "angle": 0.0, "depth": 5}, {"idx": 4, "x": 239, "y": 76, "angle": 324.999977, "depth": 6}, {"idx": 5, "x": -239, "y": 76, "angle": 35.000031, "depth": 6}, {"idx": 3, "x": 236, "y": -66, "angle": 35.000031, "depth": 7}, {"idx": 14, "x": -236, "y": -66, "angle": 324.999962, "depth": 7}];
+  cards.forEach(card => {
+    const cx2 = tx(card.x), cy2 = ty(card.y);
+    const rad = card.angle * Math.PI / 180;
+    ctx.save();
+    ctx.translate(cx2, cy2);
+    ctx.rotate(-rad);
+    const isLo = loSet.has(card.idx);
+    const isHi = hiSet.has(card.idx);
+    if (isLo) {
+      ctx.fillStyle = 'rgba(255,80,80,0.85)';
+      ctx.strokeStyle = '#ff0000';
+      ctx.lineWidth = 3;
+    } else if (isHi) {
+      ctx.fillStyle = 'rgba(80,80,255,0.85)';
+      ctx.strokeStyle = '#0000ff';
+      ctx.lineWidth = 3;
+    } else {
+      ctx.fillStyle = card.depth === 0 ? '#fff' : '#d8ecff';
+      ctx.strokeStyle = depthColors[Math.min(card.depth, depthColors.length-1)];
+      ctx.lineWidth = card.depth === 0 ? 2.5 : 1.5;
+    }
+    ctx.beginPath();
+    ctx.roundRect(-CW/2, -CH/2, CW, CH, 4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = (isLo||isHi) ? '#fff' : depthColors[Math.min(card.depth, depthColors.length-1)];
+    ctx.font = `bold ${(isLo||isHi) ? 14*SCALE/0.7 : 12*SCALE/0.7}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(card.idx, 0, 0);
+    ctx.fillStyle = '#555';
+    ctx.font = `${8*SCALE/0.7}px sans-serif`;
+    ctx.fillText('d'+card.depth, 0, CH/2-6);
+    ctx.restore();
+  });
+})();
+</script>
+
+
+<div class="map-block">
+  <div class="map-title">CC_0272 &nbsp; <span style="color:#aaa;font-size:11px;font-weight:normal">Normal_obj_2408438036868712511_2408438036868712511</span> &nbsp; (31장)</div>
+  <div class="pairs">card[0](d0)←card[2](d2) | card[2](d2)←card[11](d3) | card[7](d2)←card[14](d3) | card[21](d0)←card[7](d2)</div>
+  <canvas id="c_CC_0272" width="900" height="560"></canvas>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('c_CC_0272');
+  const ctx = canvas.getContext('2d');
+  const OX = 450.0, OY = 280.0, SCALE = 0.4125;
+  const CX = 0.0, CY = 0.0;
+  function tx(x) { return OX + (x - CX) * SCALE; }
+  function ty(y) { return OY - (y - CY) * SCALE; }
+  const CW = 100 * SCALE, CH = 150 * SCALE;
+  const depthColors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c','#e91e63','#ff5722'];
+  const loSet = new Set([0, 2, 21, 7]);
+  const hiSet = new Set([2, 11, 14, 7]);
+  const cards = [{"idx": 0, "x": -229, "y": 117, "angle": 0.0, "depth": 0}, {"idx": 5, "x": 447, "y": -135, "angle": 299.999996, "depth": 0}, {"idx": 18, "x": -447, "y": -135, "angle": 60.0, "depth": 0}, {"idx": 21, "x": 229, "y": 117, "angle": 0.0, "depth": 0}, {"idx": 22, "x": -60, "y": 144, "angle": 0.0, "depth": 0}, {"idx": 1, "x": -169, "y": 72, "angle": 0.0, "depth": 1}, {"idx": 8, "x": 417, "y": -81, "angle": 299.999996, "depth": 1}, {"idx": 9, "x": 169, "y": 72, "angle": 0.0, "depth": 1}, {"idx": 17, "x": -417, "y": -81, "angle": 60.0, "depth": 1}, {"idx": 23, "x": 60, "y": 144, "angle": 0.0, "depth": 1}, {"idx": 29, "x": -60, "y": -126, "angle": 0.0, "depth": 1}, {"idx": 30, "x": 60, "y": -126, "angle": 0.0, "depth": 1}, {"idx": 2, "x": -169, "y": -27, "angle": 0.0, "depth": 2}, {"idx": 7, "x": 169, "y": -27, "angle": 0.0, "depth": 2}, {"idx": 10, "x": -266, "y": 72, "angle": 329.999998, "depth": 2}, {"idx": 15, "x": 266, "y": 72, "angle": 30.0, "depth": 2}, {"idx": 16, "x": -380, "y": -18, "angle": 60.0, "depth": 2}, {"idx": 19, "x": 380, "y": -18, "angle": 299.999996, "depth": 2}, {"idx": 24, "x": 0, "y": 108, "angle": 0.0, "depth": 2}, {"idx": 3, "x": -127, "y": -99, "angle": 0.0, "depth": 3}, {"idx": 11, "x": -291, "y": 63, "angle": 60.0, "depth": 3}, {"idx": 13, "x": 121, "y": -99, "angle": 0.0, "depth": 3}, {"idx": 14, "x": 291, "y": 63, "angle": 299.999996, "depth": 3}, {"idx": 25, "x": 0, "y": 36, "angle": 0.0, "depth": 3}, {"idx": 28, "x": 0, "y": -144, "angle": 0.0, "depth": 3}, {"idx": 4, "x": -169, "y": -144, "angle": 0.0, "depth": 4}, {"idx": 6, "x": 169, "y": -144, "angle": 0.0, "depth": 4}, {"idx": 12, "x": -317, "y": 58, "angle": 329.999998, "depth": 4}, {"idx": 20, "x": 317, "y": 58, "angle": 30.0, "depth": 4}, {"idx": 27, "x": 0, "y": -117, "angle": 0.0, "depth": 4}, {"idx": 26, "x": 0, "y": -27, "angle": 0.0, "depth": 5}];
+  cards.forEach(card => {
+    const cx2 = tx(card.x), cy2 = ty(card.y);
+    const rad = card.angle * Math.PI / 180;
+    ctx.save();
+    ctx.translate(cx2, cy2);
+    ctx.rotate(-rad);
+    const isLo = loSet.has(card.idx);
+    const isHi = hiSet.has(card.idx);
+    if (isLo) {
+      ctx.fillStyle = 'rgba(255,80,80,0.85)';
+      ctx.strokeStyle = '#ff0000';
+      ctx.lineWidth = 3;
+    } else if (isHi) {
+      ctx.fillStyle = 'rgba(80,80,255,0.85)';
+      ctx.strokeStyle = '#0000ff';
+      ctx.lineWidth = 3;
+    } else {
+      ctx.fillStyle = card.depth === 0 ? '#fff' : '#d8ecff';
+      ctx.strokeStyle = depthColors[Math.min(card.depth, depthColors.length-1)];
+      ctx.lineWidth = card.depth === 0 ? 2.5 : 1.5;
+    }
+    ctx.beginPath();
+    ctx.roundRect(-CW/2, -CH/2, CW, CH, 4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = (isLo||isHi) ? '#fff' : depthColors[Math.min(card.depth, depthColors.length-1)];
+    ctx.font = `bold ${(isLo||isHi) ? 14*SCALE/0.7 : 12*SCALE/0.7}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(card.idx, 0, 0);
+    ctx.fillStyle = '#555';
+    ctx.font = `${8*SCALE/0.7}px sans-serif`;
+    ctx.fillText('d'+card.depth, 0, CH/2-6);
+    ctx.restore();
+  });
+})();
+</script>
+
+
+<div class="map-block">
+  <div class="map-title">CC_0273 &nbsp; <span style="color:#aaa;font-size:11px;font-weight:normal">VeryHard_obj_2519617144431508815_2519617144431508815</span> &nbsp; (30장)</div>
+  <div class="pairs">card[12](d0)←card[1](d1) | card[26](d0)←card[23](d1)</div>
+  <canvas id="c_CC_0273" width="900" height="560"></canvas>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('c_CC_0273');
+  const ctx = canvas.getContext('2d');
+  const OX = 450.0, OY = 280.0, SCALE = 0.4486;
+  const CX = -21.5, CY = 0.0;
+  function tx(x) { return OX + (x - CX) * SCALE; }
+  function ty(y) { return OY - (y - CY) * SCALE; }
+  const CW = 100 * SCALE, CH = 150 * SCALE;
+  const depthColors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c','#e91e63','#ff5722'];
+  const loSet = new Set([26, 12]);
+  const hiSet = new Set([1, 23]);
+  const cards = [{"idx": 9, "x": -352, "y": -12, "angle": 0.0, "depth": 0}, {"idx": 10, "x": 193, "y": 0, "angle": 0.0, "depth": 0}, {"idx": 11, "x": 87, "y": 0, "angle": 0.0, "depth": 0}, {"idx": 12, "x": -41, "y": -140, "angle": 45.0, "depth": 0}, {"idx": 13, "x": -40, "y": 140, "angle": 314.999996, "depth": 0}, {"idx": 15, "x": 321, "y": 140, "angle": 45.0, "depth": 0}, {"idx": 26, "x": 322, "y": -140, "angle": 314.999996, "depth": 0}, {"idx": 0, "x": 141, "y": 0, "angle": 0.0, "depth": 1}, {"idx": 1, "x": -98, "y": 2, "angle": 0.0, "depth": 1}, {"idx": 4, "x": -422, "y": 93, "angle": 15.000031, "depth": 1}, {"idx": 5, "x": -281, "y": 93, "angle": 344.999998, "depth": 1}, {"idx": 6, "x": -422, "y": -105, "angle": 345.00004, "depth": 1}, {"idx": 7, "x": -281, "y": -105, "angle": 15.000031, "depth": 1}, {"idx": 16, "x": 254, "y": 152, "angle": 0.0, "depth": 1}, {"idx": 17, "x": 141, "y": 152, "angle": 0.0, "depth": 1}, {"idx": 18, "x": 27, "y": 152, "angle": 0.0, "depth": 1}, {"idx": 20, "x": 254, "y": -152, "angle": 0.0, "depth": 1}, {"idx": 21, "x": 27, "y": -152, "angle": 0.0, "depth": 1}, {"idx": 22, "x": 141, "y": -152, "angle": 0.0, "depth": 1}, {"idx": 23, "x": 379, "y": 2, "angle": 0.0, "depth": 1}, {"idx": 2, "x": -96, "y": -93, "angle": 15.000031, "depth": 2}, {"idx": 3, "x": -96, "y": 82, "angle": 344.999999, "depth": 2}, {"idx": 8, "x": -414, "y": -12, "angle": 0.0, "depth": 2}, {"idx": 14, "x": 195, "y": -152, "angle": 0.0, "depth": 2}, {"idx": 19, "x": 87, "y": 152, "angle": 0.0, "depth": 2}, {"idx": 24, "x": 87, "y": -152, "angle": 0.0, "depth": 2}, {"idx": 25, "x": 377, "y": 82, "angle": 15.0, "depth": 2}, {"idx": 27, "x": 377, "y": -93, "angle": 344.999958, "depth": 2}, {"idx": 28, "x": 195, "y": 152, "angle": 0.0, "depth": 2}, {"idx": 29, "x": -297, "y": -12, "angle": 0.0, "depth": 2}];
+  cards.forEach(card => {
+    const cx2 = tx(card.x), cy2 = ty(card.y);
+    const rad = card.angle * Math.PI / 180;
+    ctx.save();
+    ctx.translate(cx2, cy2);
+    ctx.rotate(-rad);
+    const isLo = loSet.has(card.idx);
+    const isHi = hiSet.has(card.idx);
+    if (isLo) {
+      ctx.fillStyle = 'rgba(255,80,80,0.85)';
+      ctx.strokeStyle = '#ff0000';
+      ctx.lineWidth = 3;
+    } else if (isHi) {
+      ctx.fillStyle = 'rgba(80,80,255,0.85)';
+      ctx.strokeStyle = '#0000ff';
+      ctx.lineWidth = 3;
+    } else {
+      ctx.fillStyle = card.depth === 0 ? '#fff' : '#d8ecff';
+      ctx.strokeStyle = depthColors[Math.min(card.depth, depthColors.length-1)];
+      ctx.lineWidth = card.depth === 0 ? 2.5 : 1.5;
+    }
+    ctx.beginPath();
+    ctx.roundRect(-CW/2, -CH/2, CW, CH, 4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = (isLo||isHi) ? '#fff' : depthColors[Math.min(card.depth, depthColors.length-1)];
+    ctx.font = `bold ${(isLo||isHi) ? 14*SCALE/0.7 : 12*SCALE/0.7}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(card.idx, 0, 0);
+    ctx.fillStyle = '#555';
+    ctx.font = `${8*SCALE/0.7}px sans-serif`;
+    ctx.fillText('d'+card.depth, 0, CH/2-6);
+    ctx.restore();
+  });
+})();
+</script>
+
+
+<div class="map-block">
+  <div class="map-title">CC_0286 &nbsp; <span style="color:#aaa;font-size:11px;font-weight:normal">Normal_obj_7629362497685869891_7629362497685869891</span> &nbsp; (31장)</div>
+  <div class="pairs">card[1](d1)←card[2](d3) | card[10](d1)←card[2](d3) | card[6](d1)←card[13](d3) | card[11](d1)←card[13](d3) | card[15](d0)←card[21](d2) | card[16](d0)←card[29](d2) | card[20](d2)←card[22](d4) | card[23](d2)←card[25](d4)</div>
+  <canvas id="c_CC_0286" width="900" height="560"></canvas>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('c_CC_0286');
+  const ctx = canvas.getContext('2d');
+  const OX = 450.0, OY = 280.0, SCALE = 0.4082;
+  const CX = -18.0, CY = 0.0;
+  function tx(x) { return OX + (x - CX) * SCALE; }
+  function ty(y) { return OY - (y - CY) * SCALE; }
+  const CW = 100 * SCALE, CH = 150 * SCALE;
+  const depthColors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c','#e91e63','#ff5722'];
+  const loSet = new Set([1, 6, 10, 11, 15, 16, 20, 23]);
+  const hiSet = new Set([2, 13, 21, 22, 25, 29]);
+  const cards = [{"idx": 5, "x": 266, "y": 0, "angle": 0.0, "depth": 0}, {"idx": 15, "x": -162, "y": 76, "angle": 314.999996, "depth": 0}, {"idx": 16, "x": -333, "y": 72, "angle": 45.0, "depth": 0}, {"idx": 1, "x": 181, "y": 137, "angle": 329.999998, "depth": 1}, {"idx": 6, "x": 350, "y": 137, "angle": 30.0, "depth": 1}, {"idx": 10, "x": 181, "y": -137, "angle": 30.0, "depth": 1}, {"idx": 11, "x": 350, "y": -137, "angle": 329.999998, "depth": 1}, {"idx": 18, "x": -109, "y": 86, "angle": 0.0, "depth": 1}, {"idx": 30, "x": -386, "y": 86, "angle": 0.0, "depth": 1}, {"idx": 0, "x": 99, "y": 122, "angle": 329.999998, "depth": 2}, {"idx": 3, "x": 181, "y": 0, "angle": 0.0, "depth": 2}, {"idx": 8, "x": 350, "y": 0, "angle": 0.0, "depth": 2}, {"idx": 9, "x": 99, "y": -122, "angle": 30.0, "depth": 2}, {"idx": 12, "x": 435, "y": 119, "angle": 30.0, "depth": 2}, {"idx": 14, "x": 435, "y": -119, "angle": 329.999998, "depth": 2}, {"idx": 20, "x": -55, "y": 74, "angle": 45.0, "depth": 2}, {"idx": 21, "x": -162, "y": -78, "angle": 45.0, "depth": 2}, {"idx": 23, "x": -441, "y": 74, "angle": 314.999996, "depth": 2}, {"idx": 29, "x": -333, "y": -82, "angle": 314.999996, "depth": 2}, {"idx": 2, "x": 109, "y": 0, "angle": 0.0, "depth": 3}, {"idx": 4, "x": 266, "y": 108, "angle": 0.0, "depth": 3}, {"idx": 7, "x": 266, "y": -108, "angle": 0.0, "depth": 3}, {"idx": 13, "x": 423, "y": 0, "angle": 0.0, "depth": 3}, {"idx": 19, "x": -109, "y": -91, "angle": 0.0, "depth": 3}, {"idx": 26, "x": -386, "y": -91, "angle": 0.0, "depth": 3}, {"idx": 17, "x": -194, "y": 0, "angle": 0.0, "depth": 4}, {"idx": 22, "x": -52, "y": -76, "angle": 314.999996, "depth": 4}, {"idx": 25, "x": -443, "y": -76, "angle": 45.0, "depth": 4}, {"idx": 28, "x": -301, "y": 0, "angle": 0.0, "depth": 4}, {"idx": 24, "x": -28, "y": -1, "angle": 0.0, "depth": 5}, {"idx": 27, "x": -471, "y": -1, "angle": 0.0, "depth": 5}];
+  cards.forEach(card => {
+    const cx2 = tx(card.x), cy2 = ty(card.y);
+    const rad = card.angle * Math.PI / 180;
+    ctx.save();
+    ctx.translate(cx2, cy2);
+    ctx.rotate(-rad);
+    const isLo = loSet.has(card.idx);
+    const isHi = hiSet.has(card.idx);
+    if (isLo) {
+      ctx.fillStyle = 'rgba(255,80,80,0.85)';
+      ctx.strokeStyle = '#ff0000';
+      ctx.lineWidth = 3;
+    } else if (isHi) {
+      ctx.fillStyle = 'rgba(80,80,255,0.85)';
+      ctx.strokeStyle = '#0000ff';
+      ctx.lineWidth = 3;
+    } else {
+      ctx.fillStyle = card.depth === 0 ? '#fff' : '#d8ecff';
+      ctx.strokeStyle = depthColors[Math.min(card.depth, depthColors.length-1)];
+      ctx.lineWidth = card.depth === 0 ? 2.5 : 1.5;
+    }
+    ctx.beginPath();
+    ctx.roundRect(-CW/2, -CH/2, CW, CH, 4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = (isLo||isHi) ? '#fff' : depthColors[Math.min(card.depth, depthColors.length-1)];
+    ctx.font = `bold ${(isLo||isHi) ? 14*SCALE/0.7 : 12*SCALE/0.7}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(card.idx, 0, 0);
+    ctx.fillStyle = '#555';
+    ctx.font = `${8*SCALE/0.7}px sans-serif`;
+    ctx.fillText('d'+card.depth, 0, CH/2-6);
+    ctx.restore();
+  });
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>샘플 수정 전/후</title>
+<style>
+body{{background:#1a1a2e;color:#eee;font-family:sans-serif;padding:16px}}
+h1{{text-align:center;font-size:14px;color:#aef;margin-bottom:16px}}
+.block{{margin-bottom:40px;border:1px solid #333;border-radius:8px;padding:12px}}
+.title{{font-size:13px;font-weight:bold;color:#ffd;margin-bottom:6px}}
+.row{{display:flex;gap:12px;align-items:flex-start}}
+.panel{{flex:1}}
+.label{{font-size:11px;color:#aaa;text-align:center;margin-bottom:4px}}
+canvas{{display:block;background:#1a6fbf;border-radius:6px;width:100%}}
+.pairs{{font-size:10px;font-family:monospace;color:#bbb;margin:6px 0}}
+.fix{{font-size:10px;font-family:monospace;color:#8f8;margin:4px 0}}
+</style></head><body>
+<h1>Cross-pile 블로킹 수정 샘플 — Before / After</h1>
+<div style="text-align:center;font-size:10px;color:#ccc;margin-bottom:16px">
+  <span style="color:#f66">■ 빨강=lo(블로킹당함)</span> &nbsp;
+  <span style="color:#66f">■ 파랑=hi(블로커)</span> &nbsp;
+  <span style="color:#6f6">■ 초록=수정된 hi</span>
+</div>
+<div class="block">
+<div class="title">Normal_obj_-6973911437061815746_-6973911437061815746.json</div>
+<div class="pairs">문제: [27]d0←[0]d3 6.0px | [6]d0←[3]d3 6.0px | [14]d0←[9]d3 6.0px | [22]d0←[15]d3 6.0px</div>
+<div class="fix">수정: card[0] +(0.0,-5.0)px; card[3] +(0.0,-5.0)px; card[9] +(0.0,-5.0)px; card[15] +(0.0,-5.0)px<br>수정 후 충돌 없음 ✅</div>
+<div class="row">
+  <div class="panel"><div class="label">Before</div>
+    <canvas id="b_Normal_obj__6973911437061815746__6973911437061815746_json" width="700" height="500"></canvas></div>
+  <div class="panel"><div class="label">After</div>
+    <canvas id="a_Normal_obj__6973911437061815746__6973911437061815746_json" width="700" height="500"></canvas></div>
+</div></div>
+<script>
+(function(){
+  const canvas=document.getElementById('b_Normal_obj__6973911437061815746__6973911437061815746_json');
+  const ctx=canvas.getContext('2d');
+  const OX=350.0,OY=250.0,SC=0.3339,CX=0.0,CY=0.0;
+  const CW=100*SC,CH=150*SC;
+  const dc=["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db", "#9b59b6", "#1abc9c", "#e91e63", "#ff5722"];
+  const lo=new Set([27, 22, 6, 14]),hi=new Set([0, 9, 3, 15]),mv=new Set([]);
+  [{"idx": 6, "x": -266, "y": 81, "angle": 0.0, "depth": 0}, {"idx": 7, "x": 0, "y": 81, "angle": 0.0, "depth": 0}, {"idx": 14, "x": 374, "y": 81, "angle": 0.0, "depth": 0}, {"idx": 22, "x": 266, "y": 81, "angle": 0.0, "depth": 0}, {"idx": 26, "x": 0, "y": -81, "angle": 0.0, "depth": 0}, {"idx": 27, "x": -374, "y": 81, "angle": 0.0, "depth": 0}, {"idx": 8, "x": -235, "y": 54, "angle": 0.0, "depth": 1}, {"idx": 13, "x": 405, "y": 54, "angle": 0.0, "depth": 1}, {"idx": 17, "x": 235, "y": 54, "angle": 0.0, "depth": 1}, {"idx": 24, "x": -405, "y": 54, "angle": 0.0, "depth": 1}, {"idx": 25, "x": 0, "y": -9, "angle": 0.0, "depth": 1}, {"idx": 4, "x": -459, "y": 27, "angle": 0.0, "depth": 2}, {"idx": 10, "x": 0, "y": -45, "angle": 0.0, "depth": 2}, {"idx": 11, "x": -181, "y": 27, "angle": 0.0, "depth": 2}, {"idx": 18, "x": 181, "y": 27, "angle": 0.0, "depth": 2}, {"idx": 29, "x": 459, "y": 27, "angle": 0.0, "depth": 2}, {"idx": 0, "x": -459, "y": -63, "angle": 0.0, "depth": 3}, {"idx": 3, "x": -181, "y": -63, "angle": 0.0, "depth": 3}, {"idx": 9, "x": 459, "y": -63, "angle": 0.0, "depth": 3}, {"idx": 15, "x": 181, "y": -63, "angle": 0.0, "depth": 3}, {"idx": 16, "x": 66, "y": -9, "angle": 0.0, "depth": 3}, {"idx": 23, "x": -66, "y": -9, "angle": 0.0, "depth": 3}, {"idx": 1, "x": -211, "y": -36, "angle": 0.0, "depth": 4}, {"idx": 2, "x": -429, "y": -36, "angle": 0.0, "depth": 4}, {"idx": 12, "x": 429, "y": -36, "angle": 0.0, "depth": 4}, {"idx": 21, "x": 211, "y": -36, "angle": 0.0, "depth": 4}, {"idx": 5, "x": -266, "y": -9, "angle": 0.0, "depth": 5}, {"idx": 19, "x": 374, "y": -9, "angle": 0.0, "depth": 5}, {"idx": 20, "x": 266, "y": -9, "angle": 0.0, "depth": 5}, {"idx": 28, "x": -374, "y": -9, "angle": 0.0, "depth": 5}].forEach(c=>{
+    const px=OX+(c.x-CX)*SC,py=OY-(c.y-CY)*SC,rad=c.angle*Math.PI/180;
+    ctx.save();ctx.translate(px,py);ctx.rotate(-rad);
+    const isLo=lo.has(c.idx),isHi=hi.has(c.idx),isMv=mv.has(c.idx);
+    if(isMv){ctx.fillStyle='rgba(80,255,80,0.88)';ctx.strokeStyle='#00cc00';ctx.lineWidth=3;}
+    else if(isLo){ctx.fillStyle='rgba(255,80,80,0.88)';ctx.strokeStyle='#ff2222';ctx.lineWidth=3;}
+    else if(isHi){ctx.fillStyle='rgba(60,80,255,0.88)';ctx.strokeStyle='#3355ff';ctx.lineWidth=3;}
+    else{ctx.fillStyle=c.depth===0?'#fff':'#d4eaff';ctx.strokeStyle=dc[Math.min(c.depth,dc.length-1)];ctx.lineWidth=c.depth===0?2.5:1.5;}
+    ctx.beginPath();ctx.roundRect(-CW/2,-CH/2,CW,CH,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle=(isLo||isHi||isMv)?'#fff':dc[Math.min(c.depth,dc.length-1)];
+    ctx.font=`bold ${12*SC/0.7}px sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.idx,0,0);
+    ctx.fillStyle=(isLo||isHi||isMv)?'rgba(255,255,255,0.7)':'#555';
+    ctx.font=`${7*SC/0.7}px sans-serif`;ctx.fillText('d'+c.depth,0,CH/2-5);
+    ctx.restore();
+  });
+})();
+(function(){
+  const canvas=document.getElementById('a_Normal_obj__6973911437061815746__6973911437061815746_json');
+  const ctx=canvas.getContext('2d');
+  const OX=350.0,OY=250.0,SC=0.3339,CX=0.0,CY=0.0;
+  const CW=100*SC,CH=150*SC;
+  const dc=["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db", "#9b59b6", "#1abc9c", "#e91e63", "#ff5722"];
+  const lo=new Set([27, 22, 6, 14]),hi=new Set([]),mv=new Set([0, 9, 3, 15]);
+  [{"idx": 6, "x": -266, "y": 81, "angle": 0.0, "depth": 0}, {"idx": 7, "x": 0, "y": 81, "angle": 0.0, "depth": 0}, {"idx": 14, "x": 374, "y": 81, "angle": 0.0, "depth": 0}, {"idx": 22, "x": 266, "y": 81, "angle": 0.0, "depth": 0}, {"idx": 26, "x": 0, "y": -81, "angle": 0.0, "depth": 0}, {"idx": 27, "x": -374, "y": 81, "angle": 0.0, "depth": 0}, {"idx": 8, "x": -235, "y": 54, "angle": 0.0, "depth": 1}, {"idx": 13, "x": 405, "y": 54, "angle": 0.0, "depth": 1}, {"idx": 17, "x": 235, "y": 54, "angle": 0.0, "depth": 1}, {"idx": 24, "x": -405, "y": 54, "angle": 0.0, "depth": 1}, {"idx": 25, "x": 0, "y": -9, "angle": 0.0, "depth": 1}, {"idx": 4, "x": -459, "y": 27, "angle": 0.0, "depth": 2}, {"idx": 10, "x": 0, "y": -45, "angle": 0.0, "depth": 2}, {"idx": 11, "x": -181, "y": 27, "angle": 0.0, "depth": 2}, {"idx": 18, "x": 181, "y": 27, "angle": 0.0, "depth": 2}, {"idx": 29, "x": 459, "y": 27, "angle": 0.0, "depth": 2}, {"idx": 0, "x": -459.0, "y": -68.0, "angle": 0.0, "depth": 3}, {"idx": 3, "x": -181.0, "y": -68.0, "angle": 0.0, "depth": 3}, {"idx": 9, "x": 459.0, "y": -68.0, "angle": 0.0, "depth": 3}, {"idx": 15, "x": 181.0, "y": -68.0, "angle": 0.0, "depth": 3}, {"idx": 16, "x": 66, "y": -9, "angle": 0.0, "depth": 3}, {"idx": 23, "x": -66, "y": -9, "angle": 0.0, "depth": 3}, {"idx": 1, "x": -211, "y": -36, "angle": 0.0, "depth": 4}, {"idx": 2, "x": -429, "y": -36, "angle": 0.0, "depth": 4}, {"idx": 12, "x": 429, "y": -36, "angle": 0.0, "depth": 4}, {"idx": 21, "x": 211, "y": -36, "angle": 0.0, "depth": 4}, {"idx": 5, "x": -266, "y": -9, "angle": 0.0, "depth": 5}, {"idx": 19, "x": 374, "y": -9, "angle": 0.0, "depth": 5}, {"idx": 20, "x": 266, "y": -9, "angle": 0.0, "depth": 5}, {"idx": 28, "x": -374, "y": -9, "angle": 0.0, "depth": 5}].forEach(c=>{
+    const px=OX+(c.x-CX)*SC,py=OY-(c.y-CY)*SC,rad=c.angle*Math.PI/180;
+    ctx.save();ctx.translate(px,py);ctx.rotate(-rad);
+    const isLo=lo.has(c.idx),isHi=hi.has(c.idx),isMv=mv.has(c.idx);
+    if(isMv){ctx.fillStyle='rgba(80,255,80,0.88)';ctx.strokeStyle='#00cc00';ctx.lineWidth=3;}
+    else if(isLo){ctx.fillStyle='rgba(255,80,80,0.88)';ctx.strokeStyle='#ff2222';ctx.lineWidth=3;}
+    else if(isHi){ctx.fillStyle='rgba(60,80,255,0.88)';ctx.strokeStyle='#3355ff';ctx.lineWidth=3;}
+    else{ctx.fillStyle=c.depth===0?'#fff':'#d4eaff';ctx.strokeStyle=dc[Math.min(c.depth,dc.length-1)];ctx.lineWidth=c.depth===0?2.5:1.5;}
+    ctx.beginPath();ctx.roundRect(-CW/2,-CH/2,CW,CH,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle=(isLo||isHi||isMv)?'#fff':dc[Math.min(c.depth,dc.length-1)];
+    ctx.font=`bold ${12*SC/0.7}px sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.idx,0,0);
+    ctx.fillStyle=(isLo||isHi||isMv)?'rgba(255,255,255,0.7)':'#555';
+    ctx.font=`${7*SC/0.7}px sans-serif`;ctx.fillText('d'+c.depth,0,CH/2-5);
+    ctx.restore();
+  });
+})();
+</script>
+<div class="block">
+<div class="title">Normal_obj_3374591764154012452_3374591764154012452.json</div>
+<div class="pairs">문제: [18]d0←[14]d3 17.8px</div>
+<div class="fix">수정: card[14] +(11.9,-11.9)px<br>수정 후 충돌 없음 ✅</div>
+<div class="row">
+  <div class="panel"><div class="label">Before</div>
+    <canvas id="b_Normal_obj_3374591764154012452_3374591764154012452_json" width="700" height="500"></canvas></div>
+  <div class="panel"><div class="label">After</div>
+    <canvas id="a_Normal_obj_3374591764154012452_3374591764154012452_json" width="700" height="500"></canvas></div>
+</div></div>
+<script>
+(function(){
+  const canvas=document.getElementById('b_Normal_obj_3374591764154012452_3374591764154012452_json');
+  const ctx=canvas.getContext('2d');
+  const OX=350.0,OY=250.0,SC=0.3436,CX=-7.0,CY=0.0;
+  const CW=100*SC,CH=150*SC;
+  const dc=["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db", "#9b59b6", "#1abc9c", "#e91e63", "#ff5722"];
+  const lo=new Set([18]),hi=new Set([14]),mv=new Set([]);
+  [{"idx": 0, "x": -392, "y": -86, "angle": 45.0, "depth": 0}, {"idx": 4, "x": -380, "y": 117, "angle": 45.0, "depth": 0}, {"idx": 6, "x": -169, "y": -90, "angle": 45.0, "depth": 0}, {"idx": 13, "x": 12, "y": -14, "angle": 45.0, "depth": 0}, {"idx": 18, "x": 49, "y": 112, "angle": 45.0, "depth": 0}, {"idx": 21, "x": 307, "y": 8, "angle": 45.0, "depth": 0}, {"idx": 23, "x": 359, "y": 122, "angle": 45.0, "depth": 0}, {"idx": 1, "x": -449, "y": -24, "angle": 45.0, "depth": 1}, {"idx": 2, "x": -289, "y": -83, "angle": 45.0, "depth": 1}, {"idx": 5, "x": -290, "y": 122, "angle": 45.0, "depth": 1}, {"idx": 7, "x": -187, "y": 13, "angle": 45.0, "depth": 1}, {"idx": 8, "x": -103, "y": -122, "angle": 45.0, "depth": 1}, {"idx": 17, "x": 61, "y": 41, "angle": 45.0, "depth": 1}, {"idx": 24, "x": 380, "y": 93, "angle": 45.0, "depth": 1}, {"idx": 3, "x": -355, "y": -13, "angle": 45.0, "depth": 2}, {"idx": 9, "x": -102, "y": -95, "angle": 314.999996, "depth": 2}, {"idx": 11, "x": -223, "y": 112, "angle": 45.0, "depth": 2}, {"idx": 25, "x": 332, "y": 40, "angle": 45.0, "depth": 2}, {"idx": 29, "x": 435, "y": 121, "angle": 45.0, "depth": 2}, {"idx": 12, "x": -115, "y": 111, "angle": 45.0, "depth": 3}, {"idx": 14, "x": 89, "y": -35, "angle": 45.0, "depth": 3}, {"idx": 19, "x": 257, "y": 61, "angle": 45.0, "depth": 3}, {"idx": 26, "x": 368, "y": -60, "angle": 45.0, "depth": 3}, {"idx": 16, "x": 137, "y": 18, "angle": 45.0, "depth": 4}, {"idx": 20, "x": 202, "y": 120, "angle": 45.0, "depth": 4}, {"idx": 27, "x": 411, "y": -104, "angle": 45.0, "depth": 4}, {"idx": 22, "x": 218, "y": -66, "angle": 45.0, "depth": 5}, {"idx": 28, "x": 381, "y": -47, "angle": 45.0, "depth": 5}, {"idx": 10, "x": 175, "y": -109, "angle": 45.0, "depth": 6}, {"idx": 15, "x": 233, "y": -121, "angle": 45.0, "depth": 7}].forEach(c=>{
+    const px=OX+(c.x-CX)*SC,py=OY-(c.y-CY)*SC,rad=c.angle*Math.PI/180;
+    ctx.save();ctx.translate(px,py);ctx.rotate(-rad);
+    const isLo=lo.has(c.idx),isHi=hi.has(c.idx),isMv=mv.has(c.idx);
+    if(isMv){ctx.fillStyle='rgba(80,255,80,0.88)';ctx.strokeStyle='#00cc00';ctx.lineWidth=3;}
+    else if(isLo){ctx.fillStyle='rgba(255,80,80,0.88)';ctx.strokeStyle='#ff2222';ctx.lineWidth=3;}
+    else if(isHi){ctx.fillStyle='rgba(60,80,255,0.88)';ctx.strokeStyle='#3355ff';ctx.lineWidth=3;}
+    else{ctx.fillStyle=c.depth===0?'#fff':'#d4eaff';ctx.strokeStyle=dc[Math.min(c.depth,dc.length-1)];ctx.lineWidth=c.depth===0?2.5:1.5;}
+    ctx.beginPath();ctx.roundRect(-CW/2,-CH/2,CW,CH,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle=(isLo||isHi||isMv)?'#fff':dc[Math.min(c.depth,dc.length-1)];
+    ctx.font=`bold ${12*SC/0.7}px sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.idx,0,0);
+    ctx.fillStyle=(isLo||isHi||isMv)?'rgba(255,255,255,0.7)':'#555';
+    ctx.font=`${7*SC/0.7}px sans-serif`;ctx.fillText('d'+c.depth,0,CH/2-5);
+    ctx.restore();
+  });
+})();
+(function(){
+  const canvas=document.getElementById('a_Normal_obj_3374591764154012452_3374591764154012452_json');
+  const ctx=canvas.getContext('2d');
+  const OX=350.0,OY=250.0,SC=0.3436,CX=-7.0,CY=0.0;
+  const CW=100*SC,CH=150*SC;
+  const dc=["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db", "#9b59b6", "#1abc9c", "#e91e63", "#ff5722"];
+  const lo=new Set([18]),hi=new Set([]),mv=new Set([14]);
+  [{"idx": 0, "x": -392, "y": -86, "angle": 45.0, "depth": 0}, {"idx": 4, "x": -380, "y": 117, "angle": 45.0, "depth": 0}, {"idx": 6, "x": -169, "y": -90, "angle": 45.0, "depth": 0}, {"idx": 13, "x": 12, "y": -14, "angle": 45.0, "depth": 0}, {"idx": 18, "x": 49, "y": 112, "angle": 45.0, "depth": 0}, {"idx": 21, "x": 307, "y": 8, "angle": 45.0, "depth": 0}, {"idx": 23, "x": 359, "y": 122, "angle": 45.0, "depth": 0}, {"idx": 1, "x": -449, "y": -24, "angle": 45.0, "depth": 1}, {"idx": 2, "x": -289, "y": -83, "angle": 45.0, "depth": 1}, {"idx": 5, "x": -290, "y": 122, "angle": 45.0, "depth": 1}, {"idx": 7, "x": -187, "y": 13, "angle": 45.0, "depth": 1}, {"idx": 8, "x": -103, "y": -122, "angle": 45.0, "depth": 1}, {"idx": 17, "x": 61, "y": 41, "angle": 45.0, "depth": 1}, {"idx": 24, "x": 380, "y": 93, "angle": 45.0, "depth": 1}, {"idx": 3, "x": -355, "y": -13, "angle": 45.0, "depth": 2}, {"idx": 9, "x": -102, "y": -95, "angle": 314.999996, "depth": 2}, {"idx": 11, "x": -223, "y": 112, "angle": 45.0, "depth": 2}, {"idx": 25, "x": 332, "y": 40, "angle": 45.0, "depth": 2}, {"idx": 29, "x": 435, "y": 121, "angle": 45.0, "depth": 2}, {"idx": 12, "x": -115, "y": 111, "angle": 45.0, "depth": 3}, {"idx": 14, "x": 100.9, "y": -46.9, "angle": 45.0, "depth": 3}, {"idx": 19, "x": 257, "y": 61, "angle": 45.0, "depth": 3}, {"idx": 26, "x": 368, "y": -60, "angle": 45.0, "depth": 3}, {"idx": 16, "x": 137, "y": 18, "angle": 45.0, "depth": 4}, {"idx": 20, "x": 202, "y": 120, "angle": 45.0, "depth": 4}, {"idx": 27, "x": 411, "y": -104, "angle": 45.0, "depth": 4}, {"idx": 22, "x": 218, "y": -66, "angle": 45.0, "depth": 5}, {"idx": 28, "x": 381, "y": -47, "angle": 45.0, "depth": 5}, {"idx": 10, "x": 175, "y": -109, "angle": 45.0, "depth": 6}, {"idx": 15, "x": 233, "y": -121, "angle": 45.0, "depth": 7}].forEach(c=>{
+    const px=OX+(c.x-CX)*SC,py=OY-(c.y-CY)*SC,rad=c.angle*Math.PI/180;
+    ctx.save();ctx.translate(px,py);ctx.rotate(-rad);
+    const isLo=lo.has(c.idx),isHi=hi.has(c.idx),isMv=mv.has(c.idx);
+    if(isMv){ctx.fillStyle='rgba(80,255,80,0.88)';ctx.strokeStyle='#00cc00';ctx.lineWidth=3;}
+    else if(isLo){ctx.fillStyle='rgba(255,80,80,0.88)';ctx.strokeStyle='#ff2222';ctx.lineWidth=3;}
+    else if(isHi){ctx.fillStyle='rgba(60,80,255,0.88)';ctx.strokeStyle='#3355ff';ctx.lineWidth=3;}
+    else{ctx.fillStyle=c.depth===0?'#fff':'#d4eaff';ctx.strokeStyle=dc[Math.min(c.depth,dc.length-1)];ctx.lineWidth=c.depth===0?2.5:1.5;}
+    ctx.beginPath();ctx.roundRect(-CW/2,-CH/2,CW,CH,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle=(isLo||isHi||isMv)?'#fff':dc[Math.min(c.depth,dc.length-1)];
+    ctx.font=`bold ${12*SC/0.7}px sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.idx,0,0);
+    ctx.fillStyle=(isLo||isHi||isMv)?'rgba(255,255,255,0.7)':'#555';
+    ctx.font=`${7*SC/0.7}px sans-serif`;ctx.fillText('d'+c.depth,0,CH/2-5);
+    ctx.restore();
+  });
+})();
+</script>
+<div class="block">
+<div class="title">VeryHard_obj_-9098922016067688420_-9098922016067688420.json</div>
+<div class="pairs">문제: [0]d0←[5]d3 21.0px | [2]d2←[10]d5 6.7px | [4]d2←[10]d5 7.7px | [11]d2←[16]d5 6.7px | [23]d2←[16]d5 7.7px | [26]d0←[21]d3 21.0px</div>
+<div class="fix">수정: card[5] +(5.2,-19.3)px; card[10] +(6.7,0.0)px; card[16] +(-6.7,-0.0)px; card[21] +(-5.2,-19.3)px<br>수정 후 잔존: [(2, 10, 13.4), (11, 16, 13.4)]</div>
+<div class="row">
+  <div class="panel"><div class="label">Before</div>
+    <canvas id="b_VeryHard_obj__9098922016067688420__9098922016067688420_json" width="700" height="500"></canvas></div>
+  <div class="panel"><div class="label">After</div>
+    <canvas id="a_VeryHard_obj__9098922016067688420__9098922016067688420_json" width="700" height="500"></canvas></div>
+</div></div>
+<script>
+(function(){
+  const canvas=document.getElementById('b_VeryHard_obj__9098922016067688420__9098922016067688420_json');
+  const ctx=canvas.getContext('2d');
+  const OX=350.0,OY=250.0,SC=0.3788,CX=0.0,CY=0.5;
+  const CW=100*SC,CH=150*SC;
+  const dc=["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db", "#9b59b6", "#1abc9c", "#e91e63", "#ff5722"];
+  const lo=new Set([0, 2, 4, 11, 23, 26]),hi=new Set([16, 10, 21, 5]),mv=new Set([]);
+  [{"idx": 0, "x": -362, "y": 131, "angle": 329.999998, "depth": 0}, {"idx": 7, "x": -80, "y": 130, "angle": 30.0, "depth": 0}, {"idx": 14, "x": -86, "y": -127, "angle": 344.999969, "depth": 0}, {"idx": 17, "x": 80, "y": 132, "angle": 329.999998, "depth": 0}, {"idx": 19, "x": 86, "y": -127, "angle": 15.000031, "depth": 0}, {"idx": 26, "x": 362, "y": 131, "angle": 30.0, "depth": 0}, {"idx": 1, "x": -378, "y": 103, "angle": 329.999998, "depth": 1}, {"idx": 6, "x": -123, "y": 103, "angle": 30.0, "depth": 1}, {"idx": 12, "x": 378, "y": 103, "angle": 30.0, "depth": 1}, {"idx": 13, "x": -77, "y": -87, "angle": 344.999969, "depth": 1}, {"idx": 20, "x": 77, "y": -87, "angle": 15.000031, "depth": 1}, {"idx": 25, "x": 123, "y": 103, "angle": 329.999998, "depth": 1}, {"idx": 2, "x": -167, "y": 19, "angle": 344.999969, "depth": 2}, {"idx": 4, "x": -388, "y": 19, "angle": 15.000031, "depth": 2}, {"idx": 11, "x": 167, "y": 19, "angle": 15.000031, "depth": 2}, {"idx": 23, "x": 388, "y": 19, "angle": 344.999969, "depth": 2}, {"idx": 3, "x": -177, "y": -21, "angle": 344.999969, "depth": 3}, {"idx": 5, "x": -379, "y": -21, "angle": 15.000031, "depth": 3}, {"idx": 21, "x": 379, "y": -21, "angle": 344.999969, "depth": 3}, {"idx": 27, "x": 177, "y": -21, "angle": 15.000031, "depth": 3}, {"idx": 8, "x": -332, "y": -95, "angle": 0.0, "depth": 4}, {"idx": 9, "x": -229, "y": -95, "angle": 0.0, "depth": 4}, {"idx": 22, "x": 229, "y": -95, "angle": 0.0, "depth": 4}, {"idx": 24, "x": 332, "y": -95, "angle": 0.0, "depth": 4}, {"idx": 10, "x": -278, "y": -95, "angle": 0.0, "depth": 5}, {"idx": 16, "x": 278, "y": -95, "angle": 0.0, "depth": 5}, {"idx": 15, "x": 278, "y": -131, "angle": 0.0, "depth": 6}, {"idx": 18, "x": -278, "y": -131, "angle": 0.0, "depth": 6}].forEach(c=>{
+    const px=OX+(c.x-CX)*SC,py=OY-(c.y-CY)*SC,rad=c.angle*Math.PI/180;
+    ctx.save();ctx.translate(px,py);ctx.rotate(-rad);
+    const isLo=lo.has(c.idx),isHi=hi.has(c.idx),isMv=mv.has(c.idx);
+    if(isMv){ctx.fillStyle='rgba(80,255,80,0.88)';ctx.strokeStyle='#00cc00';ctx.lineWidth=3;}
+    else if(isLo){ctx.fillStyle='rgba(255,80,80,0.88)';ctx.strokeStyle='#ff2222';ctx.lineWidth=3;}
+    else if(isHi){ctx.fillStyle='rgba(60,80,255,0.88)';ctx.strokeStyle='#3355ff';ctx.lineWidth=3;}
+    else{ctx.fillStyle=c.depth===0?'#fff':'#d4eaff';ctx.strokeStyle=dc[Math.min(c.depth,dc.length-1)];ctx.lineWidth=c.depth===0?2.5:1.5;}
+    ctx.beginPath();ctx.roundRect(-CW/2,-CH/2,CW,CH,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle=(isLo||isHi||isMv)?'#fff':dc[Math.min(c.depth,dc.length-1)];
+    ctx.font=`bold ${12*SC/0.7}px sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.idx,0,0);
+    ctx.fillStyle=(isLo||isHi||isMv)?'rgba(255,255,255,0.7)':'#555';
+    ctx.font=`${7*SC/0.7}px sans-serif`;ctx.fillText('d'+c.depth,0,CH/2-5);
+    ctx.restore();
+  });
+})();
+(function(){
+  const canvas=document.getElementById('a_VeryHard_obj__9098922016067688420__9098922016067688420_json');
+  const ctx=canvas.getContext('2d');
+  const OX=350.0,OY=250.0,SC=0.3788,CX=0.0,CY=0.5;
+  const CW=100*SC,CH=150*SC;
+  const dc=["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db", "#9b59b6", "#1abc9c", "#e91e63", "#ff5722"];
+  const lo=new Set([0, 2, 4, 11, 23, 26]),hi=new Set([]),mv=new Set([16, 10, 21, 5]);
+  [{"idx": 0, "x": -362, "y": 131, "angle": 329.999998, "depth": 0}, {"idx": 7, "x": -80, "y": 130, "angle": 30.0, "depth": 0}, {"idx": 14, "x": -86, "y": -127, "angle": 344.999969, "depth": 0}, {"idx": 17, "x": 80, "y": 132, "angle": 329.999998, "depth": 0}, {"idx": 19, "x": 86, "y": -127, "angle": 15.000031, "depth": 0}, {"idx": 26, "x": 362, "y": 131, "angle": 30.0, "depth": 0}, {"idx": 1, "x": -378, "y": 103, "angle": 329.999998, "depth": 1}, {"idx": 6, "x": -123, "y": 103, "angle": 30.0, "depth": 1}, {"idx": 12, "x": 378, "y": 103, "angle": 30.0, "depth": 1}, {"idx": 13, "x": -77, "y": -87, "angle": 344.999969, "depth": 1}, {"idx": 20, "x": 77, "y": -87, "angle": 15.000031, "depth": 1}, {"idx": 25, "x": 123, "y": 103, "angle": 329.999998, "depth": 1}, {"idx": 2, "x": -167, "y": 19, "angle": 344.999969, "depth": 2}, {"idx": 4, "x": -388, "y": 19, "angle": 15.000031, "depth": 2}, {"idx": 11, "x": 167, "y": 19, "angle": 15.000031, "depth": 2}, {"idx": 23, "x": 388, "y": 19, "angle": 344.999969, "depth": 2}, {"idx": 3, "x": -177, "y": -21, "angle": 344.999969, "depth": 3}, {"idx": 5, "x": -373.8, "y": -40.3, "angle": 15.000031, "depth": 3}, {"idx": 21, "x": 373.8, "y": -40.3, "angle": 344.999969, "depth": 3}, {"idx": 27, "x": 177, "y": -21, "angle": 15.000031, "depth": 3}, {"idx": 8, "x": -332, "y": -95, "angle": 0.0, "depth": 4}, {"idx": 9, "x": -229, "y": -95, "angle": 0.0, "depth": 4}, {"idx": 22, "x": 229, "y": -95, "angle": 0.0, "depth": 4}, {"idx": 24, "x": 332, "y": -95, "angle": 0.0, "depth": 4}, {"idx": 10, "x": -271.3, "y": -95.0, "angle": 0.0, "depth": 5}, {"idx": 16, "x": 271.3, "y": -95.0, "angle": 0.0, "depth": 5}, {"idx": 15, "x": 278, "y": -131, "angle": 0.0, "depth": 6}, {"idx": 18, "x": -278, "y": -131, "angle": 0.0, "depth": 6}].forEach(c=>{
+    const px=OX+(c.x-CX)*SC,py=OY-(c.y-CY)*SC,rad=c.angle*Math.PI/180;
+    ctx.save();ctx.translate(px,py);ctx.rotate(-rad);
+    const isLo=lo.has(c.idx),isHi=hi.has(c.idx),isMv=mv.has(c.idx);
+    if(isMv){ctx.fillStyle='rgba(80,255,80,0.88)';ctx.strokeStyle='#00cc00';ctx.lineWidth=3;}
+    else if(isLo){ctx.fillStyle='rgba(255,80,80,0.88)';ctx.strokeStyle='#ff2222';ctx.lineWidth=3;}
+    else if(isHi){ctx.fillStyle='rgba(60,80,255,0.88)';ctx.strokeStyle='#3355ff';ctx.lineWidth=3;}
+    else{ctx.fillStyle=c.depth===0?'#fff':'#d4eaff';ctx.strokeStyle=dc[Math.min(c.depth,dc.length-1)];ctx.lineWidth=c.depth===0?2.5:1.5;}
+    ctx.beginPath();ctx.roundRect(-CW/2,-CH/2,CW,CH,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle=(isLo||isHi||isMv)?'#fff':dc[Math.min(c.depth,dc.length-1)];
+    ctx.font=`bold ${12*SC/0.7}px sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.idx,0,0);
+    ctx.fillStyle=(isLo||isHi||isMv)?'rgba(255,255,255,0.7)':'#555';
+    ctx.font=`${7*SC/0.7}px sans-serif`;ctx.fillText('d'+c.depth,0,CH/2-5);
+    ctx.restore();
+  });
+})();
+</script>
+</body></html>

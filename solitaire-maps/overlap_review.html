@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>OBB 겹침 맵 v2 (pen≥2.0)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,sans-serif;background:#0f0f13;color:#e0e0e0;padding:12px}
+header{background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:15px}
+.badge{background:#e91e63;color:#fff;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700}
+.note{color:#888;font-size:11px}
+.prog{margin-left:auto;font-size:13px}.prog strong{color:#4caf50;font-size:16px}
+.row{display:flex;align-items:center;padding:9px 14px;border-top:1px solid #1e1e2a;gap:10px;flex-wrap:wrap;background:#1a1a24}
+.row:first-of-type{border-top:1px solid #2a2a3a;border-radius:10px 10px 0 0}
+.row:last-of-type{border-radius:0 0 10px 10px;border-bottom:1px solid #2a2a3a;margin-bottom:10px}
+.row:hover{background:#1e1e2c}
+.row.done{opacity:.35}.row.done .sid{text-decoration:line-through;color:#555}
+.chk{width:19px;height:19px;border:2px solid #444;border-radius:5px;flex-shrink:0;cursor:pointer;position:relative}
+.chk.on{background:#4caf50;border-color:#4caf50}
+.chk.on::after{content:'';position:absolute;left:5px;top:1px;width:5px;height:11px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.sid{font-family:monospace;font-weight:700;color:#7ec8ff;min-width:74px;font-size:13px;cursor:pointer;padding:2px 6px;border-radius:3px}
+.sid:hover{background:#1e3a55}
+.score{background:#2e2e50;color:#aac8ff;padding:2px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:48px;text-align:center}
+.tier{padding:2px 9px;border-radius:4px;font-size:10px;font-weight:800;color:#000;min-width:64px;text-align:center}
+.pen-cnt{background:#c62828;color:#fff;padding:2px 10px;border-radius:12px;font-family:monospace;font-size:11px;font-weight:800;min-width:64px;text-align:center}
+.pen-cnt.low{background:#5a4a1a;color:#ffcc99}
+.pen-cnt.med{background:#e65100}
+.metric{font-family:monospace;font-size:10px;color:#888;min-width:180px}
+.metric .hi{color:#ff8888;font-weight:700}
+.metric .rot0{color:#ff8888;font-weight:700}
+.fn{font-family:monospace;font-size:9px;color:#555;margin-left:auto;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.fn:hover{color:#aac8ff}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#23233a;border:1px solid #4caf50;color:#4caf50;padding:8px 20px;border-radius:8px;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999}
+#toast.show{opacity:1}
+.ctrl{display:flex;gap:6px;margin-bottom:12px;background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 12px;flex-wrap:wrap}
+.btn{background:#23233a;border:1px solid #3a3a55;color:#aaa;padding:4px 12px;border-radius:5px;font-size:11px;cursor:pointer}
+.btn.danger{color:#ff8888}
+.action-group{display:inline-flex;gap:3px;margin-left:4px}
+.btn-act{background:#23233a;border:1px solid #3a3a55;color:#888;padding:2px 8px;border-radius:4px;font-size:10px;cursor:pointer;font-weight:700;min-width:46px}
+.btn-act:hover{background:#3a3a55;color:#ddd}
+.btn-act.fix.on{background:#1a5a3a;color:#99ffcc;border-color:#2a8a5a}
+.btn-act.replace.on{background:#1a3a5a;color:#9999ff;border-color:#2a4a8a}
+.row.act-fix{background:#14241a !important;border-left:3px solid #4caf50}
+.row.act-replace{background:#14202a !important;border-left:3px solid #2196f3}
+.summary{background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;gap:18px;align-items:center;font-size:12px;font-family:monospace}
+.summary .cnt{padding:3px 10px;border-radius:4px;font-weight:700}
+.summary .cnt-fix{background:#1a5a3a;color:#99ffcc}
+.summary .cnt-replace{background:#1a3a5a;color:#9999ff}
+.summary .cnt-done{background:#1e3a1e;color:#aaffaa}
+.legend{background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:10px;color:#888}
+</style></head><body>
+<header>
+  <h1>🔀 OBB 겹침 맵 v2 (penetration ≥ 2.0px)</h1>
+  <span class="badge">23개</span>
+  <span class="note">CC_0011(1.0px, 정상) 기준 초과 · CC_0110(2.0px, 버그) 포함</span>
+  <span class="prog">완료: <strong id="done">0</strong> / 23</span>
+</header>
+<div class="legend">
+  <b>판정 기준</b>: 같은 depth 카드 쌍의 SAT penetration depth ≥ 2.0px. 게임 엔진 AABB_OVERLAP_MARGIN(2)과 같은 임계 — 이 이상 겹치면 블로킹이 누락된 렌더 버그. 
+  <b>max_pen</b>: 해당 맵 최대 겹침 깊이(px). ≥9는 심각, 5-8은 중간, 2-4는 경계. 
+  <b>rot=0%</b>: 비회전 카드 (SCALE_X 블로킹 버그).
+</div>
+<div class="ctrl">
+  <button class="btn" onclick="organizeUnchecked()" style="background:#2a4a6a;color:#aac8ff;border-color:#3a5a80">📁 체크 안 된 맵 정리</button>
+  <button class="btn danger" onclick="reset()">초기화</button>
+</div>
+<div class="summary">
+  <span class="cnt cnt-fix">🔧 수정 <strong id="cnt-fix">0</strong></span>
+  <span class="cnt cnt-replace">🔄 대체 <strong id="cnt-replace">0</strong></span>
+  <span class="cnt cnt-done">✓ 완료 <strong id="cnt-done">0</strong></span>
+  <span style="margin-left:auto">
+    <button class="btn" onclick="exportActions()" style="background:#2a5a2a;color:#aaffaa;border-color:#3a7a3a">📋 액션 리스트 + 서버 저장</button>
+  </span>
+</div>
+<div class="row" id="row-CC_0004">
+<div class="chk" onclick="toggle('CC_0004')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0004" onclick="setAction('CC_0004','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0004" onclick="setAction('CC_0004','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0004')">CC_0004</span>
+<div class="score">sc 750</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<div class="pen-cnt ">pen 9.4</div>
+<div class="metric">쌍1 · f26 · <span class="">rot 77%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-1810722570242081567_-1810722570242081567.json')" title="Easy_obj_-1810722570242081567_-1810722570242081567.json">Easy_obj_-1810722570242081567_-1810722570242081567.json</div>
+</div>
+<div class="row" id="row-CC_0108">
+<div class="chk" onclick="toggle('CC_0108')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0108" onclick="setAction('CC_0108','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0108" onclick="setAction('CC_0108','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0108')">CC_0108</span>
+<div class="score">sc 610</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt ">pen 9.0</div>
+<div class="metric">쌍2 · f21 · <span class="">rot 67%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_7449358948076161530_7449358948076161530.json')" title="Easy_obj_7449358948076161530_7449358948076161530.json">Easy_obj_7449358948076161530_7449358948076161530.json</div>
+</div>
+<div class="row" id="row-CC_0180">
+<div class="chk" onclick="toggle('CC_0180')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0180" onclick="setAction('CC_0180','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0180" onclick="setAction('CC_0180','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0180')">CC_0180</span>
+<div class="score">sc 670</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt med">pen 8.6</div>
+<div class="metric">쌍5 · f24 · <span class="">rot 58%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_4489317380655479886_4489317380655479886.json')" title="Easy_obj_4489317380655479886_4489317380655479886.json">Easy_obj_4489317380655479886_4489317380655479886.json</div>
+</div>
+<div class="row" id="row-CC_0125">
+<div class="chk" onclick="toggle('CC_0125')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0125" onclick="setAction('CC_0125','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0125" onclick="setAction('CC_0125','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0125')">CC_0125</span>
+<div class="score">sc 780</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<div class="pen-cnt med">pen 7.6</div>
+<div class="metric">쌍6 · f28 · <span class="">rot 79%</span></div>
+<div class="fn" onclick="copyText('Normal_obj_-2471577862588440368_-2471577862588440368.json')" title="Normal_obj_-2471577862588440368_-2471577862588440368.json">Normal_obj_-2471577862588440368_-2471577862588440368.json</div>
+</div>
+<div class="row" id="row-CC_0286">
+<div class="chk" onclick="toggle('CC_0286')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0286" onclick="setAction('CC_0286','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0286" onclick="setAction('CC_0286','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0286')">CC_0286</span>
+<div class="score">sc 875</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<div class="pen-cnt med">pen 6.9</div>
+<div class="metric">쌍2 · f31 · <span class="">rot 52%</span></div>
+<div class="fn" onclick="copyText('Hard_obj_7629362497685869891_7629362497685869891.json')" title="Hard_obj_7629362497685869891_7629362497685869891.json">Hard_obj_7629362497685869891_7629362497685869891.json</div>
+</div>
+<div class="row" id="row-CC_0035">
+<div class="chk" onclick="toggle('CC_0035')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0035" onclick="setAction('CC_0035','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0035" onclick="setAction('CC_0035','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0035')">CC_0035</span>
+<div class="score">sc 845</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<div class="pen-cnt med">pen 6.6</div>
+<div class="metric">쌍1 · f28 · <span class="">rot 36%</span></div>
+<div class="fn" onclick="copyText('Hard_obj_-8120975917250142898_-8120975917250142898.json')" title="Hard_obj_-8120975917250142898_-8120975917250142898.json">Hard_obj_-8120975917250142898_-8120975917250142898.json</div>
+</div>
+<div class="row" id="row-CC_0141">
+<div class="chk" onclick="toggle('CC_0141')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0141" onclick="setAction('CC_0141','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0141" onclick="setAction('CC_0141','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0141')">CC_0141</span>
+<div class="score">sc 530</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt med">pen 6.2</div>
+<div class="metric">쌍3 · f19 · <span class="">rot 84%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-2712095962621706499_-2712095962621706499.json')" title="VeryEasy_obj_-2712095962621706499_-2712095962621706499.json">VeryEasy_obj_-2712095962621706499_-2712095962621706499.json</div>
+</div>
+<div class="row" id="row-CC_0160">
+<div class="chk" onclick="toggle('CC_0160')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0160" onclick="setAction('CC_0160','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0160" onclick="setAction('CC_0160','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0160')">CC_0160</span>
+<div class="score">sc 595</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt med">pen 6.2</div>
+<div class="metric">쌍2 · f20 · <span class="">rot 40%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_6192741706486804959_6192741706486804959.json')" title="VeryEasy_obj_6192741706486804959_6192741706486804959.json">VeryEasy_obj_6192741706486804959_6192741706486804959.json</div>
+</div>
+<div class="row" id="row-CC_0278">
+<div class="chk" onclick="toggle('CC_0278')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0278" onclick="setAction('CC_0278','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0278" onclick="setAction('CC_0278','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0278')">CC_0278</span>
+<div class="score">sc 870</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<div class="pen-cnt med">pen 5.7</div>
+<div class="metric">쌍2 · f30 · <span class="">rot 60%</span></div>
+<div class="fn" onclick="copyText('Hard_obj_4825420391306583281_4825420391306583281.json')" title="Hard_obj_4825420391306583281_4825420391306583281.json">Hard_obj_4825420391306583281_4825420391306583281.json</div>
+</div>
+<div class="row" id="row-CC_0204">
+<div class="chk" onclick="toggle('CC_0204')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0204" onclick="setAction('CC_0204','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0204" onclick="setAction('CC_0204','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0204')">CC_0204</span>
+<div class="score">sc 740</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<div class="pen-cnt med">pen 5.5</div>
+<div class="metric">쌍5 · f27 · <span class="">rot 44%</span></div>
+<div class="fn" onclick="copyText('Normal_obj_4464694600886160020_4464694600886160020.json')" title="Normal_obj_4464694600886160020_4464694600886160020.json">Normal_obj_4464694600886160020_4464694600886160020.json</div>
+</div>
+<div class="row" id="row-CC_0156">
+<div class="chk" onclick="toggle('CC_0156')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0156" onclick="setAction('CC_0156','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0156" onclick="setAction('CC_0156','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0156')">CC_0156</span>
+<div class="score">sc 575</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt low">pen 4.9</div>
+<div class="metric">쌍1 · f20 · <span class="">rot 10%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_5052111831417966230_5052111831417966230.json')" title="VeryEasy_obj_5052111831417966230_5052111831417966230.json">VeryEasy_obj_5052111831417966230_5052111831417966230.json</div>
+</div>
+<div class="row" id="row-CC_0281">
+<div class="chk" onclick="toggle('CC_0281')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0281" onclick="setAction('CC_0281','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0281" onclick="setAction('CC_0281','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0281')">CC_0281</span>
+<div class="score">sc 880</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<div class="pen-cnt low">pen 4.8</div>
+<div class="metric">쌍2 · f32 · <span class="">rot 16%</span></div>
+<div class="fn" onclick="copyText('Hard_obj_5817092195126959395_5817092195126959395.json')" title="Hard_obj_5817092195126959395_5817092195126959395.json">Hard_obj_5817092195126959395_5817092195126959395.json</div>
+</div>
+<div class="row" id="row-CC_0291">
+<div class="chk" onclick="toggle('CC_0291')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0291" onclick="setAction('CC_0291','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0291" onclick="setAction('CC_0291','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0291')">CC_0291</span>
+<div class="score">sc 875</div>
+<div class="tier" style="background:#ff5722">Hard</div>
+<div class="pen-cnt low">pen 4.8</div>
+<div class="metric">쌍2 · f30 · <span class="">rot 67%</span></div>
+<div class="fn" onclick="copyText('Hard_obj_8414211997008221011_8414211997008221011.json')" title="Hard_obj_8414211997008221011_8414211997008221011.json">Hard_obj_8414211997008221011_8414211997008221011.json</div>
+</div>
+<div class="row" id="row-CC_0083">
+<div class="chk" onclick="toggle('CC_0083')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0083" onclick="setAction('CC_0083','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0083" onclick="setAction('CC_0083','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0083')">CC_0083</span>
+<div class="score">sc 575</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt low">pen 4.0</div>
+<div class="metric">쌍2 · f20 · <span class="">rot 60%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_8246439891182557695_8246439891182557695.json')" title="VeryEasy_obj_8246439891182557695_8246439891182557695.json">VeryEasy_obj_8246439891182557695_8246439891182557695.json</div>
+</div>
+<div class="row" id="row-CC_0064">
+<div class="chk" onclick="toggle('CC_0064')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0064" onclick="setAction('CC_0064','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0064" onclick="setAction('CC_0064','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0064')">CC_0064</span>
+<div class="score">sc 665</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt low">pen 3.6</div>
+<div class="metric">쌍2 · f23 · <span class="">rot 17%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-4759351362199196674_-4759351362199196674.json')" title="VeryEasy_obj_-4759351362199196674_-4759351362199196674.json">VeryEasy_obj_-4759351362199196674_-4759351362199196674.json</div>
+</div>
+<div class="row" id="row-CC_0107">
+<div class="chk" onclick="toggle('CC_0107')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0107" onclick="setAction('CC_0107','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0107" onclick="setAction('CC_0107','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0107')">CC_0107</span>
+<div class="score">sc 650</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt low">pen 3.6</div>
+<div class="metric">쌍2 · f23 · <span class="">rot 52%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_7253623987517722760_7253623987517722760.json')" title="Easy_obj_7253623987517722760_7253623987517722760.json">Easy_obj_7253623987517722760_7253623987517722760.json</div>
+</div>
+<div class="row" id="row-CC_0086">
+<div class="chk" onclick="toggle('CC_0086')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0086" onclick="setAction('CC_0086','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0086" onclick="setAction('CC_0086','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0086')">CC_0086</span>
+<div class="score">sc 685</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt low">pen 3.4</div>
+<div class="metric">쌍1 · f24 · <span class="">rot 83%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-925685726601560255_-925685726601560255.json')" title="Easy_obj_-925685726601560255_-925685726601560255.json">Easy_obj_-925685726601560255_-925685726601560255.json</div>
+</div>
+<div class="row" id="row-CC_0216">
+<div class="chk" onclick="toggle('CC_0216')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0216" onclick="setAction('CC_0216','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0216" onclick="setAction('CC_0216','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0216')">CC_0216</span>
+<div class="score">sc 500</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt low">pen 3.3</div>
+<div class="metric">쌍1 · f19 · <span class="">rot 21%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-2833457327188849690_-2833457327188849690.json')" title="VeryEasy_obj_-2833457327188849690_-2833457327188849690.json">VeryEasy_obj_-2833457327188849690_-2833457327188849690.json</div>
+</div>
+<div class="row" id="row-CC_0057">
+<div class="chk" onclick="toggle('CC_0057')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0057" onclick="setAction('CC_0057','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0057" onclick="setAction('CC_0057','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0057')">CC_0057</span>
+<div class="score">sc 495</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt low">pen 2.7</div>
+<div class="metric">쌍2 · f18 · <span class="">rot 78%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-1054331589447805906_-1054331589447805906.json')" title="VeryEasy_obj_-1054331589447805906_-1054331589447805906.json">VeryEasy_obj_-1054331589447805906_-1054331589447805906.json</div>
+</div>
+<div class="row" id="row-CC_0183">
+<div class="chk" onclick="toggle('CC_0183')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0183" onclick="setAction('CC_0183','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0183" onclick="setAction('CC_0183','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0183')">CC_0183</span>
+<div class="score">sc 495</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt low">pen 2.6</div>
+<div class="metric">쌍2 · f20 · <span class="">rot 60%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_5917400523554303550_5917400523554303550.json')" title="Easy_obj_5917400523554303550_5917400523554303550.json">Easy_obj_5917400523554303550_5917400523554303550.json</div>
+</div>
+<div class="row" id="row-CC_0238">
+<div class="chk" onclick="toggle('CC_0238')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0238" onclick="setAction('CC_0238','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0238" onclick="setAction('CC_0238','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0238')">CC_0238</span>
+<div class="score">sc 545</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt low">pen 2.3</div>
+<div class="metric">쌍2 · f20 · <span class="">rot 30%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_7389990745453126925_7389990745453126925.json')" title="VeryEasy_obj_7389990745453126925_7389990745453126925.json">VeryEasy_obj_7389990745453126925_7389990745453126925.json</div>
+</div>
+<div class="row" id="row-CC_0151">
+<div class="chk" onclick="toggle('CC_0151')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0151" onclick="setAction('CC_0151','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0151" onclick="setAction('CC_0151','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0151')">CC_0151</span>
+<div class="score">sc 555</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt low">pen 2.3</div>
+<div class="metric">쌍1 · f19 · <span class="">rot 74%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_1989463773178151793_1989463773178151793.json')" title="VeryEasy_obj_1989463773178151793_1989463773178151793.json">VeryEasy_obj_1989463773178151793_1989463773178151793.json</div>
+</div>
+<div class="row" id="row-CC_0110">
+<div class="chk" onclick="toggle('CC_0110')"></div>
+<div class="action-group">
+  <button class="btn-act fix" data-sid="CC_0110" onclick="setAction('CC_0110','fix')">🔧 수정</button>
+  <button class="btn-act replace" data-sid="CC_0110" onclick="setAction('CC_0110','replace')">🔄 대체</button>
+</div>
+<span class="sid" onclick="copyText('CC_0110')">CC_0110</span>
+<div class="score">sc 630</div>
+<div class="tier" style="background:#ffc107">Normal</div>
+<div class="pen-cnt low">pen 2.0</div>
+<div class="metric">쌍8 · f24 · <span class="rot0">rot 0% ⚠️P0</span></div>
+<div class="fn" onclick="copyText('Easy_obj_8923723070358247254_8923723070358247254.json')" title="Easy_obj_8923723070358247254_8923723070358247254.json">Easy_obj_8923723070358247254_8923723070358247254.json</div>
+</div>
+
+<div id="toast"></div>
+<script>
+const KEY='overlap_review_v2';
+const state=JSON.parse(localStorage.getItem(KEY)||'{}');
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1200);}
+function updateProg(){
+  const rows=document.querySelectorAll('.row');let d=0,f=0,r=0;
+  rows.forEach(x=>{if(x.classList.contains('done'))d++;if(x.classList.contains('act-fix'))f++;if(x.classList.contains('act-replace'))r++;});
+  document.getElementById('done').textContent=d;
+  document.getElementById('cnt-done').textContent=d;
+  document.getElementById('cnt-fix').textContent=f;
+  document.getElementById('cnt-replace').textContent=r;
+}
+function ensureState(sid){if(!state[sid])state[sid]={};}
+function toggle(sid){ensureState(sid);const row=document.getElementById('row-'+sid);const c=row.querySelector('.chk');if(state[sid].done){row.classList.remove('done');c.classList.remove('on');state[sid].done=false;}else{row.classList.add('done');c.classList.add('on');state[sid].done=true;}save();updateProg();}
+function setAction(sid,act){
+  ensureState(sid);
+  const row=document.getElementById('row-'+sid);const bF=row.querySelector('.btn-act.fix'),bR=row.querySelector('.btn-act.replace');
+  if(state[sid].action===act){state[sid].action=null;row.classList.remove('act-fix','act-replace');bF.classList.remove('on');bR.classList.remove('on');toast('해제: '+sid);}
+  else{state[sid].action=act;row.classList.remove('act-fix','act-replace');bF.classList.remove('on');bR.classList.remove('on');row.classList.add('act-'+act);row.querySelector('.btn-act.'+act).classList.add('on');toast((act==='fix'?'🔧 수정: ':'🔄 대체: ')+sid);}
+  save();updateProg();
+}
+async function exportActions(){
+  const rows=document.querySelectorAll('.row');const items=[];
+  rows.forEach(r=>{const sid=r.id.replace('row-','');const fn=r.querySelector('.fn')?.getAttribute('title')||'';const tier=r.querySelector('.tier')?.textContent||'';const score=r.querySelector('.score')?.textContent||'';const action=state[sid]?.action;if(action)items.push({sid,fn,tier,score,action});});
+  try{
+    const res=await fetch('/api/save-stack-actions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items,context:'overlap_v2'})});
+    const j=await res.json();
+    const f=items.filter(x=>x.action==='fix').length,r=items.filter(x=>x.action==='replace').length;
+    let txt='# OBB 겹침 액션 (pen≥2)\n\n## 🔧 수정: '+f+'개\n'+items.filter(x=>x.action==='fix').map(x=>`- ${x.sid} [${x.tier}, ${x.score}]  ${x.fn}`).join('\n')+'\n\n## 🔄 대체: '+r+'개\n'+items.filter(x=>x.action==='replace').map(x=>`- ${x.sid} [${x.tier}, ${x.score}]  ${x.fn}`).join('\n');
+    navigator.clipboard.writeText(txt);
+    toast(`✅ 저장: 수정${f} / 대체${r}`);
+  }catch(e){toast('❌ '+e.message);}
+}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('복사: '+t.slice(0,60)));}
+function reset(){if(!confirm('초기화?'))return;localStorage.removeItem(KEY);location.reload();}
+async function organizeUnchecked(){
+  const rows=document.querySelectorAll('.row');const items=[];
+  rows.forEach(r=>{const sid=r.id.replace('row-','');const fn=r.querySelector('.fn')?.getAttribute('title')||'';items.push({sid,fn,checked:r.classList.contains('done')});});
+  const un=items.filter(x=>!x.checked).length;
+  if(!confirm(`체크 안 된 ${un}개 복사?`))return;
+  try{const res=await fetch('/api/organize-unchecked-maps',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items})});const j=await res.json();toast(`✅ ${j.copied}개 복사`);}catch(e){toast('❌ '+e.message);}
+}
+document.querySelectorAll('.row').forEach(r=>{const sid=r.id.replace('row-','');const s=state[sid]||{};if(s.done){r.classList.add('done');r.querySelector('.chk').classList.add('on');}if(s.action){r.classList.add('act-'+s.action);r.querySelector('.btn-act.'+s.action).classList.add('on');}});
+updateProg();
+</script></body></html>

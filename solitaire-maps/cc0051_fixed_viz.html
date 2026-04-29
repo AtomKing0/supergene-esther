@@ -1,0 +1,56 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>CC_0051 고정 후</title>
+<style>
+body{background:#1a1a2e;color:#eee;font-family:sans-serif;padding:12px}
+h2{text-align:center;font-size:14px;color:#ffd;margin:0 0 6px}
+.note{text-align:center;font-size:11px;color:#8f8;margin-bottom:8px}
+canvas{display:block;margin:0 auto;background:#1a6fbf;border-radius:6px}
+</style></head><body>
+<h2>CC_0051 — Hard_obj_6000994190887629578 (28장) — 모서리 간격 수정 후</h2>
+<div class="note">수정: idx=4,8,19,25 각 2px 이동 → 모서리 간격 5.25px → 10.9px</div>
+<canvas id="c" width="1000" height="640"></canvas>
+<script>
+const OX=500.0,OY=320.0,SC=0.8348,CW=100*SC,CH=150*SC;
+const dc=["#e74c3c","#e67e22","#f1c40f","#2ecc71","#3498db","#9b59b6","#1abc9c","#e91e63","#ff5722"];
+// highlight the 4 fixed cards
+const fixed=new Set([4,8,19,25]);
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+[{"idx": 0, "x": 0, "y": 108, "angle": 0.0, "depth": 0}, {"idx": 12, "x": 0, "y": -108, "angle": 0.0, "depth": 0}, {"idx": 23, "x": 451, "y": -62, "angle": 0.0, "depth": 0}, {"idx": 24, "x": -451, "y": -62, "angle": 0.0, "depth": 0}, {"idx": 1, "x": -78, "y": 135, "angle": 0.0, "depth": 1}, {"idx": 6, "x": 78, "y": 135, "angle": 0.0, "depth": 1}, {"idx": 13, "x": -78, "y": -135, "angle": 0.0, "depth": 1}, {"idx": 14, "x": 78, "y": -135, "angle": 0.0, "depth": 1}, {"idx": 21, "x": -427, "y": 41, "angle": 329.999998, "depth": 1}, {"idx": 27, "x": 427, "y": 41, "angle": 30.0, "depth": 1}, {"idx": 2, "x": -115, "y": 135, "angle": 0.0, "depth": 2}, {"idx": 5, "x": 115, "y": 135, "angle": 0.0, "depth": 2}, {"idx": 10, "x": -115, "y": -135, "angle": 0.0, "depth": 2}, {"idx": 16, "x": 115, "y": -135, "angle": 0.0, "depth": 2}, {"idx": 20, "x": -384, "y": 120, "angle": 329.999998, "depth": 2}, {"idx": 26, "x": 384, "y": 120, "angle": 30.0, "depth": 2}, {"idx": 3, "x": -151, "y": 90, "angle": 15.000031, "depth": 3}, {"idx": 7, "x": 151, "y": 90, "angle": 344.999969, "depth": 3}, {"idx": 11, "x": -151, "y": -90, "angle": 344.999969, "depth": 3}, {"idx": 15, "x": 151, "y": -90, "angle": 15.000031, "depth": 3}, {"idx": 19, "x": -356, "y": 95, "angle": 329.999998, "depth": 3}, {"idx": 25, "x": 356, "y": 103, "angle": 30.0, "depth": 3}, {"idx": 4, "x": -187, "y": 103, "angle": 30.0, "depth": 4}, {"idx": 8, "x": 187, "y": 95, "angle": 329.999998, "depth": 4}, {"idx": 9, "x": -193, "y": -99, "angle": 329.999998, "depth": 4}, {"idx": 17, "x": 193, "y": -99, "angle": 30.0, "depth": 4}, {"idx": 18, "x": -304, "y": 14, "angle": 0.0, "depth": 4}, {"idx": 22, "x": 304, "y": 14, "angle": 0.0, "depth": 4}].forEach(c=>{
+  const px=OX+c.x*SC,py=OY-c.y*SC,rad=c.angle*Math.PI/180;
+  ctx.save();ctx.translate(px,py);ctx.rotate(-rad);
+  const isF=fixed.has(c.idx);
+  if(isF){ctx.fillStyle='rgba(50,255,100,0.85)';ctx.strokeStyle='#00ff44';ctx.lineWidth=3;}
+  else{ctx.fillStyle=c.depth===0?'#fff':'#cce4ff';ctx.strokeStyle=dc[Math.min(c.depth,dc.length-1)];ctx.lineWidth=1.5;}
+  ctx.beginPath();ctx.roundRect(-CW/2,-CH/2,CW,CH,5);ctx.fill();ctx.stroke();
+  ctx.fillStyle=isF?'#003':''+dc[Math.min(c.depth,dc.length-1)];
+  ctx.font=`bold ${12*SC/0.78}px sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.idx,0,0);
+  ctx.fillStyle=isF?'rgba(0,30,0,0.8)':'#555';
+  ctx.font=`${7*SC/0.78}px sans-serif`;ctx.fillText('d'+c.depth,0,CH/2-6);
+  ctx.restore();
+});
+// draw corner distance lines for fixed pairs
+function corners(cx,cy,angle,hw,hh){
+  const r=angle*Math.PI/180,cos=Math.cos(r),sin=Math.sin(r);
+  return [[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].map(([lx,ly])=>
+    [cx+lx*cos-ly*sin, cy+lx*sin+ly*cos]);
+}
+function minCornerPair(c1,c2){
+  const p1=corners(OX+c1.x*SC,OY-c1.y*SC,-c1.angle,CW/2,CH/2);
+  const p2=corners(OX+c2.x*SC,OY-c2.y*SC,-c2.angle,CW/2,CH/2);
+  let best=null,bd=Infinity;
+  p1.forEach(a=>p2.forEach(b=>{const d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(d<bd){bd=d;best=[a,b];}}));
+  return {pair:best,dist:bd};
+}
+const cardMap={};
+[{"idx": 0, "x": 0, "y": 108, "angle": 0.0, "depth": 0}, {"idx": 12, "x": 0, "y": -108, "angle": 0.0, "depth": 0}, {"idx": 23, "x": 451, "y": -62, "angle": 0.0, "depth": 0}, {"idx": 24, "x": -451, "y": -62, "angle": 0.0, "depth": 0}, {"idx": 1, "x": -78, "y": 135, "angle": 0.0, "depth": 1}, {"idx": 6, "x": 78, "y": 135, "angle": 0.0, "depth": 1}, {"idx": 13, "x": -78, "y": -135, "angle": 0.0, "depth": 1}, {"idx": 14, "x": 78, "y": -135, "angle": 0.0, "depth": 1}, {"idx": 21, "x": -427, "y": 41, "angle": 329.999998, "depth": 1}, {"idx": 27, "x": 427, "y": 41, "angle": 30.0, "depth": 1}, {"idx": 2, "x": -115, "y": 135, "angle": 0.0, "depth": 2}, {"idx": 5, "x": 115, "y": 135, "angle": 0.0, "depth": 2}, {"idx": 10, "x": -115, "y": -135, "angle": 0.0, "depth": 2}, {"idx": 16, "x": 115, "y": -135, "angle": 0.0, "depth": 2}, {"idx": 20, "x": -384, "y": 120, "angle": 329.999998, "depth": 2}, {"idx": 26, "x": 384, "y": 120, "angle": 30.0, "depth": 2}, {"idx": 3, "x": -151, "y": 90, "angle": 15.000031, "depth": 3}, {"idx": 7, "x": 151, "y": 90, "angle": 344.999969, "depth": 3}, {"idx": 11, "x": -151, "y": -90, "angle": 344.999969, "depth": 3}, {"idx": 15, "x": 151, "y": -90, "angle": 15.000031, "depth": 3}, {"idx": 19, "x": -356, "y": 95, "angle": 329.999998, "depth": 3}, {"idx": 25, "x": 356, "y": 103, "angle": 30.0, "depth": 3}, {"idx": 4, "x": -187, "y": 103, "angle": 30.0, "depth": 4}, {"idx": 8, "x": 187, "y": 95, "angle": 329.999998, "depth": 4}, {"idx": 9, "x": -193, "y": -99, "angle": 329.999998, "depth": 4}, {"idx": 17, "x": 193, "y": -99, "angle": 30.0, "depth": 4}, {"idx": 18, "x": -304, "y": 14, "angle": 0.0, "depth": 4}, {"idx": 22, "x": 304, "y": 14, "angle": 0.0, "depth": 4}].forEach(c=>cardMap[c.idx]=c);
+[[4,19],[8,25]].forEach(([i,j])=>{
+  const r=minCornerPair(cardMap[i],cardMap[j]);
+  const [a,b]=r.pair;
+  ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);
+  ctx.strokeStyle='#ffff00';ctx.lineWidth=2;ctx.setLineDash([3,3]);ctx.stroke();
+  ctx.setLineDash([]);
+  const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;
+  ctx.fillStyle='#ffff00';ctx.font='bold 10px sans-serif';ctx.textAlign='center';
+  ctx.fillText(r.dist.toFixed(1)+'px',mx,my-6);
+});
+</script></body></html>

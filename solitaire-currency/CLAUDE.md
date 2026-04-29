@@ -59,6 +59,7 @@ python3 scripts/deep_dive.py summary     # 핵심 지표 대시보드
 ```
 ① 에이전트 시트에서 수정 → ② 하이라이트 → ③ 사용자 "확인 완료"
 → ④ 라이브 시트로 동기화 → ⑤ 하이라이트 → ⑥ 사용자 "확인 완료" → ⑦ 하이라이트 제거
+→ ⑧ workspace/balance_sheet/ JSON 동기화 → 변경된 파일명 안내
 ```
 
 - **라이브 시트에 직접 수정 절대 금지** — 에이전트 시트에서만 수정, 라이브는 동기화만
@@ -202,6 +203,7 @@ Task(10_code_review_agent, mode: CODE-REVIEW, scope: {변경된 파일 목록})
 
 ### Google Sheet 데이터 저장
 - **apostrophe prefix 전면 금지** — 숫자(`'123`)뿐 아니라 boolean(`'False'`, `'TRUE'`)·문자열 모든 타입에 apostrophe 접두 저장 금지. 반드시 numberValue(int/float) 또는 boolValue(True/False) 타입으로 저장
+- **`values().batchUpdate(valueInputOption='RAW')`로 숫자 저장 금지** — Python str을 RAW로 전달하면 셀에 apostrophe prefix(`'800`)가 생성됨. **숫자 셀은 반드시 `spreadsheets().batchUpdate()` + `updateCells` + `userEnteredValue.numberValue`로 저장.** 문자열은 `stringValue`. (2026-04-29 daily_wheel 16셀 재작업 사례)
 - **행 삽입 전 기존 데이터 확인 필수** — 중간 행 삽입 시 `update()` 단순 덮어쓰기 금지. 삽입 전 해당 위치 기존 데이터 존재 여부 확인 후 `insertDimension`으로 빈 행 생성 뒤 값 기입
 
 ### 경제 시뮬레이션 & 재화 구조

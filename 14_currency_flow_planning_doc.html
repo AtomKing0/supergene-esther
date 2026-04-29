@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCJ 재화 플로우 기획서 v2</title>
+<style>
+  :root {
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#222635; --border:#2e3348;
+    --text:#e2e4f0; --muted:#8890a8; --accent:#4f7cff; --green:#3ecf8e;
+    --yellow:#f5a623; --red:#e05c5c; --tag-bg:#252a3d;
+  }
+  [data-theme="light"] {
+    --bg:#f5f6f8; --surface:#fff; --surface2:#f0f1f4; --border:#dfe1e6;
+    --text:#1a1d27; --muted:#5e6278; --accent:#2563eb; --green:#16a34a;
+    --yellow:#d97706; --red:#dc2626; --tag-bg:#e8eaef;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; font-size:14px; line-height:1.65; }
+  .theme-toggle { position:fixed; top:16px; right:16px; z-index:200; width:40px; height:40px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.2); }
+  .back-btn { position:fixed; top:16px; right:68px; z-index:200; height:40px; padding:0 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--muted); display:flex; align-items:center; text-decoration:none; font-size:13px; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,.2); }
+  .back-btn:hover, .theme-toggle:hover { border-color:var(--muted); color:var(--text); }
+  nav { position:sticky; top:0; z-index:100; display:flex; align-items:center; gap:4px; flex-wrap:wrap; padding:0 32px; border-bottom:1px solid var(--border); background:rgba(15,17,23,.96); backdrop-filter:blur(8px); }
+  [data-theme="light"] nav { background:rgba(245,246,248,.96); }
+  nav .logo { color:var(--accent); font-weight:800; margin-right:16px; padding:14px 0; }
+  nav a { color:var(--muted); text-decoration:none; padding:14px 10px; font-size:13px; white-space:nowrap; }
+  nav a:hover { color:var(--text); }
+  .container { max-width:1280px; margin:0 auto; padding:40px 32px 72px; }
+  .hero { background:linear-gradient(135deg,#1a1d27 0%,#1e2234 55%,#17223a 100%); border:1px solid var(--border); border-radius:16px; padding:46px; margin-bottom:56px; position:relative; overflow:hidden; }
+  [data-theme="light"] .hero { background:linear-gradient(135deg,#eef0f5 0%,#e8eaf2 55%,#eef3ff 100%); }
+  .hero:before { content:""; position:absolute; right:-120px; top:-120px; width:420px; height:420px; background:radial-gradient(circle,rgba(79,124,255,.13),transparent 68%); }
+  .eyebrow { color:var(--accent); font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; margin-bottom:10px; position:relative; }
+  h1 { font-size:32px; line-height:1.2; margin-bottom:8px; position:relative; }
+  .subtitle { color:var(--muted); position:relative; max-width:820px; }
+  .hero-grid, .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
+  .hero-grid { margin-top:28px; position:relative; }
+  .stat, .card, .mini { background:var(--surface); border:1px solid var(--border); border-radius:12px; }
+  .stat { padding:16px; }
+  .label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+  .value { font-size:24px; font-weight:800; line-height:1.2; }
+  .g { color:var(--green); } .b { color:var(--accent); } .y { color:var(--yellow); } .r { color:var(--red); }
+  .sub { color:var(--muted); font-size:12px; margin-top:4px; }
+  section { scroll-margin-top:62px; margin-bottom:58px; }
+  h2 { display:flex; align-items:center; gap:10px; font-size:20px; margin-bottom:20px; }
+  h2 .num { width:28px; height:28px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; background:var(--accent); color:white; font-size:13px; font-weight:800; flex-shrink:0; }
+  h3 { font-size:15px; margin:26px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  .card { padding:22px; margin-bottom:16px; }
+  .mini { padding:16px; }
+  .mini .title { font-size:12px; color:var(--muted); font-weight:800; margin-bottom:8px; }
+  .mini .big { font-size:22px; font-weight:800; }
+  .mini .desc { font-size:12px; color:var(--muted); margin-top:4px; }
+  .flow { display:grid; grid-template-columns:minmax(220px,1fr) 44px minmax(180px,.75fr) 44px minmax(220px,1fr); gap:12px; align-items:start; }
+  .flow-title { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:800; margin-bottom:10px; }
+  .stack { display:flex; flex-direction:column; gap:8px; }
+  .node { border:1px solid var(--border); background:var(--surface2); border-radius:10px; padding:11px 14px; }
+  .node.source { border-color:rgba(62,207,142,.35); background:rgba(62,207,142,.06); }
+  .node.wallet { border-color:rgba(79,124,255,.38); background:rgba(79,124,255,.07); text-align:center; padding:24px 18px; }
+  .node.sink { border-color:rgba(224,92,92,.35); background:rgba(224,92,92,.06); }
+  .node.bridge { border-color:rgba(245,166,35,.35); background:rgba(245,166,35,.06); }
+  .node .n-label { color:var(--muted); font-size:12px; }
+  .node .n-val { font-weight:800; margin-top:2px; }
+  .arrow { color:var(--muted); font-size:26px; display:flex; justify-content:center; padding-top:92px; }
+  .table-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:10px; margin-bottom:18px; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; padding:10px 13px; background:var(--surface2); color:var(--muted); border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
+  td { padding:9px 13px; border-bottom:1px solid rgba(46,51,72,.55); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(79,124,255,.04); }
+  .numc { font-variant-numeric:tabular-nums; font-family:Consolas, monospace; color:#a8bfff; white-space:nowrap; }
+  [data-theme="light"] .numc { color:#2563eb; }
+  code { background:var(--tag-bg); color:#b8c8ff; border-radius:4px; padding:2px 6px; font-size:12px; }
+  [data-theme="light"] code { color:#1e40af; }
+  .tag { display:inline-block; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:800; white-space:nowrap; }
+  .tag.green { color:var(--green); background:rgba(62,207,142,.12); border:1px solid rgba(62,207,142,.26); }
+  .tag.yellow { color:var(--yellow); background:rgba(245,166,35,.12); border:1px solid rgba(245,166,35,.26); }
+  .tag.blue { color:var(--accent); background:rgba(79,124,255,.12); border:1px solid rgba(79,124,255,.26); }
+  .note { border-radius:10px; padding:13px 16px; margin:14px 0; font-size:13px; background:rgba(79,124,255,.07); border:1px solid rgba(79,124,255,.24); }
+  .note.warn { background:rgba(245,166,35,.07); border-color:rgba(245,166,35,.24); }
+  .note.good { background:rgba(62,207,142,.07); border-color:rgba(62,207,142,.24); }
+  .loop { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; counter-reset:step; }
+  .step { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:15px; }
+  .step:before { counter-increment:step; content:counter(step); width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; background:var(--accent); color:white; font-weight:800; font-size:12px; margin-bottom:10px; }
+  .step strong { display:block; margin-bottom:6px; }
+  .step span { color:var(--muted); font-size:12px; }
+  .footer { margin-top:60px; padding-top:22px; border-top:1px solid var(--border); color:var(--muted); font-size:12px; }
+  @media (max-width:900px) { .flow { grid-template-columns:1fr; } .arrow { padding:0; transform:rotate(90deg); } .loop { grid-template-columns:1fr; } }
+  @media (max-width:700px) { nav { padding:0 14px; } .container { padding:24px 14px 56px; } .hero { padding:28px 18px; } h1 { font-size:26px; } }
+</style>
+<script>
+  (function(){
+    var theme = localStorage.getItem("pst-report-theme");
+    if (theme === "light") document.documentElement.setAttribute("data-theme", "light");
+    document.addEventListener("DOMContentLoaded", function(){
+      var back = document.createElement("a");
+      back.className = "back-btn";
+      back.href = "index.html";
+      back.textContent = "← 목록";
+      document.body.prepend(back);
+      var btn = document.createElement("button");
+      btn.className = "theme-toggle";
+      btn.title = "라이트/다크 모드 전환";
+      btn.textContent = theme === "light" ? "☀" : "☾";
+      document.body.prepend(btn);
+      btn.addEventListener("click", function(){
+        var light = document.documentElement.getAttribute("data-theme") === "light";
+        if (light) {
+          document.documentElement.removeAttribute("data-theme");
+          localStorage.setItem("pst-report-theme", "dark");
+          btn.textContent = "☾";
+        } else {
+          document.documentElement.setAttribute("data-theme", "light");
+          localStorage.setItem("pst-report-theme", "light");
+          btn.textContent = "☀";
+        }
+      });
+    });
+  })();
+</script>
+</head>
+<body>
+<nav>
+  <span class="logo">SCJ Currency Flow</span>
+  <a href="#overview">개요</a>
+  <a href="#wallet">통화 역할</a>
+  <a href="#source">Source</a>
+  <a href="#sink">Sink</a>
+  <a href="#loop">플레이 루프</a>
+  <a href="#iap">IAP</a>
+  <a href="#risk">리스크</a>
+  <a href="#handoff">구현 메모</a>
+</nav>
+
+<div class="container">
+  <header class="hero">
+    <div class="eyebrow">Planning Document · v2 · Live Sheet Based</div>
+    <h1>SCJ 전체 재화 플로우 기획서</h1>
+    <p class="subtitle">Solitaire City Journey의 재화 생성, 보관, 소비, 회수 구조를 운영 관점으로 정리한다. 기준 데이터는 Google Sheet 라이브 시트 <strong>[PST] 밸런스시트</strong>에서 2026-04-23에 직접 읽은 값이며, 로컬 HTML/MD 문서의 구버전 수치는 근거로 사용하지 않았다.</p>
+    <div class="hero-grid">
+      <div class="stat"><div class="label">데이터 기준</div><div class="value g">Live Sheet</div><div class="sub">스냅샷/로컬 문서 미사용</div></div>
+      <div class="stat"><div class="label">Lv75 방치골드</div><div class="value b">5,700g</div><div class="sub">1,900g × 3회/일 기준</div></div>
+      <div class="stat"><div class="label">데코 Sink 총량</div><div class="value g">945,400g</div><div class="sub">150행, 해머 3,345개</div></div>
+      <div class="stat"><div class="label">컬렉션 상태</div><div class="value y">OFF</div><div class="sub">album=0 · deck=0</div></div>
+    </div>
+  </header>
+
+  <section id="overview">
+    <h2><span class="num">1</span> 전체 구조</h2>
+    <div class="card">
+      <div class="flow">
+        <div>
+          <div class="flow-title">Source: 재화 생성</div>
+          <div class="stack">
+            <div class="node source"><div class="n-label">신규 유저 지급</div><div class="n-val">2,000g</div></div>
+            <div class="node source"><div class="n-label">방치골드</div><div class="n-val">Lv75 기준 5,700g/일</div></div>
+            <div class="node source"><div class="n-label">RV 광고</div><div class="n-val">Inbox / Popup / Lobby / Shop</div></div>
+            <div class="node source"><div class="n-label">휠 · 출석 · 공유</div><div class="n-val">골드 + 티켓 + 부스터 혼합</div></div>
+            <div class="node source"><div class="n-label">IAP</div><div class="n-val">골드 번들 + 부스터 번들</div></div>
+          </div>
+        </div>
+        <div class="arrow">→</div>
+        <div>
+          <div class="flow-title">Wallet: 보관·전환</div>
+          <div class="stack">
+            <div class="node wallet"><div class="n-label">currency_gold</div><div class="n-val">주 통화</div><div class="sub">지갑 상한 없음<br>판당 수령 상한 20,000g</div></div>
+            <div class="node bridge"><div class="n-label">보조 통화</div><div class="n-val">ticket · hammer · streak_star · puzzle_piece</div></div>
+          </div>
+        </div>
+        <div class="arrow">→</div>
+        <div>
+          <div class="flow-title">Sink: 재화 회수</div>
+          <div class="stack">
+            <div class="node sink"><div class="n-label">레벨 입장료</div><div class="n-val">1,200~6,000g</div></div>
+            <div class="node sink"><div class="n-label">부스터 사용</div><div class="n-val">fixed + tier 누진 가격</div></div>
+            <div class="node sink"><div class="n-label">패배 비용</div><div class="n-val">입장료 전액 손실</div></div>
+            <div class="node sink"><div class="n-label">도시 데코레이션</div><div class="n-val">해머 + 골드 장기 Sink</div></div>
+            <div class="node sink"><div class="n-label">컬렉션</div><div class="n-val">현재 라이브 플래그 OFF</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note good"><strong>핵심 방향:</strong> 무료 Source는 재진입 동기를 만들고, 게임플레이·부스터·도시 데코레이션이 재화를 회수한다. 현재 라이브 기준 컬렉션은 닫혀 있으므로 실제 장기 Sink의 중심은 레벨 입장료, 부스터, 도시 데코레이션이다.</div>
+  </section>
+
+  <section id="wallet">
+    <h2><span class="num">2</span> 통화 역할 정의</h2>
+    <div class="grid">
+      <div class="mini"><div class="title">currency_gold</div><div class="big">주 통화</div><div class="desc">입장료, 부스터, 일부 데코레이션 비용의 기준 통화. 경제 건전성의 핵심 지표.</div></div>
+      <div class="mini"><div class="title">currency_ticket</div><div class="big">준하드 통화</div><div class="desc">휠, 출석, 번들에서 지급. 골드 직접 지급을 대체하는 완충 보상으로 사용 가능.</div></div>
+      <div class="mini"><div class="title">currency_hammer</div><div class="big">메타 진행</div><div class="desc">도시 데코레이션 진행에 사용. 장기 목표와 복귀 동기를 담당.</div></div>
+      <div class="mini"><div class="title">currency_streak_star</div><div class="big">연속 플레이</div><div class="desc">보유 상한 100개. 스트릭 보상 루프의 진척 재화.</div></div>
+      <div class="mini"><div class="title">currency_puzzle_piece</div><div class="big">컬렉션</div><div class="desc">라이브 플래그는 OFF. 활성화 전까지 실제 경제 루프 영향은 제한적.</div></div>
+    </div>
+  </section>
+
+  <section id="source">
+    <h2><span class="num">3</span> Source 설계</h2>
+    <h3>일일 Source 구조</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>채널</th><th>라이브 기준</th><th>제한</th><th>기획 역할</th></tr></thead>
+        <tbody>
+          <tr><td>방치골드</td><td class="numc">Lv75 1,900g × 3 = 5,700g/일</td><td>4시간, 스택 없음, 능동 수령</td><td>복귀 동기, 최소 재진입 보장</td></tr>
+          <tr><td>Inbox RV</td><td class="numc">5회/일 · rv_gold_ratio 기반</td><td>UTC0 리셋</td><td>부족분 보충, 광고 수익</td></tr>
+          <tr><td>Popup RV</td><td class="numc">10회/일 · rv_gold_ratio 기반</td><td>UTC0 리셋, 상황형 노출</td><td>실패/부족 순간 구제</td></tr>
+          <tr><td>Lobby RV</td><td class="numc">3회/일 · rv_gold_ratio 기반</td><td>UTC0 리셋</td><td>로비 체류와 재진입 유도</td></tr>
+          <tr><td>Shop AD</td><td class="numc">1,000g × 3 = 3,000g/일</td><td>product: gold_ad_1</td><td>상점 방문 습관 형성</td></tr>
+          <tr><td>Daily Wheel</td><td class="numc">540g EV/회, 5회/일 = 2,700g</td><td>가챠 보상</td><td>광고 보상에 변동성 부여</td></tr>
+          <tr><td>7일 출석</td><td class="numc">9,000g/7일 = 1,286g/일</td><td>7일 사이클</td><td>복귀/연속 접속 동기</td></tr>
+          <tr><td>공유 보상</td><td class="numc">P2P 500g · 도시 완성 500g</td><td>최초/상황형</td><td>소셜 확산 보상</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note warn"><strong>중요:</strong> Inbox/Popup/Lobby RV의 지급량은 고정 amount가 아니라 <code>level_entry_tier.rv_gold_ratio</code> 기반이다. 예: Lv75 구간은 entry_cost 2,400g, rv_gold_ratio 4,800이므로 1회 RV free gold는 1,152g이다.</div>
+
+    <h3>라이브 Source 핵심 상수</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>파라미터</th><th>라이브값</th><th>설명</th><th>문서화 주의</th></tr></thead>
+        <tbody>
+          <tr><td><code>nru_start_gold</code></td><td class="numc">2,000</td><td>신규 유저 최초 지급</td><td>초반 재진입 여유분</td></tr>
+          <tr><td><code>idle_gold_charge_amount</code></td><td class="numc">1,000</td><td>방치골드 초기값</td><td>기존 문서의 2,000/3,000 값 사용 금지</td></tr>
+          <tr><td><code>idle_gold_amount_increase</code></td><td class="numc">300</td><td>20레벨마다 증가</td><td>공식: min(1000 + floor(level/20) × 300, 6000)</td></tr>
+          <tr><td><code>idle_gold_max_cap</code></td><td class="numc">6,000</td><td>방치골드 1회 상한</td><td>지갑 상한 아님</td></tr>
+          <tr><td><code>inbox_free_gold_limit</code></td><td class="numc">5</td><td>우편함 RV 횟수</td><td>지급량은 level_entry_tier 기반</td></tr>
+          <tr><td><code>popup_free_gold_limit</code></td><td class="numc">10</td><td>팝업 RV 횟수</td><td>지급량은 level_entry_tier 기반</td></tr>
+          <tr><td><code>lobby_free_gold_limit</code></td><td class="numc">3</td><td>로비 RV 횟수</td><td>지급량은 level_entry_tier 기반</td></tr>
+          <tr><td><code>daily_wheel_ad_limit</code></td><td class="numc">5</td><td>데일리 룰렛 광고 보기 횟수</td><td>골드 EV 540g/회</td></tr>
+          <tr><td><code>gold_max_limit</code></td><td class="numc">20,000</td><td>인게임 판당 최대 수령 골드</td><td>지갑 상한 아님</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="sink">
+    <h2><span class="num">4</span> Sink 설계</h2>
+    <h3>게임플레이 Sink</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>항목</th><th>수치</th><th>역할</th><th>주의점</th></tr></thead>
+        <tbody>
+          <tr><td>레벨 입장료</td><td class="numc">1,200~6,000g</td><td>모든 플레이의 기본 회수</td><td>Lv1~2는 0g</td></tr>
+          <tr><td>패배 비용</td><td>입장료 전액 손실</td><td>실패 반복 구간에서 강한 Sink</td><td>튜토리얼/초반 이탈 방지 장치 필요</td></tr>
+          <tr><td>Undo</td><td>tier 누진</td><td>작은 지출을 반복 사용으로 확장</td><td>use_count_increase_rate 2,000 / max 15,000</td></tr>
+          <tr><td>Extra Deck</td><td>tier 누진</td><td>실패 직전 전환 압력</td><td>use_count_increase_rate 2,500 / max 12,000</td></tr>
+          <tr><td>Fixed 부스터</td><td>입장료 비율 기반</td><td>명확한 사전 선택 비용</td><td>fireworks 75%, golden ticket 55%, wild card 65%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note good"><strong>Sink 원칙:</strong> 입장료는 레벨 구간별로 증가하고, RV free gold 비율은 뒤 구간으로 갈수록 낮아진다. 고레벨로 갈수록 한 판 비용 대비 무료 RV 보전율이 감소하는 구조다.</div>
+
+    <h3>레벨 입장료·RV 비율 라이브값</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>레벨</th><th>입장료</th><th>Undo ratio</th><th>Extra Deck ratio</th><th>RV gold ratio</th><th>RV 1회 지급량</th></tr></thead>
+        <tbody>
+          <tr><td>1~2</td><td class="numc">0</td><td class="numc">0%</td><td class="numc">0%</td><td class="numc">0%</td><td class="numc">0</td></tr>
+          <tr><td>3~9</td><td class="numc">1,200</td><td class="numc">8%</td><td class="numc">65%</td><td class="numc">65%</td><td class="numc">780</td></tr>
+          <tr><td>10~24</td><td class="numc">1,800</td><td class="numc">12%</td><td class="numc">70%</td><td class="numc">55%</td><td class="numc">990</td></tr>
+          <tr><td>25~49</td><td class="numc">2,100</td><td class="numc">16%</td><td class="numc">75%</td><td class="numc">50%</td><td class="numc">1,050</td></tr>
+          <tr><td>50~99</td><td class="numc">2,400</td><td class="numc">20%</td><td class="numc">80%</td><td class="numc">48%</td><td class="numc">1,152</td></tr>
+          <tr><td>100~199</td><td class="numc">2,600</td><td class="numc">24%</td><td class="numc">80%</td><td class="numc">45%</td><td class="numc">1,170</td></tr>
+          <tr><td>200~349</td><td class="numc">3,000</td><td class="numc">28%</td><td class="numc">85%</td><td class="numc">42%</td><td class="numc">1,260</td></tr>
+          <tr><td>350~549</td><td class="numc">3,400</td><td class="numc">28%</td><td class="numc">85%</td><td class="numc">40%</td><td class="numc">1,360</td></tr>
+          <tr><td>550~799</td><td class="numc">4,000</td><td class="numc">32%</td><td class="numc">90%</td><td class="numc">38%</td><td class="numc">1,520</td></tr>
+          <tr><td>800~1099</td><td class="numc">4,600</td><td class="numc">32%</td><td class="numc">90%</td><td class="numc">35%</td><td class="numc">1,610</td></tr>
+          <tr><td>1100~1449</td><td class="numc">5,400</td><td class="numc">32%</td><td class="numc">90%</td><td class="numc">32%</td><td class="numc">1,728</td></tr>
+          <tr><td>1450+</td><td class="numc">6,000</td><td class="numc">32%</td><td class="numc">90%</td><td class="numc">30%</td><td class="numc">1,800</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>메타·컬렉션 Sink</h3>
+    <div class="grid">
+      <div class="mini"><div class="title">도시 데코레이션</div><div class="big">945,400g</div><div class="desc">150행 합계. 해머 3,345개와 골드를 동시에 회수하는 장기 성장 Sink.</div></div>
+      <div class="mini"><div class="title">앨범 컬렉션</div><div class="big">OFF</div><div class="desc"><code>is_album_collection_open=0</code>. milestone 데이터는 존재하지만 현재 서버 지급/UI 기준은 닫힘.</div></div>
+      <div class="mini"><div class="title">덱 컬렉션</div><div class="big">OFF</div><div class="desc"><code>is_deck_collection_open=0</code>. active deck 12개는 존재하나 현재 플래그는 닫힘.</div></div>
+      <div class="mini"><div class="title">공유 보상</div><div class="big">500g</div><div class="desc">P2P 승리 공유, 도시 완성 공유 각각 500g.</div></div>
+    </div>
+  </section>
+
+  <section id="loop">
+    <h2><span class="num">5</span> 플레이어 재화 루프</h2>
+    <div class="loop">
+      <div class="step"><strong>접속</strong><span>방치골드, 출석, 휠, 상점 AD가 복귀 보상을 제공한다.</span></div>
+      <div class="step"><strong>레벨 진입</strong><span>입장료를 지불하고 난이도·덱·부스터 선택으로 리스크를 정한다.</span></div>
+      <div class="step"><strong>플레이 중 선택</strong><span>Undo, Extra Deck, Wild Card 등으로 실패 확률을 낮추는 대신 골드를 소비한다.</span></div>
+      <div class="step"><strong>결과 정산</strong><span>승리 시 일부 골드와 해머/진척을 얻고, 패배 시 입장료와 사용 부스터가 Sink로 확정된다.</span></div>
+      <div class="step"><strong>메타 진행</strong><span>해머와 골드로 도시를 진행해 다음 접속 목표를 만든다.</span></div>
+    </div>
+  </section>
+
+  <section id="iap">
+    <h2><span class="num">6</span> IAP 가치 구조</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>상품</th><th>가격</th><th>골드량</th><th>추가 보상</th><th>역할</th></tr></thead>
+        <tbody>
+          <tr><td><code>gold_iap_1</code></td><td class="numc">$1.99</td><td class="numc">10,000g</td><td>없음</td><td>첫 구매 진입 상품</td></tr>
+          <tr><td><code>bundle_iap_1</code></td><td class="numc">$4.99</td><td class="numc">27,000g</td><td>undo 1, ticket 1</td><td>소액 번들</td></tr>
+          <tr><td><code>bundle_iap_2</code></td><td class="numc">$8.99</td><td class="numc">45,000g</td><td>wild/extra/undo/ticket 각 1</td><td>주력 추천 상품</td></tr>
+          <tr><td><code>bundle_iap_3</code></td><td class="numc">$14.99</td><td class="numc">85,000g</td><td>wild/extra/undo/ticket 각 2</td><td>중간 가격대 확장</td></tr>
+          <tr><td><code>bundle_iap_4</code></td><td class="numc">$26.99</td><td class="numc">170,000g</td><td>wild/extra/undo/ticket 각 4</td><td>고관여 유저 대상</td></tr>
+          <tr><td><code>bundle_iap_5</code></td><td class="numc">$49.99</td><td class="numc">370,000g</td><td>wild/extra/undo/ticket 각 8</td><td>best value 고가 상품</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note good"><strong>라이브 기준 해석:</strong> 이 표는 product 시트의 활성 상품만 반영했다. "며칠치 가치"는 최신 시뮬레이션이 별도로 필요하므로 이 문서에서는 확정값으로 쓰지 않는다.</div>
+  </section>
+
+  <section id="risk">
+    <h2><span class="num">7</span> 리스크와 모니터링</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>리스크</th><th>발생 조건</th><th>확인 지표</th><th>대응 방향</th></tr></thead>
+        <tbody>
+          <tr><td>초반 골드 부족</td><td>입장료 상승 + 광고 비소진</td><td>D1/D3 잔액, 초반 패배 후 이탈</td><td>초반 무료 입장, 튜토리얼 구제, 제한적 팝업 RV</td></tr>
+          <tr><td>고레벨 방치 인플레이션</td><td>Lv200+ 방치 수령 빈도 높음</td><td>Lv 구간별 D30 잔액, idle 수령 횟수</td><td>idle cap 또는 수령 빈도 조정 검토</td></tr>
+          <tr><td>RV 과다 의존</td><td>Inbox/Popup/Lobby를 모두 소진</td><td>채널별 RV 소진율, RV 후 재진입률</td><td>rv_gold_ratio와 노출 조건 조정</td></tr>
+          <tr><td>부스터 가격 저항</td><td>tier 누진 체감 과도</td><td>부스터 구매율, 사용 후 승률, 구매 직후 이탈</td><td>Undo 시작가 유지, Extra Deck 상한만 조정</td></tr>
+          <tr><td>메타 Sink 약화</td><td>도시 참여율 하락</td><td>해머 보유량, 데코 완료율, 도시 진입률</td><td>도시 보상 노출 강화, 해머 소실/FOMO 룰 조정</td></tr>
+          <tr><td>IAP 가치 약화</td><td>무료 Source 과다 또는 RV 소진율 과다</td><td>$1.99 일수 가치, ARPPU, 무료 골드 비중</td><td>RV ratio, 이벤트 골드, 방치골드 조정</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="handoff">
+    <h2><span class="num">8</span> 구현·데이터 메모</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>영역</th><th>필수 규칙</th><th>참조</th></tr></thead>
+        <tbody>
+          <tr><td>방치골드</td><td>4시간 후 1회분 대기, 스택 없음, 능동 수령. 공식은 라이브 const 기준.</td><td><code>const 10002~10006</code></td></tr>
+          <tr><td>골드 상한</td><td><code>gold_max_limit</code>은 지갑 상한이 아니라 판당 수령 상한.</td><td><code>const 10059 = 20,000</code></td></tr>
+          <tr><td>RV free gold</td><td>Inbox/Popup/Lobby 지급량은 <code>rv_gold_ratio</code> 기반. 삭제된/빈 amount 컬럼을 고정값으로 쓰지 않는다.</td><td><code>level_entry_tier</code>, <code>const 10057/10063/10076</code></td></tr>
+          <tr><td>Fixed 부스터</td><td>fireworks/golden_ticket/wild_card는 <code>entry_cost_ratio</code>로만 가격 결정. <code>ucir/ucmr = 0</code>.</td><td><code>item_list</code></td></tr>
+          <tr><td>Tier 부스터</td><td>undo/extra_deck은 level_entry_tier와 누진 사용 횟수 기반 가격을 사용.</td><td><code>level_entry_tier</code>, <code>item_list</code></td></tr>
+          <tr><td>컬렉션</td><td>현재 라이브는 album/deck 모두 0. 컬렉션을 Sink로 계산하려면 플래그 전환이 선행되어야 한다.</td><td><code>const 10061/10062</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><strong>작성 근거:</strong> Google Sheet 라이브 문서 <code>[PST] 밸런스시트</code>의 <code>const</code>, <code>level_entry_tier</code>, <code>item_list</code>, <code>daily_wheel</code>, <code>daily_gift</code>, <code>product</code>, <code>meta_decoration_list</code>, <code>collection_*</code> 시트. 로컬 HTML/MD 문서는 수치 근거로 사용하지 않았다.</div>
+  </section>
+
+  <div class="footer">SCJ Currency Flow Planning Document v2 · 작성일 2026-04-23 · Google Sheet 라이브값 기준</div>
+</div>
+</body>
+</html>

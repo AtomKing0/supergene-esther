@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Solitaire Tripeaks · UI Kit (Print)</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #2a241a; font-family: var(--font-ui); }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page {
+    width: 1280px; height: 720px; position: relative;
+    background: #000; overflow: hidden;
+    margin: 24px auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    break-inside: avoid;
+    break-after: page;
+  }
+  .page:last-child { break-after: auto; }
+  .page-label {
+    position: absolute; top: -22px; left: 0;
+    color: #fff; font-size: 12px; font-weight: 600;
+    font-family: var(--font-ui); letter-spacing: .08em; text-transform: uppercase;
+    opacity: .7;
+  }
+  .screen-root { position: absolute; inset: 0; }
+  @keyframes fadeIn { from {opacity: 0} to {opacity: 1} }
+  @keyframes popIn { 0%,100% {opacity: 1; transform: none} }
+  @keyframes shake { 0%,100% {transform: none} }
+  @keyframes cardRemove { 0%,100% {} }
+  @keyframes pulse { 0%,100% { box-shadow: var(--shadow-stamp-md); } }
+  * { animation-duration: 0s !important; transition: none !important; }
+  @page { size: 1280px 720px; margin: 0; }
+  @media print {
+    html, body { background: #fff; }
+    .page { margin: 0; box-shadow: none; border-radius: 0; }
+    .page-label { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="./components/Icons.jsx"></script>
+<script type="text/babel" src="./components/Primitives.jsx"></script>
+<script type="text/babel" src="./components/RoyalColorCollection.jsx"></script>
+<script type="text/babel" src="./components/LobbyScreen.jsx"></script>
+<script type="text/babel" src="./components/PreLevelPopup.jsx"></script>
+<script type="text/babel" src="./components/IngameScreen.jsx"></script>
+<script type="text/babel" src="./components/ResultScreen.jsx"></script>
+<script type="text/babel" src="./components/CityDecorateScreen.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+const noop = () => {};
+const pages = [
+  { label: '01 Lobby', render: () =>
+    <LobbyScreen gold={2450} hammers={1} level={3} cityIdx={0}
+      onPlay={noop} onDecorate={noop} onAddGold={noop} onOpenEvent={noop} /> },
+  { label: '02 Pre-Level', render: () =>
+    <div style={{position:'absolute', inset:0}}>
+      <LobbyScreen gold={2450} hammers={1} level={3} cityIdx={0}
+        onPlay={noop} onDecorate={noop} onAddGold={noop} onOpenEvent={noop} />
+      <PreLevelPopup level={3} onClose={noop} onPlay={noop} />
+    </div> },
+  { label: '03 Ingame', render: () =>
+    <IngameScreen level={3} gold={2400} onClear={noop} onHome={noop} /> },
+  { label: '04 Result · Clear', render: () =>
+    <ResultScreen variant="clear" level={3} goldReward={400} hammerReward={1}
+      onNext={noop} onHome={noop} onContinue={noop} /> },
+  { label: '05 Result · Fail', render: () =>
+    <ResultScreen variant="fail" level={3} goldReward={0} hammerReward={0}
+      onNext={noop} onHome={noop} onContinue={noop} /> },
+  { label: '06 Decorate', render: () =>
+    <CityDecorateScreen hammers={1} gold={2450} cityIdx={0} upgrades={{0:1}}
+      onUpgrade={noop} onHome={noop} /> },
+  { label: '07 Royal A · Classic Royal (Part 1 · Black)', render: () =>
+    <div style={{position:'absolute', inset:0, background:'#0a0608'}}>
+      <RoyalColorCollection variant="A" part={1} progress={42} level={3} onClose={noop} onPlay={noop}/>
+    </div> },
+  { label: '08 Royal A · Part 2 · Red', render: () =>
+    <div style={{position:'absolute', inset:0, background:'#0a0608'}}>
+      <RoyalColorCollection variant="A" part={2} progress={120} level={12} onClose={noop} onPlay={noop}/>
+    </div> },
+  { label: '09 Royal B · Casino Table', render: () =>
+    <div style={{position:'absolute', inset:0, background:'#0a2a14'}}>
+      <RoyalColorCollection variant="B" part={1} progress={85} level={3} onClose={noop} onPlay={noop}/>
+    </div> },
+  { label: '10 Royal C · Ladder', render: () =>
+    <div style={{position:'absolute', inset:0, background:'#0a0608'}}>
+      <RoyalColorCollection variant="C" part={2} progress={150} level={26} onClose={noop} onPlay={noop}/>
+    </div> },
+  { label: '11 Royal D · Minimal', render: () =>
+    <div style={{position:'absolute', inset:0, background:'#f0e2c7'}}>
+      <RoyalColorCollection variant="D" part={1} progress={60} level={3} onClose={noop} onPlay={noop}/>
+    </div> },
+];
+
+const Page = ({label, children}) => (
+  <div className="page">
+    <div className="page-label">{label}</div>
+    <div className="screen-root">{children}</div>
+  </div>
+);
+
+const App = () => (
+  <>
+    {pages.map((p, i) => <Page key={i} label={p.label}>{p.render()}</Page>)}
+  </>
+);
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+// Wait for fonts + Babel + a safety delay, then print
+(async () => {
+  try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch {}
+  await new Promise(r => setTimeout(r, 800));
+  window.print();
+})();
+</script>
+</body>
+</html>

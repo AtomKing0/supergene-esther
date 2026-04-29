@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>출시 일정 플래너</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f6fa; color: #333; }
+
+  /* ── 상단 컨트롤 ── */
+  .controls {
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+  .controls h1 { font-size: 16px; font-weight: 700; color: #1a1a2e; flex: none; }
+  .control-group { display: flex; align-items: center; gap: 8px; }
+  .control-group label { font-size: 13px; color: #666; white-space: nowrap; }
+  .control-group input[type="date"] {
+    padding: 5px 10px; border: 1px solid #ddd; border-radius: 6px;
+    font-size: 13px; cursor: pointer;
+  }
+  .toggle-group { display: flex; gap: 6px; }
+  .toggle-btn {
+    padding: 5px 14px; border-radius: 20px; border: 1px solid #ddd;
+    font-size: 12px; cursor: pointer; background: #fff; color: #666;
+    transition: all .15s;
+  }
+  .toggle-btn.active { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+
+  /* ── Gantt 레이아웃 ── */
+  .gantt-wrap { padding: 24px; overflow-x: auto; }
+  .gantt { min-width: 900px; }
+
+  /* 날짜 헤더 */
+  .date-header { display: flex; margin-left: 130px; margin-bottom: 4px; }
+  .date-cell {
+    flex: none; text-align: center; font-size: 11px; color: #999;
+    border-left: 1px dashed #e5e5e5; padding: 2px 0;
+    background: #fff; position: relative;
+  }
+  .date-cell.today { color: #e53e3e; font-weight: 700; }
+  .date-cell.weekend { background: #fafafa; }
+
+  /* 역할 레인 */
+  .lane { display: flex; align-items: flex-start; margin-bottom: 6px; }
+  .lane-label {
+    width: 130px; flex: none; font-size: 12px; font-weight: 600;
+    padding: 8px 12px 8px 0; color: #444; white-space: nowrap;
+  }
+  .lane-body { flex: 1; position: relative; min-height: 36px; }
+
+  /* 날짜 그리드선 */
+  .grid-line {
+    position: absolute; top: 0; bottom: 0; width: 1px;
+    background: #ececec; pointer-events: none;
+  }
+  .grid-line.weekend { background: #f3f3f3; width: 100%; pointer-events: none; }
+
+  /* 태스크 블록 */
+  .task {
+    position: absolute; height: 32px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #fff;
+    cursor: pointer; white-space: nowrap; overflow: hidden;
+    padding: 0 8px; transition: filter .15s;
+    top: 2px;
+  }
+  .task:hover { filter: brightness(1.1); }
+  .task-label { overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+
+  /* 마일스톤 다이아몬드 */
+  .milestone {
+    position: absolute; width: 14px; height: 14px;
+    transform: rotate(45deg); top: 9px;
+    background: #e53e3e; border: 2px solid #fff;
+    border-radius: 2px; cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.2);
+  }
+  .milestone-label {
+    position: absolute; font-size: 10px; color: #e53e3e;
+    white-space: nowrap; top: -1px; font-weight: 700;
+  }
+
+  /* 구분선 (페이즈) */
+  .phase-divider {
+    position: absolute; top: 0; bottom: 0; width: 2px;
+    background: linear-gradient(to bottom, #4f46e5, transparent);
+    pointer-events: none; opacity: .4;
+  }
+
+  /* 편집 패널 */
+  .edit-panel {
+    position: fixed; right: 24px; top: 80px; width: 300px;
+    background: #fff; border: 1px solid #e0e0e0; border-radius: 12px;
+    padding: 16px; box-shadow: 0 8px 32px rgba(0,0,0,.12);
+    display: none; z-index: 200;
+  }
+  .edit-panel.open { display: block; }
+  .edit-panel h3 { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: #1a1a2e; }
+  .edit-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .edit-row label { font-size: 12px; color: #666; }
+  .edit-row input[type="number"] {
+    width: 60px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 6px;
+    font-size: 12px; text-align: center;
+  }
+  .edit-row input[type="text"] {
+    width: 160px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 6px;
+    font-size: 12px;
+  }
+  .edit-row select {
+    padding: 4px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px;
+  }
+  .edit-close {
+    position: absolute; right: 12px; top: 12px; cursor: pointer;
+    font-size: 18px; color: #999; line-height: 1;
+  }
+  .edit-close:hover { color: #333; }
+  .apply-btn {
+    width: 100%; margin-top: 8px; padding: 8px; background: #4f46e5;
+    color: #fff; border: none; border-radius: 8px; cursor: pointer;
+    font-size: 13px; font-weight: 600;
+  }
+  .apply-btn:hover { background: #3730a3; }
+
+  /* 범례 */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 24px 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #555; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* 설명 박스 */
+  .note-box {
+    margin: 0 24px 16px; padding: 12px 16px; background: #fffbeb;
+    border: 1px solid #fde68a; border-radius: 8px; font-size: 12px; color: #92400e;
+    line-height: 1.6;
+  }
+  .note-box strong { font-weight: 700; }
+
+  /* CG 옵션 토글 */
+  .cg-toggle {
+    display: flex; gap: 8px; margin: 0 24px 16px; align-items: center;
+  }
+  .cg-toggle label { font-size: 13px; color: #555; font-weight: 600; }
+  .cg-opt-btn {
+    padding: 5px 16px; border-radius: 20px; border: 1px solid #ddd;
+    font-size: 12px; cursor: pointer; background: #fff; color: #666;
+  }
+  .cg-opt-btn.active { background: #059669; color: #fff; border-color: #059669; }
+</style>
+</head>
+<body>
+
+<!-- 컨트롤 -->
+<div class="controls">
+  <h1>📅 출시 일정 플래너</h1>
+  <div class="control-group">
+    <label>Toss 런칭일</label>
+    <input type="date" id="tossLaunchDate" value="2026-05-06">
+  </div>
+  <div class="control-group">
+    <label>개발 배치</label>
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btnParallel" onclick="setMode('parallel')">병렬</button>
+      <button class="toggle-btn" id="btnSerial" onclick="setMode('serial')">직렬</button>
+    </div>
+  </div>
+  <div class="control-group">
+    <label style="color:#999; font-size:12px;">클릭하면 기간 편집</label>
+  </div>
+</div>
+
+<!-- 범례 -->
+<div class="legend" style="margin-top:16px;">
+  <div class="legend-item"><div class="legend-dot" style="background:#4f46e5"></div>클라개발</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>클라개발 (FB)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#0ea5e9"></div>서버개발</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>기획</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>QA</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ef4444; border-radius:50%"></div>마일스톤</div>
+</div>
+
+<!-- CG 옵션 -->
+<div class="cg-toggle">
+  <label>CG 런치 방식:</label>
+  <button class="cg-opt-btn active" id="cgBasic" onclick="setCGMode('basic')">Basic Launch (개발1일·QA4일)</button>
+  <button class="cg-opt-btn" id="cgFull" onclick="setCGMode('full')">Full Launch IAA/IAP (개발4일·QA2일)</button>
+</div>
+
+<!-- Gantt -->
+<div class="gantt-wrap">
+  <div class="gantt">
+    <div class="date-header" id="dateHeader"></div>
+    <div id="ganttBody"></div>
+  </div>
+</div>
+
+<!-- 편집 패널 -->
+<div class="edit-panel" id="editPanel">
+  <span class="edit-close" onclick="closeEdit()">×</span>
+  <h3 id="editTitle">태스크 편집</h3>
+  <div class="edit-row">
+    <label>이름</label>
+    <input type="text" id="editName">
+  </div>
+  <div class="edit-row">
+    <label>소요 일수</label>
+    <input type="number" id="editDays" min="1" max="30">
+  </div>
+  <button class="apply-btn" onclick="applyEdit()">적용</button>
+</div>
+
+<script>
+// ── 상태 ──────────────────────────────────────
+let mode = 'parallel';   // 'parallel' | 'serial'
+let cgMode = 'basic';    // 'basic' | 'full'
+let editTarget = null;
+
+// ── 태스크 데이터 ─────────────────────────────
+// anchor: 'tossLaunch' 기준 offset(일)
+// 음수 = 런칭 전, 양수 = 런칭 후
+// parallel/serial 모드에 따라 일부 start/end 재계산
+
+let tasks = {
+  // ── Phase 0: 스펙 마무리 ──
+  spec: {
+    id: 'spec', name: 'FB 출시 스펙 마무리', role: '기획',
+    anchorOffsetStart: -15, days: 3,
+    color: '#f59e0b', fixed: true
+  },
+
+  // ── Phase 1: Toss 개발 (클라1 + 서버, 병렬) ──
+  tossCla: {
+    id: 'tossCla', name: 'Toss 빌드 (클라1)', role: '클라개발',
+    anchorOffsetStart: -14, days: 3,
+    color: '#4f46e5', parallelWith: 'tossSvr'
+  },
+  tossSvr: {
+    id: 'tossSvr', name: 'Toss 빌드 (서버)', role: '서버개발',
+    anchorOffsetStart: -14, days: 3,
+    color: '#0ea5e9', parallelWith: 'tossCla'
+  },
+
+  // ── Phase 1: FB 개발 (클라2, 동시 진행) ──
+  fbCla: {
+    id: 'fbCla', name: 'FB 스펙 개발 (컬렉션·룰렛)', role: '클라개발(FB)',
+    anchorOffsetStart: -14, days: 10,
+    color: '#7c3aed', alwaysParallel: true
+  },
+
+  // ── Phase 2: QA ──
+  qa: {
+    id: 'qa', name: 'QA + 게임물위 등급 신청', role: 'QA',
+    anchorOffsetStart: -7, days: 3,
+    color: '#10b981'
+  },
+
+  // ── Phase 3: Toss 리뷰 제출 ──
+  tossSubmit: {
+    id: 'tossSubmit', name: 'Toss 리뷰 제출', role: '클라개발',
+    anchorOffsetStart: -4, days: 1,
+    color: '#4f46e5', milestone: true
+  },
+
+  // ── Phase 4: 온보딩 개선 (런칭 후) ──
+  onboarding: {
+    id: 'onboarding', name: '온보딩 개선 작업', role: '클라개발',
+    anchorOffsetStart: 0, days: 7,
+    color: '#4f46e5'
+  },
+  onboardingPlan: {
+    id: 'onboardingPlan', name: '온보딩 기획', role: '기획',
+    anchorOffsetStart: -7, days: 7,
+    color: '#f59e0b'
+  },
+
+  // ── Phase 5: EQRv4 (런칭+7일) ──
+  eqrv4: {
+    id: 'eqrv4', name: 'IG EQRv4 (4주)', role: '클라개발',
+    anchorOffsetStart: 7, days: 28,
+    color: '#6366f1'
+  },
+
+  // ── Phase 6: CG (EQRv4 후) ──
+  cgDev: {
+    id: 'cgDev', name: 'CG 개발', role: '클라개발',
+    anchorOffsetStart: 35, days: 1,   // basic=1, full=4
+    color: '#0284c7'
+  },
+  cgSvr: {
+    id: 'cgSvr', name: 'CG 서버 개발', role: '서버개발',
+    anchorOffsetStart: 35, days: 1,
+    color: '#0ea5e9'
+  },
+  cgQA: {
+    id: 'cgQA', name: 'CG QA', role: 'QA',
+    anchorOffsetStart: 36, days: 4,   // basic=4, full=2
+    color: '#10b981'
+  },
+};
+
+const ROLES = ['기획', '클라개발', '클라개발(FB)', '서버개발', 'QA'];
+const COL_PX = 36; // 하루 너비(px)
+const DISPLAY_DAYS = 70; // 표시 일수
+
+// ── 날짜 유틸 ─────────────────────────────────
+function parseDate(str) {
+  const [y,m,d] = str.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function addDays(date, n) {
+  const d = new Date(date); d.setDate(d.getDate()+n); return d;
+}
+function daysBetween(a, b) {
+  return Math.round((b - a) / 86400000);
+}
+function fmtDate(d) {
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+function isWeekend(d) { return d.getDay()===0 || d.getDay()===6; }
+
+// ── 계산 ─────────────────────────────────────
+function getTossLaunch() {
+  return parseDate(document.getElementById('tossLaunchDate').value);
+}
+
+function getViewStart() {
+  return addDays(getTossLaunch(), -20);
+}
+
+function computedTasks() {
+  const toss = getTossLaunch();
+  const result = {};
+
+  for (const [k, t] of Object.entries(tasks)) {
+    const start = addDays(toss, t.anchorOffsetStart);
+    let end = addDays(start, t.days);
+
+    // 직렬 모드: tossCla, tossSvr를 순차 배치
+    if (mode === 'serial' && (k === 'tossSvr') && !t.alwaysParallel) {
+      const claDays = tasks.tossCla.days;
+      const claStart = addDays(toss, tasks.tossCla.anchorOffsetStart);
+      const newStart = addDays(claStart, claDays);
+      result[k] = { ...t, startDate: newStart, endDate: addDays(newStart, t.days) };
+      continue;
+    }
+
+    // CG 모드 반영
+    if (k === 'cgDev' || k === 'cgSvr') {
+      const devDays = cgMode === 'basic' ? 1 : 4;
+      end = addDays(start, devDays);
+    }
+    if (k === 'cgQA') {
+      const cgDevEnd = addDays(addDays(toss, tasks.cgDev.anchorOffsetStart), cgMode === 'basic' ? 1 : 4);
+      const qaDays = cgMode === 'basic' ? 4 : 2;
+      result[k] = { ...t, startDate: cgDevEnd, endDate: addDays(cgDevEnd, qaDays) };
+      continue;
+    }
+
+    result[k] = { ...t, startDate: start, endDate: end };
+  }
+  return result;
+}
+
+// ── 렌더 ─────────────────────────────────────
+function render() {
+  const viewStart = getViewStart();
+  const computed = computedTasks();
+
+  // 날짜 헤더
+  const header = document.getElementById('dateHeader');
+  header.innerHTML = '';
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  for (let i = 0; i < DISPLAY_DAYS; i++) {
+    const d = addDays(viewStart, i);
+    const cell = document.createElement('div');
+    cell.className = 'date-cell' +
+      (d.toDateString()===today.toDateString() ? ' today' : '') +
+      (isWeekend(d) ? ' weekend' : '');
+    cell.style.width = COL_PX + 'px';
+    cell.textContent = (d.getDate() === 1 || i === 0)
+      ? fmtDate(d)
+      : (d.getDate() % 5 === 0 ? d.getDate() : '');
+    header.appendChild(cell);
+  }
+
+  // 레인
+  const body = document.getElementById('ganttBody');
+  body.innerHTML = '';
+
+  for (const role of ROLES) {
+    const lane = document.createElement('div');
+    lane.className = 'lane';
+
+    const label = document.createElement('div');
+    label.className = 'lane-label';
+    label.textContent = role;
+    lane.appendChild(label);
+
+    const laneBody = document.createElement('div');
+    laneBody.className = 'lane-body';
+    laneBody.style.width = (COL_PX * DISPLAY_DAYS) + 'px';
+
+    // 그리드선
+    for (let i = 0; i < DISPLAY_DAYS; i++) {
+      const d = addDays(viewStart, i);
+      const line = document.createElement('div');
+      if (isWeekend(d)) {
+        line.className = 'grid-line weekend';
+        line.style.left = (i * COL_PX) + 'px';
+        line.style.width = COL_PX + 'px';
+      } else {
+        line.className = 'grid-line';
+        line.style.left = (i * COL_PX) + 'px';
+      }
+      laneBody.appendChild(line);
+    }
+
+    // today 선
+    const todayOffset = daysBetween(viewStart, today);
+    if (todayOffset >= 0 && todayOffset < DISPLAY_DAYS) {
+      const todayLine = document.createElement('div');
+      todayLine.style.cssText = `position:absolute;top:0;bottom:0;left:${todayOffset*COL_PX}px;width:2px;background:#e53e3e;opacity:.5;pointer-events:none;`;
+      laneBody.appendChild(todayLine);
+    }
+
+    // 태스크 렌더
+    let rowIdx = 0;
+    const roleTasks = Object.values(computed).filter(t => t.role === role);
+
+    // 행 배치 (겹치는 태스크를 다른 행에)
+    const rows = [];
+    for (const t of roleTasks) {
+      let placed = false;
+      for (let r = 0; r < rows.length; r++) {
+        const last = rows[r][rows[r].length - 1];
+        if (last.endDate <= t.startDate) {
+          rows[r].push(t);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) rows.push([t]);
+    }
+
+    const laneHeight = Math.max(36, rows.length * 38 + 4);
+    laneBody.style.minHeight = laneHeight + 'px';
+
+    rows.forEach((row, rIdx) => {
+      row.forEach(t => {
+        const startOff = daysBetween(viewStart, t.startDate);
+        const durDays = daysBetween(t.startDate, t.endDate);
+        if (startOff >= DISPLAY_DAYS || startOff + durDays < 0) return;
+
+        const left = Math.max(0, startOff) * COL_PX;
+        const width = Math.max(COL_PX, durDays * COL_PX - 2);
+        const top = 2 + rIdx * 38;
+
+        if (t.milestone) {
+          const ms = document.createElement('div');
+          ms.className = 'milestone';
+          ms.style.left = (startOff * COL_PX - 7) + 'px';
+          ms.style.top = (top + 2) + 'px';
+          ms.title = t.name;
+          laneBody.appendChild(ms);
+
+          const msLabel = document.createElement('div');
+          msLabel.className = 'milestone-label';
+          msLabel.style.left = (startOff * COL_PX + 10) + 'px';
+          msLabel.style.top = top + 'px';
+          msLabel.textContent = t.name;
+          laneBody.appendChild(msLabel);
+          return;
+        }
+
+        const block = document.createElement('div');
+        block.className = 'task';
+        block.style.left = left + 'px';
+        block.style.width = width + 'px';
+        block.style.top = top + 'px';
+        block.style.background = t.color;
+        block.title = `${t.name}\n${fmtDate(t.startDate)} ~ ${fmtDate(t.endDate)} (${durDays}일)`;
+        block.innerHTML = `<span class="task-label">${t.name} (${durDays}일)</span>`;
+        block.onclick = () => openEdit(t.id);
+        laneBody.appendChild(block);
+      });
+    });
+
+    lane.appendChild(laneBody);
+    body.appendChild(lane);
+  }
+
+  // 마일스톤: Toss 런칭
+  renderMilestoneOverlay();
+}
+
+function renderMilestoneOverlay() {
+  // 이미 있으면 제거
+  document.querySelectorAll('.milestone-overlay').forEach(el => el.remove());
+
+  const viewStart = getViewStart();
+  const toss = getTossLaunch();
+  const tossOff = daysBetween(viewStart, toss);
+  const body = document.getElementById('ganttBody');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'milestone-overlay';
+  overlay.style.cssText = `position:absolute;top:0;left:${130 + tossOff*COL_PX}px;bottom:0;width:2px;background:#e53e3e;opacity:.7;pointer-events:none;z-index:10;`;
+
+  const labelEl = document.createElement('div');
+  labelEl.style.cssText = `position:absolute;top:0;left:${130 + tossOff*COL_PX + 4}px;font-size:11px;font-weight:700;color:#e53e3e;white-space:nowrap;`;
+  labelEl.textContent = `🚀 Toss 런칭 ${fmtDate(toss)}`;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'milestone-overlay';
+  wrapper.style.cssText = 'position:relative;';
+  wrapper.appendChild(overlay);
+  wrapper.appendChild(labelEl);
+
+  // gantt-wrap 기준으로 절대 위치
+  const ganttWrap = document.querySelector('.gantt-wrap');
+  ganttWrap.style.position = 'relative';
+
+  // 실제로는 gantt body 위에 선 그리기
+  const ganttEl = document.querySelector('.gantt');
+  const headerH = 20;
+  const line = document.createElement('div');
+  line.className = 'milestone-overlay';
+  line.style.cssText = `
+    position:absolute;
+    top:${headerH + 4}px;
+    left:${130 + tossOff * COL_PX}px;
+    bottom:0;
+    width:2px;
+    background:#e53e3e;
+    opacity:.5;
+    pointer-events:none;
+    z-index:50;
+  `;
+  ganttEl.style.position = 'relative';
+  ganttEl.appendChild(line);
+}
+
+// ── 편집 ─────────────────────────────────────
+function openEdit(id) {
+  editTarget = id;
+  const t = tasks[id];
+  document.getElementById('editTitle').textContent = t.role + ' 편집';
+  document.getElementById('editName').value = t.name;
+
+  let days = t.days;
+  if ((id === 'cgDev' || id === 'cgSvr') && cgMode) {
+    days = cgMode === 'basic' ? 1 : 4;
+  }
+  if (id === 'cgQA') {
+    days = cgMode === 'basic' ? 4 : 2;
+  }
+  document.getElementById('editDays').value = days;
+  document.getElementById('editPanel').classList.add('open');
+}
+
+function closeEdit() {
+  document.getElementById('editPanel').classList.remove('open');
+  editTarget = null;
+}
+
+function applyEdit() {
+  if (!editTarget) return;
+  tasks[editTarget].name = document.getElementById('editName').value;
+  tasks[editTarget].days = parseInt(document.getElementById('editDays').value) || 1;
+  closeEdit();
+  render();
+}
+
+// ── 모드 전환 ─────────────────────────────────
+function setMode(m) {
+  mode = m;
+  document.getElementById('btnParallel').classList.toggle('active', m === 'parallel');
+  document.getElementById('btnSerial').classList.toggle('active', m === 'serial');
+  render();
+}
+
+function setCGMode(m) {
+  cgMode = m;
+  document.getElementById('cgBasic').classList.toggle('active', m === 'basic');
+  document.getElementById('cgFull').classList.toggle('active', m === 'full');
+
+  // CG 태스크 days 동기화
+  tasks.cgDev.days = m === 'basic' ? 1 : 4;
+  tasks.cgSvr.days = m === 'basic' ? 1 : 4;
+  tasks.cgQA.days = m === 'basic' ? 4 : 2;
+  tasks.cgQA.anchorOffsetStart = tasks.cgDev.anchorOffsetStart + tasks.cgDev.days;
+
+  render();
+}
+
+// ── 이벤트 ───────────────────────────────────
+document.getElementById('tossLaunchDate').addEventListener('change', render);
+
+// 초기 렌더
+render();
+</script>
+</body>
+</html>

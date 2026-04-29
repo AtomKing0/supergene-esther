@@ -142,3 +142,22 @@ val003_rule_update: 2026-03-11 — streak_reward_pool gacha_rate 합산 검증 �
 ---
 
 *문서 종료. Phase-B 완료 (2026-02-20T20:00:00+09:00)*
+
+---
+
+## difficulty_tier 스키마 추가 — required_gimmick_count (2026-04-13)
+
+| 항목 | 내용 |
+|------|------|
+| 컬럼명 | `required_gimmick_count` |
+| 타입 | INT, NOT NULL, DEFAULT 0 |
+| 범위 | 0 이상 정수 |
+| plus_card 포함 여부 | **제외** — rope_card / runner_card / lock_key 만 카운트 |
+| 적용 시점 | 맵 생성 시 기믹 배치 단계 (런타임 아님) |
+
+### 유효성 검증 규칙
+
+- Tutorial / Normal: 반드시 0
+- Hard: 1 이상 권고, 현재 확정값 3
+- SH: Hard 이상, 현재 확정값 4
+- `required_gimmick_count ≤ max_gimmick_count(각 기믹 종류별 합산)` 초과 금지

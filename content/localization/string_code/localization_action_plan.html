@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Localization Action Plan — 2026-03-25</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1a1a2e;
+    --border: #e0e0e0;
+    --p0: #dc2626;
+    --p0-bg: #fef2f2;
+    --p1: #ea580c;
+    --p1-bg: #fff7ed;
+    --p2: #2563eb;
+    --p2-bg: #eff6ff;
+    --note: #7c3aed;
+    --note-bg: #f5f3ff;
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --gray: #64748b;
+    --code-bg: #f1f5f9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    padding: 40px 20px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    color: var(--gray);
+    font-size: 0.9rem;
+    margin-bottom: 32px;
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+  .summary-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .summary-card .num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .summary-card .label {
+    font-size: 0.78rem;
+    color: var(--gray);
+    margin-top: 2px;
+  }
+  .summary-card.p0 { border-color: var(--p0); background: var(--p0-bg); }
+  .summary-card.p0 .num { color: var(--p0); }
+  .summary-card.p1 { border-color: var(--p1); background: var(--p1-bg); }
+  .summary-card.p1 .num { color: var(--p1); }
+  .summary-card.p2 { border-color: var(--p2); background: var(--p2-bg); }
+  .summary-card.p2 .num { color: var(--p2); }
+
+  section {
+    margin-bottom: 36px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+  .priority-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 4px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .priority-badge.p0 { background: var(--p0); }
+  .priority-badge.p1 { background: var(--p1); }
+  .priority-badge.p2 { background: var(--p2); }
+  .priority-badge.note { background: var(--note); }
+  .section-header h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+  }
+  th {
+    background: #f8fafc;
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  code {
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.82rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 4px;
+  }
+  .tag-prefab { background: #dbeafe; color: #1e40af; }
+  .tag-code { background: #dcfce7; color: #166534; }
+  .tag-json { background: #fef3c7; color: #92400e; }
+  .tag-sheet { background: #f3e8ff; color: #6b21a8; }
+
+  .note-box {
+    border-left: 3px solid;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.85rem;
+    margin: 12px 0;
+  }
+  .note-box.warn { border-color: var(--p0); background: var(--p0-bg); }
+  .note-box.info { border-color: var(--p2); background: var(--p2-bg); }
+  .note-box.tip { border-color: var(--green); background: var(--green-bg); }
+  .note-box.purple { border-color: var(--note); background: var(--note-bg); }
+  .note-box strong { display: block; margin-bottom: 2px; }
+
+  .owner {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    color: #fff;
+  }
+  .owner-dev { background: #3b82f6; }
+  .owner-plan { background: #8b5cf6; }
+  .owner-qa { background: #f59e0b; color: #1a1a2e; }
+
+  .sub-heading {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 20px 0 10px;
+    color: var(--text);
+  }
+  .strike { text-decoration: line-through; color: var(--gray); }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: var(--gray);
+  }
+</style>
+</head>
+<body>
+
+<h1>Localization Action Plan</h1>
+<p class="subtitle">2026-03-25 &middot; 기획서 v1.7 + en.json (262 keys) + 코드/프리팹 실제 검증 기반</p>
+
+<!-- ===== Summary ===== -->
+<div class="summary-grid">
+  <div class="summary-card p0">
+    <div class="num">11</div>
+    <div class="label">P0 누락 키<br>(런타임 노출)</div>
+  </div>
+  <div class="summary-card p0">
+    <div class="num">2</div>
+    <div class="label">P0 오타/키 수정</div>
+  </div>
+  <div class="summary-card p1">
+    <div class="num">6</div>
+    <div class="label">P1 프리팹<br>하드코딩 연결</div>
+  </div>
+  <div class="summary-card p2">
+    <div class="num">~90</div>
+    <div class="label">P2 미구현<br>(기능 개발 시)</div>
+  </div>
+</div>
+
+<!-- ===== P0-A: 누락 키 추가 ===== -->
+<section>
+  <div class="section-header">
+    <span class="priority-badge p0">P0-A</span>
+    <h2>en.json 누락 키 11개 &mdash; 전체 언어 JSON 추가</h2>
+  </div>
+
+  <div class="note-box warn">
+    <strong>런타임에 키 이름 또는 빈 문자열이 유저에게 노출됩니다.</strong>
+    시트 string_code에 추가 &rarr; 번역 진행 &rarr; 전체 언어 JSON (en, ar, es, fr, id, kr, pt, ru, th) 반영
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>#</th><th>키</th><th>사용 위치</th><th>영문 값 (제안)</th><th>비고</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td><code>T_SETTING_TITLE</code></td><td><span class="tag tag-prefab">prefab</span> PopupSetting</td><td>Settings</td><td>en.json엔 <code>T_SETTING</code>만 존재</td></tr>
+      <tr><td>2</td><td><code>T_INBOX</code></td><td><span class="tag tag-code">code</span> PopupMail.ts</td><td>Inbox</td><td>en.json엔 <code>T_INBOX_TITLE</code>만 존재</td></tr>
+      <tr><td>3</td><td><code>T_PURCHASE_FAIL</code></td><td><span class="tag tag-prefab">prefab</span><span class="tag tag-code">code</span> PopupPurchaseToast / ShopItem.ts</td><td>Purchase failed</td><td></td></tr>
+      <tr><td>4</td><td><code>T_DAILY_GIFT</code></td><td><span class="tag tag-code">code</span> PopupDailyGiftItem.ts</td><td>Daily Gift</td><td></td></tr>
+      <tr><td>5</td><td><code>T_GOLD_INSUFFICIENT</code></td><td><span class="tag tag-code">code</span> IngameItemButtonView.ts</td><td>Not enough gold</td><td></td></tr>
+      <tr><td>6</td><td><code>T_UNLOCK_AT</code></td><td><span class="tag tag-code">code</span> PopupCollectionAlbumItem / DeckItem.ts</td><td>Unlocks at Level {0}</td><td>getFormatString 사용</td></tr>
+      <tr><td>7</td><td><code>T_FAILED_TO_LOAD_AD</code></td><td><span class="tag tag-code">code</span> PopupChargeGold.ts</td><td>Failed to load ad</td><td></td></tr>
+      <tr><td>8</td><td><code>T_ERROR_PAYMENT_NOT_AVAILABLE</code></td><td><span class="tag tag-code">code</span> PopupSpecialOffer.ts</td><td>Payment not available</td><td>하드코딩 fallback 있음</td></tr>
+      <tr><td>9</td><td><code>T_ERROR_PRODUCT_NOT_FOUND</code></td><td><span class="tag tag-code">code</span> PopupSpecialOffer.ts</td><td>Product not found</td><td>하드코딩 fallback 있음</td></tr>
+      <tr><td>10</td><td><code>T_ERROR_PURCHASE_FAILED</code></td><td><span class="tag tag-code">code</span> PopupSpecialOffer.ts</td><td>Purchase failed</td><td>하드코딩 fallback 있음</td></tr>
+      <tr><td>11</td><td><code>T_INBOX_FRIENDS_GIFT_DESC</code></td><td><span class="tag tag-code">code</span> PopupMailScrollItem.ts</td><td><em>(기획서 문구 확인 필요)</em></td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="note-box purple">
+    <strong>작업 흐름</strong>
+    <span class="owner owner-plan">기획</span> 시트 string_code에 11개 키 + 영문 값 추가 &rarr;
+    <span class="owner owner-plan">기획</span> 번역 진행 (8개 언어) &rarr;
+    <span class="owner owner-dev">개발</span> 번역 완료된 JSON 전체 언어 파일에 반영
+  </div>
+</section>
+
+<!-- ===== P0-B: 키 수정 ===== -->
+<section>
+  <div class="section-header">
+    <span class="priority-badge p0">P0-B</span>
+    <h2>키 오타 / 키명 수정</h2>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>#</th><th>현재</th><th>수정</th><th>위치</th><th>담당</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><code class="strike">T_COMPLETE-_LEVEL_REWARD</code></td>
+        <td><code>T_COMPLETE_LEVEL_REWARD</code></td>
+        <td><span class="tag tag-json">json</span> en.json + 전체 언어</td>
+        <td><span class="owner owner-dev">개발</span> 하이픈 제거</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><code class="strike">T_SPACIAL_OFFER_*</code></td>
+        <td><code>T_SPECIAL_OFFER_*</code></td>
+        <td><span class="tag tag-code">code</span><span class="tag tag-json">json</span> 기획서 + 코드 전체</td>
+        <td><span class="owner owner-dev">개발</span> 기획서는 수정 완료, 코드 반영 필요</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note-box info">
+    <strong><code>T_INBOX</code> vs <code>T_INBOX_TITLE</code> / <code>T_SETTING_TITLE</code> vs <code>T_SETTING</code></strong>
+    코드 기준 유지. 프리팹 쪽 Localization 컴포넌트의 key를 코드와 일치하도록 수정 요청.
+    <br>&bull; PopupSetting.prefab: <code>T_SETTING</code> &rarr; <code>T_SETTING_TITLE</code>
+    <br>&bull; PopupMail에서 코드가 <code>T_INBOX</code> 사용 중 &rarr; 키 <code>T_INBOX</code>로 통일
+  </div>
+</section>
+
+<!-- ===== P1-C: 프리팹 하드코딩 연결 ===== -->
+<section>
+  <div class="section-header">
+    <span class="priority-badge p1">P1-C</span>
+    <h2>프리팹 하드코딩 텍스트 &rarr; Localization 키 연결</h2>
+  </div>
+
+  <p style="font-size:0.85rem; color:var(--gray); margin-bottom:12px;">en.json에 키가 이미 존재하지만, 프리팹/코드에서 연결되지 않아 다국어 전환 시 영문 고정 노출</p>
+
+  <h3 class="sub-heading">C-1. 완전 미연결 (Localization 컴포넌트 없음)</h3>
+  <table>
+    <thead>
+      <tr><th>프리팹</th><th>하드코딩 텍스트</th><th>연결할 키</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>PopupShop.prefab</td><td>"Shop", "Most Popular", "Best Value", "Free"</td><td><code>T_SHOP_TITLE</code>, <code>T_MOST_POPULAR</code>, <code>T_BEST_VALUE</code>, <code>T_FREE</code></td></tr>
+      <tr><td>PopupMetaCityList.prefab</td><td>"City Journey"</td><td><code>T_CITY_LIST_TITLE</code></td></tr>
+      <tr><td>PopupDecoShare.prefab</td><td>"Share", "+500", "New York Completed!"</td><td><code>T_SHARE</code> 등</td></tr>
+      <tr><td>PopupSettingLanguage.prefab</td><td>"Select Language"</td><td><code>T_LANGUAGE</code></td></tr>
+      <tr><td>PopupSpecialOffer.prefab</td><td>"Starter Pack", "Mega Value Pack", "City Builder Pack"</td><td><code>T_SPECIAL_OFFER_1</code> ~ <code>3</code> <em>(신규 키 추가 필요)</em></td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-heading">C-2. 부분 적용 (일부 Label만 Localization 컴포넌트 적용)</h3>
+  <table>
+    <thead>
+      <tr><th>프리팹</th><th>미적용 텍스트</th><th>연결할 키</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>PopupMail.prefab</td><td>"Inbox", "Claim All"</td><td><code>T_INBOX_TITLE</code>, <code>T_CLAIM_ALL</code></td></tr>
+      <tr><td>PopupGameEntry.prefab</td><td>"Level", "Play"</td><td><code>T_LEVEL</code>, <code>T_PLAY</code></td></tr>
+      <tr><td>PopupDailyGift.prefab</td><td>"Tap to Close"</td><td><code>T_TAP_TO_CLOSE</code></td></tr>
+      <tr><td>PopupDailyTask.prefab</td><td>"Daily Task", <strong style="color:var(--p0)">"Calim"(오타)</strong>, "Change"</td><td><code>T_DAILY_TASKS_TITLE</code>, <code>T_CLAIM</code>, <code>T_CHANGE</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-heading">C-3. ViewLobby 하드코딩 정리</h3>
+  <table>
+    <thead>
+      <tr><th>하드코딩 텍스트</th><th>연결할 키</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>"Collect", "Coins Bonus is ready!"</td><td><code>T_COLLECT_INFO</code> 등 (기존 키 매핑)</td></tr>
+      <tr><td>"Complete all mission for rewards!"</td><td>신규 키 또는 기존 키 확인 필요</td></tr>
+      <tr><td>"Upgrade", "View", "All cities", "Max Level"</td><td><code>T_UPGRADE</code>, <code>T_VIEW</code>, <code>T_ALL_CITY_TITLE</code>, <code>T_MAX_LEVEL</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="note-box tip">
+    <strong>"Calim" 오타</strong>
+    DailyTaskItem.prefab + PopupDailyTask.prefab에 "Calim" 하드코딩 &rarr; <code>T_CLAIM</code> 키 연결로 동시 수정.
+    <span class="owner owner-dev">개발</span> 수정 요청
+  </div>
+</section>
+
+<!-- ===== P2: 미구현 ===== -->
+<section>
+  <div class="section-header">
+    <span class="priority-badge p2">P2</span>
+    <h2>기획서 명시 / 미구현 키 (~90개) &mdash; 기능 개발 시 추가</h2>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>카테고리</th><th>수량</th><th>키 예시</th><th>추가 시점</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>로비 UI / 팝업</td><td>5개</td><td><code>T_ALL_CITY_TITLE</code>, <code>T_DECO_TITLE</code>, <code>T_POLICY_POPUP_TITLE</code></td><td>해당 UI 개발 시</td></tr>
+      <tr><td>IAP 스페셜 오퍼</td><td>6개</td><td><code>T_SHOP_SPECIAL_OFFER_1~3</code>, <code>T_SPECIAL_OFFER_1~3_TITLE</code></td><td>스페셜 오퍼 구현 시</td></tr>
+      <tr><td>소셜 공유</td><td>3개</td><td><code>T_HIDDEN_CITY_SHARE_TITLE</code>, <code>T_LEVEL_MILESTONE_SHARE_TITLE</code></td><td>소셜 피처 개발 시</td></tr>
+      <tr><td>봇 메세지</td><td>~61개</td><td><code>T_BOT_DAILY_MSG_1~20</code>, <code>T_BOT_NEW_MAP_MSG_1~20</code>, <code>T_BOT_FRIEND_JOINED_MSG_1~20</code></td><td>봇 시스템 개발 시</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===== 작업 순서 ===== -->
+<section>
+  <div class="section-header">
+    <span class="priority-badge note">요약</span>
+    <h2>실행 순서</h2>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>순서</th><th>작업</th><th>담당</th><th>산출물</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>P0-A</strong> 누락 키 11개를 시트 string_code에 추가 + 번역 진행</td>
+        <td><span class="owner owner-plan">기획</span></td>
+        <td>시트 업데이트</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>P0-A</strong> 번역 완료 후 전체 언어 JSON 반영</td>
+        <td><span class="owner owner-dev">개발</span></td>
+        <td>en/ar/es/fr/id/kr/pt/ru/th.json</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>P0-B</strong> 오타 키 수정 (<code>T_COMPLETE-_LEVEL_REWARD</code>, <code>T_SPACIAL_OFFER_*</code> &rarr; <code>T_SPECIAL_OFFER_*</code>)</td>
+        <td><span class="owner owner-dev">개발</span></td>
+        <td>JSON + 코드 수정</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>P0-B</strong> 프리팹 키 통일 (<code>T_SETTING_TITLE</code> / <code>T_INBOX</code> 방향)</td>
+        <td><span class="owner owner-dev">개발</span></td>
+        <td>프리팹 Localization key 수정</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>P1-C/D</strong> 프리팹 하드코딩 &rarr; Localization 키 연결 + "Calim" 오타 수정</td>
+        <td><span class="owner owner-dev">개발</span></td>
+        <td>프리팹 수정</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><strong>P1-E</strong> ViewLobby 하드코딩 정리</td>
+        <td><span class="owner owner-dev">개발</span></td>
+        <td>코드/프리팹 수정</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><span class="owner owner-qa">QA</span> 전체 언어 전환 테스트</td>
+        <td><span class="owner owner-qa">QA</span></td>
+        <td>테스트 결과</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<footer>
+  Source: Localization Audit Report 2026-03-25 &middot; 기획서 [PST] Solitaire Tripeaks v1.7 &middot; en.json (262 keys)
+</footer>
+
+</body>
+</html>

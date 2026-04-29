@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>deck 과다 점검 v2 (p75 기준)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,sans-serif;background:#0f0f13;color:#e0e0e0;padding:12px}
+header{background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:15px}
+.badge{background:#ff9800;color:#000;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700}
+.tag{background:#2e2e50;color:#aac8ff;padding:3px 9px;border-radius:5px;font-size:11px;font-family:monospace}
+.note{color:#888;font-size:11px}
+.prog{margin-left:auto;font-size:13px}.prog strong{color:#4caf50;font-size:16px}
+.tier-sec{background:#1a1a24;border:1px solid #2a2a3a;border-radius:10px;margin-bottom:10px;overflow:hidden}
+.tier-hd{padding:9px 14px;display:flex;gap:12px;align-items:center;cursor:pointer;user-select:none;font-size:12px}
+.tier-hd:hover{background:#22222e}
+.tier-lbl{font-weight:800;padding:3px 11px;border-radius:5px;color:#000;font-size:11px}
+.tier-cnt{background:#2a2a3a;color:#aaa;padding:2px 8px;border-radius:10px;font-size:10px}
+.tier-prog{margin-left:auto;color:#4caf50;font-size:11px;font-family:monospace}
+.row{display:flex;align-items:center;padding:9px 14px;border-top:1px solid #1e1e2a;gap:10px;flex-wrap:wrap}
+.row:hover{background:#1e1e2c}
+.row.done{opacity:.35}.row.done .sid{text-decoration:line-through;color:#555}
+.chk{width:19px;height:19px;border:2px solid #444;border-radius:5px;flex-shrink:0;cursor:pointer;position:relative}
+.chk.on{background:#4caf50;border-color:#4caf50}
+.chk.on::after{content:'';position:absolute;left:5px;top:1px;width:5px;height:11px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.sid{font-family:monospace;font-weight:700;color:#7ec8ff;min-width:74px;font-size:12px}
+.score{background:#2e2e50;color:#aac8ff;padding:2px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:50px;text-align:center}
+.deck{display:flex;align-items:center;gap:5px;font-family:monospace;font-size:13px}
+.deck .old{color:#ff9988;padding:1px 7px;background:#23233a;border-radius:3px;min-width:26px;text-align:center}
+.deck .arr{color:#555}
+.new{padding:3px 13px;border-radius:4px;font-weight:700;cursor:pointer;min-width:30px;text-align:center;background:#2a3a1e;color:#ffe0aa;box-shadow:0 0 0 1px #80803e}
+.new:hover{background:#4a4a2e;color:#fff3cc}
+.floor{padding:1px 8px;border-radius:3px;font-size:10px;color:#886;background:#2a2a14;cursor:pointer;margin-left:2px}
+.floor:hover{color:#ccc;background:#4a4a24}
+.delta{font-size:10px;font-family:monospace;padding:1px 5px;border-radius:3px;color:#ffccaa;background:#3a2a1e}
+.metric{font-family:monospace;font-size:10px;color:#888;min-width:170px}
+.metric .m-r{color:#ff8888}.metric .m-y{color:#ffcc66}
+.cr-group{font-family:monospace;font-size:10px}
+.fn{font-family:monospace;font-size:9px;color:#555;margin-left:auto;max-width:270px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.fn:hover{color:#aac8ff}
+.custom input{width:46px;background:#23233a;border:1px solid #3a3a55;color:#ffcc99;padding:2px 5px;border-radius:3px;font-family:monospace;font-size:11px;text-align:center;margin-left:4px}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#23233a;border:1px solid #4caf50;color:#4caf50;padding:8px 20px;border-radius:8px;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999}
+#toast.show{opacity:1}
+.ctrl{display:flex;gap:6px;margin-bottom:12px;background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 12px;flex-wrap:wrap}
+.btn{background:#23233a;border:1px solid #3a3a55;color:#aaa;padding:4px 12px;border-radius:5px;font-size:11px;cursor:pointer}
+.btn.danger{color:#ff8888}
+</style></head><body>
+<header>
+  <h1>📉 deck 과다 점검 v2</h1>
+  <span class="badge">41개</span>
+  <span class="tag">기준: tier_p75 (중간값 median 대비 완화)</span>
+  <span class="note">메인 제안=p75, 작은 pill=median(더 공격적)</span>
+  <span class="prog">완료: <strong id="done">0</strong> / 41</span>
+</header>
+<div class="ctrl">
+  <button class="btn" onclick="expand(1)">모두 펼침</button>
+  <button class="btn" onclick="expand(0)">모두 접음</button>
+  <button class="btn" onclick="applyUnchecked()" style="background:#5a2a2a;color:#ffaaaa;border-color:#7a3a3a">⚙️ 체크 안 된 것 JSON 적용</button>
+  <button class="btn" onclick="organizeUnchecked()" style="background:#2a4a6a;color:#aac8ff;border-color:#3a5a80">📁 체크 안 된 맵 정리</button>
+  <button class="btn danger" onclick="reset()">초기화</button>
+</div>
+<div class="tier-sec"><div class="tier-hd" onclick="toggleSec(this)">
+<span class="tier-lbl" style="background:#ffc107">Normal</span>
+<span class="tier-cnt">18개</span>
+<span class="note">tier median 0.55 / <b style="color:#ffe0aa">p75 0.70</b> / p90 0.75</span>
+<span class="tier-prog">0/18</span><span style="color:#555">▼</span></div><div class="tier-body">
+<div class="row" id="row-CC_0159">
+<div class="chk" onclick="toggle('CC_0159')"></div>
+<div class="sid">CC_0159</div>
+<div class="score" title="mapScore">490</div>
+<div class="deck">
+  <span class="old">14</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0159" data-val="13" onclick="copyVal(this)" title="p75 제안">13</span>
+  <span class="floor" data-sid="CC_0159" data-val="10" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(10)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0159" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0159')"></span>
+</div>
+<div class="metric">tot 18 · <span class="m-r">ratio 0.78</span> (+41%)</div>
+<div class="cr-group">CR <span style="color:#ffcc66">36%</span>/<span style="color:#88cc88">71%</span>/<span style="color:#ffcc66">49%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_5992097507330351453_5992097507330351453.json')" title="VeryEasy_obj_5992097507330351453_5992097507330351453.json">VeryEasy_obj_5992097507330351453_5992097507330351453.json</div>
+</div>
+<div class="row" id="row-CC_0010">
+<div class="chk" onclick="toggle('CC_0010')"></div>
+<div class="sid">CC_0010</div>
+<div class="score" title="mapScore">645</div>
+<div class="deck">
+  <span class="old">17</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0010" data-val="15" onclick="copyVal(this)" title="p75 제안">15</span>
+  <span class="floor" data-sid="CC_0010" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-2</span>
+  <span class="custom"><input type="number" id="in-CC_0010" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0010')"></span>
+</div>
+<div class="metric">tot 22 · <span class="m-r">ratio 0.77</span> (+40%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">98%</span>/<span style="color:#ffcc66">43%</span>/<span style="color:#ffcc66">35%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-3944058996604576779_-3944058996604576779.json')" title="Easy_obj_-3944058996604576779_-3944058996604576779.json">Easy_obj_-3944058996604576779_-3944058996604576779.json</div>
+</div>
+<div class="row" id="row-CC_0221">
+<div class="chk" onclick="toggle('CC_0221')"></div>
+<div class="sid">CC_0221</div>
+<div class="score" title="mapScore">460</div>
+<div class="deck">
+  <span class="old">13</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0221" data-val="12" onclick="copyVal(this)" title="p75 제안">12</span>
+  <span class="floor" data-sid="CC_0221" data-val="9" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(9)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0221" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0221')"></span>
+</div>
+<div class="metric">tot 17 · <span class="m-r">ratio 0.76</span> (+39%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-6707709543867940104_-6707709543867940104.json')" title="VeryEasy_obj_-6707709543867940104_-6707709543867940104.json">VeryEasy_obj_-6707709543867940104_-6707709543867940104.json</div>
+</div>
+<div class="row" id="row-CC_0227">
+<div class="chk" onclick="toggle('CC_0227')"></div>
+<div class="sid">CC_0227</div>
+<div class="score" title="mapScore">490</div>
+<div class="deck">
+  <span class="old">13</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0227" data-val="12" onclick="copyVal(this)" title="p75 제안">12</span>
+  <span class="floor" data-sid="CC_0227" data-val="9" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(9)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0227" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0227')"></span>
+</div>
+<div class="metric">tot 17 · <span class="m-r">ratio 0.76</span> (+39%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-7842558416730208040_-7842558416730208040.json')" title="VeryEasy_obj_-7842558416730208040_-7842558416730208040.json">VeryEasy_obj_-7842558416730208040_-7842558416730208040.json</div>
+</div>
+<div class="row" id="row-CC_0026">
+<div class="chk" onclick="toggle('CC_0026')"></div>
+<div class="sid">CC_0026</div>
+<div class="score" title="mapScore">585</div>
+<div class="deck">
+  <span class="old">16</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0026" data-val="15" onclick="copyVal(this)" title="p75 제안">15</span>
+  <span class="floor" data-sid="CC_0026" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0026" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0026')"></span>
+</div>
+<div class="metric">tot 21 · <span class="m-r">ratio 0.76</span> (+39%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">96%</span>/<span style="color:#88cc88">78%</span>/<span style="color:#88cc88">72%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_5149501888700634090_5149501888700634090.json')" title="Easy_obj_5149501888700634090_5149501888700634090.json">Easy_obj_5149501888700634090_5149501888700634090.json</div>
+</div>
+<div class="row" id="row-CC_0140">
+<div class="chk" onclick="toggle('CC_0140')"></div>
+<div class="sid">CC_0140</div>
+<div class="score" title="mapScore">605</div>
+<div class="deck">
+  <span class="old">16</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0140" data-val="15" onclick="copyVal(this)" title="p75 제안">15</span>
+  <span class="floor" data-sid="CC_0140" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0140" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0140')"></span>
+</div>
+<div class="metric">tot 21 · <span class="m-r">ratio 0.76</span> (+39%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">95%</span>/<span style="color:#ffcc66">57%</span>/<span style="color:#ff8888">24%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-2331670063229611888_-2331670063229611888.json')" title="VeryEasy_obj_-2331670063229611888_-2331670063229611888.json">VeryEasy_obj_-2331670063229611888_-2331670063229611888.json</div>
+</div>
+<div class="row" id="row-CC_0091">
+<div class="chk" onclick="toggle('CC_0091')"></div>
+<div class="sid">CC_0091</div>
+<div class="score" title="mapScore">640</div>
+<div class="deck">
+  <span class="old">16</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0091" data-val="15" onclick="copyVal(this)" title="p75 제안">15</span>
+  <span class="floor" data-sid="CC_0091" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0091" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0091')"></span>
+</div>
+<div class="metric">tot 21 · <span class="m-r">ratio 0.76</span> (+39%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-4112116539429186425_-4112116539429186425.json')" title="Easy_obj_-4112116539429186425_-4112116539429186425.json">Easy_obj_-4112116539429186425_-4112116539429186425.json</div>
+</div>
+<div class="row" id="row-CC_0145">
+<div class="chk" onclick="toggle('CC_0145')"></div>
+<div class="sid">CC_0145</div>
+<div class="score" title="mapScore">570</div>
+<div class="deck">
+  <span class="old">15</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0145" data-val="14" onclick="copyVal(this)" title="p75 제안">14</span>
+  <span class="floor" data-sid="CC_0145" data-val="11" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(11)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0145" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0145')"></span>
+</div>
+<div class="metric">tot 20 · <span class="m-r">ratio 0.75</span> (+36%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">82%</span>/<span style="color:#88cc88">62%</span>/<span style="color:#ffcc66">53%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-6595566161118467126_-6595566161118467126.json')" title="VeryEasy_obj_-6595566161118467126_-6595566161118467126.json">VeryEasy_obj_-6595566161118467126_-6595566161118467126.json</div>
+</div>
+<div class="row" id="row-CC_0178">
+<div class="chk" onclick="toggle('CC_0178')"></div>
+<div class="sid">CC_0178</div>
+<div class="score" title="mapScore">700</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0178" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0178" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0178" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0178')"></span>
+</div>
+<div class="metric">tot 24 · <span class="m-r">ratio 0.75</span> (+36%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">97%</span>/<span style="color:#ff8888">26%</span>/<span style="color:#ff8888">12%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_2881473461030184559_2881473461030184559.json')" title="Easy_obj_2881473461030184559_2881473461030184559.json">Easy_obj_2881473461030184559_2881473461030184559.json</div>
+</div>
+<div class="row" id="row-CC_0088">
+<div class="chk" onclick="toggle('CC_0088')"></div>
+<div class="sid">CC_0088</div>
+<div class="score" title="mapScore">565</div>
+<div class="deck">
+  <span class="old">15</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0088" data-val="14" onclick="copyVal(this)" title="p75 제안">14</span>
+  <span class="floor" data-sid="CC_0088" data-val="11" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(11)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0088" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0088')"></span>
+</div>
+<div class="metric">tot 20 · <span class="m-r">ratio 0.75</span> (+36%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">92%</span>/<span style="color:#88cc88">72%</span>/<span style="color:#ffcc66">45%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-1634873584433455408_-1634873584433455408.json')" title="Easy_obj_-1634873584433455408_-1634873584433455408.json">Easy_obj_-1634873584433455408_-1634873584433455408.json</div>
+</div>
+<div class="row" id="row-CC_0027">
+<div class="chk" onclick="toggle('CC_0027')"></div>
+<div class="sid">CC_0027</div>
+<div class="score" title="mapScore">665</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0027" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0027" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0027" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0027')"></span>
+</div>
+<div class="metric">tot 24 · <span class="m-r">ratio 0.75</span> (+36%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">97%</span>/<span style="color:#ffcc66">50%</span>/<span style="color:#88cc88">92%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_5703880006509274347_5703880006509274347.json')" title="Easy_obj_5703880006509274347_5703880006509274347.json">Easy_obj_5703880006509274347_5703880006509274347.json</div>
+</div>
+<div class="row" id="row-CC_0185">
+<div class="chk" onclick="toggle('CC_0185')"></div>
+<div class="sid">CC_0185</div>
+<div class="score" title="mapScore">550</div>
+<div class="deck">
+  <span class="old">15</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0185" data-val="14" onclick="copyVal(this)" title="p75 제안">14</span>
+  <span class="floor" data-sid="CC_0185" data-val="11" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(11)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0185" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0185')"></span>
+</div>
+<div class="metric">tot 20 · <span class="m-r">ratio 0.75</span> (+36%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">97%</span>/<span style="color:#88cc88">73%</span>/<span style="color:#ffcc66">56%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_7439937634274103084_7439937634274103084.json')" title="Easy_obj_7439937634274103084_7439937634274103084.json">Easy_obj_7439937634274103084_7439937634274103084.json</div>
+</div>
+<div class="row" id="row-CC_0023">
+<div class="chk" onclick="toggle('CC_0023')"></div>
+<div class="sid">CC_0023</div>
+<div class="score" title="mapScore">440</div>
+<div class="deck">
+  <span class="old">12</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0023" data-val="11" onclick="copyVal(this)" title="p75 제안">11</span>
+  <span class="floor" data-sid="CC_0023" data-val="9" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(9)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0023" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0023')"></span>
+</div>
+<div class="metric">tot 16 · <span class="m-r">ratio 0.75</span> (+36%)</div>
+<div class="cr-group">CR <span style="color:#ff8888">12%</span>/<span style="color:#88cc88">98%</span>/<span style="color:#88cc88">97%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_3831311201260693714_3831311201260693714.json')" title="Easy_obj_3831311201260693714_3831311201260693714.json">Easy_obj_3831311201260693714_3831311201260693714.json</div>
+</div>
+<div class="row" id="row-CC_0003">
+<div class="chk" onclick="toggle('CC_0003')"></div>
+<div class="sid">CC_0003</div>
+<div class="score" title="mapScore">670</div>
+<div class="deck">
+  <span class="old">17</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0003" data-val="16" onclick="copyVal(this)" title="p75 제안">16</span>
+  <span class="floor" data-sid="CC_0003" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0003" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0003')"></span>
+</div>
+<div class="metric">tot 23 · <span class="m-r">ratio 0.74</span> (+34%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">92%</span>/<span style="color:#ffcc66">30%</span>/<span style="color:#88cc88">84%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-1455324682596201204_-1455324682596201204.json')" title="Easy_obj_-1455324682596201204_-1455324682596201204.json">Easy_obj_-1455324682596201204_-1455324682596201204.json</div>
+</div>
+<div class="row" id="row-CC_0148">
+<div class="chk" onclick="toggle('CC_0148')"></div>
+<div class="sid">CC_0148</div>
+<div class="score" title="mapScore">635</div>
+<div class="deck">
+  <span class="old">17</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0148" data-val="16" onclick="copyVal(this)" title="p75 제안">16</span>
+  <span class="floor" data-sid="CC_0148" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0148" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0148')"></span>
+</div>
+<div class="metric">tot 23 · <span class="m-r">ratio 0.74</span> (+34%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">72%</span>/<span style="color:#88cc88">90%</span>/<span style="color:#88cc88">99%</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-7990036166338069588_-7990036166338069588.json')" title="VeryEasy_obj_-7990036166338069588_-7990036166338069588.json">VeryEasy_obj_-7990036166338069588_-7990036166338069588.json</div>
+</div>
+<div class="row" id="row-CC_0219">
+<div class="chk" onclick="toggle('CC_0219')"></div>
+<div class="sid">CC_0219</div>
+<div class="score" title="mapScore">425</div>
+<div class="deck">
+  <span class="old">11</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0219" data-val="10" onclick="copyVal(this)" title="p75 제안">10</span>
+  <span class="floor" data-sid="CC_0219" data-val="8" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(8)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0219" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0219')"></span>
+</div>
+<div class="metric">tot 15 · <span class="m-r">ratio 0.73</span> (+33%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-5924488609331911666_-5924488609331911666.json')" title="VeryEasy_obj_-5924488609331911666_-5924488609331911666.json">VeryEasy_obj_-5924488609331911666_-5924488609331911666.json</div>
+</div>
+<div class="row" id="row-CC_0103">
+<div class="chk" onclick="toggle('CC_0103')"></div>
+<div class="sid">CC_0103</div>
+<div class="score" title="mapScore">590</div>
+<div class="deck">
+  <span class="old">16</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0103" data-val="15" onclick="copyVal(this)" title="p75 제안">15</span>
+  <span class="floor" data-sid="CC_0103" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0103" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0103')"></span>
+</div>
+<div class="metric">tot 22 · <span class="m-r">ratio 0.73</span> (+32%)</div>
+<div class="cr-group">CR <span style="color:#ff8888">3%</span>/<span style="color:#88cc88">78%</span>/<span style="color:#88cc88">60%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_421220124618729722_421220124618729722.json')" title="Easy_obj_421220124618729722_421220124618729722.json">Easy_obj_421220124618729722_421220124618729722.json</div>
+</div>
+<div class="row" id="row-CC_0203">
+<div class="chk" onclick="toggle('CC_0203')"></div>
+<div class="sid">CC_0203</div>
+<div class="score" title="mapScore">655</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0203" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0203" data-val="14" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(14)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0203" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0203')"></span>
+</div>
+<div class="metric">tot 25 · <span class="m-r">ratio 0.72</span> (+31%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Normal_obj_3385651925592553098_3385651925592553098.json')" title="Normal_obj_3385651925592553098_3385651925592553098.json">Normal_obj_3385651925592553098_3385651925592553098.json</div>
+</div>
+</div></div>
+<div class="tier-sec"><div class="tier-hd" onclick="toggleSec(this)">
+<span class="tier-lbl" style="background:#ff5722">Hard</span>
+<span class="tier-cnt">20개</span>
+<span class="note">tier median 0.42 / <b style="color:#ffe0aa">p75 0.56</b> / p90 0.62</span>
+<span class="tier-prog">0/20</span><span style="color:#555">▼</span></div><div class="tier-body">
+<div class="row" id="row-CC_0278">
+<div class="chk" onclick="toggle('CC_0278')"></div>
+<div class="sid">CC_0278</div>
+<div class="score" title="mapScore">870</div>
+<div class="deck">
+  <span class="old">20</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0278" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0278" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-3</span>
+  <span class="custom"><input type="number" id="in-CC_0278" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0278')"></span>
+</div>
+<div class="metric">tot 30 · <span class="m-r">ratio 0.67</span> (+59%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_4825420391306583281_4825420391306583281.json')" title="Hard_obj_4825420391306583281_4825420391306583281.json">Hard_obj_4825420391306583281_4825420391306583281.json</div>
+</div>
+<div class="row" id="row-CC_0036">
+<div class="chk" onclick="toggle('CC_0036')"></div>
+<div class="sid">CC_0036</div>
+<div class="score" title="mapScore">865</div>
+<div class="deck">
+  <span class="old">20</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0036" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0036" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-3</span>
+  <span class="custom"><input type="number" id="in-CC_0036" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0036')"></span>
+</div>
+<div class="metric">tot 30 · <span class="m-r">ratio 0.67</span> (+59%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">100%</span>/<span style="color:#ffcc66">55%</span>/<span style="color:#88cc88">82%</span></div>
+<div class="fn" onclick="copyText('Hard_obj_2330540525633691184_2330540525633691184.json')" title="Hard_obj_2330540525633691184_2330540525633691184.json">Hard_obj_2330540525633691184_2330540525633691184.json</div>
+</div>
+<div class="row" id="row-CC_0249">
+<div class="chk" onclick="toggle('CC_0249')"></div>
+<div class="sid">CC_0249</div>
+<div class="score" title="mapScore">875</div>
+<div class="deck">
+  <span class="old">20</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0249" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0249" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-3</span>
+  <span class="custom"><input type="number" id="in-CC_0249" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0249')"></span>
+</div>
+<div class="metric">tot 30 · <span class="m-r">ratio 0.67</span> (+59%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_-2397008531233033957_-2397008531233033957.json')" title="Hard_obj_-2397008531233033957_-2397008531233033957.json">Hard_obj_-2397008531233033957_-2397008531233033957.json</div>
+</div>
+<div class="row" id="row-CC_0038">
+<div class="chk" onclick="toggle('CC_0038')"></div>
+<div class="sid">CC_0038</div>
+<div class="score" title="mapScore">865</div>
+<div class="deck">
+  <span class="old">20</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0038" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0038" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-3</span>
+  <span class="custom"><input type="number" id="in-CC_0038" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0038')"></span>
+</div>
+<div class="metric">tot 30 · <span class="m-r">ratio 0.67</span> (+59%)</div>
+<div class="cr-group">CR <span style="color:#ff8888">1%</span>/<span style="color:#ff8888">12%</span>/<span style="color:#ff8888">29%</span></div>
+<div class="fn" onclick="copyText('Normal_obj_-980244589156319485_-980244589156319485.json')" title="Normal_obj_-980244589156319485_-980244589156319485.json">Normal_obj_-980244589156319485_-980244589156319485.json</div>
+</div>
+<div class="row" id="row-CC_0120">
+<div class="chk" onclick="toggle('CC_0120')"></div>
+<div class="sid">CC_0120</div>
+<div class="score" title="mapScore">760</div>
+<div class="deck">
+  <span class="old">17</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0120" data-val="15" onclick="copyVal(this)" title="p75 제안">15</span>
+  <span class="floor" data-sid="CC_0120" data-val="11" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(11)</span>
+  <span class="delta">-2</span>
+  <span class="custom"><input type="number" id="in-CC_0120" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0120')"></span>
+</div>
+<div class="metric">tot 26 · <span class="m-r">ratio 0.65</span> (+56%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Normal_obj_-898773055137935167_-898773055137935167.json')" title="Normal_obj_-898773055137935167_-898773055137935167.json">Normal_obj_-898773055137935167_-898773055137935167.json</div>
+</div>
+<div class="row" id="row-CC_0060">
+<div class="chk" onclick="toggle('CC_0060')"></div>
+<div class="sid">CC_0060</div>
+<div class="score" title="mapScore">765</div>
+<div class="deck">
+  <span class="old">17</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0060" data-val="15" onclick="copyVal(this)" title="p75 제안">15</span>
+  <span class="floor" data-sid="CC_0060" data-val="11" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(11)</span>
+  <span class="delta">-2</span>
+  <span class="custom"><input type="number" id="in-CC_0060" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0060')"></span>
+</div>
+<div class="metric">tot 26 · <span class="m-r">ratio 0.65</span> (+56%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-3497900895194738745_-3497900895194738745.json')" title="VeryEasy_obj_-3497900895194738745_-3497900895194738745.json">VeryEasy_obj_-3497900895194738745_-3497900895194738745.json</div>
+</div>
+<div class="row" id="row-CC_0131">
+<div class="chk" onclick="toggle('CC_0131')"></div>
+<div class="sid">CC_0131</div>
+<div class="score" title="mapScore">770</div>
+<div class="deck">
+  <span class="old">17</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0131" data-val="15" onclick="copyVal(this)" title="p75 제안">15</span>
+  <span class="floor" data-sid="CC_0131" data-val="11" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(11)</span>
+  <span class="delta">-2</span>
+  <span class="custom"><input type="number" id="in-CC_0131" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0131')"></span>
+</div>
+<div class="metric">tot 26 · <span class="m-r">ratio 0.65</span> (+56%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">94%</span>/<span style="color:#ff8888">7%</span>/<span style="color:#ff8888">12%</span></div>
+<div class="fn" onclick="copyText('Normal_obj_3304954166619344972_3304954166619344972.json')" title="Normal_obj_3304954166619344972_3304954166619344972.json">Normal_obj_3304954166619344972_3304954166619344972.json</div>
+</div>
+<div class="row" id="row-CC_0020">
+<div class="chk" onclick="toggle('CC_0020')"></div>
+<div class="sid">CC_0020</div>
+<div class="score" title="mapScore">770</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0020" data-val="16" onclick="copyVal(this)" title="p75 제안">16</span>
+  <span class="floor" data-sid="CC_0020" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-2</span>
+  <span class="custom"><input type="number" id="in-CC_0020" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0020')"></span>
+</div>
+<div class="metric">tot 28 · <span class="m-r">ratio 0.64</span> (+53%)</div>
+<div class="cr-group">CR <span style="color:#ff8888">0%</span>/<span style="color:#88cc88">93%</span>/<span style="color:#88cc88">100%</span></div>
+<div class="fn" onclick="copyText('Easy_obj_2641590008734069844_2641590008734069844.json')" title="Easy_obj_2641590008734069844_2641590008734069844.json">Easy_obj_2641590008734069844_2641590008734069844.json</div>
+</div>
+<div class="row" id="row-CC_0126">
+<div class="chk" onclick="toggle('CC_0126')"></div>
+<div class="sid">CC_0126</div>
+<div class="score" title="mapScore">790</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0126" data-val="16" onclick="copyVal(this)" title="p75 제안">16</span>
+  <span class="floor" data-sid="CC_0126" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-2</span>
+  <span class="custom"><input type="number" id="in-CC_0126" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0126')"></span>
+</div>
+<div class="metric">tot 28 · <span class="m-r">ratio 0.64</span> (+53%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">98%</span>/<span style="color:#ff8888">6%</span>/<span style="color:#ff8888">10%</span></div>
+<div class="fn" onclick="copyText('Normal_obj_-2574313661731995503_-2574313661731995503.json')" title="Normal_obj_-2574313661731995503_-2574313661731995503.json">Normal_obj_-2574313661731995503_-2574313661731995503.json</div>
+</div>
+<div class="row" id="row-CC_0051">
+<div class="chk" onclick="toggle('CC_0051')"></div>
+<div class="sid">CC_0051</div>
+<div class="score" title="mapScore">800</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0051" data-val="16" onclick="copyVal(this)" title="p75 제안">16</span>
+  <span class="floor" data-sid="CC_0051" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-2</span>
+  <span class="custom"><input type="number" id="in-CC_0051" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0051')"></span>
+</div>
+<div class="metric">tot 28 · <span class="m-r">ratio 0.64</span> (+53%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">95%</span>/<span style="color:#ff8888">14%</span>/<span style="color:#ff8888">17%</span></div>
+<div class="fn" onclick="copyText('Normal_obj_6000994190887629578_6000994190887629578.json')" title="Normal_obj_6000994190887629578_6000994190887629578.json">Normal_obj_6000994190887629578_6000994190887629578.json</div>
+</div>
+<div class="row" id="row-CC_0281">
+<div class="chk" onclick="toggle('CC_0281')"></div>
+<div class="sid">CC_0281</div>
+<div class="score" title="mapScore">880</div>
+<div class="deck">
+  <span class="old">20</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0281" data-val="18" onclick="copyVal(this)" title="p75 제안">18</span>
+  <span class="floor" data-sid="CC_0281" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-2</span>
+  <span class="custom"><input type="number" id="in-CC_0281" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0281')"></span>
+</div>
+<div class="metric">tot 32 · <span class="m-r">ratio 0.62</span> (+49%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_5817092195126959395_5817092195126959395.json')" title="Hard_obj_5817092195126959395_5817092195126959395.json">Hard_obj_5817092195126959395_5817092195126959395.json</div>
+</div>
+<div class="row" id="row-CC_0092">
+<div class="chk" onclick="toggle('CC_0092')"></div>
+<div class="sid">CC_0092</div>
+<div class="score" title="mapScore">730</div>
+<div class="deck">
+  <span class="old">16</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0092" data-val="15" onclick="copyVal(this)" title="p75 제안">15</span>
+  <span class="floor" data-sid="CC_0092" data-val="11" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(11)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0092" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0092')"></span>
+</div>
+<div class="metric">tot 26 · <span class="m-r">ratio 0.62</span> (+47%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-4766558895716017151_-4766558895716017151.json')" title="Easy_obj_-4766558895716017151_-4766558895716017151.json">Easy_obj_-4766558895716017151_-4766558895716017151.json</div>
+</div>
+<div class="row" id="row-CC_0191">
+<div class="chk" onclick="toggle('CC_0191')"></div>
+<div class="sid">CC_0191</div>
+<div class="score" title="mapScore">865</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0191" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0191" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0191" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0191')"></span>
+</div>
+<div class="metric">tot 30 · <span class="m-r">ratio 0.60</span> (+43%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_5393874784883519988_5393874784883519988.json')" title="Hard_obj_5393874784883519988_5393874784883519988.json">Hard_obj_5393874784883519988_5393874784883519988.json</div>
+</div>
+<div class="row" id="row-CC_0031">
+<div class="chk" onclick="toggle('CC_0031')"></div>
+<div class="sid">CC_0031</div>
+<div class="score" title="mapScore">880</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0031" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0031" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0031" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0031')"></span>
+</div>
+<div class="metric">tot 30 · <span class="m-r">ratio 0.60</span> (+43%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">98%</span>/<span style="color:#88cc88">73%</span>/<span style="color:#88cc88">83%</span></div>
+<div class="fn" onclick="copyText('Hard_obj_-785890137091345071_-785890137091345071.json')" title="Hard_obj_-785890137091345071_-785890137091345071.json">Hard_obj_-785890137091345071_-785890137091345071.json</div>
+</div>
+<div class="row" id="row-CC_0037">
+<div class="chk" onclick="toggle('CC_0037')"></div>
+<div class="sid">CC_0037</div>
+<div class="score" title="mapScore">770</div>
+<div class="deck">
+  <span class="old">16</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0037" data-val="15" onclick="copyVal(this)" title="p75 제안">15</span>
+  <span class="floor" data-sid="CC_0037" data-val="11" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(11)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0037" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0037')"></span>
+</div>
+<div class="metric">tot 27 · <span class="m-r">ratio 0.59</span> (+41%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">95%</span>/<span style="color:#ff8888">14%</span>/<span style="color:#ffcc66">33%</span></div>
+<div class="fn" onclick="copyText('Normal_obj_-130971407812354464_-130971407812354464.json')" title="Normal_obj_-130971407812354464_-130971407812354464.json">Normal_obj_-130971407812354464_-130971407812354464.json</div>
+</div>
+<div class="row" id="row-CC_0248">
+<div class="chk" onclick="toggle('CC_0248')"></div>
+<div class="sid">CC_0248</div>
+<div class="score" title="mapScore">875</div>
+<div class="deck">
+  <span class="old">17</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0248" data-val="16" onclick="copyVal(this)" title="p75 제안">16</span>
+  <span class="floor" data-sid="CC_0248" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0248" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0248')"></span>
+</div>
+<div class="metric">tot 29 · <span class="m-r">ratio 0.59</span> (+40%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_-2303210174799019365_-2303210174799019365.json')" title="Hard_obj_-2303210174799019365_-2303210174799019365.json">Hard_obj_-2303210174799019365_-2303210174799019365.json</div>
+</div>
+<div class="row" id="row-CC_0118">
+<div class="chk" onclick="toggle('CC_0118')"></div>
+<div class="sid">CC_0118</div>
+<div class="score" title="mapScore">855</div>
+<div class="deck">
+  <span class="old">17</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0118" data-val="16" onclick="copyVal(this)" title="p75 제안">16</span>
+  <span class="floor" data-sid="CC_0118" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0118" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0118')"></span>
+</div>
+<div class="metric">tot 29 · <span class="m-r">ratio 0.59</span> (+40%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_6849466000772299756_6849466000772299756.json')" title="Hard_obj_6849466000772299756_6849466000772299756.json">Hard_obj_6849466000772299756_6849466000772299756.json</div>
+</div>
+<div class="row" id="row-CC_0013">
+<div class="chk" onclick="toggle('CC_0013')"></div>
+<div class="sid">CC_0013</div>
+<div class="score" title="mapScore">705</div>
+<div class="deck">
+  <span class="old">14</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0013" data-val="13" onclick="copyVal(this)" title="p75 제안">13</span>
+  <span class="floor" data-sid="CC_0013" data-val="10" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(10)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0013" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0013')"></span>
+</div>
+<div class="metric">tot 24 · <span class="m-r">ratio 0.58</span> (+39%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Easy_obj_-5589298110739892495_-5589298110739892495.json')" title="Easy_obj_-5589298110739892495_-5589298110739892495.json">Easy_obj_-5589298110739892495_-5589298110739892495.json</div>
+</div>
+<div class="row" id="row-CC_0260">
+<div class="chk" onclick="toggle('CC_0260')"></div>
+<div class="sid">CC_0260</div>
+<div class="score" title="mapScore">880</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0260" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0260" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0260" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0260')"></span>
+</div>
+<div class="metric">tot 31 · <span class="m-r">ratio 0.58</span> (+38%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_-6620684931497034085_-6620684931497034085.json')" title="Hard_obj_-6620684931497034085_-6620684931497034085.json">Hard_obj_-6620684931497034085_-6620684931497034085.json</div>
+</div>
+<div class="row" id="row-CC_0115">
+<div class="chk" onclick="toggle('CC_0115')"></div>
+<div class="sid">CC_0115</div>
+<div class="score" title="mapScore">860</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0115" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0115" data-val="13" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(13)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0115" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0115')"></span>
+</div>
+<div class="metric">tot 31 · <span class="m-r">ratio 0.58</span> (+38%)</div>
+<div class="cr-group">CR <span style="color:#88cc88">99%</span>/<span style="color:#88cc88">85%</span>/<span style="color:#88cc88">93%</span></div>
+<div class="fn" onclick="copyText('Hard_obj_-7345353388280909966_-7345353388280909966.json')" title="Hard_obj_-7345353388280909966_-7345353388280909966.json">Hard_obj_-7345353388280909966_-7345353388280909966.json</div>
+</div>
+</div></div>
+<div class="tier-sec"><div class="tier-hd" onclick="toggleSec(this)">
+<span class="tier-lbl" style="background:#9c27b0">Super Hard</span>
+<span class="tier-cnt">3개</span>
+<span class="note">tier median 0.39 / <b style="color:#ffe0aa">p75 0.53</b> / p90 0.56</span>
+<span class="tier-prog">0/3</span><span style="color:#555">▼</span></div><div class="tier-body">
+<div class="row" id="row-CC_0116">
+<div class="chk" onclick="toggle('CC_0116')"></div>
+<div class="sid">CC_0116</div>
+<div class="score" title="mapScore">940</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0116" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0116" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0116" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0116')"></span>
+</div>
+<div class="metric">tot 32 · <span class="m-r">ratio 0.56</span> (+44%)</div>
+<div class="cr-group">CR <span style="color:#ff8888">20%</span>/<span style="color:#ff8888">2%</span>/<span style="color:#ff8888">22%</span></div>
+<div class="fn" onclick="copyText('Hard_obj_4318439546011939075_4318439546011939075.json')" title="Hard_obj_4318439546011939075_4318439546011939075.json">Hard_obj_4318439546011939075_4318439546011939075.json</div>
+</div>
+<div class="row" id="row-CC_0247">
+<div class="chk" onclick="toggle('CC_0247')"></div>
+<div class="sid">CC_0247</div>
+<div class="score" title="mapScore">930</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0247" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0247" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0247" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0247')"></span>
+</div>
+<div class="metric">tot 32 · <span class="m-r">ratio 0.56</span> (+44%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_-587834331763827095_-587834331763827095.json')" title="Hard_obj_-587834331763827095_-587834331763827095.json">Hard_obj_-587834331763827095_-587834331763827095.json</div>
+</div>
+<div class="row" id="row-CC_0287">
+<div class="chk" onclick="toggle('CC_0287')"></div>
+<div class="sid">CC_0287</div>
+<div class="score" title="mapScore">955</div>
+<div class="deck">
+  <span class="old">18</span><span class="arr">→</span>
+  <span class="new" data-sid="CC_0287" data-val="17" onclick="copyVal(this)" title="p75 제안">17</span>
+  <span class="floor" data-sid="CC_0287" data-val="12" onclick="copyFloor(this)" title="median 최저 제안 (클릭=복사)">(12)</span>
+  <span class="delta">-1</span>
+  <span class="custom"><input type="number" id="in-CC_0287" placeholder="직접" min="1" max="30" onkeydown="if(event.key==='Enter')copyIn('CC_0287')"></span>
+</div>
+<div class="metric">tot 32 · <span class="m-r">ratio 0.56</span> (+44%)</div>
+<div class="cr-group">CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span></div>
+<div class="fn" onclick="copyText('Hard_obj_7710084902751132835_7710084902751132835.json')" title="Hard_obj_7710084902751132835_7710084902751132835.json">Hard_obj_7710084902751132835_7710084902751132835.json</div>
+</div>
+</div></div>
+
+<div id="toast"></div>
+<script>
+const KEY='deck_over_review_v2';
+const state=JSON.parse(localStorage.getItem(KEY)||'{}');
+// per-stage chosen value (p75 default, median if user clicks floor, custom if user types)
+const chosen=JSON.parse(localStorage.getItem(KEY+'_val')||'{}');
+function save(){localStorage.setItem(KEY,JSON.stringify(state));localStorage.setItem(KEY+'_val',JSON.stringify(chosen));}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1200);}
+function updateProg(){
+  document.getElementById('done').textContent=document.querySelectorAll('.row.done').length;
+  document.querySelectorAll('.tier-sec').forEach(sec=>{sec.querySelector('.tier-prog').textContent=`${sec.querySelectorAll('.row.done').length}/${sec.querySelectorAll('.row').length}`;});
+}
+function markDone(sid,val){const row=document.getElementById('row-'+sid);if(!row.classList.contains('done')){row.classList.add('done');row.querySelector('.chk').classList.add('on');}state[sid]=true;chosen[sid]=val;save();updateProg();}
+function toggle(sid){const row=document.getElementById('row-'+sid);const c=row.querySelector('.chk');if(row.classList.contains('done')){row.classList.remove('done');c.classList.remove('on');delete state[sid];delete chosen[sid];save();updateProg();}else{const p=row.querySelector('.new');markDone(sid,p.dataset.val);}}
+function copyVal(el){const sid=el.dataset.sid,val=el.dataset.val;navigator.clipboard.writeText(val).then(()=>{toast('p75: '+val);markDone(sid,val);});}
+function copyFloor(el){const sid=el.dataset.sid,val=el.dataset.val;navigator.clipboard.writeText(val).then(()=>{toast('median: '+val);markDone(sid,val);});}
+function copyIn(sid){const v=document.getElementById('in-'+sid).value;if(!v){toast('값 필요');return;}navigator.clipboard.writeText(v).then(()=>{toast('직접: '+v);markDone(sid,v);});}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('복사: '+t.slice(0,40)));}
+function toggleSec(h){h.nextElementSibling.style.display=h.nextElementSibling.style.display==='none'?'':'none';}
+function expand(o){document.querySelectorAll('.tier-body').forEach(b=>b.style.display=o?'':'none');}
+function reset(){if(!confirm('초기화?'))return;localStorage.removeItem(KEY);localStorage.removeItem(KEY+'_val');location.reload();}
+async function applyUnchecked(){
+  const rows=document.querySelectorAll('.row');const items=[];
+  rows.forEach(r=>{const sid=r.id.replace('row-','');const fn=r.querySelector('.fn')?.getAttribute('title')||'';const pill=r.querySelector('.new');const newDeck=pill?parseInt(pill.dataset.val):0;const checked=r.classList.contains('done');items.push({sid,fn,new_deck:newDeck,checked});});
+  const un=items.filter(x=>!x.checked).length;
+  if(!confirm(`체크 안 된 ${un}개 맵을 p75 제안값으로 JSON 적용?`))return;
+  try{const res=await fetch('/api/apply-deck-suggestions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items})});if(!res.ok)throw new Error('HTTP '+res.status);const j=await res.json();toast(`✅ ${j.updated_files}개 파일 업데이트`);}catch(e){toast('❌ '+e.message);}
+}
+
+async function organizeUnchecked(){
+  const rows=document.querySelectorAll('.row');const items=[];
+  rows.forEach(r=>{const sid=r.id.replace('row-','');const fn=r.querySelector('.fn')?.getAttribute('title')||'';items.push({sid,fn,checked:r.classList.contains('done')});});
+  const un=items.filter(x=>!x.checked).length;
+  if(!confirm(`체크 안 된 ${un}개 맵을 temp_unchecked/로 복사?`))return;
+  try{
+    const res=await fetch('/api/organize-unchecked-maps',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items})});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const j=await res.json();
+    toast(`✅ ${j.copied}개 복사 (missing ${j.missing.length})`);
+  }catch(e){toast('❌ '+e.message);}
+}
+
+document.querySelectorAll('.row').forEach(r=>{const sid=r.id.replace('row-','');if(state[sid]){r.classList.add('done');r.querySelector('.chk').classList.add('on');}});
+updateProg();
+</script></body></html>

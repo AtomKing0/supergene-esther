@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sound List — Solitaire</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#242838;--border:#2e3348;
+  --text:#e2e8f0;--muted:#718096;--accent:#6c63ff;
+  --green:#48bb78;--red:#f56565;--yellow:#ecc94b;--blue:#63b3ed;--orange:#ed8936;
+  --cc-c:#9ae6b4;--cc-b:#4a7c4e;
+  --sgh-c:#63b3ed;--sgh-b:#2c5f9a;
+  --tiki-c:#ed8936;--tiki-b:#7c4a00;
+  --rec-c:#fbd38d;--rec-b:#744210;
+  --rec2-c:#fdba74;--rec2-b:#c2410c;
+  --rec3-c:#fde68a;--rec3-b:#a16207;
+  --rec4-c:#86efac;--rec4-b:#166534;
+  --rec5-c:#c4b5fd;--rec5-b:#6d28d9;
+  --rec6-c:#67e8f9;--rec6-b:#0e7490;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5}
+
+/* ── HEADER ── */
+.hdr{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px}
+.hdr-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+h1{font-size:17px;font-weight:700;color:var(--accent);white-space:nowrap}
+.search{flex:1;min-width:160px;max-width:260px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 11px;color:var(--text);font-size:13px;outline:none}
+.search:focus{border-color:var(--accent)}
+
+/* now playing */
+.now{display:none;align-items:center;gap:8px;font-size:12px;color:var(--accent);min-width:0;overflow:hidden}
+.now-lbl{color:var(--muted);white-space:nowrap}
+.now-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.now-theme{color:var(--muted);white-space:nowrap}
+.prog{width:64px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0}
+.prog-fill{height:100%;background:var(--accent);width:0%;transition:width .1s linear}
+.stop-btn{background:var(--red);color:#fff;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0}
+
+/* save button */
+.save-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 16px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;transition:opacity .15s}
+.save-btn:hover{opacity:.85}
+.save-btn:disabled{opacity:.4;cursor:not-allowed}
+.cnt{font-size:12px;color:var(--muted);white-space:nowrap;margin-left:auto}
+
+/* ── FILTERS ── */
+.filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.flabel{color:var(--muted);font-size:11px;white-space:nowrap}
+.pill{padding:3px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:11px;transition:all .15s}
+.pill:hover{border-color:var(--accent);color:var(--text)}
+.pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.sep{width:1px;height:18px;background:var(--border);flex-shrink:0}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a2744;border:1px solid var(--accent);color:var(--text);padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:var(--red);background:#2a1414}
+
+/* ── NOTICE ── */
+.notice{margin:10px 20px 0;padding:8px 14px;background:#1e2535;border:1px solid #3a4a6a;border-radius:6px;font-size:12px;color:var(--muted)}
+.notice code{background:#0f1117;padding:1px 5px;border-radius:3px;color:var(--yellow);font-family:monospace}
+
+/* ── TABLE ── */
+.wrap{overflow:auto;padding:0 20px 80px;height:calc(100vh - var(--hdr-h,80px))}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th{text-align:left;padding:7px 10px;background:var(--surface);border-bottom:2px solid var(--border);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;position:sticky;top:0;z-index:10}
+td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:var(--surface2)}
+tr.playing td{background:rgba(108,99,255,.1)}
+tr.sel-cc   td{border-left:3px solid var(--cc-b)}
+tr.sel-sgh  td{border-left:3px solid var(--sgh-b)}
+tr.sel-tiki td{border-left:3px solid var(--tiki-b)}
+tr.sel-rec  td{border-left:3px solid var(--rec-b)}
+tr.sel-rec2 td{border-left:3px solid var(--rec2-b)}
+tr.sel-rec3 td{border-left:3px solid var(--rec3-b)}
+tr.sel-rec4 td{border-left:3px solid var(--rec4-b)}
+tr.sel-rec5 td{border-left:3px solid var(--rec5-b)}
+tr.sel-rec6 td{border-left:3px solid var(--rec6-b)}
+
+.sname{font-family:'SF Mono','Fira Code',monospace;font-size:12px;white-space:nowrap}
+
+/* category */
+.cat{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;white-space:nowrap}
+.c-bgm{background:#553c9a22;color:#b794f4;border:1px solid #553c9a55}
+.c-card{background:#2c5f9a22;color:#63b3ed;border:1px solid #2c5f9a55}
+.c-booster{background:#7c3a0022;color:#ed8936;border:1px solid #7c3a0055}
+.c-gimmick{background:#3a5c0022;color:#68d391;border:1px solid #3a5c0055}
+.c-coin{background:#7c700022;color:#ecc94b;border:1px solid #7c700055}
+.c-streak{background:#7c100022;color:#fc8181;border:1px solid #7c100055}
+.c-reward{background:#4a7c4e22;color:#9ae6b4;border:1px solid #4a7c4e55}
+.c-event{background:#1a4a7c22;color:#76e4f7;border:1px solid #1a4a7c55}
+.c-ui{background:#4a4a4a22;color:#cbd5e0;border:1px solid #4a4a4a55}
+
+/* status badges */
+.bk{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:700}
+.bon{background:var(--green);color:#1a202c}
+.boff{background:#2d3748;color:var(--muted)}
+.bex{background:#7c1000;color:#fc8181}
+
+.desc{color:var(--muted);font-size:12px;max-width:200px}
+.call{font-family:monospace;font-size:11px;color:#76e4f7;white-space:nowrap}
+
+.row-num{color:var(--muted);font-size:11px}
+
+/* ── PLAY BUTTONS ── */
+.pgrp{display:flex;gap:4px;align-items:center}
+.pb{padding:3px 8px;border-radius:4px;border:1px solid;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1.4}
+.pb:disabled{opacity:.22;cursor:not-allowed}
+.pb.cc {border-color:var(--cc-b);color:var(--cc-c);background:rgba(74,124,78,.12)}
+.pb.cc:not(:disabled):hover{background:rgba(74,124,78,.4)}
+.pb.cc.active{background:var(--cc-b);color:#0d1f10}
+.pb.sgh{border-color:var(--sgh-b);color:var(--sgh-c);background:rgba(44,95,154,.12)}
+.pb.sgh:not(:disabled):hover{background:rgba(44,95,154,.4)}
+.pb.sgh.active{background:var(--sgh-b);color:#fff}
+.pb.tiki{border-color:var(--tiki-b);color:var(--tiki-c);background:rgba(124,74,0,.12)}
+.pb.tiki:not(:disabled):hover{background:rgba(124,74,0,.4)}
+.pb.tiki.active{background:var(--tiki-b);color:#fff}
+.pb.rec{border-color:var(--rec-b);color:var(--rec-c);background:rgba(116,66,16,.12)}
+.pb.rec:not(:disabled):hover{background:rgba(116,66,16,.4)}
+.pb.rec.active{background:var(--rec-b);color:#fff}
+.pb.rec2{border-color:var(--rec2-b);color:var(--rec2-c);background:rgba(194,65,12,.12)}
+.pb.rec2:not(:disabled):hover{background:rgba(194,65,12,.4)}
+.pb.rec2.active{background:var(--rec2-b);color:#fff}
+.pb.rec3{border-color:var(--rec3-b);color:var(--rec3-c);background:rgba(161,98,7,.12)}
+.pb.rec3:not(:disabled):hover{background:rgba(161,98,7,.4)}
+.pb.rec3.active{background:var(--rec3-b);color:#fff}
+.pb.rec4{border-color:var(--rec4-b);color:var(--rec4-c);background:rgba(22,101,52,.12)}
+.pb.rec4:not(:disabled):hover{background:rgba(22,101,52,.4)}
+.pb.rec4.active{background:var(--rec4-b);color:#fff}
+.pb.rec5{border-color:var(--rec5-b);color:var(--rec5-c);background:rgba(109,40,217,.12)}
+.pb.rec5:not(:disabled):hover{background:rgba(109,40,217,.4)}
+.pb.rec5.active{background:var(--rec5-b);color:#fff}
+.pb.rec6{border-color:var(--rec6-b);color:var(--rec6-c);background:rgba(14,116,144,.12)}
+.pb.rec6:not(:disabled):hover{background:rgba(14,116,144,.4)}
+.pb.rec6.active{background:var(--rec6-b);color:#fff}
+
+/* ── SELECTION RADIO ── */
+.sel-grp{display:flex;gap:3px;align-items:center}
+.sel-btn{padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.sel-btn:hover:not(:disabled){border-color:var(--text);color:var(--text)}
+.sel-btn:disabled{opacity:.2;cursor:not-allowed}
+.sel-btn.chosen.cc  {background:var(--cc-b);border-color:var(--cc-b);color:#0d1f10}
+.sel-btn.chosen.sgh {background:var(--sgh-b);border-color:var(--sgh-b);color:#fff}
+.sel-btn.chosen.tiki{background:var(--tiki-b);border-color:var(--tiki-b);color:#fff}
+.sel-btn.chosen.rec {background:var(--rec-b);border-color:var(--rec-b);color:#fff}
+.sel-btn.chosen.rec2{background:var(--rec2-b);border-color:var(--rec2-b);color:#fff}
+.sel-btn.chosen.rec3{background:var(--rec3-b);border-color:var(--rec3-b);color:#fff}
+.sel-btn.chosen.rec4{background:var(--rec4-b);border-color:var(--rec4-b);color:#fff}
+.sel-btn.chosen.rec5{background:var(--rec5-b);border-color:var(--rec5-b);color:#fff}
+.sel-btn.chosen.rec6{background:var(--rec6-b);border-color:var(--rec6-b);color:#fff}
+.sel-btn.chosen.none{background:#2d3748;border-color:#4a5568;color:var(--muted)}
+
+/* ── BEFORE / AFTER CHIPS ── */
+.ba-chip{display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;border:none;transition:all .15s;font-family:monospace}
+.ba-chip.before{background:#3d2a1a;color:#f6ad55;border:1px solid #744210}
+.ba-chip.after{background:#1a3020;color:#68d391;border:1px solid #276749}
+.ba-chip:hover{opacity:.8}
+.ba-chip.active{filter:brightness(1.4);outline:1px solid currentColor}
+.ba-chip:disabled{opacity:.25;cursor:not-allowed}
+.ba-sep{display:inline-block;width:1px;height:14px;background:var(--border);margin:0 5px;vertical-align:middle;opacity:.5}
+tr.ba-row td:first-child::after{content:'';display:block;width:3px;height:100%;background:linear-gradient(#f6ad55,#68d391);position:absolute;left:0;top:0}
+tr.ba-row td:first-child{position:relative}
+/* ── DRAG & DROP ── */
+tr.drag-over td{background:rgba(99,179,237,.12) !important;outline:2px dashed var(--accent)}
+.pb[draggable="true"]{cursor:grab}
+.pb[draggable="true"]:active{cursor:grabbing}
+/* ── ARCHIVE PANEL ── */
+.arch-panel{background:var(--surface);border-top:1px solid var(--border);padding:8px 14px;display:none;flex-wrap:wrap;gap:6px;align-items:center;min-height:42px;transition:background .2s,border-color .2s}
+.arch-panel.open{display:flex}
+.arch-panel.drag-active{background:rgba(246,173,85,.12);border-color:#f6ad55;outline:2px dashed #f6ad55;outline-offset:-2px}
+.arch-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;border:1px solid #744210;background:#2d1f00;color:#f6ad55;font-size:11px;font-family:monospace;white-space:nowrap;cursor:grab}
+.arch-chip:active{cursor:grabbing}
+.arch-chip .arch-theme{font-size:10px;opacity:.7;font-family:sans-serif}
+.arch-restore,.arch-play{background:none;border:none;color:#f6ad55;cursor:pointer;font-size:12px;padding:0 2px;opacity:.7;transition:opacity .15s}
+.arch-restore:hover,.arch-play:hover{opacity:1}
+.arch-empty{color:var(--muted);font-size:12px;font-style:italic}
+
+/* ── CONFIRM BUTTON ── */
+.conf-btn{padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.conf-btn:hover{border-color:var(--green);color:var(--green)}
+.conf-btn.confirmed{background:var(--green);border-color:var(--green);color:#1a202c}
+tr.confirmed-row td{background:rgba(72,187,120,.13) !important;border-left:3px solid var(--green) !important}
+tr.confirmed-row:hover td{background:rgba(72,187,120,.2) !important}
+
+/* ── ARCHIVED ── */
+tr.archived td{opacity:.38}
+tr.archived:hover td{opacity:.55;background:var(--surface2)}
+tr.archived td{border-left:3px solid #2d3748 !important}
+.archive-sep td{padding:6px 10px;background:var(--surface);border-top:2px solid var(--border);font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <h1>🔊 Sound List</h1>
+    <input class="search" type="text" placeholder="사운드명 / 설명 / 호출위치 검색..." id="q" oninput="render()">
+    <div class="now" id="now">
+      <span class="now-lbl">▶</span>
+      <span class="now-name" id="now-name"></span>
+      <span class="now-theme" id="now-theme"></span>
+      <div class="prog"><div class="prog-fill" id="pfill"></div></div>
+      <button class="stop-btn" onclick="stopAll()">■ 정지</button>
+    </div>
+    <span class="cnt" id="cnt"></span>
+    <button class="save-btn" id="save-btn" onclick="saveSelections()">💾 선택 저장</button>
+  </div>
+  <div class="filters">
+    <span class="flabel">카테고리:</span>
+    <button class="pill active" data-cat="all" onclick="setCat(this)">All</button>
+    <button class="pill" data-cat="BGM" onclick="setCat(this)">BGM</button>
+    <button class="pill" data-cat="bgm" onclick="setCat(this)">bgm</button>
+    <button class="pill" data-cat="card" onclick="setCat(this)">card</button>
+    <button class="pill" data-cat="booster" onclick="setCat(this)">booster</button>
+    <button class="pill" data-cat="gimmick" onclick="setCat(this)">gimmick</button>
+    <button class="pill" data-cat="coin" onclick="setCat(this)">coin</button>
+    <button class="pill" data-cat="streak" onclick="setCat(this)">streak</button>
+    <button class="pill" data-cat="reward" onclick="setCat(this)">reward</button>
+    <button class="pill" data-cat="event" onclick="setCat(this)">event</button>
+    <button class="pill" data-cat="ui" onclick="setCat(this)">ui</button>
+    <div class="sep"></div>
+    <span class="flabel">상태:</span>
+    <button class="pill" data-filter="applied" onclick="toggleF(this)">✓ 적용됨</button>
+    <button class="pill" data-filter="notApplied" onclick="toggleF(this)">✗ 미적용</button>
+    <div class="sep"></div>
+    <span class="flabel">선택:</span>
+    <button class="pill" data-filter="selCC"   onclick="toggleF(this)">CC 선택됨</button>
+    <button class="pill" data-filter="selSGH"  onclick="toggleF(this)">SGH 선택됨</button>
+    <button class="pill" data-filter="selTIKI" onclick="toggleF(this)">TIKI 선택됨</button>
+    <button class="pill" data-filter="unsel"   onclick="toggleF(this)">미선택</button>
+    <div class="sep"></div>
+    <button class="pill" id="arch-toggle-btn" onclick="toggleArchivePanel()">📦 보관함 <span id="arch-count"></span></button>
+  </div>
+  <div class="arch-panel" id="arch-panel" ondragover="archZoneDragOver(event)" ondragleave="archZoneDragLeave(event)" ondrop="archZoneDrop(event)"></div>
+</div>
+
+<div class="notice" id="notice">
+  ⚠️ 오디오 재생을 위해 로컬 서버가 필요합니다 —
+  <code>cd /Users/estherpark/esther_solitaire/solitaire-esther-1/docs && python3 server.py</code>
+  → <code>http://localhost:8080/docs/sound-list.html</code>
+</div>
+
+<div class="wrap">
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>사운드명</th>
+      <th>카테고리</th>
+      <th>설명</th>
+      <th>적용</th>
+      <th>호출 위치</th>
+      <th>재생 미리듣기</th>
+      <th>테마 선택</th>
+      <th>확정</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+</div>
+
+<div class="toast" id="toast"></div>
+<audio id="ap" preload="none"></audio>
+
+<script>
+const SOUNDS = [
+  {name:'BGM_LOBBY',        cat:'BGM',     desc:'',                                    applied:true,  excluded:false, note:'',                                            call:'ViewLobby.ts:777'},
+  {name:'FX_CARD_LAST_PLAYED',   cat:'card',    desc:'마지막 카드 플레이 (덱 소진)',            applied:true,  excluded:false, note:'Q',                                           call:'CardView.ts:896'},
+  {name:'FX_CARD_DRAWN_01',      cat:'card',    desc:'드로우 덱에서 카드 뽑기 (랜덤 _01~_03)',  applied:true,  excluded:false, note:'',                                            call:'StageView.ts:3167 (랜덤)'},
+  {name:'FX_CARD_DRAWN_02',      cat:'card',    desc:'드로우 카드 뽑기 변형 _02',               applied:true,  excluded:false, note:'',                                            call:'StageView.ts:3167 (랜덤)'},
+  {name:'FX_CARD_DRAWN_03',      cat:'card',    desc:'드로우 카드 뽑기 변형 _03',               applied:true,  excluded:false, note:'',                                            call:'StageView.ts:3167 (랜덤)'},
+  {name:'FX_CARD_FLY_OUT',       cat:'card',    desc:'카드 날아나가기 (게임 오버 연출)',          applied:true,  excluded:false, note:'',                                            call:'StageView.ts:4345'},
+  {name:'FX_CARD_PLAYED_01',     cat:'card',    desc:'카드 매칭 성공 (랜덤 _01~_03)',            applied:true,  excluded:false, note:'',                                            call:'CardView.ts:900 (랜덤)'},
+  {name:'FX_CARD_PLAYED_02',     cat:'card',    desc:'카드 매칭 성공 변형 _02',                 applied:true,  excluded:false, note:'',                                            call:'CardView.ts:900 (랜덤)'},
+  {name:'FX_CARD_PLAYED_03',     cat:'card',    desc:'카드 매칭 성공 변형 _03',                 applied:true,  excluded:false, note:'',                                            call:'CardView.ts:900 (랜덤)'},
+  {name:'FX_CARD_REVEALED',      cat:'card',    desc:'카드 앞면 공개',                          applied:true,  excluded:false, note:'',                                            call:'CardView.ts:508'},
+  {name:'FX_CARD_TAPPED_01',     cat:'card',    desc:'카드 탭 (선택 가능) (랜덤 _01~_03)',       applied:true,  excluded:false, note:'',                                            call:'StageView.ts:2214 (랜덤)'},
+  {name:'FX_CARD_TAPPED_02',     cat:'card',    desc:'카드 탭 변형 _02',                        applied:true,  excluded:false, note:'',                                            call:'StageView.ts:2214 (랜덤)'},
+  {name:'FX_CARD_TAPPED_03',     cat:'card',    desc:'카드 탭 변형 _03',                        applied:true,  excluded:false, note:'',                                            call:'StageView.ts:2214 (랜덤)'},
+  {name:'FX_CARD_DEAL_LOOP',     cat:'card',    desc:'카드 배분 중 루프',                        applied:true,  excluded:false, note:'try_gh ✓',                                    call:'StageView.ts:1870'},
+  {name:'FX_CARD_PLUS_CARDS',    cat:'card',    desc:'플러스 카드 추가',                         applied:true,  excluded:false, note:'',                                            call:'PlusCardView.ts:56'},
+  {name:'FX_CARD_DEAL_END',      cat:'card',    desc:'카드 배분 완료',                           applied:true,  excluded:false, note:'',                                            call:'StageView.ts:1874'},
+  {name:'FX_CARD_WILD_TRIGGERED',cat:'card',    desc:'와일드 카드 발동',                         applied:true,  excluded:false, note:'',                                            call:'StageView.ts:4769'},
+  {name:'FX_CARD_MISSED',        cat:'card',    desc:'카드 매칭 실패',                           applied:true,  excluded:false, note:'try_gh ✓',                                    call:'StageView.ts:2365'},
+  {name:'FX_BOOSTER_FIREWORKS_APPEAR_01',  cat:'booster', desc:'폭죽 부스터 등장 (랜덤 _01~_03)', applied:true, excluded:false, note:'', call:'GrandFireworksCardView.ts:90 (랜덤)'},
+  {name:'FX_BOOSTER_FIREWORKS_APPEAR_02',  cat:'booster', desc:'폭죽 부스터 등장 변형 _02',       applied:true, excluded:false, note:'', call:'GrandFireworksCardView.ts:90 (랜덤)'},
+  {name:'FX_BOOSTER_FIREWORKS_APPEAR_03',  cat:'booster', desc:'폭죽 부스터 등장 변형 _03',       applied:true, excluded:false, note:'', call:'GrandFireworksCardView.ts:90 (랜덤)'},
+  {name:'FX_BOOSTER_FIREWORKS_EXPLODE_01', cat:'booster', desc:'폭죽 폭발 (랜덤 _01~_03)',        applied:true, excluded:false, note:'', call:'GrandFireworksCardView.ts:212 (랜덤)'},
+  {name:'FX_BOOSTER_FIREWORKS_EXPLODE_02', cat:'booster', desc:'폭죽 폭발 변형 _02',              applied:true, excluded:false, note:'', call:'GrandFireworksCardView.ts:212 (랜덤)'},
+  {name:'FX_BOOSTER_FIREWORKS_EXPLODE_03', cat:'booster', desc:'폭죽 폭발 변형 _03',              applied:true, excluded:false, note:'', call:'GrandFireworksCardView.ts:212 (랜덤)'},
+  {name:'FX_BOOSTER_GOLDEN_TICKET_ACTIVATED', cat:'booster', desc:'골든 티켓 활성화',             applied:true, excluded:false, note:'', call:'GoldenTicketCardView.ts:20'},
+  {name:'FX_BOOSTER_GOLDEN_TICKET_TAP_01',    cat:'booster', desc:'골든 티켓 카드 탭 (랜덤 _01~_03)', applied:true, excluded:false, note:'', call:'GoldenTicketCardView.ts:19 (랜덤)'},
+  {name:'FX_BOOSTER_GOLDEN_TICKET_TAP_02',    cat:'booster', desc:'골든 티켓 카드 탭 변형 _02',   applied:true, excluded:false, note:'', call:'GoldenTicketCardView.ts:19 (랜덤)'},
+  {name:'FX_BOOSTER_GOLDEN_TICKET_TAP_03',    cat:'booster', desc:'골든 티켓 카드 탭 변형 _03',   applied:true, excluded:false, note:'', call:'GoldenTicketCardView.ts:19 (랜덤)'},
+  {name:'FX_GIMMICK_RUNNER_MOVE', cat:'gimmick', desc:'러너 카드 이동',      applied:true, excluded:false, note:'', call:'RunnerCardView.ts:397'},
+  {name:'FX_GIMMICK_ROPE_REMOVED',cat:'gimmick', desc:'로프 카드 제거',      applied:true, excluded:false, note:'', call:'RopeCardView.ts:32, 179'},
+  {name:'FX_GIMMICK_GATE_CLOSE',  cat:'gimmick', desc:'게이트 닫힘',         applied:true, excluded:false, note:'', call:'KeyLockCardView.ts:98'},
+  {name:'FX_GIMMICK_GATE_OPEN',   cat:'gimmick', desc:'게이트 열림',         applied:true, excluded:false, note:'', call:'KeyLockCardView.ts:179'},
+  {name:'FX_GIMMICK_GATE_REMOVE', cat:'gimmick', desc:'게이트 제거',         applied:true, excluded:false, note:'', call:'KeyLockCardView.ts:203'},
+  {name:'FX_GIMMICK_KEY_ACTIVATE',cat:'gimmick', desc:'키 카드 자물쇠 해제', applied:true, excluded:false, note:'', call:'KeyLockCardView.ts:77'},
+  {name:'FX_COIN_SPENT',   cat:'coin', desc:'코인 사용/소비',                            applied:true, excluded:false, note:'', call:'IngameItemButtonView.ts:453'},
+  {name:'FX_COIN_FLY_01',  cat:'coin', desc:'코인 날아가는 중 (랜덤 _01~_03)',           applied:true, excluded:false, note:'', call:'ViewGame.ts:1517 (랜덤)'},
+  {name:'FX_COIN_FLY_02',  cat:'coin', desc:'코인 날아가기 변형 _02',                   applied:true, excluded:false, note:'', call:'ViewGame.ts:1517 (랜덤)'},
+  {name:'FX_COIN_FLY_03',  cat:'coin', desc:'코인 날아가기 변형 _03',                   applied:true, excluded:false, note:'', call:'ViewGame.ts:1517 (랜덤)'},
+  {name:'FX_COIN_HIT_01',  cat:'coin', desc:'코인 착지 충격음 (랜덤 _01~_03)',           applied:true, excluded:false, note:'', call:'ViewGame.ts:1528 (랜덤)'},
+  {name:'FX_COIN_HIT_02',  cat:'coin', desc:'코인 착지 변형 _02',                       applied:true, excluded:false, note:'', call:'ViewGame.ts:1528 (랜덤)'},
+  {name:'FX_COIN_HIT_03',  cat:'coin', desc:'코인 착지 변형 _03',                       applied:true, excluded:false, note:'', call:'ViewGame.ts:1528 (랜덤)'},
+  {name:'FX_STREAK_BAR_DETRACTS', cat:'streak', desc:'스트릭 바 감소',       applied:true,  excluded:false, note:'', call:'IngameStreak.ts:185'},
+  {name:'FX_STREAK_BAR_EXTENDS',  cat:'streak', desc:'스트릭 바 증가',       applied:true,  excluded:false, note:'', call:'IngameStreak.ts:142'},
+  {name:'FX_STREAK_COMPLETED',    cat:'streak', desc:'스트릭 완성',          applied:true,  excluded:false, note:'', call:'IngameStreak.ts:224'},
+  {name:'FX_STREAK_MULTIPLIER_IN',cat:'streak', desc:'배수 보너스 진입',     applied:true,  excluded:false, note:'', call:'PopupCompleteLevel.ts:267'},
+  {name:'FX_STREAK_MULTIPLIER_OUT',cat:'streak',desc:'배수 보너스 종료',     applied:false, excluded:false, note:'', call:'PopupCompleteLevel.ts:303'},
+  {name:'FX_STREAK_SLOT_FILLED',  cat:'streak', desc:'스트릭 슬롯 채워짐',   applied:true,  excluded:false, note:'try_gh ✓', call:'IngameStreak.ts:418'},
+  {name:'FX_STREAK_SLOT_FILLED_01', cat:'streak', desc:'스트릭 슬롯 채워짐 도', applied:false, excluded:false, note:'', call:''},
+  {name:'FX_STREAK_SLOT_FILLED_02', cat:'streak', desc:'스트릭 슬롯 채워짐 레', applied:false, excluded:false, note:'', call:''},
+  {name:'FX_STREAK_SLOT_FILLED_03', cat:'streak', desc:'스트릭 슬롯 채워짐 미', applied:false, excluded:false, note:'', call:''},
+  {name:'FX_STREAK_SLOT_FILLED_04', cat:'streak', desc:'스트릭 슬롯 채워짐 파', applied:false, excluded:false, note:'', call:''},
+  {name:'FX_STREAK_SLOT_FILLED_05', cat:'streak', desc:'스트릭 슬롯 채워짐 솔', applied:false, excluded:false, note:'', call:''},
+  {name:'FX_STREAK_SLOT_FILLED_06', cat:'streak', desc:'스트릭 슬롯 채워짐 라', applied:false, excluded:false, note:'', call:''},
+  {name:'FX_STREAK_SLOT_REMOVED', cat:'streak', desc:'스트릭 슬롯 제거',     applied:true,  excluded:false, note:'try_gh ✓', call:'IngameStreak.ts:360'},
+  {name:'FX_REWARD_CONFETTI_LOOP',cat:'reward', desc:'컨페티 루프 (클리어 연출)',         applied:true,  excluded:false, note:'playBGM() 루프 재생', call:'PopupCompleteLevel.ts:137 (playBGM)'},
+  {name:'FX_REWARD_STAR_BURST',   cat:'reward', desc:'별 획득 연출',                     applied:true,  excluded:false, note:'', call:'ViewGame.ts:1374'},
+  {name:'FX_REWARD_ITEM_FLIES',   cat:'reward', desc:'보상 아이템 날아감',               applied:true,  excluded:false, note:'', call:'ViewGame.ts:1364'},
+  {name:'FX_REWARD_BOX_OPEN',     cat:'reward', desc:'보상 박스 열기',                   applied:true,  excluded:false, note:'', call:'ViewGame.ts:1325, 1448'},
+  {name:'FX_REWARD_DAILY_CLAIMED',cat:'reward', desc:'일일 보상 수령',                   applied:true,  excluded:false, note:'', call:'PopupDailyGiftItem.ts:304'},
+  {name:'FX_REWARD_CLEAR',        cat:'reward', desc:'스테이지 클리어',                  applied:true,  excluded:false, note:'', call:'PopupCompleteLevel.ts:136'},
+  {name:'FX_REWARD_WHEEL_TICK_01',cat:'reward', desc:'보상 룰렛 회전 틱 (랜덤 _01~_03)', applied:true,  excluded:false, note:'', call:'MiniGameWheel.ts:208 (랜덤)'},
+  {name:'FX_REWARD_WHEEL_TICK_02',cat:'reward', desc:'룰렛 틱 변형 _02',                 applied:true,  excluded:false, note:'', call:'MiniGameWheel.ts:208 (랜덤)'},
+  {name:'FX_REWARD_WHEEL_TICK_03',cat:'reward', desc:'룰렛 틱 변형 _03',                 applied:true,  excluded:false, note:'', call:'MiniGameWheel.ts:208 (랜덤)'},
+  {name:'FX_EVENT_LEADERBOARD_IN',cat:'event',  desc:'리더보드 화면 진입',               applied:true,  excluded:false, note:'', call:'PopupLeaderboard.ts:103'},
+  {name:'BGM_INGAME',             cat:'bgm',    desc:'인게임 환경 앰비언트 루프',         applied:true,  excluded:false, note:'파일명 FX_ENVIRONMENT_AMBIENT에서 변경', call:'ViewGame.ts:275 (playBGM)'},
+  {name:'FX_REWARD_GAUGE_FILL',   cat:'reward', desc:'보상 게이지 채워짐',               applied:true,  excluded:false, note:'데일리 태스크?', call:'PopupDailyTask.ts:263'},
+  {name:'FX_UI_POPUP_IN',         cat:'ui',     desc:'팝업 등장',                        applied:true,  excluded:false, note:'', call:'PopupBase.ts:46'},
+  {name:'FX_UI_POPUP_OUT',        cat:'ui',     desc:'팝업 닫힘',                        applied:true,  excluded:false, note:'', call:'PopupBase.ts:51'},
+  {name:'FX_UI_BTN_RELEASE',      cat:'ui',     desc:'UI 버튼 릴리즈',                   applied:true,  excluded:false, note:'', call:'ClickSound.ts:41'},
+  {name:'FX_UI_BTN_TAP',          cat:'ui',     desc:'UI 버튼 탭',                       applied:true,  excluded:false, note:'', call:'ClickSound.ts:33'},
+  {name:'FX_UI_NOTIFICATION',     cat:'ui',     desc:'알림 팝업',                        applied:true,  excluded:false, note:'', call:'ToastView.ts:14'},
+  {name:'FX_UI_ITEM_TAP',         cat:'ui',     desc:'인벤토리/아이템 탭',               applied:false, excluded:true,  note:'EXCLUDED', call:''},
+  {name:'FX_UI_TOOLTIP_IN',       cat:'ui',     desc:'툴팁 등장',                        applied:true,  excluded:false, note:'', call:'ViewGame.ts:801'},
+  {name:'FX_UI_LOCKED_TAP',       cat:'ui',     desc:'잠김 상태 탭 (불가 피드백)',        applied:true,  excluded:false, note:'', call:'IngameItemButtonView.ts:326'},
+  {name:'FX_META_DECO_PLACE',       cat:'meta',   desc:'꾸미기 오브젝트 배치 (망치 탕!)',      applied:false, excluded:false, note:'CC=Small, SGH=Medium, TIKI=Big 후보 중 선택', call:'⚠️ play() 미구현'},
+  {name:'FX_UI_SCREENSHOT',         cat:'ui',     desc:'스크린샷 찰칵',                      applied:false, excluded:false, note:'세 테마 동일 소재', call:'ScreenShot.ts'},
+  {name:'FX_DAILY_TASK_SWAP',       cat:'ui',     desc:'데일리 태스크 팝업 — 태스크 교체 시', applied:false, excluded:false, note:'FX_UI_POPUP_OUT 소재 사용', call:'⚠️ play() 미구현'},
+  {name:'FX_REWARD_SMALL_BOX_OPEN', cat:'reward', desc:'작은 보상 상자 열림 (귀여운 느낌)',    applied:false, excluded:false, note:'CC=Giftbox, SGH=DiggingChoc, TIKI=GiftboxItemAdded', call:'ViewGame.ts:1491, 1614'},
+  {name:'FX_REWARD_BIG_BOX_OPEN',   cat:'reward', desc:'거대 보상 상자 열림 (웅장한 느낌)',    applied:false, excluded:false, note:'CC=BonusBank, SGH=PackOpens, TIKI=CC_Opening 징글', call:'⚠️ 프리로드만, play() 미구현'},
+  {name:'FX_ITEM_HIT',              cat:'reward', desc:'재화 착지 공통 (골드 제외 — 이벤트 토큰 등)', applied:false, excluded:false, note:'CC=GiftboxItemAdded, SGH=PostcardItemAdded, TIKI=StickerPop, 추천=ItemFliesTo', call:'ItemGatheringAnimation.ts:373'},
+  {name:'FX_EVENT_REWARD_CLAIMED',  cat:'event',  desc:'골드 외 보상 수령 연출',                       applied:false, excluded:false, note:'CC=DailyRewardClaimed, SGH=WinMusStinger, TIKI=StarBurstEnd, 추천=DiceWinJingle', call:'⚠️ play() 미구현'},
+  {name:'FX_META_CITY_COMPLETE',   cat:'meta',   desc:'시티 완성 — 무지개 스윕 (2초)',                  applied:false, excluded:false, note:'REC=GoldenShimmer앞2s / REC2=StreakCompleted / REC3=Confetti앞2s', call:'⚠️ play() 미구현'},
+  {name:'FX_META_CITY_ZOOM_IN',    cat:'meta',   desc:'새 시티 줌인 슝 (1초)',                          applied:false, excluded:false, note:'REC=CardFlyOut / REC2=StreakMultiplierIn / REC3=RewardBoxFliesIn', call:'⚠️ play() 미구현'},
+  {name:'FX_INGAME_LUNA_TAP_01',     cat:'gimmick', desc:'루나 캐릭터 터치 반응음 (랜덤 _1~_4)',         applied:false, excluded:false, note:'', call:'⚠️ play() 미구현 (랜덤)'},
+  {name:'FX_INGAME_LUNA_TAP_02',     cat:'gimmick', desc:'루나 터치 반응음 변형 _2',                      applied:false, excluded:false, note:'', call:'⚠️ play() 미구현 (랜덤)'},
+  {name:'FX_INGAME_LUNA_TAP_03',     cat:'gimmick', desc:'루나 터치 반응음 변형 _3',                      applied:false, excluded:false, note:'', call:'⚠️ play() 미구현 (랜덤)'},
+  {name:'FX_INGAME_LUNA_TAP_04',     cat:'gimmick', desc:'루나 터치 반응음 변형 _4',                      applied:false, excluded:false, note:'', call:'⚠️ play() 미구현 (랜덤)'},
+  {name:'FX_HAMMER',                 cat:'meta',    desc:'데코 배치 팡! 타격음 후보',                       applied:false, excluded:false, note:'REC1=HS_GateClose / REC2=GlassyImpact / REC3=BombExplode / REC4=BigGenericItem / REC5=BalloonImpact / REC6=CookieBig', call:'⚠️ 후보 선택 중'},
+];
+
+let CC   = new Set(['BGM_INGAME','FX_BOOSTER_FIREWORKS_APPEAR_01','FX_BOOSTER_FIREWORKS_APPEAR_02','FX_BOOSTER_FIREWORKS_APPEAR_03','FX_BOOSTER_FIREWORKS_EXPLODE_01','FX_BOOSTER_FIREWORKS_EXPLODE_02','FX_BOOSTER_FIREWORKS_EXPLODE_03','FX_BOOSTER_GOLDEN_TICKET_ACTIVATED','FX_BOOSTER_GOLDEN_TICKET_TAP_01','FX_BOOSTER_GOLDEN_TICKET_TAP_02','FX_BOOSTER_GOLDEN_TICKET_TAP_03','FX_CARD_DEAL_END','FX_CARD_DEAL_LOOP','FX_CARD_DRAWN_01','FX_CARD_DRAWN_02','FX_CARD_DRAWN_03','FX_CARD_FLY_OUT','FX_CARD_LAST_PLAYED','FX_CARD_MISSED','FX_CARD_PLAYED_01','FX_CARD_PLAYED_02','FX_CARD_PLAYED_03','FX_CARD_PLUS_CARDS','FX_CARD_REVEALED','FX_CARD_TAPPED_01','FX_CARD_TAPPED_02','FX_CARD_TAPPED_03','FX_CARD_WILD_TRIGGERED','FX_COIN_BURST','FX_COIN_FLY_01','FX_COIN_FLY_02','FX_COIN_FLY_03','FX_COIN_HIT_01','FX_COIN_HIT_02','FX_COIN_HIT_03','FX_COIN_MOVE','FX_COIN_SPENT','FX_EVENT_GOLDEN_SHIMMER','FX_EVENT_LEADERBOARD_CHANGE','FX_EVENT_LEADERBOARD_IN','FX_GIMMICK_GATE_CLOSE','FX_GIMMICK_GATE_OPEN','FX_GIMMICK_GATE_REMOVE','FX_GIMMICK_KEY_ACTIVATE','FX_GIMMICK_ROPE_REMOVED','FX_GIMMICK_RUNNER_MOVE','FX_REWARD_BOX_FLIES_IN','FX_REWARD_BOX_OPEN','FX_REWARD_CLEAR','FX_REWARD_CONFETTI_LOOP','FX_REWARD_DAILY_CLAIMED','FX_REWARD_GAUGE_FILL','FX_REWARD_ITEM_FLIES','FX_REWARD_STAR_BURST','FX_REWARD_WHEEL_TICK_01','FX_REWARD_WHEEL_TICK_02','FX_REWARD_WHEEL_TICK_03','FX_SLIDE','FX_SPIN_REWARD','FX_STREAK_BAR_DETRACTS','FX_STREAK_BAR_EXTENDS','FX_STREAK_COMPLETED','FX_STREAK_MULTIPLIER_IN','FX_STREAK_MULTIPLIER_OUT','FX_STREAK_SLOT_FILLED','FX_STREAK_SLOT_REMOVED','FX_UI_BTN_RELEASE','FX_UI_BTN_TAP','FX_UI_BTN_WOOD_RELEASE','FX_UI_BTN_WOOD_TAP','FX_UI_ITEM_TAP','FX_UI_LOCKED_TAP','FX_UI_LOGO','FX_UI_NOTIFICATION','FX_UI_POPUP_IN','FX_UI_POPUP_OUT','FX_UI_TOOLTIP_IN','FX_META_DECO_PLACE','FX_UI_SCREENSHOT','FX_REWARD_SMALL_BOX_OPEN','FX_REWARD_BIG_BOX_OPEN','FX_ITEM_HIT','FX_EVENT_REWARD_CLAIMED','FX_DAILY_TASK_SWAP']);
+let SGH  = new Set(['BGM_INGAME','FX_BOOSTER_FIREWORKS_APPEAR_01','FX_BOOSTER_FIREWORKS_APPEAR_02','FX_BOOSTER_FIREWORKS_EXPLODE_01','FX_BOOSTER_GOLDEN_TICKET_ACTIVATED','FX_BOOSTER_GOLDEN_TICKET_TAP_01','FX_BOOSTER_GOLDEN_TICKET_TAP_02','FX_CARD_DEAL_END','FX_CARD_DEAL_LOOP','FX_CARD_DRAWN_01','FX_CARD_FLY_OUT','FX_CARD_LAST_PLAYED','FX_CARD_MISSED','FX_CARD_PLAYED_01','FX_CARD_PLUS_CARDS','FX_CARD_REVEALED','FX_CARD_TAPPED_01','FX_CARD_TAPPED_02','FX_CARD_TAPPED_03','FX_CARD_WILD_TRIGGERED','FX_COIN_BURST','FX_COIN_FLY_01','FX_COIN_FLY_02','FX_COIN_FLY_03','FX_COIN_HIT_01','FX_COIN_HIT_02','FX_COIN_HIT_03','FX_COIN_MOVE','FX_COIN_SPENT','FX_EVENT_GOLDEN_SHIMMER','FX_EVENT_LEADERBOARD_CHANGE','FX_EVENT_LEADERBOARD_IN','FX_GIMMICK_GATE_CLOSE','FX_GIMMICK_GATE_OPEN','FX_GIMMICK_GATE_REMOVE','FX_GIMMICK_KEY_ACTIVATE','FX_GIMMICK_ROPE_REMOVED','FX_GIMMICK_RUNNER_MOVE','FX_REWARD_BOX_FLIES_IN','FX_REWARD_BOX_OPEN','FX_REWARD_CLEAR','FX_REWARD_CONFETTI_LOOP','FX_REWARD_DAILY_CLAIMED','FX_REWARD_GAUGE_FILL','FX_REWARD_ITEM_FLIES','FX_REWARD_STAR_BURST','FX_REWARD_WHEEL_TICK_01','FX_REWARD_WHEEL_TICK_02','FX_REWARD_WHEEL_TICK_03','FX_SLIDE','FX_SPIN_REWARD','FX_STREAK_BAR_DETRACTS','FX_STREAK_BAR_EXTENDS','FX_STREAK_COMPLETED','FX_STREAK_MULTIPLIER_IN','FX_STREAK_MULTIPLIER_OUT','FX_STREAK_SLOT_FILLED','FX_STREAK_SLOT_REMOVED','FX_UI_BTN_RELEASE','FX_UI_BTN_TAP','FX_UI_BTN_WOOD_RELEASE','FX_UI_BTN_WOOD_TAP','FX_UI_ITEM_TAP','FX_UI_LOCKED_TAP','FX_UI_LOGO','FX_UI_NOTIFICATION','FX_UI_POPUP_IN','FX_UI_POPUP_OUT','FX_UI_TOOLTIP_IN','FX_META_DECO_PLACE','FX_UI_SCREENSHOT','FX_REWARD_SMALL_BOX_OPEN','FX_REWARD_BIG_BOX_OPEN','FX_ITEM_HIT','FX_EVENT_REWARD_CLAIMED','FX_DAILY_TASK_SWAP']);
+let REC  = new Set(['FX_GIMMICK_RUNNER_MOVE','FX_GIMMICK_KEY_ACTIVATE','FX_CARD_REVEALED','FX_CARD_WILD_TRIGGERED','FX_BOOSTER_FIREWORKS_APPEAR_01','FX_BOOSTER_FIREWORKS_APPEAR_02','FX_BOOSTER_FIREWORKS_APPEAR_03','FX_BOOSTER_FIREWORKS_EXPLODE_01','FX_BOOSTER_FIREWORKS_EXPLODE_02','FX_BOOSTER_FIREWORKS_EXPLODE_03','FX_CARD_PLAYED_01','FX_CARD_PLAYED_02','FX_CARD_PLAYED_03','FX_REWARD_CLEAR','FX_COIN_HIT_01','FX_COIN_HIT_02','FX_COIN_HIT_03','FX_ITEM_HIT','FX_EVENT_REWARD_CLAIMED','FX_INGAME_LUNA_TAP_01','FX_INGAME_LUNA_TAP_02','FX_INGAME_LUNA_TAP_03','FX_INGAME_LUNA_TAP_04','FX_META_CITY_COMPLETE','FX_META_CITY_ZOOM_IN','FX_HAMMER']);
+let REC2 = new Set(['FX_GIMMICK_RUNNER_MOVE','FX_CARD_REVEALED','FX_META_CITY_COMPLETE','FX_META_CITY_ZOOM_IN','FX_HAMMER']);
+let REC3 = new Set(['FX_GIMMICK_RUNNER_MOVE','FX_CARD_REVEALED','FX_META_CITY_COMPLETE','FX_META_CITY_ZOOM_IN','FX_HAMMER']);
+let REC4 = new Set(['FX_GIMMICK_RUNNER_MOVE','FX_HAMMER']);
+let REC5 = new Set(['FX_HAMMER']);
+let REC6 = new Set(['FX_HAMMER']);
+const TIKI = {'BGM_INGAME':'ogg','FX_BOOSTER_FIREWORKS_APPEAR_01':'ogg','FX_BOOSTER_FIREWORKS_EXPLODE_01':'ogg','FX_BOOSTER_FIREWORKS_EXPLODE_02':'wav','FX_BOOSTER_FIREWORKS_EXPLODE_03':'ogg','FX_BOOSTER_GOLDEN_TICKET_ACTIVATED':'ogg','FX_BOOSTER_GOLDEN_TICKET_TAP_01':'ogg','FX_CARD_DEAL_END':'ogg','FX_CARD_DEAL_LOOP':'ogg','FX_CARD_DRAWN_01':'ogg','FX_CARD_FLY_OUT':'ogg','FX_CARD_LAST_PLAYED':'ogg','FX_CARD_MISSED':'ogg','FX_CARD_PLAYED_01':'wav','FX_CARD_PLUS_CARDS':'wav','FX_CARD_REVEALED':'ogg','FX_CARD_TAPPED_01':'ogg','FX_CARD_WILD_TRIGGERED':'ogg','FX_COIN_BURST':'wav','FX_COIN_FLY_01':'wav','FX_COIN_HIT_01':'wav','FX_COIN_HIT_02':'ogg','FX_COIN_MOVE':'ogg','FX_COIN_SPENT':'ogg','FX_EVENT_GOLDEN_SHIMMER':'ogg','FX_EVENT_LEADERBOARD_CHANGE':'ogg','FX_EVENT_LEADERBOARD_IN':'wav','FX_GIMMICK_GATE_CLOSE':'ogg','FX_GIMMICK_GATE_OPEN':'ogg','FX_GIMMICK_GATE_REMOVE':'ogg','FX_GIMMICK_KEY_ACTIVATE':'wav','FX_GIMMICK_ROPE_REMOVED':'ogg','FX_GIMMICK_RUNNER_MOVE':'wav','FX_REWARD_BOX_FLIES_IN':'wav','FX_REWARD_BOX_OPEN':'ogg','FX_REWARD_CLEAR':'ogg','FX_REWARD_CONFETTI_LOOP':'ogg','FX_REWARD_DAILY_CLAIMED':'ogg','FX_REWARD_GAUGE_FILL':'ogg','FX_REWARD_ITEM_FLIES':'ogg','FX_REWARD_STAR_BURST':'ogg','FX_REWARD_WHEEL_TICK_01':'wav','FX_REWARD_WHEEL_TICK_02':'wav','FX_REWARD_WHEEL_TICK_03':'ogg','FX_SLIDE':'ogg','FX_SPIN_REWARD':'ogg','FX_STREAK_BAR_DETRACTS':'ogg','FX_STREAK_BAR_EXTENDS':'ogg','FX_STREAK_COMPLETED':'ogg','FX_STREAK_MULTIPLIER_IN':'ogg','FX_STREAK_MULTIPLIER_OUT':'ogg','FX_STREAK_SLOT_FILLED':'ogg','FX_STREAK_SLOT_REMOVED':'ogg','FX_UI_BTN_RELEASE':'ogg','FX_UI_BTN_TAP':'wav','FX_UI_BTN_WOOD_RELEASE':'wav','FX_UI_BTN_WOOD_TAP':'wav','FX_UI_ITEM_TAP':'ogg','FX_UI_LOCKED_TAP':'ogg','FX_UI_LOGO':'ogg','FX_UI_NOTIFICATION':'ogg','FX_UI_POPUP_IN':'ogg','FX_UI_POPUP_OUT':'ogg','FX_UI_TOOLTIP_IN':'ogg','FX_META_DECO_PLACE':'wav','FX_UI_SCREENSHOT':'wav','FX_REWARD_SMALL_BOX_OPEN':'wav','FX_REWARD_BIG_BOX_OPEN':'wav','FX_ITEM_HIT':'wav','FX_EVENT_REWARD_CLAIMED':'wav','FX_DAILY_TASK_SWAP':'ogg'};
+
+// ── _01~_03 groups: selecting one auto-sets all in group ──
+const GROUPS = [
+  ['FX_CARD_DRAWN_01','FX_CARD_DRAWN_02','FX_CARD_DRAWN_03'],
+  ['FX_CARD_PLAYED_01','FX_CARD_PLAYED_02','FX_CARD_PLAYED_03'],
+  ['FX_CARD_TAPPED_01','FX_CARD_TAPPED_02','FX_CARD_TAPPED_03'],
+  ['FX_BOOSTER_FIREWORKS_APPEAR_01','FX_BOOSTER_FIREWORKS_APPEAR_02','FX_BOOSTER_FIREWORKS_APPEAR_03'],
+  ['FX_BOOSTER_FIREWORKS_EXPLODE_01','FX_BOOSTER_FIREWORKS_EXPLODE_02','FX_BOOSTER_FIREWORKS_EXPLODE_03'],
+  ['FX_BOOSTER_GOLDEN_TICKET_TAP_01','FX_BOOSTER_GOLDEN_TICKET_TAP_02','FX_BOOSTER_GOLDEN_TICKET_TAP_03'],
+  ['FX_COIN_FLY_01','FX_COIN_FLY_02','FX_COIN_FLY_03'],
+  ['FX_COIN_HIT_01','FX_COIN_HIT_02','FX_COIN_HIT_03'],
+  ['FX_REWARD_WHEEL_TICK_01','FX_REWARD_WHEEL_TICK_02','FX_REWARD_WHEEL_TICK_03'],
+];
+// map: name → group members
+const GROUP_MAP = {};
+GROUPS.forEach(g => g.forEach(n => GROUP_MAP[n] = g));
+
+// ── BEFORE / AFTER 비교 맵 (다른 멤버가 수정한 사운드) ──
+const BEFORE_AFTER = {
+  'FX_BOOSTER_GOLDEN_TICKET_TAP_01': {
+    before: '/api/before-sound/FX_BOOSTER_GOLDEN_TICKET_TAP_01.mp3',
+    after:  '/api/client-sound/FX_BOOSTER_GOLDEN_TICKET_TAP_01.mp3'
+  },
+  'FX_BOOSTER_FIREWORKS_EXPLODE_01': {
+    before: '/api/before-sound/FX_BOOSTER_FIREWORKS_EXPLODE_01.mp3',
+    after:  '/api/client-sound/FX_BOOSTER_FIREWORKS_EXPLODE_01.mp3'
+  },
+  'FX_META_DECO_PLACE': {
+    before: '/api/before-sound/FX_META_DECO_PLACE.mp3',
+    after:  '/api/client-sound/FX_META_DECO_PLACE.mp3'
+  },
+  'FX_COIN_HIT_01': {
+    before: '/api/before-sound/FX_COIN_HIT_01.mp3',
+    after:  '/api/client-sound/FX_COIN_HIT_01.mp3'
+  },
+  'FX_COIN_HIT_02': {
+    before: '/api/before-sound/FX_COIN_HIT_02.mp3',
+    after:  '/api/client-sound/FX_COIN_HIT_02.mp3'
+  },
+  'FX_COIN_HIT_03': {
+    before: '/api/before-sound/FX_COIN_HIT_03.mp3',
+    after:  '/api/client-sound/FX_COIN_HIT_03.mp3'
+  },
+  'FX_GIMMICK_KEY_ACTIVATE': {
+    before: '/api/before-sound/FX_GIMMICK_KEY_ACTIVATE.mp3',
+    after:  '/api/client-sound/FX_GIMMICK_KEY_ACTIVATE.mp3'
+  },
+  'FX_COIN_GET': {
+    before: null,  // 신규 연결 (이전 사운드 없음)
+    after:  '/api/client-sound/FX_COIN_GET.mp3'
+  }
+};
+
+// ── selections & confirmations ──
+const SEL_KEY  = 'sound-selections';
+const CONF_KEY = 'sound-confirmations';
+let selections    = JSON.parse(localStorage.getItem(SEL_KEY)  || '{}');
+let confirmations = JSON.parse(localStorage.getItem(CONF_KEY) || '{}');
+
+function getPath(name, theme) {
+  if (theme === 'cc')   return CC.has(name)  ? `../audio_sets/cc/${name}.wav` : null;
+  if (theme === 'sgh')  return SGH.has(name) ? `../audio_sets/sgh/${name}.wav` : null;
+  if (theme === 'tiki') return TIKI[name]    ? `../audio_sets/tiki/${name}.${TIKI[name]}` : null;
+  if (theme === 'rec')  return REC.has(name) ? `../audio_sets/rec/${name}.wav` : null;
+  if (theme === 'rec2') return REC2.has(name) ? `../audio_sets/rec/${name}_2.wav` : null;
+  if (theme === 'rec3') return REC3.has(name) ? `../audio_sets/rec/${name}_3.wav` : null;
+  if (theme === 'rec4') return REC4.has(name) ? `../audio_sets/rec/${name}_4.wav` : null;
+  if (theme === 'rec5') return REC5.has(name) ? `../audio_sets/rec/${name}_5.wav` : null;
+  if (theme === 'rec6') return REC6.has(name) ? `../audio_sets/rec/${name}_6.wav` : null;
+  return null;
+}
+
+function hasFile(name, theme) { return !!getPath(name, theme); }
+
+// ── playback ──
+let curBtn = null, progTimer = null;
+
+function stopAll() {
+  const ap = document.getElementById('ap');
+  ap.pause(); ap.currentTime = 0;
+  if (curBtn) { curBtn.classList.remove('active'); curBtn.textContent = curBtn.dataset.lbl; }
+  clearInterval(progTimer);
+  document.getElementById('now').style.display = 'none';
+  document.getElementById('pfill').style.width = '0%';
+  document.querySelectorAll('tr.playing').forEach(r => r.classList.remove('playing'));
+  curBtn = null;
+}
+
+function play(name, theme, btn) {
+  const p = getPath(name, theme);
+  if (!p) return;
+  const same = curBtn === btn;
+  stopAll();
+  if (same) return;
+  const ap = document.getElementById('ap');
+  ap.src = p;
+  ap.play().then(() => {
+    curBtn = btn;
+    btn.classList.add('active'); btn.dataset.lbl = btn.textContent; btn.textContent = '■';
+    document.getElementById('now-name').textContent = name;
+    document.getElementById('now-theme').textContent = '(' + theme.toUpperCase() + ')';
+    document.getElementById('now').style.display = 'flex';
+    btn.closest('tr').classList.add('playing');
+    clearInterval(progTimer);
+    progTimer = setInterval(() => {
+      if (ap.duration) document.getElementById('pfill').style.width = (ap.currentTime / ap.duration * 100) + '%';
+    }, 100);
+    ap.onended = stopAll;
+  }).catch(() => { btn.disabled = true; btn.style.opacity = '0.2'; });
+}
+
+function playDirect(path, btn, lbl) {
+  const same = curBtn === btn;
+  stopAll();
+  if (same) return;
+  const ap = document.getElementById('ap');
+  ap.src = path;
+  ap.play().then(() => {
+    curBtn = btn;
+    btn.classList.add('active'); btn.dataset.lbl = btn.textContent; btn.textContent = '■';
+    document.getElementById('now-name').textContent = btn.closest('tr').dataset.name;
+    document.getElementById('now-theme').textContent = '(' + lbl + ')';
+    document.getElementById('now').style.display = 'flex';
+    btn.closest('tr').classList.add('playing');
+    clearInterval(progTimer);
+    progTimer = setInterval(() => {
+      if (ap.duration) document.getElementById('pfill').style.width = (ap.currentTime / ap.duration * 100) + '%';
+    }, 100);
+    ap.onended = stopAll;
+  }).catch(() => {
+    btn.textContent = btn.dataset.lbl || lbl;
+    showToast('❌ 오디오 로드 실패 — server.py 재시작 확인', true);
+  });
+}
+
+// ── selection ──
+function applySelToRow(name, val) {
+  // update all rows that show this sound name
+  document.querySelectorAll(`tr[data-name="${name}"]`).forEach(row => {
+    row.classList.remove('sel-cc','sel-sgh','sel-tiki','sel-rec','sel-rec2','sel-rec3','sel-rec4','sel-rec5','sel-rec6');
+    if (val) row.classList.add('sel-' + val);
+    row.querySelectorAll('.sel-btn').forEach(b => {
+      b.classList.remove('chosen');
+      if (b.dataset.theme === val) b.classList.add('chosen');
+    });
+  });
+}
+
+function select(name, theme, btn) {
+  const prev = selections[name];
+  const newVal = (prev === theme) ? null : theme;
+
+  if (newVal) selections[name] = newVal;
+  else delete selections[name];
+  applySelToRow(name, newVal);
+
+  localStorage.setItem(SEL_KEY, JSON.stringify(selections));
+}
+
+// ── confirm ──
+function toggleConfirm(name, btn) {
+  if (confirmations[name]) {
+    delete confirmations[name];
+    btn.classList.remove('confirmed');
+    btn.textContent = '확정';
+    btn.closest('tr').classList.remove('confirmed-row');
+  } else {
+    confirmations[name] = true;
+    btn.classList.add('confirmed');
+    btn.textContent = '✓ 확정';
+    btn.closest('tr').classList.add('confirmed-row');
+  }
+  localStorage.setItem(CONF_KEY, JSON.stringify(confirmations));
+}
+
+// ── save ──
+async function saveSelections() {
+  const payload = SOUNDS.map(s => ({
+    name: s.name,
+    cat: s.cat,
+    selected: selections[s.name] || null,
+    confirmed: confirmations[s.name] || false
+  }));
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+  try {
+    const res = await fetch('/api/save-selections', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.ok) {
+      showToast(`✅ ${json.saved}개 항목 저장 완료 → docs/sound-selections.json`, false);
+    } else {
+      showToast('❌ 저장 실패: ' + json.error, true);
+    }
+  } catch(e) {
+    showToast('❌ 서버 연결 실패 — server.py 실행 확인', true);
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 선택 저장';
+  }
+}
+
+// ── toast ──
+let toastTimer;
+function showToast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ── filters ──
+let activeCat = 'all';
+let activeFilters = new Set();
+
+function setCat(el) {
+  activeCat = el.dataset.cat;
+  document.querySelectorAll('[data-cat]').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function toggleF(el) {
+  const f = el.dataset.filter;
+  if (activeFilters.has(f)) { activeFilters.delete(f); el.classList.remove('active'); }
+  else { activeFilters.add(f); el.classList.add('active'); }
+  render();
+}
+
+// ── render ──
+function mkRow(s, n, isArchived) {
+  const sel     = selections[s.name];
+  const conf    = confirmations[s.name];
+  const catKey  = s.cat.toLowerCase();
+  const grpTag  = GROUP_MAP[s.name] ? ' <span style="font-size:10px;color:var(--muted);opacity:.7">그룹</span>' : '';
+  const selCls  = sel ? ` sel-${sel}` : '';
+  const confCls = conf ? ' confirmed-row' : '';
+  const archCls = isArchived ? ' archived' : '';
+  const baCls   = BEFORE_AFTER[s.name] ? ' ba-row' : '';
+
+  const ba = BEFORE_AFTER[s.name];
+  const mkBA = () => {
+    if (!ba) return '';
+    const bBtn = ba.before
+      ? `<button class="ba-chip before" data-lbl="◀ BEFORE" onclick="playDirect('${ba.before}',this,'BEFORE')">◀ BEFORE</button>`
+      : `<button class="ba-chip before" disabled title="이전 사운드 없음">◀ BEFORE</button>`;
+    const aBtn = ba.after
+      ? `<button class="ba-chip after" data-lbl="AFTER ▶" onclick="playDirect('${ba.after}',this,'AFTER')">AFTER ▶</button>`
+      : '';
+    return bBtn + aBtn + `<span class="ba-sep"></span>`;
+  };
+
+  const mkPlay = (th) => {
+    const p = getPath(s.name, th);
+    return p
+      ? `<button class="pb ${th}" draggable="true" ondragstart="chipDragStart(event,'${s.name}','${th}')" onclick="play('${s.name}','${th}',this)" data-lbl="${th.toUpperCase()}">${th.toUpperCase()}</button>`
+      : `<button class="pb ${th}" disabled>${th.toUpperCase()}</button>`;
+  };
+  const mkSel = (th, label) => {
+    const avail = hasFile(s.name, th);
+    const chosen = sel === th;
+    return avail
+      ? `<button class="sel-btn ${th}${chosen?' chosen':''}" data-theme="${th}" onclick="select('${s.name}','${th}',this)">${label}</button>`
+      : `<button class="sel-btn" disabled title="파일 없음">${label}</button>`;
+  };
+  const applBadge = s.excluded
+    ? '<span class="bk bex" title="제외됨">✕</span>'
+    : s.applied ? '<span class="bk bon">✓</span>' : '<span class="bk boff">—</span>';
+  const confBtn = `<button class="conf-btn${conf?' confirmed':''}" onclick="toggleConfirm('${s.name}',this)">${conf?'✓ 확정':'확정'}</button>`;
+
+  return `<tr class="${selCls}${confCls}${archCls}${baCls}" data-name="${s.name}" ondragover="rowDragOver(event,this)" ondragleave="this.classList.remove('drag-over')" ondrop="rowDrop(event,'${s.name}')">
+    <td class="row-num">${n}</td>
+    <td><span class="sname">${s.name}</span>${grpTag}</td>
+    <td><span class="cat c-${catKey}">${s.cat}</span></td>
+    <td><span class="desc">${s.desc}</span></td>
+    <td>${applBadge}</td>
+    <td><span class="call">${s.call}</span></td>
+    <td><div class="pgrp">${mkBA()}${mkPlay('cc')}${mkPlay('sgh')}${mkPlay('tiki')}${mkPlay('rec')}${mkPlay('rec2')}${mkPlay('rec3')}${mkPlay('rec4')}${mkPlay('rec5')}${mkPlay('rec6')}</div></td>
+    <td><div class="sel-grp">${mkSel('cc','CC')}${mkSel('sgh','SGH')}${mkSel('tiki','TIKI')}${mkSel('rec','추천1')}${mkSel('rec2','추천2')}${mkSel('rec3','추천3')}${mkSel('rec4','추천4')}${mkSel('rec5','추천5')}${mkSel('rec6','추천6')}</div></td>
+    <td>${confBtn}</td>
+  </tr>`;
+}
+
+function render() {
+  const q = document.getElementById('q').value.toLowerCase();
+  let active = [], archived = [];
+
+  SOUNDS.forEach(s => {
+    if (activeCat !== 'all' && s.cat !== activeCat) return;
+    if (q && !s.name.toLowerCase().includes(q) && !s.desc.toLowerCase().includes(q) && !s.call.toLowerCase().includes(q)) return;
+    if (activeFilters.has('applied')    && !s.applied) return;
+    if (activeFilters.has('notApplied') &&  s.applied) return;
+    const sel = selections[s.name];
+    if (activeFilters.has('selCC')   && sel !== 'cc')   return;
+    if (activeFilters.has('selSGH')  && sel !== 'sgh')  return;
+    if (activeFilters.has('selTIKI') && sel !== 'tiki') return;
+    if (activeFilters.has('unsel')   && sel)             return;
+    if (sel || s.name === 'BGM_LOBBY') active.push(s); else archived.push(s);
+  });
+
+  // BGM 카테고리를 active 섹션 맨 아래로 정렬
+  active.sort((a, b) => {
+    const aIsBgm = a.cat === 'bgm' || a.cat === 'BGM';
+    const bIsBgm = b.cat === 'bgm' || b.cat === 'BGM';
+    if (aIsBgm && !bIsBgm) return 1;
+    if (!aIsBgm && bIsBgm) return -1;
+    return 0;
+  });
+
+  let rows = '';
+  active.forEach((s, i)  => { rows += mkRow(s, i + 1, false); });
+  if (archived.length) {
+    rows += `<tr class="archive-sep"><td colspan="9">⬇ ARCHIVED — 미선택 음원 (${archived.length}개)</td></tr>`;
+    archived.forEach((s, i) => { rows += mkRow(s, i + 1, true); });
+  }
+
+  document.getElementById('tbody').innerHTML = rows;
+  document.getElementById('cnt').textContent = (active.length + archived.length) + '개';
+}
+
+if (location.protocol !== 'file:') document.getElementById('notice').style.display = 'none';
+
+// ── drag & drop ──
+let dragData = null;
+
+let panelAutoOpened = false;
+
+function chipDragStart(event, name, theme) {
+  dragData = { name, theme };
+  event.dataTransfer.effectAllowed = 'all';
+  event.dataTransfer.setData('text/plain', name + '/' + theme);
+  // 보관함 패널 자동 열기
+  const panel = document.getElementById('arch-panel');
+  if (!panel.classList.contains('open')) {
+    panel.classList.add('open');
+    panelAutoOpened = true;
+    requestAnimationFrame(updateHdrHeight);
+  } else {
+    panelAutoOpened = false;
+  }
+}
+
+document.addEventListener('dragend', () => {
+  // 드래그 취소 or 드롭 완료 후 자동 열린 패널 닫기 (아이템 없을 때만)
+  if (panelAutoOpened && archivedItems.length === 0) {
+    document.getElementById('arch-panel').classList.remove('open');
+    requestAnimationFrame(updateHdrHeight);
+  }
+  panelAutoOpened = false;
+  document.getElementById('arch-panel').classList.remove('drag-active');
+});
+
+function rowDragOver(event, tr) {
+  if (!dragData) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'copy';
+  tr.classList.add('drag-over');
+}
+
+function nextRecSlot(name) {
+  if (!REC.has(name))  return 'rec';
+  if (!REC2.has(name)) return 'rec2';
+  if (!REC3.has(name)) return 'rec3';
+  if (!REC4.has(name)) return 'rec4';
+  if (!REC5.has(name)) return 'rec5';
+  if (!REC6.has(name)) return 'rec6';
+  return null;
+}
+
+async function rowDrop(event, toName) {
+  event.preventDefault();
+  document.querySelectorAll('tr.drag-over').forEach(r => r.classList.remove('drag-over'));
+  if (!dragData) return;
+  const { name: fromName, theme: fromTheme, source } = dragData;
+  dragData = null;
+  const slot = nextRecSlot(toName);
+  if (!slot) { showToast(toName + ' 추천 슬롯이 모두 찼습니다 (최대 6개)', true); return; }
+  // archive 칩 드롭: arch_ prefix로 copy-sound 호출
+  const apiTheme = source === 'archive' ? 'arch_' + fromTheme : fromTheme;
+  if (source !== 'archive' && fromName === toName) { showToast('같은 키로는 복사할 수 없음', true); return; }
+  try {
+    const res = await fetch('/api/copy-sound', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ from_name: fromName, from_theme: apiTheme, to_name: toName, to_slot: slot })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('✓ ' + fromName + '(' + fromTheme.toUpperCase() + ') → ' + toName + ' ' + slot);
+      if (slot === 'rec')  REC.add(toName);
+      if (slot === 'rec2') REC2.add(toName);
+      if (slot === 'rec3') REC3.add(toName);
+      if (slot === 'rec4') REC4.add(toName);
+      if (slot === 'rec5') REC5.add(toName);
+      if (slot === 'rec6') REC6.add(toName);
+      render();
+    } else {
+      showToast(data.error || '복사 실패', true);
+    }
+  } catch(e) {
+    showToast('서버 오류: ' + e.message, true);
+  }
+}
+
+// ── archive zone (보관) ──
+function archZoneDragOver(event) {
+  if (!dragData || dragData.source === 'archive') return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  document.getElementById('arch-panel').classList.add('drag-active');
+}
+function archZoneDragLeave(event) {
+  // relatedTarget이 패널 내부면 무시 (자식 요소로 이동 시 flicker 방지)
+  const panel = document.getElementById('arch-panel');
+  if (panel.contains(event.relatedTarget)) return;
+  panel.classList.remove('drag-active');
+}
+async function archZoneDrop(event) {
+  event.preventDefault();
+  document.getElementById('arch-panel').classList.remove('drag-active');
+  console.log('[archive] drop, dragData:', dragData);
+  if (!dragData || dragData.source === 'archive') return;
+  const { name, theme } = dragData;
+  dragData = null;
+  if (selections[name] === theme) {
+    showToast('선택된 항목은 보관 불가 (먼저 선택 해제)', true);
+    return;
+  }
+  try {
+    const res = await fetch('/api/archive-sound', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name, theme })
+    });
+    const data = await res.json();
+    console.log('[archive] response:', data);
+    if (data.ok) {
+      showToast('📦 ' + name + ' (' + theme.toUpperCase() + ') 보관됨');
+      if (theme === 'cc')   CC.delete(name);
+      if (theme === 'sgh')  SGH.delete(name);
+      if (theme === 'tiki') delete TIKI[name];
+      if (theme === 'rec')  REC.delete(name);
+      if (theme === 'rec2') REC2.delete(name);
+      if (theme === 'rec3') REC3.delete(name);
+      if (theme === 'rec4') REC4.delete(name);
+      if (theme === 'rec5') REC5.delete(name);
+      if (theme === 'rec6') REC6.delete(name);
+      render();
+      await loadArchived();
+      document.getElementById('arch-panel').classList.add('open');  // 자동 열기
+    } else {
+      showToast(data.error || '보관 실패', true);
+    }
+  } catch(e) {
+    console.error('[archive] error:', e);
+    showToast('서버 오류: ' + e.message, true);
+  }
+}
+
+// ── archive playback ──
+function getArchivePath(name, theme) {
+  if (theme === 'cc')   return `../audio_sets/archive/cc/${name}.wav`;
+  if (theme === 'sgh')  return `../audio_sets/archive/sgh/${name}.wav`;
+  if (theme === 'tiki') { const ext = TIKI[name] || 'wav'; return `../audio_sets/archive/tiki/${name}.${ext}`; }
+  if (theme === 'rec')  return `../audio_sets/archive/rec/${name}.wav`;
+  if (theme === 'rec2') return `../audio_sets/archive/rec/${name}_2.wav`;
+  if (theme === 'rec3') return `../audio_sets/archive/rec/${name}_3.wav`;
+  if (theme === 'rec4') return `../audio_sets/archive/rec/${name}_4.wav`;
+  if (theme === 'rec5') return `../audio_sets/archive/rec/${name}_5.wav`;
+  if (theme === 'rec6') return `../audio_sets/archive/rec/${name}_6.wav`;
+  return null;
+}
+
+function playArchive(name, theme, btn) {
+  const p = getArchivePath(name, theme);
+  if (!p) return;
+  const same = curBtn === btn;
+  stopAll();
+  if (same) return;
+  const ap = document.getElementById('ap');
+  ap.src = p;
+  ap.play().then(() => {
+    curBtn = btn;
+    btn.classList.add('active'); btn.dataset.lbl = btn.textContent; btn.textContent = '■';
+    document.getElementById('now-name').textContent = name;
+    document.getElementById('now-theme').textContent = '(' + theme.toUpperCase() + ') [보관]';
+    document.getElementById('now').style.display = 'flex';
+    clearInterval(progTimer);
+    progTimer = setInterval(() => {
+      if (ap.duration) document.getElementById('pfill').style.width = (ap.currentTime / ap.duration * 100) + '%';
+    }, 100);
+    ap.onended = stopAll;
+  }).catch(() => { btn.disabled = true; btn.style.opacity = '0.2'; });
+}
+
+// ── archive panel ──
+let archivedItems = [];
+
+async function loadArchived() {
+  try {
+    const res = await fetch('/api/archived-files');
+    archivedItems = await res.json();
+  } catch(e) {
+    archivedItems = [];
+  }
+  renderArchivePanel();
+}
+
+function renderArchivePanel() {
+  const count = archivedItems.length;
+  document.getElementById('arch-count').textContent = count ? `(${count})` : '';
+  const panel = document.getElementById('arch-panel');
+  if (!count) {
+    panel.innerHTML = '<span class="arch-empty">보관된 음원 없음</span>';
+  } else {
+    panel.innerHTML = archivedItems.map(it =>
+      `<span class="arch-chip" draggable="true" ondragstart="archiveDragStart(event,'${it.name}','${it.theme}')">
+        ${it.name} <span class="arch-theme">${it.theme.toUpperCase()}</span>
+        <button class="arch-play" onclick="playArchive('${it.name}','${it.theme}',this)" title="미리듣기">▶</button>
+        <button class="arch-restore" onclick="restoreSound('${it.name}','${it.theme}')" title="원래 위치로 복원">↩</button>
+      </span>`
+    ).join('');
+  }
+}
+
+function toggleArchivePanel() {
+  const panel = document.getElementById('arch-panel');
+  panel.classList.toggle('open');
+  requestAnimationFrame(updateHdrHeight);
+}
+
+function archiveDragStart(event, name, theme) {
+  dragData = { name, theme, source: 'archive' };
+  event.dataTransfer.effectAllowed = 'copy';
+  event.dataTransfer.setData('text/plain', name + '/' + theme);
+}
+
+async function restoreSound(name, theme) {
+  try {
+    const res = await fetch('/api/restore-sound', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name, theme })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('↩ ' + name + ' (' + theme + ') 복원됨');
+      // Set에 다시 추가
+      if (theme === 'cc')   CC.add(name);
+      if (theme === 'sgh')  SGH.add(name);
+      if (theme === 'tiki') { /* tiki ext는 서버가 결정 — 페이지 리로드 */ location.reload(); return; }
+      if (theme === 'rec')  REC.add(name);
+      if (theme === 'rec2') REC2.add(name);
+      if (theme === 'rec3') REC3.add(name);
+      if (theme === 'rec4') REC4.add(name);
+      if (theme === 'rec5') REC5.add(name);
+      if (theme === 'rec6') REC6.add(name);
+      archivedItems = archivedItems.filter(it => !(it.name === name && it.theme === theme));
+      renderArchivePanel();
+      render();
+    } else {
+      showToast(data.error || '복원 실패', true);
+    }
+  } catch(e) {
+    showToast('서버 오류: ' + e.message, true);
+  }
+}
+
+// ── sticky header height ──
+function updateHdrHeight() {
+  const h = document.querySelector('.hdr').offsetHeight;
+  document.documentElement.style.setProperty('--hdr-h', h + 'px');
+}
+window.addEventListener('resize', updateHdrHeight);
+
+// ── init: fetch rec-files then render ──
+(async () => {
+  if (location.protocol !== 'file:') {
+    try {
+      const [recRes, archRes] = await Promise.all([
+        fetch('/api/rec-files'),
+        fetch('/api/archived-files')
+      ]);
+      const recMap = await recRes.json();
+      Object.entries(recMap).forEach(([name, slots]) => {
+        if (slots.includes('rec'))  REC.add(name);
+        if (slots.includes('rec2')) REC2.add(name);
+        if (slots.includes('rec3')) REC3.add(name);
+        if (slots.includes('rec4')) REC4.add(name);
+        if (slots.includes('rec5')) REC5.add(name);
+        if (slots.includes('rec6')) REC6.add(name);
+      });
+      archivedItems = await archRes.json();
+      renderArchivePanel();
+      if (archivedItems.length > 0) document.getElementById('arch-panel').classList.add('open');
+    } catch(e) { console.error('[init]', e); }
+  }
+  render();
+  requestAnimationFrame(() => { updateHdrHeight(); });
+})();
+</script>
+</body>
+</html>

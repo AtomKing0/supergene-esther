@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log Definition — Solitaire City Journey</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#242838;--border:#2e3348;
+  --text:#e2e8f0;--muted:#718096;--accent:#6c63ff;
+  --green:#48bb78;--red:#f56565;--yellow:#ecc94b;--blue:#63b3ed;--orange:#ed8936;--cyan:#76e4f7;--pink:#f687b3;--purple:#b794f4;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5}
+
+/* ── HEADER ── */
+.hdr{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px}
+.hdr-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+h1{font-size:17px;font-weight:700;color:var(--accent);white-space:nowrap}
+.search{flex:1;min-width:160px;max-width:320px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 11px;color:var(--text);font-size:13px;outline:none}
+.search:focus{border-color:var(--accent)}
+.cnt{font-size:12px;color:var(--muted);white-space:nowrap;margin-left:auto}
+.sheet-link{background:var(--green);color:#1a202c;border:none;border-radius:6px;padding:6px 16px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;text-decoration:none;transition:opacity .15s}
+.sheet-link:hover{opacity:.85}
+
+/* ── FILTERS ── */
+.filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.flabel{color:var(--muted);font-size:11px;white-space:nowrap}
+.pill{padding:3px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:11px;transition:all .15s}
+.pill:hover{border-color:var(--accent);color:var(--text)}
+.pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.sep{width:1px;height:18px;background:var(--border);flex-shrink:0}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a2744;border:1px solid var(--accent);color:var(--text);padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── TABLE ── */
+.wrap{overflow-x:auto;padding:0 20px 80px}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th{text-align:left;padding:7px 10px;background:var(--surface);border-bottom:2px solid var(--border);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--text)}
+th.sorted-asc::after{content:' ▲';color:var(--accent)}
+th.sorted-desc::after{content:' ▼';color:var(--accent)}
+td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:hover td{background:var(--surface2)}
+
+.row-num{color:var(--muted);font-size:11px}
+.ename{font-family:'SF Mono','Fira Code',monospace;font-size:12px;white-space:nowrap;color:var(--cyan)}
+.ecode{font-family:'SF Mono','Fira Code',monospace;font-size:11px;color:var(--yellow);white-space:nowrap}
+
+/* category badges */
+.cat{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;white-space:nowrap}
+.c-loading{background:#553c9a22;color:#b794f4;border:1px solid #553c9a55}
+.c-login{background:#2c5f9a22;color:#63b3ed;border:1px solid #2c5f9a55}
+.c-gameplay{background:#7c3a0022;color:#ed8936;border:1px solid #7c3a0055}
+.c-social{background:#3a5c0022;color:#68d391;border:1px solid #3a5c0055}
+.c-ads{background:#7c700022;color:#ecc94b;border:1px solid #7c700055}
+.c-ui{background:#4a4a4a22;color:#cbd5e0;border:1px solid #4a4a4a55}
+.c-session{background:#1a4a7c22;color:#76e4f7;border:1px solid #1a4a7c55}
+.c-button{background:#4a7c4e22;color:#9ae6b4;border:1px solid #4a7c4e55}
+.c-popup{background:#7c4a6e22;color:#f687b3;border:1px solid #7c4a6e55}
+.c-error{background:#7c100022;color:#fc8181;border:1px solid #7c100055}
+.c-legacy{background:#4a4a4a22;color:#a0aec0;border:1px solid #4a4a4a55}
+
+.desc{color:var(--muted);font-size:12px;max-width:220px}
+.call{font-family:'SF Mono','Fira Code',monospace;font-size:11px;color:var(--cyan);max-width:260px;white-space:normal;word-break:break-word;line-height:1.7}
+.params{font-family:'SF Mono','Fira Code',monospace;font-size:10px;color:var(--purple);max-width:200px;word-break:break-all}
+
+/* followup status */
+.status-grp{display:flex;gap:3px;align-items:center}
+.status-btn{padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.status-btn:hover{border-color:var(--text);color:var(--text)}
+.status-btn.active-ok{background:var(--green);border-color:var(--green);color:#1a202c}
+.status-btn.active-issue{background:var(--red);border-color:var(--red);color:#fff}
+.status-btn.active-skip{background:#4a5568;border-color:#4a5568;color:var(--muted)}
+.status-btn.active-new{background:var(--blue);border-color:var(--blue);color:#1a202c}
+
+/* memo */
+.memo-input{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:11px;width:100%;min-width:80px;outline:none}
+.memo-input:focus{border-color:var(--accent)}
+
+/* group separator */
+.group-sep td{padding:8px 10px;background:var(--surface);border-top:2px solid var(--border);font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.06em}
+
+/* save bar */
+.save-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;gap:12px;z-index:100}
+.save-bar .info{font-size:12px;color:var(--muted);flex:1}
+.save-bar .save-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 20px;cursor:pointer;font-size:13px;font-weight:600;transition:opacity .15s}
+.save-bar .save-btn:hover{opacity:.85}
+.save-bar .save-btn:disabled{opacity:.4;cursor:not-allowed}
+.save-bar .load-btn{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 14px;cursor:pointer;font-size:12px;transition:all .15s}
+.save-bar .load-btn:hover{border-color:var(--accent);color:var(--accent)}
+.save-bar .export-btn{background:var(--orange);color:#1a202c;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:600;transition:opacity .15s}
+.save-bar .export-btn:hover{opacity:.85}
+
+/* ── CLIENT FOLDER SETTINGS ── */
+.settings-bar{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.settings-bar .flabel{flex-shrink:0}
+.folder-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 14px;color:var(--text);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.folder-btn:hover{border-color:var(--accent);color:var(--accent)}
+.folder-btn.connected{border-color:var(--green);color:var(--green)}
+.folder-name{font-size:12px;font-family:'SF Mono','Fira Code',monospace;color:var(--muted);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-status{font-size:11px;padding:3px 10px;border-radius:10px;white-space:nowrap}
+.folder-status.on{background:rgba(72,187,120,.15);color:var(--green);border:1px solid rgba(72,187,120,.3)}
+.folder-status.off{background:rgba(113,128,150,.1);color:var(--muted);border:1px solid rgba(113,128,150,.2)}
+.disconnect-btn{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:2px 6px}
+.disconnect-btn:hover{color:var(--red)}
+.scan-status{font-size:11px;color:var(--yellow);white-space:nowrap}
+.scan-status.done{color:var(--green)}
+.scan-status.err{color:var(--red)}
+.call .live{color:var(--green)}
+.call .stale{color:var(--yellow);text-decoration:line-through;opacity:.5;margin-left:4px;font-size:10px}
+.call .file-link{color:var(--cyan);text-decoration:none;border-bottom:1px dashed rgba(118,228,247,.3);cursor:pointer;white-space:nowrap}
+.call .file-link:hover{color:#fff;border-bottom-color:var(--cyan)}
+.call .no-link{color:var(--muted)}
+
+/* ── CODE PREVIEW PANEL ── */
+.code-panel{display:none;position:fixed;top:0;right:0;width:520px;height:100vh;background:var(--surface);border-left:2px solid var(--accent);z-index:200;flex-direction:column}
+.code-panel.open{display:flex}
+.code-panel-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.code-panel-title{flex:1;font-family:'SF Mono','Fira Code',monospace;font-size:12px;color:var(--cyan);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.code-panel-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px;line-height:1}
+.code-panel-close:hover{color:var(--red)}
+.code-panel-body{flex:1;overflow:auto;padding:0}
+.code-panel-body pre{margin:0;padding:10px 14px;font-family:'SF Mono','Fira Code',monospace;font-size:12px;line-height:1.6;color:var(--text);tab-size:4}
+.code-panel-body .ln{display:inline-block;width:44px;text-align:right;color:var(--muted);margin-right:12px;user-select:none;flex-shrink:0}
+.code-panel-body .highlight{background:rgba(108,99,255,.2);display:block;margin:0 -14px;padding:0 14px;border-left:3px solid var(--accent)}
+.code-panel-body .ctx{display:block}
+.code-panel-nodir{padding:20px;color:var(--muted);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <h1>Log Definition — Solitaire City Journey</h1>
+    <input class="search" type="text" placeholder="이벤트명 / 코드 / 설명 / 호출위치 검색..." id="q" oninput="render()">
+    <span class="cnt" id="cnt"></span>
+    <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1-QxV4ToLnL32qiQkWxbISFd575BYwVKBcaBE4YwJBLo/edit?gid=0#gid=0" target="_blank" rel="noopener">Google Sheet</a>
+  </div>
+  <div class="settings-bar">
+    <span class="flabel">Client:</span>
+    <button class="folder-btn" id="folder-btn" onclick="connectFolder()">폴더 연결...</button>
+    <span class="folder-name" id="folder-name"></span>
+    <span class="folder-status off" id="folder-status">미연결</span>
+    <span class="scan-status" id="scan-status"></span>
+    <button class="disconnect-btn" id="disconnect-btn" style="display:none" onclick="disconnectFolder()">연결 해제</button>
+  </div>
+  <div class="filters">
+    <span class="flabel">카테고리:</span>
+    <button class="pill active" data-cat="all" onclick="setCat(this)">All</button>
+    <button class="pill" data-cat="loading" onclick="setCat(this)">Loading</button>
+    <button class="pill" data-cat="login" onclick="setCat(this)">Login</button>
+    <button class="pill" data-cat="gameplay" onclick="setCat(this)">Gameplay</button>
+    <button class="pill" data-cat="social" onclick="setCat(this)">Social</button>
+    <button class="pill" data-cat="ads" onclick="setCat(this)">Ads</button>
+    <button class="pill" data-cat="ui" onclick="setCat(this)">UI/Shop</button>
+    <button class="pill" data-cat="session" onclick="setCat(this)">Session</button>
+    <button class="pill" data-cat="popup" onclick="setCat(this)">Popup</button>
+    <button class="pill" data-cat="error" onclick="setCat(this)">Error</button>
+    <button class="pill" data-cat="legacy" onclick="setCat(this)">Legacy</button>
+    <div class="sep"></div>
+    <span class="flabel">상태:</span>
+    <button class="pill" data-filter="ok" onclick="toggleF(this)">OK</button>
+    <button class="pill" data-filter="issue" onclick="toggleF(this)">Issue</button>
+    <button class="pill" data-filter="new" onclick="toggleF(this)">New</button>
+    <button class="pill" data-filter="skip" onclick="toggleF(this)">Skip</button>
+    <button class="pill" data-filter="unmarked" onclick="toggleF(this)">Unmarked</button>
+  </div>
+</div>
+
+<div class="wrap">
+<table>
+  <thead>
+    <tr>
+      <th data-sort="idx">#</th>
+      <th data-sort="code">코드</th>
+      <th data-sort="name">이벤트명</th>
+      <th data-sort="cat">카테고리</th>
+      <th>설명</th>
+      <th>호출 위치</th>
+      <th>파라미터</th>
+      <th>상태</th>
+      <th>메모</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+</div>
+
+<div class="save-bar">
+  <span class="info" id="save-info">상태/메모는 localStorage에 저장됩니다</span>
+  <button class="load-btn" onclick="importJSON()">JSON 불러오기</button>
+  <button class="export-btn" onclick="exportJSON()">JSON 내보내기</button>
+  <button class="save-btn" onclick="saveState()">저장</button>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileImport(event)">
+
+<!-- Code Preview Panel -->
+<div class="code-panel" id="code-panel">
+  <div class="code-panel-hdr">
+    <span class="code-panel-title" id="code-panel-title"></span>
+    <button class="code-panel-close" onclick="closeCodePanel()">&times;</button>
+  </div>
+  <div class="code-panel-body" id="code-panel-body"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CLIENT FOLDER — filename → relative path map
+// ══════════════════════════════════════════════════════════════
+const FILE_MAP = {
+  'SolitaireTripeaksLogManager.ts': 'assets/script/common/log/SolitaireTripeaksLogManager.ts',
+  'BaseLogManager.ts':              'assets/script/common/log/BaseLogManager.ts',
+  'BasePlatform.ts':                'assets/script/Base/BasePlatform.ts',
+  'BaseIntro.ts':                   'assets/script/Base/BaseIntro.ts',
+  'FacebookPlatform.ts':            'assets/script/Base/FacebookPlatform.ts',
+  'TossPlatform.ts':                'assets/script/Base/TossPlatform.ts',
+  'YouTubePlatform.ts':             'assets/script/Base/YouTubePlatform.ts',
+  'CrazyGamePlatform.ts':           'assets/script/Base/CrazyGamePlatform.ts',
+  'ViewGame.ts':                    'assets/script/game/ingame/ViewGame.ts',
+  'StageView.ts':                   'assets/script/game/ingame/StageView.ts',
+  'IngameItemButtonView.ts':        'assets/script/game/ingame/IngameItemButtonView.ts',
+  'ViewLobby.ts':                   'assets/script/game/lobby/ViewLobby.ts',
+  'LobbyMainUIVIew.ts':             'assets/script/game/lobby/LobbyMainUIVIew.ts',
+  'LobbyMetaCityUpgradeView.ts':    'assets/script/game/lobby/LobbyMetaCityUpgradeView.ts',
+  'MetaCityObjectView.ts':          'assets/script/game/lobby/MetaCityObjectView.ts',
+  'SceneManager.ts':                'assets/script/game/SceneManager.ts',
+  'SessionFlowManager.ts':          'assets/script/game/SessionFlowManager.ts',
+  'DataManager.ts':                 'assets/script/game/DataManager.ts',
+  'TutorialManager.ts':             'assets/script/game/TutorialManager.ts',
+  'SpecialOfferManager.ts':         'assets/script/game/SpecialOfferManager.ts',
+  'PopupGameEntry.ts':              'assets/script/game/popup/PopupGameEntry.ts',
+  'PopupCompleteLevel.ts':          'assets/script/game/popup/ingame/PopupCompleteLevel.ts',
+  'PopupChargeGold.ts':             'assets/script/game/popup/ingame/PopupChargeGold.ts',
+  'PopupQuitLevel.ts':              'assets/script/game/popup/ingame/PopupQuitLevel.ts',
+  'PopupSettingInGame.ts':          'assets/script/game/popup/ingame/PopupSettingInGame.ts',
+  'PopupShop.ts':                   'assets/script/game/popup/PopupShop.ts',
+  'PopupSpecialOffer.ts':           'assets/script/game/popup/Shop/PopupSpecialOffer.ts',
+  'PopupLeaderboard.ts':            'assets/script/game/popup/PopupLeaderboard.ts',
+  'PopupDailyTask.ts':              'assets/script/game/popup/DailyTask/PopupDailyTask.ts',
+  'PopupDailyGift.ts':              'assets/script/game/popup/dailyGift/PopupDailyGift.ts',
+  'PopupDailyGiftItem.ts':          'assets/script/game/popup/dailyGift/PopupDailyGiftItem.ts',
+  'PopupDecoShare.ts':              'assets/script/game/popup/PopupDecoShare.ts',
+  'PopupError.ts':                  'assets/script/game/popup/PopupError.ts',
+  'PopupSelectPhoto.ts':            'assets/script/game/popup/PopupSelectPhoto.ts',
+  'PopupSwitchContext.ts':          'assets/script/game/popup/PopupSwitchContext.ts',
+  'PopupAdBreak.ts':                'assets/script/game/popup/PopupAdBreak.ts',
+  'PopupTutorial.ts':               'assets/script/game/popup/PopupTutorial.ts',
+  'PopupWelcomeBonus.ts':           'assets/script/game/popup/PopupWelcomeBonus.ts',
+  'PopupMail.ts':                   'assets/script/game/popup/popupmail/PopupMail.ts',
+  'PopupMetaCityList.ts':           'assets/script/game/popup/MetaCityList/PopupMetaCityList.ts',
+  'PopupMetaCityListItem.ts':       'assets/script/game/popup/MetaCityList/PopupMetaCityListItem.ts',
+  'PopupEventCardMilestone.ts':     'assets/script/game/popup/EventPopup/PopupEventCardMilestone.ts',
+  'PopupEventWinningMilestone.ts':  'assets/script/game/popup/EventPopup/PopupEventWinningMilestone.ts',
+  'PopupEventClearRanking.ts':      'assets/script/game/popup/EventPopup/PopupEventClearRanking.ts',
+  'PopupRewardClaim.ts':            'assets/script/game/popup/EventPopup/PopupRewardClaim.ts',
+  'PopupCollection.ts':             'assets/script/game/popup/Collection/PopupCollection.ts',
+  'DeckCollectionPanel.ts':         'assets/script/game/popup/Collection/DeckCollectionPanel.ts',
+  'PopupSettingLanguage.ts':        'assets/script/game/popup/SettingLanguage/PopupSettingLanguage.ts',
+  'PopupPrivacyPolicy.ts':          'assets/script/game/popup/PopupPrivacyPolicy.ts',
+  'LeaderboardRankItem.ts':         'assets/script/game/leaderboard/LeaderboardRankItem.ts',
+  'IngameStreak.ts':                'assets/script/game/ingame/IngameStreak.ts',
+};
+
+// ── Directory handle (File System Access API) ──
+let dirHandle = null;
+let fileCache = {};   // { relativePath: string(content) }
+let liveCallMap = {}; // { eventCode: [{file:'relative/path.ts', line:123, snippet:'...'}] }
+let scanDone = false;
+
+// LogType enum name → event code (reverse of registLogEvent)
+const LOGTYPE_TO_CODE = {
+  AllLoadFb:'ALL_LOAD_FB', IntroGameData:'INTRO_GAME_DATA', IntroGameDataFinish:'INTRO_GAME_DATA_FINISH',
+  IntroCountryData:'INTRO_COUNTRY_DATA', IntroCountryDataFinish:'INTRO_COUNTRY_DATA_FINISH',
+  IntroBundle:'INTRO_BUNDLE', IntroBundleFinish:'INTRO_BUNDLE_FINISH',
+  IntroFbStart:'INTRO_FB_START', IntroFbStartFinish:'INTRO_FB_START_FINISH',
+  IntroSignedPlayerInfo:'INTRO_SIGNED_PLAYER_INFO', IntroSignedPlayerInfoFinish:'INTRO_SIGNED_PLAYER_INFO_FINISH',
+  IntroObjectPool:'INTRO_OBJECT_POOL', IntroObjectPoolFinish:'INTRO_OBJECT_POOL_FINISH',
+  IntroFbFriend:'INTRO_FB_FRIEND', IntroFbFriendFinish:'INTRO_FB_FRIEND_FINISH',
+  IntroFbEntryData:'INTRO_FB_ENTRY_DATA', IntroFbEntryDataFinish:'INTRO_FB_ENTRY_DATA_FINISH',
+  IntroFbEntryPoint:'INTRO_FB_ENTRY_POINT', IntroFbEntryPointFinish:'INTRO_FB_ENTRY_POINT_FINISH',
+  IntroFbSubscribeBot:'INTRO_FB_SUBSCRIBE_BOT', IntroFbSubscribeBotFinish:'INTRO_FB_SUBSCRIBE_BOT_FINISH',
+  IntroPopupHeader:'INTRO_POPUP_HEADER', IntroPopupHeaderFinish:'INTRO_POPUP_HEADER_FINISH',
+  IntroLogin:'INTRO_LOGIN', LoadComplete:'1010_LOAD_COMPLETE',
+  NetworkTimeout:'NETWORK_TIMEOUT', NetworkTimeoutRetry:'NETWORK_TIMEOUT_RETRY', NetworkTimeoutRetryOver:'NETWORK_TIMEOUT_RETRY_OVER',
+  PreLevelShow:'2090_PRE_LEVEL_SHOW', PreLevelBoosterSelect:'2091_PRE_LEVEL_BOOSTER_SELECT',
+  PreLevelBoosterDeselect:'2092_PRE_LEVEL_BOOSTER_DESELECT', PreLevelBetting:'2093_PRE_LEVEL_BETTING',
+  PreLevelPlay:'2094_PRE_LEVEL_PLAY', PreLevelGoldShortage:'2095_PRE_LEVEL_GOLD_SHORTAGE',
+  PreLevelClose:'2096_PRE_LEVEL_CLOSE', PreLevelInvite:'2097_PRE_LEVEL_INVITE',
+  GameplayStart:'2100_GAMEPLAY_START', GameplayFirstTouch:'2109_GAMEPLAY_FIRST_TOUCH',
+  TutoIngameIntro:'2110_TUTO_INGAME_INTRO', TutoDeckDraw:'2111_TUTO_DECK_DRAW',
+  TutoLobbyPlay:'2112_TUTO_LOBBY_PLAY', TutoShop:'2113_TUTO_SHOP',
+  TutoPreLevelPopup:'2114_TUTO_PRE_LEVEL_POPUP', TutoIdleGold:'2115_TUTO_IDLE_GOLD',
+  TutoPlusCard:'2116_TUTO_PLUS_CARD', TutoIdleGoldCollect:'2117_TUTO_IDLE_GOLD_COLLECT',
+  TutoDailyCheck:'2118_TUTO_DAILY_CHECK', TutoStreak:'2119_TUTO_STREAK',
+  TutoLeaderboard:'2120_TUTO_LEADERBOARD', TutoCollection:'2121_TUTO_COLLECTION',
+  TutoBoosterUndo:'2122_TUTO_BOOSTER_UNDO', TutoBoosterFireworks:'2123_TUTO_BOOSTER_FIREWORKS',
+  TutoBoosterWildcard:'2124_TUTO_BOOSTER_WILDCARD', TutoBoosterExtradeck:'2125_TUTO_BOOSTER_EXTRADECK',
+  TutoCityDeco:'2126_TUTO_CITY_DECO', TutoBetting2:'2127_TUTO_BETTING_2',
+  TutoDailyWheel:'2128_TUTO_DAILY_WHEEL', TutoEventForced:'2129_TUTO_EVENT_FORCED',
+  TutoGimmickRunner:'2130_TUTO_GIMMICK_RUNNER', TutoBetting4:'2131_TUTO_BETTING_4',
+  TutoGimmickLockKey:'2132_TUTO_GIMMICK_LOCK_KEY', TutoGimmickRope:'2133_TUTO_GIMMICK_ROPE',
+  TutoCityDecoRepeat:'2134_TUTO_CITY_DECO_REPEAT', TutoGimmickLockTip:'2135_TUTO_GIMMICK_LOCK_TIP',
+  TutoBoosterGoldenTicket:'2136_TUTO_BOOSTER_GOLDEN_TICKET', TutoGimmickRopeTip:'2137_TUTO_GIMMICK_ROPE_TIP',
+  TutoGraduated:'2140_TUTO_GRADUATED', TutoStepComplete:'2141_TUTO_STEP_COMPLETE',
+  GameplayNruCardMatch:'2150_GAMEPLAY_NRU_CARD_MATCH', GameplayNruMatches:'2151_GAMEPLAY_NRU_MATCHES',
+  GameplayItemUndoTry:'2160_GAMEPLAY_ITEM_UNDO_TRY', GameplayItemUndoSuccess:'2161_GAMEPLAY_ITEM_UNDO_SUCCESS',
+  GameplayItemUndoFail:'2162_GAMEPLAY_ITEM_UNDO_FAIL', GameplayItemUndoUnlock:'2163_GAMEPLAY_ITEM_UNDO_UNLOCK',
+  GameplayItemFireworksTry:'2170_GAMEPLAY_ITEM_FIREWORKS_TRY', GameplayItemFireworksSuccess:'2171_GAMEPLAY_ITEM_FIREWORKS_SUCCESS',
+  GameplayItemFireworksFail:'2172_GAMEPLAY_ITEM_FIREWORKS_FAIL', GameplayItemFireworksUnlock:'2173_GAMEPLAY_ITEM_FIREWORKS_UNLOCK',
+  GameplayItemWildcardTry:'2180_GAMEPLAY_ITEM_WILDCARD_TRY', GameplayItemWildcardSuccess:'2181_GAMEPLAY_ITEM_WILDCARD_SUCCESS',
+  GameplayItemWildcardFail:'2182_GAMEPLAY_ITEM_WILDCARD_FAIL', GameplayItemWildcardUnlock:'2183_GAMEPLAY_ITEM_WILDCARD_UNLOCK',
+  GameplayItemExtradeckTry:'2190_GAMEPLAY_ITEM_EXTRADECK_TRY', GameplayItemExtradeckSuccess:'2191_GAMEPLAY_ITEM_EXTRADECK_SUCCESS',
+  GameplayItemExtradeckFail:'2192_GAMEPLAY_ITEM_EXTRADECK_FAIL', GameplayItemExtradeckUnlock:'2193_GAMEPLAY_ITEM_EXTRADECK_UNLOCK',
+  GameplayItemGoldenTicketTry:'2195_GAMEPLAY_ITEM_GOLDENTICKET_TRY', GameplayItemGoldenTicketSuccess:'2196_GAMEPLAY_ITEM_GOLDENTICKET_SUCCESS',
+  GameplayItemGoldenTicketFail:'2197_GAMEPLAY_ITEM_GOLDENTICKET_FAIL',
+  GameplayItemInfiniteUse:'2198_GAMEPLAY_ITEM_INFINITE_USE', GameplayFreeBoosterUse:'2199_GAMEPLAY_FREE_BOOSTER_USE',
+  GameplayComboReward:'2210_GAMEPLAY_COMBO_REWARD', GameplayStreakMeterFill:'2211_GAMEPLAY_STREAK_METER_FILL',
+  GameplayStreakStarEarn:'2212_GAMEPLAY_STREAK_STAR_EARN', GameplayDeckBonus:'2213_GAMEPLAY_DECK_BONUS',
+  GameplaySettingLeave:'2200_GAMEPLAY_SETTING_LEAVE', GameplayEndSure:'2220_GAMEPLAY_END_SURE',
+  GameplayEndSureNo:'2221_GAMEPLAY_END_SURE_NO', GameplayEndSureYes:'2222_GAMEPLAY_END_SURE_YES',
+  IngameGoldChargePopup:'2270_INGAME_GOLD_CHARGE_POPUP', IngameGoldChargeTry:'2271_INGAME_GOLD_CHARGE_TRY',
+  IngameGoldChargeClose:'2272_INGAME_GOLD_CHARGE_CLOSE',
+  GameplayFinish:'2300_GAMEPLAY_FINISH', FinishResult:'2400_FINISH_RESULT',
+  FinishResultClaim:'2410_FINISH_RESULT_CLAIM', FinishResultDoubleClaimTry:'2420_FINISH_RESULT_DOUBLE_CLAIM_TRY',
+  FinishResultDoubleClaimSuccess:'2421_FINISH_RESULT_DOUBLE_CLAIM_SUCCESS', FinishResultDoubleClaimFail:'2422_FINISH_RESULT_DOUBLE_CLAIM_FAIL',
+  FinishResultHome:'2430_FINISH_RESULT_HOME',
+  EntryCostPay:'2510_ENTRY_COST_PAY', EntryCostPayTicket:'2511_ENTRY_COST_PAY_TICKET', EntryCostFree:'2512_ENTRY_COST_FREE',
+  GimmickFirstAppear:'2600_GIMMICK_FIRST_APPEAR', GimmickGuideShown:'2601_GIMMICK_GUIDE_SHOWN',
+  GimmickPlusCardMatch:'2610_GIMMICK_PLUS_CARD_MATCH', GimmickRunnerMove:'2620_GIMMICK_RUNNER_MOVE',
+  GimmickLockKeyUnlock:'2630_GIMMICK_LOCK_KEY_UNLOCK', GimmickRopeBreak:'2640_GIMMICK_ROPE_BREAK',
+  SwitchContextStart:'3000_SWITCH_CONTEXT_START', SwitchContextSuccess:'3010_SWITCH_CONTEXT_SUCCESS',
+  SwitchContextFail:'3020_SWITCH_CONTEXT_FAIL',
+  MsgP2P:'3400_MSG_P2P', MsgP2PSuccess:'3410_MSG_P2P_SUCCESS', MsgP2PFail:'3420_MSG_P2P_FAIL',
+  MsgP2PRetry:'3430_MSG_P2P_RETRY', MsgP2PRetrySuccess:'3440_MSG_P2P_RETRY_SUCCESS', MsgP2PRetryFail:'3450_MSG_P2P_RETRY_FAIL',
+  FeedShare:'3500_FEED_SHARE', FeedShareSuccess:'3510_FEED_SHARE_SUCCESS', FeedShareFail:'3520_FEED_SHARE_FAIL',
+  ScreenshotShare:'3600_SCREENSHOT_SHARE', ScreenshotShareSuccess:'3610_SCREENSHOT_SHARE_SUCCESS', ScreenshotShareFail:'3620_SCREENSHOT_SHARE_FAIL',
+  InterstitialADStart:'4000_INTERSTITIAL_AD_START', InterstitialADBreak:'4001_INTERSTITIAL_AD_BREAK',
+  InterstitialADFinish:'4010_INTERSTITIAL_AD_FINISH', InterstitialADError:'4020_INTERSTITIAL_AD_ERROR',
+  InterstitialADPreloadFinish:'4080_INTERSTITIAL_AD_PRELOAD_FINISH', InterstitialADPreloadError:'4090_INTERSTITIAL_AD_PRELOAD_ERROR',
+  RVStart:'4200_RV_START', RVFinish:'4210_RV_FINISH', RVError:'4220_RV_ERROR',
+  RVPreloadFinish:'4280_RV_PRELOAD_FINISH', RVPreloadError:'4290_RV_PRELOAD_ERROR',
+  BannerAdStart:'4300_BANNER_AD_START', BannerAdFinish:'4310_BANNER_AD_FINISH', BannerAdError:'4320_BANNER_AD_ERROR',
+  Shop:'5000_SHOP', ShopPurchaseTry:'5001_SHOP_PURCHASE_TRY', ShopPurchaseSuccess:'5002_SHOP_PURCHASE_SUCCESS',
+  ShopPurchaseFail:'5003_SHOP_PURCHASE_FAIL', BtnShopClose:'5004_BTN_SHOP_CLOSE',
+  ShopAdGoldTry:'5130_SHOP_AD_GOLD_TRY', ShopAdGoldSuccess:'5131_SHOP_AD_GOLD_SUCCESS', ShopAdGoldFail:'5132_SHOP_AD_GOLD_FAIL',
+  DailyTask:'5100_DAILY_TASK', DailyTaskGoTo:'5101_DAILY_TASK_GO_TO',
+  DailyTaskRewardClaimTry:'5102_DAILY_TASK_REWARD_CLAIM_TRY', DailyTaskRewardClaimSuccess:'5103_DAILY_TASK_REWARD_CLAIM_SUCCESS',
+  DailyTaskRewardClaimFail:'5104_DAILY_TASK_REWARD_CLAIM_FAIL', BtnDailyTaskClose:'5105_BTN_DAILY_TASK_CLOSE',
+  DailyTaskChangeTry:'5156_DAILY_TASK_CHANGE_TRY', DailyTaskChangeSuccess:'5157_DAILY_TASK_CHANGE_SUCCESS',
+  DailyTaskChangeFail:'5158_DAILY_TASK_CHANGE_FAIL',
+  Leaderboard:'5200_LEADERBOARD', BtnLeaderboardFriendsTab:'5201_BTN_LEADERBOARD_FRIENDS_TAB',
+  BtnLeaderboardWorldTab:'5202_BTN_LEADERBOARD_WORLD_TAB',
+  BtnLeaderboardFriendsWeeklyTab:'5203_BTN_LEADERBOARD_FRIENDS_WEEKLY_TAB',
+  BtnLeaderboardFriendsAlltimeTab:'5204_BTN_LEADERBOARD_FRIENDS_ALLTIME_TAB',
+  BtnLeaderboardWorldWeeklyTab:'5205_BTN_LEADERBOARD_WORLD_WEEKLY_TAB',
+  BtnLeaderboardWorldAlltimeTab:'5206_BTN_LEADERBOARD_WORLD_ALLTIME_TAB',
+  BtnLeaderboardFriendsInvite:'5207_BTN_LEADERBOARD_FRIENDS_INVITE',
+  LeaderboardFriendGiftTry:'5521_LEADERBOARD_FRIEND_GIFT_TRY',
+  LeaderboardFriendGiftSuccess:'5522_LEADERBOARD_FRIEND_GIFT_SUCCESS',
+  LeaderboardFriendGiftFail:'5523_LEADERBOARD_FRIEND_GIFT_FAIL',
+  EventBlackCardMilestone:'5400_EVENT_BLACK_CARD_MILESTONE', EventBlackCardMilestonePlay:'5401_EVENT_BLACK_CARD_MILESTONE_PLAY',
+  EventBlackCardMilestoneClose:'5402_EVENT_BLACK_CARD_MILESTONE_CLOSE', EventBlackCardMilestoneReward:'5403_EVENT_BLACK_CARD_MILESTONE_REWARD',
+  EventRedCardMilestone:'5410_EVENT_RED_CARD_MILESTONE', EventRedCardMilestonePlay:'5411_EVENT_RED_CARD_MILESTONE_PLAY',
+  EventRedCardMilestoneClose:'5412_EVENT_RED_CARD_MILESTONE_CLOSE', EventRedCardMilestoneReward:'5413_EVENT_RED_CARD_MILESTONE_REWARD',
+  EventWinningMilestone:'5420_EVENT_WINNING_MILESTONE', EventWinningMilestonePlay:'5421_EVENT_WINNING_MILESTONE_PLAY',
+  EventWinningMilestoneClose:'5422_EVENT_WINNING_MILESTONE_CLOSE', EventWinningMilestoneReward:'5423_EVENT_WINNING_MILESTONE_REWARD',
+  EventClearRanking:'5430_EVENT_CLEAR_RANKING', EventClearRankingPlay:'5431_EVENT_CLEAR_RANKING_PLAY',
+  EventClearRankingClose:'5432_EVENT_CLEAR_RANKING_CLOSE',
+  EventTournamentPopup:'5440_EVENT_TOURNAMENT_POPUP', EventTournamentJoin:'5441_EVENT_TOURNAMENT_JOIN',
+  EventTournamentCreate:'5442_EVENT_TOURNAMENT_CREATE', EventTournamentClose:'5443_EVENT_TOURNAMENT_CLOSE',
+  Lobby:'5700_LOBBY',
+  FriendCount:'6000_FRIEND_COUNT', UserGoldBalance:'6010_USER_GOLD_BALANCE', UserTicketBalance:'6011_USER_TICKET_BALANCE',
+  UserHammerBalance:'6012_USER_HAMMER_BALANCE', UserCurrentLevel:'6020_USER_CURRENT_LEVEL',
+  UserCityStatus:'6030_USER_CITY_STATUS', SettingLanguage:'6040_SETTING_LANGUAGE',
+  IdleGoldChargeComplete:'6100_IDLE_GOLD_CHARGE_COMPLETE', IdleGoldCollectTry:'6110_IDLE_GOLD_COLLECT_TRY',
+  IdleGoldCollectSuccess:'6111_IDLE_GOLD_COLLECT_SUCCESS', IdleGoldCollectFail:'6112_IDLE_GOLD_COLLECT_FAIL',
+  BtnDrawDeck:'7180_BTN_DRAW_DECK',
+  ProfilePopup:'8000_PROFILE_POPUP', BtnProfilePlay:'8001_BTN_PROFILE_PLAY', BtnProfileClose:'8002_BTN_PROFILE_CLOSE',
+  InboxPopup:'8010_INBOX_POPUP', BtnInboxInvite:'8011_BTN_INBOX_INVITE',
+  BtnInboxFriendJoinClaim:'8012_BTN_INBOX_FRIEND_JOIN_CLAIM', BtnInboxEventClaim:'8013_BTN_INBOX_EVENT_CLAIM',
+  BtnInboxClaimAll:'8014_BTN_INBOX_CLAIM_ALL', BtnInboxClose:'8015_BTN_INBOX_CLOSE',
+  InboxRvGoldTry:'8016_INBOX_RV_GOLD_TRY', InboxRvGoldSuccess:'8017_INBOX_RV_GOLD_SUCCESS', InboxRvGoldFail:'8018_INBOX_RV_GOLD_FAIL',
+  SettingPopup:'8020_SETTING_POPUP', BtnSettingMusic:'8021_BTN_SETTING_MUSIC', BtnSettingSound:'8022_BTN_SETTING_SOUND',
+  BtnSettingVibration:'8023_BTN_SETTING_VIBRATION', BtnSettingUserIdCopy:'8024_BTN_SETTING_USER_ID_COPY',
+  BtnSettingClose:'8025_BTN_SETTING_CLOSE', BtnSettingHowToPlay:'8026_BTN_SETTING_HOW_TO_PLAY',
+  LanguagePopup:'8030_LANGUAGE_POPUP', BtnLanguageOk:'8031_BTN_LANGUAGE_OK', BtnLanguageClose:'8032_BTN_LANGUAGE_CLOSE',
+  PrivacyPolicyPopup:'8040_PRIVACY_POLICY_POPUP', BtnPrivacyPolicyClose:'8041_BTN_PRIVACY_POLICY_CLOSE',
+  DailyWheelPopup:'8050_DAILY_WHEEL_POPUP', DailyWheelSpinSuccess:'8051_DAILY_WHEEL_SPIN_SUCCESS',
+  DailyWheelSpinFail:'8052_DAILY_WHEEL_SPIN_FAIL', BtnDailyWheelClose:'8053_BTN_DAILY_WHEEL_CLOSE',
+  DailyWheelAdSpinTry:'8054_DAILY_WHEEL_AD_SPIN_TRY', DailyWheelAdSpinSuccess:'8055_DAILY_WHEEL_AD_SPIN_SUCCESS',
+  DailyWheelAdSpinFail:'8056_DAILY_WHEEL_AD_SPIN_FAIL',
+  DailyCheckinPopup:'8060_DAILY_CHECKIN_POPUP', DailyCheckinClaimTry:'8061_DAILY_CHECKIN_CLAIM_TRY',
+  DailyCheckinClaimSuccess:'8062_DAILY_CHECKIN_CLAIM_SUCCESS', DailyCheckinClaimFail:'8063_DAILY_CHECKIN_CLAIM_FAIL',
+  BtnDailyCheckinClose:'8064_BTN_DAILY_CHECKIN_CLOSE',
+  DailyCheckinMissedAdTry:'8065_DAILY_CHECKIN_MISSED_AD_TRY', DailyCheckinMissedAdSuccess:'8066_DAILY_CHECKIN_MISSED_AD_SUCCESS',
+  DailyCheckinMissedAdFail:'8067_DAILY_CHECKIN_MISSED_AD_FAIL',
+  SpecialDealPopup:'8070_SPECIAL_DEAL_POPUP', SpecialDealPopupPurchaseTry:'8071_SPECIAL_DEAL_POPUP_PURCHASE_TRY',
+  SpecialDealPopupPurchaseSuccess:'8072_SPECIAL_DEAL_POPUP_PURCHASE_SUCCESS',
+  SpecialDealPopupPurchaseFail:'8073_SPECIAL_DEAL_POPUP_PURCHASE_FAIL',
+  BtnSpecialDealPopupClose:'8074_BTN_SPECIAL_DEAL_POPUP_CLOSE',
+  HowToPlayPopup:'8080_HOW_TO_PLAY_POPUP', BtnHowToPlayNext:'8081_BTN_HOW_TO_PLAY_NEXT', BtnHowToPlayClose:'8082_BTN_HOW_TO_PLAY_CLOSE',
+  CityDecoPopup:'8100_CITY_DECO_POPUP', CityDecoUpgradeTry:'8101_CITY_DECO_UPGRADE_TRY',
+  CityDecoUpgradeSuccess:'8102_CITY_DECO_UPGRADE_SUCCESS', CityDecoUpgradeFail:'8103_CITY_DECO_UPGRADE_FAIL',
+  CityDecoCityComplete:'8104_CITY_DECO_CITY_COMPLETE', BtnCityDecoClose:'8105_BTN_CITY_DECO_CLOSE',
+  CityDecoAllComplete:'8106_CITY_DECO_ALL_COMPLETE',
+  CityCompleteSharePopup:'8107_CITY_COMPLETE_SHARE_POPUP', CityCompleteShareTry:'8108_CITY_COMPLETE_SHARE_TRY',
+  CityCompleteShareClose:'8109_CITY_COMPLETE_SHARE_CLOSE',
+  RvPopupGoldTry:'8110_RV_POPUP_GOLD_TRY', RvPopupGoldSuccess:'8111_RV_POPUP_GOLD_SUCCESS', RvPopupGoldFail:'8112_RV_POPUP_GOLD_FAIL',
+  CollectionPopup:'8120_COLLECTION_POPUP', CollectionTabSwitch:'8121_COLLECTION_TAB_SWITCH',
+  BtnCollectionClose:'8122_BTN_COLLECTION_CLOSE',
+  CollectionMilestoneClaimTry:'8123_COLLECTION_MILESTONE_CLAIM_TRY',
+  CollectionMilestoneClaimSuccess:'8124_COLLECTION_MILESTONE_CLAIM_SUCCESS',
+  CollectionMilestoneClaimFail:'8125_COLLECTION_MILESTONE_CLAIM_FAIL',
+  CollectionPuzzleComplete:'8126_COLLECTION_PUZZLE_COMPLETE', CollectionDeckSelect:'8127_COLLECTION_DECK_SELECT',
+  CityListPopup:'8130_CITY_LIST_POPUP', CityListSelect:'8131_CITY_LIST_SELECT', BtnCityListClose:'8132_BTN_CITY_LIST_CLOSE',
+  NoMoreRecommendation:'8800_NO_MORE_RECOMMENDATION', NoMoreRecommendationFinish:'8810_NO_MORE_RECOMMENDATION_FINISH',
+  RvErrorBannerPopup:'8900_RV_ERROR_BANNER_POPUP',
+  TryAgainErrorPopup:'8910_TRY_AGAIN_ERROR_POPUP', BtnTryAgainErrorOk:'8911_BTN_TRY_AGAIN_ERROR_OK',
+  BtnTryAgainErrorClose:'8912_BTN_TRY_AGAIN_ERROR_CLOSE',
+  RestartErrorPopup:'8930_RESTART_ERROR_POPUP', BtnRestartErrorOk:'8931_BTN_RESTART_ERROR_OK',
+  BtnRestartErrorClose:'8932_BTN_RESTART_ERROR_CLOSE',
+  FBApiError:'9000_FB_API_ERROR', ServerError:'9100_SERVER_ERROR', ClientError:'9200_CLIENT_ERROR',
+  SwitchContextTimeOut:'9210_SWITCH_CONTEXT_TIME_OUT', CannotRecommendation:'9220_CANNOT_RECOMMENDATION',
+  ClientLog:'9300_CLIENT_LOG', GoldTransactionLog:'9400_GOLD_TRANSACTION_LOG',
+  TicketTransactionLog:'9401_TICKET_TRANSACTION_LOG', HammerTransactionLog:'9402_HAMMER_TRANSACTION_LOG',
+  BoosterTransactionLog:'9403_BOOSTER_TRANSACTION_LOG',
+  IAPUnconsumedProvideTry:'9501_IAP_UNCONSUMED_PROVIDE_TRY',
+  IAPUnconsumedProvideSuccess:'9502_IAP_UNCONSUMED_PROVIDE_SUCCESS',
+  IAPUnconsumedProvideFail:'9503_IAP_UNCONSUMED_PROVIDE_FAIL',
+  RVUnconsumedProvideTry:'9501_RV_UNCONSUMED_PROVIDE_TRY',
+  RVUnconsumedProvideSuccess:'9502_RV_UNCONSUMED_PROVIDE_SUCCESS',
+  RVUnconsumedProvideFail:'9503_RV_UNCONSUMED_PROVIDE_FAIL',
+  PlayFirstTouch:'9990_PLAY_FIRST_TOUCH',
+  ChooseFriend:'3001_CHOOSE_FRIEND', ChooseFriendSuccess:'3002_CHOOSE_FRIEND_SUCCESS', ChooseFriendFail:'3003_CHOOSE_FRIEND_FAIL',
+  TournamentCreate:'3100_TOURNAMENT_CREATE', TournamentCreateSuccess:'3110_TOURNAMENT_CREATE_SUCCESS',
+  TournamentCreateFail:'3120_TOURNAMENT_CREATE_FAIL',
+  TournamentShare:'3200_TOURNAMENT_SHARE', TournamentShareSuccess:'3210_TOURNAMENT_SHARE_SUCCESS',
+  TournamentShareFail:'3220_TOURNAMENT_SHARE_FAIL',
+  TournamentPost:'3300_TOURNAMENT_POST', TournamentPostSuccess:'3310_TOURNAMENT_POST_SUCCESS',
+  TournamentPostFail:'3320_TOURNAMENT_POST_FAIL',
+  InterstitialRVStart:'4100_INTERSTITIAL_RV_START', InterstitialRVFinish:'4110_INTERSTITIAL_RV_FINISH',
+  InterstitialRVError:'4120_INTERSTITIAL_RV_ERROR',
+  InterstitialRVPreloadRVFinish:'4180_INTERSTITIAL_RV_PRELOAD_FINISH',
+  InterstitialRVPreloadRVError:'4190_INTERSTITIAL_RV_PRELOAD_ERROR',
+  BannerAdLoadSuccess:'6006_BANNER_AD_LOAD_SUCCESS', BannerAdLoadFail:'6007_BANNER_AD_LOAD_FAIL',
+  BannerAdHide:'4321_BANNER_AD_HIDE', TossInviteFriendInfo:'11001_TOSS_INVITE_FRIEND_INFO',
+};
+
+// ── Scanner ──
+async function* walkDir(handle, path = '') {
+  for await (const entry of handle.values()) {
+    const entryPath = path ? path + '/' + entry.name : entry.name;
+    if (entry.kind === 'directory') {
+      // skip node_modules, .git, build, temp, library
+      if (['node_modules','.git','build','temp','library','local'].includes(entry.name)) continue;
+      yield* walkDir(entry, entryPath);
+    } else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts')) {
+      yield { handle: entry, path: entryPath };
+    }
+  }
+}
+
+async function scanFolder() {
+  if (!dirHandle) return;
+  liveCallMap = {};
+  scanDone = false;
+  const statusEl = document.getElementById('scan-status');
+  statusEl.className = 'scan-status';
+  statusEl.textContent = '스캔 중...';
+
+  let fileCount = 0;
+  let hitCount = 0;
+
+  // Regex patterns for direct string-based calls
+  const reLogEvent = /logEvent\(\s*["']([^"']+)["']/g;
+  const reLogEventFB = /logEventFBOnly\(\s*["']([^"']+)["']/g;
+
+  // Additional regex: catch LogType.XXX anywhere on a line (ternaries, variables, multi-line)
+  const reLogTypeAnywhere = /LogType\.(\w+)/g;
+  // Lines to skip (registrations, not actual calls)
+  const SKIP_PATTERNS = ['registLogEvent', 'LOGTYPE_TO_CODE', '// '];
+
+  try {
+    for await (const entry of walkDir(dirHandle)) {
+      fileCount++;
+      if (fileCount % 50 === 0) statusEl.textContent = `스캔 중... ${fileCount} files`;
+
+      const file = await entry.handle.getFile();
+      const text = await file.text();
+      fileCache[entry.path] = text;
+      const lines = text.split('\n');
+
+      // Skip the LogManager file's registLogEvent section (only registration, not calls)
+      const isLogManager = entry.path.endsWith('LogManager.ts');
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+        let m;
+
+        // Skip registration lines and comments
+        if (SKIP_PATTERNS.some(p => trimmed.includes(p))) continue;
+        // In LogManager files, only catch logEvent("xxx") direct calls, skip LogType refs
+        if (isLogManager && !trimmed.includes('logEvent')) continue;
+
+        // Catch ALL LogType.XXX on the line (handles ternaries, variables, multi-line)
+        reLogTypeAnywhere.lastIndex = 0;
+        while ((m = reLogTypeAnywhere.exec(line)) !== null) {
+          const code = LOGTYPE_TO_CODE[m[1]];
+          if (code) {
+            if (!liveCallMap[code]) liveCallMap[code] = [];
+            // Dedupe same file+line
+            if (!liveCallMap[code].some(h => h.file === entry.path && h.line === i + 1)) {
+              liveCallMap[code].push({ file: entry.path, line: i + 1 });
+              hitCount++;
+            }
+          }
+        }
+
+        // logEvent("CODE") / logEventFBOnly("CODE") — direct string literals
+        for (const re of [reLogEvent, reLogEventFB]) {
+          re.lastIndex = 0;
+          while ((m = re.exec(line)) !== null) {
+            const code = m[1];
+            if (!liveCallMap[code]) liveCallMap[code] = [];
+            if (!liveCallMap[code].some(h => h.file === entry.path && h.line === i + 1)) {
+              liveCallMap[code].push({ file: entry.path, line: i + 1 });
+              hitCount++;
+            }
+          }
+        }
+      }
+    }
+
+    scanDone = true;
+    statusEl.className = 'scan-status done';
+    statusEl.textContent = `${fileCount} files, ${hitCount} hits`;
+    render();
+    toast(`스캔 완료: ${fileCount}개 파일에서 ${hitCount}개 호출 발견`);
+  } catch (e) {
+    statusEl.className = 'scan-status err';
+    statusEl.textContent = '스캔 실패';
+    toast('스캔 에러: ' + e.message);
+  }
+}
+
+async function connectFolder() {
+  if (!window.showDirectoryPicker) {
+    toast('이 브라우저는 폴더 연결을 지원하지 않습니다 (Chrome/Edge 필요)');
+    return;
+  }
+  try {
+    dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+    fileCache = {};
+    document.getElementById('folder-btn').classList.add('connected');
+    document.getElementById('folder-btn').textContent = dirHandle.name;
+    document.getElementById('folder-name').textContent = '';
+    document.getElementById('folder-status').textContent = dirHandle.name;
+    document.getElementById('folder-status').className = 'folder-status on';
+    document.getElementById('disconnect-btn').style.display = '';
+    // auto-scan
+    await scanFolder();
+  } catch (e) {
+    if (e.name !== 'AbortError') toast('폴더 연결 실패: ' + e.message);
+  }
+}
+
+function disconnectFolder() {
+  dirHandle = null;
+  fileCache = {};
+  liveCallMap = {};
+  scanDone = false;
+  document.getElementById('folder-btn').classList.remove('connected');
+  document.getElementById('folder-btn').textContent = '폴더 연결...';
+  document.getElementById('folder-name').textContent = '';
+  document.getElementById('folder-status').textContent = '미연결';
+  document.getElementById('folder-status').className = 'folder-status off';
+  document.getElementById('disconnect-btn').style.display = 'none';
+  document.getElementById('scan-status').textContent = '';
+  closeCodePanel();
+  render();
+}
+
+function loadClientSettings() {
+  // dirHandle can't persist (browser security), UI starts disconnected
+}
+
+async function getFileByPath(relPath) {
+  if (fileCache[relPath]) return fileCache[relPath];
+  if (!dirHandle) return null;
+  try {
+    const parts = relPath.split('/');
+    let handle = dirHandle;
+    for (let i = 0; i < parts.length - 1; i++) {
+      handle = await handle.getDirectoryHandle(parts[i]);
+    }
+    const fileH = await handle.getFileHandle(parts[parts.length - 1]);
+    const file = await fileH.getFile();
+    const text = await file.text();
+    fileCache[relPath] = text;
+    return text;
+  } catch {
+    return null;
+  }
+}
+
+async function showCodePreview(relPath, lineNum) {
+  const panel = document.getElementById('code-panel');
+  const title = document.getElementById('code-panel-title');
+  const body = document.getElementById('code-panel-body');
+
+  if (!dirHandle) {
+    body.innerHTML = '<div class="code-panel-nodir">폴더를 먼저 연결해주세요</div>';
+    title.textContent = relPath;
+    panel.classList.add('open');
+    return;
+  }
+
+  title.textContent = `${relPath}${lineNum ? ':'+lineNum : ''}`;
+  body.innerHTML = '<div class="code-panel-nodir">로딩...</div>';
+  panel.classList.add('open');
+
+  const content = await getFileByPath(relPath);
+  if (!content) {
+    body.innerHTML = '<div class="code-panel-nodir">파일을 찾을 수 없습니다</div>';
+    return;
+  }
+
+  const lines = content.split('\n');
+  const target = lineNum ? parseInt(lineNum) : 1;
+  const start = Math.max(0, target - 16);
+  const end = Math.min(lines.length, target + 15);
+
+  let html = '<pre>';
+  for (let i = start; i < end; i++) {
+    const ln = i + 1;
+    const isTarget = ln === target;
+    const cls = isTarget ? 'highlight' : 'ctx';
+    html += `<span class="${cls}"><span class="ln">${ln}</span>${escHtml(lines[i])}\n</span>`;
+  }
+  html += '</pre>';
+  body.innerHTML = html;
+
+  // scroll to highlight
+  requestAnimationFrame(() => {
+    const hl = body.querySelector('.highlight');
+    if (hl) hl.scrollIntoView({ block: 'center' });
+  });
+}
+
+function closeCodePanel() {
+  document.getElementById('code-panel').classList.remove('open');
+}
+
+function makeCallLink(callStr, eventCode) {
+  // If we have live scan results, use them
+  if (scanDone && liveCallMap[eventCode]) {
+    const hits = liveCallMap[eventCode];
+    return hits.map(h => {
+      const shortName = h.file.split('/').pop();
+      return `<span class="file-link live" title="${h.file}:${h.line}" onclick="showCodePreview('${h.file}',${h.line})">${escHtml(shortName)}:${h.line}</span>`;
+    }).join(', ');
+  }
+
+  // If scanned but no hits found
+  if (scanDone) {
+    if (!callStr || callStr.startsWith('(')) return `<span class="no-link">미발견</span>`;
+    // show static as stale
+    return `<span class="no-link stale" title="스캔에서 미발견 (정적 데이터)">${escHtml(callStr)}</span>`;
+  }
+
+  // Not scanned yet — show static data with click support
+  if (!callStr || callStr.startsWith('(')) return `<span class="no-link">${escHtml(callStr||'—')}</span>`;
+
+  return callStr.replace(/([\w]+\.ts)(?::(\d+))?/g, (match, file, line) => {
+    const relPath = FILE_MAP[file];
+    if (!relPath) return escHtml(match);
+    return `<span class="file-link" title="${relPath}${line?':'+line:''}" onclick="showCodePreview('${relPath}',${line||0})">${escHtml(match)}</span>`;
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOG EVENT DATA — extracted from SolitaireTripeaksLogManager.ts
+// ══════════════════════════════════════════════════════════════
+const EVENTS = [
+  // ── 0xxx Loading ──
+  {code:'ALL_LOAD_FB',            num:'0xxx', cat:'loading', desc:'FB SDK 전체 로드 완료',           call:'BaseIntro.ts (implicit)',                params:''},
+  {code:'INTRO_GAME_DATA',        num:'0xxx', cat:'loading', desc:'게임 데이터 로딩 시작',            call:'BaseIntro.ts:305',                       params:''},
+  {code:'INTRO_GAME_DATA_FINISH', num:'0xxx', cat:'loading', desc:'게임 데이터 로딩 완료',            call:'BaseIntro.ts:308',                       params:''},
+  {code:'INTRO_COUNTRY_DATA',     num:'0xxx', cat:'loading', desc:'국가 데이터 로딩 시작',            call:'BaseIntro.ts:319',                       params:''},
+  {code:'INTRO_COUNTRY_DATA_FINISH',num:'0xxx',cat:'loading',desc:'국가 데이터 로딩 완료',            call:'BaseIntro.ts:321',                       params:''},
+  {code:'INTRO_BUNDLE',           num:'0xxx', cat:'loading', desc:'번들 로딩 시작',                   call:'BaseIntro.ts:325',                       params:''},
+  {code:'INTRO_BUNDLE_FINISH',    num:'0xxx', cat:'loading', desc:'번들 로딩 완료',                   call:'BaseIntro.ts:330',                       params:''},
+  {code:'INTRO_FB_START',         num:'0xxx', cat:'loading', desc:'FB 초기화 시작',                   call:'BaseIntro.ts (FB flow)',                  params:''},
+  {code:'INTRO_FB_START_FINISH',  num:'0xxx', cat:'loading', desc:'FB 초기화 완료',                   call:'BaseIntro.ts (FB flow)',                  params:''},
+  {code:'INTRO_SIGNED_PLAYER_INFO',num:'0xxx',cat:'loading', desc:'서명된 플레이어 정보 요청',        call:'BaseIntro.ts:343',                       params:''},
+  {code:'INTRO_SIGNED_PLAYER_INFO_FINISH',num:'0xxx',cat:'loading',desc:'서명된 플레이어 정보 완료',  call:'BaseIntro.ts:345',                       params:''},
+  {code:'INTRO_OBJECT_POOL',      num:'0xxx', cat:'loading', desc:'오브젝트 풀 초기화 시작',          call:'BaseIntro.ts:334, 565',                  params:''},
+  {code:'INTRO_OBJECT_POOL_FINISH',num:'0xxx',cat:'loading', desc:'오브젝트 풀 초기화 완료',          call:'BaseIntro.ts:336',                       params:''},
+  {code:'INTRO_FB_FRIEND',        num:'0xxx', cat:'loading', desc:'FB 친구 목록 로딩 시작',           call:'BaseIntro.ts:379',                       params:''},
+  {code:'INTRO_FB_FRIEND_FINISH', num:'0xxx', cat:'loading', desc:'FB 친구 목록 로딩 완료',           call:'BaseIntro.ts:381',                       params:''},
+  {code:'INTRO_FB_ENTRY_DATA',    num:'0xxx', cat:'loading', desc:'FB 진입 데이터 로딩 시작',         call:'BaseIntro.ts:406',                       params:''},
+  {code:'INTRO_FB_ENTRY_DATA_FINISH',num:'0xxx',cat:'loading',desc:'FB 진입 데이터 로딩 완료',        call:'BaseIntro.ts:416',                       params:''},
+  {code:'INTRO_FB_ENTRY_POINT',   num:'0xxx', cat:'loading', desc:'FB 진입 포인트 확인',              call:'BaseIntro.ts:391',                       params:''},
+  {code:'INTRO_FB_ENTRY_POINT_FINISH',num:'0xxx',cat:'loading',desc:'FB 진입 포인트 확인 완료',       call:'BaseIntro.ts:402',                       params:''},
+  {code:'INTRO_FB_SUBSCRIBE_BOT', num:'0xxx', cat:'loading', desc:'FB 봇 구독 시작',                  call:'BaseIntro.ts:421',                       params:''},
+  {code:'INTRO_FB_SUBSCRIBE_BOT_FINISH',num:'0xxx',cat:'loading',desc:'FB 봇 구독 완료',              call:'BaseIntro.ts:426',                       params:''},
+  {code:'INTRO_POPUP_HEADER',     num:'0xxx', cat:'loading', desc:'팝업 헤더 초기화',                 call:'BaseIntro.ts (implicit)',                 params:''},
+  {code:'INTRO_POPUP_HEADER_FINISH',num:'0xxx',cat:'loading',desc:'팝업 헤더 초기화 완료',            call:'BaseIntro.ts (implicit)',                 params:''},
+  {code:'INTRO_LOGIN',            num:'0xxx', cat:'loading', desc:'로그인 프로세스 시작',              call:'BaseIntro.ts:430',                       params:''},
+
+  // ── 1xxx Login & Playtime ──
+  {code:'1000_LOGIN_COMPLETE',    num:'1000', cat:'login', desc:'로그인 완료',                         call:'SolitaireTripeaksLogManager.ts:426',     params:'entrypoint{entry, contextID, payload, tournamentId, tournamentType}'},
+  {code:'1010_LOAD_COMPLETE',     num:'1010', cat:'login', desc:'씬 로드 완료',                        call:'SceneManager.ts:464',                    params:''},
+  {code:'1110_PLAYTIME_10S',      num:'1110', cat:'login', desc:'플레이타임 10초 도달',                call:'SolitaireTripeaksLogManager.ts:443',     params:''},
+  {code:'1120_PLAYTIME_30S',      num:'1120', cat:'login', desc:'플레이타임 30초 도달',                call:'SolitaireTripeaksLogManager.ts:447',     params:''},
+  {code:'1130_PLAYTIME_60S',      num:'1130', cat:'login', desc:'플레이타임 60초 도달',                call:'SolitaireTripeaksLogManager.ts:451',     params:''},
+  {code:'1140_PLAYTIME_120S',     num:'1140', cat:'login', desc:'플레이타임 2분 도달',                 call:'SolitaireTripeaksLogManager.ts:455',     params:''},
+  {code:'1150_PLAYTIME_180S',     num:'1150', cat:'login', desc:'플레이타임 3분 도달',                 call:'SolitaireTripeaksLogManager.ts:459',     params:''},
+  {code:'1160_PLAYTIME_240S',     num:'1160', cat:'login', desc:'플레이타임 4분 도달',                 call:'SolitaireTripeaksLogManager.ts:463',     params:''},
+  {code:'1170_PLAYTIME_300S',     num:'1170', cat:'login', desc:'플레이타임 5분 도달',                 call:'SolitaireTripeaksLogManager.ts:467',     params:''},
+  {code:'1180_PLAYTIME_600S',     num:'1180', cat:'login', desc:'플레이타임 10분 도달',                call:'SolitaireTripeaksLogManager.ts:471',     params:''},
+  {code:'1190_PLAYTIME_900S',     num:'1190', cat:'login', desc:'플레이타임 15분 도달',                call:'SolitaireTripeaksLogManager.ts:475',     params:''},
+  {code:'1200_PLAYTIME_1200S',    num:'1200', cat:'login', desc:'플레이타임 20분 도달',                call:'SolitaireTripeaksLogManager.ts:479',     params:''},
+  {code:'1210_PLAYTIME_1800S',    num:'1210', cat:'login', desc:'플레이타임 30분 도달',                call:'SolitaireTripeaksLogManager.ts:483',     params:''},
+  {code:'1220_PLAYTIME_3600S',    num:'1220', cat:'login', desc:'플레이타임 60분 도달',                call:'SolitaireTripeaksLogManager.ts:487',     params:''},
+
+  // ── 2xxx-0 Pre-Level & Entry ──
+  {code:'2090_PRE_LEVEL_SHOW',              num:'2090', cat:'gameplay', desc:'프리레벨 팝업 노출',               call:'PopupGameEntry.ts:184',       params:'level, difficulty_tier, gold_balance, ticket_balance, bet_level'},
+  {code:'2091_PRE_LEVEL_BOOSTER_SELECT',    num:'2091', cat:'gameplay', desc:'프리레벨 부스터 선택',             call:'PopupGameEntry.ts:805',       params:'booster_type, price'},
+  {code:'2092_PRE_LEVEL_BOOSTER_DESELECT',  num:'2092', cat:'gameplay', desc:'프리레벨 부스터 해제',             call:'PopupGameEntry.ts:763',       params:'booster_type'},
+  {code:'2093_PRE_LEVEL_BETTING',           num:'2093', cat:'gameplay', desc:'프리레벨 베팅 변경',               call:'PopupGameEntry.ts:486',       params:'bet_level, gold_cost'},
+  {code:'2094_PRE_LEVEL_PLAY',              num:'2094', cat:'gameplay', desc:'프리레벨 플레이 버튼',             call:'PopupGameEntry.ts:1023',      params:'level, bet_level, boosters, gold_balance'},
+  {code:'2095_PRE_LEVEL_GOLD_SHORTAGE',     num:'2095', cat:'gameplay', desc:'프리레벨 골드 부족',               call:'PopupGameEntry.ts:834, 934', params:'gold_balance, gold_required'},
+  {code:'2096_PRE_LEVEL_CLOSE',             num:'2096', cat:'gameplay', desc:'프리레벨 팝업 닫기',               call:'PopupGameEntry.ts:709',       params:'level'},
+  {code:'2097_PRE_LEVEL_INVITE',            num:'2097', cat:'gameplay', desc:'프리레벨 초대',                    call:'PopupGameEntry.ts:1153',      params:'level'},
+
+  // ── 2xxx-00 Gameplay Start & NRU ──
+  {code:'2100_GAMEPLAY_START',              num:'2100', cat:'gameplay', desc:'게임 플레이 시작',                  call:'ViewGame.ts:500',             params:'level, difficulty_tier, seed, bet_level, boosters'},
+  {code:'2109_GAMEPLAY_FIRST_TOUCH',        num:'2109', cat:'gameplay', desc:'NRU 첫 터치',                      call:'PopupWelcomeBonus.ts:31',     params:''},
+
+  // ── 2xxx Tutorial ──
+  {code:'2110_TUTO_INGAME_INTRO',           num:'2110', cat:'gameplay', desc:'튜토리얼: 인게임 인트로',          call:'TutorialManager.ts',          params:''},
+  {code:'2111_TUTO_DECK_DRAW',              num:'2111', cat:'gameplay', desc:'튜토리얼: 덱 드로우',              call:'TutorialManager.ts',          params:''},
+  {code:'2112_TUTO_LOBBY_PLAY',             num:'2112', cat:'gameplay', desc:'튜토리얼: 로비 플레이',            call:'TutorialManager.ts',          params:''},
+  {code:'2113_TUTO_SHOP',                   num:'2113', cat:'gameplay', desc:'튜토리얼: 상점',                   call:'TutorialManager.ts',          params:''},
+  {code:'2114_TUTO_PRE_LEVEL_POPUP',        num:'2114', cat:'gameplay', desc:'튜토리얼: 프리레벨 팝업',          call:'TutorialManager.ts',          params:''},
+  {code:'2115_TUTO_IDLE_GOLD',              num:'2115', cat:'gameplay', desc:'튜토리얼: 방치 골드',              call:'TutorialManager.ts',          params:''},
+  {code:'2116_TUTO_PLUS_CARD',              num:'2116', cat:'gameplay', desc:'튜토리얼: 플러스 카드',            call:'TutorialManager.ts',          params:''},
+  {code:'2117_TUTO_IDLE_GOLD_COLLECT',      num:'2117', cat:'gameplay', desc:'튜토리얼: 방치 골드 수집',         call:'TutorialManager.ts',          params:''},
+  {code:'2118_TUTO_DAILY_CHECK',            num:'2118', cat:'gameplay', desc:'튜토리얼: 데일리 체크',            call:'TutorialManager.ts',          params:''},
+  {code:'2119_TUTO_STREAK',                 num:'2119', cat:'gameplay', desc:'튜토리얼: 스트릭',                 call:'TutorialManager.ts',          params:''},
+  {code:'2120_TUTO_LEADERBOARD',            num:'2120', cat:'gameplay', desc:'튜토리얼: 리더보드',               call:'TutorialManager.ts',          params:''},
+  {code:'2121_TUTO_COLLECTION',             num:'2121', cat:'gameplay', desc:'튜토리얼: 콜렉션',                 call:'TutorialManager.ts',          params:''},
+  {code:'2122_TUTO_BOOSTER_UNDO',           num:'2122', cat:'gameplay', desc:'튜토리얼: 부스터 되돌리기',        call:'TutorialManager.ts',          params:''},
+  {code:'2123_TUTO_BOOSTER_FIREWORKS',      num:'2123', cat:'gameplay', desc:'튜토리얼: 부스터 폭죽',            call:'TutorialManager.ts',          params:''},
+  {code:'2124_TUTO_BOOSTER_WILDCARD',       num:'2124', cat:'gameplay', desc:'튜토리얼: 부스터 와일드카드',      call:'TutorialManager.ts',          params:''},
+  {code:'2125_TUTO_BOOSTER_EXTRADECK',      num:'2125', cat:'gameplay', desc:'튜토리얼: 부스터 추가덱',          call:'TutorialManager.ts',          params:''},
+  {code:'2126_TUTO_CITY_DECO',              num:'2126', cat:'gameplay', desc:'튜토리얼: 도시 꾸미기',            call:'TutorialManager.ts',          params:''},
+  {code:'2127_TUTO_BETTING_2',              num:'2127', cat:'gameplay', desc:'튜토리얼: 베팅 x2',                call:'TutorialManager.ts',          params:''},
+  {code:'2128_TUTO_DAILY_WHEEL',            num:'2128', cat:'gameplay', desc:'튜토리얼: 데일리 휠',              call:'TutorialManager.ts',          params:''},
+  {code:'2129_TUTO_EVENT_FORCED',           num:'2129', cat:'gameplay', desc:'튜토리얼: 이벤트 강제',            call:'TutorialManager.ts',          params:''},
+  {code:'2130_TUTO_GIMMICK_RUNNER',         num:'2130', cat:'gameplay', desc:'튜토리얼: 기믹 러너',              call:'TutorialManager.ts',          params:''},
+  {code:'2131_TUTO_BETTING_4',              num:'2131', cat:'gameplay', desc:'튜토리얼: 베팅 x4',                call:'TutorialManager.ts',          params:''},
+  {code:'2132_TUTO_GIMMICK_LOCK_KEY',       num:'2132', cat:'gameplay', desc:'튜토리얼: 기믹 자물쇠',            call:'TutorialManager.ts',          params:''},
+  {code:'2133_TUTO_GIMMICK_ROPE',           num:'2133', cat:'gameplay', desc:'튜토리얼: 기믹 로프',              call:'TutorialManager.ts',          params:''},
+  {code:'2134_TUTO_CITY_DECO_REPEAT',       num:'2134', cat:'gameplay', desc:'튜토리얼: 도시 꾸미기 반복',       call:'TutorialManager.ts',          params:''},
+  {code:'2135_TUTO_GIMMICK_LOCK_TIP',       num:'2135', cat:'gameplay', desc:'튜토리얼: 자물쇠 팁',              call:'TutorialManager.ts',          params:''},
+  {code:'2136_TUTO_BOOSTER_GOLDEN_TICKET',  num:'2136', cat:'gameplay', desc:'튜토리얼: 골든 티켓',              call:'TutorialManager.ts',          params:''},
+  {code:'2137_TUTO_GIMMICK_ROPE_TIP',       num:'2137', cat:'gameplay', desc:'튜토리얼: 로프 팁',                call:'TutorialManager.ts',          params:''},
+  {code:'2140_TUTO_GRADUATED',              num:'2140', cat:'gameplay', desc:'튜토리얼 졸업 완료',                call:'TutorialManager.ts:410',      params:'graduated_level, total_duration'},
+  {code:'2141_TUTO_STEP_COMPLETE',          num:'2141', cat:'gameplay', desc:'튜토리얼 스텝 완료',                call:'TutorialManager.ts:188',      params:'guide_key, content_id, duration'},
+  {code:'2150_GAMEPLAY_NRU_CARD_MATCH',     num:'2150', cat:'gameplay', desc:'NRU 카드 매칭',                     call:'ViewGame.ts:664',             params:'match_count, level'},
+  {code:'2151_GAMEPLAY_NRU_MATCHES',        num:'2151', cat:'gameplay', desc:'NRU 총 매칭 수',                    call:'ViewGame.ts:1117',            params:'total_matches, level'},
+
+  // ── 2xxx-1 Booster Usage ──
+  {code:'2160_GAMEPLAY_ITEM_UNDO_TRY',          num:'2160', cat:'gameplay', desc:'되돌리기 부스터 시도',          call:'IngameItemButtonView.ts:479', params:'difficulty_tier, seed, type, price, use_count'},
+  {code:'2161_GAMEPLAY_ITEM_UNDO_SUCCESS',      num:'2161', cat:'gameplay', desc:'되돌리기 부스터 성공',          call:'IngameItemButtonView.ts:494', params:'difficulty_tier, seed, type, use_count'},
+  {code:'2162_GAMEPLAY_ITEM_UNDO_FAIL',         num:'2162', cat:'gameplay', desc:'되돌리기 부스터 실패',          call:'IngameItemButtonView.ts:509', params:'difficulty_tier, seed, error_code'},
+  {code:'2163_GAMEPLAY_ITEM_UNDO_UNLOCK',       num:'2163', cat:'gameplay', desc:'되돌리기 부스터 잠금해제',      call:'IngameItemButtonView.ts:523', params:''},
+  {code:'2170_GAMEPLAY_ITEM_FIREWORKS_TRY',     num:'2170', cat:'gameplay', desc:'폭죽 부스터 시도',              call:'StageView.ts:2678, 3095',     params:'difficulty_tier, seed, type, price'},
+  {code:'2171_GAMEPLAY_ITEM_FIREWORKS_SUCCESS', num:'2171', cat:'gameplay', desc:'폭죽 부스터 성공',              call:'StageView.ts:2688, 3110',     params:'removed_cards'},
+  {code:'2172_GAMEPLAY_ITEM_FIREWORKS_FAIL',    num:'2172', cat:'gameplay', desc:'폭죽 부스터 실패',              call:'StageView.ts:2683, 3100',     params:'error_code, error_message'},
+  {code:'2173_GAMEPLAY_ITEM_FIREWORKS_UNLOCK',  num:'2173', cat:'gameplay', desc:'폭죽 부스터 잠금해제',          call:'PopupGameEntry.ts:726',       params:''},
+  {code:'2180_GAMEPLAY_ITEM_WILDCARD_TRY',      num:'2180', cat:'gameplay', desc:'와일드카드 부스터 시도',        call:'IngameItemButtonView.ts:485', params:'difficulty_tier, seed, type, price'},
+  {code:'2181_GAMEPLAY_ITEM_WILDCARD_SUCCESS',  num:'2181', cat:'gameplay', desc:'와일드카드 부스터 성공',        call:'IngameItemButtonView.ts:500', params:''},
+  {code:'2182_GAMEPLAY_ITEM_WILDCARD_FAIL',     num:'2182', cat:'gameplay', desc:'와일드카드 부스터 실패',        call:'IngameItemButtonView.ts:515', params:'error_code'},
+  {code:'2183_GAMEPLAY_ITEM_WILDCARD_UNLOCK',   num:'2183', cat:'gameplay', desc:'와일드카드 부스터 잠금해제',    call:'IngameItemButtonView.ts:526', params:''},
+  {code:'2190_GAMEPLAY_ITEM_EXTRADECK_TRY',     num:'2190', cat:'gameplay', desc:'추가덱 부스터 시도',            call:'IngameItemButtonView.ts:482', params:'difficulty_tier, seed, use_count'},
+  {code:'2191_GAMEPLAY_ITEM_EXTRADECK_SUCCESS', num:'2191', cat:'gameplay', desc:'추가덱 부스터 성공',            call:'IngameItemButtonView.ts:497', params:''},
+  {code:'2192_GAMEPLAY_ITEM_EXTRADECK_FAIL',    num:'2192', cat:'gameplay', desc:'추가덱 부스터 실패',            call:'IngameItemButtonView.ts:512', params:'error_code'},
+  {code:'2193_GAMEPLAY_ITEM_EXTRADECK_UNLOCK',  num:'2193', cat:'gameplay', desc:'추가덱 부스터 잠금해제',        call:'IngameItemButtonView.ts:529', params:''},
+  {code:'2195_GAMEPLAY_ITEM_GOLDENTICKET_TRY',      num:'2195', cat:'gameplay', desc:'골든티켓 부스터 시도',      call:'ViewGame.ts:576',             params:'difficulty_tier, seed, type, price'},
+  {code:'2196_GAMEPLAY_ITEM_GOLDENTICKET_SUCCESS',   num:'2196', cat:'gameplay', desc:'골든티켓 부스터 성공',     call:'ViewGame.ts:582',             params:'difficulty_tier, seed, type'},
+  {code:'2197_GAMEPLAY_ITEM_GOLDENTICKET_FAIL',      num:'2197', cat:'gameplay', desc:'골든티켓 부스터 실패',     call:'ViewGame.ts:591',             params:'error_code, error_message'},
+  {code:'2198_GAMEPLAY_ITEM_INFINITE_USE',       num:'2198', cat:'gameplay', desc:'무한 부스터 사용',             call:'(registered, call TBD)',       params:''},
+  {code:'2199_GAMEPLAY_FREE_BOOSTER_USE',        num:'2199', cat:'gameplay', desc:'무료 부스터 사용',             call:'(registered, call TBD)',       params:''},
+
+  // ── 2xxx-2 Streak & Combo ──
+  {code:'2210_GAMEPLAY_COMBO_REWARD',       num:'2210', cat:'gameplay', desc:'콤보 보상 획득',                    call:'StageView.ts:4264',           params:'combo_count, reward_gold'},
+  {code:'2211_GAMEPLAY_STREAK_METER_FILL',  num:'2211', cat:'gameplay', desc:'스트릭 미터 충전',                  call:'StageView.ts:5537',           params:'streak_level'},
+  {code:'2212_GAMEPLAY_STREAK_STAR_EARN',   num:'2212', cat:'gameplay', desc:'스트릭 별 획득',                    call:'StageView.ts:5514',           params:'star_count'},
+  {code:'2213_GAMEPLAY_DECK_BONUS',         num:'2213', cat:'gameplay', desc:'덱 보너스 획득',                    call:'StageView.ts:4387',           params:'bonus_gold'},
+
+  // ── 2xxx-3 Ingame Settings & Quit ──
+  {code:'2200_GAMEPLAY_SETTING_LEAVE',      num:'2200', cat:'gameplay', desc:'인게임 설정에서 나가기',            call:'ViewGame.ts:1289',            params:'level, difficulty_tier'},
+  {code:'2220_GAMEPLAY_END_SURE',           num:'2220', cat:'gameplay', desc:'게임 종료 확인 팝업 노출',          call:'PopupQuitLevel.ts:107',       params:'level'},
+  {code:'2221_GAMEPLAY_END_SURE_NO',        num:'2221', cat:'gameplay', desc:'게임 종료 확인 — 계속하기',         call:'PopupQuitLevel.ts:115',       params:'level'},
+  {code:'2222_GAMEPLAY_END_SURE_YES',       num:'2222', cat:'gameplay', desc:'게임 종료 확인 — 나가기',           call:'PopupQuitLevel.ts:124',       params:'level'},
+
+  // ── 2xxx-3a Ingame Gold Charge ──
+  {code:'2270_INGAME_GOLD_CHARGE_POPUP',    num:'2270', cat:'gameplay', desc:'인게임 골드 충전 팝업',             call:'PopupChargeGold.ts:31',       params:'gold_balance, position'},
+  {code:'2271_INGAME_GOLD_CHARGE_TRY',      num:'2271', cat:'gameplay', desc:'인게임 골드 충전 시도',             call:'PopupChargeGold.ts:62',       params:'charge_type'},
+  {code:'2272_INGAME_GOLD_CHARGE_CLOSE',    num:'2272', cat:'gameplay', desc:'인게임 골드 충전 닫기',             call:'PopupChargeGold.ts:101',      params:''},
+
+  // ── 2xxx-4 Finish & Result ──
+  {code:'2300_GAMEPLAY_FINISH',             num:'2300', cat:'gameplay', desc:'게임 플레이 종료',                   call:'ViewGame.ts:1126, 1239',     params:'level, result, score, gold_earned, cards_matched'},
+  {code:'2400_FINISH_RESULT',               num:'2400', cat:'gameplay', desc:'결과 화면 노출',                    call:'PopupCompleteLevel.ts:152',   params:'level, result, score, gold, stars'},
+  {code:'2410_FINISH_RESULT_CLAIM',         num:'2410', cat:'gameplay', desc:'결과 보상 수령',                    call:'PopupCompleteLevel.ts:302',   params:'gold_earned'},
+  {code:'2420_FINISH_RESULT_DOUBLE_CLAIM_TRY',     num:'2420', cat:'gameplay', desc:'결과 보상 2배 시도 (RV)',    call:'PopupCompleteLevel.ts:318',   params:''},
+  {code:'2421_FINISH_RESULT_DOUBLE_CLAIM_SUCCESS',  num:'2421', cat:'gameplay', desc:'결과 보상 2배 성공',       call:'PopupCompleteLevel.ts:345',   params:'double_gold'},
+  {code:'2422_FINISH_RESULT_DOUBLE_CLAIM_FAIL',     num:'2422', cat:'gameplay', desc:'결과 보상 2배 실패',       call:'PopupCompleteLevel.ts:358, 365', params:'error_code, error_message'},
+  {code:'2430_FINISH_RESULT_HOME',          num:'2430', cat:'gameplay', desc:'결과 화면에서 홈 이동',             call:'PopupCompleteLevel.ts:260',   params:''},
+
+  // ── 2xxx-5 Betting & Entry Cost ──
+  {code:'2510_ENTRY_COST_PAY',              num:'2510', cat:'gameplay', desc:'입장료 골드 지불',                   call:'PopupGameEntry.ts:1113',     params:'level, gold_cost, bet_level'},
+  {code:'2511_ENTRY_COST_PAY_TICKET',       num:'2511', cat:'gameplay', desc:'입장료 티켓 지불',                   call:'PopupGameEntry.ts:1107',     params:'level, ticket_cost'},
+  {code:'2512_ENTRY_COST_FREE',             num:'2512', cat:'gameplay', desc:'입장료 무료',                        call:'PopupGameEntry.ts:1102',     params:'level'},
+
+  // ── 2xxx-6 Gimmick ──
+  {code:'2600_GIMMICK_FIRST_APPEAR',        num:'2600', cat:'gameplay', desc:'기믹 첫 등장',                      call:'ViewGame.ts:999',            params:'gimmick_type, stage_id, level'},
+  {code:'2601_GIMMICK_GUIDE_SHOWN',         num:'2601', cat:'gameplay', desc:'기믹 가이드 노출',                  call:'TutorialManager.ts:200',     params:'gimmick_type, guide_type'},
+  {code:'2610_GIMMICK_PLUS_CARD_MATCH',     num:'2610', cat:'gameplay', desc:'플러스 카드 매칭',                  call:'StageView.ts:2928',          params:'difficulty_tier, seed'},
+  {code:'2620_GIMMICK_RUNNER_MOVE',         num:'2620', cat:'gameplay', desc:'러너 카드 이동',                    call:'StageView.ts:4497',          params:'difficulty_tier, seed, direction'},
+  {code:'2630_GIMMICK_LOCK_KEY_UNLOCK',     num:'2630', cat:'gameplay', desc:'자물쇠 키 해제',                    call:'StageView.ts:2995',          params:'difficulty_tier, seed, unlocked_cards'},
+  {code:'2640_GIMMICK_ROPE_BREAK',          num:'2640', cat:'gameplay', desc:'로프 끊기',                         call:'StageView.ts:2282',          params:'difficulty_tier, seed'},
+
+  // ── 3xxx Social ──
+  {code:'3000_SWITCH_CONTEXT_START',        num:'3000', cat:'social', desc:'컨텍스트 전환 시작',                   call:'PopupSwitchContext.ts:59, 116', params:'contextType'},
+  {code:'3010_SWITCH_CONTEXT_SUCCESS',      num:'3010', cat:'social', desc:'컨텍스트 전환 성공',                   call:'PopupSwitchContext.ts:84, 108, 139', params:'contextType'},
+  {code:'3020_SWITCH_CONTEXT_FAIL',         num:'3020', cat:'social', desc:'컨텍스트 전환 실패',                   call:'PopupSwitchContext.ts:77, 103, 132', params:'contextType, errorCode, errorMessage'},
+  {code:'3400_MSG_P2P',                     num:'3400', cat:'social', desc:'P2P 메시지 전송 시도',                 call:'FacebookPlatform.ts:1899',   params:''},
+  {code:'3410_MSG_P2P_SUCCESS',             num:'3410', cat:'social', desc:'P2P 메시지 전송 성공',                 call:'FacebookPlatform.ts:1900',   params:''},
+  {code:'3420_MSG_P2P_FAIL',               num:'3420', cat:'social', desc:'P2P 메시지 전송 실패',                 call:'FacebookPlatform.ts:1901',   params:''},
+  {code:'3430_MSG_P2P_RETRY',              num:'3430', cat:'social', desc:'P2P 메시지 재시도',                    call:'FacebookPlatform.ts:1899',   params:''},
+  {code:'3440_MSG_P2P_RETRY_SUCCESS',      num:'3440', cat:'social', desc:'P2P 메시지 재시도 성공',               call:'FacebookPlatform.ts:1900',   params:''},
+  {code:'3450_MSG_P2P_RETRY_FAIL',         num:'3450', cat:'social', desc:'P2P 메시지 재시도 실패',               call:'FacebookPlatform.ts:1901',   params:''},
+  {code:'3500_FEED_SHARE',                 num:'3500', cat:'social', desc:'피드 공유 시도',                        call:'(registered)',                params:''},
+  {code:'3510_FEED_SHARE_SUCCESS',         num:'3510', cat:'social', desc:'피드 공유 성공',                        call:'(registered)',                params:''},
+  {code:'3520_FEED_SHARE_FAIL',            num:'3520', cat:'social', desc:'피드 공유 실패',                        call:'(registered)',                params:''},
+  {code:'3600_SCREENSHOT_SHARE',           num:'3600', cat:'social', desc:'스크린샷 공유 시도',                    call:'PopupCompleteLevel.ts:493',  params:'position'},
+  {code:'3610_SCREENSHOT_SHARE_SUCCESS',   num:'3610', cat:'social', desc:'스크린샷 공유 성공',                    call:'PopupCompleteLevel.ts:485',  params:'position'},
+  {code:'3620_SCREENSHOT_SHARE_FAIL',      num:'3620', cat:'social', desc:'스크린샷 공유 실패',                    call:'PopupCompleteLevel.ts:479',  params:'position, error_code, error_message'},
+
+  // ── 4xxx Monetization (Ads) ──
+  {code:'4000_INTERSTITIAL_AD_START',       num:'4000', cat:'ads', desc:'전면 광고 시작',                          call:'TossPlatform.ts:756 / YouTubePlatform.ts:288', params:'type/position'},
+  {code:'4001_INTERSTITIAL_AD_BREAK',       num:'4001', cat:'ads', desc:'전면 광고 브레이크',                      call:'PopupAdBreak.ts:16',         params:''},
+  {code:'4010_INTERSTITIAL_AD_FINISH',      num:'4010', cat:'ads', desc:'전면 광고 완료',                          call:'TossPlatform.ts:781 / YouTubePlatform.ts:291', params:'type/position'},
+  {code:'4020_INTERSTITIAL_AD_ERROR',       num:'4020', cat:'ads', desc:'전면 광고 에러',                          call:'TossPlatform.ts:786 / YouTubePlatform.ts:294', params:'type/position, error_code, error_message'},
+  {code:'4080_INTERSTITIAL_AD_PRELOAD_FINISH', num:'4080', cat:'ads', desc:'전면 광고 프리로드 완료',              call:'TossPlatform.ts:764',        params:'type'},
+  {code:'4090_INTERSTITIAL_AD_PRELOAD_ERROR',  num:'4090', cat:'ads', desc:'전면 광고 프리로드 에러',              call:'TossPlatform.ts:766',        params:'type, error_code, error_message'},
+  {code:'4200_RV_START',                    num:'4200', cat:'ads', desc:'보상형 광고 시작',                         call:'TossPlatform.ts:813 / YouTubePlatform.ts:305', params:'type/position'},
+  {code:'4210_RV_FINISH',                   num:'4210', cat:'ads', desc:'보상형 광고 완료',                         call:'TossPlatform.ts:838 / YouTubePlatform.ts:309', params:'type/position'},
+  {code:'4220_RV_ERROR',                    num:'4220', cat:'ads', desc:'보상형 광고 에러',                         call:'TossPlatform.ts:854 / YouTubePlatform.ts:316', params:'type/position, error_code, error_message'},
+  {code:'4280_RV_PRELOAD_FINISH',           num:'4280', cat:'ads', desc:'보상형 광고 프리로드 완료',                call:'TossPlatform.ts:818',        params:'type'},
+  {code:'4290_RV_PRELOAD_ERROR',            num:'4290', cat:'ads', desc:'보상형 광고 프리로드 에러',                call:'TossPlatform.ts:824',        params:'type, error_code, error_message'},
+  {code:'4300_BANNER_AD_START',             num:'4300', cat:'ads', desc:'배너 광고 시작',                           call:'(registered)',                params:''},
+  {code:'4310_BANNER_AD_FINISH',            num:'4310', cat:'ads', desc:'배너 광고 완료',                           call:'(registered)',                params:''},
+  {code:'4320_BANNER_AD_ERROR',             num:'4320', cat:'ads', desc:'배너 광고 에러',                           call:'(registered)',                params:''},
+
+  // ── 5xxx Scene / UI Popups ──
+  {code:'5000_SHOP',                        num:'5000', cat:'ui', desc:'상점 팝업 오픈',                           call:'PopupShop.ts:52',            params:'position, gold_balance'},
+  {code:'5001_SHOP_PURCHASE_TRY',           num:'5001', cat:'ui', desc:'상점 구매 시도',                           call:'PopupShop.ts:102',           params:'product_id, price, position, type'},
+  {code:'5002_SHOP_PURCHASE_SUCCESS',       num:'5002', cat:'ui', desc:'상점 구매 성공',                           call:'PopupShop.ts:157',           params:'product_id, price, position, type'},
+  {code:'5003_SHOP_PURCHASE_FAIL',          num:'5003', cat:'ui', desc:'상점 구매 실패',                           call:'PopupShop.ts:128, 166',      params:'product_id, error_code, error_message'},
+  {code:'5004_BTN_SHOP_CLOSE',              num:'5004', cat:'ui', desc:'상점 닫기',                                call:'PopupShop.ts:348',           params:''},
+  {code:'5130_SHOP_AD_GOLD_TRY',            num:'5130', cat:'ui', desc:'상점 광고 골드 시도',                      call:'PopupShop.ts:100',           params:'ad_remaining, reward_gold'},
+  {code:'5131_SHOP_AD_GOLD_SUCCESS',        num:'5131', cat:'ui', desc:'상점 광고 골드 성공',                      call:'PopupShop.ts:155',           params:'ad_remaining, reward_gold'},
+  {code:'5132_SHOP_AD_GOLD_FAIL',           num:'5132', cat:'ui', desc:'상점 광고 골드 실패',                      call:'PopupShop.ts:164',           params:'error_code, error_message'},
+  {code:'5100_DAILY_TASK',                  num:'5100', cat:'ui', desc:'데일리 태스크 팝업',                       call:'PopupDailyTask.ts:57',       params:'position'},
+  {code:'5101_DAILY_TASK_GO_TO',            num:'5101', cat:'ui', desc:'데일리 태스크 이동',                       call:'PopupDailyTask.ts:96',       params:'task_key, type, landing'},
+  {code:'5102_DAILY_TASK_REWARD_CLAIM_TRY', num:'5102', cat:'ui', desc:'데일리 태스크 보상 수령 시도',             call:'PopupDailyTask.ts:221',      params:'task_key, reward_type'},
+  {code:'5103_DAILY_TASK_REWARD_CLAIM_SUCCESS',num:'5103',cat:'ui',desc:'데일리 태스크 보상 수령 성공',            call:'PopupDailyTask.ts:258',      params:''},
+  {code:'5104_DAILY_TASK_REWARD_CLAIM_FAIL',num:'5104', cat:'ui', desc:'데일리 태스크 보상 수령 실패',             call:'PopupDailyTask.ts:301',      params:'error_code'},
+  {code:'5105_BTN_DAILY_TASK_CLOSE',        num:'5105', cat:'ui', desc:'데일리 태스크 닫기',                       call:'PopupDailyTask.ts:385',      params:''},
+  {code:'5156_DAILY_TASK_CHANGE_TRY',       num:'5156', cat:'ui', desc:'데일리 태스크 변경 시도',                  call:'PopupDailyTask.ts:147',      params:'task_key, type'},
+  {code:'5157_DAILY_TASK_CHANGE_SUCCESS',   num:'5157', cat:'ui', desc:'데일리 태스크 변경 성공',                  call:'PopupDailyTask.ts:180',      params:'task_key, prev_type, new_type'},
+  {code:'5158_DAILY_TASK_CHANGE_FAIL',      num:'5158', cat:'ui', desc:'데일리 태스크 변경 실패',                  call:'PopupDailyTask.ts:151, 203', params:'task_key, error_code, error_message'},
+  {code:'5200_LEADERBOARD',                 num:'5200', cat:'ui', desc:'리더보드 팝업',                            call:'PopupLeaderboard.ts:107',    params:'position'},
+  {code:'5201_BTN_LEADERBOARD_FRIENDS_TAB', num:'5201', cat:'ui', desc:'리더보드 친구 탭',                         call:'PopupLeaderboard.ts:423',    params:''},
+  {code:'5202_BTN_LEADERBOARD_WORLD_TAB',   num:'5202', cat:'ui', desc:'리더보드 월드 탭',                         call:'PopupLeaderboard.ts:413',    params:''},
+  {code:'5203_BTN_LEADERBOARD_FRIENDS_WEEKLY_TAB',  num:'5203', cat:'ui', desc:'리더보드 친구 주간 탭',            call:'PopupLeaderboard.ts:450',    params:''},
+  {code:'5204_BTN_LEADERBOARD_FRIENDS_ALLTIME_TAB', num:'5204', cat:'ui', desc:'리더보드 친구 전체 탭',            call:'PopupLeaderboard.ts:454',    params:''},
+  {code:'5205_BTN_LEADERBOARD_WORLD_WEEKLY_TAB',    num:'5205', cat:'ui', desc:'리더보드 월드 주간 탭',            call:'PopupLeaderboard.ts:458',    params:''},
+  {code:'5206_BTN_LEADERBOARD_WORLD_ALLTIME_TAB',   num:'5206', cat:'ui', desc:'리더보드 월드 전체 탭',            call:'PopupLeaderboard.ts:462',    params:''},
+  {code:'5207_BTN_LEADERBOARD_FRIENDS_INVITE',      num:'5207', cat:'ui', desc:'리더보드 친구 초대',               call:'PopupLeaderboard.ts:466',    params:''},
+  {code:'5521_LEADERBOARD_FRIEND_GIFT_TRY',     num:'5521', cat:'ui', desc:'리더보드 친구 선물 시도',              call:'LeaderboardRankItem.ts:181', params:'friend_id, gift_type'},
+  {code:'5522_LEADERBOARD_FRIEND_GIFT_SUCCESS',  num:'5522', cat:'ui', desc:'리더보드 친구 선물 성공',             call:'LeaderboardRankItem.ts:243', params:'friend_id, gift_type'},
+  {code:'5523_LEADERBOARD_FRIEND_GIFT_FAIL',     num:'5523', cat:'ui', desc:'리더보드 친구 선물 실패',             call:'LeaderboardRankItem.ts:246', params:'friend_id, error_code, error_message'},
+
+  // ── 5xxx-1 Events ──
+  {code:'5400_EVENT_BLACK_CARD_MILESTONE',       num:'5400', cat:'ui', desc:'블랙카드 마일스톤 팝업',              call:'PopupEventCardMilestone.ts:89',  params:'position'},
+  {code:'5401_EVENT_BLACK_CARD_MILESTONE_PLAY',  num:'5401', cat:'ui', desc:'블랙카드 마일스톤 플레이',            call:'PopupEventCardMilestone.ts:170', params:''},
+  {code:'5402_EVENT_BLACK_CARD_MILESTONE_CLOSE', num:'5402', cat:'ui', desc:'블랙카드 마일스톤 닫기',              call:'PopupEventCardMilestone.ts:209', params:''},
+  {code:'5403_EVENT_BLACK_CARD_MILESTONE_REWARD',num:'5403', cat:'ui', desc:'블랙카드 마일스톤 보상',              call:'SessionFlowManager.ts:117',      params:''},
+  {code:'5410_EVENT_RED_CARD_MILESTONE',         num:'5410', cat:'ui', desc:'레드카드 마일스톤 팝업',              call:'PopupEventCardMilestone.ts:89',  params:'position'},
+  {code:'5411_EVENT_RED_CARD_MILESTONE_PLAY',    num:'5411', cat:'ui', desc:'레드카드 마일스톤 플레이',            call:'PopupEventCardMilestone.ts:170', params:''},
+  {code:'5412_EVENT_RED_CARD_MILESTONE_CLOSE',   num:'5412', cat:'ui', desc:'레드카드 마일스톤 닫기',              call:'PopupEventCardMilestone.ts:209', params:''},
+  {code:'5413_EVENT_RED_CARD_MILESTONE_REWARD',  num:'5413', cat:'ui', desc:'레드카드 마일스톤 보상',              call:'SessionFlowManager.ts:119',      params:''},
+  {code:'5420_EVENT_WINNING_MILESTONE',          num:'5420', cat:'ui', desc:'위닝 마일스톤 팝업',                  call:'PopupEventWinningMilestone.ts:74', params:'position'},
+  {code:'5421_EVENT_WINNING_MILESTONE_PLAY',     num:'5421', cat:'ui', desc:'위닝 마일스톤 플레이',                call:'PopupEventWinningMilestone.ts:124', params:''},
+  {code:'5422_EVENT_WINNING_MILESTONE_CLOSE',    num:'5422', cat:'ui', desc:'위닝 마일스톤 닫기',                  call:'PopupEventWinningMilestone.ts:129', params:''},
+  {code:'5423_EVENT_WINNING_MILESTONE_REWARD',   num:'5423', cat:'ui', desc:'위닝 마일스톤 보상',                  call:'(registered)',                params:''},
+  {code:'5430_EVENT_CLEAR_RANKING',              num:'5430', cat:'ui', desc:'클리어 랭킹 팝업',                    call:'PopupEventClearRanking.ts:75', params:'position'},
+  {code:'5431_EVENT_CLEAR_RANKING_PLAY',         num:'5431', cat:'ui', desc:'클리어 랭킹 플레이',                  call:'PopupEventClearRanking.ts:164', params:''},
+  {code:'5432_EVENT_CLEAR_RANKING_CLOSE',        num:'5432', cat:'ui', desc:'클리어 랭킹 닫기',                    call:'PopupEventClearRanking.ts:169', params:''},
+
+  // ── 5xxx-1a Tournament ──
+  {code:'5440_EVENT_TOURNAMENT_POPUP',       num:'5440', cat:'ui', desc:'토너먼트 팝업',                            call:'(registered)',                params:''},
+  {code:'5441_EVENT_TOURNAMENT_JOIN',        num:'5441', cat:'ui', desc:'토너먼트 참가',                            call:'(registered)',                params:''},
+  {code:'5442_EVENT_TOURNAMENT_CREATE',      num:'5442', cat:'ui', desc:'토너먼트 생성',                            call:'(registered)',                params:''},
+  {code:'5443_EVENT_TOURNAMENT_CLOSE',       num:'5443', cat:'ui', desc:'토너먼트 닫기',                            call:'(registered)',                params:''},
+  {code:'5700_LOBBY',                        num:'5700', cat:'ui', desc:'로비 화면 진입',                           call:'ViewLobby.ts:779',           params:''},
+
+  // ── 6xxx Session & User State ──
+  {code:'6000_FRIEND_COUNT',                num:'6000', cat:'session', desc:'친구 수',                               call:'BaseIntro.ts:385',           params:'friend_count'},
+  {code:'6010_USER_GOLD_BALANCE',           num:'6010', cat:'session', desc:'유저 골드 잔액',                        call:'BaseIntro.ts:453',           params:'gold_balance'},
+  {code:'6011_USER_TICKET_BALANCE',         num:'6011', cat:'session', desc:'유저 티켓 잔액',                        call:'BaseIntro.ts:454',           params:'ticket_balance'},
+  {code:'6012_USER_HAMMER_BALANCE',         num:'6012', cat:'session', desc:'유저 망치 잔액',                        call:'BaseIntro.ts:455',           params:'hammer_balance'},
+  {code:'6020_USER_CURRENT_LEVEL',          num:'6020', cat:'session', desc:'유저 현재 레벨',                        call:'BaseIntro.ts:456',           params:'level'},
+  {code:'6030_USER_CITY_STATUS',            num:'6030', cat:'session', desc:'유저 도시 진행 상태',                   call:'BaseIntro.ts:466',           params:'current_city, progress'},
+  {code:'6040_SETTING_LANGUAGE',            num:'6040', cat:'session', desc:'언어 설정',                             call:'BaseIntro.ts:728, 737',      params:'setting_language, browser_language'},
+  {code:'6100_IDLE_GOLD_CHARGE_COMPLETE',   num:'6100', cat:'session', desc:'방치 골드 충전 완료',                   call:'LobbyMainUIVIew.ts:604',     params:'charged_gold, max_gold'},
+  {code:'6110_IDLE_GOLD_COLLECT_TRY',       num:'6110', cat:'session', desc:'방치 골드 수집 시도',                   call:'LobbyMainUIVIew.ts:626 / ViewLobby.ts:349', params:'collect_gold'},
+  {code:'6111_IDLE_GOLD_COLLECT_SUCCESS',   num:'6111', cat:'session', desc:'방치 골드 수집 성공',                   call:'LobbyMainUIVIew.ts:633 / ViewLobby.ts:363', params:'collect_gold, gold_after'},
+  {code:'6112_IDLE_GOLD_COLLECT_FAIL',      num:'6112', cat:'session', desc:'방치 골드 수집 실패',                   call:'LobbyMainUIVIew.ts:644',     params:'error_code, error_message'},
+
+  // ── 7xxx Ingame Button ──
+  {code:'7180_BTN_DRAW_DECK',              num:'7180', cat:'gameplay', desc:'드로우 덱 버튼 탭',                     call:'StageView.ts:3196',          params:''},
+
+  // ── 8xxx Lobby Popups ──
+  {code:'8000_PROFILE_POPUP',              num:'8000', cat:'popup', desc:'프로필 팝업',                              call:'PopupSelectPhoto.ts:17',     params:'position'},
+  {code:'8001_BTN_PROFILE_PLAY',           num:'8001', cat:'popup', desc:'프로필 플레이 버튼',                       call:'PopupSelectPhoto.ts:35',     params:''},
+  {code:'8002_BTN_PROFILE_CLOSE',          num:'8002', cat:'popup', desc:'프로필 닫기',                              call:'PopupSelectPhoto.ts:39',     params:''},
+  {code:'8010_INBOX_POPUP',                num:'8010', cat:'popup', desc:'인박스 팝업',                              call:'PopupMail.ts:221',           params:''},
+  {code:'8011_BTN_INBOX_INVITE',           num:'8011', cat:'popup', desc:'인박스 초대 버튼',                         call:'PopupMail.ts:381',           params:''},
+  {code:'8012_BTN_INBOX_FRIEND_JOIN_CLAIM',num:'8012', cat:'popup', desc:'인박스 친구 합류 보상 수령',               call:'PopupMail.ts:88',            params:''},
+  {code:'8013_BTN_INBOX_EVENT_CLAIM',      num:'8013', cat:'popup', desc:'인박스 이벤트 보상 수령',                  call:'PopupMail.ts:90',            params:''},
+  {code:'8014_BTN_INBOX_CLAIM_ALL',        num:'8014', cat:'popup', desc:'인박스 전체 수령',                         call:'PopupMail.ts:158',           params:''},
+  {code:'8015_BTN_INBOX_CLOSE',            num:'8015', cat:'popup', desc:'인박스 닫기',                              call:'PopupMail.ts:409',           params:''},
+  {code:'8016_INBOX_RV_GOLD_TRY',          num:'8016', cat:'popup', desc:'인박스 RV 골드 시도',                      call:'PopupMail.ts:72',            params:'remaining, reward_gold'},
+  {code:'8017_INBOX_RV_GOLD_SUCCESS',      num:'8017', cat:'popup', desc:'인박스 RV 골드 성공',                      call:'PopupMail.ts:123',           params:'reward_gold'},
+  {code:'8018_INBOX_RV_GOLD_FAIL',         num:'8018', cat:'popup', desc:'인박스 RV 골드 실패',                      call:'PopupMail.ts:79, 113',       params:'error_code, error_message'},
+  {code:'8020_SETTING_POPUP',              num:'8020', cat:'popup', desc:'설정 팝업',                                call:'PopupSettingInGame.ts:63',   params:'position'},
+  {code:'8021_BTN_SETTING_MUSIC',          num:'8021', cat:'popup', desc:'설정 음악 토글',                           call:'PopupSettingInGame.ts:122',  params:'music_on'},
+  {code:'8022_BTN_SETTING_SOUND',          num:'8022', cat:'popup', desc:'설정 효과음 토글',                         call:'PopupSettingInGame.ts:133',  params:'sound_on'},
+  {code:'8023_BTN_SETTING_VIBRATION',      num:'8023', cat:'popup', desc:'설정 진동 토글',                           call:'PopupSettingInGame.ts:143',  params:'vibration_on'},
+  {code:'8024_BTN_SETTING_USER_ID_COPY',   num:'8024', cat:'popup', desc:'설정 유저ID 복사',                        call:'PopupSettingInGame.ts:190',  params:'user_id'},
+  {code:'8025_BTN_SETTING_CLOSE',          num:'8025', cat:'popup', desc:'설정 닫기',                                call:'PopupSettingInGame.ts:205',  params:''},
+  {code:'8026_BTN_SETTING_HOW_TO_PLAY',    num:'8026', cat:'popup', desc:'설정 How to Play',                         call:'PopupSettingInGame.ts:177',  params:''},
+  {code:'8030_LANGUAGE_POPUP',             num:'8030', cat:'popup', desc:'언어 선택 팝업',                           call:'PopupSettingLanguage.ts:34', params:''},
+  {code:'8031_BTN_LANGUAGE_OK',            num:'8031', cat:'popup', desc:'언어 선택 확인',                           call:'PopupSettingLanguage.ts:72', params:'selected_language, prev_language'},
+  {code:'8032_BTN_LANGUAGE_CLOSE',         num:'8032', cat:'popup', desc:'언어 선택 닫기',                           call:'PopupSettingLanguage.ts:87', params:'selected_language'},
+  {code:'8040_PRIVACY_POLICY_POPUP',       num:'8040', cat:'popup', desc:'개인정보 정책 팝업',                       call:'PopupPrivacyPolicy.ts:110', params:''},
+  {code:'8041_BTN_PRIVACY_POLICY_CLOSE',   num:'8041', cat:'popup', desc:'개인정보 정책 닫기',                       call:'PopupPrivacyPolicy.ts:182', params:'accepted'},
+  {code:'8050_DAILY_WHEEL_POPUP',          num:'8050', cat:'popup', desc:'데일리 휠 팝업',                           call:'(registered)',               params:''},
+  {code:'8051_DAILY_WHEEL_SPIN_SUCCESS',   num:'8051', cat:'popup', desc:'데일리 휠 스핀 성공',                      call:'(registered)',               params:''},
+  {code:'8052_DAILY_WHEEL_SPIN_FAIL',      num:'8052', cat:'popup', desc:'데일리 휠 스핀 실패',                      call:'(registered)',               params:''},
+  {code:'8053_BTN_DAILY_WHEEL_CLOSE',      num:'8053', cat:'popup', desc:'데일리 휠 닫기',                           call:'(registered)',               params:''},
+  {code:'8054_DAILY_WHEEL_AD_SPIN_TRY',    num:'8054', cat:'popup', desc:'데일리 휠 광고 스핀 시도',                 call:'(registered)',               params:''},
+  {code:'8055_DAILY_WHEEL_AD_SPIN_SUCCESS',num:'8055', cat:'popup', desc:'데일리 휠 광고 스핀 성공',                 call:'(registered)',               params:''},
+  {code:'8056_DAILY_WHEEL_AD_SPIN_FAIL',   num:'8056', cat:'popup', desc:'데일리 휠 광고 스핀 실패',                 call:'(registered)',               params:''},
+  {code:'8060_DAILY_CHECKIN_POPUP',        num:'8060', cat:'popup', desc:'출석 체크 팝업',                           call:'PopupDailyGift.ts:47',      params:'day, is_missed'},
+  {code:'8061_DAILY_CHECKIN_CLAIM_TRY',    num:'8061', cat:'popup', desc:'출석 보상 수령 시도',                      call:'PopupDailyGiftItem.ts:153', params:'day, reward_type'},
+  {code:'8062_DAILY_CHECKIN_CLAIM_SUCCESS',num:'8062', cat:'popup', desc:'출석 보상 수령 성공',                      call:'PopupDailyGiftItem.ts:175', params:'day, reward_type'},
+  {code:'8063_DAILY_CHECKIN_CLAIM_FAIL',   num:'8063', cat:'popup', desc:'출석 보상 수령 실패',                      call:'PopupDailyGiftItem.ts:208', params:'error_code'},
+  {code:'8064_BTN_DAILY_CHECKIN_CLOSE',    num:'8064', cat:'popup', desc:'출석 체크 닫기',                           call:'PopupDailyGift.ts:229',     params:''},
+  {code:'8065_DAILY_CHECKIN_MISSED_AD_TRY',    num:'8065', cat:'popup', desc:'출석 놓친 보상 광고 시도',             call:'PopupDailyGiftItem.ts:224', params:'day'},
+  {code:'8066_DAILY_CHECKIN_MISSED_AD_SUCCESS',num:'8066', cat:'popup', desc:'출석 놓친 보상 광고 성공',             call:'PopupDailyGiftItem.ts:280', params:'day'},
+  {code:'8067_DAILY_CHECKIN_MISSED_AD_FAIL',   num:'8067', cat:'popup', desc:'출석 놓친 보상 광고 실패',             call:'PopupDailyGiftItem.ts:234', params:'error_code, error_message'},
+  {code:'8070_SPECIAL_DEAL_POPUP',         num:'8070', cat:'popup', desc:'스페셜 딜 팝업',                           call:'SpecialOfferManager.ts:483 / LobbyMainUIVIew.ts:966', params:'type, product_id'},
+  {code:'8071_SPECIAL_DEAL_POPUP_PURCHASE_TRY',     num:'8071', cat:'popup', desc:'스페셜 딜 구매 시도',             call:'PopupSpecialOffer.ts:301',  params:'type'},
+  {code:'8072_SPECIAL_DEAL_POPUP_PURCHASE_SUCCESS',  num:'8072', cat:'popup', desc:'스페셜 딜 구매 성공',            call:'PopupSpecialOffer.ts:394',  params:'type'},
+  {code:'8073_SPECIAL_DEAL_POPUP_PURCHASE_FAIL',     num:'8073', cat:'popup', desc:'스페셜 딜 구매 실패',            call:'PopupSpecialOffer.ts:471',  params:'type, error_code, error_message'},
+  {code:'8074_BTN_SPECIAL_DEAL_POPUP_CLOSE',         num:'8074', cat:'popup', desc:'스페셜 딜 닫기',                 call:'PopupSpecialOffer.ts:278',  params:'type'},
+  {code:'8080_HOW_TO_PLAY_POPUP',          num:'8080', cat:'popup', desc:'플레이 방법 팝업',                         call:'(registered)',               params:''},
+  {code:'8081_BTN_HOW_TO_PLAY_NEXT',       num:'8081', cat:'popup', desc:'플레이 방법 다음',                         call:'(registered)',               params:''},
+  {code:'8082_BTN_HOW_TO_PLAY_CLOSE',      num:'8082', cat:'popup', desc:'플레이 방법 닫기',                         call:'(registered)',               params:''},
+  {code:'8100_CITY_DECO_POPUP',            num:'8100', cat:'popup', desc:'도시 꾸미기 팝업',                         call:'ViewLobby.ts:1296',         params:'city, position'},
+  {code:'8101_CITY_DECO_UPGRADE_TRY',      num:'8101', cat:'popup', desc:'도시 꾸미기 업그레이드 시도',              call:'LobbyMetaCityUpgradeView.ts:218', params:'city, deco_key, cost'},
+  {code:'8102_CITY_DECO_UPGRADE_SUCCESS',  num:'8102', cat:'popup', desc:'도시 꾸미기 업그레이드 성공',              call:'LobbyMetaCityUpgradeView.ts:233', params:'city, deco_key'},
+  {code:'8103_CITY_DECO_UPGRADE_FAIL',     num:'8103', cat:'popup', desc:'도시 꾸미기 업그레이드 실패',              call:'LobbyMetaCityUpgradeView.ts:246', params:'city, error_code'},
+  {code:'8104_CITY_DECO_CITY_COMPLETE',    num:'8104', cat:'popup', desc:'도시 완성',                                call:'ViewLobby.ts:491',          params:'city'},
+  {code:'8105_BTN_CITY_DECO_CLOSE',        num:'8105', cat:'popup', desc:'도시 꾸미기 닫기',                         call:'ViewLobby.ts:1314',         params:''},
+  {code:'8106_CITY_DECO_ALL_COMPLETE',     num:'8106', cat:'popup', desc:'전체 도시 완성',                           call:'ViewLobby.ts:559',          params:''},
+  {code:'8107_CITY_COMPLETE_SHARE_POPUP',  num:'8107', cat:'popup', desc:'도시 완성 공유 팝업',                      call:'PopupDecoShare.ts:87',      params:'city'},
+  {code:'8108_CITY_COMPLETE_SHARE_TRY',    num:'8108', cat:'popup', desc:'도시 완성 공유 시도',                      call:'PopupDecoShare.ts:115',     params:'city'},
+  {code:'8109_CITY_COMPLETE_SHARE_CLOSE',  num:'8109', cat:'popup', desc:'도시 완성 공유 닫기',                      call:'PopupDecoShare.ts:214',     params:'city'},
+  {code:'8110_RV_POPUP_GOLD_TRY',          num:'8110', cat:'popup', desc:'RV 팝업 골드 시도',                        call:'LobbyMainUIVIew.ts:860',    params:'remaining, reward_gold'},
+  {code:'8111_RV_POPUP_GOLD_SUCCESS',      num:'8111', cat:'popup', desc:'RV 팝업 골드 성공',                        call:'LobbyMainUIVIew.ts:880',    params:'reward_gold'},
+  {code:'8112_RV_POPUP_GOLD_FAIL',         num:'8112', cat:'popup', desc:'RV 팝업 골드 실패',                        call:'LobbyMainUIVIew.ts:864, 886', params:'error_code, error_message'},
+  {code:'8120_COLLECTION_POPUP',           num:'8120', cat:'popup', desc:'콜렉션 팝업',                              call:'PopupCollection.ts:36',     params:'position, tab'},
+  {code:'8121_COLLECTION_TAB_SWITCH',      num:'8121', cat:'popup', desc:'콜렉션 탭 전환',                           call:'PopupCollection.ts:64, 72', params:'prev_tab, new_tab'},
+  {code:'8122_BTN_COLLECTION_CLOSE',       num:'8122', cat:'popup', desc:'콜렉션 닫기',                              call:'PopupCollection.ts:113',    params:''},
+  {code:'8123_COLLECTION_MILESTONE_CLAIM_TRY',     num:'8123', cat:'popup', desc:'콜렉션 마일스톤 수령 시도',        call:'(registered)',               params:''},
+  {code:'8124_COLLECTION_MILESTONE_CLAIM_SUCCESS',  num:'8124', cat:'popup', desc:'콜렉션 마일스톤 수령 성공',       call:'(registered)',               params:''},
+  {code:'8125_COLLECTION_MILESTONE_CLAIM_FAIL',     num:'8125', cat:'popup', desc:'콜렉션 마일스톤 수령 실패',       call:'(registered)',               params:''},
+  {code:'8126_COLLECTION_PUZZLE_COMPLETE',          num:'8126', cat:'popup', desc:'콜렉션 퍼즐 완성',                call:'(registered)',               params:''},
+  {code:'8127_COLLECTION_DECK_SELECT',              num:'8127', cat:'popup', desc:'콜렉션 덱 선택',                  call:'DeckCollectionPanel.ts:74', params:'deck_key'},
+  {code:'8130_CITY_LIST_POPUP',            num:'8130', cat:'popup', desc:'도시 리스트 팝업',                          call:'PopupMetaCityList.ts:32',   params:''},
+  {code:'8131_CITY_LIST_SELECT',           num:'8131', cat:'popup', desc:'도시 리스트 선택',                          call:'PopupMetaCityListItem.ts:231', params:'selected_city'},
+  {code:'8132_BTN_CITY_LIST_CLOSE',        num:'8132', cat:'popup', desc:'도시 리스트 닫기',                          call:'PopupMetaCityList.ts:141',  params:''},
+  {code:'8800_NO_MORE_RECOMMENDATION',     num:'8800', cat:'popup', desc:'추천 없음',                                call:'FacebookPlatform.ts:205, 210', params:''},
+  {code:'8810_NO_MORE_RECOMMENDATION_FINISH',num:'8810',cat:'popup',desc:'추천 없음 종료',                           call:'ViewGame.ts:1055',          params:'game_finish'},
+  {code:'8900_RV_ERROR_BANNER_POPUP',      num:'8900', cat:'popup', desc:'RV 에러 배너 팝업',                        call:'(여러 파일 — RV 실패 시 공통)', params:'error_code, error_message'},
+  {code:'8910_TRY_AGAIN_ERROR_POPUP',      num:'8910', cat:'popup', desc:'재시도 에러 팝업',                         call:'(registered)',               params:''},
+  {code:'8911_BTN_TRY_AGAIN_ERROR_OK',     num:'8911', cat:'popup', desc:'재시도 에러 OK',                           call:'PopupError.ts:40',          params:''},
+  {code:'8912_BTN_TRY_AGAIN_ERROR_CLOSE',  num:'8912', cat:'popup', desc:'재시도 에러 닫기',                         call:'PopupError.ts:52',          params:''},
+  {code:'8930_RESTART_ERROR_POPUP',        num:'8930', cat:'popup', desc:'재시작 에러 팝업',                         call:'(registered)',               params:''},
+  {code:'8931_BTN_RESTART_ERROR_OK',       num:'8931', cat:'popup', desc:'재시작 에러 OK',                           call:'PopupError.ts:43',          params:''},
+  {code:'8932_BTN_RESTART_ERROR_CLOSE',    num:'8932', cat:'popup', desc:'재시작 에러 닫기',                         call:'PopupError.ts:55',          params:''},
+
+  // ── 9xxx Error & Transaction Logs ──
+  {code:'9000_FB_API_ERROR',               num:'9000', cat:'error', desc:'Facebook API 에러',                        call:'FacebookPlatform.ts:170 등', params:'api, error_code, error_message'},
+  {code:'9100_SERVER_ERROR',               num:'9100', cat:'error', desc:'서버 에러',                                call:'(registered)',               params:''},
+  {code:'9200_CLIENT_ERROR',               num:'9200', cat:'error', desc:'클라이언트 에러',                          call:'SolitaireTripeaksLogManager.ts:637 / BaseIntro.ts:602 / BasePlatform.ts:1395', params:'error_code, error_message'},
+  {code:'9210_SWITCH_CONTEXT_TIME_OUT',    num:'9210', cat:'error', desc:'컨텍스트 전환 타임아웃',                   call:'PopupSwitchContext.ts:157',  params:'time'},
+  {code:'9220_CANNOT_RECOMMENDATION',      num:'9220', cat:'error', desc:'추천 불가',                                call:'FacebookPlatform.ts:217, 222, 228', params:''},
+  {code:'9300_CLIENT_LOG',                 num:'9300', cat:'error', desc:'클라이언트 로그 (디버그용)',                call:'SolitaireTripeaksLogManager.ts:644 / TutorialManager.ts:256 / TossPlatform.ts:977', params:'code, message / type'},
+  {code:'9400_GOLD_TRANSACTION_LOG',       num:'9400', cat:'error', desc:'골드 트랜잭션 로그',                       call:'DataManager.ts:959',         params:'type, amount, before, after, reason'},
+  {code:'9401_TICKET_TRANSACTION_LOG',     num:'9401', cat:'error', desc:'티켓 트랜잭션 로그',                       call:'DataManager.ts:961',         params:'type, amount, before, after, reason'},
+  {code:'9402_HAMMER_TRANSACTION_LOG',     num:'9402', cat:'error', desc:'망치 트랜잭션 로그',                       call:'DataManager.ts:963',         params:'type, amount, before, after, reason'},
+  {code:'9403_BOOSTER_TRANSACTION_LOG',    num:'9403', cat:'error', desc:'부스터 트랜잭션 로그',                     call:'DataManager.ts:965',         params:'booster_type, type, amount, remaining, reason'},
+  {code:'9501_RV_UNCONSUMED_PROVIDE_TRY',      num:'9501', cat:'error', desc:'RV 미소비 제공 시도',                  call:'SolitaireTripeaksLogManager.ts:651', params:'productId, token'},
+  {code:'9502_RV_UNCONSUMED_PROVIDE_SUCCESS',   num:'9502', cat:'error', desc:'RV 미소비 제공 성공',                 call:'SolitaireTripeaksLogManager.ts:658', params:'productId, token'},
+  {code:'9503_RV_UNCONSUMED_PROVIDE_FAIL',      num:'9503', cat:'error', desc:'RV 미소비 제공 실패',                 call:'SolitaireTripeaksLogManager.ts:665', params:'productId, token, error_code'},
+  {code:'9990_PLAY_FIRST_TOUCH',           num:'9990', cat:'error', desc:'최초 터치 (인게임 시작 감지)',             call:'StageView.ts:2203',          params:''},
+  {code:'NETWORK_TIMEOUT',                 num:'NET',  cat:'error', desc:'네트워크 타임아웃',                        call:'SolitaireTripeaksLogManager.ts:616', params:'url, retry_count'},
+  {code:'NETWORK_TIMEOUT_RETRY',           num:'NET',  cat:'error', desc:'네트워크 타임아웃 재시도',                 call:'SolitaireTripeaksLogManager.ts:623', params:'url, retry_count'},
+  {code:'NETWORK_TIMEOUT_RETRY_OVER',      num:'NET',  cat:'error', desc:'네트워크 타임아웃 재시도 초과',            call:'SolitaireTripeaksLogManager.ts:630', params:'url, retry_count'},
+
+  // ── Legacy / Platform-specific ──
+  {code:'3001_CHOOSE_FRIEND',              num:'3001', cat:'legacy', desc:'[Legacy] 친구 선택',                     call:'FacebookPlatform.ts:93',     params:'friend_id'},
+  {code:'3002_CHOOSE_FRIEND_SUCCESS',      num:'3002', cat:'legacy', desc:'[Legacy] 친구 선택 성공',                call:'FacebookPlatform.ts:101',    params:'friend_id'},
+  {code:'3003_CHOOSE_FRIEND_FAIL',         num:'3003', cat:'legacy', desc:'[Legacy] 친구 선택 실패',                call:'FacebookPlatform.ts:108',    params:'error_code'},
+  {code:'3100_TOURNAMENT_CREATE',          num:'3100', cat:'legacy', desc:'[Legacy] 토너먼트 생성',                 call:'FacebookPlatform.ts:375',    params:''},
+  {code:'3110_TOURNAMENT_CREATE_SUCCESS',  num:'3110', cat:'legacy', desc:'[Legacy] 토너먼트 생성 성공',            call:'FacebookPlatform.ts:421, 431', params:''},
+  {code:'3120_TOURNAMENT_CREATE_FAIL',     num:'3120', cat:'legacy', desc:'[Legacy] 토너먼트 생성 실패',            call:'FacebookPlatform.ts:411',    params:'error_code'},
+  {code:'3200_TOURNAMENT_SHARE',           num:'3200', cat:'legacy', desc:'[Legacy] 토너먼트 공유',                 call:'FacebookPlatform.ts:387',    params:'tournament_id'},
+  {code:'3210_TOURNAMENT_SHARE_SUCCESS',   num:'3210', cat:'legacy', desc:'[Legacy] 토너먼트 공유 성공',            call:'FacebookPlatform.ts:469',    params:''},
+  {code:'3220_TOURNAMENT_SHARE_FAIL',      num:'3220', cat:'legacy', desc:'[Legacy] 토너먼트 공유 실패',            call:'FacebookPlatform.ts:455',    params:'error_code'},
+  {code:'3300_TOURNAMENT_POST',            num:'3300', cat:'legacy', desc:'[Legacy] 토너먼트 포스트',               call:'FacebookPlatform.ts:439',    params:'score'},
+  {code:'3310_TOURNAMENT_POST_SUCCESS',    num:'3310', cat:'legacy', desc:'[Legacy] 토너먼트 포스트 성공',          call:'FacebookPlatform.ts:463',    params:''},
+  {code:'3320_TOURNAMENT_POST_FAIL',       num:'3320', cat:'legacy', desc:'[Legacy] 토너먼트 포스트 실패',          call:'FacebookPlatform.ts:450',    params:'error_code'},
+  {code:'4100_INTERSTITIAL_RV_START',      num:'4100', cat:'legacy', desc:'[Legacy] 전면 RV 시작',                  call:'(registered)',               params:''},
+  {code:'4110_INTERSTITIAL_RV_FINISH',     num:'4110', cat:'legacy', desc:'[Legacy] 전면 RV 완료',                  call:'(registered)',               params:''},
+  {code:'4120_INTERSTITIAL_RV_ERROR',      num:'4120', cat:'legacy', desc:'[Legacy] 전면 RV 에러',                  call:'(registered)',               params:''},
+  {code:'4180_INTERSTITIAL_RV_PRELOAD_FINISH',num:'4180',cat:'legacy',desc:'[Legacy] 전면 RV 프리로드 완료',        call:'(registered)',               params:''},
+  {code:'4190_INTERSTITIAL_RV_PRELOAD_ERROR', num:'4190',cat:'legacy',desc:'[Legacy] 전면 RV 프리로드 에러',        call:'(registered)',               params:''},
+  {code:'4321_BANNER_AD_HIDE',             num:'4321', cat:'legacy', desc:'[Legacy] 배너 광고 숨기기',              call:'(registered)',               params:''},
+  {code:'6006_BANNER_AD_LOAD_SUCCESS',     num:'6006', cat:'legacy', desc:'[Legacy] 배너 광고 로드 성공',           call:'(registered)',               params:''},
+  {code:'6007_BANNER_AD_LOAD_FAIL',        num:'6007', cat:'legacy', desc:'[Legacy] 배너 광고 로드 실패',           call:'(registered)',               params:''},
+  {code:'9501_IAP_UNCONSUMED_PROVIDE_TRY',     num:'9501', cat:'legacy', desc:'[Legacy] IAP 미소비 제공 시도',      call:'(registered)',               params:'productKey, token'},
+  {code:'9502_IAP_UNCONSUMED_PROVIDE_SUCCESS',  num:'9502', cat:'legacy', desc:'[Legacy] IAP 미소비 제공 성공',     call:'(registered)',               params:'productKey, token'},
+  {code:'9503_IAP_UNCONSUMED_PROVIDE_FAIL',     num:'9503', cat:'legacy', desc:'[Legacy] IAP 미소비 제공 실패',     call:'(registered)',               params:'productKey, token, errorCode'},
+  {code:'11001_TOSS_INVITE_FRIEND_INFO',   num:'11001',cat:'legacy', desc:'[Toss] 친구 초대 정보',                  call:'TossPlatform.ts:914',        params:'data'},
+
+  // ── FB-only (logEventFBOnly) ──
+  {code:'9500_AFTER_CREATE_TOURNAMENT',    num:'9500', cat:'legacy', desc:'[FB] 토너먼트 생성 후',                   call:'FacebookPlatform.ts:278',    params:'tournamentId'},
+  {code:'9998_ERROR_PAYLOAD',              num:'9998', cat:'legacy', desc:'[FB] 페이로드 에러',                      call:'FacebookPlatform.ts:658',    params:'PAYLOAD'},
+  {code:'11001_MSG_P2P_SUCCESS_2',         num:'11001',cat:'legacy', desc:'[FB] P2P 성공 2회',                       call:'SolitaireTripeaksLogManager.ts:674', params:''},
+  {code:'11002_MSG_P2P_SUCCESS_3',         num:'11002',cat:'legacy', desc:'[FB] P2P 성공 3회',                       call:'SolitaireTripeaksLogManager.ts:675', params:''},
+  {code:'11003_MSG_P2P_SUCCESS_4',         num:'11003',cat:'legacy', desc:'[FB] P2P 성공 4회',                       call:'SolitaireTripeaksLogManager.ts:676', params:''},
+  {code:'11004_MSG_P2P_SUCCESS_5',         num:'11004',cat:'legacy', desc:'[FB] P2P 성공 5회',                       call:'SolitaireTripeaksLogManager.ts:677', params:''},
+  {code:'11010_RV_FINISH_COUNT_2',         num:'11010',cat:'legacy', desc:'[FB] RV 완료 2회',                        call:'SolitaireTripeaksLogManager.ts:686', params:''},
+  {code:'11011_RV_FINISH_COUNT_3',         num:'11011',cat:'legacy', desc:'[FB] RV 완료 3회',                        call:'SolitaireTripeaksLogManager.ts:687', params:''},
+  {code:'11012_RV_FINISH_COUNT_4',         num:'11012',cat:'legacy', desc:'[FB] RV 완료 4회',                        call:'SolitaireTripeaksLogManager.ts:688', params:''},
+  {code:'11013_RV_FINISH_COUNT_5',         num:'11013',cat:'legacy', desc:'[FB] RV 완료 5회',                        call:'SolitaireTripeaksLogManager.ts:689', params:''},
+];
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+const STORAGE_KEY = 'solitaire_log_def_state';
+let curCat = 'all';
+let activeFilters = new Set();
+let sortCol = null, sortDir = 'asc';
+let state = {};   // {[code]: {status:'ok'|'issue'|'skip'|'new', memo:''}}
+
+function loadState() {
+  try { state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { state = {}; }
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  toast('저장 완료');
+}
+
+loadState();
+
+// ══════════════════════════════════════════════════════════════
+// CATEGORY MAP
+// ══════════════════════════════════════════════════════════════
+const CAT_LABEL = {
+  loading:'Loading', login:'Login/Time', gameplay:'Gameplay', social:'Social',
+  ads:'Ads', ui:'UI/Shop', session:'Session', popup:'Popup', error:'Error/Log', legacy:'Legacy'
+};
+const CAT_CSS = {
+  loading:'c-loading', login:'c-login', gameplay:'c-gameplay', social:'c-social',
+  ads:'c-ads', ui:'c-ui', session:'c-session', button:'c-button', popup:'c-popup', error:'c-error', legacy:'c-legacy'
+};
+
+// ══════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════
+function render() {
+  const q = document.getElementById('q').value.toLowerCase();
+  const tbody = document.getElementById('tbody');
+  let rows = '';
+  let shown = 0;
+  let lastCatGroup = '';
+
+  let data = [...EVENTS];
+
+  // sort
+  if (sortCol) {
+    data.sort((a, b) => {
+      let va = a[sortCol] || '', vb = b[sortCol] || '';
+      if (sortCol === 'idx') { va = EVENTS.indexOf(a); vb = EVENTS.indexOf(b); }
+      if (typeof va === 'string') va = va.toLowerCase();
+      if (typeof vb === 'string') vb = vb.toLowerCase();
+      if (va < vb) return sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  data.forEach((e, i) => {
+    // category filter
+    if (curCat !== 'all' && e.cat !== curCat) return;
+
+    // text search
+    const searchStr = `${e.code} ${e.num} ${e.desc} ${e.call} ${e.params} ${(state[e.code]?.memo||'')}`.toLowerCase();
+    if (q && !searchStr.includes(q)) return;
+
+    // status filter
+    if (activeFilters.size > 0) {
+      const st = state[e.code]?.status || 'unmarked';
+      if (!activeFilters.has(st)) return;
+    }
+
+    shown++;
+    const s = state[e.code] || {};
+    const catCss = CAT_CSS[e.cat] || 'c-ui';
+
+    // group separator
+    const catGroup = e.cat;
+    if (catGroup !== lastCatGroup && !sortCol) {
+      lastCatGroup = catGroup;
+      rows += `<tr class="group-sep"><td colspan="9">${CAT_LABEL[catGroup] || catGroup} (${e.num.replace(/_.*/,'')}xxx)</td></tr>`;
+    }
+
+    rows += `<tr>
+      <td class="row-num">${shown}</td>
+      <td class="ecode">${e.num}</td>
+      <td class="ename">${e.code}</td>
+      <td><span class="cat ${catCss}">${CAT_LABEL[e.cat]||e.cat}</span></td>
+      <td class="desc">${e.desc}</td>
+      <td class="call">${makeCallLink(e.call, e.code)}</td>
+      <td class="params">${e.params||'—'}</td>
+      <td>
+        <div class="status-grp">
+          <button class="status-btn ${s.status==='ok'?'active-ok':''}" onclick="setStatus('${e.code}','ok',this)">OK</button>
+          <button class="status-btn ${s.status==='issue'?'active-issue':''}" onclick="setStatus('${e.code}','issue',this)">Issue</button>
+          <button class="status-btn ${s.status==='new'?'active-new':''}" onclick="setStatus('${e.code}','new',this)">New</button>
+          <button class="status-btn ${s.status==='skip'?'active-skip':''}" onclick="setStatus('${e.code}','skip',this)">Skip</button>
+        </div>
+      </td>
+      <td><input class="memo-input" value="${escHtml(s.memo||'')}" onchange="setMemo('${e.code}',this.value)" placeholder="메모..."></td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = rows;
+  document.getElementById('cnt').textContent = `${shown} / ${EVENTS.length} events`;
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ══════════════════════════════════════════════════════════════
+// INTERACTIONS
+// ══════════════════════════════════════════════════════════════
+function setCat(el) {
+  document.querySelectorAll('[data-cat]').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  curCat = el.dataset.cat;
+  render();
+}
+
+function toggleF(el) {
+  const f = el.dataset.filter;
+  if (activeFilters.has(f)) { activeFilters.delete(f); el.classList.remove('active'); }
+  else { activeFilters.add(f); el.classList.add('active'); }
+  render();
+}
+
+function setStatus(code, status, btn) {
+  if (!state[code]) state[code] = {};
+  if (state[code].status === status) { delete state[code].status; }
+  else { state[code].status = status; }
+  autoSave();
+  render();
+}
+
+function setMemo(code, val) {
+  if (!state[code]) state[code] = {};
+  state[code].memo = val;
+  autoSave();
+}
+
+// debounced auto-save
+let _saveTimer = null;
+function autoSave() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, 300);
+}
+
+// sorting
+document.querySelectorAll('th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+    else { sortCol = col; sortDir = 'asc'; }
+    document.querySelectorAll('th').forEach(t => t.classList.remove('sorted-asc','sorted-desc'));
+    th.classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+    render();
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+// IMPORT / EXPORT
+// ══════════════════════════════════════════════════════════════
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `log-def-state-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('JSON 내보내기 완료');
+}
+
+function importJSON() {
+  document.getElementById('file-input').click();
+}
+
+function handleFileImport(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      Object.assign(state, imported);
+      saveState();
+      render();
+      toast(`${Object.keys(imported).length}개 항목 불러오기 완료`);
+    } catch { toast('JSON 파싱 에러'); }
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── Initial render ──
+loadClientSettings();
+render();
+</script>
+</body>
+</html>

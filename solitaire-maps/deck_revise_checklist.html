@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>deckCount 재검토 (v3)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,sans-serif;background:#0f0f13;color:#e0e0e0;padding:12px}
+header{background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:15px}
+.badge{background:#2196f3;color:#fff;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700}
+.tag{background:#2e2e50;color:#aac8ff;padding:3px 9px;border-radius:5px;font-size:11px;font-family:monospace}
+.note{color:#888;font-size:11px}
+.prog{margin-left:auto;font-size:13px}.prog strong{color:#4caf50;font-size:16px}
+.tier-sec{background:#1a1a24;border:1px solid #2a2a3a;border-radius:10px;margin-bottom:10px;overflow:hidden}
+.tier-hd{padding:10px 14px;display:flex;gap:12px;align-items:center;cursor:pointer;user-select:none}
+.tier-lbl{font-weight:800;padding:3px 12px;border-radius:5px;color:#000;font-size:12px}
+.tier-cnt{background:#2a2a3a;color:#aaa;padding:2px 8px;border-radius:10px;font-size:11px}
+.tier-prog{margin-left:auto;color:#4caf50;font-size:12px;font-family:monospace}
+.row{display:flex;align-items:center;padding:10px 14px;border-top:1px solid #1e1e2a;gap:12px;flex-wrap:wrap}
+.row:hover{background:#1e1e2c}
+.row.done{opacity:.4}.row.done .sid{text-decoration:line-through;color:#555}
+.chk{width:20px;height:20px;border:2px solid #444;border-radius:5px;flex-shrink:0;cursor:pointer;position:relative}
+.chk.on{background:#4caf50;border-color:#4caf50}
+.chk.on::after{content:'';position:absolute;left:5px;top:1px;width:6px;height:12px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.sid{font-family:monospace;font-weight:700;color:#7ec8ff;min-width:78px;font-size:13px}
+.metric{font-family:monospace;font-size:10px;color:#666;min-width:180px;line-height:1.5}
+.metric .m-est{color:#7ec8ff;font-weight:700}
+.metric .m-g{color:#88cc88}.metric .m-y{color:#ffcc66}.metric .m-r{color:#ff8888}.metric .m-0{color:#666}
+.decks{display:flex;align-items:center;gap:6px;font-family:monospace;font-size:13px}
+.decks .pill{padding:2px 9px;border-radius:4px;min-width:28px;text-align:center}
+.decks .p-orig{background:#23233a;color:#888}
+.decks .p-html{background:#3a1a1a;color:#ff9988;text-decoration:line-through}
+.decks .p-cur{background:#3a2a1a;color:#ffcc99}
+.decks .p-suggest{background:#1e3a1e;color:#aaffaa;font-weight:700;cursor:pointer}
+.decks .p-suggest:hover{background:#2e5a2e}
+.decks .lbl{font-size:9px;color:#555;margin-right:1px}
+.decks .arr{color:#555}
+.custom{display:inline-flex;align-items:center;gap:4px;margin-left:4px}
+.custom input{width:50px;background:#23233a;border:1px solid #3a3a55;color:#ffcc99;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:13px;text-align:center}
+.custom button{background:#2a4a6a;border:1px solid #3a5a80;color:#aac8ff;padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer}
+.fn{font-family:monospace;font-size:9px;color:#555;margin-left:auto;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#23233a;border:1px solid #4caf50;color:#4caf50;padding:8px 20px;border-radius:8px;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999}
+#toast.show{opacity:1}
+.ctrl{display:flex;gap:6px;margin-bottom:12px;background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 12px}
+.btn{background:#23233a;border:1px solid #3a3a55;color:#aaa;padding:4px 12px;border-radius:5px;font-size:12px;cursor:pointer}
+.legend{background:#1a1a24;border:1px solid #2a2a3a;border-radius:8px;padding:8px 14px;margin-bottom:12px;font-size:11px;color:#888;display:flex;gap:14px;flex-wrap:wrap}
+.legend .key{color:#aac}
+</style></head><body>
+<header>
+  <h1>🔍 deckCount 재검토 (보수안)</h1>
+  <span class="badge">30개</span>
+  <span class="tag">est 기반 재산정</span>
+  <span class="note">현재 JSON 과다 → round(est) 또는 orig+2 최소값 제안</span>
+  <span class="prog">완료: <strong id="done">0</strong> / 30</span>
+</header>
+<div class="legend">
+  <span><span class="key">original</span> 원본 · <span class="key" style="text-decoration:line-through">HTML</span> v6 제안(과다) · <span class="key" style="color:#ffcc99">JSON</span> 현재 적용값 · <span class="key" style="color:#aaffaa">제안</span> 보수안(클릭=복사+체크)</span>
+  <span style="margin-left:auto">CR: <span style="color:#88cc88">≥60%</span> <span style="color:#ffcc66">30~59%</span> <span style="color:#ff8888">&lt;30%</span></span>
+</div>
+<div class="ctrl">
+  <button class="btn" onclick="expand(1)">모두 펼침</button>
+  <button class="btn" onclick="expand(0)">모두 접음</button>
+  <button class="btn" onclick="applyAllConservative()" style="background:#2a5a2a;color:#aaffaa;border-color:#3a7a3a">제안값 JSON 일괄 적용</button>
+  <button class="btn" style="color:#ff8888" onclick="reset()">초기화</button>
+</div>
+
+<div class="tier-sec"><div class="tier-hd" onclick="toggleSec(this)">
+<span class="tier-lbl" style="background:#4caf50">VeryEasy</span>
+<span class="tier-cnt">6개</span>
+<span class="tier-prog" data-tier="VeryEasy">0/6</span><span style="color:#555">▼</span></div><div class="tier-body">
+<div class="row" id="row-CC_0071">
+<div class="chk" onclick="toggle('CC_0071')"></div>
+<div class="sid">CC_0071</div>
+<div class="metric">
+  f20 d5 frnt3.65 <span class="m-est">est=9.5</span><br>
+  score 565 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">7</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">12</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">12</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0071" data-val="10" onclick="copyVal(this)" title="보수안 클릭→복사">10</span>
+  <span class="custom"><input type="number" id="in-CC_0071" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0071')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_1505846800031349250_1505846800031349250.json')" title="VeryEasy_obj_1505846800031349250_1505846800031349250.json">VeryEasy_obj_1505846800031349250_1505846800031349250.json</div>
+</div>
+<div class="row" id="row-CC_0234">
+<div class="chk" onclick="toggle('CC_0234')"></div>
+<div class="sid">CC_0234</div>
+<div class="metric">
+  f23 d2 frnt5.61 <span class="m-est">est=8.8</span><br>
+  score 620 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">7</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">12</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">12</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0234" data-val="9" onclick="copyVal(this)" title="보수안 클릭→복사">9</span>
+  <span class="custom"><input type="number" id="in-CC_0234" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0234')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_2825736920963069881_2825736920963069881.json')" title="VeryEasy_obj_2825736920963069881_2825736920963069881.json">VeryEasy_obj_2825736920963069881_2825736920963069881.json</div>
+</div>
+<div class="row" id="row-CC_0232">
+<div class="chk" onclick="toggle('CC_0232')"></div>
+<div class="sid">CC_0232</div>
+<div class="metric">
+  f20 d3 frnt3.65 <span class="m-est">est=8.7</span><br>
+  score 565 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">6</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">11</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">11</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0232" data-val="9" onclick="copyVal(this)" title="보수안 클릭→복사">9</span>
+  <span class="custom"><input type="number" id="in-CC_0232" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0232')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_2533780747040595241_2533780747040595241.json')" title="VeryEasy_obj_2533780747040595241_2533780747040595241.json">VeryEasy_obj_2533780747040595241_2533780747040595241.json</div>
+</div>
+<div class="row" id="row-CC_0242">
+<div class="chk" onclick="toggle('CC_0242')"></div>
+<div class="sid">CC_0242</div>
+<div class="metric">
+  f18 d4 frnt3.83 <span class="m-est">est=8.3</span><br>
+  score 500 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">6</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">11</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">11</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0242" data-val="8" onclick="copyVal(this)" title="보수안 클릭→복사">8</span>
+  <span class="custom"><input type="number" id="in-CC_0242" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0242')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_8554537005776796579_8554537005776796579.json')" title="VeryEasy_obj_8554537005776796579_8554537005776796579.json">VeryEasy_obj_8554537005776796579_8554537005776796579.json</div>
+</div>
+<div class="row" id="row-CC_0164">
+<div class="chk" onclick="toggle('CC_0164')"></div>
+<div class="sid">CC_0164</div>
+<div class="metric">
+  f19 d3 frnt3.84 <span class="m-est">est=8.3</span><br>
+  score 525 · CR <span style="color:#88cc88">71%</span>/<span style="color:#ff8888">12%</span>/<span style="color:#ff8888">11%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">7</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">12</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">12</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0164" data-val="9" onclick="copyVal(this)" title="보수안 클릭→복사">9</span>
+  <span class="custom"><input type="number" id="in-CC_0164" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0164')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_9170902172408887236_9170902172408887236.json')" title="VeryEasy_obj_9170902172408887236_9170902172408887236.json">VeryEasy_obj_9170902172408887236_9170902172408887236.json</div>
+</div>
+<div class="row" id="row-CC_0219">
+<div class="chk" onclick="toggle('CC_0219')"></div>
+<div class="sid">CC_0219</div>
+<div class="metric">
+  f15 d3 frnt2.67 <span class="m-est">est=7.1</span><br>
+  score 425 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">6</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">11</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">11</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0219" data-val="8" onclick="copyVal(this)" title="보수안 클릭→복사">8</span>
+  <span class="custom"><input type="number" id="in-CC_0219" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0219')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('VeryEasy_obj_-5924488609331911666_-5924488609331911666.json')" title="VeryEasy_obj_-5924488609331911666_-5924488609331911666.json">VeryEasy_obj_-5924488609331911666_-5924488609331911666.json</div>
+</div>
+</div></div>
+<div class="tier-sec"><div class="tier-hd" onclick="toggleSec(this)">
+<span class="tier-lbl" style="background:#8bc34a">Easy</span>
+<span class="tier-cnt">10개</span>
+<span class="tier-prog" data-tier="Easy">0/10</span><span style="color:#555">▼</span></div><div class="tier-body">
+<div class="row" id="row-CC_0017">
+<div class="chk" onclick="toggle('CC_0017')"></div>
+<div class="sid">CC_0017</div>
+<div class="metric">
+  f25 d3 frnt5.48 <span class="m-est">est=10.0</span><br>
+  score 655 · CR <span style="color:#ff8888">7%</span>/<span style="color:#ff8888">0%</span>/<span style="color:#ff8888">6%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">5</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">13</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">13</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0017" data-val="10" onclick="copyVal(this)" title="보수안 클릭→복사">10</span>
+  <span class="custom"><input type="number" id="in-CC_0017" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0017')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Easy_obj_-9170708446745828065_-9170708446745828065.json')" title="Easy_obj_-9170708446745828065_-9170708446745828065.json">Easy_obj_-9170708446745828065_-9170708446745828065.json</div>
+</div>
+<div class="row" id="row-CC_0025">
+<div class="chk" onclick="toggle('CC_0025')"></div>
+<div class="sid">CC_0025</div>
+<div class="metric">
+  f28 d2 frnt5.14 <span class="m-est">est=10.9</span><br>
+  score 750 · CR <span style="color:#88cc88">70%</span>/<span style="color:#ff8888">6%</span>/<span style="color:#ff8888">4%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">6</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">13</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">13</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0025" data-val="11" onclick="copyVal(this)" title="보수안 클릭→복사">11</span>
+  <span class="custom"><input type="number" id="in-CC_0025" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0025')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Easy_obj_4128039804169441458_4128039804169441458.json')" title="Easy_obj_4128039804169441458_4128039804169441458.json">Easy_obj_4128039804169441458_4128039804169441458.json</div>
+</div>
+<div class="row" id="row-CC_0007">
+<div class="chk" onclick="toggle('CC_0007')"></div>
+<div class="sid">CC_0007</div>
+<div class="metric">
+  f25 d5 frnt3.96 <span class="m-est">est=11.4</span><br>
+  score 725 · CR <span style="color:#88cc88">75%</span>/<span style="color:#ff8888">12%</span>/<span style="color:#ff8888">6%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">8</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0007" data-val="11" onclick="copyVal(this)" title="보수안 클릭→복사">11</span>
+  <span class="custom"><input type="number" id="in-CC_0007" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0007')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Easy_obj_-3577985653752088467_-3577985653752088467.json')" title="Easy_obj_-3577985653752088467_-3577985653752088467.json">Easy_obj_-3577985653752088467_-3577985653752088467.json</div>
+</div>
+<div class="row" id="row-CC_0090">
+<div class="chk" onclick="toggle('CC_0090')"></div>
+<div class="sid">CC_0090</div>
+<div class="metric">
+  f25 d4 frnt3.64 <span class="m-est">est=11.1</span><br>
+  score 710 · CR <span style="color:#88cc88">68%</span>/<span style="color:#ff8888">8%</span>/<span style="color:#ff8888">8%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">8</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0090" data-val="11" onclick="copyVal(this)" title="보수안 클릭→복사">11</span>
+  <span class="custom"><input type="number" id="in-CC_0090" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0090')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Easy_obj_-3890466614938630821_-3890466614938630821.json')" title="Easy_obj_-3890466614938630821_-3890466614938630821.json">Easy_obj_-3890466614938630821_-3890466614938630821.json</div>
+</div>
+<div class="row" id="row-CC_0019">
+<div class="chk" onclick="toggle('CC_0019')"></div>
+<div class="sid">CC_0019</div>
+<div class="metric">
+  f25 d5 frnt5.48 <span class="m-est">est=10.8</span><br>
+  score 675 · CR <span style="color:#ff8888">0%</span>/<span style="color:#ffcc66">47%</span>/<span style="color:#ffcc66">39%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">10</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0019" data-val="12" onclick="copyVal(this)" title="보수안 클릭→복사">12</span>
+  <span class="custom"><input type="number" id="in-CC_0019" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0019')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Easy_obj_1970069471253374735_1970069471253374735.json')" title="Easy_obj_1970069471253374735_1970069471253374735.json">Easy_obj_1970069471253374735_1970069471253374735.json</div>
+</div>
+<div class="row" id="row-CC_0002">
+<div class="chk" onclick="toggle('CC_0002')"></div>
+<div class="sid">CC_0002</div>
+<div class="metric">
+  f22 d2 frnt7.18 <span class="m-est">est=7.7</span><br>
+  score 530 · CR <span style="color:#ff8888">4%</span>/<span style="color:#ff8888">22%</span>/<span style="color:#ff8888">28%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">7</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">12</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">12</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0002" data-val="9" onclick="copyVal(this)" title="보수안 클릭→복사">9</span>
+  <span class="custom"><input type="number" id="in-CC_0002" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0002')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Easy_obj_-1076113912418926872_-1076113912418926872.json')" title="Easy_obj_-1076113912418926872_-1076113912418926872.json">Easy_obj_-1076113912418926872_-1076113912418926872.json</div>
+</div>
+<div class="row" id="row-CC_0183">
+<div class="chk" onclick="toggle('CC_0183')"></div>
+<div class="sid">CC_0183</div>
+<div class="metric">
+  f20 d3 frnt6.05 <span class="m-est">est=7.8</span><br>
+  score 495 · CR <span style="color:#ffcc66">49%</span>/<span style="color:#ff8888">11%</span>/<span style="color:#ff8888">15%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">5</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">10</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">10</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0183" data-val="8" onclick="copyVal(this)" title="보수안 클릭→복사">8</span>
+  <span class="custom"><input type="number" id="in-CC_0183" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0183')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Easy_obj_5917400523554303550_5917400523554303550.json')" title="Easy_obj_5917400523554303550_5917400523554303550.json">Easy_obj_5917400523554303550_5917400523554303550.json</div>
+</div>
+<div class="row" id="row-CC_0016">
+<div class="chk" onclick="toggle('CC_0016')"></div>
+<div class="sid">CC_0016</div>
+<div class="metric">
+  f23 d6 frnt4.57 <span class="m-est">est=10.8</span><br>
+  score 680 · CR <span style="color:#88cc88">64%</span>/<span style="color:#ff8888">9%</span>/<span style="color:#ff8888">11%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">19</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">19</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0016" data-val="16" onclick="copyVal(this)" title="보수안 클릭→복사">16</span>
+  <span class="custom"><input type="number" id="in-CC_0016" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0016')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Easy_obj_-6845371592253495967_-6845371592253495967.json')" title="Easy_obj_-6845371592253495967_-6845371592253495967.json">Easy_obj_-6845371592253495967_-6845371592253495967.json</div>
+</div>
+<div class="row" id="row-CC_0171">
+<div class="chk" onclick="toggle('CC_0171')"></div>
+<div class="sid">CC_0171</div>
+<div class="metric">
+  f22 d5 frnt4.86 <span class="m-est">est=9.8</span><br>
+  score 605 · CR <span style="color:#88cc88">62%</span>/<span style="color:#ff8888">29%</span>/<span style="color:#ff8888">26%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">7</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">12</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">12</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0171" data-val="10" onclick="copyVal(this)" title="보수안 클릭→복사">10</span>
+  <span class="custom"><input type="number" id="in-CC_0171" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0171')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Easy_obj_-8228455277662928550_-8228455277662928550.json')" title="Easy_obj_-8228455277662928550_-8228455277662928550.json">Easy_obj_-8228455277662928550_-8228455277662928550.json</div>
+</div>
+<div class="row" id="row-CC_0182">
+<div class="chk" onclick="toggle('CC_0182')"></div>
+<div class="sid">CC_0182</div>
+<div class="metric">
+  f28 d4 frnt3.64 <span class="m-est">est=12.3</span><br>
+  score 800 · CR <span style="color:#88cc88">76%</span>/<span style="color:#ff8888">9%</span>/<span style="color:#ff8888">1%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">10</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0182" data-val="12" onclick="copyVal(this)" title="보수안 클릭→복사">12</span>
+  <span class="custom"><input type="number" id="in-CC_0182" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0182')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Easy_obj_5582524774713652387_5582524774713652387.json')" title="Easy_obj_5582524774713652387_5582524774713652387.json">Easy_obj_5582524774713652387_5582524774713652387.json</div>
+</div>
+</div></div>
+<div class="tier-sec"><div class="tier-hd" onclick="toggleSec(this)">
+<span class="tier-lbl" style="background:#ffc107">Normal</span>
+<span class="tier-cnt">12개</span>
+<span class="tier-prog" data-tier="Normal">0/12</span><span style="color:#555">▼</span></div><div class="tier-body">
+<div class="row" id="row-CC_0050">
+<div class="chk" onclick="toggle('CC_0050')"></div>
+<div class="sid">CC_0050</div>
+<div class="metric">
+  f0 d0 frnt0 <span class="m-est">est=0.0</span><br>
+  score 800 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">8</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0050" data-val="15" onclick="copyVal(this)" title="보수안 클릭→복사">15</span>
+  <span class="custom"><input type="number" id="in-CC_0050" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0050')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_5840205091478623467_5840205091478623467.json')" title="Normal_obj_5840205091478623467_5840205091478623467.json">Normal_obj_5840205091478623467_5840205091478623467.json</div>
+</div>
+<div class="row" id="row-CC_0212">
+<div class="chk" onclick="toggle('CC_0212')"></div>
+<div class="sid">CC_0212</div>
+<div class="metric">
+  f27 d2 frnt4.22 <span class="m-est">est=10.9</span><br>
+  score 730 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">6</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">13</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">13</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0212" data-val="11" onclick="copyVal(this)" title="보수안 클릭→복사">11</span>
+  <span class="custom"><input type="number" id="in-CC_0212" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0212')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_7439413060091581926_7439413060091581926.json')" title="Normal_obj_7439413060091581926_7439413060091581926.json">Normal_obj_7439413060091581926_7439413060091581926.json</div>
+</div>
+<div class="row" id="row-CC_0121">
+<div class="chk" onclick="toggle('CC_0121')"></div>
+<div class="sid">CC_0121</div>
+<div class="metric">
+  f27 d4 frnt4.3 <span class="m-est">est=11.7</span><br>
+  score 750 · CR <span style="color:#88cc88">74%</span>/<span style="color:#ff8888">7%</span>/<span style="color:#ff8888">6%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">8</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0121" data-val="12" onclick="copyVal(this)" title="보수안 클릭→복사">12</span>
+  <span class="custom"><input type="number" id="in-CC_0121" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0121')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_-949791933841341856_-949791933841341856.json')" title="Normal_obj_-949791933841341856_-949791933841341856.json">Normal_obj_-949791933841341856_-949791933841341856.json</div>
+</div>
+<div class="row" id="row-CC_0135">
+<div class="chk" onclick="toggle('CC_0135')"></div>
+<div class="sid">CC_0135</div>
+<div class="metric">
+  f30 d4 frnt5.23 <span class="m-est">est=12.5</span><br>
+  score 840 · CR <span style="color:#88cc88">64%</span>/<span style="color:#ff8888">5%</span>/<span style="color:#ff8888">7%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">9</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0135" data-val="12" onclick="copyVal(this)" title="보수안 클릭→복사">12</span>
+  <span class="custom"><input type="number" id="in-CC_0135" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0135')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_6590097658921723082_6590097658921723082.json')" title="Normal_obj_6590097658921723082_6590097658921723082.json">Normal_obj_6590097658921723082_6590097658921723082.json</div>
+</div>
+<div class="row" id="row-CC_0200">
+<div class="chk" onclick="toggle('CC_0200')"></div>
+<div class="sid">CC_0200</div>
+<div class="metric">
+  f30 d5 frnt5.07 <span class="m-est">est=13.0</span><br>
+  score 835 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">9</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0200" data-val="13" onclick="copyVal(this)" title="보수안 클릭→복사">13</span>
+  <span class="custom"><input type="number" id="in-CC_0200" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0200')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_2381993396820737367_2381993396820737367.json')" title="Normal_obj_2381993396820737367_2381993396820737367.json">Normal_obj_2381993396820737367_2381993396820737367.json</div>
+</div>
+<div class="row" id="row-CC_0199">
+<div class="chk" onclick="toggle('CC_0199')"></div>
+<div class="sid">CC_0199</div>
+<div class="metric">
+  f30 d5 frnt3.9 <span class="m-est">est=13.4</span><br>
+  score 865 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">10</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0199" data-val="13" onclick="copyVal(this)" title="보수안 클릭→복사">13</span>
+  <span class="custom"><input type="number" id="in-CC_0199" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0199')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_1013913111840760766_1013913111840760766.json')" title="Normal_obj_1013913111840760766_1013913111840760766.json">Normal_obj_1013913111840760766_1013913111840760766.json</div>
+</div>
+<div class="row" id="row-CC_0053">
+<div class="chk" onclick="toggle('CC_0053')"></div>
+<div class="sid">CC_0053</div>
+<div class="metric">
+  f30 d4 frnt3.57 <span class="m-est">est=13.2</span><br>
+  score 860 · CR <span style="color:#ff8888">13%</span>/<span style="color:#ff8888">10%</span>/<span style="color:#ff8888">9%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">12</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">17</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">17</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0053" data-val="14" onclick="copyVal(this)" title="보수안 클릭→복사">14</span>
+  <span class="custom"><input type="number" id="in-CC_0053" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0053')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_7498578966834877293_7498578966834877293.json')" title="Normal_obj_7498578966834877293_7498578966834877293.json">Normal_obj_7498578966834877293_7498578966834877293.json</div>
+</div>
+<div class="row" id="row-CC_0054">
+<div class="chk" onclick="toggle('CC_0054')"></div>
+<div class="sid">CC_0054</div>
+<div class="metric">
+  f31 d4 frnt4.03 <span class="m-est">est=13.4</span><br>
+  score 870 · CR <span style="color:#88cc88">78%</span>/<span style="color:#ff8888">8%</span>/<span style="color:#ff8888">1%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">10</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0054" data-val="13" onclick="copyVal(this)" title="보수안 클릭→복사">13</span>
+  <span class="custom"><input type="number" id="in-CC_0054" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0054')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_8531102714590821791_8531102714590821791.json')" title="Normal_obj_8531102714590821791_8531102714590821791.json">Normal_obj_8531102714590821791_8531102714590821791.json</div>
+</div>
+<div class="row" id="row-CC_0137">
+<div class="chk" onclick="toggle('CC_0137')"></div>
+<div class="sid">CC_0137</div>
+<div class="metric">
+  f28 d7 frnt3.75 <span class="m-est">est=13.5</span><br>
+  score 825 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">10</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0137" data-val="14" onclick="copyVal(this)" title="보수안 클릭→복사">14</span>
+  <span class="custom"><input type="number" id="in-CC_0137" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0137')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_9109329256775260811_9109329256775260811.json')" title="Normal_obj_9109329256775260811_9109329256775260811.json">Normal_obj_9109329256775260811_9109329256775260811.json</div>
+</div>
+<div class="row" id="row-CC_0136">
+<div class="chk" onclick="toggle('CC_0136')"></div>
+<div class="sid">CC_0136</div>
+<div class="metric">
+  f26 d9 frnt3.73 <span class="m-est">est=13.5</span><br>
+  score 755 · CR <span style="color:#ff8888">0%</span>/<span style="color:#ffcc66">32%</span>/<span style="color:#ff8888">19%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">13</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">18</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">18</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0136" data-val="15" onclick="copyVal(this)" title="보수안 클릭→복사">15</span>
+  <span class="custom"><input type="number" id="in-CC_0136" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0136')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_9005262734481547871_9005262734481547871.json')" title="Normal_obj_9005262734481547871_9005262734481547871.json">Normal_obj_9005262734481547871_9005262734481547871.json</div>
+</div>
+<div class="row" id="row-CC_0119">
+<div class="chk" onclick="toggle('CC_0119')"></div>
+<div class="sid">CC_0119</div>
+<div class="metric">
+  f20 d4 frnt3.15 <span class="m-est">est=9.3</span><br>
+  score 560 · CR <span style="color:#88cc88">75%</span>/<span style="color:#ffcc66">30%</span>/<span style="color:#ffcc66">31%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">10</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">15</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0119" data-val="12" onclick="copyVal(this)" title="보수안 클릭→복사">12</span>
+  <span class="custom"><input type="number" id="in-CC_0119" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0119')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_-45362167705950980_-45362167705950980.json')" title="Normal_obj_-45362167705950980_-45362167705950980.json">Normal_obj_-45362167705950980_-45362167705950980.json</div>
+</div>
+<div class="row" id="row-CC_0129">
+<div class="chk" onclick="toggle('CC_0129')"></div>
+<div class="sid">CC_0129</div>
+<div class="metric">
+  f30 d5 frnt6.17 <span class="m-est">est=12.5</span><br>
+  score 865 · CR <span style="color:#ff8888">1%</span>/<span style="color:#ff8888">28%</span>/<span style="color:#ff8888">19%</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">10</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">14</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0129" data-val="12" onclick="copyVal(this)" title="보수안 클릭→복사">12</span>
+  <span class="custom"><input type="number" id="in-CC_0129" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0129')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Normal_obj_290478911730800373_290478911730800373.json')" title="Normal_obj_290478911730800373_290478911730800373.json">Normal_obj_290478911730800373_290478911730800373.json</div>
+</div>
+</div></div>
+<div class="tier-sec"><div class="tier-hd" onclick="toggleSec(this)">
+<span class="tier-lbl" style="background:#ff5722">Hard</span>
+<span class="tier-cnt">2개</span>
+<span class="tier-prog" data-tier="Hard">0/2</span><span style="color:#555">▼</span></div><div class="tier-body">
+<div class="row" id="row-CC_0267">
+<div class="chk" onclick="toggle('CC_0267')"></div>
+<div class="sid">CC_0267</div>
+<div class="metric">
+  f32 d5 frnt2.94 <span class="m-est">est=14.6</span><br>
+  score 945 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">10</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">17</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">17</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0267" data-val="15" onclick="copyVal(this)" title="보수안 클릭→복사">15</span>
+  <span class="custom"><input type="number" id="in-CC_0267" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0267')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Hard_obj_-8581124268425051125_-8581124268425051125.json')" title="Hard_obj_-8581124268425051125_-8581124268425051125.json">Hard_obj_-8581124268425051125_-8581124268425051125.json</div>
+</div>
+<div class="row" id="row-CC_0263">
+<div class="chk" onclick="toggle('CC_0263')"></div>
+<div class="sid">CC_0263</div>
+<div class="metric">
+  f31 d7 frnt3.32 <span class="m-est">est=14.9</span><br>
+  score 905 · CR <span style="color:#666">—</span>/<span style="color:#666">—</span>/<span style="color:#666">—</span>
+</div>
+<div class="decks">
+  <span class="pill p-orig" title="원본">10</span>
+  <span class="arr">→</span>
+  <span class="pill p-html" title="HTML v6 제안(과다)">17</span>
+  <span class="arr">→</span>
+  <span class="pill p-cur" title="현재 JSON 적용값">17</span>
+  <span class="arr">→</span>
+  <span class="pill p-suggest" data-sid="CC_0263" data-val="15" onclick="copyVal(this)" title="보수안 클릭→복사">15</span>
+  <span class="custom"><input type="number" id="in-CC_0263" placeholder="직접" min="1" max="30"><button onclick="copyCustom('CC_0263')">복사</button></span>
+</div>
+<div class="fn" onclick="copyText('Hard_obj_-6858756943211057750_-6858756943211057750.json')" title="Hard_obj_-6858756943211057750_-6858756943211057750.json">Hard_obj_-6858756943211057750_-6858756943211057750.json</div>
+</div>
+</div></div>
+
+<div id="toast"></div>
+<script>
+const KEY='deck_revise_v3';
+const state=JSON.parse(localStorage.getItem(KEY)||'{}');
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1200);}
+function updateProg(){
+  document.getElementById('done').textContent=document.querySelectorAll('.row.done').length;
+  document.querySelectorAll('.tier-prog').forEach(el=>{
+    const sec=el.closest('.tier-sec');
+    el.textContent=`${sec.querySelectorAll('.row.done').length}/${sec.querySelectorAll('.row').length}`;
+  });
+}
+function markDone(sid,val){
+  const row=document.getElementById('row-'+sid);
+  if(!row.classList.contains('done')){row.classList.add('done');row.querySelector('.chk').classList.add('on');}
+  state[sid]=val;save();updateProg();
+}
+function toggle(sid){
+  const row=document.getElementById('row-'+sid);
+  const c=row.querySelector('.chk');
+  if(row.classList.contains('done')){row.classList.remove('done');c.classList.remove('on');delete state[sid];}
+  else{row.classList.add('done');c.classList.add('on');state[sid]=true;}
+  save();updateProg();
+}
+function copyVal(el){
+  const sid=el.dataset.sid, val=el.dataset.val;
+  navigator.clipboard.writeText(val).then(()=>{toast('복사: '+val);markDone(sid,val);});
+}
+function copyCustom(sid){
+  const v=document.getElementById('in-'+sid).value;
+  if(!v){toast('값 입력 필요');return;}
+  navigator.clipboard.writeText(v).then(()=>{toast('복사: '+v);markDone(sid,v);});
+}
+function copyText(txt){navigator.clipboard.writeText(txt).then(()=>toast('복사: '+txt.slice(0,40)));}
+function toggleSec(h){h.nextElementSibling.style.display=h.nextElementSibling.style.display==='none'?'':'none';}
+function expand(o){document.querySelectorAll('.tier-body').forEach(b=>b.style.display=o?'':'none');}
+function reset(){if(!confirm('초기화?'))return;localStorage.removeItem(KEY);location.reload();}
+async function applyAllConservative(){
+  if(!confirm('30개 스테이지 JSON 파일 일괄 보수안 적용?\n(서버 API 필요)'))return;
+  const pills=document.querySelectorAll('.p-suggest');
+  const payload=[...pills].map(p=>({sid:p.dataset.sid, new_deck:parseInt(p.dataset.val)}));
+  try{
+    const res=await fetch('/api/apply-deck-revise',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:payload})});
+    if(!res.ok) throw 0;
+    const j=await res.json();
+    toast('✅ '+j.updated+'개 파일 업데이트');
+  }catch(e){
+    const blob=new Blob([JSON.stringify({items:payload},null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');
+    a.href=url;a.download='deck_revise_apply.json';a.click();URL.revokeObjectURL(url);
+    toast('⚠️ API 없음 → 파일 다운로드');
+  }
+}
+document.querySelectorAll('.row').forEach(r=>{const sid=r.id.replace('row-','');if(state[sid]){r.classList.add('done');r.querySelector('.chk').classList.add('on');}});
+updateProg();
+</script></body></html>

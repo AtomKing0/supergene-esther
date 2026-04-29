@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Cross-pile 문제 맵 시각화</title>
+<style>
+  body{background:#1a1a2e;color:#eee;font-family:sans-serif;padding:16px}
+  h1{text-align:center;font-size:15px;color:#aef;margin-bottom:16px}
+  .block{margin-bottom:36px}
+  .title{font-size:13px;font-weight:bold;color:#ffd;margin-bottom:4px}
+  .pairs{font-size:11px;color:#bbb;font-family:monospace;margin-bottom:6px}
+  canvas{display:block;background:#1a6fbf;border-radius:6px}
+  .leg{font-size:10px;color:#ccc;margin-top:4px;text-align:center}
+</style></head><body>
+<h1>Cross-pile 블로킹 문제 맵 — CC_0272 / CC_0273 / CC_0286</h1>
+<div class="leg" style="margin-bottom:18px">
+  <span style="color:#ff6060">■ 빨강(lo)</span> = 블로킹 당하는 카드 &nbsp;
+  <span style="color:#6699ff">■ 파랑(hi)</span> = 크로스-파일 블로커 (hi 자체가 blocked) &nbsp;
+  흰/하늘 = 일반
+</div>
+
+<div class="block">
+  <div class="title">CC_0272 &nbsp;<span style="color:#aaa;font-size:11px;font-weight:normal">Normal_obj_2408438036868712511_2408438036868712511 (31장)</span></div>
+  <div class="pairs">❌ card[0](d0)→card[2](d2) 6.0px | card[2](d2)→card[11](d3) 5.1px | card[7](d2)→card[14](d3) 5.1px | card[21](d0)→card[7](d2) 6.0px</div>
+  <canvas id="c_CC_0272" width="960" height="600"></canvas>
+</div>
+<script>(function(){
+  const canvas=document.getElementById('c_CC_0272');
+  const ctx=canvas.getContext('2d');
+  const OX=480.0,OY=300.0,SC=0.4191,CX=0.0,CY=0.0;
+  const CW=100*SC,CH=150*SC;
+  const dc=["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db", "#9b59b6", "#1abc9c", "#e91e63", "#ff5722"];
+  const lo=new Set([0, 2, 21, 7]);
+  const hi=new Set([2, 11, 14, 7]);
+  [{"idx": 0, "x": -229, "y": 117, "angle": 0.0, "depth": 0}, {"idx": 5, "x": 447, "y": -135, "angle": 299.999996, "depth": 0}, {"idx": 18, "x": -447, "y": -135, "angle": 60.0, "depth": 0}, {"idx": 21, "x": 229, "y": 117, "angle": 0.0, "depth": 0}, {"idx": 22, "x": -60, "y": 144, "angle": 0.0, "depth": 0}, {"idx": 1, "x": -169, "y": 72, "angle": 0.0, "depth": 1}, {"idx": 8, "x": 417, "y": -81, "angle": 299.999996, "depth": 1}, {"idx": 9, "x": 169, "y": 72, "angle": 0.0, "depth": 1}, {"idx": 17, "x": -417, "y": -81, "angle": 60.0, "depth": 1}, {"idx": 23, "x": 60, "y": 144, "angle": 0.0, "depth": 1}, {"idx": 29, "x": -60, "y": -126, "angle": 0.0, "depth": 1}, {"idx": 30, "x": 60, "y": -126, "angle": 0.0, "depth": 1}, {"idx": 2, "x": -169, "y": -27, "angle": 0.0, "depth": 2}, {"idx": 7, "x": 169, "y": -27, "angle": 0.0, "depth": 2}, {"idx": 10, "x": -266, "y": 72, "angle": 329.999998, "depth": 2}, {"idx": 15, "x": 266, "y": 72, "angle": 30.0, "depth": 2}, {"idx": 16, "x": -380, "y": -18, "angle": 60.0, "depth": 2}, {"idx": 19, "x": 380, "y": -18, "angle": 299.999996, "depth": 2}, {"idx": 24, "x": 0, "y": 108, "angle": 0.0, "depth": 2}, {"idx": 3, "x": -127, "y": -99, "angle": 0.0, "depth": 3}, {"idx": 11, "x": -291, "y": 63, "angle": 60.0, "depth": 3}, {"idx": 13, "x": 121, "y": -99, "angle": 0.0, "depth": 3}, {"idx": 14, "x": 291, "y": 63, "angle": 299.999996, "depth": 3}, {"idx": 25, "x": 0, "y": 36, "angle": 0.0, "depth": 3}, {"idx": 28, "x": 0, "y": -144, "angle": 0.0, "depth": 3}, {"idx": 4, "x": -169, "y": -144, "angle": 0.0, "depth": 4}, {"idx": 6, "x": 169, "y": -144, "angle": 0.0, "depth": 4}, {"idx": 12, "x": -317, "y": 58, "angle": 329.999998, "depth": 4}, {"idx": 20, "x": 317, "y": 58, "angle": 30.0, "depth": 4}, {"idx": 27, "x": 0, "y": -117, "angle": 0.0, "depth": 4}, {"idx": 26, "x": 0, "y": -27, "angle": 0.0, "depth": 5}].forEach(c=>{
+    const px=OX+(c.x-CX)*SC, py=OY-(c.y-CY)*SC;
+    const rad=c.angle*Math.PI/180;
+    ctx.save(); ctx.translate(px,py); ctx.rotate(-rad);
+    const isLo=lo.has(c.idx), isHi=hi.has(c.idx), isBoth=isLo&&isHi;
+    if(isBoth){ ctx.fillStyle='rgba(255,120,255,0.9)'; ctx.strokeStyle='#ff00ff'; ctx.lineWidth=3; }
+    else if(isLo){ ctx.fillStyle='rgba(255,80,80,0.88)'; ctx.strokeStyle='#ff2222'; ctx.lineWidth=3; }
+    else if(isHi){ ctx.fillStyle='rgba(60,80,255,0.88)'; ctx.strokeStyle='#3355ff'; ctx.lineWidth=3; }
+    else{ ctx.fillStyle=c.depth===0?'#fff':'#d4eaff'; ctx.strokeStyle=dc[Math.min(c.depth,dc.length-1)]; ctx.lineWidth=c.depth===0?2.5:1.5; }
+    ctx.beginPath(); ctx.roundRect(-CW/2,-CH/2,CW,CH,4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=(isLo||isHi)?'#fff':dc[Math.min(c.depth,dc.length-1)];
+    ctx.font=`bold ${(isLo||isHi?14:11)*SC/0.75}px sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(c.idx,0,0);
+    ctx.fillStyle=(isLo||isHi)?'rgba(255,255,255,0.8)':'#555';
+    ctx.font=`${7.5*SC/0.75}px sans-serif`;
+    ctx.fillText('d'+c.depth,0,CH/2-5);
+    ctx.restore();
+  });
+})();</script>
+
+<div class="block">
+  <div class="title">CC_0273 &nbsp;<span style="color:#aaa;font-size:11px;font-weight:normal">VeryHard_obj_2519617144431508815_2519617144431508815 (30장)</span></div>
+  <div class="pairs">❌ card[12](d0)→card[1](d1) 21.4px | card[26](d0)→card[23](d1) 21.4px</div>
+  <canvas id="c_CC_0273" width="960" height="600"></canvas>
+</div>
+<script>(function(){
+  const canvas=document.getElementById('c_CC_0273');
+  const ctx=canvas.getContext('2d');
+  const OX=480.0,OY=300.0,SC=0.4551,CX=-21.5,CY=0.0;
+  const CW=100*SC,CH=150*SC;
+  const dc=["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db", "#9b59b6", "#1abc9c", "#e91e63", "#ff5722"];
+  const lo=new Set([26, 12]);
+  const hi=new Set([1, 23]);
+  [{"idx": 9, "x": -352, "y": -12, "angle": 0.0, "depth": 0}, {"idx": 10, "x": 193, "y": 0, "angle": 0.0, "depth": 0}, {"idx": 11, "x": 87, "y": 0, "angle": 0.0, "depth": 0}, {"idx": 12, "x": -41, "y": -140, "angle": 45.0, "depth": 0}, {"idx": 13, "x": -40, "y": 140, "angle": 314.999996, "depth": 0}, {"idx": 15, "x": 321, "y": 140, "angle": 45.0, "depth": 0}, {"idx": 26, "x": 322, "y": -140, "angle": 314.999996, "depth": 0}, {"idx": 0, "x": 141, "y": 0, "angle": 0.0, "depth": 1}, {"idx": 1, "x": -98, "y": 2, "angle": 0.0, "depth": 1}, {"idx": 4, "x": -422, "y": 93, "angle": 15.000031, "depth": 1}, {"idx": 5, "x": -281, "y": 93, "angle": 344.999998, "depth": 1}, {"idx": 6, "x": -422, "y": -105, "angle": 345.00004, "depth": 1}, {"idx": 7, "x": -281, "y": -105, "angle": 15.000031, "depth": 1}, {"idx": 16, "x": 254, "y": 152, "angle": 0.0, "depth": 1}, {"idx": 17, "x": 141, "y": 152, "angle": 0.0, "depth": 1}, {"idx": 18, "x": 27, "y": 152, "angle": 0.0, "depth": 1}, {"idx": 20, "x": 254, "y": -152, "angle": 0.0, "depth": 1}, {"idx": 21, "x": 27, "y": -152, "angle": 0.0, "depth": 1}, {"idx": 22, "x": 141, "y": -152, "angle": 0.0, "depth": 1}, {"idx": 23, "x": 379, "y": 2, "angle": 0.0, "depth": 1}, {"idx": 2, "x": -96, "y": -93, "angle": 15.000031, "depth": 2}, {"idx": 3, "x": -96, "y": 82, "angle": 344.999999, "depth": 2}, {"idx": 8, "x": -414, "y": -12, "angle": 0.0, "depth": 2}, {"idx": 14, "x": 195, "y": -152, "angle": 0.0, "depth": 2}, {"idx": 19, "x": 87, "y": 152, "angle": 0.0, "depth": 2}, {"idx": 24, "x": 87, "y": -152, "angle": 0.0, "depth": 2}, {"idx": 25, "x": 377, "y": 82, "angle": 15.0, "depth": 2}, {"idx": 27, "x": 377, "y": -93, "angle": 344.999958, "depth": 2}, {"idx": 28, "x": 195, "y": 152, "angle": 0.0, "depth": 2}, {"idx": 29, "x": -297, "y": -12, "angle": 0.0, "depth": 2}].forEach(c=>{
+    const px=OX+(c.x-CX)*SC, py=OY-(c.y-CY)*SC;
+    const rad=c.angle*Math.PI/180;
+    ctx.save(); ctx.translate(px,py); ctx.rotate(-rad);
+    const isLo=lo.has(c.idx), isHi=hi.has(c.idx), isBoth=isLo&&isHi;
+    if(isBoth){ ctx.fillStyle='rgba(255,120,255,0.9)'; ctx.strokeStyle='#ff00ff'; ctx.lineWidth=3; }
+    else if(isLo){ ctx.fillStyle='rgba(255,80,80,0.88)'; ctx.strokeStyle='#ff2222'; ctx.lineWidth=3; }
+    else if(isHi){ ctx.fillStyle='rgba(60,80,255,0.88)'; ctx.strokeStyle='#3355ff'; ctx.lineWidth=3; }
+    else{ ctx.fillStyle=c.depth===0?'#fff':'#d4eaff'; ctx.strokeStyle=dc[Math.min(c.depth,dc.length-1)]; ctx.lineWidth=c.depth===0?2.5:1.5; }
+    ctx.beginPath(); ctx.roundRect(-CW/2,-CH/2,CW,CH,4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=(isLo||isHi)?'#fff':dc[Math.min(c.depth,dc.length-1)];
+    ctx.font=`bold ${(isLo||isHi?14:11)*SC/0.75}px sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(c.idx,0,0);
+    ctx.fillStyle=(isLo||isHi)?'rgba(255,255,255,0.8)':'#555';
+    ctx.font=`${7.5*SC/0.75}px sans-serif`;
+    ctx.fillText('d'+c.depth,0,CH/2-5);
+    ctx.restore();
+  });
+})();</script>
+
+<div class="block">
+  <div class="title">CC_0286 &nbsp;<span style="color:#aaa;font-size:11px;font-weight:normal">Normal_obj_7629362497685869891_7629362497685869891 (31장)</span></div>
+  <div class="pairs">❌ card[15](d0)→card[21](d2) 16.1px | card[16](d0)→card[29](d2) 16.1px | card[20](d2)→card[22](d4) 16.8px | card[23](d2)→card[25](d4) 17.5px</div>
+  <canvas id="c_CC_0286" width="960" height="600"></canvas>
+</div>
+<script>(function(){
+  const canvas=document.getElementById('c_CC_0286');
+  const ctx=canvas.getContext('2d');
+  const OX=480.0,OY=300.0,SC=0.4148,CX=-18.0,CY=0.0;
+  const CW=100*SC,CH=150*SC;
+  const dc=["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#3498db", "#9b59b6", "#1abc9c", "#e91e63", "#ff5722"];
+  const lo=new Set([16, 20, 23, 15]);
+  const hi=new Set([25, 29, 21, 22]);
+  [{"idx": 5, "x": 266, "y": 0, "angle": 0.0, "depth": 0}, {"idx": 15, "x": -162, "y": 76, "angle": 314.999996, "depth": 0}, {"idx": 16, "x": -333, "y": 72, "angle": 45.0, "depth": 0}, {"idx": 1, "x": 181, "y": 137, "angle": 329.999998, "depth": 1}, {"idx": 6, "x": 350, "y": 137, "angle": 30.0, "depth": 1}, {"idx": 10, "x": 181, "y": -137, "angle": 30.0, "depth": 1}, {"idx": 11, "x": 350, "y": -137, "angle": 329.999998, "depth": 1}, {"idx": 18, "x": -109, "y": 86, "angle": 0.0, "depth": 1}, {"idx": 30, "x": -386, "y": 86, "angle": 0.0, "depth": 1}, {"idx": 0, "x": 99, "y": 122, "angle": 329.999998, "depth": 2}, {"idx": 3, "x": 181, "y": 0, "angle": 0.0, "depth": 2}, {"idx": 8, "x": 350, "y": 0, "angle": 0.0, "depth": 2}, {"idx": 9, "x": 99, "y": -122, "angle": 30.0, "depth": 2}, {"idx": 12, "x": 435, "y": 119, "angle": 30.0, "depth": 2}, {"idx": 14, "x": 435, "y": -119, "angle": 329.999998, "depth": 2}, {"idx": 20, "x": -55, "y": 74, "angle": 45.0, "depth": 2}, {"idx": 21, "x": -162, "y": -78, "angle": 45.0, "depth": 2}, {"idx": 23, "x": -441, "y": 74, "angle": 314.999996, "depth": 2}, {"idx": 29, "x": -333, "y": -82, "angle": 314.999996, "depth": 2}, {"idx": 2, "x": 109, "y": 0, "angle": 0.0, "depth": 3}, {"idx": 4, "x": 266, "y": 108, "angle": 0.0, "depth": 3}, {"idx": 7, "x": 266, "y": -108, "angle": 0.0, "depth": 3}, {"idx": 13, "x": 423, "y": 0, "angle": 0.0, "depth": 3}, {"idx": 19, "x": -109, "y": -91, "angle": 0.0, "depth": 3}, {"idx": 26, "x": -386, "y": -91, "angle": 0.0, "depth": 3}, {"idx": 17, "x": -194, "y": 0, "angle": 0.0, "depth": 4}, {"idx": 22, "x": -52, "y": -76, "angle": 314.999996, "depth": 4}, {"idx": 25, "x": -443, "y": -76, "angle": 45.0, "depth": 4}, {"idx": 28, "x": -301, "y": 0, "angle": 0.0, "depth": 4}, {"idx": 24, "x": -28, "y": -1, "angle": 0.0, "depth": 5}, {"idx": 27, "x": -471, "y": -1, "angle": 0.0, "depth": 5}].forEach(c=>{
+    const px=OX+(c.x-CX)*SC, py=OY-(c.y-CY)*SC;
+    const rad=c.angle*Math.PI/180;
+    ctx.save(); ctx.translate(px,py); ctx.rotate(-rad);
+    const isLo=lo.has(c.idx), isHi=hi.has(c.idx), isBoth=isLo&&isHi;
+    if(isBoth){ ctx.fillStyle='rgba(255,120,255,0.9)'; ctx.strokeStyle='#ff00ff'; ctx.lineWidth=3; }
+    else if(isLo){ ctx.fillStyle='rgba(255,80,80,0.88)'; ctx.strokeStyle='#ff2222'; ctx.lineWidth=3; }
+    else if(isHi){ ctx.fillStyle='rgba(60,80,255,0.88)'; ctx.strokeStyle='#3355ff'; ctx.lineWidth=3; }
+    else{ ctx.fillStyle=c.depth===0?'#fff':'#d4eaff'; ctx.strokeStyle=dc[Math.min(c.depth,dc.length-1)]; ctx.lineWidth=c.depth===0?2.5:1.5; }
+    ctx.beginPath(); ctx.roundRect(-CW/2,-CH/2,CW,CH,4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=(isLo||isHi)?'#fff':dc[Math.min(c.depth,dc.length-1)];
+    ctx.font=`bold ${(isLo||isHi?14:11)*SC/0.75}px sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(c.idx,0,0);
+    ctx.fillStyle=(isLo||isHi)?'rgba(255,255,255,0.8)':'#555';
+    ctx.font=`${7.5*SC/0.75}px sans-serif`;
+    ctx.fillText('d'+c.depth,0,CH/2-5);
+    ctx.restore();
+  });
+})();</script>
+
+</body></html>

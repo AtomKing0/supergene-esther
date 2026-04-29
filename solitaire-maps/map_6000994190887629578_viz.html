@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Map 6000994190887629578 - Card Visualization</title>
+<style>
+  body { background: #1a6fbf; margin: 0; font-family: sans-serif; }
+  h2 { color: white; text-align: center; padding: 10px; margin: 0; font-size: 14px; }
+  canvas { display: block; margin: 0 auto; }
+  #legend { color: white; text-align: center; font-size: 11px; padding: 4px; }
+</style>
+</head>
+<body>
+<h2>Normal_obj_6000994190887629578 — 카드 배치도 (28장)</h2>
+<canvas id="c" width="1100" height="700"></canvas>
+<div id="legend">depth: 0=빨강 1=주황 2=노랑 3=연두 4=파랑 | 숫자=카드번호 | 굵은테두리=depth0(뒤집기 가능)</div>
+<script>
+const cards = [
+  {n:1,  x:0,    y:108,  angle:0,    depth:0},
+  {n:2,  x:-78,  y:135,  angle:0,    depth:1},
+  {n:3,  x:-115, y:135,  angle:0,    depth:2},
+  {n:4,  x:-151, y:90,   angle:15,   depth:3},
+  {n:5,  x:-193, y:99,   angle:30,   depth:4},
+  {n:6,  x:115,  y:135,  angle:0,    depth:2},
+  {n:7,  x:78,   y:135,  angle:0,    depth:1},
+  {n:8,  x:151,  y:90,   angle:345,  depth:3},
+  {n:9,  x:193,  y:99,   angle:330,  depth:4},
+  {n:10, x:-193, y:-99,  angle:330,  depth:4},
+  {n:11, x:-115, y:-135, angle:0,    depth:2},
+  {n:12, x:-151, y:-90,  angle:345,  depth:3},
+  {n:13, x:0,    y:-108, angle:0,    depth:0},
+  {n:14, x:-78,  y:-135, angle:0,    depth:1},
+  {n:15, x:78,   y:-135, angle:0,    depth:1},
+  {n:16, x:151,  y:-90,  angle:15,   depth:3},
+  {n:17, x:115,  y:-135, angle:0,    depth:2},
+  {n:18, x:193,  y:-99,  angle:30,   depth:4},
+  {n:19, x:-304, y:14,   angle:0,    depth:4},
+  {n:20, x:-350, y:99,   angle:330,  depth:3},
+  {n:21, x:-384, y:120,  angle:330,  depth:2},
+  {n:22, x:-427, y:41,   angle:330,  depth:1},
+  {n:23, x:304,  y:14,   angle:0,    depth:4},
+  {n:24, x:451,  y:-62,  angle:0,    depth:0},
+  {n:25, x:-451, y:-62,  angle:0,    depth:0},
+  {n:26, x:350,  y:99,   angle:30,   depth:3},
+  {n:27, x:384,  y:120,  angle:30,   depth:2},
+  {n:28, x:427,  y:41,   angle:30,   depth:1},
+];
+
+const CW = 100, CH = 150;
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+// 좌표 변환: 게임좌표 → 캔버스좌표 (y축 반전)
+const OX = 550, OY = 350, SCALE = 0.9;
+function tx(x) { return OX + x * SCALE; }
+function ty(y) { return OY - y * SCALE; }
+
+const depthColors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db'];
+const depthNames  = ['depth 0','depth 1','depth 2','depth 3','depth 4'];
+
+// depth 0이 바닥, depth 높을수록 위에 렌더링
+const sorted = [...cards].sort((a,b) => a.depth - b.depth);
+
+sorted.forEach(card => {
+  const cx = tx(card.x);
+  const cy = ty(card.y);
+  const rad = card.angle * Math.PI / 180;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(-rad); // y축 반전으로 부호 반전
+
+  const w = CW * SCALE, h = CH * SCALE;
+
+  // 카드 배경
+  ctx.fillStyle = card.depth === 0 ? '#fff' : '#c8dff5';
+  ctx.strokeStyle = card.depth === 0 ? '#e74c3c' : depthColors[card.depth];
+  ctx.lineWidth = card.depth === 0 ? 3 : 1.5;
+
+  ctx.beginPath();
+  ctx.roundRect(-w/2, -h/2, w, h, 6);
+  ctx.fill();
+  ctx.stroke();
+
+  // 카드 번호
+  ctx.fillStyle = depthColors[card.depth];
+  ctx.font = `bold ${card.depth === 0 ? 18 : 14}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(card.n, 0, 0);
+
+  // depth 표시 (작게)
+  ctx.fillStyle = '#666';
+  ctx.font = '9px sans-serif';
+  ctx.fillText(`d${card.depth}`, 0, h/2 - 8);
+
+  ctx.restore();
+});
+
+// 범례
+const lx = 20, ly = canvas.height - 100;
+ctx.font = 'bold 11px sans-serif';
+ctx.fillStyle = 'white';
+ctx.fillText('Depth 색상:', lx, ly);
+depthColors.forEach((col, i) => {
+  ctx.fillStyle = col;
+  ctx.fillRect(lx + i*85, ly+10, 15, 15);
+  ctx.fillStyle = 'white';
+  ctx.font = '10px sans-serif';
+  ctx.fillText(depthNames[i], lx + i*85 + 18, ly+22);
+});
+</script>
+</body>
+</html>
