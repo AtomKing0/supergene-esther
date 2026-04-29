@@ -1980,3 +1980,59 @@ event_ranking 시트의 보상을 순위별 티어에 맞게 다양화하고, �
 - 숫자형 저장: ✅ numberValue int 사용
 - apostrophe 없음: ✅
 
+
+---
+
+# 2026-04-29 — streak_meter_gold A1안 적용
+
+```yaml
+agent: 07_sheet_modifier
+mode: sheet-modify
+scope: level_entry_tier.streak_meter_gold (A1안)
+executed: 2026-04-29T11:35:00+09:00
+status: complete
+approved_by: pm
+items_modified: 11
+items_skipped: 0
+script: scripts/modify_streak_meter_gold_a1.py
+```
+
+## 대상
+
+- 시트: 에이전트 시트 (`1Z6VGkSOFydDcX74anwN2meFW_LNMPs-rVgy3FlAqYqk`)
+- 워크시트: `level_entry_tier` (gid=144373391)
+- 변경 컬럼: `streak_meter_gold` (col G)
+- 변경 행: row 4~14 (key_number 220002~220012, 11행)
+- 백업 위치: J·K·L (Parameter│Original│Updated), 헤더 row 2 + 데이터 row 3~13
+- 하이라이트: 연두색 (수치 증가)
+
+## 변경 내역
+
+| key | 위치 | Lv 구간 | Original | Updated | Δ |
+|---|---|---|---|---|---|
+| 220002 | row 4 | 3–9 | 32 | 60 | +88% |
+| 220003 | row 5 | 10–24 | 48 | 90 | +88% |
+| 220004 | row 6 | 25–49 | 58 | 105 | +81% |
+| 220005 | row 7 | 50–99 | 64 | 120 | +88% |
+| 220006 | row 8 | 100–199 | 70 | 130 | +86% |
+| 220007 | row 9 | 200–349 | 80 | 150 | +88% |
+| 220008 | row 10 | 350–549 | 93 | 170 | +83% |
+| 220009 | row 11 | 550–799 | 109 | 200 | +83% |
+| 220010 | row 12 | 800–1099 | 125 | 230 | +84% |
+| 220011 | row 13 | 1100–1449 | 144 | 270 | +88% |
+| 220012 | row 14 | 1450+ | 160 | 300 | +88% |
+
+## 작업 완료 체크
+
+- 수정 셀: 11
+- 백업 영역 (J2:L13): ✅ Parameter/Original/Updated 3열 작성
+- numberValue (int) 저장: ✅ apostrophe 없음
+- 연두색 하이라이트 G4:G14: ✅
+- 사용자 ③ 확인 완료: ✅ 2026-04-29
+- ⑦ 에이전트 시트 하이라이트 제거: ⏳ 진행 예정
+- ④~⑦ 라이브 시트 동기화: ⏳ 09 에이전트 진행 예정
+
+## 참고
+
+- 보고서: `workspace/02_streak_meter_gold_balance.html`
+- 시뮬: `workspace/06_streak_meter_gold_a1_simulation.md`
