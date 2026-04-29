@@ -187,3 +187,60 @@ T_CLAIM_ALL(Row 166) 바로 다음 위치에 `insertDimension`으로 삽입. 에
 ### 동기화 후 검증
 에이전트↔라이브 동기화 완료 ✅
 
+
+---
+
+# 2026-04-29 — streak_meter_gold A1안 라이브 동기화
+
+```yaml
+agent: 09_sheet_sync
+mode: sheet-sync
+src_spreadsheet: 1Z6VGkSOFydDcX74anwN2meFW_LNMPs-rVgy3FlAqYqk
+dst_spreadsheet: 1oLbpsJjiDz0pdljaGBQznrSZcXA7aypFyJihnQ8_iiM
+executed: 2026-04-29T11:42:00+09:00
+status: complete
+sheets_synced: 1
+sheets_skipped: 0
+total_cells_changed: 11
+scripts:
+  - scripts/sync_streak_meter_gold_a1_to_live.py  (07 ⑦ + 09 ④⑤)
+  - scripts/finalize_streak_meter_gold_a1.py      (09 ⑦ + JSON ⑧)
+```
+
+## 동기화 결과
+
+| 시트명 | 처리 | 복사 셀 | 하이라이트 | 검증 |
+|---|---|---|---|---|
+| level_entry_tier | streak_meter_gold 단일 컬럼 (G4:G14) | 11 | 연두색 → 제거 | ✅ 통과 |
+
+## 변경 셀
+
+| key | row | DST 변경 전 → 후 |
+|---|---|---|
+| 220002 | 4 | 32 → 60 |
+| 220003 | 5 | 48 → 90 |
+| 220004 | 6 | 58 → 105 |
+| 220005 | 7 | 64 → 120 |
+| 220006 | 8 | 70 → 130 |
+| 220007 | 9 | 80 → 150 |
+| 220008 | 10 | 93 → 170 |
+| 220009 | 11 | 109 → 200 |
+| 220010 | 12 | 125 → 230 |
+| 220011 | 13 | 144 → 270 |
+| 220012 | 14 | 160 → 300 |
+
+## 작업 완료 체크
+
+- ④ 라이브 시트 동기화 (11셀 numberValue 정수형): ✅
+- ⑤ 연두색 하이라이트 적용: ✅
+- ⑥ 사용자 확인 완료: ✅ 2026-04-29
+- ⑦ 라이브 하이라이트 제거: ✅
+- ⑧ workspace/balance_sheet/level_entry_tier.json 동기화: ✅
+- 07 에이전트 백업 컬럼(J·K·L) 라이브 복사 제외: ✅
+- 행 수·layout 일치 검증: ✅ (SRC/DST 모두 14행, 12 keys)
+
+## 참고
+
+- 보고서: `workspace/02_streak_meter_gold_balance.html`
+- 시뮬: `workspace/06_streak_meter_gold_a1_simulation.md`
+- 07 로그: `workspace/07_sheet_modify_log.md`

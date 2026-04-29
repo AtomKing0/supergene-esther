@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="pst-theme-init">(function(){var t=localStorage.getItem("pst-report-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var b=document.createElement("a");b.className="back-btn";b.id="backBtn";b.href="reports/index.html";b.title="\uBCF4\uACE0\uC11C \uC778\uB371\uC2A4\uB85C \uC774\uB3D9";b.textContent="\u2190 \uBAA9\uB85D";document.body.prepend(b);var g=document.createElement("button");g.className="theme-toggle";g.id="themeToggle";g.title="\uB77C\uC774\uD2B8/\uB2E4\uD06C \uBAA8\uB4DC \uC804\uD658";g.textContent=t==="light"?"\u2600\uFE0F":"\uD83C\uDF19";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";if(l){document.documentElement.removeAttribute("data-theme");g.textContent="\uD83C\uDF19";localStorage.setItem("pst-report-theme","dark");}else{document.documentElement.setAttribute("data-theme","light");g.textContent="\u2600\uFE0F";localStorage.setItem("pst-report-theme","light");}});});window.addEventListener("pageshow",function(e){if(e.persisted){var s=localStorage.getItem("pst-report-theme"),il=s==="light";if(il)document.documentElement.setAttribute("data-theme","light");else document.documentElement.removeAttribute("data-theme");var b=document.getElementById("themeToggle");if(b)b.textContent=il?"\u2600\uFE0F":"\uD83C\uDF19";}});})()</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>스트릭 미터 골드 밸런스 안 — A1/A2 비교</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root { --bg:#0f1117; --card:#1a1d27; --border:#2a2d3a; --text:#e0e0e0; --muted:#888; --surface:#1a1d27; --code-bg:rgba(255,255,255,0.06); --meta-bg:rgba(255,255,255,0.04); --inner-bg:rgba(255,255,255,0.03); --grid-line:#1e2130; --chart-border:#1a1d27; --table-sep:#444; --pre-bg:rgba(0,0,0,0.3); --pre-color:#a0c4ff; }
+  [data-theme="light"] { --bg:#f5f6f8; --card:#ffffff; --border:#dfe1e6; --text:#1a1d27; --muted:#5e6278; --surface:#ffffff; --code-bg:rgba(0,0,0,0.06); --meta-bg:rgba(0,0,0,0.04); --inner-bg:rgba(0,0,0,0.03); --grid-line:#e8eaef; --chart-border:#ffffff; --table-sep:#c0c4cc; --pre-bg:rgba(0,0,0,0.05); --pre-color:#2563eb; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height:1.6; }
+  .container { max-width:1200px; margin:0 auto; padding:1.5rem; }
+  h1 { font-size:1.8rem; margin-bottom:0.3rem; }
+  h2 { font-size:1.3rem; margin-bottom:1rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
+  h3 { font-size:1.05rem; margin-bottom:0.75rem; margin-top:1.25rem; }
+  h4 { font-size:0.95rem; margin-top:1rem; margin-bottom:0.5rem; }
+  .section { margin-bottom:2.5rem; }
+  .section-desc { color:var(--muted); font-size:0.9rem; margin-bottom:1.25rem; }
+  .card { background:var(--card); border-radius:10px; padding:1.25rem; border:1px solid var(--border); margin-bottom:1rem; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin:1.5rem 0; }
+  .kpi { background:var(--card); border-radius:10px; padding:1.25rem; text-align:center; border:1px solid var(--border); }
+  .kpi .value { font-size:1.8rem; font-weight:bold; }
+  .kpi .label { font-size:0.8rem; color:var(--muted); margin-top:0.25rem; }
+  .kpi .sub { font-size:0.75rem; color:var(--muted); margin-top:0.2rem; }
+  table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+  th,td { padding:0.5rem 0.75rem; text-align:left; border-bottom:1px solid var(--border); }
+  th { color:var(--muted); font-weight:600; font-size:0.8rem; text-transform:uppercase; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .table-scroll { overflow-x:auto; }
+  .badge { display:inline-block; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.78rem; font-weight:600; }
+  .badge-green { background:rgba(16,185,129,0.15); color:#059669; }
+  .badge-red { background:rgba(239,68,68,0.15); color:#dc2626; }
+  .badge-blue { background:rgba(59,130,246,0.15); color:#2563eb; }
+  .badge-yellow { background:rgba(245,158,11,0.15); color:#d97706; }
+  .badge-gray { background:rgba(136,136,136,0.15); color:var(--muted); }
+  .callout { padding:1rem; border-radius:8px; font-size:0.9rem; border-left:4px solid; margin:1rem 0; }
+  .callout-green { background:rgba(16,185,129,0.06); border-color:#10b981; }
+  .callout-yellow { background:rgba(245,158,11,0.06); border-color:#f59e0b; }
+  .callout-blue { background:rgba(59,130,246,0.06); border-color:#3b82f6; }
+  .callout-red { background:rgba(239,68,68,0.06); border-color:#ef4444; }
+  code { background:var(--code-bg); padding:0.15rem 0.4rem; border-radius:3px; font-size:0.85rem; font-family:monospace; }
+  .toc { background:var(--card); border-radius:10px; padding:1.25rem; margin:1.5rem 0; border:1px solid var(--border); }
+  .toc a { color:#3b82f6; text-decoration:none; }
+  .toc a:hover { text-decoration:underline; }
+  .toc ol { padding-left:1.5rem; }
+  .toc li { margin:0.3rem 0; font-size:0.9rem; }
+  .header-meta { display:flex; gap:1rem; flex-wrap:wrap; margin:0.5rem 0 1.5rem; font-size:0.8rem; color:var(--muted); }
+  .header-meta span { background:var(--meta-bg); padding:0.2rem 0.6rem; border-radius:4px; }
+  ul { padding-left:1.5rem; }
+  li { margin:0.3rem 0; }
+  .version-tag { display:inline-block; padding:0.1rem 0.4rem; border-radius:3px; font-size:0.75rem; font-weight:700; }
+  .recommended-tag { background:rgba(16,185,129,0.2); color:#059669; }
+  .chart-wrap { background:var(--card); border-radius:10px; padding:1rem; border:1px solid var(--border); margin:1rem 0; }
+  .chart-canvas { max-height:380px; }
+  .grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:1rem; }
+  .opt-card { border:1px solid var(--border); border-radius:10px; padding:1.25rem; background:var(--card); }
+  .opt-card.recommended { border-color:#10b981; box-shadow:0 0 0 1px rgba(16,185,129,0.25); }
+  .opt-card h3 { margin-top:0; }
+  .meta-row { display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.4rem; }
+  .delta-up { color:#10b981; font-weight:600; }
+  .delta-down { color:#ef4444; font-weight:600; }
+  .strike { text-decoration:line-through; color:var(--muted); }
+  .theme-toggle { position:fixed; top:16px; right:16px; z-index:100; width:40px; height:40px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+  .theme-toggle:hover { border-color:var(--muted); transform:scale(1.1); }
+  .back-btn { position:fixed; top:16px; right:68px; z-index:200; height:40px; padding:0 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.2); text-decoration:none; }
+  .back-btn:hover { border-color:var(--muted); color:var(--text); transform:translateY(-1px); text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>스트릭 미터 골드 밸런스 안 — A1 / A2 비교</h1>
+<div class="header-meta">
+  <span>2026-04-28</span>
+  <span>대상 컬럼: level_entry_tier.streak_meter_gold</span>
+  <span>출처: workspace/balance_sheet/level_entry_tier.json</span>
+  <span>레퍼런스: PST · 캔디 크러시 솔리테어(CCS)</span>
+</div>
+
+<nav class="toc">
+  <strong>목차</strong>
+  <ol>
+    <li><a href="#s1">Executive Summary</a></li>
+    <li><a href="#s2">현황 진단</a></li>
+    <li><a href="#s3">레퍼런스 비교 (PST · CCS)</a></li>
+    <li><a href="#s4">설계 제약 (Not-To-Do)</a></li>
+    <li><a href="#s5">A1안 (보수, 추천)</a></li>
+    <li><a href="#s6">A2안 (적극)</a></li>
+    <li><a href="#s7">옵션 비교 차트</a></li>
+    <li><a href="#s8">인플레이션 추정</a></li>
+    <li><a href="#s9">보조 옵션 — 와카 가격 인하</a></li>
+    <li><a href="#s10">추천 결정과 다음 단계</a></li>
+  </ol>
+</nav>
+
+<!-- ==================== 1. Executive Summary ==================== -->
+<section id="s1" class="section">
+  <h2>1. Executive Summary</h2>
+  <div class="kpi-grid">
+    <div class="kpi" style="border-top:3px solid #ef4444">
+      <div class="value">4.1%</div>
+      <div class="label">현행 와카 회수율</div>
+      <div class="sub">streak_meter_gold ÷ wild_card 가격</div>
+    </div>
+    <div class="kpi" style="border-top:3px solid #10b981">
+      <div class="value">7.7%</div>
+      <div class="label">A1안 회수율 (목표)</div>
+      <div class="sub">+1.9× 인상 · entry_cost의 5%</div>
+    </div>
+    <div class="kpi" style="border-top:3px solid #f59e0b">
+      <div class="value">10.8%</div>
+      <div class="label">A2안 회수율</div>
+      <div class="sub">+2.6× 인상 · entry_cost의 7%</div>
+    </div>
+    <div class="kpi" style="border-top:3px solid #3b82f6">
+      <div class="value">0</div>
+      <div class="label">스키마 변경</div>
+      <div class="sub">단일 컬럼 수치만 수정</div>
+    </div>
+  </div>
+  <div class="callout callout-green">
+    <strong>결론:</strong> 스트릭 길이별 배수(캔크솔식 doubling)는 타겟 유저 복잡도 부담으로 제외.
+    <code>level_entry_tier.streak_meter_gold</code> 단일 컬럼만 인상하는 <strong>A1안(entry_cost의 5%)</strong> 채택 권장.
+    현행 대비 1.9×, 캔크솔 Lv8 베이스(40g) 대비 1.5× 수준으로 "배수 부재" 보정.
+  </div>
+</section>
+
+<!-- ==================== 2. 현황 진단 ==================== -->
+<section id="s2" class="section">
+  <h2>2. 현황 진단</h2>
+  <p class="section-desc">현행 우리 게임 <code>streak_meter_gold</code>는 entry_cost의 약 2.7%로 고정. 와일드카드 1회 사용 비용 대비 회수율이 4.1%에 그쳐, 유저가 "스트릭을 위해 와카를 살 동기"가 매우 약함.</p>
+
+  <h3>2-1. 현행 streak_meter_gold (우리 시트)</h3>
+  <div class="card table-scroll">
+    <table>
+      <thead>
+        <tr><th>레벨 구간</th><th class="num">entry_cost (g)</th><th class="num">현행 streak_meter_gold</th><th class="num">비율 (gold/entry)</th><th class="num">와카 가격 (g)</th><th class="num">와카 회수율</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>3–9</td><td class="num">1,200</td><td class="num">32</td><td class="num">2.7%</td><td class="num">780</td><td class="num">4.1%</td></tr>
+        <tr><td>10–24</td><td class="num">1,800</td><td class="num">48</td><td class="num">2.7%</td><td class="num">1,170</td><td class="num">4.1%</td></tr>
+        <tr><td>25–49</td><td class="num">2,100</td><td class="num">58</td><td class="num">2.8%</td><td class="num">1,365</td><td class="num">4.2%</td></tr>
+        <tr><td>50–99</td><td class="num">2,400</td><td class="num">64</td><td class="num">2.7%</td><td class="num">1,560</td><td class="num">4.1%</td></tr>
+        <tr><td>100–199</td><td class="num">2,600</td><td class="num">70</td><td class="num">2.7%</td><td class="num">1,690</td><td class="num">4.1%</td></tr>
+        <tr><td>200–349</td><td class="num">3,000</td><td class="num">80</td><td class="num">2.7%</td><td class="num">1,950</td><td class="num">4.1%</td></tr>
+        <tr><td>350–549</td><td class="num">3,400</td><td class="num">93</td><td class="num">2.7%</td><td class="num">2,210</td><td class="num">4.2%</td></tr>
+        <tr><td>550–799</td><td class="num">4,000</td><td class="num">109</td><td class="num">2.7%</td><td class="num">2,600</td><td class="num">4.2%</td></tr>
+        <tr><td>800–1099</td><td class="num">4,600</td><td class="num">125</td><td class="num">2.7%</td><td class="num">2,990</td><td class="num">4.2%</td></tr>
+        <tr><td>1100–1449</td><td class="num">5,400</td><td class="num">144</td><td class="num">2.7%</td><td class="num">3,510</td><td class="num">4.1%</td></tr>
+        <tr><td>1450+</td><td class="num">6,000</td><td class="num">160</td><td class="num">2.7%</td><td class="num">3,900</td><td class="num">4.1%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="section-desc" style="margin-top:0.75rem;">와일드카드 가격 = <code>entry_cost × booster_wild_card.entry_cost_ratio (6500 = 65%)</code></p>
+
+  <h3>2-2. 유저 체감 문제</h3>
+  <div class="callout callout-red">
+    <strong>핵심 페인 포인트:</strong> "스트릭을 완성해 골드를 받기 위해 와일드카드를 사서 쓰는데, 와카 1장(예: 1,560g) 사면 64g 받음 — 95.9% 손실 체감."
+  </div>
+  <ul>
+    <li>스트릭 길이(4/5/6) 무관하게 <code>tier_combo_reward</code> = <code>streak_meter_gold</code> 평탄 지급 → 6-streak 도달 동기 약함</li>
+    <li>가챠 그룹별 골드 트리거율(추정 ~50%)을 곱해도 기대값은 더 낮아짐</li>
+    <li>현재 비율 2.7%는 PST(약 3.3%) 대비 -20% 적용된 상태</li>
+  </ul>
+</section>
+
+<!-- ==================== 3. 레퍼런스 비교 ==================== -->
+<section id="s3" class="section">
+  <h2>3. 레퍼런스 비교 (PST · CCS)</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>PST (스냅샷 기준)</h4>
+      <table>
+        <thead><tr><th>구간</th><th class="num">PST</th><th class="num">우리</th><th class="num">갭</th></tr></thead>
+        <tbody>
+          <tr><td>3–9</td><td class="num">40</td><td class="num">32</td><td class="num delta-down">-20%</td></tr>
+          <tr><td>10–24</td><td class="num">60</td><td class="num">48</td><td class="num delta-down">-20%</td></tr>
+          <tr><td>50–99</td><td class="num">80</td><td class="num">64</td><td class="num delta-down">-20%</td></tr>
+          <tr><td>200–349</td><td class="num">100</td><td class="num">80</td><td class="num delta-down">-20%</td></tr>
+          <tr><td>1450+</td><td class="num">200</td><td class="num">160</td><td class="num delta-down">-20%</td></tr>
+        </tbody>
+      </table>
+      <p class="section-desc" style="margin-top:0.5rem;">우리 시트는 PST 대비 균일 -20% 적용 상태.</p>
+    </div>
+
+    <div class="card">
+      <h4>캔디 크러시 솔리테어 (CCS)</h4>
+      <ul>
+        <li>Lv 8 기준 베이스 <strong>40g</strong></li>
+        <li>스트릭 콤보 길이에 따라 <strong>×2 doubling</strong></li>
+        <li>4-streak 40g → 5-streak 80g → 6-streak 160g (예시 추정)</li>
+        <li>평균 EV (4·5·6 가중평균) 약 80~120g</li>
+      </ul>
+      <div class="callout callout-blue" style="margin-top:0.75rem;">
+        CCS 매력의 핵심은 "<strong>×2 시각 효과로 피크 모멘트 연출</strong>". 우리는 이 구조를 차용하지 않으므로 <strong>베이스값을 CCS 평균 수준으로 끌어올려 EV 매칭</strong>.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 4. 설계 제약 ==================== -->
+<section id="s4" class="section">
+  <h2>4. 설계 제약 (Not-To-Do)</h2>
+  <div class="card">
+    <ul>
+      <li><span class="badge badge-red">금지</span> 스트릭 길이별 차등 배수 (캔크솔식 doubling) — <strong>타겟 유저에게 너무 복잡</strong></li>
+      <li><span class="badge badge-red">금지</span> <code>length_multiplier</code> 등 신규 컬럼 추가</li>
+      <li><span class="badge badge-red">금지</span> <code>tier_combo_reward</code> 계산식 변경 (런타임 로직 유지)</li>
+      <li><span class="badge badge-green">허용</span> <code>level_entry_tier.streak_meter_gold</code> <strong>단일 컬럼</strong> 수치 인상</li>
+      <li><span class="badge badge-green">허용</span> 비율 일관성 유지 (모든 구간 동일 비율 적용)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 5. A1안 ==================== -->
+<section id="s5" class="section">
+  <h2>5. A1안 — 보수 (entry_cost의 5%, 약 +88%) <span class="version-tag recommended-tag">RECOMMENDED</span></h2>
+  <p class="section-desc">와카 회수율 4.1% → 7.7%. 캔크솔 Lv8 베이스 40g 대비 1.5× 수준에서 정착(배수 부재 보정). 골드 인플레는 통제 가능 범위.</p>
+
+  <div class="card table-scroll">
+    <table>
+      <thead>
+        <tr><th>레벨 구간</th><th class="num">entry_cost</th><th class="num">현행</th><th class="num">A1안</th><th class="num">변화</th><th class="num">신규 비율</th><th class="num">와카 회수율</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>3–9</td><td class="num">1,200</td><td class="num strike">32</td><td class="num"><strong>60</strong></td><td class="num delta-up">+88%</td><td class="num">5.0%</td><td class="num">7.7%</td></tr>
+        <tr><td>10–24</td><td class="num">1,800</td><td class="num strike">48</td><td class="num"><strong>90</strong></td><td class="num delta-up">+88%</td><td class="num">5.0%</td><td class="num">7.7%</td></tr>
+        <tr><td>25–49</td><td class="num">2,100</td><td class="num strike">58</td><td class="num"><strong>105</strong></td><td class="num delta-up">+81%</td><td class="num">5.0%</td><td class="num">7.7%</td></tr>
+        <tr><td>50–99</td><td class="num">2,400</td><td class="num strike">64</td><td class="num"><strong>120</strong></td><td class="num delta-up">+88%</td><td class="num">5.0%</td><td class="num">7.7%</td></tr>
+        <tr><td>100–199</td><td class="num">2,600</td><td class="num strike">70</td><td class="num"><strong>130</strong></td><td class="num delta-up">+86%</td><td class="num">5.0%</td><td class="num">7.7%</td></tr>
+        <tr><td>200–349</td><td class="num">3,000</td><td class="num strike">80</td><td class="num"><strong>150</strong></td><td class="num delta-up">+88%</td><td class="num">5.0%</td><td class="num">7.7%</td></tr>
+        <tr><td>350–549</td><td class="num">3,400</td><td class="num strike">93</td><td class="num"><strong>170</strong></td><td class="num delta-up">+83%</td><td class="num">5.0%</td><td class="num">7.7%</td></tr>
+        <tr><td>550–799</td><td class="num">4,000</td><td class="num strike">109</td><td class="num"><strong>200</strong></td><td class="num delta-up">+83%</td><td class="num">5.0%</td><td class="num">7.7%</td></tr>
+        <tr><td>800–1099</td><td class="num">4,600</td><td class="num strike">125</td><td class="num"><strong>230</strong></td><td class="num delta-up">+84%</td><td class="num">5.0%</td><td class="num">7.7%</td></tr>
+        <tr><td>1100–1449</td><td class="num">5,400</td><td class="num strike">144</td><td class="num"><strong>270</strong></td><td class="num delta-up">+88%</td><td class="num">5.0%</td><td class="num">7.7%</td></tr>
+        <tr><td>1450+</td><td class="num">6,000</td><td class="num strike">160</td><td class="num"><strong>300</strong></td><td class="num delta-up">+88%</td><td class="num">5.0%</td><td class="num">7.7%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-green">
+    <strong>장점</strong>
+    <ul style="margin-top:0.4rem;">
+      <li>비율 일정(<code>5.0%</code>)으로 구간 간 일관성 유지</li>
+      <li>현행 대비 ~1.9× → "체감 차이"는 인지 가능, 인플레 폭은 통제 가능</li>
+      <li>스키마/로직 변경 없이 시트 수치 11행만 수정</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 6. A2안 ==================== -->
+<section id="s6" class="section">
+  <h2>6. A2안 — 적극 (entry_cost의 7%, 약 +163%)</h2>
+  <p class="section-desc">와카 회수율 ~10.8%. 캔크솔 평균 상단(~120g)에 매칭되나 골드 인플레 우려가 큼.</p>
+
+  <div class="card table-scroll">
+    <table>
+      <thead>
+        <tr><th>레벨 구간</th><th class="num">entry_cost</th><th class="num">현행</th><th class="num">A2안</th><th class="num">변화</th><th class="num">신규 비율</th><th class="num">와카 회수율</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>3–9</td><td class="num">1,200</td><td class="num strike">32</td><td class="num"><strong>84</strong></td><td class="num delta-up">+163%</td><td class="num">7.0%</td><td class="num">10.8%</td></tr>
+        <tr><td>10–24</td><td class="num">1,800</td><td class="num strike">48</td><td class="num"><strong>126</strong></td><td class="num delta-up">+163%</td><td class="num">7.0%</td><td class="num">10.8%</td></tr>
+        <tr><td>25–49</td><td class="num">2,100</td><td class="num strike">58</td><td class="num"><strong>147</strong></td><td class="num delta-up">+153%</td><td class="num">7.0%</td><td class="num">10.8%</td></tr>
+        <tr><td>50–99</td><td class="num">2,400</td><td class="num strike">64</td><td class="num"><strong>168</strong></td><td class="num delta-up">+163%</td><td class="num">7.0%</td><td class="num">10.8%</td></tr>
+        <tr><td>100–199</td><td class="num">2,600</td><td class="num strike">70</td><td class="num"><strong>182</strong></td><td class="num delta-up">+160%</td><td class="num">7.0%</td><td class="num">10.8%</td></tr>
+        <tr><td>200–349</td><td class="num">3,000</td><td class="num strike">80</td><td class="num"><strong>210</strong></td><td class="num delta-up">+163%</td><td class="num">7.0%</td><td class="num">10.8%</td></tr>
+        <tr><td>350–549</td><td class="num">3,400</td><td class="num strike">93</td><td class="num"><strong>238</strong></td><td class="num delta-up">+156%</td><td class="num">7.0%</td><td class="num">10.8%</td></tr>
+        <tr><td>550–799</td><td class="num">4,000</td><td class="num strike">109</td><td class="num"><strong>280</strong></td><td class="num delta-up">+157%</td><td class="num">7.0%</td><td class="num">10.8%</td></tr>
+        <tr><td>800–1099</td><td class="num">4,600</td><td class="num strike">125</td><td class="num"><strong>322</strong></td><td class="num delta-up">+158%</td><td class="num">7.0%</td><td class="num">10.8%</td></tr>
+        <tr><td>1100–1449</td><td class="num">5,400</td><td class="num strike">144</td><td class="num"><strong>378</strong></td><td class="num delta-up">+163%</td><td class="num">7.0%</td><td class="num">10.8%</td></tr>
+        <tr><td>1450+</td><td class="num">6,000</td><td class="num strike">160</td><td class="num"><strong>420</strong></td><td class="num delta-up">+163%</td><td class="num">7.0%</td><td class="num">10.8%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-yellow">
+    <strong>유의사항</strong>
+    <ul style="margin-top:0.4rem;">
+      <li>인플레 폭이 A1 대비 약 2배 → <code>gold_max_limit (20,000g)</code> 도달 빈도 상승 우려</li>
+      <li>저레벨(3–9) 84g도 캔크솔 베이스 40g 대비 2.1× → 레퍼런스 정합성 약화</li>
+      <li>채택 시 06 시뮬레이션 필수 (D7/D30 잔액 추이 검증)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 7. 옵션 비교 차트 ==================== -->
+<section id="s7" class="section">
+  <h2>7. 옵션 비교 차트</h2>
+
+  <div class="chart-wrap">
+    <h4>7-1. 구간별 streak_meter_gold (현행 / A1 / A2)</h4>
+    <canvas id="chartGold" class="chart-canvas"></canvas>
+  </div>
+
+  <div class="chart-wrap">
+    <h4>7-2. 와카 회수율 비교 (Lv 50-99 기준)</h4>
+    <canvas id="chartRoi" class="chart-canvas"></canvas>
+  </div>
+</section>
+
+<!-- ==================== 8. 인플레이션 추정 ==================== -->
+<section id="s8" class="section">
+  <h2>8. 인플레이션 추정 (Lv 50-99 기준)</h2>
+  <p class="section-desc">가정: 스트릭 미터 충만 빈도 4판당 1회, streak_reward 가챠에서 골드(<code>tier_combo_reward</code>) 트리거율 ~50% (Group 1·3 가중 평균).</p>
+
+  <div class="card table-scroll">
+    <table>
+      <thead>
+        <tr><th>항목</th><th class="num">현행</th><th class="num">A1안</th><th class="num">A2안</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1회 충만당 기대 골드 (×0.5)</td><td class="num">32g</td><td class="num">60g</td><td class="num">84g</td></tr>
+        <tr><td>게임당 환산 (4판당 1회)</td><td class="num">8g/판</td><td class="num">15g/판</td><td class="num">21g/판</td></tr>
+        <tr><td>100판 누적 차이 (vs 현행)</td><td class="num">—</td><td class="num delta-up">+700g</td><td class="num delta-up">+1,300g</td></tr>
+        <tr><td>ARPDAU 영향 (추정)</td><td class="num">—</td><td class="num">+1~2%</td><td class="num">+2~4%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-blue">
+    <strong>06 시뮬레이션 검증 필요 항목</strong>
+    <ul style="margin-top:0.4rem;">
+      <li>Lv 50-99 / Lv 200-349 / Lv 1450+ 3개 구간 ledger 100~300판</li>
+      <li><code>gold_max_limit (20,000g)</code> 도달 빈도 변화</li>
+      <li>유저 타입별(Casual / Mid / Hardcore) D7/D30 잔액 추이</li>
+      <li>스트릭 도달률 변동 시 EV 민감도 (충만 빈도 4판→3판→6판 시나리오)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 9. 보조 옵션 ==================== -->
+<section id="s9" class="section">
+  <h2>9. 보조 옵션 — 와일드카드 가격 인하 (별도 안건)</h2>
+  <p class="section-desc">스트릭 골드 자체가 아닌 <code>booster_wild_card.entry_cost_ratio</code>를 낮춰 회수율을 동일하게 개선하는 대안. 이번 밸런스 안과 분리 검토 권장.</p>
+
+  <div class="card table-scroll">
+    <table>
+      <thead>
+        <tr><th>변경</th><th class="num">와카 가격 (Lv 50-99)</th><th class="num">단독 회수율</th><th>비고</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>현행 ratio 6500 (65%)</td><td class="num">1,560g</td><td class="num">4.1%</td><td>—</td></tr>
+        <tr><td>ratio 6500 → 5000 (-23%)</td><td class="num">1,200g</td><td class="num">5.3%</td><td>단독으로는 부족</td></tr>
+        <tr><td>위 변경 + A1안 동시 적용</td><td class="num">1,200g</td><td class="num delta-up">10.0%</td><td>두 안 시너지</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-yellow">
+    부스터 가격 체계 전반(undo / extra_deck / fireworks / golden_ticket / wild_card)의 균형이 함께 흔들리므로, <strong>이번 안건과 분리하여 별도 검토 권장</strong>.
+  </div>
+</section>
+
+<!-- ==================== 10. 추천 결정과 다음 단계 ==================== -->
+<section id="s10" class="section">
+  <h2>10. 추천 결정과 다음 단계</h2>
+
+  <div class="grid-2">
+    <div class="opt-card recommended">
+      <h3>채택 권장: <strong>A1안</strong> <span class="version-tag recommended-tag">RECOMMENDED</span></h3>
+      <ul>
+        <li>entry_cost의 5% (균일)</li>
+        <li>현행 대비 ~1.9× 인상</li>
+        <li>와카 회수율 4.1% → 7.7%</li>
+        <li>스키마/로직 변경 없음 — 시트 11행 수치만 수정</li>
+        <li>인플레 영향 통제 가능 (+1~2% ARPDAU 추정)</li>
+      </ul>
+    </div>
+    <div class="opt-card">
+      <h3>대안: A2안</h3>
+      <ul>
+        <li>entry_cost의 7% (균일)</li>
+        <li>현행 대비 ~2.6× 인상</li>
+        <li>와카 회수율 ~10.8%</li>
+        <li>인플레 폭 큼 — 06 시뮬 필수</li>
+        <li>저레벨 레퍼런스 정합성 약화</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>실행 단계</h3>
+  <ol style="padding-left:1.5rem; margin-top:0.5rem;">
+    <li>본 보고서 검토 후 A1/A2 채택 결정</li>
+    <li><strong>06 시뮬레이션 의뢰</strong> — Lv 50-99 / 200-349 / 1450+ × 3 유저 타입, 100~300판 ledger</li>
+    <li><code>gold_max_limit (20,000g)</code> 도달 빈도 / ARPDAU 변화 확인</li>
+    <li><strong>01 PM CP1 스키마 검수</strong> 통과</li>
+    <li>시트 수정 워크플로우:
+      <ul>
+        <li>① 에이전트 시트 <code>level_entry_tier</code> 11행 수정 + 백업 (Parameter│Original│Updated 3열)</li>
+        <li>② <strong>연두색 하이라이트</strong> (수치 증가)</li>
+        <li>③~⑦ 표준 절차</li>
+        <li>⑧ <code>workspace/balance_sheet/level_entry_tier.json</code> 동기화</li>
+      </ul>
+    </li>
+  </ol>
+
+  <div class="callout callout-blue" style="margin-top:1rem;">
+    <strong>참고:</strong> <code>streak_reward</code> 시트(가챠 풀)는 변경 없음. <code>tier_combo_reward</code> 계산식도 그대로 유지. 본 안은 <strong>level_entry_tier 단일 테이블</strong>만 영향.
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  var textColor = isLight ? '#1a1d27' : '#e0e0e0';
+  var gridColor = isLight ? '#e8eaef' : '#1e2130';
+
+  Chart.defaults.color = textColor;
+  Chart.defaults.borderColor = gridColor;
+  Chart.defaults.font.family = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif";
+
+  var labels = ['3–9','10–24','25–49','50–99','100–199','200–349','350–549','550–799','800–1099','1100–1449','1450+'];
+  var current = [32,48,58,64,70,80,93,109,125,144,160];
+  var a1 = [60,90,105,120,130,150,170,200,230,270,300];
+  var a2 = [84,126,147,168,182,210,238,280,322,378,420];
+
+  new Chart(document.getElementById('chartGold'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: '현행', data: current, backgroundColor: 'rgba(136,136,136,0.7)', borderColor: '#888', borderWidth: 1 },
+        { label: 'A1 (entry×5%)', data: a1, backgroundColor: 'rgba(16,185,129,0.7)', borderColor: '#10b981', borderWidth: 1 },
+        { label: 'A2 (entry×7%)', data: a2, backgroundColor: 'rgba(245,158,11,0.7)', borderColor: '#f59e0b', borderWidth: 1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ': ' + ctx.parsed.y + 'g'; } } }
+      },
+      scales: {
+        x: { grid: { color: gridColor }, title: { display: true, text: '레벨 구간' } },
+        y: { grid: { color: gridColor }, title: { display: true, text: 'streak_meter_gold (g)' }, beginAtZero: true }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('chartRoi'), {
+    type: 'bar',
+    data: {
+      labels: ['현행', 'A1안', 'A2안', 'A1 + 와카 -23%'],
+      datasets: [{
+        label: '와카 회수율 (%)',
+        data: [4.1, 7.7, 10.8, 10.0],
+        backgroundColor: ['rgba(239,68,68,0.7)','rgba(16,185,129,0.7)','rgba(245,158,11,0.7)','rgba(59,130,246,0.7)'],
+        borderColor: ['#ef4444','#10b981','#f59e0b','#3b82f6'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.parsed.x + '%'; } } }
+      },
+      scales: {
+        x: { grid: { color: gridColor }, beginAtZero: true, title: { display: true, text: '회수율 (%)' } },
+        y: { grid: { color: gridColor } }
+      }
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
