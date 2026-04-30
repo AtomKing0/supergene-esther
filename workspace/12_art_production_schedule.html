@@ -1833,7 +1833,8 @@ function computePuzzle() {
     const city_wins = Math.round((a.hammers || 0) / PUZZLE_WEIGHTED_HPW);
     const ratio = city_wins > 0 ? (total / city_wins).toFixed(2) : '—';
     const unlock_days = Math.round(unlock_lv / AVG_LV_PER_DAY);
-    return { ...a, id, n: i + 1, total, x1_lv, x2_lv, x4_lv, city_wins, ratio, unlock_days };
+    const art_date = addDate(LAUNCH, unlock_days);
+    return { ...a, id, n: i + 1, total, x1_lv, x2_lv, x4_lv, city_wins, ratio, unlock_days, art_date };
   });
 }
 
@@ -1864,15 +1865,17 @@ function renderPuzzleTable(data) {
   html += '<th>x1 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">1피스/판</span></th>';
   html += '<th>x2 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">3피스/판</span></th>';
   html += '<th>x4 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">5피스/판</span></th>';
-  html += '<th>도시 대비<br>비율</th><th>아트 완료</th>';
+  html += '<th>아트 납기 기준<br><span style="font-weight:400;color:var(--muted);font-size:.85em">Avg 유저 해금일</span></th><th>아트 완료</th>';
   html += '</tr></thead><tbody>';
   data.forEach((a, i) => {
     const done = puzzleArtDone[a.id];
     const artBtn = done
       ? `<button class="art-done-btn" onclick="togglePuzzleArtDone('${a.id}')" title="완료 취소">✅</button><div class="art-done-ts">${done}</div>`
       : `<button class="art-done-btn" onclick="togglePuzzleArtDone('${a.id}')" title="아트 완료 체크">⬜</button>`;
-    const rv = parseFloat(a.ratio);
-    const ratioColor = rv >= 2.8 ? 'var(--green)' : rv >= 2 ? 'var(--yellow)' : 'var(--red)';
+    const nowDate = new Date(); nowDate.setHours(0,0,0,0);
+    const artDeadline = new Date(a.art_date); artDeadline.setHours(0,0,0,0);
+    const isOverdue = artDeadline < nowDate;
+    const overdueDays = isOverdue ? Math.round((nowDate - artDeadline) / 86400000) : 0;
     html += `<tr draggable="true" data-pidx="${i}">`;
     html += `<td class="drag-handle">&#9776;</td>`;
     html += `<td>${a.n}</td>`;
@@ -1881,7 +1884,10 @@ function renderPuzzleTable(data) {
     html += `<td style="color:var(--accent)">L${a.x1_lv}</td>`;
     html += `<td style="color:var(--blue)">L${a.x2_lv}</td>`;
     html += `<td style="color:var(--yellow)">L${a.x4_lv}</td>`;
-    html += `<td style="color:${ratioColor};font-weight:700">${a.ratio}x</td>`;
+    const dateLabel = isOverdue
+      ? `<strong style="color:var(--red)">${fmtDate(a.art_date)}</strong><div style="font-size:.75em;color:var(--red);margin-top:1px">(D+${overdueDays} 초과)</div>`
+      : `<strong>${fmtDate(a.art_date)}</strong><div style="font-size:.75em;color:var(--muted);margin-top:1px">D+${a.unlock_days}</div>`;
+    html += `<td style="color:var(--yellow)">${dateLabel}</td>`;
     html += `<td style="text-align:center">${artBtn}</td></tr>`;
   });
   const totalPieces = data.reduce((s, a) => s + a.total, 0);
