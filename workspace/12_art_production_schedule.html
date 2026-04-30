@@ -2221,57 +2221,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   await Promise.all([loadPuzzleOrder(), loadPuzzleArtDone(), loadPuzzleBookmarks()]);
   renderPuzzleAll();
 
-  // 실시간 협업 sync — 퍼즐 앨범 목록
-  _channels.push(_sb.channel('puzzle_config_changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_config' }, payload => {
-      if (_isSavingPuzzleConfig || !payload.new || !Array.isArray(payload.new.albums)) return;
-      _applyPuzzleAlbums(payload.new.albums);
-      const knownIds = new Set(ALBUMS_BASE.map(a => a.id));
-      puzzleOrder = puzzleOrder.filter(id => knownIds.has(id));
-      ALBUMS_BASE.forEach(a => { if (!puzzleOrder.includes(a.id)) puzzleOrder.push(a.id); });
-      renderPuzzleAll();
-    })
-    .subscribe());
-
-  // 실시간 협업 sync — 퍼즐 순서
-  _channels.push(_sb.channel('puzzle_order_changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_order' }, payload => {
-      if (_isSavingPuzzleOrder || !payload.new || !payload.new.order_ids) return;
-      const order = JSON.parse(payload.new.order_ids);
-      const knownIds = new Set(ALBUMS_BASE.map(a => a.id));
-      const valid = order.filter(id => knownIds.has(id));
-      const missing = ALBUMS_BASE.map(a => a.id).filter(id => !valid.includes(id));
-      puzzleOrder = [...valid, ...missing];
-      renderPuzzleAll();
-    })
-    .subscribe());
-
-  // 실시간 협업 sync — 퍼즐 아트 완료
-  _channels.push(_sb.channel('puzzle_art_done_changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_art_done' }, payload => {
-      if (payload.eventType === 'DELETE') {
-        delete puzzleArtDone[payload.old.album_id];
-      } else {
-        const r = payload.new;
-        puzzleArtDone[r.album_id] = r.done_by ? `${r.done_at} (${r.done_by})` : r.done_at;
-      }
-      renderPuzzleAll();
-    })
-    .subscribe());
-
-  // 실시간 협업 sync — 퍼즐 북마크
-  _channels.push(_sb.channel('puzzle_bookmarks_changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_bookmarks' }, async () => {
-      if (_isSavingPuzzleBookmarks) return;
-      const { data } = await _sb.from('puzzle_bookmarks').select('*').order('sort_order', { ascending: true });
-      if (data) {
-        puzzleBookmarks = data.map(r => ({ id: r.bm_id, name: r.name, order: JSON.parse(r.order_ids), updatedAt: r.updated_at || null }));
-        localStorage.setItem(PUZZLE_BM_KEY, JSON.stringify(puzzleBookmarks));
-        renderPuzzleBookmarks();
-      }
-    })
-    .subscribe());
-
   // 실시간 채널 정리 (페이지 언로드 시)
   const _channels = [];
   window.addEventListener('beforeunload', () => _channels.forEach(ch => ch.unsubscribe()));
@@ -2322,6 +2271,57 @@ window.addEventListener('DOMContentLoaded', async () => {
       const order = JSON.parse(payload.new.order_ids);
       _applyOrder(order);
       renderAll();
+    })
+    .subscribe());
+
+  // 실시간 협업 sync — 퍼즐 앨범 목록
+  _channels.push(_sb.channel('puzzle_config_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_config' }, payload => {
+      if (_isSavingPuzzleConfig || !payload.new || !Array.isArray(payload.new.albums)) return;
+      _applyPuzzleAlbums(payload.new.albums);
+      const knownIds = new Set(ALBUMS_BASE.map(a => a.id));
+      puzzleOrder = puzzleOrder.filter(id => knownIds.has(id));
+      ALBUMS_BASE.forEach(a => { if (!puzzleOrder.includes(a.id)) puzzleOrder.push(a.id); });
+      renderPuzzleAll();
+    })
+    .subscribe());
+
+  // 실시간 협업 sync — 퍼즐 순서
+  _channels.push(_sb.channel('puzzle_order_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_order' }, payload => {
+      if (_isSavingPuzzleOrder || !payload.new || !payload.new.order_ids) return;
+      const order = JSON.parse(payload.new.order_ids);
+      const knownIds = new Set(ALBUMS_BASE.map(a => a.id));
+      const valid = order.filter(id => knownIds.has(id));
+      const missing = ALBUMS_BASE.map(a => a.id).filter(id => !valid.includes(id));
+      puzzleOrder = [...valid, ...missing];
+      renderPuzzleAll();
+    })
+    .subscribe());
+
+  // 실시간 협업 sync — 퍼즐 아트 완료
+  _channels.push(_sb.channel('puzzle_art_done_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_art_done' }, payload => {
+      if (payload.eventType === 'DELETE') {
+        delete puzzleArtDone[payload.old.album_id];
+      } else {
+        const r = payload.new;
+        puzzleArtDone[r.album_id] = r.done_by ? `${r.done_at} (${r.done_by})` : r.done_at;
+      }
+      renderPuzzleAll();
+    })
+    .subscribe());
+
+  // 실시간 협업 sync — 퍼즐 북마크
+  _channels.push(_sb.channel('puzzle_bookmarks_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_bookmarks' }, async () => {
+      if (_isSavingPuzzleBookmarks) return;
+      const { data } = await _sb.from('puzzle_bookmarks').select('*').order('sort_order', { ascending: true });
+      if (data) {
+        puzzleBookmarks = data.map(r => ({ id: r.bm_id, name: r.name, order: JSON.parse(r.order_ids), updatedAt: r.updated_at || null }));
+        localStorage.setItem(PUZZLE_BM_KEY, JSON.stringify(puzzleBookmarks));
+        renderPuzzleBookmarks();
+      }
     })
     .subscribe());
 });
