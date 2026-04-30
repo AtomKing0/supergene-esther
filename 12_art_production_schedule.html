@@ -1649,63 +1649,147 @@ let puzzleActiveBookmarkId = null;
 let puzzleLastModifiedFromId = null;
 let puzzleDragIdx = null;
 
-// --- Persistence ---
-function loadPuzzleCfg() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(PUZZLE_CFG_KEY));
-    if (saved && Array.isArray(saved) && saved.length > 0) {
-      ALBUMS_BASE = saved.map(a => ({ id: a.id, name: a.name, unlock_lv: a.unlock_lv || 1, hammers: a.hammers || 0, pieces: a.pieces || Array(12).fill(0) }));
-    }
-  } catch {}
-}
-function savePuzzleCfg() {
-  localStorage.setItem(PUZZLE_CFG_KEY, JSON.stringify(ALBUMS_BASE));
+// --- Persistence (Supabase + localStorage fallback) ---
+let _isSavingPuzzleConfig    = false;
+let _isSavingPuzzleOrder     = false;
+let _isSavingPuzzleBookmarks = false;
+
+function _applyPuzzleAlbums(albums) {
+  ALBUMS_BASE = albums.map(a => ({ id: a.id, name: a.name, unlock_lv: a.unlock_lv || 1, hammers: a.hammers || 0, pieces: a.pieces || Array(12).fill(0) }));
 }
 
-function loadPuzzleOrder() {
+async function loadPuzzleCfg() {
   try {
-    const saved = JSON.parse(localStorage.getItem(PUZZLE_ORDER_KEY));
-    if (saved && Array.isArray(saved)) {
-      const knownIds = new Set(ALBUMS_BASE.map(a => a.id));
-      const valid = saved.filter(id => knownIds.has(id));
-      const missing = ALBUMS_BASE.map(a => a.id).filter(id => !valid.includes(id));
-      puzzleOrder = [...valid, ...missing];
+    const { data, error } = await _sb.from('puzzle_config').select('albums').eq('id', 1).single();
+    if (error || !data || !Array.isArray(data.albums) || data.albums.length === 0) {
+      try { const c = JSON.parse(localStorage.getItem(PUZZLE_CFG_KEY)); if (c && c.length) _applyPuzzleAlbums(c); } catch {}
+      return;
     }
-  } catch {}
-}
-function savePuzzleOrder() {
-  localStorage.setItem(PUZZLE_ORDER_KEY, JSON.stringify(puzzleOrder));
-}
-
-function loadPuzzleArtDone() {
-  try { puzzleArtDone = JSON.parse(localStorage.getItem(PUZZLE_ART_KEY)) || {}; }
-  catch { puzzleArtDone = {}; }
-}
-function savePuzzleArtDone() {
-  localStorage.setItem(PUZZLE_ART_KEY, JSON.stringify(puzzleArtDone));
-}
-function togglePuzzleArtDone(id) {
-  if (puzzleArtDone[id]) {
-    delete puzzleArtDone[id];
-    showToast('⬜ 완료 취소됨', 'var(--yellow)');
-  } else {
-    const now = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    puzzleArtDone[id] = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-    showToast('✅ 아트 완료 체크', 'var(--green)');
+    _applyPuzzleAlbums(data.albums);
+    localStorage.setItem(PUZZLE_CFG_KEY, JSON.stringify(data.albums));
+  } catch (e) {
+    console.warn('puzzle_config 로드 실패, localStorage 폴백', e);
+    try { const c = JSON.parse(localStorage.getItem(PUZZLE_CFG_KEY)); if (c && c.length) _applyPuzzleAlbums(c); } catch {}
   }
-  savePuzzleArtDone();
-  renderPuzzleAll();
+}
+async function savePuzzleCfg() {
+  _isSavingPuzzleConfig = true;
+  try {
+    localStorage.setItem(PUZZLE_CFG_KEY, JSON.stringify(ALBUMS_BASE));
+    await _sb.from('puzzle_config').upsert({ id: 1, albums: ALBUMS_BASE, updated_at: new Date().toISOString() });
+  } catch (e) {
+    console.error('puzzle_config 저장 실패', e);
+    showToast('⚠️ 앨범 설정 저장 실패: ' + e.message, 'var(--red)');
+  } finally {
+    setTimeout(() => { _isSavingPuzzleConfig = false; }, 600);
+  }
+}
+
+async function loadPuzzleOrder() {
+  try {
+    const { data, error } = await _sb.from('puzzle_order').select('order_ids').eq('id', 1).single();
+    if (error) throw error;
+    if (!data) return;
+    const order = JSON.parse(data.order_ids);
+    const knownIds = new Set(ALBUMS_BASE.map(a => a.id));
+    const valid = order.filter(id => knownIds.has(id));
+    const missing = ALBUMS_BASE.map(a => a.id).filter(id => !valid.includes(id));
+    puzzleOrder = [...valid, ...missing];
+    localStorage.setItem(PUZZLE_ORDER_KEY, JSON.stringify(puzzleOrder));
+  } catch (e) {
+    console.warn('puzzle_order 로드 실패, localStorage 사용', e);
+    try {
+      const saved = JSON.parse(localStorage.getItem(PUZZLE_ORDER_KEY));
+      if (saved && Array.isArray(saved)) {
+        const knownIds = new Set(ALBUMS_BASE.map(a => a.id));
+        const valid = saved.filter(id => knownIds.has(id));
+        const missing = ALBUMS_BASE.map(a => a.id).filter(id => !valid.includes(id));
+        puzzleOrder = [...valid, ...missing];
+      }
+    } catch {}
+  }
+}
+async function savePuzzleOrder() {
+  _isSavingPuzzleOrder = true;
+  try {
+    localStorage.setItem(PUZZLE_ORDER_KEY, JSON.stringify(puzzleOrder));
+    await _sb.from('puzzle_order').upsert({ id: 1, order_ids: JSON.stringify(puzzleOrder), updated_at: new Date().toISOString() });
+  } catch (e) {
+    console.error('puzzle_order 저장 실패', e);
+    showToast('⚠️ 순서 저장 실패: ' + e.message, 'var(--red)');
+  } finally {
+    setTimeout(() => { _isSavingPuzzleOrder = false; }, 600);
+  }
+}
+
+async function loadPuzzleArtDone() {
+  try {
+    const { data, error } = await _sb.from('puzzle_art_done').select('album_id, done_at, done_by');
+    if (error) throw error;
+    puzzleArtDone = {};
+    data.forEach(r => { puzzleArtDone[r.album_id] = r.done_by ? `${r.done_at} (${r.done_by})` : r.done_at; });
+  } catch (e) {
+    console.warn('puzzle_art_done 로드 실패, localStorage 사용', e);
+    try { puzzleArtDone = JSON.parse(localStorage.getItem(PUZZLE_ART_KEY)) || {}; } catch { puzzleArtDone = {}; }
+  }
+}
+async function togglePuzzleArtDone(id) {
+  const wasChecked = !!puzzleArtDone[id];
+  try {
+    if (wasChecked) {
+      const { error } = await _sb.from('puzzle_art_done').delete().eq('album_id', id);
+      if (error) throw error;
+      delete puzzleArtDone[id];
+    } else {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const ts = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      const { error } = await _sb.from('puzzle_art_done').upsert({ album_id: id, done_at: ts });
+      if (error) throw error;
+      puzzleArtDone[id] = ts;
+    }
+    renderPuzzleAll();
+    showToast(!wasChecked ? '✅ 아트 완료 체크' : '⬜ 완료 취소됨', !wasChecked ? 'var(--green)' : 'var(--yellow)');
+  } catch (e) {
+    console.error('puzzle_art_done 저장 실패', e);
+    showToast('⚠️ 저장 실패: ' + e.message, 'var(--red)');
+  }
 }
 
 // --- Bookmarks ---
-function loadPuzzleBookmarks() {
-  try { puzzleBookmarks = JSON.parse(localStorage.getItem(PUZZLE_BM_KEY)) || []; }
-  catch { puzzleBookmarks = []; }
+async function loadPuzzleBookmarks() {
+  try {
+    const { data, error } = await _sb.from('puzzle_bookmarks').select('*').order('sort_order', { ascending: true });
+    if (error) throw error;
+    puzzleBookmarks = data.map(r => ({ id: r.bm_id, name: r.name, order: JSON.parse(r.order_ids), updatedAt: r.updated_at || null }));
+    localStorage.setItem(PUZZLE_BM_KEY, JSON.stringify(puzzleBookmarks));
+  } catch (e) {
+    console.warn('puzzle_bookmarks 로드 실패, localStorage 사용', e);
+    try { puzzleBookmarks = JSON.parse(localStorage.getItem(PUZZLE_BM_KEY)) || []; } catch { puzzleBookmarks = []; }
+  }
   puzzleActiveBookmarkId = localStorage.getItem(PUZZLE_ACTIVE_BM_KEY) || null;
 }
 function savePuzzleBookmarks() {
   localStorage.setItem(PUZZLE_BM_KEY, JSON.stringify(puzzleBookmarks));
+  _syncPuzzleBookmarksToSupabase(puzzleBookmarks);
+}
+async function _syncPuzzleBookmarksToSupabase(bms) {
+  _isSavingPuzzleBookmarks = true;
+  try {
+    const { data: existing } = await _sb.from('puzzle_bookmarks').select('bm_id');
+    const existingIds = new Set((existing || []).map(r => r.bm_id));
+    const newIds = new Set(bms.map(b => b.id));
+    const toDelete = [...existingIds].filter(id => !newIds.has(id));
+    if (toDelete.length) await _sb.from('puzzle_bookmarks').delete().in('bm_id', toDelete);
+    if (bms.length) await _sb.from('puzzle_bookmarks').upsert(
+      bms.map((b, i) => ({ bm_id: b.id, name: b.name, order_ids: JSON.stringify(b.order), sort_order: i, updated_at: b.updatedAt || new Date().toISOString() }))
+    );
+  } catch (e) {
+    console.error('puzzle_bookmarks 저장 실패', e);
+    showToast('⚠️ 북마크 저장 실패: ' + e.message, 'var(--red)');
+  } finally {
+    setTimeout(() => { _isSavingPuzzleBookmarks = false; }, 600);
+  }
 }
 function setPuzzleActiveBookmark(id) {
   if (id) localStorage.setItem(PUZZLE_ACTIVE_BM_KEY, id);
@@ -2133,11 +2217,60 @@ window.addEventListener('DOMContentLoaded', async () => {
   renderAll();
 
   // Puzzle section init
-  loadPuzzleCfg();
-  loadPuzzleOrder();
-  loadPuzzleArtDone();
-  loadPuzzleBookmarks();
+  await loadPuzzleCfg();
+  await Promise.all([loadPuzzleOrder(), loadPuzzleArtDone(), loadPuzzleBookmarks()]);
   renderPuzzleAll();
+
+  // 실시간 협업 sync — 퍼즐 앨범 목록
+  _channels.push(_sb.channel('puzzle_config_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_config' }, payload => {
+      if (_isSavingPuzzleConfig || !payload.new || !Array.isArray(payload.new.albums)) return;
+      _applyPuzzleAlbums(payload.new.albums);
+      const knownIds = new Set(ALBUMS_BASE.map(a => a.id));
+      puzzleOrder = puzzleOrder.filter(id => knownIds.has(id));
+      ALBUMS_BASE.forEach(a => { if (!puzzleOrder.includes(a.id)) puzzleOrder.push(a.id); });
+      renderPuzzleAll();
+    })
+    .subscribe());
+
+  // 실시간 협업 sync — 퍼즐 순서
+  _channels.push(_sb.channel('puzzle_order_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_order' }, payload => {
+      if (_isSavingPuzzleOrder || !payload.new || !payload.new.order_ids) return;
+      const order = JSON.parse(payload.new.order_ids);
+      const knownIds = new Set(ALBUMS_BASE.map(a => a.id));
+      const valid = order.filter(id => knownIds.has(id));
+      const missing = ALBUMS_BASE.map(a => a.id).filter(id => !valid.includes(id));
+      puzzleOrder = [...valid, ...missing];
+      renderPuzzleAll();
+    })
+    .subscribe());
+
+  // 실시간 협업 sync — 퍼즐 아트 완료
+  _channels.push(_sb.channel('puzzle_art_done_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_art_done' }, payload => {
+      if (payload.eventType === 'DELETE') {
+        delete puzzleArtDone[payload.old.album_id];
+      } else {
+        const r = payload.new;
+        puzzleArtDone[r.album_id] = r.done_by ? `${r.done_at} (${r.done_by})` : r.done_at;
+      }
+      renderPuzzleAll();
+    })
+    .subscribe());
+
+  // 실시간 협업 sync — 퍼즐 북마크
+  _channels.push(_sb.channel('puzzle_bookmarks_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'puzzle_bookmarks' }, async () => {
+      if (_isSavingPuzzleBookmarks) return;
+      const { data } = await _sb.from('puzzle_bookmarks').select('*').order('sort_order', { ascending: true });
+      if (data) {
+        puzzleBookmarks = data.map(r => ({ id: r.bm_id, name: r.name, order: JSON.parse(r.order_ids), updatedAt: r.updated_at || null }));
+        localStorage.setItem(PUZZLE_BM_KEY, JSON.stringify(puzzleBookmarks));
+        renderPuzzleBookmarks();
+      }
+    })
+    .subscribe());
 
   // 실시간 채널 정리 (페이지 언로드 시)
   const _channels = [];
