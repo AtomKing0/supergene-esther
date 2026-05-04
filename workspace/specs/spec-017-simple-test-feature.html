@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="spec-created" content="2026. 5. 4.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-017 · 간단 테스트 기능</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--surface3:#2a2f45;
+  --border:#2e3347;--text:#e2e8f0;--text2:#94a3b8;--text-dim:#64748b;
+  --accent:#a78bfa;--accent-bg:rgba(167,139,250,.15);--accent-border:rgba(167,139,250,.35);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.12);--purple-border:rgba(167,139,250,.3);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,.12);--teal-border:rgba(45,212,191,.3);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.12);--blue-border:rgba(96,165,250,.3);
+  --green:#4ade80;--green-bg:rgba(74,222,128,.12);--green-border:rgba(74,222,128,.25);
+  --yellow:#fbbf24;--yellow-bg:rgba(251,191,36,.12);--yellow-border:rgba(251,191,36,.3);
+  --red:#f87171;--red-bg:rgba(248,113,113,.12);--red-border:rgba(248,113,113,.25);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
+  --text-xs:12px;--text-sm:13px;--text-base:14px;--text-lg:15px;
+  --dur-base:.18s;
+}
+[data-theme=light]{
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--text:#0f172a;--text2:#475569;--text-dim:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--text-lg);line-height:1.7;display:flex}
+.sidenav{position:fixed;left:0;top:0;height:100vh;width:200px;background:var(--surface);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;gap:4px;z-index:200}
+.sidenav-logo{padding:0 20px 20px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:var(--text-sm);color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all var(--dur-base)}
+.nav-item:hover,.nav-item.active{color:var(--text);border-left-color:var(--accent);background:var(--accent-bg)}
+.nav-num{font-size:10px;font-weight:700;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.n1{background:var(--purple-bg);color:var(--purple)}
+.n2{background:var(--teal-bg);color:var(--teal)}
+.n3{background:var(--blue-bg);color:var(--blue)}
+.main{margin-left:200px;flex:1;padding:60px 56px 80px;max-width:900px}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-toggle:hover{transform:scale(1.1)}
+.back-btn{position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;text-decoration:none}
+.back-btn:hover{color:var(--text)}
+.spec-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;margin-bottom:14px}
+h1{font-size:26px;font-weight:800;margin-bottom:8px;line-height:1.3}
+.subtitle{color:var(--text2);font-size:var(--text-base);margin-bottom:32px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:40px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 16px}
+.kpi-label{font-size:var(--text-xs);color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:800}
+.kpi-sub{font-size:var(--text-xs);color:var(--text-dim);margin-top:4px}
+.kpi-trend{font-size:var(--text-xs);font-weight:700;margin-top:6px}
+.trend-up{color:var(--green)}.trend-down{color:var(--red)}.trend-neutral{color:var(--text2)}
+.section-header{display:flex;align-items:center;gap:12px;margin:48px 0 24px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.section-num{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);font-weight:800}
+.section-num-1,.s1-num{background:var(--purple-bg);color:var(--purple)}
+.section-num-2,.s2-num{background:var(--teal-bg);color:var(--teal)}
+.section-num-3,.s3-num{background:var(--blue-bg);color:var(--blue)}
+.section-meta{display:flex;flex-direction:column;gap:2px}
+.section-title{font-size:18px;font-weight:700}
+.section-audience{font-size:var(--text-xs);padding:3px 10px;border-radius:var(--radius-full);font-weight:600}
+.aud-all{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.aud-art{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+.aud-dev{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:16px}
+.card-title{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);margin-bottom:12px}
+p,li{color:var(--text2);font-size:var(--text-base)}
+p strong,li strong{color:var(--text)}
+ul,ol{padding-left:20px;margin:8px 0}
+li{margin:6px 0}
+.hl{color:var(--text);font-weight:600}
+code,.code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(--text-xs);font-family:monospace;color:var(--accent)}
+.sheet-var{font-family:monospace;font-size:var(--text-xs);background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:4px;padding:2px 7px;color:var(--blue)}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:var(--text-xs);font-weight:600}
+.badge-purple{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,.3)}
+.badge-blue{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+.badge-yellow{background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,.3)}
+.badge-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(74,222,128,.25)}
+.badge-red{background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,.25)}
+.badge-teal{background:var(--teal-bg);color:var(--teal);border:1px solid rgba(45,212,191,.3)}
+.callout{border-radius:var(--radius-md);padding:16px 20px;margin:20px 0;font-size:var(--text-base)}
+.callout-blue{background:var(--blue-bg);border-left:3px solid var(--blue)}
+.callout-yellow{background:var(--yellow-bg);border-left:3px solid var(--yellow)}
+.callout-green{background:var(--green-bg);border-left:3px solid var(--green)}
+.callout-red{background:var(--red-bg);border-left:3px solid var(--red)}
+.callout strong{color:var(--text)}
+.callout p{margin:0;color:var(--text2)}
+table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:var(--text-sm)}
+thead th{background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border)}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+tbody tr:hover td{background:var(--surface2)}
+tbody td:first-child{color:var(--text);font-weight:600}
+.sheet-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;margin:20px 0}
+.sheet-block-title{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px}
+.sheet-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:var(--text-sm)}
+.sheet-row:last-child{border-bottom:none}
+.sheet-row-var{font-family:monospace;color:var(--blue);font-weight:600;min-width:260px}
+.sheet-row-default{font-family:monospace;color:var(--green);font-size:var(--text-xs);min-width:80px}
+.sheet-row-unit{font-size:var(--text-xs);color:var(--text2);min-width:90px}
+.sheet-row-desc{color:var(--text2);font-size:var(--text-sm);flex:1}
+.flow-step{display:flex;gap:14px;margin-bottom:14px;align-items:flex-start}
+.flow-dot{width:28px;height:28px;border-radius:50%;background:var(--accent-bg);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);font-weight:700;color:var(--accent);flex-shrink:0;margin-top:2px}
+.flow-body{flex:1}
+.flow-body strong{color:var(--text);font-size:var(--text-base)}
+.flow-body p{margin:2px 0 0;font-size:var(--text-sm);color:var(--text2)}
+.section-divider{border:none;border-top:2px dashed var(--border);margin:12px 0 40px}
+.wireframe{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin:20px 0}
+.wireframe .dim{color:var(--text2)}
+h2{font-size:1.2rem;font-weight:700;margin:28px 0 14px;color:var(--text)}
+h3{font-size:1rem;font-weight:700;margin:20px 0 10px;color:var(--text2)}
+section{padding:0}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<nav class="sidenav">
+  <div class="sidenav-logo">SPEC-017</div>
+  <a class="nav-item" href="#s1"><span class="nav-num n1">1</span>기획 의도</a>
+  <a class="nav-item" href="#s2"><span class="nav-num n2">2</span>아트 가이드</a>
+  <a class="nav-item" href="#s3"><span class="nav-num n3">3</span>개발 스펙</a>
+</nav>
+<main class="main">
+<div>
+  <span class="spec-badge">SPEC-017</span>
+</div>
+<h1>간단 테스트 기능</h1>
+<p class="subtitle">게임 기능 검증 및 품질 확보를 위한 간단한 테스트 인터페이스입니다.</p>
+<div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">테스트 커버리지</div>
+        <div class="kpi-value" style="color:var(--blue)">목표</div>
+        <div class="kpi-sub">주요 기능 검증</div>
+        <div class="kpi-trend trend-neutral">→ 기준 설정</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">사용성 평가</div>
+        <div class="kpi-value" style="color:var(--green)">용이</div>
+        <div class="kpi-sub">간단한 UI</div>
+        <div class="kpi-trend trend-up">▲ 직관적 설계</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">개발 효율</div>
+        <div class="kpi-value" style="color:var(--accent)">고</div>
+        <div class="kpi-sub">빠른 피드백</div>
+        <div class="kpi-trend trend-up">▲ 신속한 개선</div>
+      </div>
+    </div>
+
+
+<!-- ════════════════════════════════════════
+  SECTION 1 — 기획 의도 & 콘텐츠 흐름
+════════════════════════════════════════ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">1</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도 &amp; 콘텐츠 흐름</div>
+      <span class="section-audience aud-all">개발 + 아트 공통</span>
+    </div>
+  </div>
+
+  <h3>왜 만드는가</h3>
+  <p>게임 개발 과정에서 특정 기능을 빠르게 검증하고, 문제점을 파악해야 합니다. 이를 위해 <strong>간단하고 직관적인 테스트 인터페이스</strong>를 제공하여 개발팀의 신속한 피드백을 지원합니다.</p>
+
+  <h3>플레이어 경험 흐름</h3>
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>테스트 화면 진입</strong><p>개발 메뉴 또는 특정 진입점에서 테스트 기능에 접근합니다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>테스트 항목 선택</strong><p>검증할 기능 또는 시나리오를 선택하거나 입력합니다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>테스트 실행</strong><p>버튼 클릭 등 간단한 조작으로 테스트를 시작합니다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>결과 표시</strong><p>성공/실패 또는 상세 로그를 화면에 표시합니다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>반복 또는 종료</strong><p>다른 테스트를 실행하거나 화면을 닫고 게임으로 복귀합니다.</p></div></div>
+
+  <h3>기대 KPI 및 성공 지표</h3>
+  <table>
+    <thead><tr><th>지표</th><th>측정 방법</th><th>목표</th><th>전제</th></tr></thead>
+    <tbody>
+      <tr><td>테스트 실행 시간</td><td>사용자 지표 로깅</td><td>1회 평균 &lt; 30초</td><td>빠른 로딩 및 응답</td></tr>
+      <tr><td>버그 발견 효율</td><td>테스트로 발견된 버그 수</td><td>주요 버그 선제 포착</td><td>정확한 테스트 케이스</td></tr>
+      <tr><td>개발팀 만족도</td><td>피드백 설문</td><td>사용 편이성 높음</td><td>직관적 UI 설계</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════════════════════════════════════════
+  SECTION 2 — 아트 가이드
+════════════════════════════════════════ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">2</div>
+    <div class="section-meta">
+      <div class="section-title">아트 가이드</div>
+      <span class="section-audience aud-art">아트팀 전용</span>
+    </div>
+  </div>
+
+  <h3>와이어프레임 — 테스트 화면 구성</h3>
+  <div class="wireframe">
+    <svg viewBox="0 0 560 360" width="100%" style="display:block;max-width:640px;margin:16px 0;">
+      <!-- 배경 -->
+      <rect x="20" y="20" width="520" height="320" rx="12" style="fill:var(--surface);stroke:var(--border);stroke-width:1.5"/>
+      <!-- 헤더 -->
+      <rect x="20" y="20" width="520" height="50" rx="12 12 0 0" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+      <text x="40" y="55" style="fill:var(--text);font-size:16px;font-weight:700;font-family:sans-serif;">테스트 기능</text>
+      <!-- 선택 영역 -->
+      <text x="40" y="90" style="fill:var(--text2);font-size:12px;font-family:sans-serif;font-weight:600;">테스트 항목</text>
+      <rect x="40" y="100" width="460" height="32" rx="6" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="50" y="124" style="fill:var(--text-dim);font-size:11px;font-family:sans-serif;">기능 선택 또는 입력...</text>
+      <!-- 버튼 영역 -->
+      <rect x="40" y="145" width="220" height="40" rx="6" style="fill:var(--blue-bg);stroke:var(--blue);stroke-width:1.5"/>
+      <text x="150" y="174" text-anchor="middle" style="fill:var(--blue);font-size:13px;font-family:sans-serif;font-weight:700;">실행</text>
+      <rect x="280" y="145" width="220" height="40" rx="6" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="390" y="174" text-anchor="middle" style="fill:var(--text2);font-size:13px;font-family:sans-serif;font-weight:700;">초기화</text>
+      <!-- 결과 영역 -->
+      <text x="40" y="210" style="fill:var(--text2);font-size:12px;font-family:sans-serif;font-weight:600;">결과</text>
+      <rect x="40" y="220" width="460" height="100" rx="6" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="50" y="240" style="fill:var(--green);font-size:11px;font-family:monospace;font-weight:700;">✓ 테스트 완료</text>
+      <text x="50" y="256" style="fill:var(--text2);font-size:10px;font-family:monospace;">Status: PASS</text>
+      <text x="50" y="272" style="fill:var(--text-dim);font-size:10px;font-family:monospace;">Timestamp: 2026-05-04 00:00:00</text>
+    </svg>
+  </div>
+
+  <h3>비주얼 방향성</h3>
+  <p><strong>간결하고 기능적</strong>인 디자인으로, 개발자의 집중력을 방해하지 않습니다. 테스트 결과는 명확하게 구분되어야 합니다.</p>
+  <ul>
+    <li><strong>배색:</strong> 다크/라이트 테마 모두 대비가 명확한 색상 사용</li>
+    <li><strong>레이아웃:</strong> 입력 → 버튼 → 결과 순서로 위에서 아래로 흐르는 구조</li>
+    <li><strong>텍스트:</strong> 명확한 라벨과 작은 폰트로 정보 밀도 유지</li>
+  </ul>
+
+  <h3>애니메이션 방향성</h3>
+  <p>최소한의 애니메이션으로 빠른 반응성을 중심으로 설계합니다. 로딩 중에는 스피너 또는 진행률 표시를 제공합니다.</p>
+
+  <h3>필요 에셋</h3>
+  <ul>
+    <li><strong>로딩 아이콘:</strong> 스피너 또는 진행 애니메이션</li>
+    <li><strong>상태 아이콘:</strong> 성공(체크), 실패(엑스), 경고(느낌표)</li>
+    <li><strong>배경:</strong> 코드로 처리 가능</li>
+  </ul>
+
+  <div class="callout callout-blue">
+    <p><strong>참고:</strong> 이 화면은 개발용 기능으로, 게임 내 일반 UI 스타일과 동일하게 유지하되 기능성을 최우선으로 합니다.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════
+  SECTION 3 — 개발 스펙
+════════════════════════════════════════ -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">3</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+  </div>
+
+  <h3>밸런스 시트 변수</h3>
+  <div class="sheet-block">
+    <div class="sheet-block-title">해당 사항 없음 (테스트 기능은 밸런스 변수 미사용)</div>
+    <p style="color:var(--text-dim);font-size:var(--text-sm);margin:8px 0;">이 기능은 순수 UI/로직 테스트이며, 게임 밸런스 데이터를 포함하지 않습니다.</p>
+  </div>
+
+  <h3>트리거 조건</h3>
+  <ul>
+    <li>개발 메뉴 또는 특정 키 조합 입력 시 테스트 화면 진입</li>
+    <li>테스트 항목 입력 후 [실행] 버튼 클릭 시 테스트 시작</li>
+  </ul>
+
+  <h3>기능 명세</h3>
+  <table>
+    <thead><tr><th>기능</th><th>설명</th><th>예상 동작</th></tr></thead>
+    <tbody>
+      <tr><td>항목 선택</td><td>드롭다운 또는 텍스트 입력으로 테스트 케이스 지정</td><td>선택된 항목 표시</td></tr>
+      <tr><td>실행</td><td>선택한 테스트 케이스 실행</td><td>로딩 표시 후 결과 출력</td></tr>
+      <tr><td>초기화</td><td>화면 초기 상태로 복원</td><td>입력/결과 필드 비우기</td></tr>
+      <tr><td>결과 표시</td><td>성공/실패 및 상세 로그 출력</td><td>색상 코딩 + 타임스탐프</td></tr>
+    </tbody>
+  </table>
+
+  <h3>에러 처리</h3>
+  <ul>
+    <li><strong>입력 없음:</strong> "항목을 선택하세요" 경고 표시</li>
+    <li><strong>테스트 실패:</strong> 실패 사유와 함께 빨간색 표시</li>
+    <li><strong>타임아웃:</strong> 30초 이상 응답 없을 시 중단 및 타임아웃 메시지</li>
+  </ul>
+
+  <h3>z-index 관리</h3>
+  <table>
+    <thead><tr><th>요소</th><th>z-index</th></tr></thead>
+    <tbody>
+      <tr><td>게임 배경</td><td>1</td></tr>
+      <tr><td>테스트 화면</td><td>100</td></tr>
+      <tr><td>로딩 오버레이</td><td>110</td></tr>
+    </tbody>
+  </table>
+
+  <h3>엣지 케이스</h3>
+  <ul>
+    <li><strong>빠른 반복 클릭:</strong> [실행] 버튼 중복 클릭 시 하나의 요청만 처리</li>
+    <li><strong>앱 백그라운드 전환:</strong> 백그라운드 중 테스트 진행 시 일시 중단 후 포그라운드 복귀 시 재개 가능</li>
+  </ul>
+</section>
+
+</main>
+<script src="memo.js"></script>
+<script src="changelog.js"></script>
+</body>
+</html>

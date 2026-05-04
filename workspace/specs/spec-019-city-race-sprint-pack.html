@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="spec-created" content="2026. 5. 4.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPEC-019 · City Race Sprint Pack</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--surface3:#2a2f45;
+  --border:#2e3347;--text:#e2e8f0;--text2:#94a3b8;--text-dim:#64748b;
+  --accent:#a78bfa;--accent-bg:rgba(167,139,250,.15);--accent-border:rgba(167,139,250,.35);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.12);--purple-border:rgba(167,139,250,.3);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,.12);--teal-border:rgba(45,212,191,.3);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.12);--blue-border:rgba(96,165,250,.3);
+  --green:#4ade80;--green-bg:rgba(74,222,128,.12);--green-border:rgba(74,222,128,.25);
+  --yellow:#fbbf24;--yellow-bg:rgba(251,191,36,.12);--yellow-border:rgba(251,191,36,.3);
+  --red:#f87171;--red-bg:rgba(248,113,113,.12);--red-border:rgba(248,113,113,.25);
+  --orange:#fb923c;--orange-bg:rgba(251,146,60,.12);--orange-border:rgba(251,146,60,.3);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
+  --text-xs:12px;--text-sm:13px;--text-base:14px;--text-lg:15px;
+  --dur-base:.18s;
+}
+[data-theme=light]{
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--text:#0f172a;--text2:#475569;--text-dim:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--text-lg);line-height:1.7;display:flex}
+.sidenav{position:fixed;left:0;top:0;height:100vh;width:200px;background:var(--surface);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;gap:4px;z-index:200}
+.sidenav-logo{padding:0 20px 20px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:var(--text-sm);color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all var(--dur-base)}
+.nav-item:hover,.nav-item.active{color:var(--text);border-left-color:var(--accent);background:var(--accent-bg)}
+.nav-num{font-size:10px;font-weight:700;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.n1{background:var(--purple-bg);color:var(--purple)}
+.n2{background:var(--teal-bg);color:var(--teal)}
+.n3{background:var(--blue-bg);color:var(--blue)}
+.main{margin-left:200px;flex:1;padding:60px 56px 80px;max-width:900px}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-toggle:hover{transform:scale(1.1)}
+.back-btn{position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;text-decoration:none}
+.back-btn:hover{color:var(--text)}
+.spec-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;margin-bottom:14px}
+h1{font-size:26px;font-weight:800;margin-bottom:8px;line-height:1.3}
+.subtitle{color:var(--text2);font-size:var(--text-base);margin-bottom:32px}
+a{color:var(--accent);text-decoration:none}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:4px;margin-bottom:40px}
+.kpi-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+[data-theme=light] .kpi-card{background:rgba(0,0,0,0.03)}
+.kpi-card .kpi-val{font-size:16px;font-weight:800;color:var(--accent)}
+.kpi-card .kpi-label{font-size:12px;color:var(--text2);margin-top:4px}
+.section{margin-bottom:56px;padding-top:40px}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.section-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+.section-audience{display:inline-block;border-radius:4px;padding:3px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.s1 .section-num{background:var(--purple-bg);color:var(--purple)}
+.s1 .section-audience{background:var(--purple-bg);color:var(--purple)}
+.s2 .section-num{background:var(--teal-bg);color:var(--teal)}
+.s2 .section-audience{background:var(--teal-bg);color:var(--teal)}
+.s3 .section-num{background:var(--blue-bg);color:var(--blue)}
+.s3 .section-audience{background:var(--blue-bg);color:var(--blue)}
+h2{font-size:20px;font-weight:700;margin:28px 0 12px}
+h3{font-size:15px;font-weight:600;color:var(--text2);margin:20px 0 8px}
+p,li{color:var(--text2)}
+ul,ol{padding-left:20px;margin:8px 0}
+li{margin:4px 0}
+.flow-steps{display:flex;flex-direction:column}
+.flow-step{display:flex;gap:16px;padding:14px 0;border-left:2px solid var(--border);padding-left:20px;position:relative}
+.flow-step::before{content:attr(data-n);position:absolute;left:-12px;top:14px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.flow-step:last-child{border-left-color:transparent}
+.flow-step-title{font-weight:600;margin-bottom:2px}
+.flow-step-desc{font-size:13px;color:var(--text2)}
+table{width:100%;border-collapse:collapse;margin:16px 0}
+th{background:var(--surface2);color:var(--text);font-size:13px;font-weight:600;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border)}
+tr:hover td{background:var(--surface2)}
+.bs-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;margin:16px 0}
+.bs-table{width:100%;border-collapse:collapse}
+.bs-table th{background:var(--surface3);color:var(--text);font-size:12px;padding:8px 12px;text-align:left;border:1px solid var(--border)}
+.bs-table td{padding:8px 12px;font-size:12px;color:var(--text2);border:1px solid var(--border);font-family:monospace}
+.bs-table tr:hover td{background:var(--surface3)}
+.tab-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:2px 8px;font-size:11px;font-family:monospace;margin:12px 0 4px}
+.wf-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin:16px 0}
+.wf-caption{font-size:12px;color:var(--text-dim);margin-top:8px;text-align:center}
+.prio-high{background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.prio-mid{background:var(--yellow-bg);color:var(--yellow);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.prio-low{background:var(--green-bg);color:var(--green);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.note{background:var(--surface2);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:var(--text2);margin:12px 0}
+.note strong{color:var(--text)}
+.reward-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.reward-row:last-child{border-bottom:none}
+.reward-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.reward-icon-gold{background:rgba(251,191,36,.2)}
+.reward-icon-ticket{background:rgba(45,212,191,.2)}
+.reward-icon-fw{background:rgba(248,113,113,.2)}
+.reward-icon-wc{background:rgba(167,139,250,.2)}
+.reward-icon-inf{background:rgba(251,146,60,.2)}
+.reward-name{font-weight:600;font-size:13px}
+.reward-key{font-family:monospace;font-size:11px;color:var(--text-dim)}
+.reward-qty{margin-left:auto;font-weight:800;color:var(--accent);font-size:14px}
+.callout{border-radius:var(--radius-md);padding:14px 18px;margin:16px 0;font-size:var(--text-base)}
+.callout-orange{background:var(--orange-bg);border-left:3px solid var(--orange)}
+.callout-blue{background:var(--blue-bg);border-left:3px solid var(--blue)}
+.callout-yellow{background:var(--yellow-bg);border-left:3px solid var(--yellow)}
+.callout strong{color:var(--text)}
+code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(--text-xs);font-family:monospace;color:var(--accent)}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<nav class="sidenav">
+  <div class="sidenav-logo">SPEC-019</div>
+  <a class="nav-item" href="#s1"><span class="nav-num n1">1</span>기획 의도</a>
+  <a class="nav-item" href="#s1-flow"><span class="nav-num n1">↳</span>플레이 흐름</a>
+  <a class="nav-item" href="#s1-kpi"><span class="nav-num n1">↳</span>성공 지표</a>
+  <a class="nav-item" href="#s2"><span class="nav-num n2">2</span>아트 가이드</a>
+  <a class="nav-item" href="#s3"><span class="nav-num n3">3</span>개발 스펙</a>
+</nav>
+
+<main class="main">
+<span class="spec-badge">수익화 × IAP</span>
+<h1>City Race Sprint Pack</h1>
+<p class="subtitle">City Race 3일 랭킹전 전용 저가형 번들 — $1.99 / 이벤트당 1회</p>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-val">$1.99</div>
+    <div class="kpi-label">판매가 (IAP)</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">4종</div>
+    <div class="kpi-label">보상 구성</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">이벤트 1회</div>
+    <div class="kpi-label">구매 제한</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">72h</div>
+    <div class="kpi-label">오퍼 유효 기간</div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- SECTION 1 — 기획 의도 & 흐름 -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<div id="s1" class="section s1">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2>기획 의도 &amp; 콘텐츠 흐름</h2>
+    <span class="section-audience">제품 × 아트 공통</span>
+  </div>
+
+  <h3>배경 — 왜 이 번들이 필요한가</h3>
+  <p>City Race는 주말 3일간 진행되는 순위 경쟁 이벤트입니다. 최종 순위에 따라 보상이 지급되므로, 이벤트 초반에 얼마나 빠르게 레벨을 클리어해 순위를 올리느냐가 결정적입니다.</p>
+  <ul>
+    <li><strong>현황:</strong> 이벤트 시작 직후 랭킹 스퍼트를 할 의지가 있지만 부스터·입장권이 부족한 유저가 다수</li>
+    <li><strong>기회:</strong> $2 미만의 저가형 번들로 초반 스퍼트 비용을 커버 → 구매 장벽 최소화 + 이벤트 참여 질 향상</li>
+    <li><strong>차별점:</strong> 기존 상시 상품(<code>special_offer_1</code> $1.99)과 달리 시간제 부스터를 포함 → 이벤트 기간 한정으로 "지금 당장 써야 할 이유" 제공</li>
+  </ul>
+
+  <h3>보상 구성 (제안)</h3>
+  <div class="bs-block" style="padding:8px 20px">
+    <div class="reward-row">
+      <div class="reward-icon reward-icon-gold">🪙</div>
+      <div>
+        <div class="reward-name">골드</div>
+        <div class="reward-key">currency_gold</div>
+      </div>
+      <div class="reward-qty">× <span id="r-gold">gold_amount</span></div>
+    </div>
+    <div class="reward-row">
+      <div class="reward-icon reward-icon-ticket">🎟️</div>
+      <div>
+        <div class="reward-name">무료 입장 티켓</div>
+        <div class="reward-key">currency_ticket</div>
+      </div>
+      <div class="reward-qty">× <span id="r-ticket">ticket_amount</span></div>
+    </div>
+    <div class="reward-row">
+      <div class="reward-icon reward-icon-wc">🃏</div>
+      <div>
+        <div class="reward-name">와일드카드 (인게임 부스터)</div>
+        <div class="reward-key">booster_wild_card</div>
+      </div>
+      <div class="reward-qty">× <span id="r-wc">wc_amount</span></div>
+    </div>
+    <div class="reward-row">
+      <div class="reward-icon reward-icon-inf">⚡</div>
+      <div>
+        <div class="reward-name">파이어웍스 5분 무제한</div>
+        <div class="reward-key">infinite_fireworks_5m</div>
+      </div>
+      <div class="reward-qty">× 1</div>
+    </div>
+  </div>
+
+  <div class="callout callout-orange">
+    <strong>시간제 아이템의 역할:</strong> <code>infinite_fireworks_5m</code>은 5분간 파이어웍스를 무제한 사용할 수 있게 한다. City Race 랭킹 스퍼트 세션에서 집중적으로 소모하면 단시간에 여러 레벨을 고효율로 클리어할 수 있어, "지금 사면 지금 써야 한다"는 행동 동기를 즉시 만든다.
+  </div>
+
+  <div class="callout callout-blue">
+    <strong>가치 근거:</strong> 와일드카드(entry_cost_ratio 6,500 기준) + 티켓(입장료 직결 절감) + 골드 + 시간제 파이어웍스 5분 무제한 합산 시 $1.99 대비 명백한 가치 우위. <code>booster_fireworks</code> 수량형 제거로 구성이 단순해졌고, <code>infinite_fireworks_5m</code>이 "이벤트 전용 차별점"으로 더 명확히 부각된다.
+  </div>
+
+  <!-- ──────────────────────────────────────────────────────────────────── -->
+  <!-- 1-1. 플레이어 경험 흐름 -->
+  <!-- ──────────────────────────────────────────────────────────────────── -->
+  <h2 id="s1-flow">1-1 플레이어 경험 흐름</h2>
+  <div class="flow-steps">
+    <div class="flow-step" data-n="1">
+      <div>
+        <div class="flow-step-title">City Race 이벤트 시작 — 로비 진입</div>
+        <div class="flow-step-desc">주말 금요일 자정 전후 이벤트가 열린다. 로비에 City Race 배너 노출. 이벤트 화면 첫 진입 시 Sprint Pack 팝업이 우선순위로 표시된다.</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="2">
+      <div>
+        <div class="flow-step-title">Sprint Pack 팝업 노출</div>
+        <div class="flow-step-desc">팝업에는 이벤트 잔여 시간 카운트다운 + 보상 4종 목록 + "$1.99 구매" CTA가 표시된다. 닫으면 24시간 후 재노출 (최대 1회 이벤트 중 구매 가능).</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="3">
+      <div>
+        <div class="flow-step-title">구매 완료 — 보상 즉시 지급</div>
+        <div class="flow-step-desc">결제 성공 시 골드·티켓·부스터가 인벤토리에 즉시 추가된다. <code>infinite_fireworks_5m</code>은 수령 즉시 타이머 카운트다운이 시작되는 것이 아니라, 인벤토리에서 수동 발동한다.</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="4">
+      <div>
+        <div class="flow-step-title">랭킹 스퍼트 — 집중 플레이</div>
+        <div class="flow-step-desc">티켓으로 입장료 없이 즉시 경기 참여, 파이어웍스로 클리어율 향상, 골드는 추가 베팅(×2/×4) 또는 연속 경기 참여에 활용. 시간제 파이어웍스는 좋은 시간대에 발동해 5분 집중 스퍼트.</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="5">
+      <div>
+        <div class="flow-step-title">랭킹 상승 확인</div>
+        <div class="flow-step-desc">이벤트 내 리더보드에서 순위 확인. 번들 구매자는 초반 랭킹 순위 우위를 점한 상태에서 이벤트 진행.</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="6">
+      <div>
+        <div class="flow-step-title">이벤트 종료 — 최종 순위 보상 수령</div>
+        <div class="flow-step-desc">3일 후 이벤트 종료, 순위별 보상 지급. 번들 구매자의 평균 순위가 비구매자 대비 높은지를 KPI로 측정.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ──────────────────────────────────────────────────────────────────── -->
+  <!-- 1-2. KPI & 성공 지표 -->
+  <!-- ──────────────────────────────────────────────────────────────────── -->
+  <h2 id="s1-kpi">1-2 기대 KPI &amp; 성공 지표</h2>
+  <table>
+    <thead>
+      <tr><th>지표</th><th>측정 방법</th><th>목표</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>번들 구매 전환율</strong></td>
+        <td>이벤트 팝업 노출 수 대비 구매 완료 수</td>
+        <td>&gt; 3%</td>
+      </tr>
+      <tr>
+        <td><strong>이벤트 기간 ARPU</strong></td>
+        <td>City Race 주말 IAP 수익 / DAU</td>
+        <td>비이벤트 주말 대비 +20%</td>
+      </tr>
+      <tr>
+        <td><strong>번들 구매자 평균 랭킹</strong></td>
+        <td>이벤트 최종 순위 (번들 구매 vs 비구매)</td>
+        <td>비구매자 대비 상위 30%p 이상</td>
+      </tr>
+      <tr>
+        <td><strong>시간제 아이템 발동율</strong></td>
+        <td><code>infinite_fireworks_5m</code> 수령 후 실제 발동 비율</td>
+        <td>&gt; 70% (이벤트 기간 내)</td>
+      </tr>
+      <tr>
+        <td><strong>D3 리텐션 (구매자)</strong></td>
+        <td>번들 구매 유저의 이벤트 3일차 재방문율</td>
+        <td>&gt; 65%</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- SECTION 2 — 아트 가이드 -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<div id="s2" class="section s2">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <h2>아트 가이드</h2>
+    <span class="section-audience">아트팀</span>
+  </div>
+
+  <h3>전체 분위기 방향</h3>
+  <ul>
+    <li>City Race 자체의 <strong>레이싱·스피드 테마</strong>와 맞추되, 팝업 자체는 차분하고 신뢰감 있게</li>
+    <li>배경은 어둡고 레이싱 느낌의 그래디언트 (짙은 남색 → 파랑 → 보라). 기존 이벤트 색상 팔레트 유지</li>
+    <li>타이머 카운트다운은 붉은 숫자로 <strong>긴박감</strong>을 시각화하되, 스트레스 주지 않도록 작게 배치</li>
+    <li>보상 아이템 아이콘은 기존 인게임 자산을 그대로 사용, 별도 제작 불필요</li>
+  </ul>
+
+  <h3>팝업 와이어프레임</h3>
+  <div class="wf-wrap">
+    <svg viewBox="0 0 360 440" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-width:480px;display:block;margin:0 auto">
+      <defs>
+        <linearGradient id="popGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1e1b4b"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+        <linearGradient id="ctaGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#7c3aed"/>
+          <stop offset="100%" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+
+      <!-- 팝업 배경 -->
+      <rect width="360" height="440" rx="16" fill="url(#popGrad)" stroke="#3730a3" stroke-width="1.5"/>
+
+      <!-- 헤더 레이블 -->
+      <rect x="110" y="18" width="140" height="24" rx="12" fill="#7c3aed" opacity="0.7"/>
+      <text x="180" y="34" text-anchor="middle" font-size="11" fill="#c4b5fd" font-weight="700" letter-spacing="1">CITY RACE 한정</text>
+
+      <!-- 타이틀 -->
+      <text x="180" y="72" text-anchor="middle" font-size="20" fill="#f1f5f9" font-weight="800">Sprint Pack</text>
+
+      <!-- 카운트다운 바 -->
+      <rect x="60" y="84" width="240" height="28" rx="6" fill="#1e293b"/>
+      <text x="180" y="103" text-anchor="middle" font-size="12" fill="#f87171" font-weight="700">⏱ 이벤트 종료까지 남은 시간 표시</text>
+
+      <!-- 구분선 -->
+      <line x1="30" y1="124" x2="330" y2="124" stroke="#334155" stroke-width="1"/>
+
+      <!-- 아이템 목록 -->
+      <!-- 1. 골드 -->
+      <rect x="28" y="134" width="36" height="36" rx="8" fill="rgba(251,191,36,0.2)"/>
+      <text x="46" y="158" text-anchor="middle" font-size="18">🪙</text>
+      <text x="76" y="150" font-size="13" fill="#e2e8f0" font-weight="600">골드</text>
+      <text x="76" y="165" font-size="11" fill="#64748b">currency_gold</text>
+      <text x="330" y="157" text-anchor="end" font-size="13" fill="#a78bfa" font-weight="700">× [금액]</text>
+
+      <!-- 2. 티켓 -->
+      <rect x="28" y="180" width="36" height="36" rx="8" fill="rgba(45,212,191,0.2)"/>
+      <text x="46" y="204" text-anchor="middle" font-size="18">🎟️</text>
+      <text x="76" y="196" font-size="13" fill="#e2e8f0" font-weight="600">무료 입장 티켓</text>
+      <text x="76" y="211" font-size="11" fill="#64748b">currency_ticket</text>
+      <text x="330" y="203" text-anchor="end" font-size="13" fill="#a78bfa" font-weight="700">× [수량]</text>
+
+      <!-- 3. 와일드카드 -->
+      <rect x="28" y="226" width="36" height="36" rx="8" fill="rgba(167,139,250,0.2)"/>
+      <text x="46" y="250" text-anchor="middle" font-size="18">🃏</text>
+      <text x="76" y="242" font-size="13" fill="#e2e8f0" font-weight="600">와일드카드</text>
+      <text x="76" y="257" font-size="11" fill="#64748b">booster_wild_card</text>
+      <text x="330" y="249" text-anchor="end" font-size="13" fill="#a78bfa" font-weight="700">× [수량]</text>
+
+      <!-- 4. 시간제 파이어웍스 (하이라이트) -->
+      <rect x="20" y="272" width="320" height="48" rx="8" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.4)" stroke-width="1"/>
+      <rect x="28" y="278" width="36" height="36" rx="8" fill="rgba(251,146,60,0.25)"/>
+      <text x="46" y="302" text-anchor="middle" font-size="18">⚡</text>
+      <text x="76" y="294" font-size="13" fill="#fb923c" font-weight="700">파이어웍스 5분 무제한</text>
+      <text x="76" y="309" font-size="11" fill="#64748b">infinite_fireworks_5m — 인벤토리서 수동 발동</text>
+      <text x="330" y="301" text-anchor="end" font-size="13" fill="#fb923c" font-weight="700">× 1</text>
+
+      <!-- 구분선 -->
+      <line x1="30" y1="332" x2="330" y2="332" stroke="#334155" stroke-width="1"/>
+
+      <!-- 가격 & CTA -->
+      <text x="180" y="360" text-anchor="middle" font-size="22" fill="#f1f5f9" font-weight="800">$1.99</text>
+      <rect x="40" y="374" width="280" height="44" rx="22" fill="url(#ctaGrad)"/>
+      <text x="180" y="401" text-anchor="middle" font-size="15" fill="#fff" font-weight="800">지금 구매하기</text>
+    </svg>
+    <p class="wf-caption">팝업 와이어프레임 — 헤더(한정 레이블) / 카운트다운 / 아이템 4종 / CTA 버튼</p>
+  </div>
+
+  <h3>연출 방향</h3>
+  <ul>
+    <li><strong>팝업 등장:</strong> 아래에서 슬라이드-업 + 페이드인 (빠르고 자신감 있게, 약 200ms)</li>
+    <li><strong>아이템 목록 진입:</strong> 순서대로 짧은 딜레이(약 40ms 간격) 후 페이드인 — 선물 언박싱 느낌</li>
+    <li><strong>시간제 아이템 강조:</strong> 주황색 테두리 펄스 애니메이션 (천천히 반복) — 나머지 아이템과 시각적으로 구분</li>
+    <li><strong>CTA 버튼:</strong> 눌렸을 때 눈에 띄는 피드백 (살짝 축소 후 복귀). 색상은 기존 보라-그래디언트 계열 유지</li>
+    <li><strong>닫기(X) 버튼:</strong> 우상단 작게 배치. 닫아도 배너는 이벤트 화면에 잔류</li>
+  </ul>
+
+  <h3>필요 에셋 목록</h3>
+  <table>
+    <thead>
+      <tr><th>에셋</th><th>내용</th><th>우선순위</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>팝업 배경 텍스처</td>
+        <td>어두운 레이싱 그래디언트 배경 (기존 City Race 배경 재사용 가능)</td>
+        <td><span class="prio-mid">Mid</span></td>
+      </tr>
+      <tr>
+        <td>"CITY RACE 한정" 레이블 배지</td>
+        <td>작은 칩형 배지 UI — 신규 제작 or 기존 이벤트 배지 재사용</td>
+        <td><span class="prio-low">Low</span></td>
+      </tr>
+      <tr>
+        <td>아이템 아이콘 4종</td>
+        <td>currency_gold / currency_ticket / booster_wild_card / infinite_fireworks_5m — <strong>모두 기존 인게임 에셋 재사용</strong></td>
+        <td><span class="prio-high">High (재사용)</span></td>
+      </tr>
+      <tr>
+        <td>주황색 펄스 테두리 이펙트</td>
+        <td>시간제 아이템 강조용. 기존 "NEW" 배지 애니메이션 변형 가능</td>
+        <td><span class="prio-mid">Mid</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- SECTION 3 — 개발 스펙 -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<div id="s3" class="section s3">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <h2>개발 스펙</h2>
+    <span class="section-audience">개발팀</span>
+  </div>
+
+  <h3>밸런스 시트 변수 — <code>product</code> 탭 신규 행 추가</h3>
+  <p>아래 행을 <strong>key_number 190104</strong>로 <code>product</code> 탭 끝에 추가한다 (190103 다음). 수치는 PM 검수 후 확정.</p>
+
+  <div class="tab-badge">product</div>
+  <div class="bs-block">
+    <table class="bs-table">
+      <thead>
+        <tr>
+          <th>컬럼</th>
+          <th>값 (제안)</th>
+          <th>비고</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>key_number</td><td>190104</td><td>190103 다음 연장</td></tr>
+        <tr><td>product_name</td><td>T_SHOP_CITY_RACE_SPRINT</td><td>string_code 키 추가 필요</td></tr>
+        <tr><td>product_id</td><td>city_race_sprint_1</td><td>결제 게이트웨이 SKU 등록 필요</td></tr>
+        <tr><td>pay_type</td><td>IAP</td><td></td></tr>
+        <tr><td>pay_amount</td><td>1.99</td><td>USD 기준, $3 미만 확인</td></tr>
+        <tr><td>reward_type</td><td>currency_gold</td><td>골드</td></tr>
+        <tr><td>reward_amount</td><td><em>sprint_pack_gold_amount</em></td><td>시트 변수명으로 확정 — 제안 15,000</td></tr>
+        <tr><td>reward_type2</td><td>currency_ticket</td><td>무료 입장 티켓</td></tr>
+        <tr><td>reward_amount2</td><td><em>sprint_pack_ticket_amount</em></td><td>제안 2</td></tr>
+        <tr><td>reward_type3</td><td>booster_wild_card</td><td>와일드카드 (인게임)</td></tr>
+        <tr><td>reward_amount3</td><td><em>sprint_pack_wc_amount</em></td><td>제안 1</td></tr>
+        <tr><td>reward_type4</td><td>infinite_fireworks_5m</td><td>파이어웍스 5분 무제한</td></tr>
+        <tr><td>reward_amount4</td><td>1</td><td>수동 발동, 타이머는 발동 시점 기준</td></tr>
+        <tr><td>reward_type5</td><td>none</td><td>미사용</td></tr>
+        <tr><td>reward_amount5</td><td>0</td><td>미사용</td></tr>
+        <tr><td>shop_order</td><td>999</td><td>상점 탭 미노출 (이벤트 팝업 전용)</td></tr>
+        <tr><td>label_type</td><td>none</td><td>상점 배지 없음</td></tr>
+        <tr><td>in_use</td><td>FALSE</td><td>City Race 이벤트 라이브 시 TRUE로 변경</td></tr>
+        <tr><td>limit_type</td><td>event</td><td>City Race 이벤트당 1회 구매 제한</td></tr>
+        <tr><td>pay_limit</td><td>1</td><td>이벤트 기간 내 1회</td></tr>
+        <tr><td>max_display_count</td><td>1</td><td>팝업 자동 노출 최대 1회 (닫으면 재노출은 dismiss_cooldown 이후)</td></tr>
+        <tr><td>validity_duration_sec</td><td>259200</td><td>72시간 (이벤트 전체 기간)</td></tr>
+        <tr><td>display_priority</td><td>1</td><td>이벤트 화면 첫 진입 시 최우선 표시</td></tr>
+        <tr><td>dismiss_cooldown_sec</td><td>86400</td><td>닫은 후 24시간 뒤 재노출 (최초 1회 자동 노출 이후)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-yellow">
+    <strong>수치 확정 절차:</strong> 위 <em>이탤릭체</em> 값은 시트 변수명(제안)입니다. 실제 수치는 PM·밸런스팀 검수 후 시트에 확정하며, 이 문서에는 변수명과 의도만 기재합니다.
+  </div>
+
+  <h3>트리거 조건</h3>
+  <ul>
+    <li><strong>팝업 자동 노출:</strong> City Race 이벤트 진행 중 <code>AND</code> 해당 유저 해당 이벤트 미구매 <code>AND</code> City Race 이벤트 화면 첫 진입</li>
+    <li><strong>배너 상시 노출:</strong> City Race 이벤트 화면 내 하단 배너로 팝업 닫힌 후에도 유지. 미구매 상태에서만 표시</li>
+    <li><strong>상품 비활성화:</strong> 이벤트 종료 시 자동 만료 (<code>validity_duration_sec</code> 기준)</li>
+  </ul>
+
+  <h3>억제 조건</h3>
+  <ul>
+    <li>해당 이벤트 기간 중 이미 구매 완료 → 팝업 및 배너 모두 숨김</li>
+    <li><code>in_use = FALSE</code> → 노출 없음 (이벤트 비활성 기간 기본값)</li>
+    <li>기존 팝업 우선순위가 더 높은 팝업이 이미 열려있는 경우 → 큐에 대기 후 순차 노출</li>
+  </ul>
+
+  <h3>상태 처리</h3>
+  <table>
+    <thead>
+      <tr><th>상태</th><th>조건</th><th>클라이언트 동작</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>미구매·미노출</strong></td>
+        <td>이벤트 화면 최초 진입</td>
+        <td>팝업 자동 표시</td>
+      </tr>
+      <tr>
+        <td><strong>미구매·닫힘</strong></td>
+        <td>X 버튼으로 닫은 후 86400초 이내</td>
+        <td>팝업 숨김, 배너만 표시</td>
+      </tr>
+      <tr>
+        <td><strong>미구매·재노출</strong></td>
+        <td>닫은 후 86400초 경과</td>
+        <td>배너 탭 시 팝업 재표시</td>
+      </tr>
+      <tr>
+        <td><strong>결제 진행 중</strong></td>
+        <td>CTA 버튼 탭</td>
+        <td>결제 게이트웨이 진입, 로딩 표시</td>
+      </tr>
+      <tr>
+        <td><strong>구매 성공</strong></td>
+        <td>결제 완료 콜백</td>
+        <td>서버 지급 → 인벤토리 갱신 → "구매 완료" 확인 팝업 → 팝업·배너 숨김</td>
+      </tr>
+      <tr>
+        <td><strong>결제 실패</strong></td>
+        <td>결제 게이트웨이 실패 응답</td>
+        <td>오류 메시지 표시, 재시도 버튼 제공, 팝업 유지</td>
+      </tr>
+      <tr>
+        <td><strong>이벤트 종료</strong></td>
+        <td>validity_duration_sec 만료</td>
+        <td>상품 자동 만료, 팝업·배너 완전 숨김</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3><code>infinite_fireworks_5m</code> 발동 처리</h3>
+  <ul>
+    <li>인벤토리 수령 후 즉시 발동되지 않는다 — 유저가 명시적으로 발동해야 타이머 시작</li>
+    <li>발동 진입점: 프리레벨 화면 부스터 선택 UI에서 파이어웍스 탭 시 "무제한 발동" 버튼 노출</li>
+    <li>발동 후 300초(5분) 동안 파이어웍스 무제한 사용 → 타이머 만료 시 자동 해제</li>
+    <li>타이머 만료 후 남은 발동 횟수 0이면 인벤토리에서 제거</li>
+    <li>기존 <code>infinite_fireworks_5m</code> 타입 아이템 처리 로직과 동일 (아이템 정의 기존 item_list 40020번 참조)</li>
+  </ul>
+
+  <h3>구현 체크리스트</h3>
+  <ul>
+    <li>☐ <code>product</code> 탭 190104 행 추가 (시트 수정 워크플로우 준수)</li>
+    <li>☐ <code>string_code</code> 탭: <code>T_SHOP_CITY_RACE_SPRINT</code> 키 번역 추가 (11_translation 에이전트)</li>
+    <li>☐ 결제 게이트웨이 SKU <code>city_race_sprint_1</code> 등록 (iOS / Android)</li>
+    <li>☐ City Race 이벤트 화면 첫 진입 팝업 트리거 로직 구현</li>
+    <li>☐ 배너 컴포넌트: 미구매 상태에서만 표시 조건 처리</li>
+    <li>☐ <code>infinite_fireworks_5m</code> 수동 발동 UI (프리레벨 화면)</li>
+    <li>☐ 구매 완료 후 팝업·배너 즉시 숨김 처리</li>
+    <li>☐ <code>in_use</code> 플래그: City Race 이벤트 라이브 타이밍에 TRUE 전환 계획 수립</li>
+  </ul>
+</div>
+</main>
+</body>
+</html>
