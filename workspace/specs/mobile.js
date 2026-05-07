@@ -4,14 +4,20 @@
 
   /* ── 1. 스펙 상세 페이지: sidenav 햄버거 토글 ── */
   function initSidenav() {
-    var sidenav = document.querySelector('.sidenav');
+    var sidenav = document.querySelector('.sidenav, .nav-sidebar');
     if (!sidenav) return;
 
-    var btn = document.createElement('button');
-    btn.className = 'nav-toggle';
-    btn.setAttribute('aria-label', '메뉴 열기');
-    btn.innerHTML = '&#9776;';
-    document.body.appendChild(btn);
+    // 기존 nav-toggle 버튼 재사용, 없으면 새로 생성
+    var btn = document.querySelector('button.nav-toggle');
+    if (btn) {
+      btn.removeAttribute('onclick');
+    } else {
+      btn = document.createElement('button');
+      btn.className = 'nav-toggle';
+      btn.setAttribute('aria-label', '메뉴 열기');
+      btn.innerHTML = '&#9776;';
+      document.body.appendChild(btn);
+    }
 
     var overlay = document.createElement('div');
     overlay.className = 'nav-overlay';
