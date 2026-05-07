@@ -1529,16 +1529,30 @@ function removeTyping() {
   if (t) t.remove();
 }
 
+let _claudeLockY = 0;
 function openClaudeModal() {
+  _claudeLockY = window.scrollY;
+  document.body.style.position = 'fixed';
+  document.body.style.top = -_claudeLockY + 'px';
+  document.body.style.width = '100%';
+  document.body.style.overflow = 'hidden';
   document.getElementById('claudeOverlay').classList.add('open');
   setTimeout(() => document.getElementById('claudePrompt').focus(), 120);
 }
 function closeClaudeModal(e) {
   if (e && e.target !== document.getElementById('claudeOverlay')) return;
+  _closeClaudeModal();
+}
+function _closeClaudeModal() {
   document.getElementById('claudeOverlay').classList.remove('open');
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  document.body.style.overflow = '';
+  window.scrollTo(0, _claudeLockY);
 }
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.getElementById('claudeOverlay').classList.remove('open');
+  if (e.key === 'Escape') _closeClaudeModal();
 });
 function handleClaudeKey(e) {
   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submitClaude(); }

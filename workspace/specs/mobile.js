@@ -256,7 +256,7 @@
     var fab = document.createElement('button');
     fab.className = 'claude-fab';
     fab.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:450;width:50px;height:50px;border-radius:50%;border:none;background:var(--accent,#a78bfa);color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.4)';
-    fab.title = 'Claude에게 수정 요청';
+    fab.title = 'Claude에게 아이디어 말하기';
     fab.innerHTML = '✨';
     document.body.appendChild(fab);
 
@@ -267,7 +267,7 @@
       '#specChatOverlay.open{display:flex}',
       '#specChatModal{width:100%;max-width:700px;max-height:70vh;background:var(--surface,#1a1d27);border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden}',
       '#specChatHeader{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border,#2e3347);flex-shrink:0}',
-      '#specChatHistory{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}',
+      '#specChatHistory{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}',
       '.sc-msg{max-width:85%;display:flex;flex-direction:column}',
       '.sc-msg.user{align-self:flex-end;align-items:flex-end}',
       '.sc-msg.ai{align-self:flex-start}',
@@ -278,6 +278,11 @@
       '#specChatInput textarea{flex:1;min-height:38px;max-height:100px;background:var(--surface2,#222636);border:1px solid var(--border,#2e3347);border-radius:10px;color:var(--text,#e2e8f0);font-size:13px;padding:7px 10px;resize:none;font-family:inherit;outline:none;line-height:1.5}',
       '#specChatInput button{width:38px;height:38px;border-radius:50%;border:none;background:var(--accent,#a78bfa);color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}',
       '#specChatInput button:disabled{opacity:0.45;cursor:not-allowed}',
+      '.sc-dots{display:flex;gap:5px;align-items:center;padding:2px 0}',
+      '.sc-dots span{width:7px;height:7px;border-radius:50%;background:var(--text-dim,#64748b);animation:sc-bounce 1.2s infinite}',
+      '.sc-dots span:nth-child(2){animation-delay:.2s}',
+      '.sc-dots span:nth-child(3){animation-delay:.4s}',
+      '@keyframes sc-bounce{0%,60%,100%{transform:translateY(0);opacity:0.35}30%{transform:translateY(-6px);opacity:1}}',
     ].join('');
     document.head.appendChild(style);
 
@@ -287,13 +292,13 @@
     overlay.innerHTML = [
       '<div id="specChatModal" onclick="event.stopPropagation()">',
       '  <div id="specChatHeader">',
-      '    <span style="font-weight:700;font-size:14px">✨ 수정 요청</span>',
+      '    <span style="font-weight:700;font-size:14px">✨ 아이디어 말하기</span>',
       '    <span style="font-size:11px;color:var(--text-dim,#64748b)">⚡ content-spec-writer</span>',
-      '    <button onclick="document.getElementById(\'specChatOverlay\').classList.remove(\'open\')" style="background:none;border:none;color:var(--text-dim,#64748b);font-size:18px;cursor:pointer;padding:0 4px">✕</button>',
+      '    <button id="specChatClose" style="background:none;border:none;color:var(--text-dim,#64748b);font-size:18px;cursor:pointer;padding:0 4px">✕</button>',
       '  </div>',
       '  <div id="specChatHistory"></div>',
       '  <div id="specChatInput">',
-      '    <textarea id="specChatTa" placeholder="수정 요청을 입력하세요… (Cmd+Enter)" rows="1"',
+      '    <textarea id="specChatTa" placeholder="아이디어를 자유롭게 말해보세요… (Cmd+Enter)" rows="1"',
       '      oninput="this.style.height=\'auto\';this.style.height=Math.min(this.scrollHeight,100)+\'px\'"',
       '      onkeydown="if(event.key===\'Enter\'&&(event.metaKey||event.ctrlKey)){event.preventDefault();specChatSend()}"></textarea>',
       '    <button id="specChatBtn" onclick="specChatSend()">↑</button>',
@@ -302,15 +307,32 @@
     ].join('');
     document.body.appendChild(overlay);
 
+    var _lockY = 0;
+    function openChat() {
+      _lockY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = -_lockY + 'px';
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      overlay.classList.add('open');
+      setTimeout(function () { document.getElementById('specChatTa').focus(); }, 120);
+    }
+    function closeChat() {
+      overlay.classList.remove('open');
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, _lockY);
+    }
+
     fab.addEventListener('click', function () {
-      overlay.classList.toggle('open');
-      if (overlay.classList.contains('open')) {
-        setTimeout(function () { document.getElementById('specChatTa').focus(); }, 120);
-      }
+      overlay.classList.contains('open') ? closeChat() : openChat();
     });
     overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) overlay.classList.remove('open');
+      if (e.target === overlay) closeChat();
     });
+    document.getElementById('specChatClose').addEventListener('click', closeChat);
 
     var _scHistory = [];
 
@@ -359,7 +381,7 @@
       var typingWrap = document.createElement('div');
       typingWrap.className = 'sc-msg ai';
       typingWrap.id = 'scTyping';
-      typingWrap.innerHTML = '<div class="sc-bubble" style="opacity:0.5">...</div>';
+      typingWrap.innerHTML = '<div class="sc-bubble"><div class="sc-dots"><span></span><span></span><span></span></div></div>';
       document.getElementById('specChatHistory').appendChild(typingWrap);
 
       fetch('/api/claude', {
