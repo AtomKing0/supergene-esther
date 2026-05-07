@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>업데이트 스펙 인덱스 · Solitaire TriPeaks</title>
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json">
@@ -1437,7 +1437,7 @@ initFromSupabase();
   border: 1px solid var(--border);
   border-radius: 12px;
   color: var(--text);
-  font-size: var(--text-base);
+  font-size: 16px;
   padding: 8px 12px;
   resize: none;
   font-family: inherit;
@@ -1530,6 +1530,13 @@ function removeTyping() {
 }
 
 let _claudeLockY = 0;
+let _vpHandler = null;
+function _adjustClaudeModal() {
+  if (!window.visualViewport) return;
+  const modal = document.querySelector('#claudeOverlay .sheet-modal');
+  if (!modal) return;
+  modal.style.maxHeight = window.visualViewport.height + 'px';
+}
 function openClaudeModal() {
   _claudeLockY = window.scrollY;
   document.body.style.position = 'fixed';
@@ -1537,6 +1544,11 @@ function openClaudeModal() {
   document.body.style.width = '100%';
   document.body.style.overflow = 'hidden';
   document.getElementById('claudeOverlay').classList.add('open');
+  if (window.visualViewport) {
+    _vpHandler = _adjustClaudeModal;
+    window.visualViewport.addEventListener('resize', _vpHandler);
+    _adjustClaudeModal();
+  }
   setTimeout(() => document.getElementById('claudePrompt').focus(), 120);
 }
 function closeClaudeModal(e) {
@@ -1544,7 +1556,14 @@ function closeClaudeModal(e) {
   _closeClaudeModal();
 }
 function _closeClaudeModal() {
-  document.getElementById('claudeOverlay').classList.remove('open');
+  const ov = document.getElementById('claudeOverlay');
+  ov.classList.remove('open');
+  const modal = ov.querySelector('.sheet-modal');
+  if (modal) modal.style.maxHeight = '';
+  if (window.visualViewport && _vpHandler) {
+    window.visualViewport.removeEventListener('resize', _vpHandler);
+    _vpHandler = null;
+  }
   document.body.style.position = '';
   document.body.style.top = '';
   document.body.style.width = '';
