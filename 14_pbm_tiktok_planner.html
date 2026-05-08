@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem('pbm-tiktok-theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');document.addEventListener('DOMContentLoaded',function(){var g=document.getElementById('themeToggle');if(g)g.textContent=t==='light'?'☀️':'🌙';});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PBM TikTok 런칭 일정</title>
+<style>
+:root {
+  --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a; --border: #2e3250;
+  --text: #e2e8f0; --muted: #8892b0; --accent: #ff2d55; --tiktok: #ff2d55; --tiktok2: #00f2ea;
+  --green: #69db7c; --yellow: #ffd166; --red: #ff6b6b;
+  --day-width: 36px; --label-width: 160px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --border: #dfe1e6;
+  --text: #1a1d27; --muted: #5e6278; --accent: #e11d48; --tiktok: #e11d48; --tiktok2: #0891b2;
+  --green: #16a34a; --yellow: #d97706; --red: #dc2626;
+}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:100;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text)}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6}
+.container{max-width:960px;margin:0 auto;padding:40px 24px 80px}
+.header{margin-bottom:32px;padding-bottom:20px;border-bottom:2px solid var(--border)}
+.header h1{font-size:1.6em;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.badge{display:inline-flex;align-items:center;gap:6px;background:var(--tiktok);color:#fff;padding:3px 12px;border-radius:20px;font-size:.78em;font-weight:800;letter-spacing:.06em}
+.header-sub{margin-top:8px;color:var(--muted);font-size:.9em}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
+.section-title{font-size:1.2em;font-weight:700;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.section-num{color:var(--tiktok);font-size:.75em;font-weight:800}
+
+/* Gantt */
+.gantt-wrap{overflow-x:auto}
+.gantt{border-collapse:collapse;width:100%;min-width:600px}
+.gantt th,.gantt td{border:1px solid var(--border);padding:0}
+.gantt thead th{background:var(--surface2);font-size:.78em;font-weight:700;color:var(--muted);text-align:center;height:32px;min-width:var(--day-width)}
+.gantt thead th.label-col{min-width:var(--label-width);text-align:left;padding:0 12px;color:var(--text)}
+.gantt thead th.holiday{color:var(--red);background:#2a1a1a}
+[data-theme="light"] .gantt thead th.holiday{background:#fff0f0}
+.gantt thead th.weekend{color:var(--muted);background:var(--surface)}
+.gantt tbody tr{height:44px}
+.gantt tbody tr:hover td{background:rgba(255,255,255,.03)}
+[data-theme="light"] .gantt tbody tr:hover td{background:rgba(0,0,0,.02)}
+.gantt td.label-col{padding:0 12px;font-weight:600;font-size:.92em;white-space:nowrap;background:var(--surface)}
+.gantt td.day-cell{text-align:center;vertical-align:middle;background:var(--surface);position:relative}
+.gantt td.day-cell.weekend,.gantt td.day-cell.holiday{background:var(--surface2);opacity:.6}
+.bar-cell{background:var(--tiktok)!important;opacity:1!important}
+.bar-end{border-radius:0 6px 6px 0}
+.bar-start{border-radius:6px 0 0 6px}
+.bar-full{border-radius:6px}
+.bar-inner{display:flex;align-items:center;justify-content:center;height:100%;width:100%;color:#fff;font-size:.75em;font-weight:700;white-space:nowrap;overflow:hidden}
+.milestone-cell{background:var(--surface)!important;opacity:1!important}
+.milestone-diamond{display:inline-block;width:16px;height:16px;background:var(--tiktok);transform:rotate(45deg);border-radius:2px}
+.row-label{display:flex;align-items:center;gap:8px}
+.tag{font-size:.7em;padding:2px 7px;border-radius:10px;font-weight:700;color:#fff}
+.tag-dev{background:#57b6ff}
+.tag-qa{background:#ff9f43}
+.tag-deploy{background:var(--tiktok)}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
+.kpi-label{font-size:.78em;color:var(--muted);font-weight:600;margin-bottom:4px}
+.kpi-value{font-size:1.4em;font-weight:800;color:var(--text)}
+.kpi-sub{font-size:.78em;color:var(--muted);margin-top:2px}
+.kpi.hl .kpi-value{color:var(--tiktok)}
+
+/* Legend */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;font-size:.84em;color:var(--muted)}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:12px;height:12px;border-radius:3px}
+.legend-diamond{width:10px;height:10px;background:var(--tiktok);transform:rotate(45deg);border-radius:1px}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle">🌙</button>
+
+<div class="container">
+  <div class="header">
+    <h1><span class="badge">PBM</span> TikTok 런칭 일정</h1>
+    <div class="header-sub">개발 ~5/11 (월) · QA ~5/13 (수) · 배포 5/14~ (목)</div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi hl">
+      <div class="kpi-label">개발 완료</div>
+      <div class="kpi-value">5/11</div>
+      <div class="kpi-sub">월요일</div>
+    </div>
+    <div class="kpi hl">
+      <div class="kpi-label">QA 완료</div>
+      <div class="kpi-value">5/13</div>
+      <div class="kpi-sub">수요일</div>
+    </div>
+    <div class="kpi hl">
+      <div class="kpi-label">배포 시작</div>
+      <div class="kpi-value">5/14~</div>
+      <div class="kpi-sub">목요일</div>
+    </div>
+  </div>
+
+  <!-- Gantt -->
+  <div class="section">
+    <div class="section-title"><span class="section-num">01</span> 간트차트</div>
+    <div class="gantt-wrap">
+      <table class="gantt" id="gantt-table"></table>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--tiktok)"></div>TikTok</div>
+      <div class="legend-item"><div class="legend-diamond"></div>배포 마일스톤</div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('themeToggle').addEventListener('click', function() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) { document.documentElement.removeAttribute('data-theme'); this.textContent = '🌙'; localStorage.setItem('pbm-tiktok-theme', 'dark'); }
+  else { document.documentElement.setAttribute('data-theme', 'light'); this.textContent = '☀️'; localStorage.setItem('pbm-tiktok-theme', 'light'); }
+});
+
+const HOLIDAYS = { '2026-05-01': '근로자의날', '2026-05-05': '어린이날' };
+
+function parseDate(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function fmtDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function isWeekend(d) { return d.getDay() === 0 || d.getDay() === 6; }
+function isHoliday(d) { return !!HOLIDAYS[fmtDate(d)]; }
+function isOff(d) { return isWeekend(d) || isHoliday(d); }
+
+const ROWS = [
+  { id: 'dev', label: '개발',    tag: 'dev',    start: '2026-05-06', end: '2026-05-11', type: 'task' },
+  { id: 'qa',  label: 'QA',     tag: 'qa',     start: '2026-05-12', end: '2026-05-13', type: 'task' },
+  { id: 'dep', label: '배포',   tag: 'deploy', start: '2026-05-14', end: '2026-05-14', type: 'milestone' },
+];
+
+const CHART_START = parseDate('2026-05-04');
+const CHART_END   = parseDate('2026-05-17');
+
+function eachDay(from, to) {
+  const days = []; const c = new Date(from);
+  while (c <= to) { days.push(new Date(c)); c.setDate(c.getDate() + 1); }
+  return days;
+}
+
+const days = eachDay(CHART_START, CHART_END);
+
+function buildGantt() {
+  const table = document.getElementById('gantt-table');
+
+  // Header
+  const thead = document.createElement('thead');
+  const trHead = document.createElement('tr');
+  const thLabel = document.createElement('th');
+  thLabel.className = 'label-col';
+  thLabel.textContent = '태스크';
+  trHead.appendChild(thLabel);
+  days.forEach(d => {
+    const th = document.createElement('th');
+    const off = isOff(d);
+    const hol = isHoliday(d);
+    th.className = hol ? 'holiday' : (isWeekend(d) ? 'weekend' : '');
+    th.textContent = `${d.getMonth()+1}/${d.getDate()}`;
+    th.title = HOLIDAYS[fmtDate(d)] || '';
+    trHead.appendChild(th);
+  });
+  thead.appendChild(trHead);
+  table.appendChild(thead);
+
+  // Body
+  const tbody = document.createElement('tbody');
+  ROWS.forEach(row => {
+    const tr = document.createElement('tr');
+    // Label cell
+    const tdLabel = document.createElement('td');
+    tdLabel.className = 'label-col';
+    tdLabel.innerHTML = `<div class="row-label"><span class="tag tag-${row.tag}">${row.tag === 'dev' ? '개발' : row.tag === 'qa' ? 'QA' : '배포'}</span>${row.label}</div>`;
+    tr.appendChild(tdLabel);
+
+    const rowStart = parseDate(row.start);
+    const rowEnd   = parseDate(row.end);
+
+    days.forEach((d, i) => {
+      const td = document.createElement('td');
+      td.className = 'day-cell' + (isHoliday(d) ? ' holiday' : isWeekend(d) ? ' weekend' : '');
+
+      const inRange = d >= rowStart && d <= rowEnd;
+      if (inRange) {
+        if (row.type === 'milestone') {
+          td.classList.add('milestone-cell');
+          td.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%"><div class="milestone-diamond"></div></div>';
+        } else {
+          td.classList.add('bar-cell');
+          const isFirst = fmtDate(d) === fmtDate(rowStart);
+          const isLast  = fmtDate(d) === fmtDate(rowEnd);
+          if (isFirst && isLast) td.classList.add('bar-full');
+          else if (isFirst) td.classList.add('bar-start');
+          else if (isLast)  td.classList.add('bar-end');
+          if (isFirst) td.innerHTML = `<div class="bar-inner">${row.label}</div>`;
+        }
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+}
+
+buildGantt();
+</script>
+</body>
+</html>
