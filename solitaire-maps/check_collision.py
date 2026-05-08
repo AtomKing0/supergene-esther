@@ -6,6 +6,10 @@ card_collision_logic.md 기반: 카드 100x150 (StageModel.CARD_SIZE), OBB_OVERL
   1. 같은 depth 카드 간 충돌 (동일 레이어 겹침)
   2. 크로스-파일 블로킹: 서로 다른 파일 계통(중심 거리 >= 150px)의
      높은 depth 카드가 낮은 depth 카드를 OBB 겹침으로 잘못 블로킹
+
+회전 카드 크기 조정 (2026-05-08):
+  회전 카드는 모서리 영역이 시각적으로 투명/얇아 실제 충돌 영역이
+  전체 100×150px보다 작음. 실측 기준 유효 크기 94×140px 사용.
 """
 
 import json
@@ -17,7 +21,14 @@ from collections import defaultdict
 CARD_W = 100
 CARD_H = 150
 OBB_OVERLAP_MARGIN = 2
+CARD_W_ROT = 94    # 회전 카드 유효 충돌 크기 (시각 여백 ~3px/side 제외)
+CARD_H_ROT = 140
+OBB_OVERLAP_MARGIN_ROT = 0
 CROSS_PILE_MIN_DIST = 150   # 이 거리 이상이면 다른 파일 계통으로 판별
+
+def _is_rotated(angle_deg):
+    a = angle_deg % 360
+    return abs(a) > 1 and abs(a - 360) > 1
 CONVERTED_DIR = os.path.join(os.path.dirname(__file__), "converted")
 
 
@@ -55,27 +66,36 @@ def obb_collide(c1, c2):
     """
     두 카드가 충돌하면 True.
     c1, c2: {"x", "y", "angle"} dict
+    회전 카드가 포함된 경우 유효 크기 94×140px, 마진 0 적용.
     """
-    v1 = get_vertices(c1["x"], c1["y"], CARD_W, CARD_H, c1["angle"])
-    v2 = get_vertices(c2["x"], c2["y"], CARD_W, CARD_H, c2["angle"])
+    rot = _is_rotated(c1["angle"]) or _is_rotated(c2["angle"])
+    w1, h1 = (CARD_W_ROT, CARD_H_ROT) if rot else (CARD_W, CARD_H)
+    w2, h2 = (CARD_W_ROT, CARD_H_ROT) if rot else (CARD_W, CARD_H)
+    margin = OBB_OVERLAP_MARGIN_ROT if rot else OBB_OVERLAP_MARGIN
+    v1 = get_vertices(c1["x"], c1["y"], w1, h1, c1["angle"])
+    v2 = get_vertices(c2["x"], c2["y"], w2, h2, c2["angle"])
     axes = get_axes(c1["angle"]) + get_axes(c2["angle"])
 
     for axis in axes:
         overlap = get_overlap(project(v1, axis), project(v2, axis))
-        if overlap <= OBB_OVERLAP_MARGIN:
+        if overlap <= margin:
             return False
     return True
 
 
 def obb_overlap_amount(c1, c2):
     """겹침량(px) 반환. 마진 이하면 0 반환."""
-    v1 = get_vertices(c1["x"], c1["y"], CARD_W, CARD_H, c1["angle"])
-    v2 = get_vertices(c2["x"], c2["y"], CARD_W, CARD_H, c2["angle"])
+    rot = _is_rotated(c1["angle"]) or _is_rotated(c2["angle"])
+    w1, h1 = (CARD_W_ROT, CARD_H_ROT) if rot else (CARD_W, CARD_H)
+    w2, h2 = (CARD_W_ROT, CARD_H_ROT) if rot else (CARD_W, CARD_H)
+    margin = OBB_OVERLAP_MARGIN_ROT if rot else OBB_OVERLAP_MARGIN
+    v1 = get_vertices(c1["x"], c1["y"], w1, h1, c1["angle"])
+    v2 = get_vertices(c2["x"], c2["y"], w2, h2, c2["angle"])
     axes = get_axes(c1["angle"]) + get_axes(c2["angle"])
     min_ov = float("inf")
     for axis in axes:
         ov = get_overlap(project(v1, axis), project(v2, axis))
-        if ov <= OBB_OVERLAP_MARGIN:
+        if ov <= margin:
             return 0
         min_ov = min(min_ov, ov)
     return round(min_ov, 1)
