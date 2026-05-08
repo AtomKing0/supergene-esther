@@ -11,7 +11,7 @@
   --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a; --border: #2e3250;
   --text: #e2e8f0; --muted: #8892b0; --accent: #64ffda; --blue: #57b6ff;
   --yellow: #ffd166; --red: #ff6b6b; --green: #69db7c; --purple: #c77dff; --orange: #ff9f43;
-  --fb: #57b6ff; --toss: #4a7ce0; --cg: #ff9f43; --common: #8892b0;
+  --fb: #57b6ff; --toss: #4a7ce0; --cg: #ff9f43; --tiktok: #ff2d55; --common: #8892b0;
   --role-plan: #69db7c; --role-client: #57b6ff; --role-server: #c77dff; --role-qa: #ff9f43;
   --day-width: 32px; --label-width: 340px;
 }
@@ -19,7 +19,7 @@
   --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --border: #dfe1e6;
   --text: #1a1d27; --muted: #5e6278; --accent: #059669; --blue: #2563eb;
   --yellow: #d97706; --red: #dc2626; --green: #16a34a; --purple: #9333ea; --orange: #ea580c;
-  --fb: #2563eb; --toss: #1d4ed8; --cg: #ea580c; --common: #5e6278;
+  --fb: #2563eb; --toss: #1d4ed8; --cg: #ea580c; --tiktok: #e11d48; --common: #5e6278;
   --role-plan: #16a34a; --role-client: #2563eb; --role-server: #9333ea; --role-qa: #ea580c;
 }
 .theme-toggle{position:fixed;top:16px;right:16px;z-index:100;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.2)}
@@ -360,6 +360,19 @@ body.view-only #role-badge{display:inline-flex!important;background:rgba(100,255
   </div>
   <div class="callout danger">
     <strong>저장 주의</strong>: 상태는 브라우저 메모리에만 유지됩니다. 새로고침하면 초기 데이터로 복원됩니다.
+  </div>
+</div>
+
+<!-- Section 4: PBM TikTok Reference -->
+<div class="section" id="s4">
+  <div class="section-title"><span class="section-num">04</span> PBM TikTok 런칭 일정 (참고)</div>
+  <div class="section-desc">SCJ와 별도 프로젝트 — 개발 ~5/11 (월) · QA ~5/13 (수) · 배포 5/14~ (목)</div>
+  <div style="overflow-x:auto;margin-top:12px">
+    <table id="pbm-gantt" style="border-collapse:collapse;width:100%;min-width:500px"></table>
+  </div>
+  <div class="legend" style="margin-top:12px">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--tiktok)"></div>TikTok (PBM)</div>
+    <div class="legend-item"><div class="legend-diamond"></div>배포 마일스톤</div>
   </div>
 </div>
 
@@ -1454,6 +1467,74 @@ let _loadedRemote = false;
   }
   _origRender();
   if (!_loadedRemote) { selfValidate(); _origRender(); }
+})();
+
+// ===== PBM TikTok Reference Gantt =====
+(function buildPbmGantt() {
+  const PBM_ROWS = [
+    { label: '개발', start: '2026-05-06', end: '2026-05-11', type: 'task' },
+    { label: 'QA',   start: '2026-05-12', end: '2026-05-13', type: 'task' },
+    { label: '[M] 배포', start: '2026-05-14', end: '2026-05-14', type: 'milestone' },
+  ];
+  const chartStart = parseDate('2026-05-04');
+  const chartEnd   = parseDate('2026-05-17');
+  const days = eachDay(chartStart, chartEnd);
+
+  const LABEL_W = '120px';
+  const DAY_W   = '32px';
+  const tbl = document.getElementById('pbm-gantt');
+  if (!tbl) return;
+
+  // header
+  const thead = tbl.createTHead();
+  const trH = thead.insertRow();
+  const thL = document.createElement('th');
+  thL.style.cssText = `min-width:${LABEL_W};text-align:left;padding:0 10px;background:var(--surface2);font-size:.78em;color:var(--muted);border:1px solid var(--border);height:30px`;
+  thL.textContent = '태스크';
+  trH.appendChild(thL);
+  days.forEach(d => {
+    const th = document.createElement('th');
+    const off = isNonBusinessDay(d);
+    const hol = isHoliday(d);
+    th.style.cssText = `min-width:${DAY_W};width:${DAY_W};text-align:center;font-size:.72em;border:1px solid var(--border);height:30px;` +
+      (hol ? 'color:var(--red);background:#2a1a1a' : off ? 'color:var(--muted);background:var(--surface)' : 'background:var(--surface2);color:var(--muted)');
+    th.textContent = `${d.getMonth()+1}/${d.getDate()}`;
+    trH.appendChild(th);
+  });
+
+  // body
+  const tbody = tbl.createTBody();
+  PBM_ROWS.forEach(row => {
+    const tr = tbody.insertRow();
+    const tdL = document.createElement('td');
+    tdL.style.cssText = `padding:0 10px;font-size:.88em;font-weight:600;white-space:nowrap;background:var(--surface);border:1px solid var(--border);height:38px`;
+    tdL.textContent = row.label;
+    tr.appendChild(tdL);
+
+    const rs = parseDate(row.start), re = parseDate(row.end);
+    days.forEach(d => {
+      const td = document.createElement('td');
+      const off = isNonBusinessDay(d);
+      const inRange = d >= rs && d <= re;
+      let bg = off ? 'var(--surface2)' : 'var(--surface)';
+      td.style.cssText = `border:1px solid var(--border);height:38px;text-align:center;vertical-align:middle;${inRange ? '' : `background:${bg}`}`;
+      if (inRange) {
+        if (row.type === 'milestone') {
+          td.style.background = 'var(--surface)';
+          td.innerHTML = '<div style="display:inline-block;width:12px;height:12px;background:var(--tiktok);transform:rotate(45deg);border-radius:2px"></div>';
+        } else {
+          td.style.background = 'var(--tiktok)';
+          td.style.opacity = '0.9';
+          const isFirst = fmtDate(d) === fmtDate(rs);
+          const isLast  = fmtDate(d) === fmtDate(re);
+          if (isFirst) td.style.borderRadius = '6px 0 0 6px';
+          if (isLast)  td.style.borderRadius = (isFirst ? '6px' : '0 6px 6px 0');
+          if (isFirst) td.innerHTML = `<span style="font-size:.7em;font-weight:700;color:#fff;white-space:nowrap">${row.label}</span>`;
+        }
+      }
+      tr.appendChild(td);
+    });
+  });
 })();
 </script>
 </body>
