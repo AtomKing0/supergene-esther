@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>온보딩 개선 스펙 — 솔리테어 시티 저니</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'Apple SD Gothic Neo', 'Pretendard', sans-serif;
+    background: #F2F4F6;
+    padding: 40px 24px;
+    color: #191F28;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #8B95A1;
+    text-transform: uppercase;
+    margin: 48px 0 16px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  /* 16:9 card */
+  .card {
+    width: 100%;
+    max-width: 960px;
+    aspect-ratio: 16 / 9;
+    margin: 0 auto 24px;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 56px 64px;
+  }
+
+  /* ── Cover ── */
+  .card.cover {
+    background: linear-gradient(135deg, #1B4EF7 0%, #0D2BBF 100%);
+    color: #fff;
+  }
+  .card.cover .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 20px;
+  }
+  .card.cover h1 {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+  .card.cover .sub {
+    font-size: 15px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.7;
+  }
+  .card.cover .badge-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 28px;
+  }
+  .card.cover .badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* ── Funnel summary ── */
+  .card.funnel {
+    background: #fff;
+    padding: 48px 56px;
+    justify-content: space-between;
+  }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .card-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #191F28;
+  }
+  .card-date {
+    font-size: 12px;
+    color: #8B95A1;
+    font-weight: 500;
+    margin-top: 4px;
+  }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .tag.red    { background: #FFF0F0; color: #E53E3E; }
+  .tag.orange { background: #FFF5EB; color: #C05621; }
+  .tag.yellow { background: #FFFFF0; color: #975A16; }
+  .tag.blue   { background: #EBF4FF; color: #2B6CB0; }
+  .tag.green  { background: #F0FFF4; color: #276749; }
+  .tag.gray   { background: #F2F4F6; color: #4E5968; }
+
+  .funnel-steps {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    flex: 1;
+  }
+  .funnel-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .funnel-top {
+    height: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+    width: 100%;
+  }
+  .funnel-bar-wrap {
+    width: 100%;
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+  }
+  .funnel-bottom {
+    height: 34px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 5px;
+    width: 100%;
+  }
+  .funnel-bar {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
+  }
+  .funnel-bar.normal { background: #D6E4FF; }
+  .funnel-bar.danger { background: #FEB2B2; }
+  .funnel-bar.warn   { background: #FBD38D; }
+  .funnel-label {
+    font-size: 9.5px;
+    color: #4E5968;
+    text-align: center;
+    line-height: 1.3;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .funnel-pct {
+    font-size: 12px;
+    font-weight: 800;
+    color: #191F28;
+    line-height: 1;
+  }
+  .funnel-drop {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #E53E3E;
+    line-height: 1;
+  }
+
+  /* ── Spec card ── */
+  .card.spec {
+    background: #fff;
+    padding: 48px 56px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+  }
+  .spec-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .spec-eyebrow.red    { color: #E53E3E; }
+  .spec-eyebrow.orange { color: #C05621; }
+  .spec-eyebrow.blue   { color: #2B6CB0; }
+  .spec-eyebrow.green  { color: #276749; }
+  .spec-eyebrow.gray   { color: #8B95A1; }
+
+  .spec-title {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+  .spec-subtitle {
+    font-size: 14px;
+    color: #6B7684;
+    margin-bottom: 32px;
+    line-height: 1.5;
+  }
+  .spec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .spec-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .spec-box {
+    background: #F8F9FA;
+    border-radius: 14px;
+    padding: 20px 22px;
+  }
+  .spec-box-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8B95A1;
+    margin-bottom: 8px;
+  }
+  .spec-box-content {
+    font-size: 13.5px;
+    color: #191F28;
+    line-height: 1.65;
+    font-weight: 500;
+  }
+  .spec-box-content b {
+    font-weight: 700;
+  }
+  .metric-big {
+    font-size: 36px;
+    font-weight: 800;
+    color: #E53E3E;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .metric-big.orange { color: #C05621; }
+  .metric-big.blue   { color: #1B4EF7; }
+  .metric-desc {
+    font-size: 12px;
+    color: #8B95A1;
+    font-weight: 500;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: #F2F4F6;
+    margin: 20px 0;
+  }
+
+  ul.spec-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  ul.spec-list li {
+    font-size: 13px;
+    color: #191F28;
+    line-height: 1.6;
+    font-weight: 500;
+    padding-left: 18px;
+    position: relative;
+  }
+  ul.spec-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #8B95A1;
+    font-size: 11px;
+    top: 2px;
+  }
+
+  /* ── Priority card ── */
+  .card.priority {
+    background: #fff;
+    padding: 48px 56px;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .priority-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #F2F4F6;
+    gap: 16px;
+  }
+  .priority-row:last-child { border-bottom: none; }
+  .priority-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .priority-num.p1 { background: #FFF0F0; color: #E53E3E; }
+  .priority-num.p2 { background: #FFF5EB; color: #C05621; }
+  .priority-num.p3 { background: #FFFFF0; color: #975A16; }
+  .priority-num.p4 { background: #EBF4FF; color: #2B6CB0; }
+  .priority-num.p5 { background: #F2F4F6; color: #4E5968; }
+  .priority-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+    color: #191F28;
+  }
+  .priority-meta {
+    font-size: 12px;
+    color: #8B95A1;
+    font-weight: 500;
+    text-align: right;
+    line-height: 1.5;
+  }
+  .priority-impact {
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .priority-impact.high { color: #E53E3E; }
+  .priority-impact.mid  { color: #C05621; }
+  .priority-impact.low  { color: #8B95A1; }
+
+  /* ── Added/Removed notice ── */
+  .notice-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .notice-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .notice-chip.added   { background: #F0FFF4; color: #276749; border: 1px solid #C6F6D5; }
+  .notice-chip.removed { background: #FFF0F0; color: #C53030; border: 1px solid #FEB2B2; }
+  .notice-chip.moved   { background: #EBF4FF; color: #2B6CB0; border: 1px solid #BEE3F8; }
+
+  .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dot.green  { background: #38A169; }
+  .dot.red    { background: #E53E3E; }
+  .dot.blue   { background: #3182CE; }
+
+  /* ── Accent stripe ── */
+  .stripe {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 6px;
+    border-radius: 20px 0 0 20px;
+  }
+  .stripe.red    { background: #E53E3E; }
+  .stripe.orange { background: #DD6B20; }
+  .stripe.yellow { background: #D69E2E; }
+  .stripe.blue   { background: #3182CE; }
+  .stripe.gray   { background: #CBD5E0; }
+
+  /* dark card variant */
+  .card.dark {
+    background: #1A202C;
+    color: #fff;
+  }
+  .card.dark .card-title { color: #fff; }
+  .card.dark .spec-subtitle { color: #A0AEC0; }
+  .card.dark .spec-box { background: #2D3748; }
+  .card.dark .spec-box-content { color: #E2E8F0; }
+  .card.dark .priority-row { border-color: #2D3748; }
+  .card.dark .priority-name { color: #E2E8F0; }
+
+  @media (max-width: 700px) {
+    .card { padding: 28px 24px; aspect-ratio: auto; min-height: 300px; }
+    .spec-grid { grid-template-columns: 1fr; }
+    .spec-grid.three { grid-template-columns: 1fr; }
+    h1 { font-size: 26px !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ COVER ═══════════════════════════════ -->
+<div class="section-label">솔리테어 시티 저니 · 온보딩 개선</div>
+
+<div class="card cover">
+  <div class="eyebrow">Product Spec · v1.1 · 2026-05-11</div>
+  <h1>온보딩 개선 스펙<br>Solitaire City Journey NRU</h1>
+  <p class="sub">
+    퍼널 분석(2026-05-08~11) 기반 이탈 구간 특정 및 개선 항목 정의<br>
+    최우선 목표: 튜토리얼 이탈 감소 · 데이터 신뢰도 확보
+  </p>
+  <div class="badge-row">
+    <span class="badge">총 5개 항목</span>
+    <span class="badge">UX 3 · 데이터 2</span>
+    <span class="badge">기준 유저수 289명</span>
+    <span class="badge" style="background:rgba(255,80,80,0.25); border-color:rgba(255,80,80,0.5);">🚨 배포 마감 오늘 16:00</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ FUNNEL ════════════════════════════════ -->
+<div class="section-label">현황 분석</div>
+
+<div class="card funnel">
+  <div>
+    <div class="card-title">NRU 온보딩 퍼널 이탈 현황</div>
+    <div class="card-date">2026-05-08 · 신규 유저 289명 기준</div>
+  </div>
+  <div class="funnel-steps">
+    <div class="funnel-step">
+      <div class="funnel-top"><div class="funnel-pct">100%</div></div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar normal" style="height:100%"></div></div>
+      <div class="funnel-bottom"><div class="funnel-label">로그인</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-top"><div class="funnel-pct">99.6%</div></div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar normal" style="height:99%"></div></div>
+      <div class="funnel-bottom"><div class="funnel-label">로그인<br>완료</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-top"><div class="funnel-drop">▼7.6%</div><div class="funnel-pct">92%</div></div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar warn" style="height:92%"></div></div>
+      <div class="funnel-bottom"><div class="funnel-label">게임<br>시작</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-top"><div class="funnel-pct">92%</div></div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar warn" style="height:92%"></div></div>
+      <div class="funnel-bottom"><div class="funnel-label">로딩<br>완료</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-top"><div class="funnel-drop">▼12.1%</div><div class="funnel-pct">79.9%</div></div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar danger" style="height:80%"></div></div>
+      <div class="funnel-bottom"><div class="funnel-label">튜토<br>팝업</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-top"><div class="funnel-drop">▼24.6% 🔴</div><div class="funnel-pct">55.4%</div></div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar danger" style="height:55%"></div></div>
+      <div class="funnel-bottom"><div class="funnel-label">10초<br>플레이</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-top"><div class="funnel-pct">43.3%</div></div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar danger" style="height:43%"></div></div>
+      <div class="funnel-bottom"><div class="funnel-label">팝업<br>닫기</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-top"><div class="funnel-pct">31.1%</div></div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar normal" style="height:31%"></div></div>
+      <div class="funnel-bottom"><div class="funnel-label">카드<br>매칭</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-top"><div class="funnel-pct">29.4%</div></div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar normal" style="height:29%"></div></div>
+      <div class="funnel-bottom"><div class="funnel-label">첫 판<br>클리어</div></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-top"><div class="funnel-pct">26.6%</div></div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar normal" style="height:27%"></div></div>
+      <div class="funnel-bottom"><div class="funnel-label">60초<br>플레이</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SPEC 1 ════════════════════════════════ -->
+<div class="section-label">개선 항목 · UX</div>
+
+<!-- SPEC 1: 튜토리얼 강화 -->
+<div class="card spec">
+  <div class="stripe red"></div>
+  <div style="padding-left: 20px;">
+    <div class="spec-eyebrow red">P1 · UX 개선 · 최우선</div>
+    <div class="spec-title">튜토리얼 강화</div>
+    <div class="spec-subtitle">첫 터치 → 첫 카드 매칭 구간 이탈률 감소 목적 · 이탈 -24.6% 구간 직접 대응</div>
+    <div class="spec-grid">
+      <div class="spec-box">
+        <div class="spec-box-label">문제</div>
+        <div class="spec-box-content">
+          튜토리얼 팝업 노출(6초) 직후 10초 구간에서<br>
+          <b>전체 유저의 24.57%가 이탈</b>. 팝업 텍스트가 길거나<br>
+          첫 인터랙션 유도가 명확하지 않은 것으로 추정
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">구현 방향</div>
+        <div class="spec-box-content">
+          · <b>힌트 재생 속도 상향</b> — 기존 힌트 애니메이션 재생 속도 빠르게 조정,<br>
+          &nbsp;&nbsp;유저가 기다리지 않고 바로 인터랙션 가능하도록<br>
+          · <b>인덱스 애니메이션 추가</b> — 튜토리얼 진행 단계 인디케이터(인덱스) 추가,<br>
+          &nbsp;&nbsp;"지금 몇 단계 중 몇 단계" 시각화로 이탈 심리 감소<br>
+          · 첫 카드 터치 → 카드 매칭 구간 조작 흐름 명확화
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">목표 지표</div>
+        <div class="metric-big">≤15%</div>
+        <div class="metric-desc">TUTO_INGAME_INTRO → PLAYTIME_10S 이탈률 (현재 24.6%)</div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">관련 이벤트</div>
+        <div class="spec-box-content">
+          <b>2110_TUTO_INGAME_INTRO</b> 팝업 노출<br>
+          <b>9990_PLAY_FIRST_TOUCH</b> 첫 카드 터치<br>
+          <b>2150_GAMEPLAY_NRU_CARD_MATCH</b> 첫 매칭<br>
+          <b>2141_TUTO_STEP_COMPLETE</b> 안내 팝업 닫기 (유저 터치)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SPEC 2: 로딩→게임 전환 UX (추가 항목) -->
+<div class="card spec">
+  <div class="stripe orange"></div>
+  <div style="padding-left: 20px;">
+    <div class="spec-eyebrow orange">P2 · 버그 조사 · 추가 항목</div>
+    <div class="spec-title">10초 미만 로딩 비정상 유저 원인 파악 및 수정</div>
+    <div class="spec-subtitle">LOAD_COMPLETE 이후 10초 내 이탈하는 비정상 코호트 특정 · -12.1% 이탈 구간 원인 규명</div>
+    <div class="spec-grid">
+      <div class="spec-box">
+        <div class="spec-box-label">현상</div>
+        <div class="spec-box-content">
+          LOAD_COMPLETE(avg 3.68s) 이후 TUTO_INGAME_INTRO까지<br>
+          <b>전체 유저의 12.1%가 이탈</b>. 로딩은 완료됐지만<br>
+          10초 내에 세션이 종료되는 유저군 존재.<br>
+          정상 플로우라면 이 구간 이탈이 발생하면 안 됨
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">조사 방향</div>
+        <div class="spec-box-content">
+          · <b>크래시 여부</b> — LOAD_COMPLETE 직후 앱 강제 종료 로그 확인<br>
+          · <b>씬 전환 오류</b> — 로딩 완료 후 게임판 씬 마운트 실패 케이스<br>
+          · <b>네트워크 타임아웃</b> — 에셋 추가 다운로드 중 끊김<br>
+          · <b>기기 스펙 이슈</b> — 저사양 기기에서 렌더링 지연 후 이탈<br>
+          · <b>중복 세션</b> — 다른 기기 동시 접속으로 세션 강제 종료
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">수정 방향</div>
+        <div class="spec-box-content">
+          원인 파악 후 대응 결정.<br>
+          크래시 → 스택트레이스 기반 핫픽스<br>
+          씬 오류 → 씬 초기화 로직 재검토<br>
+          네트워크 → 재시도 로직 또는 타임아웃 완화<br>
+          기기 스펙 → 저사양 렌더링 최적화 또는 품질 단계 축소
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">관련 이벤트 · 수치</div>
+        <div class="spec-box-content">
+          <b>1010_LOAD_COMPLETE</b> avg 3.68s, 266명(92%)<br>
+          <b>2110_TUTO_INGAME_INTRO</b> avg 6.12s, 231명(79.9%)<br>
+          <b>이탈 구간: 약 2.4초 이내, 35명</b><br>
+          → 이 35명의 공통 속성(기기·OS·네트워크) 분석 필요
+        </div>
+      </div>
+    </div>
+    <div class="notice-row">
+      <span class="notice-chip added"><span class="dot green"></span>추가된 항목 — 퍼널 분석에서 발견, 원본 목록에 없음</span>
+    </div>
+  </div>
+</div>
+
+<!-- SPEC 3: 토스 로그인 팝업 NRU 미노출 -->
+<div class="card spec">
+  <div class="stripe" style="background:#D69E2E"></div>
+  <div style="padding-left: 20px;">
+    <div class="spec-eyebrow" style="color:#975A16">P3 · UX 개선</div>
+    <div class="spec-title">토스 로그인 유도 팝업 NRU 미노출</div>
+    <div class="spec-subtitle">신규 유저 온보딩 중 방해 요소 제거 · 로그인 → 게임 시작 구간 이탈 -7.6% 부분 대응</div>
+    <div class="spec-grid three">
+      <div class="spec-box">
+        <div class="spec-box-label">문제</div>
+        <div class="spec-box-content">
+          NRU가 처음 게임에 진입하는 시점에<br>
+          토스 로그인 유도 팝업이 노출되면<br>
+          <b>온보딩 흐름이 끊기고 이탈 유발</b>.<br>
+          게임 경험 전에 계정 전환 유도는<br>
+          NRU 관점에서 맥락 없는 요청
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">개선 방향</div>
+        <div class="spec-box-content">
+          · NRU 세션(첫 로그인 기준) 동안<br>
+          &nbsp;&nbsp;토스 로그인 유도 팝업 미노출 처리<br>
+          · 노출 조건 분기: <b>isNRU = true</b>이면 skip<br>
+          · 팝업 노출 시점을 첫 판 클리어 이후로 이동<br>
+          &nbsp;&nbsp;(GAMEPLAY_FINISH 이후가 적절)
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">조건 정의</div>
+        <div class="spec-box-content">
+          <b>NRU 기준:</b> 첫 세션 한정<br>
+          (INTRO_LOGIN 첫 발생 기준)<br><br>
+          <b>미노출 범위:</b><br>
+          로그인 ~ 첫 판 클리어 전까지<br><br>
+          <b>재노출 허용:</b><br>
+          2회차 세션부터 정상 노출
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SPEC 4-5 (데이터) ═══════════════════ -->
+<div class="section-label">개선 항목 · 데이터</div>
+
+<!-- SPEC 4: 튜토리얼 터치 트래킹 -->
+<div class="card spec">
+  <div class="stripe blue"></div>
+  <div style="padding-left: 20px;">
+    <div class="spec-eyebrow blue">P4 · 데이터 수집</div>
+    <div class="spec-title">1번 튜토리얼 유저 터치 트래킹 로그 추가</div>
+    <div class="spec-subtitle">유저가 어디서 길을 잃는지 확인 목적 · 튜토리얼 개선의 데이터 근거 확보</div>
+    <div class="spec-grid">
+      <div class="spec-box">
+        <div class="spec-box-label">목적</div>
+        <div class="spec-box-content">
+          현재 퍼널 로그만으로는 튜토리얼 이탈이<br>
+          <b>어느 단계에서 발생하는지 특정 불가</b>.<br>
+          터치 위치·타이밍 트래킹으로 이탈 원인<br>
+          정밀 분석 가능하게 함
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">로그 스펙</div>
+        <div class="spec-box-content">
+          · 대상: <b>1번 튜토리얼 진입 유저 한정</b><br>
+          · 트리거: 화면 터치 이벤트 발생 시<br>
+          · 수집 항목: 터치 좌표(x,y), 튜토리얼 단계,<br>
+          &nbsp;&nbsp;경과 시간(초), 유효터치 여부<br>
+          · 이벤트명 제안: <b>TUTO_TOUCH_TRACK</b>
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">분석 활용</div>
+        <div class="spec-box-content">
+          · 힌트 영역 밖 터치 → UX 혼선 지점 파악<br>
+          · 반복 터치 → 조작 방법 모름 지점 파악<br>
+          · 터치 없이 이탈 → 팝업 읽다 이탈 파악<br>
+          · P1 튜토리얼 강화 작업의 <b>before/after 측정</b>
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">주의사항</div>
+        <div class="spec-box-content">
+          · 1번 튜토리얼 한정 (전체 로깅 시 과도한 이벤트)<br>
+          · 개인정보 미포함, 좌표만 수집<br>
+          · 데이터 볼륨 고려 샘플링 비율 설정 권장<br>
+          · 튜토리얼 개선 완료 후 수집 종료 가능
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SPEC 5: PLAYTIME 중복 로깅 제거 -->
+<div class="card spec">
+  <div class="stripe gray"></div>
+  <div style="padding-left: 20px;">
+    <div class="spec-eyebrow gray">P5 · 데이터 정합성</div>
+    <div class="spec-title">PLAYTIME 중복 로깅 제거</div>
+    <div class="spec-subtitle">동일 이벤트가 nth=1, nth=2로 중복 기록돼 퍼널 수치 왜곡 · 데이터 신뢰도 직결</div>
+    <div class="spec-grid">
+      <div class="spec-box">
+        <div class="spec-box-label">현상</div>
+        <div class="spec-box-content">
+          <b>1-1110_PLAYTIME_10S</b> 160명 (55.36%)<br>
+          <b>2-1110_PLAYTIME_10S</b> 158명 (54.67%)<br><br>
+          동일 유저의 10초 플레이 이벤트가<br>
+          nth=1, nth=2로 2회 기록됨.<br>
+          30초, 60초 구간도 동일 패턴 확인
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">영향</div>
+        <div class="spec-box-content">
+          · 퍼널 집계 시 중복 row로 유저수 오계산<br>
+          · nth=2 행을 별도 이벤트로 오해할 가능성<br>
+          · avg_sec 평균값 왜곡 (1회 vs 2회 평균)<br>
+          · <b>BigQuery 쿼리 시 DISTINCT 처리 강제 필요</b>
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">해결 방향</div>
+        <div class="spec-box-content">
+          · 클라이언트: PLAYTIME_10S/30S/60S는<br>
+          &nbsp;&nbsp;세션당 1회만 발송 (중복 발송 로직 제거)<br>
+          · 또는 서버: nth > 1 행 필터링 후 저장<br>
+          · 대상: 10s / 30s / 60s 전체
+        </div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-label">적용 대상 이벤트</div>
+        <div class="spec-box-content">
+          <b>1110_PLAYTIME_10S</b><br>
+          <b>1120_PLAYTIME_30S</b><br>
+          <b>1130_PLAYTIME_60S</b><br><br>
+          세 이벤트 모두 동일 패턴 확인
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PRIORITY SUMMARY ════════════════════ -->
+<div class="section-label">전체 항목 정리</div>
+
+<div class="card priority">
+  <div class="card-header">
+    <div>
+      <div class="card-title">개선 항목 우선순위 요약</div>
+      <div class="card-date">UX 3개 · 데이터 2개 · 총 5개 항목</div>
+    </div>
+    <div>
+      <span class="tag green">원본 4항목 유지</span>&nbsp;
+      <span class="tag blue">+1 추가</span>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="priority-num p1">1</div>
+    <div>
+      <div class="priority-name">튜토리얼 강화</div>
+      <div style="font-size:11px; color:#8B95A1; margin-top:2px;">첫 터치 ~ 카드 매칭 churn rate 감소</div>
+    </div>
+    <div class="priority-meta">
+      <div class="priority-impact high">이탈 -24.6%</div>
+      <div>UX · 원본 항목</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="priority-num p2">2</div>
+    <div>
+      <div class="priority-name">10초 미만 로딩 비정상 유저 원인 파악 및 수정</div>
+      <div style="font-size:11px; color:#8B95A1; margin-top:2px;">크래시·씬오류·네트워크·기기 스펙 조사 → 원인별 핫픽스</div>
+    </div>
+    <div class="priority-meta">
+      <div class="priority-impact mid">이탈 -12.1%</div>
+      <div>버그조사 · <span style="color:#276749; font-weight:700;">추가</span></div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="priority-num p3">3</div>
+    <div>
+      <div class="priority-name">토스 로그인 유도 팝업 NRU 미노출</div>
+      <div style="font-size:11px; color:#8B95A1; margin-top:2px;">첫 세션 동안 팝업 skip, 2회차부터 정상 노출</div>
+    </div>
+    <div class="priority-meta">
+      <div class="priority-impact mid">이탈 -7.6% 연관</div>
+      <div>UX · 원본 항목</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="priority-num p4">4</div>
+    <div>
+      <div class="priority-name">1번 튜토리얼 유저 터치 트래킹 로그 추가</div>
+      <div style="font-size:11px; color:#8B95A1; margin-top:2px;">이탈 위치 정밀 파악, P1 작업 before/after 측정</div>
+    </div>
+    <div class="priority-meta">
+      <div class="priority-impact low">데이터 수집</div>
+      <div>데이터 · 원본 항목</div>
+    </div>
+  </div>
+  <div class="priority-row">
+    <div class="priority-num p5">5</div>
+    <div>
+      <div class="priority-name">PLAYTIME 중복 로깅 제거</div>
+      <div style="font-size:11px; color:#8B95A1; margin-top:2px;">10s / 30s / 60s 세션당 1회만 발송</div>
+    </div>
+    <div class="priority-meta">
+      <div class="priority-impact low">데이터 정합성</div>
+      <div>데이터 · 원본 항목</div>
+    </div>
+  </div>
+  <div class="notice-row">
+    <span class="notice-chip added"><span class="dot green"></span>추가: 로딩→게임 전환 UX — 퍼널 분석에서 발견한 -12.1% 이탈 구간</span>
+    <span class="notice-chip moved"><span class="dot blue"></span>재정렬: PLAYTIME 중복 제거 → P5 (데이터 항목, UX 개선과 분리)</span>
+  </div>
+</div>
+
+</body>
+</html>
