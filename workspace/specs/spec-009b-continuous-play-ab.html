@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="spec-created" content="2026. 5. 11.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPEC-009B · [AB-플로우] 연속 플레이 N판 A/B</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--surface3:#2a2f45;
+  --border:#2e3347;--text:#e2e8f0;--text2:#94a3b8;--text-dim:#64748b;
+  --accent:#f97316;--accent-bg:rgba(249,115,22,.15);--accent-border:rgba(249,115,22,.35);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.12);--purple-border:rgba(167,139,250,.3);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,.12);--teal-border:rgba(45,212,191,.3);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.12);--blue-border:rgba(96,165,250,.3);
+  --green:#4ade80;--green-bg:rgba(74,222,128,.12);--green-border:rgba(74,222,128,.25);
+  --yellow:#fbbf24;--yellow-bg:rgba(251,191,36,.12);--yellow-border:rgba(251,191,36,.3);
+  --red:#f87171;--red-bg:rgba(248,113,113,.12);--red-border:rgba(248,113,113,.25);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
+  --text-xs:12px;--text-sm:13px;--text-base:14px;--text-lg:15px;
+  --dur-base:.18s;
+}
+[data-theme=light]{
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--text:#0f172a;--text2:#475569;--text-dim:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--text-lg);line-height:1.7;display:flex}
+
+.sidenav{position:fixed;left:0;top:0;height:100vh;width:200px;background:var(--surface);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;gap:4px;z-index:200}
+.sidenav-logo{padding:0 20px 20px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:var(--text-sm);color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all var(--dur-base)}
+.nav-item:hover,.nav-item.active{color:var(--text);border-left-color:var(--accent);background:var(--accent-bg)}
+.nav-num{font-size:10px;font-weight:700;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.n1{background:var(--purple-bg);color:var(--purple)}
+.n2{background:var(--teal-bg);color:var(--teal)}
+.n3{background:var(--blue-bg);color:var(--blue)}
+.n4{background:var(--yellow-bg);color:var(--yellow)}
+
+.main{margin-left:200px;flex:1;padding:60px 56px 80px;max-width:900px}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-toggle:hover{transform:scale(1.1)}
+.back-btn{position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;text-decoration:none}
+.back-btn:hover{color:var(--text)}
+
+.spec-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;margin-bottom:14px}
+.prefix-badge{display:inline-block;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.04em;margin-bottom:14px;margin-left:8px}
+.parent-badge{display:inline-block;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:600;margin-bottom:14px;margin-left:8px}
+h1{font-size:26px;font-weight:800;margin-bottom:8px;line-height:1.3}
+.subtitle{color:var(--text2);font-size:var(--text-base);margin-bottom:32px}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:40px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 16px}
+.kpi-label{font-size:var(--text-xs);color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:800}
+.kv-orange{color:var(--accent)}.kv-green{color:var(--green)}.kv-blue{color:var(--blue)}.kv-yellow{color:var(--yellow)}.kv-red{color:var(--red)}
+
+.section-header{display:flex;align-items:center;gap:12px;margin:48px 0 24px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.section-num{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);font-weight:800}
+.s1-num{background:var(--purple-bg);color:var(--purple)}
+.s2-num{background:var(--teal-bg);color:var(--teal)}
+.s3-num{background:var(--blue-bg);color:var(--blue)}
+.s4-num{background:var(--yellow-bg);color:var(--yellow)}
+.section-title{font-size:18px;font-weight:700}
+.section-audience{font-size:var(--text-xs);padding:3px 10px;border-radius:var(--radius-full);font-weight:600}
+.aud-all{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.aud-art{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+.aud-dev{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:16px}
+.card-title{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);margin-bottom:12px}
+p,li{color:var(--text2);font-size:var(--text-base)}
+ul,ol{padding-left:20px;margin:8px 0}
+li{margin:6px 0}
+.hl{color:var(--text);font-weight:600}
+.hl-red{color:var(--red);font-weight:600}
+.hl-green{color:var(--green);font-weight:600}
+.hl-yellow{color:var(--yellow);font-weight:600}
+code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(--text-xs);font-family:monospace;color:var(--accent)}
+
+.callout{border-radius:var(--radius-lg);padding:16px 20px;margin:16px 0;font-size:var(--text-sm)}
+.callout-yellow{background:var(--yellow-bg);border:1px solid var(--yellow-border)}
+.callout-yellow .callout-title{color:var(--yellow);font-weight:700;margin-bottom:6px;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em}
+.callout-red{background:var(--red-bg);border:1px solid var(--red-border)}
+.callout-red .callout-title{color:var(--red);font-weight:700;margin-bottom:6px;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em}
+.callout-green{background:var(--green-bg);border:1px solid var(--green-border)}
+.callout-green .callout-title{color:var(--green);font-weight:700;margin-bottom:6px;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em}
+
+.flow-steps{display:flex;flex-direction:column;gap:0;margin:16px 0}
+.flow-step{display:flex;gap:14px;align-items:flex-start;padding:10px 0}
+.flow-step:not(:last-child){border-bottom:1px dashed var(--border)}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--accent);font-size:var(--text-xs);font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-num-green{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
+.step-num-red{background:var(--red-bg);border-color:var(--red-border);color:var(--red)}
+.step-body{font-size:var(--text-base);color:var(--text2)}
+.step-body strong{color:var(--text)}
+
+.bs-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin:16px 0}
+.bs-tab{background:var(--surface3);padding:8px 18px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.bs-row{display:grid;grid-template-columns:240px 80px 1fr;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border);font-size:var(--text-sm)}
+.bs-row:last-child{border-bottom:none}
+.bs-key{font-family:monospace;color:var(--blue);font-size:var(--text-xs)}
+.bs-val{color:var(--accent);font-weight:700;font-family:monospace;font-size:var(--text-xs)}
+.bs-desc{color:var(--text2)}
+
+.wireframe{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin:16px 0}
+.wireframe-label{font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.06em;margin-bottom:12px;text-transform:uppercase}
+
+table{width:100%;border-collapse:collapse;margin:1rem 0}
+thead tr{background:var(--accent);color:#000}
+th{padding:8px 12px;text-align:left;font-size:var(--text-sm)}
+td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:var(--text-sm);color:var(--text2)}
+td:first-child{color:var(--text-dim);font-weight:600}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+
+<nav class="sidenav">
+  <div class="sidenav-logo">SPEC-009B</div>
+  <a class="nav-item" href="#s1"><span class="nav-num n1">1</span>기획 의도</a>
+  <a class="nav-item" href="#s2"><span class="nav-num n2">2</span>튜토리얼 처리</a>
+  <a class="nav-item" href="#s3"><span class="nav-num n3">3</span>입장료 처리</a>
+  <a class="nav-item" href="#s4"><span class="nav-num n4">4</span>개발 스펙</a>
+</nav>
+
+<main class="main">
+  <!-- 히어로 -->
+  <div>
+    <span class="spec-badge">SPEC-009B</span>
+    <span class="prefix-badge">AB-플로우</span>
+    <span class="parent-badge">↑ SPEC-009 사전 검증</span>
+  </div>
+  <h1>연속 플레이 N판 A/B 테스트</h1>
+  <p class="subtitle">로비 복귀 마찰 제거 → 세션당 판수 증가 검증 (프리레벨 팝업·부스터 UI 변경 없음)</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">핵심 지표</div><div class="kpi-value kv-orange">판/세션</div></div>
+    <div class="kpi-card"><div class="kpi-label">부수 지표</div><div class="kpi-value kv-yellow">세션 길이</div></div>
+    <div class="kpi-card"><div class="kpi-label">리스크 지표</div><div class="kpi-value kv-blue">클리어율</div></div>
+    <div class="kpi-card"><div class="kpi-label">연속 판수 N</div><div class="kpi-value kv-green">3판</div></div>
+    <div class="kpi-card"><div class="kpi-label">스코프</div><div class="kpi-value kv-red" style="font-size:15px">팝업 미변경</div></div>
+  </div>
+
+  <!-- S1 -->
+  <section id="s1">
+    <div class="section-header">
+      <div class="section-num s1-num">1</div>
+      <div class="section-title">기획 의도 &amp; 흐름</div>
+      <span class="section-audience aud-all">개발 + 아트 공통</span>
+    </div>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">009B가 009보다 먼저인 이유</div>
+      <p style="color:var(--text2)">SPEC-009(프리레벨 팝업 제거)는 부스터 판매 채널을 건드리기 때문에 경제 리스크가 높다. 009B는 <span class="hl">로비 복귀 마찰만 제거</span>하여 "로비 이동" 변수와 "팝업" 변수를 분리 검증한다. 009B 결과에 따라 009 진행 여부를 데이터로 판단한다.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">핵심 변경점</div>
+      <ul>
+        <li><span class="hl">B안에서 프리레벨 팝업은 그대로 유지</span> — 부스터 구매·배수 설정 경험 동일</li>
+        <li>변경하는 것은 오직 <span class="hl">결과 화면 이후 로비 복귀 여부</span>만</li>
+        <li>B안: 결과 화면에서 "다음 게임" 탭 시 로비 없이 다음 레벨 프리레벨 팝업으로 직행</li>
+        <li>N판(<code>ab_continuous_play_streak_count</code>) 소진 또는 중단 조건 충족 시 로비로 복귀</li>
+      </ul>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th>A안 (현행)</th>
+          <th>B안 (테스트)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>게임 종료 후</td>
+          <td>결과 화면 → 로비 복귀 → 레벨 탭 → 다음 레벨 선택</td>
+          <td>결과 화면 → "다음 게임" CTA → 다음 레벨 프리레벨 팝업 직행</td>
+        </tr>
+        <tr>
+          <td>프리레벨 팝업</td>
+          <td>로비에서 레벨 탭 시 표시</td>
+          <td>동일하게 표시 (변경 없음)</td>
+        </tr>
+        <tr>
+          <td>부스터 구매</td>
+          <td>팝업 내 구매</td>
+          <td>팝업 내 구매 (변경 없음)</td>
+        </tr>
+        <tr>
+          <td>배수 설정</td>
+          <td>팝업 내 설정</td>
+          <td>팝업 내 설정 (변경 없음)</td>
+        </tr>
+        <tr>
+          <td>연속 플레이 한도</td>
+          <td>해당 없음</td>
+          <td>N판 (<code>ab_continuous_play_streak_count</code>, 기본 3)</td>
+        </tr>
+        <tr>
+          <td>로비 복귀 시점</td>
+          <td>매 판 종료 후</td>
+          <td>N판 소진 / 골드 부족 / 튜토리얼 트리거 / 유저 로비 이동 시</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card">
+      <div class="card-title">성공 지표 &amp; 전제</div>
+      <ul>
+        <li><span class="hl">주요:</span> B안의 세션당 플레이 판수가 A안 대비 통계적 유의 수준으로 증가</li>
+        <li><span class="hl">허용 범위:</span> 클리어율 하락 5%p 미만 (부스터 사용 패턴 미변경이므로 큰 영향 없을 것으로 예상)</li>
+        <li><span class="hl">실패 기준:</span> 세션 길이가 늘지 않거나 클리어율이 유의미하게 하락</li>
+        <li><span class="hl">009 진행 조건:</span> 009B에서 판수 증가가 확인될 경우 팝업 제거(009) 로 단계적 진행</li>
+      </ul>
+    </div>
+
+    <!-- 플로우 다이어그램 -->
+    <div class="wireframe">
+      <div class="wireframe-label">A안 vs B안 — 판 종료 후 흐름 비교</div>
+      <svg viewBox="0 0 700 300" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <!-- A안 -->
+        <rect x="10" y="10" width="320" height="278" rx="10" style="fill:var(--surface3);stroke:var(--border)" stroke-width="1.5"/>
+        <text x="170" y="32" text-anchor="middle" style="fill:var(--text-dim);font-size:11px;font-weight:700">A안 (현재)</text>
+
+        <rect x="25" y="42" width="290" height="40" rx="6" style="fill:var(--surface2)"/>
+        <text x="170" y="57" text-anchor="middle" style="fill:var(--text2);font-size:11px;font-weight:600">게임 종료 (결과 화면)</text>
+        <text x="170" y="73" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">clear / fail</text>
+
+        <line x1="170" y1="82" x2="170" y2="96" style="stroke:var(--text-dim)" stroke-width="1.5"/>
+        <polygon points="170,98 165,92 175,92" style="fill:var(--text-dim)"/>
+
+        <rect x="25" y="98" width="290" height="36" rx="6" style="fill:var(--surface2)"/>
+        <text x="170" y="121" text-anchor="middle" style="fill:var(--text2);font-size:11px">로비 복귀</text>
+
+        <line x1="170" y1="134" x2="170" y2="148" style="stroke:var(--text-dim)" stroke-width="1.5"/>
+        <polygon points="170,150 165,144 175,144" style="fill:var(--text-dim)"/>
+
+        <rect x="25" y="150" width="290" height="36" rx="6" style="fill:var(--surface2)"/>
+        <text x="170" y="173" text-anchor="middle" style="fill:var(--text2);font-size:11px">레벨 탭 → 다음 레벨 선택</text>
+
+        <line x1="170" y1="186" x2="170" y2="200" style="stroke:var(--text-dim)" stroke-width="1.5"/>
+        <polygon points="170,202 165,196 175,196" style="fill:var(--text-dim)"/>
+
+        <rect x="25" y="202" width="290" height="36" rx="6" style="fill:var(--surface2);stroke:var(--border)" stroke-width="1"/>
+        <text x="170" y="225" text-anchor="middle" style="fill:var(--text2);font-size:11px">프리레벨 팝업 → 게임 시작</text>
+
+        <text x="170" y="268" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">총 3단계 이동 필요</text>
+
+        <!-- B안 -->
+        <rect x="370" y="10" width="320" height="278" rx="10" style="fill:var(--surface3);stroke:var(--accent-border)" stroke-width="1.5"/>
+        <text x="530" y="32" text-anchor="middle" style="fill:var(--accent);font-size:11px;font-weight:700">B안 (테스트)</text>
+
+        <rect x="385" y="42" width="290" height="40" rx="6" style="fill:var(--surface2)"/>
+        <text x="530" y="57" text-anchor="middle" style="fill:var(--text2);font-size:11px;font-weight:600">게임 종료 (결과 화면)</text>
+        <text x="530" y="73" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">clear / fail + 스트릭 카운터 표시</text>
+
+        <line x1="530" y1="82" x2="530" y2="96" style="stroke:var(--accent)" stroke-width="2"/>
+        <polygon points="530,98 525,92 535,92" style="fill:var(--accent)"/>
+
+        <rect x="385" y="98" width="290" height="36" rx="6" style="fill:var(--accent-bg);stroke:var(--accent-border)" stroke-width="1"/>
+        <text x="530" y="121" text-anchor="middle" style="fill:var(--accent);font-size:11px;font-weight:700">"다음 게임" CTA 탭</text>
+
+        <line x1="530" y1="134" x2="530" y2="148" style="stroke:var(--accent)" stroke-width="2"/>
+        <polygon points="530,148 525,142 535,142" style="fill:var(--accent)"/>
+
+        <rect x="385" y="148" width="290" height="36" rx="6" style="fill:var(--surface2);stroke:var(--border)" stroke-width="1"/>
+        <text x="530" y="171" text-anchor="middle" style="fill:var(--text2);font-size:11px">프리레벨 팝업 → 게임 시작</text>
+
+        <text x="530" y="208" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">로비 없이 1단계만 — 단, N판 소진 시</text>
+        <text x="530" y="222" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">또는 중단 조건 충족 시 로비 복귀</text>
+
+        <rect x="420" y="232" width="220" height="28" rx="6" style="fill:var(--surface2)"/>
+        <text x="530" y="251" text-anchor="middle" style="fill:var(--text-dim);font-size:10px">→ 로비 (스트릭 종료)</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- S2 -->
+  <section id="s2">
+    <div class="section-header">
+      <div class="section-num s2-num">2</div>
+      <div class="section-title">튜토리얼 처리</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+
+    <div class="callout callout-red">
+      <div class="callout-title">로비 트리거 튜토리얼은 단 1개</div>
+      <p style="color:var(--text2)">덱뒤집기(<code>content_deck_draw</code>)·스트릭미터 등은 <span class="hl">인게임 트리거</span>이므로 연속 플레이 중에도 정상 발동된다. 로비를 반드시 경유해야 하는 튜토리얼은 <span class="hl-red">content_lobby_play(230003) 하나뿐</span> — Lv1 클리어 후 로비의 "게임 시작" 버튼 포커스 가이드.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">처리 원칙</div>
+      <ul>
+        <li>억제 조건: <code>TutorialStateStore.shownGuides</code>에 <code>"content_lobby_play"</code>가 없으면 B안 억제 → 로비 복귀 강제</li>
+        <li>실질적으로 <span class="hl">Phase 0 유저(Lv1 미클리어 또는 Lv1 클리어 후 로비 미방문)</span>만 억제 대상</li>
+        <li>Lv2 이상(Phase 1+)부터는 잔여 튜토리얼이 모두 인게임·프리레벨 트리거이므로 B안 정상 적용 가능</li>
+        <li>프리레벨 팝업 안내(<code>content_pre_level_popup</code>)는 B안에서도 팝업이 유지되므로 정상 발동</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">튜토리얼 항목별 트리거 위치 &amp; 억제 여부</div>
+      <table>
+        <thead><tr><th>가이드 ID</th><th>트리거 위치</th><th>내용</th><th>억제 필요</th></tr></thead>
+        <tbody>
+          <tr><td>Phase 0 인게임 (Lv1)</td><td>인게임</td><td>카드 매칭 기본 안내 (S1-1~S1-4)</td><td style="color:var(--green);font-weight:700">불필요</td></tr>
+          <tr><td><code>content_lobby_play</code> (230003)</td><td style="color:var(--red);font-weight:600">로비</td><td>Lv1 클리어 후 게임 시작 버튼 포커스</td><td style="color:var(--red);font-weight:700">억제 필요 ★</td></tr>
+          <tr><td><code>content_deck_draw</code> (230002)</td><td>인게임 (Lv2)</td><td>덱 뒤집기 안내 — 이동 불가 시 발동</td><td style="color:var(--green);font-weight:700">불필요</td></tr>
+          <tr><td><code>content_pre_level_popup</code> (230005)</td><td>프리레벨 팝업</td><td>Lv2 클리어 후 팝업 UI 안내</td><td style="color:var(--green);font-weight:700">불필요 (팝업 유지)</td></tr>
+          <tr><td>Phase 2~6 해금 팝업</td><td>인게임·결과화면</td><td>상점·스트릭미터·부스터 등 순차 해금</td><td style="color:var(--green);font-weight:700">불필요</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">판 종료 시 연속 플레이 진입 가능 여부 판단 로직</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-num">1</div>
+          <div class="step-body"><strong>A/B 플래그 확인</strong> — <code>ab_continuous_play_variant == 0</code>이면 A안 → 로비 복귀 (종료)</div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-body"><strong>로비 튜토리얼 완료 확인</strong> — <code>!TutorialStateStore.shownGuides.includes("content_lobby_play")</code>이면 B안 억제 → 로비 복귀</div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-body"><strong>스트릭 카운터 확인</strong> — <code>continuousPlayCount &gt;= ab_continuous_play_streak_count</code>이면 스트릭 소진 → 로비 복귀 + 카운터 리셋</div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">4</div>
+          <div class="step-body"><strong>골드 충분 확인</strong> — 다음 레벨 입장료를 감당할 골드가 없으면 → 로비 복귀 (§3 입장료 처리 참조)</div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num-green step-num">5</div>
+          <div class="step-body"><strong>연속 플레이 허용</strong> — 결과 화면에 "다음 게임" CTA 강조 표시, 탭 시 프리레벨 팝업 직행</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-green">
+      <div class="callout-title">로비 복귀 시 튜토리얼 재트리거</div>
+      <p style="color:var(--text2)">연속 플레이 중 스트릭 소진·골드 부족 등으로 로비에 복귀할 때, 로비 진입 트리거가 정상적으로 발동되는지 QA 필수. 로비를 건너뛴 판 수와 무관하게 트리거는 <span class="hl">로비 복귀 시점</span>에 정상 발동되어야 함.</p>
+    </div>
+  </section>
+
+  <!-- S3 -->
+  <section id="s3">
+    <div class="section-header">
+      <div class="section-num s3-num">3</div>
+      <div class="section-title">입장료 처리</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">처리 원칙</div>
+      <ul>
+        <li><span class="hl">판당 입장료는 기존과 동일하게 각 레벨 진입 시점에 차감</span> — 선불 묶음 차감 없음</li>
+        <li>입장료 차감 시점: 프리레벨 팝업에서 "게임 시작" 확인 시 (A안과 동일)</li>
+        <li>연속 플레이 흐름 중 <span class="hl">다음 레벨 입장료를 감당할 골드가 없으면 스트릭 중단 → 로비 복귀</span></li>
+        <li>로비 복귀 시 토스트 메시지로 이유 안내: <span class="hl">"골드가 부족해 로비로 돌아왔어요"</span></li>
+      </ul>
+    </div>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">선불 묶음 차감을 하지 않는 이유</div>
+      <p style="color:var(--text2)">N판치 입장료를 미리 차감하면 ① 중도 포기 시 환불 로직 필요 ② 게임 크래시 시 재화 손실 분쟁 ③ 구현 복잡도 증가. 판당 차감을 유지하면서 골드 부족 감지만 추가하는 것이 가장 단순하고 안전하다.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">골드 부족 처리 상세 흐름</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-num">1</div>
+          <div class="step-body"><strong>결과 화면 진입 시점</strong>에 다음 레벨의 입장료를 미리 조회 (<code>next_level_entry_cost</code>)</div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-body"><strong>유저 현재 골드 &lt; 다음 레벨 입장료</strong>이면 "다음 게임" CTA 비활성화 또는 미표시</div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-body">대신 <strong>"골드 부족 — 로비로 이동"</strong> 보조 텍스트 표시 후 자동 로비 복귀 유도</div>
+        </div>
+        <div class="flow-step">
+          <div class="step-num-red step-num">!</div>
+          <div class="step-body"><span class="hl-red">강제 이동 금지</span> — 유저가 결과 화면을 확인할 시간 확보. 5초 타이머 후 자동 로비 복귀 또는 버튼 탭으로 즉시 이동 (둘 다 허용)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">배팅(베팅/배수) 설정 처리</div>
+      <ul>
+        <li>배팅 설정은 프리레벨 팝업 내에 그대로 존재 — <span class="hl">B안에서도 동일하게 접근 가능</span></li>
+        <li>연속 플레이 중 배팅 설정은 판마다 프리레벨 팝업에서 조정 가능 (변경 없음)</li>
+        <li>이전 판의 배팅값을 다음 판에 기본값으로 유지할지 여부: <span class="hl-yellow">PM 확인 필요</span> (현재 미정)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- S4 -->
+  <section id="s4">
+    <div class="section-header">
+      <div class="section-num s4-num">4</div>
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">밸런스 시트 변수</div>
+      <div class="bs-block">
+        <div class="bs-tab">TAB: const</div>
+        <div class="bs-row">
+          <span class="bs-key">ab_continuous_play_variant</span>
+          <span class="bs-val">0</span>
+          <span class="bs-desc">0=A안(로비 복귀), 1=B안(연속 플레이). 서버 플래그, 유저 ID 해시 50:50</span>
+        </div>
+        <div class="bs-row">
+          <span class="bs-key">ab_continuous_play_streak_count</span>
+          <span class="bs-val">3</span>
+          <span class="bs-desc">B안 연속 플레이 최대 판수. 소진 시 로비 복귀. 범위 권장: 3~5</span>
+        </div>
+        <div class="bs-row">
+          <span class="bs-key">ab_continuous_play_test_duration_days</span>
+          <span class="bs-val">—</span>
+          <span class="bs-desc">테스트 기간(일). 최소 표본 확보 후 PM이 수동 회수. 7~14일 권장</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">트리거 &amp; 분기 조건 요약</div>
+      <table>
+        <thead><tr><th>조건</th><th>결과</th></tr></thead>
+        <tbody>
+          <tr><td><code>ab_continuous_play_variant == 0</code></td><td>A안 — 매 판 종료 후 로비 복귀</td></tr>
+          <tr><td>튜토리얼 Phase 2 미완료</td><td>B안 억제 → 로비 복귀 강제</td></tr>
+          <tr><td><code>continuousPlayCount >= streak_count</code></td><td>스트릭 소진 → 로비 복귀 + 카운터 리셋</td></tr>
+          <tr><td>다음 레벨 입장료 > 현재 골드</td><td>"다음 게임" CTA 비활성 → 로비 유도</td></tr>
+          <tr><td>유저가 "로비" 버튼 직접 탭</td><td>즉시 로비 복귀 + 카운터 리셋 (항상 허용)</td></tr>
+          <tr><td>위 조건 모두 해당 없음</td><td>"다음 게임" CTA 활성 → 다음 레벨 프리레벨 팝업</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">측정 이벤트</div>
+      <ul>
+        <li><code>ab_cp_game_start</code> — variant(a/b), level_id, streak_index(0-based)</li>
+        <li><code>ab_cp_game_result</code> — variant, result(clear/quit), streak_index</li>
+        <li><code>ab_cp_streak_end</code> — variant, reason(streak_exhausted / gold_insufficient / user_exit / tutorial_suppressed), final_streak_count</li>
+        <li><code>ab_cp_next_game_tap</code> — 결과 화면 "다음 게임" CTA 탭 횟수 (전환율 측정용)</li>
+        <li>세션당 판수: <code>ab_cp_game_start</code> 세션별 집계로 도출</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">엣지 케이스</div>
+      <ul>
+        <li><span class="hl">마지막 레벨 도달 시</span> — 다음 레벨 없으면 스트릭 종료 → 로비 복귀 (레벨 없음 안내)</li>
+        <li><span class="hl">실패(fail) 후 연속 플레이</span> — 실패한 레벨을 다시 시도할지, 다음 레벨로 넘길지 PM 확인 필요. 기본: 실패해도 다음 레벨로 진행 (스트릭 카운터 차감)</li>
+        <li><span class="hl">앱 백그라운드 → 복귀 시</span> — 스트릭 카운터 유지 여부: 세션 만료(<code>session_timeout</code>) 기준으로 만료 시 리셋 권장</li>
+        <li><span class="hl">테스트 종료 후 플래그 회수</span> — <code>ab_continuous_play_variant</code>를 채택안(0 또는 1)으로 고정, <code>ab_continuous_play_streak_count</code>는 서비스 파라미터로 전환</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">PM 확인 필요 (개발 착수 전)</div>
+      <ul style="margin:4px 0 0 16px">
+        <li style="color:var(--text2)">실패 후 같은 레벨 재시도 vs 다음 레벨 진행 중 어느 쪽으로 할지</li>
+        <li style="color:var(--text2)">이전 판 배팅값을 다음 판 기본값으로 유지할지 여부</li>
+        <li style="color:var(--text2)">골드 부족 로비 복귀 시 자동 이동 타이머 사용 여부 및 시간</li>
+        <li style="color:var(--text2)"><code>ab_continuous_play_test_duration_days</code> 확정 (최소 표본 수 계산 후)</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script src="memo.js"></script>
+<script src="changelog.js"></script>
+</body>
+</html>
