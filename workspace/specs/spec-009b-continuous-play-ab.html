@@ -20,6 +20,7 @@
   --green:#4ade80;--green-bg:rgba(74,222,128,.12);--green-border:rgba(74,222,128,.25);
   --yellow:#fbbf24;--yellow-bg:rgba(251,191,36,.12);--yellow-border:rgba(251,191,36,.3);
   --red:#f87171;--red-bg:rgba(248,113,113,.12);--red-border:rgba(248,113,113,.25);
+  --orange2:#fb923c;--orange2-bg:rgba(251,146,60,.12);--orange2-border:rgba(251,146,60,.3);
   --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
   --text-xs:12px;--text-sm:13px;--text-base:14px;--text-lg:15px;
   --dur-base:.18s;
@@ -41,6 +42,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .n2{background:var(--teal-bg);color:var(--teal)}
 .n3{background:var(--blue-bg);color:var(--blue)}
 .n4{background:var(--yellow-bg);color:var(--yellow)}
+.n5{background:var(--red-bg);color:var(--red)}
 
 .main{margin-left:200px;flex:1;padding:60px 56px 80px;max-width:900px}
 .theme-toggle{position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
@@ -127,6 +129,7 @@ td:first-child{color:var(--text-dim);font-weight:600}
   <a class="nav-item" href="#s2"><span class="nav-num n2">2</span>튜토리얼 처리</a>
   <a class="nav-item" href="#s3"><span class="nav-num n3">3</span>입장료 처리</a>
   <a class="nav-item" href="#s4"><span class="nav-num n4">4</span>개발 스펙</a>
+  <a class="nav-item" href="#s5"><span class="nav-num n5">5</span>시트 변경 명세</a>
 </nav>
 
 <main class="main">
@@ -398,6 +401,19 @@ td:first-child{color:var(--text-dim);font-weight:600}
     </div>
 
     <div class="card">
+      <div class="card-title">level_entry_tier 수정 필요 (Lv5 전 로비 숨김 전제)</div>
+      <p style="color:var(--text2);font-size:var(--text-sm);margin-bottom:10px">NRU 시작 골드 2,000G 기준, 현재 Lv3·4에 각 1,000G 입장료가 부과되어 Lv3에서 골드가 바닥남. 연속 플레이 중 입장료 부족으로 스트릭이 즉시 종료되는 문제를 방지하려면 아래 수정이 필요.</p>
+      <table>
+        <thead><tr><th>key_number</th><th>항목</th><th>현재값</th><th>변경값</th></tr></thead>
+        <tbody>
+          <tr><td><code>220001</code></td><td>level_max</td><td>2</td><td style="color:var(--green);font-weight:700">4</td></tr>
+          <tr><td><code>220002</code></td><td>level_min</td><td>3</td><td style="color:var(--green);font-weight:700">5</td></tr>
+        </tbody>
+      </table>
+      <p style="color:var(--text2);font-size:var(--text-sm);margin-top:8px">entry_cost 외 나머지 컬럼(undo_ratio, streak_meter_gold 등)은 220001이 0이므로 영향 없음. <span class="hl-yellow">단독으로는 불충분</span> — §5 튜토리얼 가이드 변경이 병행되어야 함.</p>
+    </div>
+
+    <div class="card">
       <div class="card-title">배팅(베팅/배수) 설정 처리</div>
       <ul>
         <li>배팅 설정은 프리레벨 팝업 내에 그대로 존재 — <span class="hl">B안에서도 동일하게 접근 가능</span></li>
@@ -481,6 +497,130 @@ td:first-child{color:var(--text-dim);font-weight:600}
         <li style="color:var(--text2)">골드 부족 로비 복귀 시 자동 이동 타이머 사용 여부 및 시간</li>
         <li style="color:var(--text2)"><code>ab_continuous_play_test_duration_days</code> 확정 (최소 표본 수 계산 후)</li>
       </ul>
+    </div>
+  </section>
+
+  <!-- S5 -->
+  <section id="s5">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--red-bg);color:var(--red)">5</div>
+      <div class="section-title">시트 변경 명세 &amp; 리스크 (Lv5 전 로비 숨김)</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+
+    <div class="callout callout-yellow">
+      <div class="callout-title">전제 조건</div>
+      <p style="color:var(--text2)">이 섹션은 B안에서 <span class="hl">Lv5 클리어 전까지 로비를 노출하지 않는 설계</span>를 채택할 경우 필요한 시트 변경과 리스크를 정리한다. Lv5 첫 로비 방문 = 모든 지연된 로비 가이드의 발동 시점.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">tutorial_guide 시트 변경</div>
+      <table>
+        <thead><tr><th>가이드 ID</th><th>현재 play_scene / trigger_value</th><th>변경 방향</th><th>이유</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>230003</code> 게임 시작 버튼</td>
+            <td>lobby / level_clear=1</td>
+            <td style="color:var(--red);font-weight:600">삭제 또는 결과화면 CTA로 대체</td>
+            <td>결과 화면 "다음 게임" 버튼이 역할 대체. lobby 트리거 자체가 성립 안 됨</td>
+          </tr>
+          <tr>
+            <td><code>230004</code> 상점 아이콘</td>
+            <td>lobby / level_clear=3</td>
+            <td style="color:var(--yellow);font-weight:600">trigger_value 3 → 5</td>
+            <td>Lv5 첫 로비 방문 시 발동</td>
+          </tr>
+          <tr>
+            <td><code>230006</code> 방치골드 해금</td>
+            <td>lobby / level_clear=3</td>
+            <td style="color:var(--yellow);font-weight:600">trigger_value 3 → 5</td>
+            <td>Lv5 첫 로비에서 순차 큐 1번째</td>
+          </tr>
+          <tr>
+            <td><code>230008</code> 방치골드 수령 강제</td>
+            <td>lobby / level_clear=3</td>
+            <td style="color:var(--yellow);font-weight:600">trigger_value 3 → 5</td>
+            <td>Lv5 첫 로비에서 순차 큐 2번째 (006 완료 후)</td>
+          </tr>
+          <tr>
+            <td><code>230009</code> 출석체크 아이콘</td>
+            <td>lobby / level_clear=3</td>
+            <td style="color:var(--yellow);font-weight:600">trigger_value 3 → 5</td>
+            <td>Lv5 첫 로비에서 순차 큐 3번째 (008 완료 후)</td>
+          </tr>
+          <tr>
+            <td><code>230010</code> 스트릭미터</td>
+            <td>ingame / first_appear=5</td>
+            <td style="color:var(--green);font-weight:600">변경 불필요</td>
+            <td>인게임 트리거, 정상 발동</td>
+          </tr>
+          <tr>
+            <td><code>230011</code> 리더보드 아이콘</td>
+            <td>lobby / level_clear=5</td>
+            <td style="color:var(--green);font-weight:600">변경 불필요</td>
+            <td>Lv5 = 첫 로비 방문 시점과 일치</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="color:var(--text2);font-size:var(--text-sm);margin-top:10px">⚠️ <span class="hl">Lv5 첫 로비 가이드 큐 순서</span>: 230004 → 230006 → 230008 → 230009 → 230011 순차 실행 보장 필요. 큐 이탈 또는 병렬 발동 시 UX 혼란.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">unlock 시트 변경</div>
+      <table>
+        <thead><tr><th>content_id</th><th>condition_val</th><th>변경 필요</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td><code>content_idle_gold</code></td><td>Lv2</td><td style="color:var(--green);font-weight:600">불필요</td><td>unlock 조건 유지. Lv2~4 방치골드는 쌓이고 Lv5 첫 로비에서 일괄 수령</td></tr>
+          <tr><td><code>content_shop</code></td><td>Lv3</td><td style="color:var(--green);font-weight:600">불필요</td><td>unlock 조건 유지, 가이드(230004)만 trigger_value 조정</td></tr>
+          <tr><td><code>content_betting_1</code></td><td>Lv3</td><td style="color:var(--green);font-weight:600">불필요</td><td>프리레벨 팝업에 UI만 노출. 가이드 없이 표시되어도 UX 허용 범위</td></tr>
+          <tr><td><code>content_pre_level_popup</code></td><td>Lv3</td><td style="color:var(--green);font-weight:600">불필요</td><td>프리레벨 팝업 자체가 B안에서 유지됨. 튜토리얼(230005)은 pre_level 트리거라 정상 발동</td></tr>
+          <tr><td><code>content_streak</code></td><td>Lv5</td><td style="color:var(--green);font-weight:600">불필요</td><td>첫 로비 방문 시점과 일치</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">리스크 평가</div>
+      <table>
+        <thead><tr><th>리스크</th><th>등급</th><th>내용</th><th>대응 방향</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Lv5 첫 로비 가이드 과부하</td>
+            <td style="color:var(--red);font-weight:700">🔴 High</td>
+            <td>230004·006·008·009·011 총 5개 가이드가 한 시점에 순차 큐잉 → 유저 피로도 급증</td>
+            <td>큐 순서 설계 + 스킵 가능 여부 정책 명시 필요. 230009(출석체크)는 비강제로 낮춰도 무방</td>
+          </tr>
+          <tr>
+            <td>방치골드 인지 지연</td>
+            <td style="color:var(--red);font-weight:700">🔴 High</td>
+            <td>Lv2~4 구간 방치골드 수령 불가 → 재화 누적 기회 인지 못함. Lv5 첫 로비에서 대량 수령 UX가 어색</td>
+            <td>첫 로비 진입 시 방치골드 수령 연출 강화. 수령 전 쌓인 양 시각적으로 강조</td>
+          </tr>
+          <tr>
+            <td>230003 대체 미흡 시 Lv2 진입 혼란</td>
+            <td style="color:var(--yellow);font-weight:700">🟡 Mid</td>
+            <td>로비 없이 Lv2 진입 방법을 유저가 모를 수 있음</td>
+            <td>결과 화면 "다음 게임" CTA 시각적 강조 필수. 첫 결과 화면에서 펄스 애니메이션 등 유도</td>
+          </tr>
+          <tr>
+            <td>상점 인지 지연</td>
+            <td style="color:var(--yellow);font-weight:700">🟡 Mid</td>
+            <td>Lv3부터 상점 unlock이지만 가이드가 Lv5까지 지연 → 골드 부족 시 충전 방법을 모름</td>
+            <td>220001 Lv4 연장으로 Lv3·4 무료이므로 실질 충돌 없음. 단, 의도적 상점 탐색 유저 감소 가능</td>
+          </tr>
+          <tr>
+            <td>배팅 UI 가이드 없이 노출</td>
+            <td style="color:var(--green);font-weight:700">🟢 Low</td>
+            <td>content_betting_1이 Lv3 프리레벨 팝업에 가이드 없이 노출</td>
+            <td>show_tutorial=FALSE인 기존 설계와 동일 패턴. 허용 범위</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-red">
+      <div class="callout-title">결론: 220001 단독 수정은 불충분</div>
+      <p style="color:var(--text2)">level_entry_tier 220001 확장은 <span class="hl">필요 조건</span>이지만 충분하지 않다. <span class="hl-red">tutorial_guide 230003·004·006·008·009의 trigger_value/play_scene 변경이 반드시 병행</span>되어야 한다. 두 작업을 동시에 배포해야 로직 꼬임 없이 동작.</p>
     </div>
   </section>
 </main>
