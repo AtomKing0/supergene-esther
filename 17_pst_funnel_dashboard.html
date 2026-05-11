@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>PST 퍼널 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  width:1920px; height:1080px; overflow:hidden;
+  background:#F0F2F7; color:#1A1D2E;
+  font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif; font-size:13px;
+}
+#dashboard { width:1920px; height:1080px; display:flex; flex-direction:column; }
+
+/* ── HEADER ─────────────────────────────────────────── */
+#header {
+  width:1920px; height:130px; background:#fff;
+  border-bottom:2px solid #E2E6EF;
+  display:flex; align-items:center; padding:0 32px; gap:28px; flex-shrink:0;
+}
+#header-title { flex:1; }
+#header-title h1 { font-size:24px; font-weight:900; color:#1A1D2E; letter-spacing:-0.5px; line-height:1.2; }
+#header-title p  { font-size:12px; color:#7A7F94; margin-top:4px; }
+#header-title p strong { color:#4A5068; }
+.header-cards { display:flex; gap:14px; }
+.hcard {
+  background:#fff; border:1.5px solid #E2E6EF; border-radius:10px;
+  padding:11px 18px; min-width:220px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.07);
+}
+.hcard.pst { border-color:#4F8EF7; }
+.hcard-name  { font-size:10px; font-weight:700; color:#7A7F94; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
+.hcard.pst .hcard-name { color:#4F8EF7; }
+.hcard-total { font-size:11px; color:#9AA0B8; margin-bottom:6px; }
+.hcard-funnel { display:flex; align-items:center; gap:5px; }
+.hcard-funnel .val  { font-size:15px; font-weight:800; color:#1A1D2E; }
+.hcard-funnel .arrow{ font-size:12px; color:#C0C5D8; }
+.hcard.pst .hcard-funnel .val.v1 { color:#4F8EF7; }
+#admin-btn {
+  background:#F0F2F7; border:1.5px solid #CBD5E0; border-radius:8px;
+  padding:8px 14px; font-size:11px; font-weight:700; color:#4A5068;
+  cursor:pointer; flex-shrink:0; display:flex; align-items:center; gap:6px;
+  transition:background 0.2s;
+}
+#admin-btn:hover { background:#E2E6EF; }
+
+/* ── MIDDLE ─────────────────────────────────────────── */
+#middle { display:flex; width:1920px; height:750px; flex-shrink:0; }
+
+/* panel-chart */
+#panel-chart {
+  width:460px; height:750px; background:#fff;
+  border-right:1px solid #E2E6EF; padding:18px 20px 14px;
+  display:flex; flex-direction:column; flex-shrink:0;
+}
+#panel-chart h2 { font-size:13px; font-weight:700; color:#4A5068; margin-bottom:3px; }
+.subtitle { font-size:10px; color:#9AA0B8; margin-bottom:10px; }
+#chart-wrap { flex:1; position:relative; }
+.chart-notes {
+  margin-top:8px; font-size:10px; color:#7A7F94; line-height:1.7;
+  background:#F7F8FB; border-radius:6px; padding:7px 10px; flex-shrink:0;
+}
+.chart-notes span { color:#4A5068; font-weight:600; }
+
+/* panel-dropout */
+#panel-dropout {
+  width:220px; height:750px; background:#fff;
+  border-right:1px solid #E2E6EF; padding:16px 14px;
+  display:flex; flex-direction:column; flex-shrink:0; overflow:hidden;
+}
+.dropout-section { flex:1; display:flex; flex-direction:column; }
+.dropout-section+.dropout-section { border-top:1px solid #E2E6EF; padding-top:12px; margin-top:12px; }
+.section-title { font-size:10px; font-weight:700; color:#4A5068; text-transform:uppercase; letter-spacing:0.7px; margin-bottom:8px; }
+.section-title .num { color:#4F8EF7; }
+.section-sub { font-size:9px; color:#9AA0B8; margin-bottom:10px; margin-top:-4px; }
+.prog-row { margin-bottom:10px; }
+.prog-row-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
+.prog-label { font-size:10px; font-weight:600; color:#4A5068; }
+.prog-pct   { font-size:12px; font-weight:700; color:#1A1D2E; }
+.prog-bar-bg { width:100%; height:12px; background:#E2E6EF; border-radius:6px; overflow:hidden; }
+.prog-bar-fill { height:100%; border-radius:6px; transition:width 0.6s ease; }
+.prog-row-footer { display:flex; justify-content:flex-end; margin-top:3px; }
+.badge { font-size:9px; font-weight:700; padding:1px 6px; border-radius:8px; }
+.badge-red   { background:#FFF5F5; color:#E53E3E; border:1px solid #FEB2B2; }
+.badge-green { background:#F0FFF4; color:#2CB87A; border:1px solid #9AE6B4; }
+.alert-box {
+  background:#FFF5F5; border:1px solid #FEB2B2; border-radius:7px;
+  padding:7px 10px; margin-top:6px; font-size:10px; font-weight:700;
+  color:#E53E3E; text-align:center; line-height:1.5; flex-shrink:0;
+}
+.ok-box {
+  background:#F0FFF4; border:1px solid #9AE6B4; border-radius:7px;
+  padding:7px 10px; margin-top:6px; font-size:10px; font-weight:700;
+  color:#2CB87A; text-align:center; line-height:1.5; flex-shrink:0;
+}
+.prog-row-b { margin-bottom:9px; }
+.prog-row-b-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
+.prog-bar-fill-b { background:#2CB87A; }
+
+/* panel-trend */
+#panel-trend {
+  width:720px; height:750px; background:#fff;
+  border-right:1px solid #E2E6EF; padding:18px 22px 14px;
+  display:flex; flex-direction:column; flex-shrink:0; overflow:hidden;
+}
+#panel-trend h2 { font-size:14px; font-weight:700; color:#4A5068; margin-bottom:3px; }
+#trend-wrap { flex:1; position:relative; min-height:0; }
+.trend-history { flex-shrink:0; border-top:1px solid #E2E6EF; padding-top:8px; margin-top:8px; }
+.trend-table { width:100%; border-collapse:collapse; }
+.trend-table th {
+  font-size:10px; color:#9AA0B8; font-weight:600;
+  padding:2px 8px; text-align:right; border-bottom:1px solid #E2E6EF;
+}
+.trend-table th:first-child { text-align:left; }
+.trend-table td { font-size:11px; color:#4A5068; padding:4px 8px; text-align:right; border-bottom:1px solid #F0F2F7; }
+.trend-table td:first-child { text-align:left; font-weight:600; }
+.td-pos  { color:#2CB87A; font-weight:700; }
+.td-neg  { color:#E53E3E; font-weight:700; }
+.td-base { color:#9AA0B8; }
+.trend-gap {
+  margin-top:8px; padding:6px 12px; border-radius:6px;
+  font-size:11px; font-weight:600; text-align:center;
+}
+.trend-gap.needs-more { background:#EBF8F0; color:#2A6B4A; border:1px solid #9AE6B4; }
+.trend-gap.achieved   { background:#E6FFFA; color:#1A5C3A; border:1px solid #2CB87A; }
+
+/* panel-compare */
+#panel-compare {
+  flex:1; height:750px; background:#fff;
+  padding:18px 18px; display:flex; flex-direction:column; overflow:hidden;
+}
+#panel-compare h2 { font-size:13px; font-weight:700; color:#4A5068; margin-bottom:12px; flex-shrink:0; }
+.compare-cols { display:flex; gap:12px; flex:1; min-height:0; }
+.tuto-col { flex:1; border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; overflow:hidden; }
+.tuto-col.pst { border:1.5px solid #4F8EF7; background:rgba(79,142,247,0.03); }
+.tuto-col.pbm { border:1.5px solid #E8832A; background:rgba(232,131,42,0.03); }
+.tuto-col-title { font-size:11px; font-weight:700; margin-bottom:10px; flex-shrink:0; }
+.tuto-col.pst .tuto-col-title { color:#4F8EF7; }
+.tuto-col.pbm .tuto-col-title { color:#E8832A; }
+.tl { display:flex; flex-direction:column; flex:1; overflow:hidden; gap:6px; }
+.tl-item { display:flex; align-items:flex-start; gap:7px; }
+.tl-dot-col { display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:12px; }
+.tl-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:3px; }
+.tl-dot.red    { background:#E53E3E; }
+.tl-dot.yellow { background:#D69E2E; }
+.tl-dot.green  { background:#2CB87A; }
+.tl-line { width:2px; flex:1; background:#E2E6EF; min-height:10px; }
+.tl-content { flex:1; padding-bottom:10px; }
+.tl-event { font-size:10px; font-weight:700; color:#4A5068; margin-bottom:1px; }
+.tl-pct   { font-size:18px; font-weight:900; color:#1A1D2E; line-height:1.1; }
+.tl-drop  { font-size:10px; font-weight:600; margin-top:2px; }
+.tl-drop.red    { color:#E53E3E; }
+.tl-drop.yellow { color:#D69E2E; }
+.tl-drop.gray   { color:#9AA0B8; }
+.tuto-total { font-size:10px; font-weight:700; border-radius:6px; padding:5px 10px; margin-top:auto; text-align:center; flex-shrink:0; }
+.tuto-total.red   { color:#E53E3E; background:#FFF5F5; border:1px solid #FEB2B2; }
+.tuto-total.green { color:#2CB87A; background:#F0FFF4; border:1px solid #9AE6B4; }
+
+/* ── BOTTOM ─────────────────────────────────────────── */
+#bottom { display:flex; width:1920px; height:200px; flex-shrink:0; border-top:2px solid #E2E6EF; }
+
+#panel-sim {
+  width:640px; height:200px; background:#fff;
+  border-right:1px solid #E2E6EF; padding:14px 22px;
+  display:flex; flex-direction:column; flex-shrink:0;
+}
+#panel-sim h2 { font-size:12px; font-weight:700; color:#4A5068; margin-bottom:10px; flex-shrink:0; }
+.sim-rows { display:flex; flex-direction:column; gap:12px; flex:1; justify-content:center; }
+.sim-row  { display:flex; align-items:center; gap:12px; }
+.sim-label { width:90px; font-size:10px; color:#7A7F94; flex-shrink:0; line-height:1.4; }
+.sim-label strong { display:block; font-size:11px; color:#4A5068; }
+.sim-bar-bg { flex:1; height:20px; background:#E2E6EF; border-radius:10px; overflow:hidden; }
+.sim-bar-fill { height:100%; border-radius:10px; display:flex; align-items:center; padding-left:9px; font-size:10px; font-weight:700; color:rgba(255,255,255,0.95); white-space:nowrap; transition:width 0.6s ease; }
+.sim-val  { width:48px; font-size:18px; font-weight:900; text-align:right; flex-shrink:0; }
+.sim-hint { width:110px; font-size:9px; color:#9AA0B8; flex-shrink:0; }
+
+#panel-ig {
+  width:320px; height:200px; background:#fff;
+  border-right:1px solid #E2E6EF; padding:12px 16px;
+  display:flex; flex-direction:column; flex-shrink:0;
+}
+#panel-ig h2 { font-size:12px; font-weight:700; color:#4A5068; margin-bottom:7px; flex-shrink:0; }
+.ig-compare-row { display:flex; align-items:center; gap:7px; margin-bottom:8px; }
+.ig-game-label  { width:48px; font-size:10px; font-weight:700; color:#4A5068; flex-shrink:0; }
+.ig-bar-group   { flex:1; display:flex; flex-direction:column; gap:3px; }
+.ig-bar-line    { display:flex; align-items:center; gap:4px; }
+.ig-bar-label   { width:28px; font-size:9px; color:#9AA0B8; flex-shrink:0; }
+.ig-bar-bg      { flex:1; height:13px; background:#E2E6EF; border-radius:6px; overflow:hidden; }
+.ig-bar-fill    { height:100%; border-radius:6px; display:flex; align-items:center; padding-left:5px; font-size:9px; font-weight:700; color:#fff; white-space:nowrap; }
+.ig-delta       { width:40px; font-size:10px; font-weight:800; color:#2CB87A; text-align:right; flex-shrink:0; }
+.ig-insight     { margin-top:auto; background:#EBF8F0; border-left:3px solid #2CB87A; border-radius:0 5px 5px 0; padding:5px 9px; font-size:9px; color:#2A6B4A; line-height:1.5; }
+.ig-insight strong { color:#1A5C3A; }
+
+#panel-action {
+  flex:1; height:200px; background:#fff; padding:14px 22px;
+  display:flex; flex-direction:column;
+}
+#panel-action h2 { font-size:12px; font-weight:700; color:#4A5068; margin-bottom:10px; flex-shrink:0; }
+.action-cards { display:flex; gap:12px; flex:1; }
+.acard { flex:1; border-radius:9px; padding:10px 12px; display:flex; flex-direction:column; gap:3px; }
+.acard.p1 { background:#FFF5F5; border:1px solid #FEB2B2; }
+.acard.p2 { background:#FFFFF0; border:1px solid #F6E05E; }
+.acard.p3 { background:#F0FFF4; border:1px solid #9AE6B4; }
+.acard-badge { font-size:9px; font-weight:700; padding:2px 7px; border-radius:9px; display:inline-block; width:fit-content; margin-bottom:3px; }
+.acard.p1 .acard-badge { background:#FED7D7; color:#E53E3E; }
+.acard.p2 .acard-badge { background:#FEFCBF; color:#D69E2E; }
+.acard.p3 .acard-badge { background:#C6F6D5; color:#2CB87A; }
+.acard-title { font-size:12px; font-weight:700; color:#1A1D2E; }
+.acard-desc  { font-size:10px; color:#4A5068; line-height:1.5; }
+.acard-kpi   { font-size:9px; font-weight:600; margin-top:3px; }
+.acard.p1 .acard-kpi { color:#E53E3E; }
+.acard.p2 .acard-kpi { color:#D69E2E; }
+.acard.p3 .acard-kpi { color:#2CB87A; }
+
+/* ── ADMIN DRAWER ────────────────────────────────────── */
+#admin-drawer {
+  position:fixed; top:0; right:-460px; width:460px; height:100vh;
+  background:#fff; z-index:9999;
+  box-shadow:-4px 0 28px rgba(0,0,0,0.18);
+  transition:right 0.28s cubic-bezier(0.4,0,0.2,1);
+  display:flex; flex-direction:column; overflow:hidden;
+  font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+}
+#admin-drawer.open { right:0; }
+#adm-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; border-bottom:1px solid #E2E6EF;
+  background:#F7F8FB; flex-shrink:0;
+}
+#adm-head h3 { font-size:14px; font-weight:700; color:#1A1D2E; }
+#adm-close {
+  background:none; border:none; font-size:18px; color:#7A7F94;
+  cursor:pointer; padding:0 4px; line-height:1;
+}
+#adm-close:hover { color:#1A1D2E; }
+#adm-body { flex:1; overflow-y:auto; padding:0 0 20px; }
+.adm-section { padding:16px 20px; border-bottom:1px solid #F0F2F7; }
+.adm-section-title { font-size:11px; font-weight:700; color:#4A5068; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:12px; }
+
+/* drop zone */
+#drop-zone {
+  border:2px dashed #CBD5E0; border-radius:10px; padding:20px;
+  text-align:center; cursor:pointer; transition:all 0.2s;
+  background:#F7F8FB; color:#7A7F94; font-size:12px; line-height:1.6;
+}
+#drop-zone:hover, #drop-zone.drag-over { border-color:#4F8EF7; background:#EBF3FF; color:#4F8EF7; }
+#drop-zone .dz-icon { font-size:24px; display:block; margin-bottom:6px; }
+
+/* date filter */
+#date-filter-row {
+  display:none; margin-top:12px; gap:8px; align-items:center;
+  flex-wrap:wrap;
+}
+#date-filter-row.visible { display:flex; }
+#date-filter-row label { font-size:11px; color:#4A5068; font-weight:600; }
+.adm-select {
+  border:1px solid #CBD5E0; border-radius:6px; padding:4px 8px;
+  font-size:11px; color:#1A1D2E; background:#fff; cursor:pointer;
+}
+#apply-date-btn {
+  background:#4F8EF7; color:#fff; border:none; border-radius:6px;
+  padding:5px 12px; font-size:11px; font-weight:700; cursor:pointer;
+}
+#apply-date-btn:hover { background:#2D6CE0; }
+
+/* preview box */
+#csv-preview {
+  display:none; margin-top:12px; background:#F7F8FB; border-radius:8px;
+  padding:12px 14px; border:1px solid #E2E6EF;
+}
+#csv-preview.visible { display:block; }
+.preview-title { font-size:10px; font-weight:700; color:#9AA0B8; text-transform:uppercase; margin-bottom:8px; }
+.preview-funnel { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.pf-item { text-align:center; }
+.pf-label { font-size:9px; color:#9AA0B8; }
+.pf-val   { font-size:20px; font-weight:900; color:#1A1D2E; line-height:1.1; }
+.pf-arrow { color:#CBD5E0; font-size:16px; }
+.pf-drop  { font-size:10px; font-weight:700; color:#E53E3E; margin-top:2px; }
+
+/* label + add */
+.adm-input {
+  width:100%; border:1px solid #CBD5E0; border-radius:7px;
+  padding:8px 12px; font-size:12px; color:#1A1D2E; margin-top:10px;
+  font-family:'Noto Sans KR',sans-serif;
+}
+.adm-input:focus { outline:none; border-color:#4F8EF7; }
+#add-snapshot-btn {
+  width:100%; margin-top:10px; background:#4F8EF7; color:#fff;
+  border:none; border-radius:8px; padding:10px; font-size:13px;
+  font-weight:700; cursor:pointer; transition:background 0.2s;
+}
+#add-snapshot-btn:hover { background:#2D6CE0; }
+#add-snapshot-btn:disabled { background:#CBD5E0; cursor:not-allowed; }
+
+/* history list */
+#history-list { display:flex; flex-direction:column; gap:6px; }
+.hist-item {
+  display:flex; align-items:center; gap:10px;
+  background:#F7F8FB; border:1px solid #E2E6EF; border-radius:8px;
+  padding:8px 12px;
+}
+.hist-date  { font-size:11px; color:#7A7F94; width:80px; flex-shrink:0; }
+.hist-label { font-size:12px; font-weight:600; color:#1A1D2E; flex:1; }
+.hist-touch { font-size:13px; font-weight:800; color:#4F8EF7; width:52px; text-align:right; flex-shrink:0; }
+.hist-del {
+  background:none; border:none; color:#CBD5E0; font-size:14px;
+  cursor:pointer; padding:0 2px; flex-shrink:0; line-height:1;
+}
+.hist-del:hover { color:#E53E3E; }
+.hist-item.baseline { border-color:#4F8EF7; }
+#no-history { font-size:11px; color:#9AA0B8; text-align:center; padding:12px 0; }
+</style>
+</head>
+<body>
+
+<!-- ═══ ADMIN DRAWER ════════════════════════════════════ -->
+<div id="admin-drawer">
+  <div id="adm-head">
+    <h3>⚙️ 관리자 패널</h3>
+    <button id="adm-close">✕</button>
+  </div>
+  <div id="adm-body">
+
+    <!-- CSV 업로드 -->
+    <div class="adm-section">
+      <div class="adm-section-title">📂 CSV 업로드 (일별 PST 퍼널)</div>
+      <div id="drop-zone">
+        <span class="dz-icon">📄</span>
+        <strong>파일을 드래그하거나 클릭</strong><br>
+        log_date, nth_event, avg_sec, player_count 포맷
+      </div>
+      <input type="file" id="csv-input" accept=".csv" style="display:none">
+
+      <div id="date-filter-row">
+        <label>날짜 범위:</label>
+        <select class="adm-select" id="sel-date-start"></select>
+        <span style="font-size:11px;color:#9AA0B8;">~</span>
+        <select class="adm-select" id="sel-date-end"></select>
+        <button id="apply-date-btn">적용</button>
+      </div>
+
+      <div id="csv-preview">
+        <div class="preview-title">파싱 미리보기</div>
+        <div class="preview-funnel">
+          <div class="pf-item">
+            <div class="pf-label">게임 시작</div>
+            <div class="pf-val" id="pf-start">—</div>
+          </div>
+          <div class="pf-arrow">→</div>
+          <div class="pf-item">
+            <div class="pf-label">첫 터치</div>
+            <div class="pf-val" id="pf-touch">—</div>
+            <div class="pf-drop" id="pf-drop-a">—</div>
+          </div>
+          <div class="pf-arrow">→</div>
+          <div class="pf-item">
+            <div class="pf-label">게임 완료</div>
+            <div class="pf-val" id="pf-finish">—</div>
+            <div class="pf-drop" id="pf-drop-b">—</div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#9AA0B8;" id="pf-players"></div>
+      </div>
+
+      <input class="adm-input" id="snapshot-label" placeholder="구분 이름 (예: P1 적용 후)" />
+      <input class="adm-input" id="snapshot-date" placeholder="날짜 (예: 2026-05-21)" style="margin-top:6px;" />
+      <button id="add-snapshot-btn" disabled>대시보드에 추가</button>
+    </div>
+
+    <!-- 이력 관리 -->
+    <div class="adm-section">
+      <div class="adm-section-title">📋 업데이트 이력 관리</div>
+      <div id="history-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD 1920×1080 ═══════════════════════════════ -->
+<div id="dashboard">
+
+  <!-- HEADER -->
+  <div id="header">
+    <div id="header-title">
+      <h1>PST 런칭 퍼널 대시보드</h1>
+      <p>온보딩 개선 추이 모니터링 &nbsp;|&nbsp; 최근 업데이트: <strong id="h-updated">2026-05-11</strong></p>
+    </div>
+    <div class="header-cards">
+      <div class="hcard pst">
+        <div class="hcard-name">🎯 PST (Solitaire City Journey)</div>
+        <div class="hcard-total" id="h-pst-total">499명</div>
+        <div class="hcard-funnel">
+          <span class="val v1" id="h-pst-start">93.8%</span>
+          <span class="arrow">→</span>
+          <span class="val" id="h-pst-touch">40.7%</span>
+          <span class="arrow">→</span>
+          <span class="val" id="h-pst-finish">37.7%</span>
+        </div>
+      </div>
+      <div class="hcard">
+        <div class="hcard-name">Cozy (Toss D1-3)</div>
+        <div class="hcard-total">1,537명</div>
+        <div class="hcard-funnel">
+          <span class="val">85.9%</span><span class="arrow">→</span>
+          <span class="val">33.4%</span><span class="arrow">→</span>
+          <span class="val">32.4%</span>
+        </div>
+      </div>
+      <div class="hcard">
+        <div class="hcard-name">Puzzle Block Master (Toss D1-3)</div>
+        <div class="hcard-total">277명</div>
+        <div class="hcard-funnel">
+          <span class="val">72.9%</span><span class="arrow">→</span>
+          <span class="val">55.2%</span><span class="arrow">→</span>
+          <span class="val">48.7%</span>
+        </div>
+      </div>
+    </div>
+    <button id="admin-btn">⚙️ 관리자</button>
+  </div>
+
+  <!-- MIDDLE -->
+  <div id="middle">
+
+    <!-- LEFT: Bar Chart (460px) -->
+    <div id="panel-chart">
+      <h2>3개 핵심 지점 비교</h2>
+      <p class="subtitle">① 게임 시작 → ② 첫 터치 → ③ 첫 게임 완료</p>
+      <div id="chart-wrap"><canvas id="funnelChart"></canvas></div>
+      <div class="chart-notes" id="chart-notes-text"></div>
+    </div>
+
+    <!-- CENTER-LEFT: Dropout (220px) -->
+    <div id="panel-dropout">
+      <div class="dropout-section">
+        <div class="section-title"><span class="num">①</span>→<span class="num">②</span> 구간 이탈</div>
+        <div class="section-sub">게임시작 → 첫터치</div>
+        <div class="prog-row">
+          <div class="prog-row-header">
+            <span class="prog-label">PST</span>
+            <span class="prog-pct" id="d-pst-touch">40.7%</span>
+          </div>
+          <div class="prog-bar-bg">
+            <div class="prog-bar-fill" id="d-pst-touch-bar" style="width:40.7%;background:linear-gradient(90deg,#4F8EF7,#2D6CE0);"></div>
+          </div>
+          <div class="prog-row-footer">
+            <span class="badge badge-red" id="d-pst-touch-badge">-53.1pp 🔴</span>
+          </div>
+        </div>
+        <div class="prog-row">
+          <div class="prog-row-header"><span class="prog-label">Cozy</span><span class="prog-pct">33.4%</span></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:33.4%;background:linear-gradient(90deg,#2CB87A,#1A9A63);"></div></div>
+          <div class="prog-row-footer"><span class="badge badge-red">-52.5pp 🔴</span></div>
+        </div>
+        <div class="prog-row">
+          <div class="prog-row-header"><span class="prog-label">PBM</span><span class="prog-pct">55.2%</span></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:55.2%;background:linear-gradient(90deg,#E8832A,#C96810);"></div></div>
+          <div class="prog-row-footer"><span class="badge badge-green">-17.7pp 🟢</span></div>
+        </div>
+        <div class="alert-box" id="d-alert">PST·Cozy 약 53pp 이탈 vs PBM 17.7pp<br>→ 튜토 구간이 3배 이탈</div>
+      </div>
+
+      <div class="dropout-section">
+        <div class="section-title"><span class="num">②</span>→<span class="num">③</span> 완료율</div>
+        <div class="section-sub">첫터치 → 완료</div>
+        <div class="prog-row-b">
+          <div class="prog-row-b-header">
+            <span class="prog-label">PST</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="prog-pct" id="d-pst-comp">92.6%</span>
+              <span id="d-pst-comp-icon">✅</span>
+            </div>
+          </div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill prog-bar-fill-b" id="d-pst-comp-bar" style="width:92.6%;"></div></div>
+        </div>
+        <div class="prog-row-b">
+          <div class="prog-row-b-header"><span class="prog-label">Cozy</span><div style="display:flex;align-items:center;gap:6px;"><span class="prog-pct">97.0%</span><span>✅</span></div></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill prog-bar-fill-b" style="width:97%;"></div></div>
+        </div>
+        <div class="prog-row-b">
+          <div class="prog-row-b-header"><span class="prog-label">PBM</span><div style="display:flex;align-items:center;gap:6px;"><span class="prog-pct">88.2%</span><span>✅</span></div></div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill prog-bar-fill-b" style="width:88.2%;"></div></div>
+        </div>
+        <div class="ok-box">첫터치 후 완료율 88~97%<br>→ 문제는 첫터치 도달</div>
+      </div>
+    </div>
+
+    <!-- CENTER-RIGHT: Trend Chart (720px) -->
+    <div id="panel-trend">
+      <h2>PST 첫 터치율 개선 추이 <span style="font-size:11px;font-weight:400;color:#9AA0B8;">목표 55% (PBM 수준) | 기준 40.7%</span></h2>
+      <p class="subtitle">데이터 포인트를 추가할수록 개선 곡선이 표시됩니다</p>
+      <div id="trend-wrap"><canvas id="trendChart"></canvas></div>
+      <div class="trend-history">
+        <table class="trend-table">
+          <thead>
+            <tr>
+              <th style="text-align:left;">날짜</th>
+              <th style="text-align:left;">구분</th>
+              <th>게임 시작</th>
+              <th>첫 터치</th>
+              <th>완료율</th>
+              <th>vs 기준</th>
+            </tr>
+          </thead>
+          <tbody id="trend-tbody"></tbody>
+        </table>
+        <div class="trend-gap needs-more" id="trend-gap">목표(55%)까지 +14.3pp 필요</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: PST vs PBM (flex:1 ~520px) -->
+    <div id="panel-compare">
+      <h2>PST vs PBM 퍼널 비교</h2>
+      <div class="compare-cols">
+
+        <div class="tuto-col pst">
+          <div class="tuto-col-title">PST (현재)</div>
+          <div class="tl">
+            <div class="tl-item">
+              <div class="tl-dot-col"><div class="tl-dot red"></div><div class="tl-line"></div></div>
+              <div class="tl-content">
+                <div class="tl-event">게임 시작</div>
+                <div class="tl-pct" id="c-pst-start">93.8%</div>
+                <div class="tl-drop gray">기준점</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot-col"><div class="tl-dot red"></div><div class="tl-line"></div></div>
+              <div class="tl-content">
+                <div class="tl-event">첫 터치 🎯</div>
+                <div class="tl-pct" id="c-pst-touch">40.7%</div>
+                <div class="tl-drop red" id="c-pst-touch-drop">-53.1pp</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot-col"><div class="tl-dot green"></div></div>
+              <div class="tl-content">
+                <div class="tl-event">게임 완료</div>
+                <div class="tl-pct" id="c-pst-finish">37.7%</div>
+                <div class="tl-drop gray" id="c-pst-finish-drop">-3.0pp ✅</div>
+              </div>
+            </div>
+          </div>
+          <div class="tuto-total red" id="c-pst-total">총 이탈: -56.1pp</div>
+        </div>
+
+        <div class="tuto-col pbm">
+          <div class="tuto-col-title">PBM 벤치마크</div>
+          <div class="tl">
+            <div class="tl-item">
+              <div class="tl-dot-col"><div class="tl-dot green"></div><div class="tl-line"></div></div>
+              <div class="tl-content">
+                <div class="tl-event">튜토 1-1 시작</div>
+                <div class="tl-pct">72.9% ✅</div>
+                <div class="tl-drop gray">기준점</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot-col"><div class="tl-dot yellow"></div><div class="tl-line"></div></div>
+              <div class="tl-content">
+                <div class="tl-event">첫 카드 배치</div>
+                <div class="tl-pct">55.2% ⚠️</div>
+                <div class="tl-drop yellow">-17.7pp</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot-col"><div class="tl-dot green"></div></div>
+              <div class="tl-content">
+                <div class="tl-event">게임 완료</div>
+                <div class="tl-pct">54.9%</div>
+                <div class="tl-drop gray">-0.3pp ✅</div>
+              </div>
+            </div>
+          </div>
+          <div class="tuto-total green">총 이탈: -17.7pp</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM -->
+  <div id="bottom">
+
+    <div id="panel-sim">
+      <h2 id="sim-title">첫 터치 도달률 개선 시 완료율 시뮬레이션</h2>
+      <div class="sim-rows">
+        <div class="sim-row">
+          <div class="sim-label"><strong>현재</strong><span id="sim-cur-label">첫터치 40.7%</span></div>
+          <div class="sim-bar-bg"><div class="sim-bar-fill" id="sim-cur-bar" style="width:37.7%;background:linear-gradient(90deg,#E53E3E,#C53030);">37.7%</div></div>
+          <div class="sim-val" id="sim-cur-val" style="color:#E53E3E;">37.7%</div>
+          <div class="sim-hint" style="color:#9AA0B8;">현재 수준</div>
+        </div>
+        <div class="sim-row">
+          <div class="sim-label"><strong>P1 적용</strong>첫터치 50% 목표</div>
+          <div class="sim-bar-bg"><div class="sim-bar-fill" id="sim-p1-bar" style="width:46%;background:linear-gradient(90deg,#D69E2E,#B7791F);">~46%</div></div>
+          <div class="sim-val" id="sim-p1-val" style="color:#D69E2E;">~46%</div>
+          <div class="sim-hint" id="sim-p1-hint" style="color:#9AA0B8;">+8pp 개선</div>
+        </div>
+        <div class="sim-row">
+          <div class="sim-label"><strong>PBM 수준</strong>첫터치 55% 목표</div>
+          <div class="sim-bar-bg"><div class="sim-bar-fill" id="sim-pbm-bar" style="width:51%;background:linear-gradient(90deg,#2CB87A,#1A9A63);">~51%</div></div>
+          <div class="sim-val" id="sim-pbm-val" style="color:#2CB87A;">~51%</div>
+          <div class="sim-hint" style="color:#2CB87A;">PBM 수준 달성</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-ig">
+      <h2>IG 플랫폼 비교 <span style="font-size:9px;color:#9AA0B8;font-weight:400;">(런칭 D1~D3)</span></h2>
+      <div class="ig-compare-row">
+        <div class="ig-game-label">Cozy</div>
+        <div class="ig-bar-group">
+          <div class="ig-bar-line"><div class="ig-bar-label">Toss</div><div class="ig-bar-bg"><div class="ig-bar-fill" style="width:33.4%;background:linear-gradient(90deg,#E53E3E,#C53030);">33.4%</div></div></div>
+          <div class="ig-bar-line"><div class="ig-bar-label">IG</div><div class="ig-bar-bg"><div class="ig-bar-fill" style="width:73.5%;background:linear-gradient(90deg,#2CB87A,#1A9A63);">73.5%</div></div></div>
+        </div>
+        <div class="ig-delta">+40pp</div>
+      </div>
+      <div class="ig-compare-row">
+        <div class="ig-game-label">PBM</div>
+        <div class="ig-bar-group">
+          <div class="ig-bar-line"><div class="ig-bar-label">Toss</div><div class="ig-bar-bg"><div class="ig-bar-fill" style="width:55.2%;background:linear-gradient(90deg,#D69E2E,#B7791F);">55.2%</div></div></div>
+          <div class="ig-bar-line"><div class="ig-bar-label">IG</div><div class="ig-bar-bg"><div class="ig-bar-fill" style="width:86%;background:linear-gradient(90deg,#2CB87A,#1A9A63);">86.0%</div></div></div>
+        </div>
+        <div class="ig-delta">+30.8pp</div>
+      </div>
+      <div class="ig-insight"><strong>두 게임 모두 IG &gt; Toss 30~40pp</strong><br>Toss 플랫폼 진입 장벽 실재 → PST도 동일 패턴</div>
+    </div>
+
+    <div id="panel-action">
+      <h2>개선 액션 아이템</h2>
+      <div class="action-cards">
+        <div class="acard p1">
+          <span class="acard-badge">🔴 P1 튜토리얼 UX (즉시)</span>
+          <div class="acard-title">인디케이터 / 힌트 강화</div>
+          <div class="acard-desc">힌트 재생 속도 상향<br><strong>인디케이터 애니메이션 추가</strong> ← 핵심<br>조작 흐름 명확화</div>
+          <div class="acard-kpi">목표: 이탈 15% 이하 (현재 24.6%)</div>
+        </div>
+        <div class="acard p2">
+          <span class="acard-badge">🟡 P2·P3 환경 개선 (단기)</span>
+          <div class="acard-title">오류 규명 &amp; 팝업 최적화</div>
+          <div class="acard-desc">로딩 오류 35명 원인 규명<br>로그인 팝업: 첫 판 클리어 후 재노출</div>
+          <div class="acard-kpi">목표: 오류 이탈 제거, 팝업 최소화</div>
+        </div>
+        <div class="acard p3">
+          <span class="acard-badge">🟢 P4·P5 데이터 고도화 (중기)</span>
+          <div class="acard-title">트래킹 강화 &amp; 로그 정제</div>
+          <div class="acard-desc">터치 좌표·단계·시간 추가 (P4)<br>PLAYTIME 중복 로그 제거 (P5)</div>
+          <div class="acard-kpi">목표: 개선 효과 정밀 측정</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- #dashboard -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// 📊 DATA — 업데이트 시 HISTORY 배열 끝에 항목 추가
+// 형식: { date, label, updatedAt, pst:{players,start,touch,finish} }
+// ═══════════════════════════════════════════════════════════════════
+const HISTORY = [
+  {
+    date:'2026-05-07', label:'D+0 런칭', updatedAt:'2026-05-11',
+    pst:{ players:499, start:93.8, touch:40.7, finish:37.7 },
+  },
+];
+
+const REF = {
+  cozy:{ start:85.9, touch:33.4, finish:32.4 },
+  pbm: { start:72.9, touch:55.2, finish:48.7 },
+};
+const TARGET_TOUCH = 55;
+const BASELINE     = HISTORY[0].pst.touch;
+
+// ── helpers ──────────────────────────────────────────
+const pct   = v  => (+v).toFixed(1) + '%';
+const delta = (a,b) => { const d=b-a; return (d>=0?'+':'')+d.toFixed(1)+'pp'; };
+const round1= v  => Math.round(v*10)/10;
+
+let funnelChart = null;
+let trendChart  = null;
+
+// ══════════════════════════════════════════════════════
+// RENDER — call whenever HISTORY changes
+// ══════════════════════════════════════════════════════
+function render() {
+  const cur = HISTORY[HISTORY.length-1];
+  const p   = cur.pst;
+  const cr  = p.finish / p.touch; // completion rate post-touch
+
+  // Header
+  document.getElementById('h-updated').textContent   = cur.updatedAt;
+  document.getElementById('h-pst-total').textContent = p.players.toLocaleString()+'명';
+  document.getElementById('h-pst-start').textContent = pct(p.start);
+  document.getElementById('h-pst-touch').textContent = pct(p.touch);
+  document.getElementById('h-pst-finish').textContent= pct(p.finish);
+
+  // Dropout
+  const dropA = p.touch - p.start;
+  document.getElementById('d-pst-touch').textContent         = pct(p.touch);
+  document.getElementById('d-pst-touch-bar').style.width     = p.touch+'%';
+  document.getElementById('d-pst-touch-badge').textContent   = dropA.toFixed(1)+'pp 🔴';
+  const compPct = round1(p.finish/p.touch*100);
+  document.getElementById('d-pst-comp').textContent          = pct(compPct);
+  document.getElementById('d-pst-comp-bar').style.width      = compPct+'%';
+  document.getElementById('d-pst-comp-icon').textContent     = compPct>=90?'✅':compPct>=80?'⚠️':'🔴';
+
+  // Compare panel
+  document.getElementById('c-pst-start').textContent        = pct(p.start);
+  document.getElementById('c-pst-touch').textContent        = pct(p.touch);
+  document.getElementById('c-pst-touch-drop').textContent   = delta(p.start, p.touch);
+  document.getElementById('c-pst-finish').textContent       = pct(p.finish);
+  document.getElementById('c-pst-finish-drop').textContent  = delta(p.touch, p.finish)+' ✅';
+  document.getElementById('c-pst-total').textContent        = '총 이탈: '+delta(p.start, p.finish);
+
+  // Simulation
+  document.getElementById('sim-cur-label').textContent = '첫터치 '+pct(p.touch);
+  const curFin = round1(p.finish);
+  document.getElementById('sim-cur-bar').style.width    = curFin+'%';
+  document.getElementById('sim-cur-bar').textContent    = pct(curFin);
+  document.getElementById('sim-cur-val').textContent    = pct(curFin);
+  const sim50 = round1(50*cr);
+  document.getElementById('sim-p1-bar').style.width     = sim50+'%';
+  document.getElementById('sim-p1-bar').textContent     = '~'+sim50.toFixed(0)+'%';
+  document.getElementById('sim-p1-val').textContent     = '~'+sim50.toFixed(0)+'%';
+  document.getElementById('sim-p1-hint').textContent    = '+'+(sim50-curFin).toFixed(0)+'pp 개선';
+  const sim55 = round1(55*cr);
+  document.getElementById('sim-pbm-bar').style.width    = sim55+'%';
+  document.getElementById('sim-pbm-bar').textContent    = '~'+sim55.toFixed(0)+'%';
+  document.getElementById('sim-pbm-val').textContent    = '~'+sim55.toFixed(0)+'%';
+
+  // Trend table
+  const tbody = document.getElementById('trend-tbody');
+  tbody.innerHTML = '';
+  HISTORY.forEach(h => {
+    const d   = h.pst.touch - BASELINE;
+    const cls = d>0.4?'td-pos':d<-0.4?'td-neg':'td-base';
+    const ds  = d===0?'기준':(d>=0?'+':'')+d.toFixed(1)+'pp';
+    tbody.innerHTML += `<tr>
+      <td>${h.date}</td><td>${h.label}</td>
+      <td>${pct(h.pst.start)}</td>
+      <td>${pct(h.pst.touch)}</td>
+      <td>${pct(round1(h.pst.finish/h.pst.touch*100))}</td>
+      <td class="${cls}">${ds}</td>
+    </tr>`;
+  });
+
+  const gap = TARGET_TOUCH - p.touch;
+  const gapEl = document.getElementById('trend-gap');
+  if (gap>0) {
+    gapEl.textContent = '목표('+TARGET_TOUCH+'%)까지 +'+gap.toFixed(1)+'pp 필요';
+    gapEl.className = 'trend-gap needs-more';
+  } else {
+    gapEl.textContent = '🎉 목표 달성! (+'+Math.abs(gap).toFixed(1)+'pp 초과)';
+    gapEl.className = 'trend-gap achieved';
+  }
+
+  // Chart notes
+  const all=[{l:'PST',...p},{l:'Cozy',...REF.cozy},{l:'PBM',...REF.pbm}];
+  const bS=all.reduce((a,b)=>a.start>b.start?a:b);
+  const bT=all.reduce((a,b)=>a.touch>b.touch?a:b);
+  const bF=all.reduce((a,b)=>a.finish>b.finish?a:b);
+  document.getElementById('chart-notes-text').innerHTML =
+    `<span>게임시작: ${bS.l} 최고 (${pct(bS.start)})</span> &nbsp;|&nbsp; `+
+    `<span>첫터치: ${bT.l} 최고 (${pct(bT.touch)})</span> &nbsp;|&nbsp; `+
+    `<span>완료율: ${bF.l} 최고 (${pct(bF.finish)})</span>`;
+
+  // Update or create charts
+  updateCharts(p);
+
+  // History list in admin
+  renderHistoryList();
+}
+
+// ── Charts ───────────────────────────────────────────
+Chart.defaults.color='#7A7F94';
+Chart.defaults.font.family="'Noto Sans KR','Apple SD Gothic Neo',sans-serif";
+
+function updateCharts(p) {
+  const funnelData = {
+    labels:['① 게임 시작','② 첫 터치','③ 첫 게임 완료'],
+    datasets:[
+      {label:'PST',data:[p.start,p.touch,p.finish],backgroundColor:'rgba(79,142,247,0.82)',borderColor:'#4F8EF7',borderWidth:1.5,borderRadius:4},
+      {label:'Cozy',data:[REF.cozy.start,REF.cozy.touch,REF.cozy.finish],backgroundColor:'rgba(44,184,122,0.82)',borderColor:'#2CB87A',borderWidth:1.5,borderRadius:4},
+      {label:'PBM',data:[REF.pbm.start,REF.pbm.touch,REF.pbm.finish],backgroundColor:'rgba(232,131,42,0.82)',borderColor:'#E8832A',borderWidth:1.5,borderRadius:4},
+    ]
+  };
+  const funnelOpts = {
+    responsive:true, maintainAspectRatio:false, animation:{duration:500},
+    plugins:{
+      legend:{position:'top',labels:{color:'#4A5068',font:{size:11,weight:'600'},boxWidth:12,padding:14}},
+      tooltip:{backgroundColor:'#fff',borderColor:'#E2E6EF',borderWidth:1,titleColor:'#1A1D2E',bodyColor:'#4A5068',padding:9,
+        callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}%`}},
+    },
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#4A5068',font:{size:11,weight:'500'}},border:{color:'#E2E6EF'}},
+      y:{min:0,max:100,grid:{color:'rgba(0,0,0,0.05)'},ticks:{color:'#7A7F94',font:{size:10},callback:v=>v+'%',stepSize:20},border:{color:'#E2E6EF'}}
+    }
+  };
+  const labelPlugin=[{id:'dl',afterDatasetsDraw(chart){
+    const {ctx}=chart;
+    chart.data.datasets.forEach((ds,i)=>{
+      chart.getDatasetMeta(i).data.forEach((bar,j)=>{
+        ctx.save(); ctx.fillStyle='#4A5068'; ctx.font='600 10px "Noto Sans KR",sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='bottom';
+        ctx.fillText(ds.data[j].toFixed(1)+'%',bar.x,bar.y-3); ctx.restore();
+      });
+    });
+  }}];
+
+  if (funnelChart) {
+    funnelChart.data = funnelData;
+    funnelChart.update();
+  } else {
+    funnelChart = new Chart(document.getElementById('funnelChart'),{type:'bar',data:funnelData,options:funnelOpts,plugins:labelPlugin});
+  }
+
+  // Trend chart
+  const tLabels  = HISTORY.map(h=>h.date+'\n'+h.label);
+  const tTouches = HISTORY.map(h=>h.pst.touch);
+  const tFinish  = HISTORY.map(h=>round1(h.pst.finish/h.pst.touch*100));
+  const n = HISTORY.length;
+
+  const trendData = {
+    labels:tLabels,
+    datasets:[
+      {label:'첫터치율',data:tTouches,borderColor:'#4F8EF7',backgroundColor:'rgba(79,142,247,0.10)',
+       borderWidth:2.5,pointRadius:7,pointBackgroundColor:'#4F8EF7',pointBorderColor:'#fff',pointBorderWidth:2,
+       fill:true,tension:0.35,yAxisID:'y'},
+      {label:'첫터치후 완료율',data:tFinish,borderColor:'#2CB87A',backgroundColor:'rgba(44,184,122,0.06)',
+       borderWidth:2,pointRadius:6,pointBackgroundColor:'#2CB87A',pointBorderColor:'#fff',pointBorderWidth:2,
+       fill:false,tension:0.35,borderDash:[],yAxisID:'y'},
+      {label:'목표 '+TARGET_TOUCH+'% (첫터치)',data:Array(n).fill(TARGET_TOUCH),borderColor:'#E8832A',
+       borderDash:[7,4],borderWidth:1.5,pointRadius:0,fill:false,yAxisID:'y'},
+      {label:'기준 '+BASELINE+'% (D+0)',data:Array(n).fill(BASELINE),borderColor:'#CBD5E0',
+       borderDash:[3,3],borderWidth:1,pointRadius:0,fill:false,yAxisID:'y'},
+    ]
+  };
+  const trendOpts = {
+    responsive:true, maintainAspectRatio:false, animation:{duration:500},
+    plugins:{
+      legend:{position:'top',labels:{font:{size:10},padding:12,usePointStyle:true,pointStyleWidth:8}},
+      tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toFixed(1)}%`}},
+    },
+    scales:{
+      x:{grid:{display:false},ticks:{color:'#4A5068',font:{size:9},maxRotation:15},border:{color:'#E2E6EF'}},
+      y:{min:25,max:100,grid:{color:'#E2E6EF'},ticks:{color:'#4A5068',font:{size:10},callback:v=>v+'%',stepSize:10},border:{color:'#E2E6EF'}}
+    }
+  };
+  const trendLabelPlugin=[{id:'tl',afterDatasetsDraw(chart){
+    const {ctx}=chart;
+    [0,1].forEach(i=>{
+      const meta=chart.getDatasetMeta(i);
+      const ds=chart.data.datasets[i];
+      meta.data.forEach((pt,j)=>{
+        ctx.save(); ctx.fillStyle=i===0?'#4F8EF7':'#2CB87A';
+        ctx.font='700 11px "Noto Sans KR",sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='bottom';
+        ctx.fillText(ds.data[j].toFixed(1)+'%',pt.x,pt.y-8); ctx.restore();
+      });
+    });
+  }}];
+
+  if (trendChart) {
+    trendChart.data = trendData;
+    trendChart.update();
+  } else {
+    trendChart = new Chart(document.getElementById('trendChart'),{type:'line',data:trendData,options:trendOpts,plugins:trendLabelPlugin});
+  }
+}
+
+// ── Admin History List ────────────────────────────────
+function renderHistoryList() {
+  const el = document.getElementById('history-list');
+  if (!HISTORY.length) { el.innerHTML='<div id="no-history">이력 없음</div>'; return; }
+  el.innerHTML = HISTORY.map((h,i)=>`
+    <div class="hist-item${i===0?' baseline':''}">
+      <div class="hist-date">${h.date}</div>
+      <div class="hist-label">${h.label}${i===0?' <span style="font-size:9px;color:#9AA0B8;">(기준)</span>':''}</div>
+      <div class="hist-touch">${pct(h.pst.touch)}</div>
+      ${i>0?`<button class="hist-del" onclick="deleteEntry(${i})">✕</button>`:'<span style="width:18px;"></span>'}
+    </div>`).join('');
+}
+
+function deleteEntry(i) {
+  if (HISTORY.length<=1) return;
+  HISTORY.splice(i,1);
+  render();
+}
+
+// ── Admin Panel Toggle ────────────────────────────────
+const drawer = document.getElementById('admin-drawer');
+document.getElementById('admin-btn').addEventListener('click',()=>drawer.classList.add('open'));
+document.getElementById('adm-close').addEventListener('click',()=>drawer.classList.remove('open'));
+
+// ── CSV Upload ────────────────────────────────────────
+let parsedRows = [];
+let parsedDates = [];
+
+const dropZone  = document.getElementById('drop-zone');
+const csvInput  = document.getElementById('csv-input');
+
+dropZone.addEventListener('click',()=>csvInput.click());
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag-over');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');handleFile(e.dataTransfer.files[0]);});
+csvInput.addEventListener('change',e=>handleFile(e.target.files[0]));
+
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    parsedRows = parseCSV(e.target.result);
+    parsedDates = [...new Set(parsedRows.map(r=>r.log_date))].sort();
+    populateDateSelectors(parsedDates);
+    document.getElementById('date-filter-row').classList.add('visible');
+    computeAndPreview(parsedRows);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  return lines.slice(1).map(line => {
+    const cols = line.split(',');
+    return { log_date:cols[0], nth_event:cols[1], player_count:parseInt(cols[3])||0 };
+  }).filter(r=>r.log_date && r.nth_event);
+}
+
+function populateDateSelectors(dates) {
+  ['sel-date-start','sel-date-end'].forEach((id,i)=>{
+    const sel = document.getElementById(id);
+    sel.innerHTML = dates.map(d=>`<option value="${d}">${d}</option>`).join('');
+    if (i===1) sel.value = dates[dates.length-1];
+  });
+}
+
+document.getElementById('apply-date-btn').addEventListener('click',()=>{
+  const s = document.getElementById('sel-date-start').value;
+  const e = document.getElementById('sel-date-end').value;
+  const filtered = parsedRows.filter(r=>r.log_date>=s && r.log_date<=e);
+  computeAndPreview(filtered);
+});
+
+function computeAndPreview(rows) {
+  const f1 = rows.filter(r=>r.nth_event.startsWith('1-'));
+  const pivot = {};
+  f1.forEach(r=>{ pivot[r.nth_event]=(pivot[r.nth_event]||0)+r.player_count; });
+
+  const find = (...patterns) => {
+    for (const pat of patterns) {
+      const k = Object.keys(pivot).find(k=>k.includes(pat));
+      if (k) return pivot[k];
+    }
+    return null;
+  };
+
+  // Base: total players (largest event near top)
+  const allVals = Object.values(pivot);
+  const base = allVals.length ? Math.max(...allVals) : null;
+  const startCount  = find('2100_GAMEPLAY_START');
+  const touchCount  = find('9990','2115_GAMEPLAY_FIRST_TOUCH','2115_FIRST_TOUCH');
+  const finishCount = find('2300_GAMEPLAY_FINISH','2300_FINISH');
+
+  const preview = document.getElementById('csv-preview');
+  if (!startCount || !touchCount || !finishCount || !base) {
+    preview.innerHTML='<div style="color:#E53E3E;font-size:11px;">❌ 퍼널 이벤트를 찾을 수 없습니다<br>2100_GAMEPLAY_START / 9990 또는 2115 / 2300_GAMEPLAY_FINISH 필요</div>';
+    preview.classList.add('visible');
+    document.getElementById('add-snapshot-btn').disabled = true;
+    return;
+  }
+
+  const startPct  = round1(startCount/base*100);
+  const touchPct  = round1(touchCount/base*100);
+  const finishPct = round1(finishCount/base*100);
+
+  preview.classList.add('visible');
+  document.getElementById('pf-start').textContent   = pct(startPct);
+  document.getElementById('pf-touch').textContent   = pct(touchPct);
+  document.getElementById('pf-finish').textContent  = pct(finishPct);
+  document.getElementById('pf-drop-a').textContent  = delta(startPct, touchPct);
+  document.getElementById('pf-drop-b').textContent  = delta(touchPct, finishPct);
+  document.getElementById('pf-players').textContent = `총 기준 플레이어 ${base.toLocaleString()}명`;
+
+  // Store parsed values for add button
+  preview.dataset.start  = startPct;
+  preview.dataset.touch  = touchPct;
+  preview.dataset.finish = finishPct;
+  preview.dataset.players= base;
+  document.getElementById('add-snapshot-btn').disabled = false;
+}
+
+document.getElementById('add-snapshot-btn').addEventListener('click',()=>{
+  const preview  = document.getElementById('csv-preview');
+  const label    = document.getElementById('snapshot-label').value.trim() || '업데이트';
+  const dateVal  = document.getElementById('snapshot-date').value.trim() || new Date().toISOString().slice(0,10);
+
+  HISTORY.push({
+    date: dateVal,
+    label: label,
+    updatedAt: new Date().toISOString().slice(0,10),
+    pst:{
+      players: parseInt(preview.dataset.players)||0,
+      start:   parseFloat(preview.dataset.start)||0,
+      touch:   parseFloat(preview.dataset.touch)||0,
+      finish:  parseFloat(preview.dataset.finish)||0,
+    }
+  });
+
+  document.getElementById('snapshot-label').value = '';
+  document.getElementById('snapshot-date').value  = '';
+  document.getElementById('add-snapshot-btn').disabled = true;
+  preview.classList.remove('visible');
+  document.getElementById('date-filter-row').classList.remove('visible');
+
+  render();
+  drawer.classList.remove('open');
+});
+
+// ── INIT ─────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
