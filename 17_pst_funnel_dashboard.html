@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>PST 퍼널 대시보드</title>
-<script>(function(){var t=localStorage.getItem("pst-report-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var bar=document.createElement("div");bar.id="top-bar";var back=document.createElement("a");back.className="back-btn";back.href="index.html";back.textContent="← 목록";var right=document.createElement("div");right.id="top-bar-right";var btn=document.createElement("button");btn.className="theme-toggle";btn.title="라이트/다크 모드 전환";btn.textContent=t==="light"?"☀":"☾";right.appendChild(btn);bar.appendChild(back);bar.appendChild(right);document.body.prepend(bar);btn.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";if(l){document.documentElement.removeAttribute("data-theme");localStorage.setItem("pst-report-theme","dark");btn.textContent="☾";}else{document.documentElement.setAttribute("data-theme","light");localStorage.setItem("pst-report-theme","light");btn.textContent="☀";}});});})();</script>
+<script>(function(){document.addEventListener("DOMContentLoaded",function(){var bar=document.createElement("div");bar.id="top-bar";var back=document.createElement("a");back.className="back-btn";back.href="index.html";back.textContent="← 목록";bar.appendChild(back);document.body.prepend(bar);});})();</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -429,6 +429,13 @@ body {
     <div class="adm-section">
       <div class="adm-section-title">📋 업데이트 이력 관리</div>
       <div id="history-list"></div>
+    </div>
+
+    <!-- 배포 -->
+    <div class="adm-section">
+      <div class="adm-section-title">🚀 배포용 데이터 복사</div>
+      <p style="font-size:11px;color:#9AA0B8;margin-bottom:8px;line-height:1.5;">복사 후 채팅에 붙여넣기 → Claude가 배포합니다</p>
+      <button id="copy-deploy-btn" onclick="copyDeployCode()">📋 HISTORY 코드 복사</button>
     </div>
 
   </div>
@@ -946,6 +953,18 @@ function deleteEntry(i) {
   if (HISTORY.length<=1) return;
   HISTORY.splice(i,1);
   render();
+}
+
+function copyDeployCode() {
+  const lines = HISTORY.map(h =>
+    `  { date:'${h.date}', label:'${h.label}', updatedAt:'${h.updatedAt}', pst:{ players:${h.pst.players}, start:${h.pst.start}, touch:${h.pst.touch}, finish:${h.pst.finish} } }`
+  ).join(',\n');
+  const code = `const HISTORY = [\n${lines},\n];`;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('copy-deploy-btn');
+    btn.textContent = '✅ 복사됨!';
+    setTimeout(() => btn.textContent = '📋 HISTORY 코드 복사', 2000);
+  });
 }
 
 // ── Admin Panel Toggle ────────────────────────────────
