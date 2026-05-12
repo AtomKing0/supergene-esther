@@ -363,15 +363,26 @@ body.view-only #role-badge{display:inline-flex!important;background:rgba(100,255
   </div>
 </div>
 
-<!-- Section 4: PBM TikTok Reference -->
+<!-- Section 4: PBM Reference -->
 <div class="section" id="s4">
-  <div class="section-title"><span class="section-num">04</span> PBM TikTok 런칭 일정 (참고)</div>
-  <div class="section-desc">SCJ와 별도 프로젝트 — 개발 ~5/11 (월) · QA ~5/13 (수) · 배포 5/14~ (목)</div>
-  <div style="overflow-x:auto;margin-top:12px">
+  <div class="section-title"><span class="section-num">04</span> PBM 런칭 일정 (참고)</div>
+  <div class="section-desc">SCJ와 별도 프로젝트</div>
+  <div style="margin-top:16px;font-size:.82em;font-weight:700;color:var(--tiktok);margin-bottom:4px">TikTok — 개발 ~5/11 (월) · QA ~5/13 (수) · 배포 5/14~ (목)</div>
+  <div style="overflow-x:auto">
     <table id="pbm-gantt" style="border-collapse:collapse;width:100%;min-width:500px"></table>
+  </div>
+  <div style="margin-top:24px;font-size:.82em;font-weight:700;color:var(--cg);margin-bottom:4px">CG Star Fever — 개발 5/18 (월) 1.5일 · QA 5/20 (수) 1일 · 버퍼 5/21 (목) 0.5일 · 배포 5/22 (금)</div>
+  <div style="overflow-x:auto">
+    <table id="cg-gantt" style="border-collapse:collapse;width:100%;min-width:500px"></table>
+  </div>
+  <div style="margin-top:24px;font-size:.82em;font-weight:700;color:var(--toss);margin-bottom:4px">Toss 로그인 구좌 추가 — 개발 5/19 (화) 0.5일 · QA 5/20 (수) 1일 · 배포 5/21 (목)</div>
+  <div style="overflow-x:auto">
+    <table id="toss-gantt" style="border-collapse:collapse;width:100%;min-width:500px"></table>
   </div>
   <div class="legend" style="margin-top:12px">
     <div class="legend-item"><div class="legend-dot" style="background:var(--tiktok)"></div>TikTok (PBM)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cg)"></div>CG Star Fever (PBM)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--toss)"></div>Toss (PBM)</div>
     <div class="legend-item"><div class="legend-diamond"></div>배포 마일스톤</div>
   </div>
 </div>
@@ -1469,6 +1480,68 @@ let _loadedRemote = false;
   if (!_loadedRemote) { selfValidate(); _origRender(); }
 })();
 
+// ===== Generic simple gantt builder =====
+function buildSimpleGantt(tableId, rows, colorVar, chartStartStr, chartEndStr) {
+  const chartStart = parseDate(chartStartStr);
+  const chartEnd   = parseDate(chartEndStr);
+  const days = eachDay(chartStart, chartEnd);
+  const LABEL_W = '150px';
+  const DAY_W   = '32px';
+  const tbl = document.getElementById(tableId);
+  if (!tbl) return;
+  const thead = tbl.createTHead();
+  const trH = thead.insertRow();
+  const thL = document.createElement('th');
+  thL.style.cssText = `min-width:${LABEL_W};text-align:left;padding:0 10px;background:var(--surface2);font-size:.78em;color:var(--muted);border:1px solid var(--border);height:30px`;
+  thL.textContent = '태스크';
+  trH.appendChild(thL);
+  days.forEach(d => {
+    const th = document.createElement('th');
+    const off = isNonBusinessDay(d);
+    const hol = isHoliday(d);
+    th.style.cssText = `min-width:${DAY_W};width:${DAY_W};text-align:center;font-size:.72em;border:1px solid var(--border);height:30px;` +
+      (hol ? 'color:var(--red);background:#2a1a1a' : off ? 'color:var(--muted);background:var(--surface)' : 'background:var(--surface2);color:var(--muted)');
+    th.textContent = `${d.getMonth()+1}/${d.getDate()}`;
+    trH.appendChild(th);
+  });
+  const tbody = tbl.createTBody();
+  rows.forEach(row => {
+    const tr = tbody.insertRow();
+    const tdL = document.createElement('td');
+    tdL.style.cssText = `padding:0 10px;font-size:.88em;font-weight:600;white-space:nowrap;background:var(--surface);border:1px solid var(--border);height:38px`;
+    tdL.textContent = row.label;
+    tr.appendChild(tdL);
+    const rs = parseDate(row.start), re = parseDate(row.end);
+    days.forEach(d => {
+      const td = document.createElement('td');
+      const off = isNonBusinessDay(d);
+      const inRange = d >= rs && d <= re;
+      let bg = off ? 'var(--surface2)' : 'var(--surface)';
+      td.style.cssText = `border:1px solid var(--border);height:38px;text-align:center;vertical-align:middle;${inRange ? '' : `background:${bg}`}`;
+      if (inRange) {
+        if (row.type === 'milestone') {
+          td.style.background = 'var(--surface)';
+          td.innerHTML = `<div style="display:inline-block;width:12px;height:12px;background:${colorVar};transform:rotate(45deg);border-radius:2px"></div>`;
+        } else if (row.type === 'buffer') {
+          td.style.background = colorVar;
+          td.style.opacity = '0.4';
+          const isFirst = fmtDate(d) === fmtDate(rs);
+          if (isFirst) td.innerHTML = `<span style="font-size:.7em;font-weight:700;color:#fff;white-space:nowrap">${row.label}</span>`;
+        } else {
+          td.style.background = colorVar;
+          td.style.opacity = '0.9';
+          const isFirst = fmtDate(d) === fmtDate(rs);
+          const isLast  = fmtDate(d) === fmtDate(re);
+          if (isFirst) td.style.borderRadius = '6px 0 0 6px';
+          if (isLast)  td.style.borderRadius = (isFirst ? '6px' : '0 6px 6px 0');
+          if (isFirst) td.innerHTML = `<span style="font-size:.7em;font-weight:700;color:#fff;white-space:nowrap">${row.label}</span>`;
+        }
+      }
+      tr.appendChild(td);
+    });
+  });
+}
+
 // ===== PBM TikTok Reference Gantt =====
 (function buildPbmGantt() {
   const PBM_ROWS = [
@@ -1536,6 +1609,21 @@ let _loadedRemote = false;
     });
   });
 })();
+
+// ===== CG Star Fever Reference Gantt =====
+buildSimpleGantt('cg-gantt', [
+  { label: '개발',     start: '2026-05-18', end: '2026-05-19', type: 'task' },
+  { label: 'QA',      start: '2026-05-20', end: '2026-05-20', type: 'task' },
+  { label: '버퍼',    start: '2026-05-21', end: '2026-05-21', type: 'buffer' },
+  { label: '[M] 배포', start: '2026-05-22', end: '2026-05-22', type: 'milestone' },
+], 'var(--cg)', '2026-05-18', '2026-05-22');
+
+// ===== Toss 로그인 구좌 Reference Gantt =====
+buildSimpleGantt('toss-gantt', [
+  { label: '개발',     start: '2026-05-19', end: '2026-05-19', type: 'task' },
+  { label: 'QA',      start: '2026-05-20', end: '2026-05-20', type: 'task' },
+  { label: '[M] 배포', start: '2026-05-21', end: '2026-05-21', type: 'milestone' },
+], 'var(--toss)', '2026-05-18', '2026-05-22');
 </script>
 </body>
 </html>
