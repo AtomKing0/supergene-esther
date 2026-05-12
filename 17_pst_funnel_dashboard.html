@@ -222,6 +222,24 @@ body {
 .acard.p2 .acard-kpi { color:#D69E2E; }
 .acard.p3 .acard-kpi { color:#2CB87A; }
 
+/* ── ENGAGEMENT PANEL ───────────────────────────────── */
+#panel-engagement {
+  width:520px; height:200px; background:#fff;
+  border-right:1px solid #E2E6EF; padding:11px 14px 10px;
+  display:flex; flex-direction:column; flex-shrink:0;
+}
+#panel-engagement > h2 { font-size:12px; font-weight:700; color:#4A5068; margin-bottom:7px; flex-shrink:0; }
+.eng-body { display:flex; gap:10px; flex:1; overflow:hidden; }
+.eng-kpi-col { width:196px; flex-shrink:0; display:flex; flex-direction:column; }
+.eng-section-title { font-size:9px; font-weight:700; color:#9AA0B8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px; }
+.eng-section-title + .eng-section-title, .eng-row + .eng-row + .eng-row + .eng-section-title { margin-top:5px; }
+.eng-chart-col { flex:1; position:relative; min-width:0; }
+.eng-row { display:flex; align-items:center; gap:6px; margin-bottom:5px; }
+.eng-game-label { width:38px; font-size:9px; font-weight:700; color:#4A5068; flex-shrink:0; }
+.eng-bar-bg { flex:1; height:12px; background:#E2E6EF; border-radius:5px; overflow:hidden; }
+.eng-bar-fill { height:100%; border-radius:5px; display:flex; align-items:center; padding-left:4px; font-size:8px; font-weight:700; color:#fff; white-space:nowrap; }
+.eng-val { width:40px; font-size:9px; font-weight:800; text-align:right; flex-shrink:0; }
+
 /* ── ADMIN DRAWER ────────────────────────────────────── */
 #admin-drawer {
   position:fixed; top:0; right:-460px; width:460px; height:100vh;
@@ -375,6 +393,8 @@ body {
 
       <input class="adm-input" id="snapshot-label" placeholder="구분 이름 (예: P1 적용 후)" />
       <input class="adm-input" id="snapshot-date" placeholder="날짜 (예: 2026-05-21)" style="margin-top:6px;" />
+      <input class="adm-input" id="snapshot-rounds" placeholder="인당 판수 선택 (예: 3.5)" style="margin-top:6px;" />
+      <input class="adm-input" id="snapshot-rv" placeholder="판당 RV 선택 (예: 0.065)" style="margin-top:6px;" />
       <button id="add-snapshot-btn" disabled>대시보드에 추가</button>
     </div>
 
@@ -652,6 +672,49 @@ body {
       <div class="ig-insight"><strong>PST v146, Toss 내 타 게임 압도</strong><br>인디케이터 강화 → 첫터치 74.2% (목표 55% 초과)</div>
     </div>
 
+    <div id="panel-engagement">
+      <h2>판수 / 판당 RV <span style="font-size:9px;color:#9AA0B8;font-weight:400;">D1 신규유저 기준</span></h2>
+      <div class="eng-body">
+        <div class="eng-kpi-col">
+          <div class="eng-section-title">인당 판수</div>
+          <div class="eng-row">
+            <div class="eng-game-label">PST</div>
+            <div class="eng-bar-bg"><div class="eng-bar-fill" id="rounds-pst-bar" style="width:0%;background:linear-gradient(90deg,#4F8EF7,#2563EB);"></div></div>
+            <div class="eng-val" id="rounds-pst-val" style="color:#9AA0B8;">—</div>
+          </div>
+          <div class="eng-row">
+            <div class="eng-game-label">Cozy</div>
+            <div class="eng-bar-bg"><div class="eng-bar-fill" style="width:60%;background:linear-gradient(90deg,#2CB87A,#1A9A63);">4.80</div></div>
+            <div class="eng-val" style="color:#2CB87A;">4.80</div>
+          </div>
+          <div class="eng-row">
+            <div class="eng-game-label">PBM</div>
+            <div class="eng-bar-bg"><div class="eng-bar-fill" style="width:74%;background:linear-gradient(90deg,#E8832A,#C96810);">5.93</div></div>
+            <div class="eng-val" style="color:#E8832A;">5.93</div>
+          </div>
+          <div class="eng-section-title" style="margin-top:5px;">판당 RV</div>
+          <div class="eng-row">
+            <div class="eng-game-label">PST</div>
+            <div class="eng-bar-bg"><div class="eng-bar-fill" id="rv-pst-bar" style="width:0%;background:linear-gradient(90deg,#9B59B6,#7D3C98);"></div></div>
+            <div class="eng-val" id="rv-pst-val" style="color:#9AA0B8;">—</div>
+          </div>
+          <div class="eng-row">
+            <div class="eng-game-label">Cozy</div>
+            <div class="eng-bar-bg"><div class="eng-bar-fill" style="width:9%;background:linear-gradient(90deg,#2CB87A,#1A9A63);"></div></div>
+            <div class="eng-val" style="color:#2CB87A;">0.059</div>
+          </div>
+          <div class="eng-row">
+            <div class="eng-game-label">PBM</div>
+            <div class="eng-bar-bg"><div class="eng-bar-fill" style="width:10%;background:linear-gradient(90deg,#E8832A,#C96810);"></div></div>
+            <div class="eng-val" style="color:#E8832A;">0.068</div>
+          </div>
+        </div>
+        <div class="eng-chart-col">
+          <canvas id="engagementChart"></canvas>
+        </div>
+      </div>
+    </div>
+
     <div id="panel-action">
       <h2>개선 액션 아이템</h2>
       <div class="action-cards">
@@ -685,13 +748,13 @@ body {
 // 형식: { date, label, updatedAt, pst:{players,start,touch,finish} }
 // ═══════════════════════════════════════════════════════════════════
 const HISTORY = [
-  { date:'2026-05-07', label:'v136 런칭 (5/7~5/10)', version:'136', updatedAt:'2026-05-12', pst:{ players:499, start:93.8, touch:40.7, finish:37.7 } },
-  { date:'2026-05-11', label:'v146 인디케이터',        version:'146', updatedAt:'2026-05-12', pst:{ players:31,  start:100.0,touch:74.2, finish:67.7 } },
+  { date:'2026-05-07', label:'v136 런칭 (5/7~5/10)', version:'136', updatedAt:'2026-05-12', pst:{ players:499, start:93.8, touch:40.7, finish:37.7, rounds:3.73, rvPerRound:0.183 } },
+  { date:'2026-05-11', label:'v146 인디케이터',        version:'146', updatedAt:'2026-05-12', pst:{ players:31,  start:100.0,touch:74.2, finish:67.7, rounds:4.74, rvPerRound:0.578 } },
 ];
 
 const REF = {
-  cozy:{ start:86.9, touch:33.4, finish:32.5, platform:'Toss' },
-  pbm: { start:23.8, touch:24.7, finish:20.4, platform:'Toss' },
+  cozy:{ start:86.9, touch:33.4, finish:32.5, platform:'Toss', rounds:4.80, rvPerRound:0.0586 },
+  pbm: { start:23.8, touch:24.7, finish:20.4, platform:'Toss', rounds:5.93, rvPerRound:0.0682 },
 };
 const TARGET_TOUCH = 80;
 const BASELINE     = HISTORY[0].pst.touch;
@@ -792,8 +855,96 @@ function render() {
   // Update or create charts
   updateCharts(p);
 
+  // Engagement panels
+  renderEngagement(cur.pst);
+
   // History list in admin
   renderHistoryList();
+}
+
+let engChart = null;
+
+function renderEngagement(p) {
+  const MAX_ROUNDS = 8;
+  const MAX_RV     = 0.65;
+
+  if (p.rounds != null) {
+    const w = Math.min(p.rounds / MAX_ROUNDS * 100, 100);
+    document.getElementById('rounds-pst-bar').style.width    = w + '%';
+    document.getElementById('rounds-pst-bar').textContent    = p.rounds.toFixed(2);
+    document.getElementById('rounds-pst-val').textContent    = p.rounds.toFixed(2);
+    document.getElementById('rounds-pst-val').style.color    = '#4F8EF7';
+  }
+  if (p.rvPerRound != null) {
+    const w = Math.min(p.rvPerRound / MAX_RV * 100, 100);
+    document.getElementById('rv-pst-bar').style.width    = w + '%';
+    document.getElementById('rv-pst-bar').textContent    = p.rvPerRound.toFixed(3);
+    document.getElementById('rv-pst-val').textContent    = p.rvPerRound.toFixed(3);
+    document.getElementById('rv-pst-val').style.color    = '#9B59B6';
+  }
+  updateEngagementChart();
+}
+
+function updateEngagementChart() {
+  const labels     = HISTORY.map(h => (h.version ? `v${h.version}` : h.date));
+  const n          = HISTORY.length;
+  const roundsData = HISTORY.map(h => h.pst.rounds ?? null);
+  const rvData     = HISTORY.map(h => h.pst.rvPerRound ?? null);
+
+  const engData = {
+    labels,
+    datasets: [
+      { label:'PST 판수',  data:roundsData, borderColor:'#4F8EF7', backgroundColor:'rgba(79,142,247,0.08)',
+        borderWidth:2.5, pointRadius:5, pointBackgroundColor:'#4F8EF7', pointBorderColor:'#fff', pointBorderWidth:2,
+        yAxisID:'y', spanGaps:true, tension:0.3, fill:true },
+      { label:'Cozy 판수', data:Array(n).fill(REF.cozy.rounds), borderColor:'#2CB87A',
+        borderWidth:1.5, borderDash:[5,3], pointRadius:0, yAxisID:'y' },
+      { label:'PBM 판수',  data:Array(n).fill(REF.pbm.rounds),  borderColor:'#E8832A',
+        borderWidth:1.5, borderDash:[5,3], pointRadius:0, yAxisID:'y' },
+      { label:'PST RV',   data:rvData,     borderColor:'#9B59B6', backgroundColor:'rgba(155,89,182,0.06)',
+        borderWidth:2, pointRadius:5, pointBackgroundColor:'#9B59B6', pointBorderColor:'#fff', pointBorderWidth:2,
+        yAxisID:'y2', spanGaps:true, tension:0.3 },
+      { label:'Cozy RV',  data:Array(n).fill(REF.cozy.rvPerRound), borderColor:'#2CB87A',
+        borderWidth:1, borderDash:[3,3], pointRadius:0, yAxisID:'y2' },
+      { label:'PBM RV',   data:Array(n).fill(REF.pbm.rvPerRound),  borderColor:'#E8832A',
+        borderWidth:1, borderDash:[3,3], pointRadius:0, yAxisID:'y2' },
+    ]
+  };
+
+  const engOpts = {
+    responsive:true, maintainAspectRatio:false, animation:false,
+    plugins:{
+      legend:{ display:true, position:'bottom',
+        labels:{ font:{size:8}, boxWidth:10, padding:6,
+          filter: item => ['PST 판수','PST RV','Cozy 판수','PBM 판수'].includes(item.text) }
+      },
+      tooltip:{
+        callbacks:{
+          label: ctx => ctx.dataset.yAxisID==='y'
+            ? ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(2)}판`
+            : ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(3)}`
+        }
+      }
+    },
+    scales:{
+      x:{ grid:{display:false}, ticks:{font:{size:8}, maxRotation:0} },
+      y:{ type:'linear', position:'left', min:0, max:8,
+          ticks:{font:{size:8}, callback:v=>`${v}판`},
+          grid:{color:'rgba(0,0,0,0.05)'},
+          title:{display:true, text:'판수', font:{size:8}, color:'#4F8EF7'} },
+      y2:{ type:'linear', position:'right', min:0, max:0.7,
+           ticks:{font:{size:8}, callback:v=>v.toFixed(2)},
+           grid:{drawOnChartArea:false},
+           title:{display:true, text:'RV', font:{size:8}, color:'#9B59B6'} }
+    }
+  };
+
+  if (engChart) {
+    engChart.data = engData;
+    engChart.update();
+  } else {
+    engChart = new Chart(document.getElementById('engagementChart'), {type:'line', data:engData, options:engOpts});
+  }
 }
 
 // ── Charts ───────────────────────────────────────────
@@ -913,9 +1064,11 @@ function deleteEntry(i) {
 }
 
 function copyDeployCode() {
-  const lines = HISTORY.map(h =>
-    `  { date:'${h.date}', label:'${h.label}', updatedAt:'${h.updatedAt}', pst:{ players:${h.pst.players}, start:${h.pst.start}, touch:${h.pst.touch}, finish:${h.pst.finish} } }`
-  ).join(',\n');
+  const lines = HISTORY.map(h => {
+    const extras = (h.pst.rounds != null ? `, rounds:${h.pst.rounds}` : '') +
+                   (h.pst.rvPerRound != null ? `, rvPerRound:${h.pst.rvPerRound}` : '');
+    return `  { date:'${h.date}', label:'${h.label}', updatedAt:'${h.updatedAt}', pst:{ players:${h.pst.players}, start:${h.pst.start}, touch:${h.pst.touch}, finish:${h.pst.finish}${extras} } }`;
+  }).join(',\n');
   const code = `const HISTORY = [\n${lines},\n];`;
   navigator.clipboard.writeText(code).then(() => {
     const btn = document.getElementById('copy-deploy-btn');
@@ -1032,20 +1185,27 @@ document.getElementById('add-snapshot-btn').addEventListener('click',()=>{
   const label    = document.getElementById('snapshot-label').value.trim() || '업데이트';
   const dateVal  = document.getElementById('snapshot-date').value.trim() || new Date().toISOString().slice(0,10);
 
+  const roundsVal = parseFloat(document.getElementById('snapshot-rounds').value) || null;
+  const rvVal     = parseFloat(document.getElementById('snapshot-rv').value)     || null;
+
   HISTORY.push({
     date: dateVal,
     label: label,
     updatedAt: new Date().toISOString().slice(0,10),
     pst:{
-      players: parseInt(preview.dataset.players)||0,
-      start:   parseFloat(preview.dataset.start)||0,
-      touch:   parseFloat(preview.dataset.touch)||0,
-      finish:  parseFloat(preview.dataset.finish)||0,
+      players:    parseInt(preview.dataset.players)||0,
+      start:      parseFloat(preview.dataset.start)||0,
+      touch:      parseFloat(preview.dataset.touch)||0,
+      finish:     parseFloat(preview.dataset.finish)||0,
+      rounds:     roundsVal,
+      rvPerRound: rvVal,
     }
   });
 
-  document.getElementById('snapshot-label').value = '';
-  document.getElementById('snapshot-date').value  = '';
+  document.getElementById('snapshot-label').value  = '';
+  document.getElementById('snapshot-date').value   = '';
+  document.getElementById('snapshot-rounds').value = '';
+  document.getElementById('snapshot-rv').value     = '';
   document.getElementById('add-snapshot-btn').disabled = true;
   preview.classList.remove('visible');
   document.getElementById('date-filter-row').classList.remove('visible');
