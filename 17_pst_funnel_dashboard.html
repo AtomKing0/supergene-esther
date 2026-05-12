@@ -514,6 +514,7 @@ body {
             <tr>
               <th style="text-align:left;">날짜</th>
               <th style="text-align:left;">구분</th>
+              <th style="color:#9097b4;">빌드</th>
               <th>게임 시작</th>
               <th>첫 터치</th>
               <th>완료율</th>
@@ -679,15 +680,14 @@ body {
 // 형식: { date, label, updatedAt, pst:{players,start,touch,finish} }
 // ═══════════════════════════════════════════════════════════════════
 const HISTORY = [
-  {
-    date:'2026-05-07', label:'D+0 런칭', updatedAt:'2026-05-11',
-    pst:{ players:499, start:93.8, touch:40.7, finish:37.7 },
-  },
+  { date:'2026-05-07', label:'D+0 런칭',          version:'',    updatedAt:'2026-05-12', pst:{ players:499, start:93.8, touch:40.7, finish:37.7 } },
+  { date:'2026-05-11', label:'D+5 v136',           version:'136', updatedAt:'2026-05-12', pst:{ players:54,  start:98.1, touch:59.3, finish:57.4 } },
+  { date:'2026-05-11', label:'D+5 v146 인디케이터', version:'146', updatedAt:'2026-05-12', pst:{ players:31,  start:100.0,touch:74.2, finish:67.7 } },
 ];
 
 const REF = {
-  cozy:{ start:85.9, touch:33.4, finish:32.4 },
-  pbm: { start:72.9, touch:55.2, finish:48.7 },
+  cozy:{ start:88.4, touch:29.9, finish:29.9, platform:'Toss' },
+  pbm: { start:72.9, touch:55.2, finish:48.7, platform:'IG'   },
 };
 const TARGET_TOUCH = 55;
 const BASELINE     = HISTORY[0].pst.touch;
@@ -757,7 +757,7 @@ function render() {
     const cls = d>0.4?'td-pos':d<-0.4?'td-neg':'td-base';
     const ds  = d===0?'기준':(d>=0?'+':'')+d.toFixed(1)+'pp';
     tbody.innerHTML += `<tr>
-      <td>${h.date}</td><td>${h.label}</td>
+      <td>${h.date}</td><td>${h.label}</td><td style="color:#9097b4;font-size:10px;">${h.version?'v'+h.version:'-'}</td>
       <td>${pct(h.pst.start)}</td>
       <td>${pct(h.pst.touch)}</td>
       <td>${pct(round1(h.pst.finish/h.pst.touch*100))}</td>
@@ -836,7 +836,7 @@ function updateCharts(p) {
   }
 
   // Trend chart
-  const tLabels  = HISTORY.map(h=>h.date+'\n'+h.label);
+  const tLabels  = HISTORY.map(h=>h.date+(h.version?` v${h.version}`:'')+'\n'+h.label);
   const tTouches = HISTORY.map(h=>h.pst.touch);
   const tFinish  = HISTORY.map(h=>round1(h.pst.finish/h.pst.touch*100));
   const n = HISTORY.length;
