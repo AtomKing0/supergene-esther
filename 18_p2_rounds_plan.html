@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>P2: 인당 판수 개선 기획안</title>
+<script>(function(){document.addEventListener("DOMContentLoaded",function(){var bar=document.createElement("div");bar.id="top-bar";var back=document.createElement("a");back.className="back-btn";back.href="index.html";back.textContent="← 목록";bar.appendChild(back);document.body.prepend(bar);});})();</script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+#top-bar{width:100%;height:52px;display:flex;align-items:center;padding:0 20px;background:#fff;border-bottom:1px solid #E2E6EF;box-sizing:border-box;position:sticky;top:0;z-index:9997;}
+.back-btn{height:36px;padding:0 14px;border-radius:18px;border:1px solid #CBD5E0;background:#F8F9FB;color:#525870;display:flex;align-items:center;text-decoration:none;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;}
+.back-btn:hover{border-color:#4A5068;color:#1A1D2E;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#F0F2F7;font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:13px;color:#1A1D2E;padding-bottom:48px;}
+
+/* PAGE */
+.page{max-width:1200px;margin:0 auto;padding:32px 24px;}
+
+/* HEADER */
+.report-header{background:#fff;border-radius:14px;padding:28px 32px;margin-bottom:24px;border:1.5px solid #E2E6EF;display:flex;gap:32px;align-items:flex-start;}
+.report-header-left{flex:1;}
+.report-tag{display:inline-block;background:#FFF5C2;border:1px solid #F6C90E;color:#7A6200;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:0.5px;margin-bottom:10px;}
+.report-header h1{font-size:26px;font-weight:900;color:#1A1D2E;letter-spacing:-0.5px;line-height:1.3;}
+.report-header p{font-size:12px;color:#7A7F94;margin-top:6px;}
+.report-header p strong{color:#4A5068;}
+.kpi-row{display:flex;gap:12px;flex-shrink:0;}
+.kpi-box{background:#F8F9FB;border:1.5px solid #E2E6EF;border-radius:10px;padding:12px 18px;text-align:center;min-width:130px;}
+.kpi-box.gap{border-color:#E8832A;background:#FFF8F0;}
+.kpi-label{font-size:9px;font-weight:700;color:#9AA0B8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.kpi-val{font-size:22px;font-weight:900;color:#1A1D2E;}
+.kpi-box.gap .kpi-val{color:#E8832A;}
+.kpi-sub{font-size:10px;color:#9AA0B8;margin-top:2px;}
+
+/* SECTION */
+.section-title{font-size:16px;font-weight:800;color:#1A1D2E;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.section-title span{font-size:11px;font-weight:600;color:#7A7F94;}
+
+/* CARD GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;}
+.grid-full{margin-bottom:24px;}
+.card{background:#fff;border-radius:12px;padding:20px 22px;border:1.5px solid #E2E6EF;}
+.card h3{font-size:13px;font-weight:700;color:#4A5068;margin-bottom:4px;}
+.card .sub{font-size:10px;color:#9AA0B8;margin-bottom:14px;}
+
+/* FUNNEL VIZ */
+.funnel-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.funnel-label{width:60px;font-size:11px;font-weight:700;color:#4A5068;flex-shrink:0;}
+.funnel-bar-wrap{flex:1;position:relative;height:28px;background:#F4F6FB;border-radius:6px;overflow:hidden;}
+.funnel-bar{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#fff;transition:width 0.6s ease;}
+.funnel-n{width:44px;font-size:11px;font-weight:700;color:#4A5068;text-align:right;flex-shrink:0;}
+.funnel-drop{width:70px;font-size:10px;font-weight:700;text-align:right;flex-shrink:0;}
+.funnel-drop.bad{color:#E53E3E;}
+.funnel-drop.mid{color:#D69E2E;}
+.funnel-drop.ok{color:#2CB87A;}
+.funnel-arrow{width:20px;text-align:center;color:#CBD5E0;font-size:14px;flex-shrink:0;}
+.drop-badge{display:inline-block;background:#FFF0F0;border:1px solid #FEB2B2;color:#E53E3E;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:6px;}
+.drop-badge.mid{background:#FFFBEB;border-color:#F6C90E;color:#B07D00;}
+
+/* PROBLEM CARDS */
+.prob-card{background:#fff;border-radius:12px;padding:18px 20px;border:1.5px solid #E2E6EF;display:flex;flex-direction:column;gap:8px;}
+.prob-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;width:fit-content;}
+.prob-badge.p1{background:#FFF0F0;color:#C53030;border:1px solid #FEB2B2;}
+.prob-badge.p2{background:#FFFBEB;color:#B07D00;border:1px solid #F6C90E;}
+.prob-badge.p3{background:#EBF8FF;color:#2B6CB0;border:1px solid #90CDF4;}
+.prob-title{font-size:15px;font-weight:800;color:#1A1D2E;line-height:1.3;}
+.prob-stat{font-size:22px;font-weight:900;}
+.prob-stat.red{color:#E53E3E;}
+.prob-stat.yellow{color:#D69E2E;}
+.prob-stat.blue{color:#4F8EF7;}
+.prob-desc{font-size:11px;color:#7A7F94;line-height:1.6;}
+.prob-hypothesis{background:#F8F9FB;border-left:3px solid #CBD5E0;border-radius:0 6px 6px 0;padding:7px 10px;font-size:11px;color:#4A5068;line-height:1.6;}
+
+/* ACTION CARDS */
+.action-card{background:#fff;border-radius:12px;padding:20px 22px;border:1.5px solid #E2E6EF;}
+.action-tag{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-bottom:10px;width:fit-content;}
+.action-tag.p1{background:#FFF0F0;color:#C53030;border:1px solid #FEB2B2;}
+.action-tag.p2{background:#FFFBEB;color:#B07D00;border:1px solid #F6C90E;}
+.action-tag.p3{background:#EBF8FF;color:#2B6CB0;border:1px solid #90CDF4;}
+.action-title{font-size:14px;font-weight:800;color:#1A1D2E;margin-bottom:6px;}
+.action-why{font-size:11px;color:#7A7F94;margin-bottom:12px;line-height:1.6;}
+.action-items{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.action-item{display:flex;align-items:flex-start;gap:8px;font-size:11px;color:#4A5068;line-height:1.5;}
+.action-item-dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;}
+.action-item-dot.red{background:#E53E3E;}
+.action-item-dot.yellow{background:#D69E2E;}
+.action-item-dot.blue{background:#4F8EF7;}
+.action-kpi{background:#F8F9FB;border-radius:7px;padding:8px 12px;font-size:10px;color:#4A5068;line-height:1.6;}
+.action-kpi strong{color:#1A1D2E;}
+.action-impact{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.impact-chip{background:#EBF8F0;color:#276749;border:1px solid #9AE6B4;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;}
+.impact-chip.yellow{background:#FFFBEB;color:#744210;border-color:#F6E05E;}
+
+/* TARGET TABLE */
+.target-table{width:100%;border-collapse:collapse;font-size:12px;}
+.target-table thead tr{background:#F4F6FB;}
+.target-table th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:#9AA0B8;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #E2E6EF;}
+.target-table td{padding:9px 12px;border-bottom:1px solid #F4F6FB;color:#4A5068;}
+.target-table tr:last-child td{border-bottom:none;}
+.target-table .metric{font-weight:700;color:#1A1D2E;}
+.target-table .cur{color:#E53E3E;font-weight:700;}
+.target-table .tgt{color:#2CB87A;font-weight:700;}
+.target-table .ref{color:#9AA0B8;}
+
+/* TIMELINE */
+.timeline{display:flex;gap:0;margin-bottom:24px;}
+.tl-item{flex:1;position:relative;}
+.tl-item:not(:last-child)::after{content:'';position:absolute;top:18px;right:0;width:100%;height:2px;background:#E2E6EF;z-index:0;}
+.tl-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:8px;position:relative;z-index:1;}
+.tl-dot.now{background:#4F8EF7;}
+.tl-dot.soon{background:#E8832A;}
+.tl-dot.later{background:#2CB87A;}
+.tl-dot.future{background:#9B59B6;}
+.tl-phase{font-size:9px;font-weight:800;color:#9AA0B8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;}
+.tl-label{font-size:12px;font-weight:700;color:#1A1D2E;line-height:1.3;}
+.tl-sub{font-size:10px;color:#9AA0B8;margin-top:2px;}
+
+/* CHART */
+.chart-wrap{height:200px;position:relative;}
+
+/* DIVIDER */
+.divider{height:1px;background:#E2E6EF;margin:24px 0;}
+
+/* HIGHLIGHT BOX */
+.highlight{background:linear-gradient(135deg,#EBF4FF,#F0F7FF);border:1.5px solid #90CDF4;border-radius:10px;padding:14px 18px;font-size:12px;color:#2B6CB0;line-height:1.7;margin-top:16px;}
+.highlight strong{color:#1A56A0;}
+
+/* COMP ROW */
+.comp-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.comp-label{width:70px;font-size:11px;font-weight:700;color:#4A5068;flex-shrink:0;}
+.comp-bar-wrap{flex:1;background:#F4F6FB;border-radius:6px;overflow:hidden;height:24px;}
+.comp-bar{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:8px;font-size:10px;font-weight:700;color:#fff;}
+.comp-val{width:50px;font-size:12px;font-weight:800;text-align:right;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <div class="report-header-left">
+      <div class="report-tag">🟡 P2 액션 아이템</div>
+      <h1>인당 플레이 판수 개선 기획안</h1>
+      <p>v163 (5/13) 데이터 기반 · <strong>작성: 2026-05-14</strong></p>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-box">
+        <div class="kpi-label">현재 avg 판수</div>
+        <div class="kpi-val">4.09</div>
+        <div class="kpi-sub">v163 (n=69)</div>
+      </div>
+      <div class="kpi-box gap">
+        <div class="kpi-label">vs PBM 갭</div>
+        <div class="kpi-val">-1.84</div>
+        <div class="kpi-sub">PBM 5.93판</div>
+      </div>
+      <div class="kpi-box gap" style="border-color:#D69E2E;background:#FFFBEB;">
+        <div class="kpi-label">vs Cozy 갭</div>
+        <div class="kpi-val" style="color:#D69E2E;">-0.71</div>
+        <div class="kpi-sub">Cozy 4.80판</div>
+      </div>
+      <div class="kpi-box" style="border-color:#2CB87A;background:#EBF8F0;">
+        <div class="kpi-label">목표</div>
+        <div class="kpi-val" style="color:#2CB87A;">5.5</div>
+        <div class="kpi-sub">PBM 대비 93%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 섹션 1: 현황 분석 -->
+  <div class="section-title">📊 판별 이탈 현황 분석 <span>v163 (n=69)</span></div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>판별 잔존율 (1판 기준)</h3>
+      <div class="sub">각 판 진입자 ÷ 1판 진입자(69명)</div>
+      <div id="funnel-viz">
+        <div class="funnel-row">
+          <div class="funnel-label">1판</div>
+          <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%;background:linear-gradient(90deg,#4F8EF7,#2563EB);">100%</div></div>
+          <div class="funnel-n">69명</div>
+          <div class="funnel-drop ok">—</div>
+        </div>
+        <div class="funnel-row" style="padding-left:0;">
+          <div class="funnel-label" style="color:#CBD5E0;font-size:10px;">↓</div>
+          <div style="flex:1;padding-left:4px;font-size:10px;color:#E53E3E;font-weight:700;">-24명 이탈 (-34.8%) <span class="drop-badge">최대 이탈</span></div>
+          <div class="funnel-n"></div><div class="funnel-drop"></div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-label">2판</div>
+          <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:65.2%;background:linear-gradient(90deg,#9B59B6,#7B2FBE);">65.2%</div></div>
+          <div class="funnel-n">45명</div>
+          <div class="funnel-drop mid">-34.8%</div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-label" style="color:#CBD5E0;font-size:10px;">↓</div>
+          <div style="flex:1;padding-left:4px;font-size:10px;color:#D69E2E;font-weight:700;">-9명 이탈 (-20.0%)</div>
+          <div class="funnel-n"></div><div class="funnel-drop"></div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-label">3판</div>
+          <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:52.2%;background:linear-gradient(90deg,#9B59B6,#7B2FBE);">52.2%</div></div>
+          <div class="funnel-n">36명</div>
+          <div class="funnel-drop mid">-20.0%</div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-label" style="color:#CBD5E0;font-size:10px;">↓</div>
+          <div style="flex:1;padding-left:4px;font-size:10px;color:#E53E3E;font-weight:700;">-16명 이탈 (-44.4%) <span class="drop-badge">2위 이탈</span></div>
+          <div class="funnel-n"></div><div class="funnel-drop"></div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-label">4판</div>
+          <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:29.0%;background:linear-gradient(90deg,#E8832A,#C96810);">29.0%</div></div>
+          <div class="funnel-n">20명</div>
+          <div class="funnel-drop bad">-44.4%</div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-label" style="color:#CBD5E0;font-size:10px;">↓</div>
+          <div style="flex:1;padding-left:4px;font-size:10px;color:#D69E2E;font-weight:700;">-7명 이탈 (-35.0%)</div>
+          <div class="funnel-n"></div><div class="funnel-drop"></div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-label">5판</div>
+          <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:18.8%;background:linear-gradient(90deg,#E8832A,#C96810);">18.8%</div></div>
+          <div class="funnel-n">13명</div>
+          <div class="funnel-drop bad">-35.0%</div>
+        </div>
+        <div class="funnel-row">
+          <div class="funnel-label">6판+</div>
+          <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:10.1%;background:linear-gradient(90deg,#9AA0B8,#7A7F94);">10.1%</div></div>
+          <div class="funnel-n">7명</div>
+          <div class="funnel-drop bad">-46.2%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>경쟁앱 판수 비교</h3>
+      <div class="sub">세션당 평균 플레이 판수</div>
+      <div style="margin-bottom:20px;">
+        <div class="comp-row">
+          <div class="comp-label">PST v163</div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:69%;background:linear-gradient(90deg,#4F8EF7,#2563EB);">4.09판</div></div>
+          <div class="comp-val" style="color:#4F8EF7;">4.09</div>
+        </div>
+        <div class="comp-row">
+          <div class="comp-label">Cozy</div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:81%;background:linear-gradient(90deg,#2CB87A,#1A9A63);">4.80판</div></div>
+          <div class="comp-val" style="color:#2CB87A;">4.80</div>
+        </div>
+        <div class="comp-row">
+          <div class="comp-label">PBM</div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:100%;background:linear-gradient(90deg,#E8832A,#C96810);">5.93판</div></div>
+          <div class="comp-val" style="color:#E8832A;">5.93</div>
+        </div>
+        <div class="comp-row">
+          <div class="comp-label" style="color:#2CB87A;font-weight:800;">목표</div>
+          <div class="comp-bar-wrap"><div class="comp-bar" style="width:93%;background:linear-gradient(90deg,#9B59B6,#7B2FBE);">목표 5.5판</div></div>
+          <div class="comp-val" style="color:#9B59B6;">5.5</div>
+        </div>
+      </div>
+      <h3 style="margin-bottom:6px;">판별 완료율 이상 포인트</h3>
+      <div class="sub">완료율 = 해당 판 finish ÷ start</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:100px;background:#F8F9FB;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:#9AA0B8;font-weight:700;margin-bottom:3px;">1판</div>
+          <div style="font-size:18px;font-weight:900;color:#D69E2E;">76.8%</div>
+          <div style="font-size:9px;color:#9AA0B8;">첫터치 장벽</div>
+        </div>
+        <div style="flex:1;min-width:100px;background:#F8F9FB;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:#9AA0B8;font-weight:700;margin-bottom:3px;">2~4판</div>
+          <div style="font-size:18px;font-weight:900;color:#2CB87A;">91~97%</div>
+          <div style="font-size:9px;color:#9AA0B8;">양호 구간</div>
+        </div>
+        <div style="flex:1;min-width:100px;background:#FFF0F0;border:1px solid #FEB2B2;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9px;color:#9AA0B8;font-weight:700;margin-bottom:3px;">5판</div>
+          <div style="font-size:18px;font-weight:900;color:#E53E3E;">61.5%</div>
+          <div style="font-size:9px;color:#E53E3E;font-weight:700;">난이도 스파이크 의심</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 섹션 2: 핵심 문제 진단 -->
+  <div class="section-title">🔍 핵심 문제 진단</div>
+  <div class="grid-3">
+    <div class="prob-card">
+      <div class="prob-badge p1">🔴 문제 #1 — 1→2판 이탈</div>
+      <div class="prob-title">튜토 직후 이탈<br>1→2판 -34.8%</div>
+      <div class="prob-stat red">24명 / 69명 이탈</div>
+      <div class="prob-desc">1판을 완료했음에도 2판을 시작하지 않은 유저가 34.8%.<br>튜토리얼을 클리어한 직후가 최대 이탈 지점.</div>
+      <div class="prob-hypothesis">
+        <strong>가설:</strong> 1판 클리어 후 다음 진입 유도(CTA)가 약하거나, 게임 루프 매력이 전달되지 않는 시점.
+      </div>
+    </div>
+    <div class="prob-card">
+      <div class="prob-badge p1">🔴 문제 #2 — 3→4판 이탈</div>
+      <div class="prob-title">초반 루프 이탈<br>3→4판 -44.4%</div>
+      <div class="prob-stat red">16명 / 36명 이탈</div>
+      <div class="prob-desc">3판 완료 후 4판 진입 이탈률이 44.4%로 가장 높은 구간 이탈.<br>누적 잔존율도 29%로 급락.</div>
+      <div class="prob-hypothesis">
+        <strong>가설:</strong> 3판 완료 시 제공되는 보상/피드백이 약해 세션 지속 동기 상실. 또는 난이도 체감 증가.
+      </div>
+    </div>
+    <div class="prob-card">
+      <div class="prob-badge p2">🟡 문제 #3 — 5판 완료율 급락</div>
+      <div class="prob-title">난이도 스파이크<br>5판 완료율 61.5%</div>
+      <div class="prob-stat yellow">2~4판 대비 -30pp</div>
+      <div class="prob-desc">2~4판 완료율 91~97% 대비 5판만 61.5%로 유독 낮음.<br>특정 레벨의 난이도 이상치 가능성.</div>
+      <div class="prob-hypothesis">
+        <strong>가설:</strong> 5번째 레벨이 의도치 않게 어렵거나, 힌트·부스터 노출 타이밍이 늦음.
+      </div>
+    </div>
+  </div>
+
+  <!-- 섹션 3: 개선 제안 -->
+  <div class="section-title">💡 개선 제안</div>
+  <div class="grid-2">
+
+    <div class="action-card">
+      <div class="action-tag p1">🔴 A1 — 즉시 적용</div>
+      <div class="action-title">1판 → 2판 전환 UX 강화</div>
+      <div class="action-why">1판 클리어 직후가 최대 이탈 지점. 다음판 진입 마찰을 줄이고 연속 플레이 momentum을 형성.</div>
+      <div class="action-items">
+        <div class="action-item">
+          <div class="action-item-dot red">1</div>
+          <div><strong>클리어 화면 CTA 강화</strong> — "다음 레벨 바로 시작" 버튼을 팝업 화면 정중앙에 배치, 탭 수 최소화</div>
+        </div>
+        <div class="action-item">
+          <div class="action-item-dot red">2</div>
+          <div><strong>2판 예고 연출</strong> — 1판 클리어 후 2판 썸네일·난이도 한 줄 노출 ("다음: 레벨 2 · 보통")</div>
+        </div>
+        <div class="action-item">
+          <div class="action-item-dot red">3</div>
+          <div><strong>연속 클리어 streak 피드백</strong> — 2판 진입 시 "2연속!" 애니메이션으로 연속성 강화</div>
+        </div>
+      </div>
+      <div class="action-kpi">
+        <strong>목표:</strong> 1→2판 전환율 65.2% → <strong>78%+</strong><br>
+        <strong>측정:</strong> r2.retention 변화 (버전 비교)
+      </div>
+      <div class="action-impact">
+        <div class="impact-chip">+0.5~0.8판/인 예상</div>
+        <div class="impact-chip">코드 변경 최소</div>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-tag p1">🔴 A2 — 즉시 적용</div>
+      <div class="action-title">3판 완료 시 보상 강화</div>
+      <div class="action-why">3→4판 구간이 44.4%로 가장 높은 이탈. 3판 완료를 "작은 마일스톤"으로 만들어 세션 지속 동기 부여.</div>
+      <div class="action-items">
+        <div class="action-item">
+          <div class="action-item-dot red">1</div>
+          <div><strong>3판 완료 마일스톤 보상</strong> — 코인·힌트 소량 지급 ("3판 달성! 보너스 코인 +50")</div>
+        </div>
+        <div class="action-item">
+          <div class="action-item-dot red">2</div>
+          <div><strong>진행 게이지 표시</strong> — "오늘 목표: 5판" 게이지를 세션 중 상단에 노출하여 목표 의식 부여</div>
+        </div>
+        <div class="action-item">
+          <div class="action-item-dot red">3</div>
+          <div><strong>4판 선예고 잠금해제 연출</strong> — 3판 클리어 순간 4판이 잠금 해제되는 애니메이션</div>
+        </div>
+      </div>
+      <div class="action-kpi">
+        <strong>목표:</strong> 3→4판 전환율 29.0% → <strong>45%+</strong><br>
+        <strong>측정:</strong> r4.retention 변화 (버전 비교)
+      </div>
+      <div class="action-impact">
+        <div class="impact-chip">+0.4~0.6판/인 예상</div>
+        <div class="impact-chip yellow">보상 경제 검토 필요</div>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-tag p2">🟡 A3 — 단기 (1~2주)</div>
+      <div class="action-title">5판 난이도 스파이크 해소</div>
+      <div class="action-why">5판 완료율 61.5%는 인접 판 대비 -30pp 이상 낮은 이상치. 난이도 조정 또는 힌트 개입이 필요.</div>
+      <div class="action-items">
+        <div class="action-item">
+          <div class="action-item-dot yellow">1</div>
+          <div><strong>5번째 레벨 난이도 검토</strong> — 평균 이동 수·클리어 시간 데이터로 이상 여부 확인</div>
+        </div>
+        <div class="action-item">
+          <div class="action-item-dot yellow">2</div>
+          <div><strong>실패 2회 이상 시 힌트 자동 노출</strong> — 5판 이상 구간에서 연속 실패 시 부스터 제안</div>
+        </div>
+        <div class="action-item">
+          <div class="action-item-dot yellow">3</div>
+          <div><strong>난이도 곡선 재조정</strong> — 레벨 5 → 6 사이 완충 레벨 삽입 또는 레벨 5 카드 수 조정</div>
+        </div>
+      </div>
+      <div class="action-kpi">
+        <strong>목표:</strong> 5판 완료율 61.5% → <strong>80%+</strong><br>
+        <strong>측정:</strong> r5.finishRate 변화
+      </div>
+      <div class="action-impact">
+        <div class="impact-chip">+0.2~0.3판/인 예상</div>
+        <div class="impact-chip yellow">레벨 데이터 분석 선행</div>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-tag p2">🟡 A4 — 단기 (1~2주)</div>
+      <div class="action-title">일일 목표 퀘스트 + 세션 복귀 유도</div>
+      <div class="action-why">현재 세션 내 이탈 후 재방문 동기가 없음. 가벼운 일일 목표 시스템으로 재방문율·판수 동시 개선.</div>
+      <div class="action-items">
+        <div class="action-item">
+          <div class="action-item-dot yellow">1</div>
+          <div><strong>일일 미션</strong> — "오늘 5판 클리어 시 보너스" 형태의 가벼운 데일리 퀘스트</div>
+        </div>
+        <div class="action-item">
+          <div class="action-item-dot yellow">2</div>
+          <div><strong>세션 종료 훅</strong> — 앱 종료 시 "목표까지 N판 남았어요!" 알림 예약</div>
+        </div>
+        <div class="action-item">
+          <div class="action-item-dot yellow">3</div>
+          <div><strong>Streak 시스템</strong> — 연속 N일 플레이 달성 보상으로 재방문 루틴화</div>
+        </div>
+      </div>
+      <div class="action-kpi">
+        <strong>목표:</strong> 세션 복귀율 향상 → 판수 누적 증가<br>
+        <strong>측정:</strong> DAU/NRU 비율, 판수 분포 변화
+      </div>
+      <div class="action-impact">
+        <div class="impact-chip">재방문 세션 추가 기대</div>
+        <div class="impact-chip yellow">시스템 설계 필요</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 섹션 4: 목표 지표 -->
+  <div class="section-title">🎯 개선 목표 지표</div>
+  <div class="card grid-full">
+    <h3>판별 전환율 목표</h3>
+    <div class="sub" style="margin-bottom:16px;">현재 → 목표 (각 개선안 적용 후)</div>
+    <table class="target-table">
+      <thead>
+        <tr>
+          <th>지표</th>
+          <th>현재 (v163)</th>
+          <th>목표</th>
+          <th>참고 (레퍼런스)</th>
+          <th>관련 개선안</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="metric">평균 플레이 판수</td>
+          <td class="cur">4.09판</td>
+          <td class="tgt">5.5판</td>
+          <td class="ref">PBM 5.93 / Cozy 4.80</td>
+          <td>A1+A2+A3+A4 복합</td>
+        </tr>
+        <tr>
+          <td class="metric">1→2판 전환율</td>
+          <td class="cur">65.2%</td>
+          <td class="tgt">78%+</td>
+          <td class="ref">—</td>
+          <td>A1 (CTA·streak)</td>
+        </tr>
+        <tr>
+          <td class="metric">3→4판 전환율</td>
+          <td class="cur">29.0%</td>
+          <td class="tgt">45%+</td>
+          <td class="ref">—</td>
+          <td>A2 (마일스톤 보상)</td>
+        </tr>
+        <tr>
+          <td class="metric">5판 완료율</td>
+          <td class="cur">61.5%</td>
+          <td class="tgt">80%+</td>
+          <td class="ref">2~4판 91~97%</td>
+          <td>A3 (난이도 조정)</td>
+        </tr>
+        <tr>
+          <td class="metric">RV/판</td>
+          <td class="cur">0.606</td>
+          <td class="tgt">0.65+</td>
+          <td class="ref">PBM 0.068 (비교 불가)</td>
+          <td>A4 (세션 유지)</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="highlight" style="margin-top:14px;">
+      <strong>예상 임팩트:</strong> A1+A2 적용만으로도 1→2판 전환율 +13pp, 3→4판 전환율 +16pp 개선 시 평균 판수 <strong>4.09 → 5.0~5.3판</strong> 수준 달성 가능 (Cozy 수준 도달). A3+A4 추가 시 5.5판 목표 달성 가능.
+    </div>
+  </div>
+
+  <!-- 섹션 5: 실행 로드맵 -->
+  <div class="section-title">📅 실행 로드맵</div>
+  <div class="card grid-full">
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot now" style="color:#fff;">🔥</div>
+        <div class="tl-phase">즉시</div>
+        <div class="tl-label">A1: 1→2판 CTA</div>
+        <div class="tl-sub">클리어 화면 UX<br>2판 예고 연출</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot now" style="color:#fff;">⚡</div>
+        <div class="tl-phase">즉시</div>
+        <div class="tl-label">A2: 3판 보상</div>
+        <div class="tl-sub">마일스톤 지급<br>진행 게이지</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot soon" style="color:#fff;">🔍</div>
+        <div class="tl-phase">1주 내</div>
+        <div class="tl-label">A3: 5판 분석</div>
+        <div class="tl-sub">레벨 데이터 검토<br>난이도 조정</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot later" style="color:#fff;">📋</div>
+        <div class="tl-phase">1~2주</div>
+        <div class="tl-label">A4: 일일 퀘스트</div>
+        <div class="tl-sub">데일리 미션 설계<br>복귀 알림 기획</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot future" style="color:#fff;">✅</div>
+        <div class="tl-phase">2~3주</div>
+        <div class="tl-label">효과 측정</div>
+        <div class="tl-sub">n=200 누적 후<br>판수 개선 확인</div>
+      </div>
+    </div>
+    <div style="background:#F8F9FB;border-radius:8px;padding:12px 16px;font-size:11px;color:#4A5068;line-height:1.7;">
+      <strong>우선순위 기준:</strong> A1(1→2판 CTA)·A2(3판 보상)는 코드 변경 범위가 작고 임팩트가 커 즉시 착수 권장.
+      A3(5판 난이도)는 레벨 데이터 분석 선행 후 진행. A4(일일 퀘스트)는 시스템 설계 공수가 크므로 A1~A3 효과 확인 후 착수.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
