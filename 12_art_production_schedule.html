@@ -291,7 +291,7 @@ document.getElementById('themeToggle').addEventListener('click',function(){
 <div class="section-title"><span class="section-num">06</span> 퍼즐 사진 제작 일정</div>
 
 <div class="callout">
-  <strong>퍼즐 피스 드랍 기준 (CONST)</strong>: 베팅 x1 클리어 → <strong>1피스</strong> · 베팅 x2 → <strong>3피스</strong> · 베팅 x4 → <strong>5피스</strong> (레벨당).<br>
+  <strong>퍼즐 피스 드랍 기준 (CONST)</strong>: 베팅 x1 클리어 → <strong>1피스</strong> · 베팅 x2 → <strong>2피스</strong> · 베팅 x4 → <strong>4피스</strong> (레벨당).<br>
   <span style="color:var(--muted)">"완성 레벨" = 앨범 해금 레벨부터 피스를 모두 모으는 데 필요한 레벨 수 누적 기준. 납기 기준 = Average 유저(15판/일·72% 클리어 ≈ 10.8레벨/일) 기준 해금 레벨 도달 시점.</span>
 </div>
 
@@ -1913,8 +1913,8 @@ function computePuzzle() {
     const total = a.pieces.reduce((s, p) => s + p, 0);
     const unlock_lv = a.unlock_lv || 1;
     const x1_lv = unlock_lv + total;
-    const x2_lv = unlock_lv + Math.ceil(total / 3);
-    const x4_lv = unlock_lv + Math.ceil(total / 5);
+    const x2_lv = unlock_lv + Math.ceil(total / 2);
+    const x4_lv = unlock_lv + Math.ceil(total / 4);
     const city_wins = Math.round((a.hammers || 0) / PUZZLE_WEIGHTED_HPW);
     const ratio = city_wins > 0 ? (total / city_wins).toFixed(2) : '—';
     const unlock_days = Math.round(unlock_lv / AVG_LV_PER_DAY);
@@ -1948,8 +1948,8 @@ function renderPuzzleTable(data) {
   html += '<th></th><th>#</th><th>앨범</th><th>해금 레벨</th>';
   html += '<th>피스 수<br>(사진 장수)</th><th>총 소모 피스</th>';
   html += '<th>x1 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">1피스/판</span></th>';
-  html += '<th>x2 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">3피스/판</span></th>';
-  html += '<th>x4 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">5피스/판</span></th>';
+  html += '<th>x2 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">2피스/판</span></th>';
+  html += '<th>x4 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">4피스/판</span></th>';
   html += '<th>아트 납기 기준<br><span style="font-weight:400;color:var(--muted);font-size:.85em">Avg 유저 해금일</span></th><th>아트 완료</th>';
   html += '</tr></thead><tbody>';
   data.forEach((a, i) => {
@@ -2164,8 +2164,8 @@ function initPuzzleChart(dataArg) {
       labels,
       datasets: [
         { label: 'x1 완성 레벨 (캐주얼, 1피스/판)', data: data.map(a => a.x1_lv), backgroundColor: 'rgba(100,255,218,0.5)', borderColor: 'rgba(100,255,218,0.9)', borderWidth: 1, borderRadius: 3 },
-        { label: 'x2 완성 레벨 (일반, 3피스/판)',   data: data.map(a => a.x2_lv), backgroundColor: 'rgba(87,182,255,0.7)',  borderColor: 'rgba(87,182,255,0.9)',  borderWidth: 1, borderRadius: 3 },
-        { label: 'x4 완성 레벨 (헤비, 5피스/판)',   data: data.map(a => a.x4_lv), backgroundColor: 'rgba(255,209,102,0.8)', borderColor: 'rgba(255,209,102,1)',   borderWidth: 1, borderRadius: 3 },
+        { label: 'x2 완성 레벨 (일반, 2피스/판)',   data: data.map(a => a.x2_lv), backgroundColor: 'rgba(87,182,255,0.7)',  borderColor: 'rgba(87,182,255,0.9)',  borderWidth: 1, borderRadius: 3 },
+        { label: 'x4 완성 레벨 (헤비, 4피스/판)',   data: data.map(a => a.x4_lv), backgroundColor: 'rgba(255,209,102,0.8)', borderColor: 'rgba(255,209,102,1)',   borderWidth: 1, borderRadius: 3 },
       ]
     },
     options: {
