@@ -1536,7 +1536,11 @@ let _isSavingConfig = false;
 function _applyCityList(cities) {
   const locked = CITIES_BASE.filter(c => c.locked);
   const lockedIds = new Set(locked.map(c => c.id));
-  const filtered = cities.filter(c => !lockedIds.has(c.id));
+  const staticH = {};
+  CITIES_BASE.forEach(c => { if (c.h !== undefined) staticH[c.id] = c.h; });
+  const filtered = cities.filter(c => !lockedIds.has(c.id)).map(c => ({
+    ...c, h: c.h !== undefined ? c.h : staticH[c.id]
+  }));
   CITIES_BASE.splice(0, CITIES_BASE.length, ...locked, ...filtered);
   TOTAL_CITIES = CITIES_BASE.length;
   while (HAMMER_CURVE.length < TOTAL_CITIES) {
