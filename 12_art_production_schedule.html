@@ -544,6 +544,19 @@ function compute(cities) {
     postDates.push(prevPost);
   }
 
+  // 업데이트 일정 (Cozy 패턴: 런칭→C11 +30일, C11→C12 +7일, 이후 [15,25,14,45] 반복)
+  const UPDATE_CYCLE = [15, 25, 14, 45];
+  const updateDates = [];
+  for (let j = 0; j < cities.length; j++) {
+    if (j < LAUNCH_CITIES) {
+      updateDates.push(new Date(LAUNCH));
+    } else {
+      const p = j - LAUNCH_CITIES;
+      const interval = p === 0 ? 30 : p === 1 ? 7 : UPDATE_CYCLE[(p - 2) % 4];
+      updateDates.push(addDate(updateDates[j - 1], interval));
+    }
+  }
+
   let cumH = 0;
   return cities.map((c, i) => {
     cumH += c.h;
@@ -583,7 +596,7 @@ function compute(cities) {
     });
 
     return {
-      ...c, n, cumH, artDate, phase,
+      ...c, n, cumH, artDate, phase, updateDate: updateDates[i],
       pd, hcD, hcDate, buffer, games
     };
   });
@@ -1174,6 +1187,7 @@ function renderSchedule(data) {
   html += `<th colspan="2" style="${gs} #9B59B6;text-align:center;color:#9B59B6">Hardcore</th>`;
   html += `<th colspan="1" style="${gs} var(--yellow);text-align:center;color:var(--yellow)">납기 일정</th>`;
   html += `<th colspan="1" style="${gs} var(--accent);text-align:center;color:var(--accent)">아트 완료</th>`;
+  html += `<th colspan="1" style="${gs} var(--blue);text-align:center;color:var(--blue)">업데이트 일정</th>`;
   html += '</tr>';
   // 컬럼 헤더
   html += '<tr>';
@@ -1189,6 +1203,7 @@ function renderSchedule(data) {
   html += '<th title="Hardcore 유저의 해당 도시 도달 예상 경과일 (런칭 기준 D+N)" style="color:#9B59B6">HC 도달</th>';
   html += '<th title="개발에 넘겨야 하는 마지노선 날짜 (아트+연출 완료 기준)">납기 일정</th>';
   html += '<th title="아트 완료 체크 및 완료 날짜 기록">아트 완료</th>';
+  html += '<th title="인게임 공간 업데이트 예정일 (Cozy 패턴 기반)" style="color:var(--blue)">업데이트<br>일정</th>';
   html += '</tr></thead><tbody>';
 
   let lastPhase = '';
@@ -1255,11 +1270,16 @@ function renderSchedule(data) {
     html += `<td style="color:#9B59B6">${c.games['Hardcore']}</td>`;
     html += `<td style="color:#9B59B6">${hcDStr}</td>`;
     html += `<td style="color:var(--yellow)">${bufStr}</td>`;
-    html += `<td style="text-align:center">${artCheckHtml}</td></tr>`;
+    html += `<td style="text-align:center">${artCheckHtml}</td>`;
+    const updD = Math.round((c.updateDate - LAUNCH) / 86400000);
+    const updCell = i < LAUNCH_CITIES
+      ? `<strong style="color:var(--blue)">런칭</strong>`
+      : `<strong>${fmtDate(c.updateDate)}</strong><div style="font-size:.75em;color:var(--muted)">D+${updD}</div>`;
+    html += `<td style="color:var(--blue);text-align:center">${updCell}</td></tr>`;
   });
 
   html += `<tr class="total-row"><td colspan="4">합계</td><td>${data[data.length-1].cumH}</td>`;
-  html += `<td colspan="9">런칭 ${LAUNCH_CITIES}도시 · 업데이트 ${TOTAL_CITIES-LAUNCH_CITIES}도시 (${fmtDate(data[data.length-1].artDate)} 완료) · HC 전체 소진: D${Math.round(data[data.length-1].hcD)}</td></tr>`;
+  html += `<td colspan="10">런칭 ${LAUNCH_CITIES}도시 · 업데이트 ${TOTAL_CITIES-LAUNCH_CITIES}도시 (${fmtDate(data[data.length-1].artDate)} 완료) · HC 전체 소진: D${Math.round(data[data.length-1].hcD)}</td></tr>`;
   html += '</tbody></table>';
 
   document.getElementById('schedule-table-wrap').innerHTML = html;
