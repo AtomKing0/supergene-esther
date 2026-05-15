@@ -173,7 +173,7 @@ document.getElementById('themeToggle').addEventListener('click',function(){
   <div class="subtitle">Reference-Calibrated Hammer Curve v3.0 · 4일/도시 · 런칭 10개 도시 + 업데이트 · 드래그로 순서 변경</div>
   <div class="meta-row">
     <span class="meta-tag">Hammer Curve v3.0 (x1.07 progressive)</span>
-    <span class="meta-tag">30 Cities · 3,838 Hammers</span>
+    <span class="meta-tag">30 Cities · 3,345 Hammers</span>
     <span class="meta-tag">2026-03-26</span>
     <span class="meta-tag">Agent: 01_PM</span>
   </div>
@@ -327,38 +327,38 @@ document.getElementById('themeToggle').addEventListener('click',function(){
 // ========== DATA ==========
 const CITIES_BASE = [
   // Published (1-4) — 확정, 아트 완료
-  {id:'newyork',name:'New York',locked:true,artDone:new Date(2026,2,26)},
-  {id:'venice',name:'Venice',locked:true,artDone:new Date(2026,2,26)},
-  {id:'sapporo',name:'Sapporo',locked:true,artDone:new Date(2026,2,27)},
-  {id:'cairo',name:'Cairo',locked:true,pending:true,artDone:new Date(2026,3,2)},
+  {id:'newyork',name:'New York',h:61,locked:true,artDone:new Date(2026,2,26)},
+  {id:'venice',name:'Venice',h:64,locked:true,artDone:new Date(2026,2,26)},
+  {id:'sapporo',name:'Sapporo',h:68,locked:true,artDone:new Date(2026,2,27)},
+  {id:'cairo',name:'Cairo',h:71,locked:true,pending:true,artDone:new Date(2026,3,2)},
   // Sheet city_order 5-30 (순서 미정, 드래그로 변경 가능)
-  {id:'prague',name:'Prague'},
-  {id:'bangkok',name:'Bangkok'},
-  {id:'miami',name:'Miami'},
-  {id:'dubai',name:'Dubai'},
-  {id:'tokyo',name:'Tokyo'},
-  {id:'barcelona',name:'Barcelona'},
-  {id:'chicago',name:'Chicago'},
-  {id:'london',name:'London'},
-  {id:'rio',name:'Rio de Janeiro'},
-  {id:'sanfrancisco',name:'San Francisco'},
-  {id:'athens',name:'Athens'},
-  {id:'lasvegas',name:'Las Vegas'},
-  {id:'sydney',name:'Sydney'},
-  {id:'rome',name:'Rome'},
-  {id:'losangeles',name:'Los Angeles'},
-  {id:'istanbul',name:'Istanbul'},
-  {id:'paris',name:'Paris'},
+  {id:'prague',name:'Prague',h:75},
+  {id:'bangkok',name:'Bangkok',h:78},
+  {id:'miami',name:'Miami',h:82},
+  {id:'dubai',name:'Dubai',h:85},
+  {id:'tokyo',name:'Tokyo',h:92},
+  {id:'barcelona',name:'Barcelona',h:96},
+  {id:'chicago',name:'Chicago',h:99},
+  {id:'london',name:'London',h:89},
+  {id:'rio',name:'Rio de Janeiro',h:103},
+  {id:'sanfrancisco',name:'San Francisco',h:106},
+  {id:'athens',name:'Athens',h:110},
+  {id:'lasvegas',name:'Las Vegas',h:113},
+  {id:'sydney',name:'Sydney',h:117},
+  {id:'rome',name:'Rome',h:120},
+  {id:'losangeles',name:'Los Angeles',h:124},
+  {id:'istanbul',name:'Istanbul',h:127},
+  {id:'paris',name:'Paris',h:131},
   // 신규 9개 도시 (22-30)
-  {id:'marrakech',name:'Marrakech'},
-  {id:'kyoto',name:'Kyoto'},
-  {id:'havana',name:'Havana'},
-  {id:'reykjavik',name:'Reykjavik'},
-  {id:'shanghai',name:'Shanghai'},
-  {id:'capetown',name:'Cape Town'},
-  {id:'petra',name:'Petra'},
-  {id:'buenosaires',name:'Buenos Aires'},
-  {id:'mexicocity',name:'Mexico City'}
+  {id:'marrakech',name:'Marrakech',h:134},
+  {id:'kyoto',name:'Kyoto',h:138},
+  {id:'havana',name:'Havana',h:141},
+  {id:'reykjavik',name:'Reykjavik',h:145},
+  {id:'shanghai',name:'Shanghai',h:148},
+  {id:'capetown',name:'Cape Town',h:152},
+  {id:'petra',name:'Petra',h:155},
+  {id:'buenosaires',name:'Buenos Aires',h:159},
+  {id:'mexicocity',name:'Mexico City',h:162}
 ];
 
 // 해머 누진 곡선: 슬롯(순서) 기반. base=40, x1.07. 도시 순서 변경해도 곡선은 고정.
@@ -469,8 +469,10 @@ function setActiveBookmark(id) {
 function getCities(order) {
   const map = {};
   CITIES_BASE.forEach(c => map[c.id] = {...c});
-  // 해머는 슬롯(순서) 기반 배정 — 도시가 아닌 위치에 따라 결정
-  return order.map((id, i) => ({...map[id], h: HAMMER_CURVE[i]}));
+  return order.map((id, i) => {
+    const city = map[id];
+    return {...city, h: city.h !== undefined ? city.h : HAMMER_CURVE[i]};
+  });
 }
 
 function addDate(base, days) {
