@@ -544,15 +544,14 @@ function compute(cities) {
     postDates.push(prevPost);
   }
 
-  // 업데이트 일정 (Cozy 패턴: 런칭→C11 +30일, C11→C12 +7일, 이후 [15,25,14,45] 반복)
-  const UPDATE_CYCLE = [15, 25, 14, 45];
+  // 업데이트 일정: 런칭→C11 +25일, 이후 20일 간격
   const updateDates = [];
   for (let j = 0; j < cities.length; j++) {
     if (j < LAUNCH_CITIES) {
       updateDates.push(new Date(LAUNCH));
     } else {
       const p = j - LAUNCH_CITIES;
-      const interval = p === 0 ? 30 : p === 1 ? 7 : UPDATE_CYCLE[(p - 2) % 4];
+      const interval = p === 0 ? 25 : 20;
       updateDates.push(addDate(updateDates[j - 1], interval));
     }
   }
