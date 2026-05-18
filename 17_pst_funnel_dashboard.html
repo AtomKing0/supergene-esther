@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>PST 퍼널 대시보드</title>
-<script>(function(){document.addEventListener("DOMContentLoaded",function(){var bar=document.createElement("div");bar.id="top-bar";var back=document.createElement("a");back.className="back-btn";back.href="index.html";back.textContent="← 목록";bar.appendChild(back);document.body.prepend(bar);});})();</script>
+<script>(function(){document.addEventListener("DOMContentLoaded",function(){var bar=document.createElement("div");bar.id="top-bar";var back=document.createElement("a");back.className="back-btn";back.href="index.html";back.textContent="← 목록";bar.appendChild(back);var right=document.createElement("div");right.id="top-bar-right";var lbl=document.createElement("span");lbl.textContent="데이터 기준:";lbl.style.cssText="font-size:10px;font-weight:600;color:#9AA0B8;flex-shrink:0;";var bA=document.createElement("button");bA.id="toggle-all";bA.textContent="전체 유저";bA.setAttribute("onclick","setOrgMode(false)");bA.style.cssText="padding:5px 14px;border-radius:20px;border:1.5px solid #4F8EF7;background:#EEF3FF;color:#4F8EF7;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;";var bO=document.createElement("button");bO.id="toggle-org";bO.textContent="🌿 오가닉 Only";bO.setAttribute("onclick","setOrgMode(true)");bO.style.cssText="padding:5px 14px;border-radius:20px;border:1.5px solid #E2E6EF;background:#fff;color:#9AA0B8;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;";right.appendChild(lbl);right.appendChild(bA);right.appendChild(bO);bar.appendChild(right);document.body.prepend(bar);});})();</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -570,17 +570,11 @@ body {
 
     <!-- CENTER-RIGHT: Trend Chart (840px) -->
     <div id="panel-trend">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
-        <h2 style="margin-bottom:0;">PST 첫 터치율 개선 추이 <span style="font-size:11px;font-weight:400;color:#9AA0B8;">목표 80% | 기준 v136 40.7%</span></h2>
-        <div style="display:flex;gap:4px;flex-shrink:0;">
-          <button id="toggle-all" onclick="setOrgMode(false)" style="padding:4px 10px;border-radius:20px;border:1.5px solid #4F8EF7;background:#EEF3FF;color:#4F8EF7;font-size:10px;font-weight:700;cursor:pointer;">전체 유저</button>
-          <button id="toggle-org" onclick="setOrgMode(true)"  style="padding:4px 10px;border-radius:20px;border:1.5px solid #E2E6EF;background:#fff;color:#9AA0B8;font-size:10px;font-weight:700;cursor:pointer;">🚫 오가닉 Only</button>
-        </div>
-      </div>
+      <h2 id="trend-panel-title" style="margin-bottom:3px;">PST 첫 터치율 개선 추이 <span style="font-size:11px;font-weight:400;color:#9AA0B8;">목표 80% | 기준 v136</span></h2>
       <p class="subtitle">데이터 포인트를 추가할수록 개선 곡선이 표시됩니다</p>
       <div id="trend-wrap"><canvas id="trendChart"></canvas></div>
       <div class="trend-history">
-        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:5px 9px;margin-bottom:6px;font-size:9px;color:#92400E;line-height:1.5;">
+        <div id="noise-warning" style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:5px 9px;margin-bottom:6px;font-size:9px;color:#92400E;line-height:1.5;">
           <strong>⚠️ v170 이후 노이즈 주의</strong> — 5/14부터 스마트 발송으로 유저 유입량·유입 채널이 변경됨. 행동 지표(터치율·완료율) 변화가 UX 개선 효과인지 유입 구조 변화인지 교차 검증 필요.
         </div>
         <table class="trend-table">
@@ -703,9 +697,10 @@ body {
     </div>
 
     <div id="panel-engagement">
-      <h2>판수 / 판당 RV <span style="font-size:9px;color:#9AA0B8;font-weight:400;">D1 신규유저 기준</span></h2>
+      <h2 id="eng-panel-title">판수 / 판당 RV <span style="font-size:9px;color:#9AA0B8;font-weight:400;">D1 신규유저 기준</span></h2>
       <div class="eng-body">
         <div class="eng-kpi-col">
+          <div id="eng-kpi-all">
           <div class="eng-section-title">인당 판수</div>
           <div class="eng-row">
             <div class="eng-game-label">PST</div>
@@ -738,6 +733,8 @@ body {
             <div class="eng-bar-bg"><div class="eng-bar-fill" style="width:10%;background:linear-gradient(90deg,#E8832A,#C96810);"></div></div>
             <div class="eng-val" style="color:#E8832A;">0.068</div>
           </div>
+          </div><!-- #eng-kpi-all -->
+          <div id="eng-kpi-org" style="display:none;"></div>
         </div>
         <div class="eng-chart-col">
           <canvas id="engagementChart"></canvas>
@@ -807,6 +804,21 @@ const REF = {
 const TARGET_TOUCH = 80;
 const BASELINE     = HISTORY[0].pst.touch;
 
+// ── Organic-only version data (smart-sending excluded) ────────────
+// v163 merged into v146 (minor bugfix), v172 merged into v170 (minor bugfix)
+const DATA_ORGANIC_VER = [
+  { ver:'v120', period:'5/7~5/8',   n:138, touch:63.0, r1r2:50.4, r2r3:82.9, r3r4:47.1, r5f:100,  post:false,
+    desc:'런칭 초기 빌드' },
+  { ver:'v136', period:'5/8~5/11',  n:268, touch:56.1, r1r2:46.1, r2r3:79.1, r3r4:53.7, r5f:94.2, post:false, base:true,
+    desc:'출시 빌드 — 기준점' },
+  { ver:'v146', period:'5/11~5/13', n:158, touch:77.8, r1r2:60.2, r2r3:78.2, r3r4:46.3, r5f:100,  post:false,
+    desc:'인디케이터(손가락 연출) 적용 · v163 버그픽스 포함' },
+  { ver:'v170', period:'5/14~5/15', n:115, touch:76.4, r1r2:63.6, r2r3:83.3, r3r4:79.3, r5f:92.5, post:true,
+    desc:'[온보딩/튜토 개선] 22레벨까지 인디케이터 유지 · 3→4레벨 상점 튜토 삭제·플레이 유도 · v172 버그픽스 포함' },
+  { ver:'v177', period:'5/15~5/17', n:241, touch:68.9, r1r2:63.0, r2r3:72.1, r3r4:74.1, r5f:97.6, post:true, latest:true,
+    desc:'[판수 증대] 강제 튜토 5레벨 확장 · 2레벨까지 클리어 후 즉시 진입 · TUT_0005_b 진입·클리어 확인' },
+];
+
 // ── helpers ──────────────────────────────────────────
 const pct   = v  => (+v).toFixed(1) + '%';
 const delta = (a,b) => { const d=b-a; return (d>=0?'+':'')+d.toFixed(1)+'pp'; };
@@ -821,12 +833,15 @@ let orgMode     = false;
 // ══════════════════════════════════════════════════════
 function render() {
   const cur = HISTORY[HISTORY.length-1];
-  const p   = cur.pst;
+  const orgLatest = DATA_ORGANIC_VER[DATA_ORGANIC_VER.length-1];
+  const p = orgMode
+    ? { ...cur.pst, players: orgLatest.n, touch: orgLatest.touch }
+    : cur.pst;
   const cr  = p.finish / p.touch; // completion rate post-touch
 
   // Header
   document.getElementById('h-updated').textContent   = cur.updatedAt;
-  document.getElementById('h-pst-total').textContent = p.players.toLocaleString()+'명';
+  document.getElementById('h-pst-total').textContent = p.players.toLocaleString()+'명'+(orgMode?' (오가닉)':'');
   document.getElementById('h-pst-start').textContent = pct(p.start);
   document.getElementById('h-pst-touch').textContent = pct(p.touch);
   document.getElementById('h-pst-finish').textContent= pct(p.finish);
@@ -880,6 +895,7 @@ function render() {
       const badge = r.base?' <span style="font-size:8px;background:#EEF3FF;color:#2563EB;padding:1px 4px;border-radius:3px;">기준</span>'
                   : r.latest?' <span style="font-size:8px;background:#E0F2FE;color:#0369A1;padding:1px 4px;border-radius:3px;">최신</span>':'';
       const vs = r.base ? '—' : `${dStr(r.r1r2,b136.r1r2)} ${dStr(r.r3r4,b136.r3r4)}`;
+      const descRow = r.desc ? `<tr style="background:${r.post?'#F4FBFF':'#F8F9FB'};"><td colspan="9" style="padding:2px 8px 5px 20px;font-size:9px;color:#7A7F94;font-style:italic;">└ ${r.desc}</td></tr>` : '';
       tbody.innerHTML += `<tr style="${bg}${divider}">
         <td style="font-weight:700;color:${vc};">${r.ver}${badge}</td>
         <td style="color:#9097b4;font-size:10px;">${r.period}</td>
@@ -890,7 +906,7 @@ function render() {
         <td style="background:#FFF8F8;">${colC(r.r3r4,70,55)}</td>
         <td style="background:#FFFBEB;">${colC(r.r5f,80,70)}</td>
         <td>${vs}</td>
-      </tr>`;
+      </tr>${descRow}`;
     });
   } else {
     thead.innerHTML = `<tr>
@@ -1003,24 +1019,91 @@ function render() {
 let engChart = null;
 
 function renderEngagement(p) {
-  const MAX_ROUNDS = 8;
-  const MAX_RV     = 0.65;
+  const allView = document.getElementById('eng-kpi-all');
+  const orgView = document.getElementById('eng-kpi-org');
 
-  if (p.rounds != null) {
-    const w = Math.min(p.rounds / MAX_ROUNDS * 100, 100);
-    document.getElementById('rounds-pst-bar').style.width    = w + '%';
-    document.getElementById('rounds-pst-bar').textContent    = p.rounds.toFixed(2);
-    document.getElementById('rounds-pst-val').textContent    = p.rounds.toFixed(2);
-    document.getElementById('rounds-pst-val').style.color    = '#4F8EF7';
+  if (orgMode) {
+    if (allView) allView.style.display = 'none';
+    if (orgView) {
+      orgView.style.display = '';
+      const orgBase = DATA_ORGANIC_VER.find(r => r.base);
+      const lat = DATA_ORGANIC_VER[DATA_ORGANIC_VER.length-1];
+      const mkBar = (label, val, base) => {
+        const d = val - base;
+        const c = d >= 5 ? '#2CB87A' : d >= -5 ? '#D69E2E' : '#E53E3E';
+        const ds = (d >= 0 ? '+' : '') + d.toFixed(1) + 'pp';
+        return `<div class="prog-row" style="margin-bottom:8px;">
+          <div class="prog-row-header">
+            <span class="prog-label">${label}</span>
+            <span style="font-size:12px;font-weight:700;color:${c};">${val.toFixed(1)}%</span>
+          </div>
+          <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${val}%;background:${c};"></div></div>
+          <div class="prog-row-footer"><span class="badge" style="background:${d>=0?'#F0FFF4':'#FFF5F5'};color:${c};border:1px solid ${d>=0?'#9AE6B4':'#FEB2B2'};">${ds} vs v136</span></div>
+        </div>`;
+      };
+      orgView.innerHTML =
+        `<div class="eng-section-title">판별 전환율 (오가닉 최신 vs 기준)</div>` +
+        mkBar('1→2판 전환', lat.r1r2, orgBase.r1r2) +
+        mkBar('2→3판 전환', lat.r2r3, orgBase.r2r3) +
+        mkBar('3→4판 전환', lat.r3r4, orgBase.r3r4) +
+        mkBar('5판 완료율', lat.r5f,  orgBase.r5f);
+    }
+    updateOrgEngChart();
+  } else {
+    if (allView) allView.style.display = '';
+    if (orgView) orgView.style.display = 'none';
+    const MAX_ROUNDS = 8;
+    const MAX_RV     = 0.65;
+    if (p && p.rounds != null) {
+      const w = Math.min(p.rounds / MAX_ROUNDS * 100, 100);
+      document.getElementById('rounds-pst-bar').style.width    = w + '%';
+      document.getElementById('rounds-pst-bar').textContent    = p.rounds.toFixed(2);
+      document.getElementById('rounds-pst-val').textContent    = p.rounds.toFixed(2);
+      document.getElementById('rounds-pst-val').style.color    = '#4F8EF7';
+    }
+    if (p && p.rvPerRound != null) {
+      const w = Math.min(p.rvPerRound / MAX_RV * 100, 100);
+      document.getElementById('rv-pst-bar').style.width    = w + '%';
+      document.getElementById('rv-pst-bar').textContent    = p.rvPerRound.toFixed(3);
+      document.getElementById('rv-pst-val').textContent    = p.rvPerRound.toFixed(3);
+      document.getElementById('rv-pst-val').style.color    = '#9B59B6';
+    }
+    updateEngagementChart();
   }
-  if (p.rvPerRound != null) {
-    const w = Math.min(p.rvPerRound / MAX_RV * 100, 100);
-    document.getElementById('rv-pst-bar').style.width    = w + '%';
-    document.getElementById('rv-pst-bar').textContent    = p.rvPerRound.toFixed(3);
-    document.getElementById('rv-pst-val').textContent    = p.rvPerRound.toFixed(3);
-    document.getElementById('rv-pst-val').style.color    = '#9B59B6';
-  }
-  updateEngagementChart();
+}
+
+function updateOrgEngChart() {
+  const labels = DATA_ORGANIC_VER.map(r => r.ver);
+  const n = DATA_ORGANIC_VER.length;
+  const orgEngData = {
+    labels,
+    datasets: [
+      { label:'1→2판', data:DATA_ORGANIC_VER.map(r=>r.r1r2), borderColor:'#4F8EF7', backgroundColor:'rgba(79,142,247,0.08)',
+        borderWidth:2.5, pointRadius:5, pointBackgroundColor:'#4F8EF7', pointBorderColor:'#fff', pointBorderWidth:2,
+        fill:false, tension:0.3, yAxisID:'y' },
+      { label:'2→3판', data:DATA_ORGANIC_VER.map(r=>r.r2r3), borderColor:'#2CB87A',
+        borderWidth:2, pointRadius:4, fill:false, tension:0.3, yAxisID:'y' },
+      { label:'3→4판', data:DATA_ORGANIC_VER.map(r=>r.r3r4), borderColor:'#E53E3E',
+        borderWidth:2.5, pointRadius:5, fill:false, tension:0.3, yAxisID:'y' },
+      { label:'5판 완료', data:DATA_ORGANIC_VER.map(r=>r.r5f), borderColor:'#9B59B6',
+        borderWidth:1.5, borderDash:[5,3], pointRadius:3, fill:false, tension:0.3, yAxisID:'y' },
+    ]
+  };
+  const orgEngOpts = {
+    responsive:true, maintainAspectRatio:false, animation:false,
+    plugins:{
+      legend:{ display:true, position:'right', labels:{ font:{size:9}, boxWidth:10, padding:7 } },
+      tooltip:{ callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(1)}%` } }
+    },
+    scales:{
+      x:{ grid:{display:false}, ticks:{font:{size:8}, maxRotation:0} },
+      y:{ type:'linear', min:30, max:100,
+          ticks:{font:{size:8}, callback:v=>v+'%', stepSize:10},
+          grid:{color:'rgba(0,0,0,0.05)'} }
+    }
+  };
+  if (engChart) { engChart.destroy(); engChart = null; }
+  engChart = new Chart(document.getElementById('engagementChart'), {type:'line', data:orgEngData, options:orgEngOpts});
 }
 
 function updateEngagementChart() {
@@ -1382,25 +1465,28 @@ function setOrgMode(on) {
   orgMode = on;
   const btnAll = document.getElementById('toggle-all');
   const btnOrg = document.getElementById('toggle-org');
-  if (on) {
-    btnAll.style.cssText = 'padding:4px 10px;border-radius:20px;border:1.5px solid #E2E6EF;background:#fff;color:#9AA0B8;font-size:10px;font-weight:700;cursor:pointer;';
-    btnOrg.style.cssText = 'padding:4px 10px;border-radius:20px;border:1.5px solid #065F46;background:#ECFDF5;color:#065F46;font-size:10px;font-weight:700;cursor:pointer;';
-  } else {
-    btnAll.style.cssText = 'padding:4px 10px;border-radius:20px;border:1.5px solid #4F8EF7;background:#EEF3FF;color:#4F8EF7;font-size:10px;font-weight:700;cursor:pointer;';
-    btnOrg.style.cssText = 'padding:4px 10px;border-radius:20px;border:1.5px solid #E2E6EF;background:#fff;color:#9AA0B8;font-size:10px;font-weight:700;cursor:pointer;';
+  if (btnAll && btnOrg) {
+    if (on) {
+      btnAll.style.cssText = 'padding:5px 14px;border-radius:20px;border:1.5px solid #E2E6EF;background:#fff;color:#9AA0B8;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;';
+      btnOrg.style.cssText = 'padding:5px 14px;border-radius:20px;border:1.5px solid #065F46;background:#ECFDF5;color:#065F46;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;';
+    } else {
+      btnAll.style.cssText = 'padding:5px 14px;border-radius:20px;border:1.5px solid #4F8EF7;background:#EEF3FF;color:#4F8EF7;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;';
+      btnOrg.style.cssText = 'padding:5px 14px;border-radius:20px;border:1.5px solid #E2E6EF;background:#fff;color:#9AA0B8;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;';
+    }
   }
+  const trendTitle = document.getElementById('trend-panel-title');
+  if (trendTitle) trendTitle.innerHTML = on
+    ? 'PST 오가닉 퍼널 추이 <span style="font-size:11px;font-weight:400;color:#9AA0B8;">스마트발송 제외 | 기준 v136</span>'
+    : 'PST 첫 터치율 개선 추이 <span style="font-size:11px;font-weight:400;color:#9AA0B8;">목표 80% | 기준 v136</span>';
+  const engTitle = document.getElementById('eng-panel-title');
+  if (engTitle) engTitle.innerHTML = on
+    ? '오가닉 판별 전환율 <span style="font-size:9px;color:#9AA0B8;font-weight:400;">오가닉 NRU 기준</span>'
+    : '판수 / 판당 RV <span style="font-size:9px;color:#9AA0B8;font-weight:400;">D1 신규유저 기준</span>';
+  const nw = document.getElementById('noise-warning');
+  if (nw) nw.style.display = on ? 'none' : '';
   render();
 }
 
-const DATA_ORGANIC_VER = [
-  { ver:'v120', period:'5/7~5/8',    n:138, touch:63.0, r1r2:50.4, r2r3:82.9, r3r4:47.1, r5f:100,  post:false },
-  { ver:'v136', period:'5/8~5/11',   n:268, touch:56.1, r1r2:46.1, r2r3:79.1, r3r4:53.7, r5f:94.2, post:false, base:true },
-  { ver:'v146', period:'5/11~5/12',  n:67,  touch:79.1, r1r2:62.7, r2r3:68.9, r3r4:31.8, r5f:100,  post:false },
-  { ver:'v163', period:'5/12~5/13',  n:91,  touch:76.9, r1r2:58.3, r2r3:85.1, r3r4:56.9, r5f:100,  post:false },
-  { ver:'v170', period:'5/14',       n:76,  touch:76.4, r1r2:61.1, r2r3:88.6, r3r4:79.5, r5f:95.0, post:true  },
-  { ver:'v172', period:'5/15',       n:39,  touch:76.3, r1r2:68.4, r2r3:73.1, r3r4:78.9, r5f:87.5, post:true  },
-  { ver:'v177', period:'5/15~5/17',  n:241, touch:68.9, r1r2:63.0, r2r3:72.1, r3r4:74.1, r5f:97.6, post:true, latest:true },
-];
 </script>
 
 
