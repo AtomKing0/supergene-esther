@@ -1340,24 +1340,14 @@ window.addEventListener('resize', scaleReport);
 scaleReport();
 
 // ── Organic Section ───────────────────────────────
-const DATA_ORGANIC_DAILY = [
-  { date:'05/07', ver:'v120', n:80,  touch:69.2, r1r2:61.5, r2r3:81.3, r3r4:51.3, r5f:100   },
-  { date:'05/08', ver:'v120', n:58,  touch:54.4, r1r2:35.1, r2r3:85.0, r3r4:41.2, r5f:100   },
-  { date:'05/08', ver:'v136', n:36,  touch:53.1, r1r2:43.8, r2r3:78.6, r3r4:63.6, r5f:100   },
-  { date:'05/09', ver:'v136', n:86,  touch:64.3, r1r2:47.6, r2r3:87.5, r3r4:48.6, r5f:91.7  },
-  { date:'05/10', ver:'v136', n:93,  touch:46.7, r1r2:40.0, r2r3:69.4, r3r4:52.0, r5f:90.9  },
-  { date:'05/11', ver:'v136', n:53,  touch:61.5, r1r2:55.8, r2r3:82.8, r3r4:58.3, r5f:100   },
-  { date:'05/11', ver:'v146', n:31,  touch:74.2, r1r2:61.3, r2r3:57.9, r3r4:36.4, r5f:100   },
-  { date:'05/12', ver:'v146', n:36,  touch:83.3, r1r2:63.9, r2r3:78.3, r3r4:27.8, r5f:100   },
-  { date:'05/12', ver:'v163', n:22,  touch:68.2, r1r2:31.8, r2r3:100,  r3r4:57.1, r5f:100,  small:true },
-  { date:'05/13', ver:'v163', n:69,  touch:79.7, r1r2:66.7, r2r3:80.4, r3r4:56.8, r5f:100   },
-  { date:'05/14', ver:'v163', n:11,  touch:72.7, r1r2:54.6, r2r3:100,  r3r4:33.3, r5f:100,  small:true },
-  { date:'05/14', ver:'v170', n:76,  touch:76.4, r1r2:61.1, r2r3:88.6, r3r4:79.5, r5f:95.0  },
-  { date:'05/15', ver:'v170', n:11,  touch:50.0, r1r2:20.0, r2r3:100,  r3r4:100,  r5f:50.0, small:true },
-  { date:'05/15', ver:'v172', n:39,  touch:76.3, r1r2:68.4, r2r3:73.1, r3r4:78.9, r5f:87.5  },
-  { date:'05/15', ver:'v177', n:37,  touch:70.3, r1r2:64.9, r2r3:83.3, r3r4:70.0, r5f:100   },
-  { date:'05/16', ver:'v177', n:123, touch:67.8, r1r2:61.2, r2r3:74.3, r3r4:78.2, r5f:100   },
-  { date:'05/17', ver:'v177', n:81,  touch:70.0, r1r2:65.0, r2r3:63.5, r3r4:69.7, r5f:92.9  },
+const DATA_ORGANIC_VER = [
+  { ver:'v120', period:'5/7~5/8',    n:138, touch:63.0, r1r2:50.4, r2r3:82.9, r3r4:47.1, r5f:100,  post:false },
+  { ver:'v136', period:'5/8~5/11',   n:268, touch:56.1, r1r2:46.1, r2r3:79.1, r3r4:53.7, r5f:94.2, post:false, base:true },
+  { ver:'v146', period:'5/11~5/12',  n:67,  touch:79.1, r1r2:62.7, r2r3:68.9, r3r4:31.8, r5f:100,  post:false },
+  { ver:'v163', period:'5/12~5/13',  n:91,  touch:76.9, r1r2:58.3, r2r3:85.1, r3r4:56.9, r5f:100,  post:false },
+  { ver:'v170', period:'5/14',       n:76,  touch:76.4, r1r2:61.1, r2r3:88.6, r3r4:79.5, r5f:95.0, post:true  },
+  { ver:'v172', period:'5/15',       n:39,  touch:76.3, r1r2:68.4, r2r3:73.1, r3r4:78.9, r5f:87.5, post:true  },
+  { ver:'v177', period:'5/15~5/17',  n:241, touch:68.9, r1r2:63.0, r2r3:72.1, r3r4:74.1, r5f:97.6, post:true, latest:true },
 ];
 const ORGANIC_AGG = {
   v136: { n:268, touch:56.1, r1r2:46.1, r3r4:53.7, r5f:94.2, color:'#4F8EF7' },
@@ -1403,31 +1393,44 @@ const ORG_VER_COLORS = { v120:'#94A3B8', v136:'#4F8EF7', v146:'#E8832A', v163:'#
     <div style="font-size:9px;color:#0EA5E9;margin-top:1px;">v177 오가닉 · n=${c.n}</div>
     <div style="font-size:10px;font-weight:700;color:#2CB87A;margin-top:2px;">+${(c.r5f-b.r5f).toFixed(1)}pp · 목표 80%+ <span style="color:${c.r5f>=80?'#2CB87A':'#E53E3E'}">${c.r5f>=80?'✅':'⚠️'}</span></div>`;
 
+  const b136 = DATA_ORGANIC_VER.find(r => r.ver === 'v136');
+  const dStr = (v, base) => v != null && base != null
+    ? `<span style="font-size:9px;font-weight:700;color:${v>=base?'#2CB87A':'#E53E3E'}">${v>=base?'+':''}${(v-base).toFixed(1)}pp</span>`
+    : '';
+  const th = (txt, extra='') => `<th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;text-align:center;${extra}">${txt}</th>`;
+
   let html = `<thead><tr>
-    <th style="text-align:left;padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">날짜</th>
-    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">버전</th>
-    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">오가닉 NRU</th>
-    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">첫터치율</th>
-    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">1→2판</th>
-    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">2→3판</th>
-    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">3→4판</th>
-    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">5판 완료율</th>
+    ${th('버전','text-align:left;')}${th('기간','text-align:left;')}${th('오가닉 NRU')}
+    ${th('첫터치율')}
+    ${th('1→2판 ★','background:#FFF8F8;color:#C53030;')}
+    ${th('2→3판')}
+    ${th('3→4판 ★','background:#FFF8F8;color:#C53030;')}
+    ${th('5판 완료율 ★','background:#FFFBEB;color:#B07D00;')}
+    ${th('vs v136','color:#9AA0B8;font-size:9px;')}
   </tr></thead><tbody>`;
-  DATA_ORGANIC_DAILY.forEach(row => {
+
+  DATA_ORGANIC_VER.forEach((row, i) => {
     const vc = ORG_VER_COLORS[row.ver] || '#9AA0B8';
-    const post = ['v170','v172','v177'].includes(row.ver);
-    const bg = post ? 'background:#F0F9FF;' : '';
-    const sm = row.small ? '<span style="font-size:8px;color:#9AA0B8;margin-left:3px;">(소표본)</span>' : '';
-    const td = 'style="padding:5px 8px;text-align:right;border-bottom:1px solid #F4F6FB;"';
-    html += `<tr style="${bg}">
-      <td style="padding:5px 8px;border-bottom:1px solid #F4F6FB;color:#4A5068;">${row.date}</td>
-      <td ${td} style="padding:5px 8px;text-align:right;border-bottom:1px solid #F4F6FB;font-weight:700;color:${vc};">${row.ver}${sm}</td>
-      <td ${td}>${row.n}</td>
-      <td ${td}>${colC(row.touch,70,50)}</td>
-      <td ${td}>${colC(row.r1r2,75,60)}</td>
-      <td ${td}>${colC(row.r2r3,80,65)}</td>
-      <td ${td}>${colC(row.r3r4,70,55)}</td>
-      <td ${td}>${colC(row.r5f,80,70)}</td>
+    let bg = row.post ? 'background:#F0F9FF;' : '';
+    if (row.base)   bg = 'background:#EEF3FF;';
+    if (row.latest) bg = 'background:#E0F2FE;';
+    const divider = i === 4 ? 'border-top:2px solid #CBD5E0;' : '';
+    const badge = row.base   ? ' <span style="font-size:8px;background:#EEF3FF;color:#2563EB;padding:1px 5px;border-radius:4px;">기준</span>'
+                : row.latest ? ' <span style="font-size:8px;background:#E0F2FE;color:#0369A1;padding:1px 5px;border-radius:4px;">최신</span>' : '';
+    const td = (v, extra='') => `<td style="padding:5px 8px;text-align:center;border-bottom:1px solid #F0F2F7;${extra}">${v}</td>`;
+    const vsCol = row.base
+      ? td('—', 'color:#9AA0B8;font-size:9px;')
+      : td(`${dStr(row.r1r2,b136.r1r2)} ${dStr(row.r3r4,b136.r3r4)}`);
+    html += `<tr style="${bg}${divider}">
+      ${td(`<span style="font-weight:700;color:${vc};">${row.ver}${badge}</span>`, 'text-align:left;')}
+      ${td(`<span style="color:#7A7F94;font-size:10px;">${row.period}</span>`, 'text-align:left;')}
+      ${td(row.n)}
+      ${td(colC(row.touch,70,50))}
+      ${td(colC(row.r1r2,75,60), 'background:#FFF8F8;')}
+      ${td(colC(row.r2r3,80,65))}
+      ${td(colC(row.r3r4,70,55), 'background:#FFF8F8;')}
+      ${td(colC(row.r5f,80,70), 'background:#FFFBEB;')}
+      ${vsCol}
     </tr>`;
   });
   html += '</tbody>';
