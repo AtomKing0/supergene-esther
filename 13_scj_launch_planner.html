@@ -176,6 +176,10 @@ body.view-only #role-badge{display:inline-flex!important;background:rgba(100,255
 .bar:hover{box-shadow:0 4px 10px rgba(0,0,0,.35);filter:brightness(1.05)}
 .bar.dragging{cursor:grabbing!important;opacity:.85;z-index:50;box-shadow:0 6px 14px rgba(0,0,0,.45)}
 .bar.FB{background:var(--fb)}.bar.Toss{background:var(--toss)}.bar.CG{background:var(--cg)}.bar.공통{background:var(--common)}
+#s2 .bar.CG{background:var(--muted)!important;opacity:.5}
+#s2 .milestone.CG{background:var(--muted)!important;opacity:.5}
+#s2 .task-row.platform-CG{opacity:.45}
+#s2 .milestone-label.cg-lbl{opacity:.45;color:var(--muted)}
 .bar.conflict{outline:2px solid var(--red);outline-offset:1px;box-shadow:0 0 0 1px rgba(255,107,107,.3),0 2px 6px rgba(0,0,0,.25)}
 .bar.has-manual::before{content:"📌";position:absolute;top:-4px;right:-2px;font-size:11px;background:var(--bg);border-radius:50%;padding:0 2px;line-height:1;z-index:2}
 .bar-roles{margin-left:8px;font-size:.92em;opacity:.88;font-weight:500;letter-spacing:.02em}
@@ -740,8 +744,8 @@ function renderTaskView(conflicts) {
     let bar = '';
     if (t.type === 'milestone') {
       const mManCls = t.manualStart ? 'has-manual' : '';
-      bar = `<div class="milestone ${cCls} ${mManCls}" data-task="${t.id}" style="left:${leftIdx*dayW + dayW/2}px;" title="${escapeAttr(t.name)} · ${t.startDate?fmtDate(t.startDate):''}${t.manualStart?' (수동)':''}"></div>
-             <div class="milestone-label" style="left:${leftIdx*dayW + dayW/2}px;">${escapeHtml(t.name.replace(/^\[M\]\s*/, '◆ '))}</div>`;
+      bar = `<div class="milestone ${t.platform} ${cCls} ${mManCls}" data-task="${t.id}" style="left:${leftIdx*dayW + dayW/2}px;" title="${escapeAttr(t.name)} · ${t.startDate?fmtDate(t.startDate):''}${t.manualStart?' (수동)':''}"></div>
+             <div class="milestone-label${t.platform==='CG'?' cg-lbl':''}" style="left:${leftIdx*dayW + dayW/2}px;">${escapeHtml(t.name.replace(/^\[M\]\s*/, '◆ '))}</div>`;
     } else {
       const manCls = t.manualStart ? 'has-manual' : '';
       bar = `<div class="bar ${t.platform} ${cCls} ${manCls}" data-task="${t.id}" style="left:${leftIdx*dayW}px;width:${Math.max(dayW-4, span*dayW - 4)}px;" title="${escapeAttr(t.name)} · ${t.startDate?fmtDate(t.startDate):''} → ${t.endDate?fmtDate(t.endDate):''}${t.manualStart?' (수동 시작)':''}">
@@ -752,7 +756,7 @@ function renderTaskView(conflicts) {
              </div>`;
     }
     return `
-      <div class="task-row" data-id="${t.id}" draggable="${filter==='all'?'true':'false'}">
+      <div class="task-row platform-${t.platform}" data-id="${t.id}" draggable="${filter==='all'?'true':'false'}">
         <div class="label-cell">
           <div class="task-name" data-field="name" data-id="${t.id}">
             ${filter==='all' ? `<span class="row-grip" title="드래그로 순서 변경">≡</span>` : ''}
@@ -817,8 +821,8 @@ function renderPlatformView(conflicts) {
       const topPx = lane*36 + 6;
       if (t.type === 'milestone') {
         const mManCls = t.manualStart ? 'has-manual' : '';
-        return `<div class="milestone ${cCls} ${mManCls}" data-task="${t.id}" style="left:${leftIdx*dayW + dayW/2}px;top:${topPx + 5}px;" title="${escapeAttr(t.name)} · ${fmtDate(t.startDate)}${t.manualStart?' (수동)':''}"></div>
-                <div class="milestone-label" style="left:${leftIdx*dayW + dayW/2}px;top:${topPx + 3}px;">${escapeHtml(t.name.replace(/^\[M\]\s*/, '◆ '))}</div>`;
+        return `<div class="milestone ${t.platform} ${cCls} ${mManCls}" data-task="${t.id}" style="left:${leftIdx*dayW + dayW/2}px;top:${topPx + 5}px;" title="${escapeAttr(t.name)} · ${fmtDate(t.startDate)}${t.manualStart?' (수동)':''}"></div>
+                <div class="milestone-label${t.platform==='CG'?' cg-lbl':''}" style="left:${leftIdx*dayW + dayW/2}px;top:${topPx + 3}px;">${escapeHtml(t.name.replace(/^\[M\]\s*/, '◆ '))}</div>`;
       }
       const manCls = t.manualStart ? 'has-manual' : '';
       return `<div class="bar ${t.platform} ${cCls} ${manCls}" data-task="${t.id}" style="left:${leftIdx*dayW}px;top:${topPx}px;width:${Math.max(dayW-4, span*dayW - 4)}px;height:30px;" title="${escapeAttr(t.name)} · ${fmtDate(t.startDate)} → ${fmtDate(t.endDate)}${t.manualStart?' (수동 시작)':''}">
