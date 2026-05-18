@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>P2 2차 개선 제안 — 1→2판 전환율 + 평균 판수</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#F0F2F7;font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:13px;color:#1A1D2E;padding-bottom:48px;}
+.page{max-width:1200px;margin:0 auto;padding:32px 24px;}
+
+/* HEADER */
+.report-header{background:#fff;border-radius:14px;padding:28px 32px;margin-bottom:24px;border:1.5px solid #E2E6EF;display:flex;gap:32px;align-items:flex-start;}
+.report-header-left{flex:1;}
+.report-tag{display:inline-block;background:#EBF4FF;border:1px solid #90CDF4;color:#1A56A0;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:0.5px;margin-bottom:10px;}
+.report-header h1{font-size:26px;font-weight:900;color:#1A1D2E;letter-spacing:-0.5px;line-height:1.3;}
+.report-header p{font-size:12px;color:#7A7F94;margin-top:6px;}
+.report-header p strong{color:#4A5068;}
+.kpi-row{display:flex;gap:12px;flex-shrink:0;}
+.kpi-box{background:#F8F9FB;border:1.5px solid #E2E6EF;border-radius:10px;padding:12px 18px;text-align:center;min-width:130px;}
+.kpi-box.warn{border-color:#F59E0B;background:#FFFBEB;}
+.kpi-box.bad{border-color:#FC8181;background:#FFF5F5;}
+.kpi-label{font-size:9px;font-weight:700;color:#9AA0B8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.kpi-val{font-size:22px;font-weight:900;color:#1A1D2E;}
+.kpi-box.warn .kpi-val{color:#E8832A;}
+.kpi-box.bad .kpi-val{color:#E53E3E;}
+.kpi-sub{font-size:10px;color:#9AA0B8;margin-top:2px;}
+
+/* SECTION */
+.section-title{font-size:16px;font-weight:800;color:#1A1D2E;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.grid-full{margin-bottom:24px;}
+.card{background:#fff;border-radius:12px;padding:20px 22px;border:1.5px solid #E2E6EF;}
+.card h3{font-size:13px;font-weight:700;color:#4A5068;margin-bottom:4px;}
+.card .sub{font-size:10px;color:#9AA0B8;margin-bottom:14px;}
+
+/* HYPOTHESIS CARD */
+.hypo-card{background:#FFFBEB;border:1.5px solid #F6E05E;border-radius:12px;padding:18px 22px;margin-bottom:24px;}
+.hypo-title{font-size:13px;font-weight:800;color:#744210;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.hypo-body{font-size:12px;color:#744210;line-height:1.7;}
+.hypo-calc{background:#FFF9E6;border:1px solid #F6E05E;border-radius:8px;padding:10px 14px;margin-top:10px;font-size:12px;color:#5A3A00;display:flex;flex-direction:column;gap:4px;}
+.hypo-calc .row{display:flex;align-items:center;gap:8px;}
+.hypo-calc .lbl{color:#9AA0B8;width:180px;flex-shrink:0;}
+.hypo-calc .val{font-weight:800;color:#1A1D2E;}
+.hypo-calc .highlight{color:#2CB87A;font-weight:800;}
+.hypo-action{margin-top:10px;font-size:11px;color:#92400E;background:rgba(255,255,255,0.6);border-radius:6px;padding:8px 12px;border-left:3px solid #D69E2E;}
+
+/* FUNNEL TABLE */
+.funnel-table{width:100%;border-collapse:collapse;font-size:12px;}
+.funnel-table th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:#9AA0B8;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1.5px solid #E2E6EF;background:#F8F9FB;}
+.funnel-table td{padding:9px 12px;border-bottom:1px solid #F4F6FB;color:#4A5068;}
+.funnel-table tr:last-child td{border-bottom:none;}
+.funnel-table .stage{font-weight:700;color:#1A1D2E;}
+.funnel-table .rate{font-weight:800;}
+.funnel-table .drop-high{color:#E53E3E;font-weight:800;}
+.funnel-table .drop-mid{color:#D69E2E;font-weight:700;}
+.funnel-table .drop-ok{color:#2CB87A;font-weight:700;}
+.funnel-table .fixed{color:#2CB87A;}
+.funnel-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px;}
+.funnel-tag.fixed{background:#C6F6D5;color:#22543D;}
+.funnel-tag.target{background:#EBF4FF;color:#1A56A0;}
+.funnel-tag.issue{background:#FED7D7;color:#822727;}
+
+/* ACTION CARDS */
+.action-card{background:#fff;border-radius:12px;border:1.5px solid #E2E6EF;overflow:hidden;display:flex;flex-direction:column;}
+.action-card-body{padding:20px 22px;flex:1;}
+.action-card.data-only{border-color:#90CDF4;background:#F0F7FF;}
+.action-tag{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-bottom:10px;width:fit-content;}
+.action-tag.propose{background:#EBF4FF;color:#1A56A0;border:1px solid #90CDF4;}
+.action-tag.data{background:#EBF8F0;color:#276749;border:1px solid #9AE6B4;}
+.owner-chip{display:inline-flex;align-items:center;gap:4px;background:#F0F4FF;color:#3B5BDB;border:1px solid #BAC8FF;font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;margin-bottom:8px;}
+.action-title{font-size:14px;font-weight:800;color:#1A1D2E;margin-bottom:6px;}
+.action-why{font-size:11px;color:#7A7F94;margin-bottom:12px;line-height:1.6;}
+.action-items{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.action-item{display:flex;align-items:flex-start;gap:8px;font-size:11px;color:#4A5068;line-height:1.5;}
+.action-item-dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;}
+.action-item-dot.blue{background:#3B82F6;}
+.action-item-dot.green{background:#2CB87A;}
+.action-item-dot.yellow{background:#D69E2E;}
+.action-item-dot.purple{background:#7C3AED;}
+.action-kpi{background:#F8F9FB;border-radius:7px;padding:8px 12px;font-size:10px;color:#4A5068;line-height:1.6;}
+.action-kpi strong{color:#1A1D2E;}
+.action-impact{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.impact-chip{background:#EBF8F0;color:#276749;border:1px solid #9AE6B4;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;}
+.impact-chip.blue{background:#EBF4FF;color:#1A56A0;border-color:#90CDF4;}
+.impact-chip.yellow{background:#FFFBEB;color:#744210;border-color:#F6E05E;}
+.impact-chip.gray{background:#F4F6FB;color:#4A5068;border-color:#CBD5E0;}
+
+/* TARGET TABLE */
+.target-table{width:100%;border-collapse:collapse;font-size:12px;}
+.target-table thead tr{background:#F4F6FB;}
+.target-table th{padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:#9AA0B8;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #E2E6EF;}
+.target-table td{padding:9px 12px;border-bottom:1px solid #F4F6FB;color:#4A5068;}
+.target-table tr:last-child td{border-bottom:none;}
+.target-table .metric{font-weight:700;color:#1A1D2E;}
+.target-table .cur{color:#E53E3E;font-weight:700;}
+.target-table .tgt{color:#2CB87A;font-weight:700;}
+.result-pill{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;}
+.result-pill.warn{background:#FEECB5;color:#744210;}
+
+.highlight{background:linear-gradient(135deg,#EBF4FF,#F0F7FF);border:1.5px solid #90CDF4;border-radius:10px;padding:14px 18px;font-size:12px;color:#2B6CB0;line-height:1.7;margin-top:16px;}
+.highlight strong{color:#1A56A0;}
+.divider{height:1px;background:#E2E6EF;margin:24px 0;}
+
+/* ANALYSIS SECTION */
+.analysis-card{background:#fff;border-radius:12px;border:1.5px solid #E2E6EF;padding:22px 24px;margin-bottom:24px;}
+.analysis-card h3{font-size:13px;font-weight:700;color:#4A5068;margin-bottom:2px;}
+.analysis-card .sub{font-size:10px;color:#9AA0B8;margin-bottom:18px;}
+.event-funnel{width:100%;display:flex;flex-direction:column;gap:6px;}
+.ef-row{display:grid;grid-template-columns:220px 1fr 90px 90px;align-items:center;gap:8px;}
+.ef-row.header{font-size:10px;font-weight:700;color:#9AA0B8;text-transform:uppercase;letter-spacing:0.4px;padding-bottom:6px;border-bottom:1.5px solid #E2E6EF;margin-bottom:4px;}
+.ef-event{font-size:11px;color:#4A5068;font-weight:600;}
+.ef-event.drop-main{color:#E53E3E;font-weight:800;}
+.ef-bar-wrap{position:relative;height:20px;background:#F4F6FB;border-radius:4px;overflow:hidden;}
+.ef-bar{height:100%;border-radius:4px;transition:width 0.3s;}
+.ef-bar.normal{background:#90CDF4;}
+.ef-bar.warn{background:#F6AD55;}
+.ef-bar.danger{background:#FC8181;}
+.ef-bar.good{background:#9AE6B4;}
+.ef-count{font-size:11px;font-weight:700;color:#1A1D2E;text-align:right;}
+.ef-delta{font-size:10px;font-weight:700;text-align:right;}
+.ef-delta.neg-high{color:#E53E3E;}
+.ef-delta.neg-mid{color:#D69E2E;}
+.ef-delta.neg-low{color:#68D391;}
+.ef-delta.none{color:#CBD5E0;}
+.insight-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+.insight-box{border-radius:9px;padding:13px 16px;font-size:11px;line-height:1.7;}
+.insight-box.red{background:#FFF5F5;border:1.5px solid #FC8181;}
+.insight-box.yellow{background:#FFFBEB;border:1.5px solid #F6AD55;}
+.insight-box.blue{background:#EBF4FF;border:1.5px solid #90CDF4;}
+.insight-box.green{background:#EBF8F0;border:1.5px solid #9AE6B4;}
+.insight-box .ib-title{font-size:11px;font-weight:800;margin-bottom:6px;}
+.insight-box.red .ib-title{color:#C53030;}
+.insight-box.yellow .ib-title{color:#744210;}
+.insight-box.blue .ib-title{color:#1A56A0;}
+.insight-box.green .ib-title{color:#22543D;}
+.ver-compare{width:100%;border-collapse:collapse;font-size:11px;margin-top:16px;}
+.ver-compare th{padding:7px 10px;font-size:10px;font-weight:700;color:#9AA0B8;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1.5px solid #E2E6EF;background:#F8F9FB;text-align:center;}
+.ver-compare td{padding:8px 10px;border-bottom:1px solid #F4F6FB;text-align:center;color:#4A5068;}
+.ver-compare tr:last-child td{border-bottom:none;}
+.ver-compare .ver-label{font-weight:700;color:#1A1D2E;text-align:left;}
+.ver-compare .highlight-cell{background:#FFF5F5;color:#E53E3E;font-weight:800;}
+.ef-label-badge{display:inline-block;font-size:9px;font-weight:800;padding:1px 6px;border-radius:6px;margin-left:6px;}
+.ef-label-badge.max{background:#FED7D7;color:#822727;}
+.ef-label-badge.sub{background:#FEECB5;color:#744210;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 헤더 -->
+  <div class="report-header">
+    <div class="report-header-left">
+      <div class="report-tag">📐 P2 2차 개선 제안 · 이터레이션</div>
+      <h1>인당 판수 개선 — 2차 이터레이션 제안</h1>
+      <p><strong>기준:</strong> v170~v177 합산 결과 (n=324) &nbsp;·&nbsp; <strong>미달 지표:</strong> 1→2판 전환율 63.2% (목표 75%) · 평균 판수 4.04판 (목표 5.5판) &nbsp;·&nbsp; <strong>작성일:</strong> 2026-05-18</p>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-box warn">
+        <div class="kpi-label">1→2판 전환율 (현재)</div>
+        <div class="kpi-val">63.2%</div>
+        <div class="kpi-sub">목표 75% · -11.8% 미달</div>
+      </div>
+      <div class="kpi-box bad">
+        <div class="kpi-label">평균 판수 (현재)</div>
+        <div class="kpi-val">4.04판</div>
+        <div class="kpi-sub">목표 5.5판 · -1.46판 미달</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 현황: 판별 퍼널 -->
+  <div class="section-title">📊 판별 퍼널 현황 (1차 개선 후)</div>
+  <div class="card grid-full">
+    <h3>판별 진입률 · 이탈 구간 분석</h3>
+    <div class="sub">베이스라인 v163 (n=69) 기준 · A1 적용으로 3→4판 구간 개선 완료 · 잔여 이탈 구간 식별</div>
+    <table class="funnel-table">
+      <thead>
+        <tr>
+          <th>구간</th>
+          <th>잔존율</th>
+          <th>이탈률</th>
+          <th>상태</th>
+          <th>비고</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="stage">1판 (시작)</td>
+          <td class="rate">100%</td>
+          <td>—</td>
+          <td>—</td>
+          <td style="font-size:10px;color:#9AA0B8;">1판 완료율 76.8% (v163 기준)</td>
+        </tr>
+        <tr>
+          <td class="stage">1판 완료율</td>
+          <td class="rate drop-high">53.3%</td>
+          <td class="drop-high">—</td>
+          <td><span class="funnel-tag issue">⚠️ 개선 대상</span></td>
+          <td style="font-size:10px;color:#9AA0B8;">v136 기준 · v177: 64.1% · 목표 80%+</td>
+        </tr>
+        <tr>
+          <td class="stage">1→2판 전환 (클리어 기준)</td>
+          <td class="rate drop-ok">86.5%</td>
+          <td class="drop-ok">—</td>
+          <td><span class="funnel-tag fixed">✅ A3 효과 확인</span></td>
+          <td style="font-size:10px;color:#9AA0B8;">v136 86.5% → v177 98.3% · 로비 스킵 효과 良好</td>
+        </tr>
+        <tr>
+          <td class="stage">2→3판 전환</td>
+          <td class="rate drop-mid">52.2%</td>
+          <td class="drop-mid">-20.0%</td>
+          <td>—</td>
+          <td style="font-size:10px;color:#9AA0B8;">이탈 원인 미분석</td>
+        </tr>
+        <tr>
+          <td class="stage">3→4판 전환</td>
+          <td class="rate drop-ok">76.1%</td>
+          <td class="drop-ok">-23.9%</td>
+          <td><span class="funnel-tag fixed">✅ A1 개선 완료</span></td>
+          <td style="font-size:10px;color:#9AA0B8;">v136 29.0% → 76.1% (+47.1%)</td>
+        </tr>
+        <tr>
+          <td class="stage">4→5판 전환</td>
+          <td class="rate drop-high">18.8%</td>
+          <td class="drop-high">-35.0%</td>
+          <td><span class="funnel-tag issue">⚠️ 개선 대상</span></td>
+          <td style="font-size:10px;color:#9AA0B8;">A1 이후 다음 최대 이탈 구간</td>
+        </tr>
+        <tr>
+          <td class="stage">5→6판+ 잔존</td>
+          <td class="rate drop-high">10.1%</td>
+          <td class="drop-high">-46.2%</td>
+          <td><span class="funnel-tag issue">⚠️ 개선 대상</span></td>
+          <td style="font-size:10px;color:#9AA0B8;">판수 목표 달성을 위한 핵심 구간</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="highlight">
+      <strong>핵심 과제:</strong> A3(로비 스킵) 효과는 1판 클리어 기준으로 v177 기준 98.3%로 확인됨. 실제 이탈은 <strong>1판 완료율(64.1%)</strong>과 <strong>4→5판(-35%)</strong>이 핵심. 평균 판수 5.5판 달성을 위해서는 1판 완료율 향상 + 4→5판 이후 잔존율 향상이 병행 필요.
+    </div>
+  </div>
+
+  <!-- 가설 검증 -->
+  <div class="section-title">✅ 측정 기준 검증 결과</div>
+  <div class="hypo-card" style="background:#EBF8F0;border-color:#9AE6B4;">
+    <div class="hypo-title" style="color:#22543D;">✅ 가설 확인 완료 — A3 효과는 실제로 매우 좋음. 진짜 문제는 1판 완료율</div>
+    <div class="hypo-body" style="color:#276749;">
+      BigQuery 쿼리 분석 결과, 기존 1→2판 전환율은 <strong>"1판 시작 유저 전체"</strong> 기준으로 산출됨이 확인됨. A3(로비 스킵)는 1레벨 클리어 후에만 적용되므로, 1판 미클리어 유저가 분모에 포함되어 수치가 희석된 것.
+      <br><br>
+      1판 클리어 기준으로 재산출 시 A3 효과가 매우 높음 — v177 기준 98.3%로 사실상 로비 스킵 이후 이탈 없음. <strong>실제 이탈 원인은 1판 완료율 자체(64.1%).</strong>
+    </div>
+    <div class="hypo-calc" style="background:rgba(255,255,255,0.6);border-color:#9AE6B4;">
+      <div class="row"><span class="lbl">v136 1판 완료율 (finish)</span><span class="val">53.3%</span></div>
+      <div class="row"><span class="lbl">v136 1→2판 전환율 (기존 측정)</span><span class="val">46.1%</span></div>
+      <div class="row"><span class="lbl">v136 클리어 기준 환산</span><span class="highlight">86.5%</span></div>
+      <div class="row" style="margin-top:6px;"><span class="lbl">v177 1판 완료율 (finish)</span><span class="val">64.1%</span></div>
+      <div class="row"><span class="lbl">v177 1→2판 전환율 (기존 측정)</span><span class="val">63.0%</span></div>
+      <div class="row"><span class="lbl">v177 클리어 기준 환산</span><span class="highlight">98.3% ✅ A3 효과 확인</span></div>
+    </div>
+    <div class="hypo-action" style="background:rgba(255,255,255,0.5);border-left-color:#2CB87A;">
+      <strong>결론:</strong> A3는 효과적으로 작동 중. 1→2판 전환율 개선의 핵심은 이제 <strong>1판 완료율 향상 (현재 64.1% → 목표 80%+)</strong>으로 집중. B1을 이에 맞게 방향 전환.
+    </div>
+  </div>
+
+  <!-- 1판 이탈 구간 세분화 분석 -->
+  <div class="section-title">🔍 1판 이탈 구간 세분화 분석</div>
+  <div class="analysis-card">
+    <h3>BigQuery 이벤트 로그 기반 실측 퍼널 — v177 (n=287명, 오가닉)</h3>
+    <div class="sub">데이터 출처: bq-results-20260518 · 이벤트 순서: GAMEPLAY_START → TUTO_INGAME_INTRO → PLAYTIME_10S → TUTO_STEP_COMPLETE → PLAY_FIRST_TOUCH → GAMEPLAY_FINISH</div>
+
+    <div class="event-funnel">
+      <div class="ef-row header">
+        <div>이벤트 구간</div>
+        <div>잔존율 (n=287 기준)</div>
+        <div>인원</div>
+        <div>전 구간 대비</div>
+      </div>
+      <!-- GAMEPLAY_START -->
+      <div class="ef-row">
+        <div class="ef-event">GAMEPLAY_START</div>
+        <div class="ef-bar-wrap"><div class="ef-bar good" style="width:98.3%"></div></div>
+        <div class="ef-count">282명 (98.3%)</div>
+        <div class="ef-delta none">—</div>
+      </div>
+      <!-- TUTO_INGAME_INTRO -->
+      <div class="ef-row">
+        <div class="ef-event">TUTO_INGAME_INTRO</div>
+        <div class="ef-bar-wrap"><div class="ef-bar normal" style="width:87.5%"></div></div>
+        <div class="ef-count">251명 (87.5%)</div>
+        <div class="ef-delta neg-mid">−31명 (−11%)</div>
+      </div>
+      <!-- PLAYTIME_10S — 최대 이탈 -->
+      <div class="ef-row">
+        <div class="ef-event drop-main">PLAYTIME_10S<span class="ef-label-badge max">최대 이탈</span></div>
+        <div class="ef-bar-wrap"><div class="ef-bar danger" style="width:58.2%"></div></div>
+        <div class="ef-count" style="color:#E53E3E;font-weight:800;">167명 (58.2%)</div>
+        <div class="ef-delta neg-high">−84명 (−33.5%)</div>
+      </div>
+      <!-- TUTO_STEP_COMPLETE -->
+      <div class="ef-row">
+        <div class="ef-event">TUTO_STEP_COMPLETE<span class="ef-label-badge sub">터치 전 완료</span></div>
+        <div class="ef-bar-wrap"><div class="ef-bar warn" style="width:54.0%"></div></div>
+        <div class="ef-count">155명 (54.0%)</div>
+        <div class="ef-delta neg-mid">−12명 (−7%)</div>
+      </div>
+      <!-- PLAY_FIRST_TOUCH -->
+      <div class="ef-row">
+        <div class="ef-event drop-main">PLAY_FIRST_TOUCH<span class="ef-label-badge sub">2차 이탈</span></div>
+        <div class="ef-bar-wrap"><div class="ef-bar warn" style="width:43.6%"></div></div>
+        <div class="ef-count">125명 (43.6%)</div>
+        <div class="ef-delta neg-high">−30명 (−19%)</div>
+      </div>
+      <!-- GAMEPLAY_FINISH -->
+      <div class="ef-row">
+        <div class="ef-event">GAMEPLAY_FINISH (1판 완료)</div>
+        <div class="ef-bar-wrap"><div class="ef-bar danger" style="width:40.1%"></div></div>
+        <div class="ef-count">115명 (40.1%)</div>
+        <div class="ef-delta neg-high">−10명 (−8%)</div>
+      </div>
+      <!-- 2판 시작 -->
+      <div class="ef-row">
+        <div class="ef-event" style="color:#2CB87A;font-weight:800;">2판 시작</div>
+        <div class="ef-bar-wrap"><div class="ef-bar good" style="width:37.3%"></div></div>
+        <div class="ef-count" style="color:#2CB87A;">107명 (37.3%)</div>
+        <div class="ef-delta neg-low">−8명 (−7%)</div>
+      </div>
+    </div>
+
+    <!-- 버전별 최대 이탈 구간 비교 -->
+    <div style="margin-top:22px;">
+      <div style="font-size:12px;font-weight:800;color:#1A1D2E;margin-bottom:8px;">버전별 TUTO_INGAME_INTRO → PLAYTIME_10S 이탈 비교</div>
+      <table class="ver-compare">
+        <thead>
+          <tr>
+            <th style="text-align:left;">버전</th>
+            <th>TUTO_INGAME_INTRO</th>
+            <th>PLAYTIME_10S</th>
+            <th>이탈 인원</th>
+            <th>이탈률</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ver-label">v170</td>
+            <td>271명</td>
+            <td class="highlight-cell">144명</td>
+            <td class="highlight-cell">−127명</td>
+            <td class="highlight-cell">−46.9%</td>
+          </tr>
+          <tr>
+            <td class="ver-label">v172</td>
+            <td>230명</td>
+            <td class="highlight-cell">150명</td>
+            <td class="highlight-cell">−80명</td>
+            <td class="highlight-cell">−34.8%</td>
+          </tr>
+          <tr>
+            <td class="ver-label">v177</td>
+            <td>251명</td>
+            <td class="highlight-cell">167명</td>
+            <td class="highlight-cell">−84명</td>
+            <td class="highlight-cell">−33.5%</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="font-size:10px;color:#9AA0B8;margin-top:6px;">→ v170 대비 이탈률 개선(−46.9% → −33.5%)되었으나 여전히 게임 시작 후 10초 내 이탈이 구조적 문제로 지속</div>
+    </div>
+
+    <!-- 인사이트 박스 -->
+    <div class="insight-grid">
+      <div class="insight-box red">
+        <div class="ib-title">🚨 핵심 이탈: 게임 시작 후 10초 이내</div>
+        TUTO_INGAME_INTRO(251명) → PLAYTIME_10S(167명)<br>
+        <strong>−84명(−33.5%)</strong> 이탈. 전체 이탈의 최대 단일 구간.<br>
+        인게임 진입 직후 UI 혼란, 로딩 지연, 튜토리얼 인트로 이탈 추정.
+      </div>
+      <div class="insight-box yellow">
+        <div class="ib-title">⚠️ 주목: 첫 카드 터치 전 이탈 구간</div>
+        TUTO_STEP_COMPLETE(155명) &gt; PLAY_FIRST_TOUCH(125명)<br>
+        <strong>튜토리얼 스텝은 통과했으나 카드를 한 번도 터치하지 않은 유저 존재.</strong><br>
+        터치 인디케이터 시인성 또는 조작 방법 이해 부재 가능성.
+      </div>
+      <div class="insight-box blue">
+        <div class="ib-title">📌 GAMEPLAY_FINISH 기준 1판 완료율</div>
+        115명 / 287명 = <strong>40.1%</strong> (세션 기준)<br>
+        대시보드 표기 64.1%는 GAMEPLAY_START(282명) 기준.<br>
+        이탈은 게임 시작 전(start→intro) 구간에서도 일부 발생.
+      </div>
+      <div class="insight-box green">
+        <div class="ib-title">✅ 1판 완료 후 2판 진입율</div>
+        GAMEPLAY_FINISH(115명) → 2판 시작(107명)<br>
+        <strong>93.0%</strong> — A3(로비 스킵) 효과. 완료 이후 이탈은 거의 없음.<br>
+        즉, 문제는 완료 "이후"가 아닌 완료 "이전" 구간.
+      </div>
+    </div>
+
+    <div class="highlight" style="margin-top:16px;">
+      <strong>분석 결론:</strong> 1판 이탈의 <strong>1순위 개선 타겟은 게임 시작 후 10초 이내(TUTO_INGAME_INTRO → PLAYTIME_10S)</strong>. 3개 버전 모두 동일 구간에서 최대 이탈 발생 — 구조적 문제 확인. 2순위는 첫 카드 터치 유도(TUTO_STEP_COMPLETE → PLAY_FIRST_TOUCH). 1판 완료 후 2판 진입은 A3 효과로 93%를 유지 중이며 개선 불필요.
+    </div>
+  </div>
+
+  <!-- 개선 제안 -->
+  <div class="section-title">💡 개선 제안</div>
+  <div class="grid-3">
+
+    <!-- B1 -->
+    <div class="action-card">
+      <div class="action-card-body">
+        <div class="action-tag propose">📐 B1 — 제안</div>
+        <div class="owner-chip">👤 담당: 기획 + 개발</div>
+        <div class="action-title">1판 완료율 개선</div>
+        <div class="action-why">측정 기준 검증 결과, 1→2판 이탈의 실제 원인은 로비 스킵 부재가 아니라 <strong>1판 자체를 완료하지 못하는 유저</strong>임이 확인됨. v177 기준 1판 완료율 64.1% — A2(무조건 클리어 구조) 적용 이후에도 36%는 여전히 1판을 완료하지 못하고 이탈. 완료율 80%+ 달성이 목표.</div>
+        <div class="action-items">
+          <div class="action-item">
+            <div class="action-item-dot blue">1</div>
+            <div><strong>1판 이탈 구간 세분화 분석</strong> — 이탈이 게임 시작 전(로딩), 게임 중, 완료 직후 중 어느 시점에서 가장 많이 발생하는지 이벤트 로그 기반 확인. (2100_GAMEPLAY_START → 2300_GAMEPLAY_FINISH 사이 구간)</div>
+          </div>
+          <div class="action-item">
+            <div class="action-item-dot blue">2</div>
+            <div><strong>첫 터치 유도 강화</strong> — 현재 첫 터치율 67.3%. 터치 인디케이터 타이밍·시인성 개선으로 게임 참여 진입 장벽 추가 완화.</div>
+          </div>
+          <div class="action-item">
+            <div class="action-item-dot blue">3</div>
+            <div><strong>게임 중 이탈 시 즉시 재시작 유도</strong> — 실패·중단 화면에서 로비 이동 없이 원탭 재도전. A2 클리어 보장 구조와 함께 적용 시 완료율 추가 향상 기대.</div>
+          </div>
+        </div>
+        <div class="action-kpi">
+          <strong>KPI:</strong> 1판 완료율 64.1% → 80%+<br>
+          <strong>예상 효과:</strong> 완료율 +16%pt 시 판수 +0.3~0.5판 추가<br>
+          <strong>측정:</strong> 1-2300_GAMEPLAY_FINISH / 1-2100_GAMEPLAY_START 비율
+        </div>
+        <div class="action-impact">
+          <div class="impact-chip blue">+0.3~0.5판/인 예상</div>
+          <div class="impact-chip gray">분석 선행 후 개발 범위 확정</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B2 -->
+    <div class="action-card">
+      <div class="action-card-body">
+        <div class="action-tag propose">📐 B2 — 제안</div>
+        <div class="owner-chip">👤 담당: 개발</div>
+        <div class="action-title">4→5판 로비 없이 자동 진입</div>
+        <div class="action-why">A1으로 3→4판 이탈이 해결된 이후, 4→5판(-35%)이 다음 최대 이탈 구간. 1→2판(A3)에 적용한 로비 스킵과 동일한 메커니즘으로 4레벨 클리어 후 5레벨 자동 진입 처리. 개발 패턴이 이미 확립되어 있어 구현 리스크 낮음.</div>
+        <div class="action-items">
+          <div class="action-item">
+            <div class="action-item-dot green">1</div>
+            <div><strong>4레벨 클리어 후 로비 화면 없이 5레벨 자동 진입</strong> — A3(1→2판)와 동일 메커니즘 확장 적용.</div>
+          </div>
+          <div class="action-item">
+            <div class="action-item-dot green">2</div>
+            <div><strong>적용 범위: 4→5레벨 확정</strong> — 추가 구간(2→3, 5→6) 확장 여부는 데이터 확인 후 단계적 검토.</div>
+          </div>
+        </div>
+        <div class="action-kpi">
+          <strong>KPI:</strong> 4→5판 전환율 18.8% → 40%+<br>
+          <strong>예상 효과:</strong> 평균 판수 +0.3~0.5판<br>
+          <strong>측정:</strong> r5.retention 변화 (버전 비교)
+        </div>
+        <div class="action-impact">
+          <div class="impact-chip">+0.3~0.5판/인 예상</div>
+          <div class="impact-chip yellow">개발 공수 필요 (A3 패턴 동일)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B3 -->
+    <div class="action-card">
+      <div class="action-card-body">
+        <div class="action-tag propose">📐 B3 — 제안</div>
+        <div class="owner-chip">👤 담당: 기획</div>
+        <div class="action-title">5판 이후 재참여 유도 — 스트릭 보상 가시성 강화</div>
+        <div class="action-why">5→6판+ 이탈률 46.2%로 가장 높은 이탈 구간. 5번째 판에서 스트릭 보상이 지급되나, 유저가 보상 가치를 사전에 인지하지 못해 6판 진입 동기가 낮을 가능성. 보상 예고 및 달성 연출 강화로 6판+ 진입 동기 부여.</div>
+        <div class="action-items">
+          <div class="action-item">
+            <div class="action-item-dot yellow">1</div>
+            <div><strong>4판 완료 직후 "다음 판 스트릭 보상 예고" UI</strong> — "딱 한 판 더! 스트릭 보상 지급까지 1판 남았어요" 형태의 넛지 노출.</div>
+          </div>
+          <div class="action-item">
+            <div class="action-item-dot yellow">2</div>
+            <div><strong>5판 클리어 시 스트릭 보상 연출 강화</strong> — 현재 보상 지급 연출 대비 가시성 향상 (팝업 또는 풀스크린 모션).</div>
+          </div>
+          <div class="action-item">
+            <div class="action-item-dot yellow">3</div>
+            <div><strong>5판 클리어 후 6판 자동 진입 검토</strong> — B2(4→5판 자동 진입) 효과 확인 후 5→6판으로 확장 여부 검토.</div>
+          </div>
+        </div>
+        <div class="action-kpi">
+          <strong>KPI:</strong> 5→6판+ 잔존율 10.1% → 25%+<br>
+          <strong>예상 효과:</strong> 평균 판수 +0.3~0.6판<br>
+          <strong>측정:</strong> r6+ retention 변화 (버전 비교)
+        </div>
+        <div class="action-impact">
+          <div class="impact-chip">+0.3~0.6판/인 예상</div>
+          <div class="impact-chip gray">기획 주도 · 개발 소규모</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 개선 목표 지표 -->
+  <div class="section-title">🎯 개선 목표 지표</div>
+  <div class="card grid-full">
+    <h3>2차 이터레이션 목표 vs 현재</h3>
+    <div class="sub">기준: v170~v177 합산 결과 (n=324) · 목표: B1+B2+B3 적용 후</div>
+    <table class="target-table">
+      <thead>
+        <tr>
+          <th>지표</th>
+          <th>현재 (배포 후 합산)</th>
+          <th>목표</th>
+          <th>개선 제안</th>
+          <th>예상 효과</th>
+          <th>우선순위</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="metric">1판 완료율</td>
+          <td class="cur">64.1% (v177)</td>
+          <td class="tgt">80%+</td>
+          <td>B1 · 이탈 구간 분석 + 터치 유도 강화</td>
+          <td>+0.3~0.5판/인</td>
+          <td><span class="result-pill warn">🔴 1순위</span></td>
+        </tr>
+        <tr>
+          <td class="metric">1→2판 전환율 (클리어 기준)</td>
+          <td style="color:#2CB87A;font-weight:700;">98.3% (v177) ✅</td>
+          <td class="tgt">—</td>
+          <td>A3 효과 확인 완료</td>
+          <td>—</td>
+          <td><span class="result-pill" style="background:#C6F6D5;color:#22543D;">달성</span></td>
+        </tr>
+        <tr>
+          <td class="metric">4→5판 전환율</td>
+          <td class="cur">18.8%</td>
+          <td class="tgt">40%+</td>
+          <td>B2 · 로비 없이 자동 진입</td>
+          <td>+0.3~0.5판/인</td>
+          <td><span class="result-pill warn">🔴 1순위</span></td>
+        </tr>
+        <tr>
+          <td class="metric">5→6판+ 잔존율</td>
+          <td class="cur">10.1%</td>
+          <td class="tgt">25%+</td>
+          <td>B3 · 스트릭 보상 가시성 강화</td>
+          <td>+0.3~0.6판/인</td>
+          <td><span class="result-pill warn">🟡 2순위</span></td>
+        </tr>
+        <tr>
+          <td class="metric">평균 플레이 판수</td>
+          <td class="cur">4.04판</td>
+          <td class="tgt">5.0판+</td>
+          <td>B2+B3 복합 적용</td>
+          <td>+0.6~1.1판/인 예상</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="highlight">
+      <strong>제안 요약:</strong> A3(로비 스킵) 효과는 클리어 기준 98.3%로 확인 완료. 이제 1→2판 개선의 핵심은 <strong>1판 완료율(B1)</strong>로 전환. 동시에 <strong>4→5판 자동 진입(B2)</strong> 개발 착수. B2 효과 확인 후 <strong>5판 이후 보상 연출(B3)</strong> 순서로 진행 권장. B1+B2+B3 복합 시 평균 판수 +0.9~1.6판/인 예상.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
