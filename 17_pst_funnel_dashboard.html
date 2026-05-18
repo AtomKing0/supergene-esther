@@ -819,20 +819,21 @@ const TARGET_TOUCH = 80;
 const BASELINE     = HISTORY[0].pst.touch;
 
 // start: from HISTORY same version; finish: estimated as touch × (HISTORY finish/touch ratio)
+// rounds/rvPerRound: from BQ organic query (2026-05-18)
 const DATA_ORGANIC_VER = [
-  { ver:'v120', period:'5/7~5/8',   n:138, start:93.5,  touch:63.0, finish:58.3, r1r2:50.4, r2r3:82.9, r3r4:47.1, r5f:100,  post:false,
+  { ver:'v120', period:'5/7~5/8',   n:57,  start:93.5,  touch:63.0, finish:58.3, rounds:2.32, rvPerRound:0.0455, r1r2:50.4, r2r3:82.9, r3r4:47.1, r5f:100,  post:false,
     desc:'런칭 초기 빌드' },
-  { ver:'v136', period:'5/8~5/11',  n:268, start:95.4,  touch:56.1, finish:53.3, r1r2:46.1, r2r3:79.1, r3r4:53.7, r5f:94.2, post:false, base:true,
+  { ver:'v136', period:'5/8~5/11',  n:268, start:95.4,  touch:56.1, finish:53.3, rounds:4.07, rvPerRound:0.1734, r1r2:46.1, r2r3:79.1, r3r4:53.7, r5f:94.2, post:false, base:true,
     desc:'출시 빌드 — 기준점' },
-  { ver:'v146', period:'5/11~5/12', n:67,  start:100.0, touch:79.1, finish:73.1, r1r2:62.7, r2r3:68.9, r3r4:31.8, r5f:100,  post:false,
+  { ver:'v146', period:'5/11~5/12', n:67,  start:100.0, touch:79.1, finish:73.1, rounds:3.82, rvPerRound:0.3828, r1r2:62.7, r2r3:68.9, r3r4:31.8, r5f:100,  post:false,
     desc:'인디케이터(손가락 연출) 적용' },
-  { ver:'v163', period:'5/12~5/13', n:91,  start:100.0, touch:76.9, finish:74.7, r1r2:58.3, r2r3:85.1, r3r4:56.9, r5f:100,  post:false, minor:true,
+  { ver:'v163', period:'5/12~5/13', n:102, start:100.0, touch:76.9, finish:74.7, rounds:4.04, rvPerRound:0.2500, r1r2:58.3, r2r3:85.1, r3r4:56.9, r5f:100,  post:false, minor:true,
     desc:'마이너 버그픽스' },
-  { ver:'v170', period:'5/14',      n:76,  start:97.3,  touch:76.4, finish:68.9, r1r2:61.1, r2r3:88.6, r3r4:79.5, r5f:95.0, post:true,
+  { ver:'v170', period:'5/14',      n:86,  start:97.3,  touch:76.4, finish:68.9, rounds:4.79, rvPerRound:0.1651, r1r2:61.1, r2r3:88.6, r3r4:79.5, r5f:95.0, post:true,
     desc:'[온보딩/튜토 개선] 22레벨 인디케이터 유지 · 3→4레벨 상점 튜토 삭제·플레이 유도' },
-  { ver:'v172', period:'5/15',      n:39,  start:96.9,  touch:76.3, finish:72.6, r1r2:68.4, r2r3:73.1, r3r4:78.9, r5f:87.5, post:true, minor:true,
+  { ver:'v172', period:'5/15',      n:39,  start:96.9,  touch:76.3, finish:72.6, rounds:3.59, rvPerRound:0.2000, r1r2:68.4, r2r3:73.1, r3r4:78.9, r5f:87.5, post:true, minor:true,
     desc:'마이너 버그픽스' },
-  { ver:'v177', period:'5/15~5/17', n:241, start:98.8,  touch:68.9, finish:64.1, r1r2:63.0, r2r3:72.1, r3r4:74.1, r5f:97.6, post:true, latest:true,
+  { ver:'v177', period:'5/15~5/17', n:199, start:98.8,  touch:68.9, finish:64.1, rounds:3.81, rvPerRound:0.0935, r1r2:63.0, r2r3:72.1, r3r4:74.1, r5f:97.6, post:true, latest:true,
     desc:'[판수 증대] 강제 튜토 5레벨 확장 · 2레벨까지 클리어 후 즉시 진입 · TUT_0005_b 진입·클리어 확인' },
 ];
 
@@ -1032,7 +1033,8 @@ function render() {
   if (p1Bar) p1Bar.style.width    = p1Pct + '%';
 
   // Engagement panels (orgMode: no organic rounds/RV data yet → show "—")
-  renderEngagement(orgMode ? { rounds: null, rvPerRound: null } : cur.pst);
+  const orgLatestEng = DATA_ORGANIC_VER[DATA_ORGANIC_VER.length-1];
+  renderEngagement(orgMode ? orgLatestEng : cur.pst);
 
   // History list in admin
   renderHistoryList();
@@ -1077,10 +1079,17 @@ function renderEngagement(p) {
 }
 
 function updateEngagementChart() {
-  const labels     = HISTORY.map(h => (h.version ? `v${h.version}` : h.date));
-  const n          = HISTORY.length;
-  const roundsData = HISTORY.map(h => orgMode ? null : (h.pst.rounds ?? null));
-  const rvData     = HISTORY.map(h => orgMode ? null : (h.pst.rvPerRound ?? null));
+  const src    = orgMode ? DATA_ORGANIC_VER : HISTORY;
+  const labels = orgMode
+    ? DATA_ORGANIC_VER.map(r => r.ver)
+    : HISTORY.map(h => h.version ? `v${h.version}` : h.date);
+  const n = src.length;
+  const roundsData = orgMode
+    ? DATA_ORGANIC_VER.map(r => r.rounds ?? null)
+    : HISTORY.map(h => h.pst.rounds ?? null);
+  const rvData = orgMode
+    ? DATA_ORGANIC_VER.map(r => r.rvPerRound ?? null)
+    : HISTORY.map(h => h.pst.rvPerRound ?? null);
 
   const engData = {
     labels,
