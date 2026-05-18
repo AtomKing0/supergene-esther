@@ -779,6 +779,32 @@ body {
 
 </div></div><!-- #dashboard / .slide-wrap -->
 
+<!-- ── 오가닉 전용 퍼널 분석 (스마트발송 제외) ── -->
+<div style="max-width:1400px;margin:0 auto;padding:24px 24px 40px;background:#F4F6FB;">
+  <div style="background:#fff;border-radius:12px;padding:20px 22px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="font-size:15px;font-weight:900;color:#1A1D2E;">오가닉 전용 퍼널 분석</div>
+      <span style="background:#ECFDF5;color:#065F46;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid #6EE7B7;">🚫 스마트발송 제외</span>
+      <span style="font-size:10px;color:#9AA0B8;">push / inbox / message(push URI) 유입 제외 · BigQuery 직접 집계</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">
+      <div id="org-kpi-1" style="background:#F8F9FB;border-radius:10px;padding:12px 14px;border:1.5px solid #E2E6EF;"></div>
+      <div id="org-kpi-2" style="background:#F8F9FB;border-radius:10px;padding:12px 14px;border:1.5px solid #E2E6EF;"></div>
+      <div id="org-kpi-3" style="background:#F8F9FB;border-radius:10px;padding:12px 14px;border:1.5px solid #E2E6EF;"></div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table id="org-daily-table" style="width:100%;border-collapse:collapse;font-size:11px;"></table>
+    </div>
+    <div style="background:#EEF3FF;border-left:3px solid #4F8EF7;border-radius:0 8px 8px 0;padding:10px 14px;margin-top:14px;font-size:11px;line-height:1.7;color:#4A5068;">
+      <strong style="color:#2563EB;">📋 오가닉 기준 개선 결과</strong> — 스마트발송 노이즈 제거 후에도 개선 유효.<br>
+      문제#1(1→2판): <strong>46.1% → 63.0%</strong> (+16.9pp) ⚠️ 미달(목표 75%) &nbsp;·&nbsp;
+      문제#2(3→4판): <strong>53.7% → 74.1%</strong> (+20.4pp) ✅ 달성(목표 70%) &nbsp;·&nbsp;
+      문제#3(5판완료): <strong>94.2% → 97.6%</strong> (+3.4pp) ✅ 달성(목표 80%)<br>
+      <span style="font-size:9px;color:#64748B;">전환율 = N판 시작 유저 중 N+1판 시작 유저 비율 · v136 오가닉 n=268 / v177 오가닉 n=241 · 소표본(n≤11) 행은 참고용</span>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════════════
 // 📊 DATA — 업데이트 시 HISTORY 배열 끝에 항목 추가
@@ -1312,6 +1338,103 @@ function scaleReport() {
 }
 window.addEventListener('resize', scaleReport);
 scaleReport();
+
+// ── Organic Section ───────────────────────────────
+const DATA_ORGANIC_DAILY = [
+  { date:'05/07', ver:'v120', n:80,  touch:69.2, r1r2:61.5, r2r3:81.3, r3r4:51.3, r5f:100   },
+  { date:'05/08', ver:'v120', n:58,  touch:54.4, r1r2:35.1, r2r3:85.0, r3r4:41.2, r5f:100   },
+  { date:'05/08', ver:'v136', n:36,  touch:53.1, r1r2:43.8, r2r3:78.6, r3r4:63.6, r5f:100   },
+  { date:'05/09', ver:'v136', n:86,  touch:64.3, r1r2:47.6, r2r3:87.5, r3r4:48.6, r5f:91.7  },
+  { date:'05/10', ver:'v136', n:93,  touch:46.7, r1r2:40.0, r2r3:69.4, r3r4:52.0, r5f:90.9  },
+  { date:'05/11', ver:'v136', n:53,  touch:61.5, r1r2:55.8, r2r3:82.8, r3r4:58.3, r5f:100   },
+  { date:'05/11', ver:'v146', n:31,  touch:74.2, r1r2:61.3, r2r3:57.9, r3r4:36.4, r5f:100   },
+  { date:'05/12', ver:'v146', n:36,  touch:83.3, r1r2:63.9, r2r3:78.3, r3r4:27.8, r5f:100   },
+  { date:'05/12', ver:'v163', n:22,  touch:68.2, r1r2:31.8, r2r3:100,  r3r4:57.1, r5f:100,  small:true },
+  { date:'05/13', ver:'v163', n:69,  touch:79.7, r1r2:66.7, r2r3:80.4, r3r4:56.8, r5f:100   },
+  { date:'05/14', ver:'v163', n:11,  touch:72.7, r1r2:54.6, r2r3:100,  r3r4:33.3, r5f:100,  small:true },
+  { date:'05/14', ver:'v170', n:76,  touch:76.4, r1r2:61.1, r2r3:88.6, r3r4:79.5, r5f:95.0  },
+  { date:'05/15', ver:'v170', n:11,  touch:50.0, r1r2:20.0, r2r3:100,  r3r4:100,  r5f:50.0, small:true },
+  { date:'05/15', ver:'v172', n:39,  touch:76.3, r1r2:68.4, r2r3:73.1, r3r4:78.9, r5f:87.5  },
+  { date:'05/15', ver:'v177', n:37,  touch:70.3, r1r2:64.9, r2r3:83.3, r3r4:70.0, r5f:100   },
+  { date:'05/16', ver:'v177', n:123, touch:67.8, r1r2:61.2, r2r3:74.3, r3r4:78.2, r5f:100   },
+  { date:'05/17', ver:'v177', n:81,  touch:70.0, r1r2:65.0, r2r3:63.5, r3r4:69.7, r5f:92.9  },
+];
+const ORGANIC_AGG = {
+  v136: { n:268, touch:56.1, r1r2:46.1, r3r4:53.7, r5f:94.2, color:'#4F8EF7' },
+  v170: { n:76,  touch:76.4, r1r2:61.1, r3r4:79.5, r5f:95.0, color:'#2CB87A' },
+  v177: { n:241, touch:68.9, r1r2:63.0, r3r4:74.1, r5f:97.6, color:'#0EA5E9' },
+};
+const ORG_VER_COLORS = { v120:'#94A3B8', v136:'#4F8EF7', v146:'#E8832A', v163:'#9B59B6', v170:'#2CB87A', v172:'#F59E0B', v177:'#0EA5E9' };
+
+(function renderOrganic() {
+  const colC = (v, t1, t2) => {
+    if (v == null) return '<span style="color:#9AA0B8;">—</span>';
+    const c = v >= t1 ? '#2CB87A' : v >= t2 ? '#D69E2E' : '#E53E3E';
+    return `<span style="font-weight:700;color:${c}">${v.toFixed(1)}%</span>`;
+  };
+  const col = (v, t1, t2) => v >= t1 ? '#2CB87A' : v >= t2 ? '#D69E2E' : '#E53E3E';
+  const b = ORGANIC_AGG.v136, c = ORGANIC_AGG.v177;
+
+  document.getElementById('org-kpi-1').innerHTML = `
+    <div style="font-size:9px;font-weight:700;color:#C53030;margin-bottom:3px;">🔴 문제#1 — 1→2판 전환율</div>
+    <div style="display:flex;align-items:baseline;gap:6px;">
+      <span style="font-size:11px;color:#4F8EF7;font-weight:700;">${b.r1r2.toFixed(1)}%</span>
+      <span style="font-size:9px;color:#9AA0B8;">→</span>
+      <span style="font-size:20px;font-weight:900;color:${col(c.r1r2,75,60)}">${c.r1r2.toFixed(1)}%</span>
+    </div>
+    <div style="font-size:9px;color:#0EA5E9;margin-top:1px;">v177 오가닉 · n=${c.n}</div>
+    <div style="font-size:10px;font-weight:700;color:#2CB87A;margin-top:2px;">+${(c.r1r2-b.r1r2).toFixed(1)}pp · 목표 75%+ <span style="color:${c.r1r2>=75?'#2CB87A':'#E53E3E'}">${c.r1r2>=75?'✅':'⚠️'}</span></div>`;
+  document.getElementById('org-kpi-2').innerHTML = `
+    <div style="font-size:9px;font-weight:700;color:#C53030;margin-bottom:3px;">🔴 문제#2 — 3→4판 전환율</div>
+    <div style="display:flex;align-items:baseline;gap:6px;">
+      <span style="font-size:11px;color:#4F8EF7;font-weight:700;">${b.r3r4.toFixed(1)}%</span>
+      <span style="font-size:9px;color:#9AA0B8;">→</span>
+      <span style="font-size:20px;font-weight:900;color:${col(c.r3r4,70,55)}">${c.r3r4.toFixed(1)}%</span>
+    </div>
+    <div style="font-size:9px;color:#0EA5E9;margin-top:1px;">v177 오가닉 · n=${c.n}</div>
+    <div style="font-size:10px;font-weight:700;color:#2CB87A;margin-top:2px;">+${(c.r3r4-b.r3r4).toFixed(1)}pp · 목표 70%+ <span style="color:${c.r3r4>=70?'#2CB87A':'#E53E3E'}">${c.r3r4>=70?'✅':'⚠️'}</span></div>`;
+  document.getElementById('org-kpi-3').innerHTML = `
+    <div style="font-size:9px;font-weight:700;color:#B07D00;margin-bottom:3px;">🟡 문제#3 — 5판 완료율</div>
+    <div style="display:flex;align-items:baseline;gap:6px;">
+      <span style="font-size:11px;color:#4F8EF7;font-weight:700;">${b.r5f.toFixed(1)}%</span>
+      <span style="font-size:9px;color:#9AA0B8;">→</span>
+      <span style="font-size:20px;font-weight:900;color:${col(c.r5f,80,70)}">${c.r5f.toFixed(1)}%</span>
+    </div>
+    <div style="font-size:9px;color:#0EA5E9;margin-top:1px;">v177 오가닉 · n=${c.n}</div>
+    <div style="font-size:10px;font-weight:700;color:#2CB87A;margin-top:2px;">+${(c.r5f-b.r5f).toFixed(1)}pp · 목표 80%+ <span style="color:${c.r5f>=80?'#2CB87A':'#E53E3E'}">${c.r5f>=80?'✅':'⚠️'}</span></div>`;
+
+  let html = `<thead><tr>
+    <th style="text-align:left;padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">날짜</th>
+    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">버전</th>
+    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">오가닉 NRU</th>
+    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">첫터치율</th>
+    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">1→2판</th>
+    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">2→3판</th>
+    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">3→4판</th>
+    <th style="padding:6px 8px;font-size:10px;color:#9AA0B8;border-bottom:1px solid #E2E6EF;">5판 완료율</th>
+  </tr></thead><tbody>`;
+  DATA_ORGANIC_DAILY.forEach(row => {
+    const vc = ORG_VER_COLORS[row.ver] || '#9AA0B8';
+    const post = ['v170','v172','v177'].includes(row.ver);
+    const bg = post ? 'background:#F0F9FF;' : '';
+    const sm = row.small ? '<span style="font-size:8px;color:#9AA0B8;margin-left:3px;">(소표본)</span>' : '';
+    const td = 'style="padding:5px 8px;text-align:right;border-bottom:1px solid #F4F6FB;"';
+    html += `<tr style="${bg}">
+      <td style="padding:5px 8px;border-bottom:1px solid #F4F6FB;color:#4A5068;">${row.date}</td>
+      <td ${td} style="padding:5px 8px;text-align:right;border-bottom:1px solid #F4F6FB;font-weight:700;color:${vc};">${row.ver}${sm}</td>
+      <td ${td}>${row.n}</td>
+      <td ${td}>${colC(row.touch,70,50)}</td>
+      <td ${td}>${colC(row.r1r2,75,60)}</td>
+      <td ${td}>${colC(row.r2r3,80,65)}</td>
+      <td ${td}>${colC(row.r3r4,70,55)}</td>
+      <td ${td}>${colC(row.r5f,80,70)}</td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('org-daily-table').innerHTML = html;
+})();
 </script>
+
+
 </body>
 </html>
