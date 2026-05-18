@@ -133,6 +133,8 @@ body {
 .trend-table th:first-child { text-align:left; }
 .trend-table td { font-size:11px; color:#4A5068; padding:4px 8px; text-align:right; border-bottom:1px solid #F0F2F7; }
 .trend-table td:first-child { text-align:left; font-weight:600; }
+.trend-table tr.noise-row td { background:#FFFBEB; }
+.noise-tag { display:inline-block; margin-left:4px; font-size:8px; font-weight:700; color:#92400E; background:#FDE68A; border-radius:4px; padding:0 4px; vertical-align:middle; }
 .td-pos  { color:#2CB87A; font-weight:700; }
 .td-neg  { color:#E53E3E; font-weight:700; }
 .td-base { color:#9AA0B8; }
@@ -572,6 +574,9 @@ body {
       <p class="subtitle">데이터 포인트를 추가할수록 개선 곡선이 표시됩니다</p>
       <div id="trend-wrap"><canvas id="trendChart"></canvas></div>
       <div class="trend-history">
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:5px 9px;margin-bottom:6px;font-size:9px;color:#92400E;line-height:1.5;">
+          <strong>⚠️ v170 이후 노이즈 주의</strong> — 5/14부터 스마트 발송으로 유저 유입량·유입 채널이 변경됨. 행동 지표(터치율·완료율) 변화가 UX 개선 효과인지 유입 구조 변화인지 교차 검증 필요.
+        </div>
         <table class="trend-table">
           <thead>
             <tr>
@@ -784,9 +789,9 @@ const HISTORY = [
   { date:'2026-05-08', label:'v136 (5/8~5/11)',                version:'136', updatedAt:'2026-05-15', pst:{ players:304, start:95.4, touch:54.1, finish:51.4, rounds:3.94, rvPerRound:0.163 } },
   { date:'2026-05-11', label:'v146 인디케이터 (5/11~5/12)',   version:'146', updatedAt:'2026-05-15', pst:{ players:67,  start:100.0,touch:79.1, finish:73.1, rounds:3.82, rvPerRound:0.383 } },
   { date:'2026-05-12', label:'v163 (5/12~5/13)',               version:'163', updatedAt:'2026-05-15', pst:{ players:92,  start:100.0,touch:77.2, finish:75.0, rounds:4.02, rvPerRound:0.268 } },
-  { date:'2026-05-14', label:'v170 인디케이터·A1 (5/14)',     version:'170', updatedAt:'2026-05-15', note:'스마트 발송 시작 → 유입 증가', pst:{ players:110, start:97.3, touch:67.3, finish:60.7, rounds:4.50, rvPerRound:0.1455 } },
-  { date:'2026-05-15', label:'v172 (5/15)',                    version:'172', updatedAt:'2026-05-18', pst:{ players:261, start:96.9, touch:40.7, finish:38.7, rounds:2.14, rvPerRound:0.1163 } },
-  { date:'2026-05-15', label:'v177 A2·A3 (5/15~5/17)',        version:'177', updatedAt:'2026-05-18', note:'A2(클리어 구조)+A3(로비 스킵) 5/15 배포', pst:{ players:424, start:98.8, touch:51.3, finish:47.7, rounds:2.99, rvPerRound:0.0765 } },
+  { date:'2026-05-14', label:'v170 인디케이터·A1 (5/14)',     version:'170', updatedAt:'2026-05-15', noise:true, note:'스마트 발송 시작 → 유입 증가', pst:{ players:110, start:97.3, touch:67.3, finish:60.7, rounds:4.50, rvPerRound:0.1455 } },
+  { date:'2026-05-15', label:'v172 (5/15)',                    version:'172', updatedAt:'2026-05-18', noise:true, pst:{ players:261, start:96.9, touch:40.7, finish:38.7, rounds:2.14, rvPerRound:0.1163 } },
+  { date:'2026-05-15', label:'v177 A2·A3 (5/15~5/17)',        version:'177', updatedAt:'2026-05-18', noise:true, note:'A2(클리어 구조)+A3(로비 스킵) 5/15 배포', pst:{ players:424, start:98.8, touch:51.3, finish:47.7, rounds:2.99, rvPerRound:0.0765 } },
 ];
 
 const REF = {
@@ -844,9 +849,11 @@ function render() {
     const d   = h.pst.touch - BASELINE;
     const cls = d>0.4?'td-pos':d<-0.4?'td-neg':'td-base';
     const ds  = d===0?'기준':(d>=0?'+':'')+d.toFixed(1)+'pp';
-    tbody.innerHTML += `<tr>
+    const noiseTag = h.noise ? `<span class="noise-tag">⚠️ 스마트발송</span>` : '';
+    const noteStr  = h.note  ? `<br><span style="font-size:9px;color:#D69E2E;">⚡ ${h.note}</span>` : '';
+    tbody.innerHTML += `<tr${h.noise?' class="noise-row"':''}>
       <td>${h.date}</td>
-      <td>${h.label}${h.note?`<br><span style="font-size:9px;color:#D69E2E;">⚡ ${h.note}</span>`:''}</td>
+      <td>${h.label}${noiseTag}${noteStr}</td>
       <td style="color:#9097b4;font-size:10px;">${h.version?'v'+h.version:'-'}</td>
       <td style="color:#9097b4;font-size:10px;">${h.pst.players}</td>
       <td>${pct(h.pst.start)}</td>
