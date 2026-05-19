@@ -517,8 +517,8 @@ body {
     <!-- CENTER-LEFT: Dropout (220px) -->
     <div id="panel-dropout">
       <div class="dropout-section">
-        <div class="section-title"><span class="num">①</span>→<span class="num">②</span> 구간 이탈</div>
-        <div class="section-sub">게임시작 → 첫터치</div>
+        <div class="section-title"><span class="num">①</span>→<span class="num">②</span> 첫터치 도달률</div>
+        <div class="section-sub">게임시작 → 첫터치 (도달한 비율)</div>
         <div class="prog-row">
           <div class="prog-row-header">
             <span class="prog-label">PST</span>
@@ -930,7 +930,15 @@ function render() {
   const dropA = p.touch - p.start;
   document.getElementById('d-pst-touch').textContent         = pct(p.touch);
   document.getElementById('d-pst-touch-bar').style.width     = p.touch+'%';
-  document.getElementById('d-pst-touch-badge').textContent   = dropA.toFixed(1)+'pp 🔴';
+  document.getElementById('d-pst-touch-badge').textContent   = dropA.toFixed(1)+'pp 이탈';
+  const alertEl = document.getElementById('d-alert');
+  if (alertEl) {
+    const verLabel = orgMode ? (DATA_ORGANIC_VER[DATA_ORGANIC_VER.length-1].ver) : ('v'+cur.version);
+    const pstT = p.touch, cozyT = REF.cozy.touch, pbmT = REF.pbm.touch;
+    const best = pstT > cozyT && pstT > pbmT;
+    alertEl.innerHTML = `PST ${verLabel} <strong>${pct(pstT)}</strong> vs 자사 타앱 Cozy ${pct(cozyT)} / PBM ${pct(pbmT)}<br>`
+      + (best ? '→ PST Toss 내 최고 첫터치 도달률 ✅' : `→ Cozy 대비 ${(pstT-cozyT).toFixed(1)}pp`);
+  }
   const compPct = round1(p.finish/p.touch*100);
   document.getElementById('d-pst-comp').textContent          = pct(compPct);
   document.getElementById('d-pst-comp-bar').style.width      = compPct+'%';
