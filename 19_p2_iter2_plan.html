@@ -371,16 +371,16 @@ body{background:#F0F2F7;font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-se
     <!-- 인사이트 박스 -->
     <div class="insight-grid">
       <div class="insight-box red">
-        <div class="ib-title">🚨 핵심 이탈: 게임 시작 후 10초 이내</div>
-        TUTO_INGAME_INTRO(251명) → PLAYTIME_10S(167명)<br>
-        <strong>−84명(−33.5%)</strong> 이탈. 전체 이탈의 최대 단일 구간.<br>
-        인게임 진입 직후 UI 혼란, 로딩 지연, 튜토리얼 인트로 이탈 추정.
+        <div class="ib-title">🚨 핵심 이탈: 게임 시작 후 10초 이내 — 튜토 팝업 직접 원인</div>
+        TUTO_INGAME_INTRO(251명) → PLAYTIME_10S(167명) <strong>−84명(−33.5%)</strong><br>
+        튜토 시트 확인 결과: <strong>230001(content_ingame_intro)</strong> — 레벨 1 진입 즉시 발동하는 <code>floating</code> 팝업, <code>is_forced=FALSE</code>. 닫기 전 카드 터치 불가 상태.<br>
+        팝업 닫은 후에도 <strong>힌트 표시까지 5초 대기</strong>(hint_card_idle_seconds=5) — 행동 유도 공백 발생.
       </div>
       <div class="insight-box yellow">
-        <div class="ib-title">⚠️ 주목: 첫 카드 터치 전 이탈 구간</div>
-        TUTO_STEP_COMPLETE(155명) &gt; PLAY_FIRST_TOUCH(125명)<br>
-        <strong>튜토리얼 스텝은 통과했으나 카드를 한 번도 터치하지 않은 유저 존재.</strong><br>
-        터치 인디케이터 시인성 또는 조작 방법 이해 부재 가능성.
+        <div class="ib-title">⚠️ 2차 이탈: 튜토 완료 후 로비 복귀 시 재진입 미유도</div>
+        TUTO_STEP_COMPLETE(155명) → PLAY_FIRST_TOUCH(125명) <strong>−30명(−19%)</strong><br>
+        튜토 시트 확인: <strong>230003(content_lobby_play)</strong> — 레벨 1 클리어 후 로비에서 플레이 버튼 유도(<code>is_forced=TRUE</code>). 단, 로비 복귀 직후 보상 팝업 등 선행 연출이 있을 경우 230003 표시 전 이탈 가능.<br>
+        <strong>230029(content_lobby_play_2)</strong>는 <code>string_code_key=none</code>, <code>is_forced=FALSE</code> — 텍스트 없어 유도력 없음.
       </div>
       <div class="insight-box blue">
         <div class="ib-title">📌 GAMEPLAY_FINISH 기준 1판 완료율</div>
@@ -397,7 +397,7 @@ body{background:#F0F2F7;font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-se
     </div>
 
     <div class="highlight" style="margin-top:16px;">
-      <strong>분석 결론:</strong> 1판 이탈의 <strong>1순위 개선 타겟은 게임 시작 후 10초 이내(TUTO_INGAME_INTRO → PLAYTIME_10S)</strong>. 3개 버전 모두 동일 구간에서 최대 이탈 발생 — 구조적 문제 확인. 2순위는 첫 카드 터치 유도(TUTO_STEP_COMPLETE → PLAY_FIRST_TOUCH). 1판 완료 후 2판 진입은 A3 효과로 93%를 유지 중이며 개선 불필요.
+      <strong>분석 결론:</strong> 튜토리얼 시트 교차 분석으로 병목 원인 특정 완료. 10초 이내 이탈의 직접 원인은 <strong>230001(content_ingame_intro) floating 팝업 + hint 5초 공백</strong>. 2차 이탈은 <strong>230003 표시 타이밍 지연</strong>. 두 구간 모두 튜토 데이터 수정으로 개선 가능한 영역이며, 3개 버전 연속 동일 패턴 — 팝업 구조 변경 없이는 자연 해소 없음.
     </div>
   </div>
 
@@ -411,19 +411,19 @@ body{background:#F0F2F7;font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-se
         <div class="action-tag propose">📐 B1 — 제안</div>
         <div class="owner-chip">👤 담당: 기획 + 개발</div>
         <div class="action-title">1판 완료율 개선 — 10초 이내 이탈 차단 + 첫 터치 유도</div>
-        <div class="action-why">이벤트 로그 세분화 결과, 이탈의 <strong>최대 단일 구간은 게임 시작 후 10초 이내</strong> (TUTO_INGAME_INTRO 251명 → PLAYTIME_10S 167명, −84명 −33.5%). 3개 버전 모두 동일 구간에서 최대 이탈 발생 — 구조적 문제 확인. 2차 이탈은 튜토리얼 완료 후 첫 터치 전 구간 (−30명 −19%). 반면 1판 완료 후 2판 진입율은 93%로 A3 효과 확인 완료.</div>
+        <div class="action-why">이벤트 로그 + 튜토리얼 시트 교차 분석 결과, 10초 이내 이탈의 <strong>직접 원인은 230001(content_ingame_intro) floating 팝업</strong>으로 특정됨. 3개 버전 연속 동일 구간 최대 이탈 — 팝업 구조가 바뀌지 않은 한 자연 해소 없음. 2차 이탈은 230003 표시 타이밍 문제.</div>
         <div class="action-items">
           <div class="action-item">
             <div class="action-item-dot blue">1</div>
-            <div><strong>[1순위] 인게임 인트로 10초 이탈 차단</strong> — TUTO_INGAME_INTRO 진입 후 10초 내 33.5% 이탈. 인트로 연출 단축 또는 즉시 인터랙션 유도 UI 삽입. "탭해서 시작" 형태의 조기 개입 검토.</div>
+            <div><strong>[1순위] 230001 인트로 팝업 UX 개선</strong> — <code>floating</code> 팝업이 닫히기 전까지 카드 터치 불가. 텍스트 단축 + CTA 버튼("탭해서 시작") 크기·위치 명확화. 또는 팝업 없이 첫 카드에 즉시 인디케이터 표시로 대체 검토.</div>
           </div>
           <div class="action-item">
             <div class="action-item-dot blue">2</div>
-            <div><strong>[2순위] 첫 카드 터치 유도 강화</strong> — TUTO_STEP_COMPLETE(155명) 이후 PLAY_FIRST_TOUCH(125명)로 −30명(−19%) 이탈. 튜토리얼 스텝 완료 직후 터치 인디케이터 강화·애니메이션 명확화로 "지금 터치" 유도.</div>
+            <div><strong>[1순위] hint_card_idle_seconds 5→0 단축</strong> — 팝업 닫은 후 현재 5초 대기 후 힌트 표시. 즉시(0~1초) 힌트 표시로 행동 유도 공백 제거. const 10074 값 수정으로 적용 가능.</div>
           </div>
           <div class="action-item">
             <div class="action-item-dot blue">3</div>
-            <div><strong>게임 중 이탈 시 원탭 재도전</strong> — PLAYTIME_10S 이후~GAMEPLAY_FINISH 사이 이탈(−10명) 대상. 실패·중단 화면에서 로비 없이 즉시 재시작. A2 클리어 구조와 병행 적용.</div>
+            <div><strong>[2순위] 230003 표시 타이밍 최적화</strong> — 레벨 1 클리어 후 로비 복귀 시 보상 팝업 등 선행 연출로 인해 230003(플레이 버튼 하이라이트) 표시 전 이탈 가능. 230003을 로비 복귀 즉시 최우선 표시하도록 순서 조정. 230029(텍스트 없음)에 string_code_key 추가도 검토.</div>
           </div>
         </div>
         <div class="action-kpi" style="margin-bottom:8px;">
