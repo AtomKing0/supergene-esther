@@ -357,32 +357,6 @@ body {
 #no-history { font-size:11px; color:#9AA0B8; text-align:center; padding:12px 0; }
 
 
-/* ── ROUNDS FUNNEL PANEL (below slide) ───────────────── */
-#rounds-funnel-panel {
-  max-width:1400px; margin:32px auto 48px; padding:0 28px;
-  font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
-}
-.rfp-section { background:#fff; border-radius:14px; border:1.5px solid #E2E6EF; padding:22px 26px; margin-bottom:20px; }
-.rfp-section h3 { font-size:15px; font-weight:800; color:#1A1D2E; margin-bottom:4px; }
-.rfp-section .rfp-sub { font-size:11px; color:#9AA0B8; margin-bottom:16px; }
-.rfp-table { width:100%; border-collapse:collapse; font-size:12px; }
-.rfp-table th { padding:8px 12px; text-align:left; font-size:10px; font-weight:700; color:#9AA0B8; text-transform:uppercase; letter-spacing:0.4px; border-bottom:1.5px solid #E2E6EF; background:#F8F9FB; }
-.rfp-table td { padding:9px 12px; border-bottom:1px solid #F4F6FB; color:#4A5068; }
-.rfp-table tr:last-child td { border-bottom:none; }
-.rfp-table tr:hover td { background:#F8FBFF; }
-.ver-badge { font-size:8px; font-weight:700; padding:1px 5px; border-radius:3px; margin-left:4px; vertical-align:middle; }
-.ver-badge.base { background:#EEF3FF; color:#2563EB; }
-.ver-badge.latest { background:#E0F2FE; color:#0369A1; }
-.dropout-bar-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-.dropout-bar-label { font-size:11px; font-weight:700; width:44px; flex-shrink:0; }
-.dropout-bar-track { flex:1; height:20px; background:#F0F2F7; border-radius:6px; overflow:hidden; display:flex; }
-.dropout-bar-seg { height:100%; transition:width 0.5s; }
-.dropout-bar-seg.clear   { background:#2CB87A; }
-.dropout-bar-seg.dropout { background:#FC8181; opacity:0.85; }
-.dropout-bar-seg.nostart { background:#E2E6EF; }
-.dropout-bar-nums { display:flex; gap:10px; font-size:11px; font-weight:700; width:160px; flex-shrink:0; }
-.dropout-legend { display:flex; gap:16px; margin-bottom:12px; font-size:11px; color:#4A5068; }
-.dropout-legend-dot { width:10px; height:10px; border-radius:2px; display:inline-block; margin-right:4px; vertical-align:middle; }
 </style>
 </head>
 <body>
@@ -790,7 +764,7 @@ body {
           <span class="acard-badge">✅ P2 1차 완료 · 2차 이터레이션 진행</span>
           <div class="acard-title">인당 플레이 판수 개선</div>
           <div class="acard-desc">A1·A2·A3 배포 완료 (v170~v177 · n=324)<br>3→4판 +22.4% ✅ · 5판완료율 +36.1% ✅ · 판수 4.04판 (목표 5.5)<br>2차: 4→5판 자동진입(B2) · 보상 가시성(B3) 이터레이션 예정</div>
-          <div class="acard-kpi">지표: avg 판수 · 판별 전환율 (↓ 아래 섹션 참고)</div>
+          <div class="acard-kpi">지표: avg 판수 · 세션당 재도전율 · 평균 세션 길이</div>
           <a class="acard-link" href="19_p2_iter2_plan.html" target="_blank">📄 P2 2차 제안서 →</a>
           <div class="acard-prog-header"><span class="acard-prog-label">진척도</span><span class="acard-prog-pct">1차 완료</span></div>
           <div class="acard-prog-bg"><div class="acard-prog-fill acard-prog-p2" style="width:55%;"></div></div>
@@ -809,40 +783,6 @@ body {
 
 </div></div><!-- #dashboard / .slide-wrap -->
 
-<!-- ══ 판별 전환율 상세 (스크롤 다운 영역) ══ -->
-<div id="rounds-funnel-panel">
-
-  <div class="rfp-section">
-    <h3>📊 판별 전환율 추이 — 오가닉 NRU</h3>
-    <div class="rfp-sub">1→2판 전환율: <strong>1판 클리어 유저 기준</strong> (= r1r2 ÷ 1판완료율) · 기존 지표는 1판 미클리어 유저 포함으로 실제 효과가 희석됨</div>
-    <table class="rfp-table">
-      <thead>
-        <tr>
-          <th>버전</th><th>기간</th><th>n</th>
-          <th>1판 완료율</th>
-          <th>1판 미완료 이탈</th>
-          <th>1→2판 (클리어 기준)</th>
-          <th>2→3판</th>
-          <th>3→4판</th>
-          <th>5판 완료율</th>
-        </tr>
-      </thead>
-      <tbody id="rfunnel-tbody"></tbody>
-    </table>
-  </div>
-
-  <div class="rfp-section">
-    <h3>🔴 1판 미완료 이탈 분포</h3>
-    <div class="rfp-sub">버전별 전체 유입 유저 중 1판 클리어 도달 비율 · 미완료 이탈 · 게임 미시작 비중</div>
-    <div class="dropout-legend">
-      <span><span class="dropout-legend-dot" style="background:#2CB87A;"></span>1판 클리어</span>
-      <span><span class="dropout-legend-dot" style="background:#FC8181;"></span>1판 미완료 이탈 (시작했으나 클리어 못함)</span>
-      <span><span class="dropout-legend-dot" style="background:#E2E6EF;"></span>게임 미시작</span>
-    </div>
-    <div id="r1-dropout-bars"></div>
-  </div>
-
-</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
@@ -1497,69 +1437,12 @@ document.getElementById('add-snapshot-btn').addEventListener('click',()=>{
   drawer.classList.remove('open');
 });
 
-// ── 판별 전환율 + 1판 이탈 분포 렌더 ─────────────────
-function renderRoundsFunnel() {
-  const tbody  = document.getElementById('rfunnel-tbody');
-  const barsEl = document.getElementById('r1-dropout-bars');
-  if (!tbody) return;
-
-  const VCV = {v120:'#94A3B8',v136:'#4F8EF7',v146:'#E8832A',v163:'#9B59B6',v170:'#2CB87A',v172:'#F59E0B',v177:'#0EA5E9'};
-  const colV = (v, t1, t2) => {
-    if (v == null) return '<td>—</td>';
-    const c = v >= t1 ? '#2CB87A' : v >= t2 ? '#D69E2E' : '#E53E3E';
-    return `<td style="font-weight:700;color:${c}">${v.toFixed(1)}%</td>`;
-  };
-
-  tbody.innerHTML = DATA_ORGANIC_VER.map(r => {
-    const vc         = VCV[r.ver] || '#9AA0B8';
-    const r1dropout  = round1(r.start - r.finish);
-    const r1r2corr   = r.finish > 0 ? round1(r.r1r2 / r.finish * 100) : null;
-    const bgColor    = r.minor ? '#F8F9FB' : r.base ? '#EEF3FF' : r.post ? '#F0F9FF' : '#fff';
-    const badge      = r.base   ? ' <span class="ver-badge base">기준</span>'
-                     : r.latest ? ' <span class="ver-badge latest">최신</span>' : '';
-    const dropColor  = r1dropout > 30 ? '#E53E3E' : r1dropout > 20 ? '#D69E2E' : '#2CB87A';
-    return `<tr style="background:${bgColor};">
-      <td style="font-weight:700;color:${vc};">${r.ver}${badge}</td>
-      <td style="color:#9097b4;font-size:10px;">${r.period}</td>
-      <td style="color:#9097b4;font-size:10px;">${r.n}</td>
-      ${colV(r.finish, 75, 60)}
-      <td style="font-weight:700;color:${dropColor};">-${r1dropout.toFixed(1)}%</td>
-      ${colV(r1r2corr, 90, 80)}
-      ${colV(r.r2r3, 80, 70)}
-      ${colV(r.r3r4, 60, 45)}
-      ${colV(r.r5f,  90, 75)}
-    </tr>`;
-  }).join('');
-
-  if (barsEl) {
-    barsEl.innerHTML = DATA_ORGANIC_VER.map(r => {
-      const vc         = VCV[r.ver] || '#9AA0B8';
-      const clearPct   = r.finish;
-      const dropoutPct = Math.max(0, r.start - r.finish);
-      const noStartPct = Math.max(0, 100 - r.start);
-      return `<div class="dropout-bar-row">
-        <div class="dropout-bar-label" style="color:${vc};">${r.ver}</div>
-        <div class="dropout-bar-track">
-          <div class="dropout-bar-seg clear"   style="width:${clearPct}%;"></div>
-          <div class="dropout-bar-seg dropout" style="width:${dropoutPct}%;"></div>
-          <div class="dropout-bar-seg nostart" style="width:${noStartPct}%;"></div>
-        </div>
-        <div class="dropout-bar-nums">
-          <span style="color:#2CB87A;">${clearPct.toFixed(1)}%</span>
-          <span style="color:#E53E3E;">-${dropoutPct.toFixed(1)}%</span>
-          <span style="color:#9AA0B8;">${noStartPct.toFixed(1)}%</span>
-        </div>
-      </div>`;
-    }).join('');
-  }
-}
 
 // ── INIT ─────────────────────────────────────────────
 if (window.location.search.includes('admin')) {
   document.getElementById('admin-btn').style.display = 'flex';
 }
 setOrgMode(true);
-renderRoundsFunnel();
 
 function scaleReport() {
   var s = window.innerWidth / 1920;
