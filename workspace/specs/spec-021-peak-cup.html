@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="spec-created" content="2026. 5. 4.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPEC-021 · Peak Cup — 100인 데일리 경쟁전</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--surface3:#2a2f45;
+  --border:#2e3347;--text:#e2e8f0;--text2:#94a3b8;--text-dim:#64748b;
+  --accent:#a78bfa;--accent-bg:rgba(167,139,250,.15);--accent-border:rgba(167,139,250,.35);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.12);--purple-border:rgba(167,139,250,.3);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,.12);--teal-border:rgba(45,212,191,.3);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.12);--blue-border:rgba(96,165,250,.3);
+  --green:#4ade80;--green-bg:rgba(74,222,128,.12);--green-border:rgba(74,222,128,.25);
+  --yellow:#fbbf24;--yellow-bg:rgba(251,191,36,.12);--yellow-border:rgba(251,191,36,.3);
+  --red:#f87171;--red-bg:rgba(248,113,113,.12);--red-border:rgba(248,113,113,.25);
+  --orange:#fb923c;--orange-bg:rgba(251,146,60,.12);--orange-border:rgba(251,146,60,.3);
+  --gold:#f59e0b;--gold-bg:rgba(245,158,11,.12);--gold-border:rgba(245,158,11,.3);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
+  --text-xs:12px;--text-sm:13px;--text-base:14px;--text-lg:15px;
+  --dur-base:.18s;
+}
+[data-theme=light]{
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--text:#0f172a;--text2:#475569;--text-dim:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--text-lg);line-height:1.7;display:flex}
+.sidenav{position:fixed;left:0;top:0;height:100vh;width:200px;background:var(--surface);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;gap:4px;z-index:200;overflow-y:auto}
+.sidenav-logo{padding:0 20px 20px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:var(--text-sm);color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all var(--dur-base)}
+.nav-item:hover,.nav-item.active{color:var(--text);border-left-color:var(--accent);background:var(--accent-bg)}
+.nav-num{font-size:10px;font-weight:700;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.n1{background:var(--purple-bg);color:var(--purple)}
+.n2{background:var(--teal-bg);color:var(--teal)}
+.n3{background:var(--blue-bg);color:var(--blue)}
+.main{margin-left:200px;flex:1;padding:60px 56px 80px;max-width:900px}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-toggle:hover{transform:scale(1.1)}
+.back-btn{position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;text-decoration:none}
+.back-btn:hover{color:var(--text)}
+.spec-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;margin-bottom:14px}
+h1{font-size:26px;font-weight:800;margin-bottom:8px;line-height:1.3}
+.subtitle{color:var(--text2);font-size:var(--text-base);margin-bottom:32px}
+a{color:var(--accent);text-decoration:none}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:4px;margin-bottom:40px}
+.kpi-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+[data-theme=light] .kpi-card{background:rgba(0,0,0,0.03)}
+.kpi-card .kpi-val{font-size:16px;font-weight:800;color:var(--accent)}
+.kpi-card .kpi-label{font-size:12px;color:var(--text2);margin-top:4px}
+.section{margin-bottom:56px;padding-top:40px}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.section-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+.section-audience{display:inline-block;border-radius:4px;padding:3px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.s1 .section-num{background:var(--purple-bg);color:var(--purple)}
+.s1 .section-audience{background:var(--purple-bg);color:var(--purple)}
+.s2 .section-num{background:var(--teal-bg);color:var(--teal)}
+.s2 .section-audience{background:var(--teal-bg);color:var(--teal)}
+.s3 .section-num{background:var(--blue-bg);color:var(--blue)}
+.s3 .section-audience{background:var(--blue-bg);color:var(--blue)}
+h2{font-size:20px;font-weight:700;margin:28px 0 12px}
+h3{font-size:15px;font-weight:600;color:var(--text2);margin:20px 0 8px}
+p,li{color:var(--text2)}
+ul,ol{padding-left:20px;margin:8px 0}
+li{margin:4px 0}
+.flow-steps{display:flex;flex-direction:column}
+.flow-step{display:flex;gap:16px;padding:14px 0;border-left:2px solid var(--border);padding-left:20px;position:relative}
+.flow-step::before{content:attr(data-n);position:absolute;left:-12px;top:14px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.flow-step:last-child{border-left-color:transparent}
+.flow-step-title{font-weight:600;margin-bottom:2px}
+.flow-step-desc{font-size:13px;color:var(--text2)}
+table{width:100%;border-collapse:collapse;margin:16px 0}
+th{background:var(--surface2);color:var(--text);font-size:13px;font-weight:600;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border)}
+tr:hover td{background:var(--surface2)}
+.bs-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;margin:16px 0}
+.bs-table{width:100%;border-collapse:collapse}
+.bs-table th{background:var(--surface3);color:var(--text);font-size:12px;padding:8px 12px;text-align:left;border:1px solid var(--border)}
+.bs-table td{padding:8px 12px;font-size:12px;color:var(--text2);border:1px solid var(--border);font-family:monospace}
+.bs-table tr:hover td{background:var(--surface3)}
+.tab-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:2px 8px;font-size:11px;font-family:monospace;margin:12px 0 4px}
+.wf-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin:16px 0}
+.wf-caption{font-size:12px;color:var(--text-dim);margin-top:8px;text-align:center}
+.prio-high{background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.prio-mid{background:var(--yellow-bg);color:var(--yellow);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.prio-low{background:var(--green-bg);color:var(--green);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.note{background:var(--surface2);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:var(--text2);margin:12px 0}
+.note strong{color:var(--text)}
+.callout{border-radius:var(--radius-md);padding:14px 18px;margin:16px 0;font-size:var(--text-base)}
+.callout-orange{background:var(--orange-bg);border-left:3px solid var(--orange)}
+.callout-blue{background:var(--blue-bg);border-left:3px solid var(--blue)}
+.callout-yellow{background:var(--yellow-bg);border-left:3px solid var(--yellow)}
+.callout-green{background:var(--green-bg);border-left:3px solid var(--green)}
+.callout-gold{background:var(--gold-bg);border-left:3px solid var(--gold)}
+.callout strong{color:var(--text)}
+code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(--text-xs);font-family:monospace;color:var(--accent)}
+/* 랭크 배지 */
+.rank-1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1100;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:800}
+.rank-2{background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:800}
+.rank-3{background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:800}
+.rank-low{background:var(--surface3);color:var(--text2);padding:3px 10px;border-radius:4px;font-size:12px;font-weight:700}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<nav class="sidenav">
+  <div class="sidenav-logo">SPEC-021</div>
+  <a class="nav-item" href="#s1"><span class="nav-num n1">1</span>기획 의도</a>
+  <a class="nav-item" href="#s1-flow"><span class="nav-num n1">↳</span>플레이 흐름</a>
+  <a class="nav-item" href="#s1-kpi"><span class="nav-num n1">↳</span>성공 지표</a>
+  <a class="nav-item" href="#s2"><span class="nav-num n2">2</span>아트 가이드</a>
+  <a class="nav-item" href="#s2-wf1"><span class="nav-num n2">↳</span>로비 진입점</a>
+  <a class="nav-item" href="#s2-wf2"><span class="nav-num n2">↳</span>리더보드</a>
+  <a class="nav-item" href="#s2-wf3"><span class="nav-num n2">↳</span>결과 화면</a>
+  <a class="nav-item" href="#s3"><span class="nav-num n3">3</span>개발 스펙</a>
+  <a class="nav-item" href="#s3-bs"><span class="nav-num n3">↳</span>밸런스 시트</a>
+  <a class="nav-item" href="#s3-logic"><span class="nav-num n3">↳</span>서버 로직</a>
+  <a class="nav-item" href="#s3-edge"><span class="nav-num n3">↳</span>엣지 케이스</a>
+</nav>
+
+<main class="main">
+<span class="spec-badge">콘텐츠 × 이벤트</span>
+<h1>Peak Cup — 100인 데일리 경쟁전</h1>
+<p class="subtitle">하루 3시간, 100명이 같은 시간에 경쟁하는 실시간 랭킹 이벤트. 레벨 클리어 승수로 순위를 다투고, 상위 랭커에게 보상을 지급한다.</p>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-val">100인</div>
+    <div class="kpi-label">풀당 플레이어 수</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">3시간</div>
+    <div class="kpi-label">1일 이벤트 운영 시간</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">승수</div>
+    <div class="kpi-label">순위 결정 지표</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">매일</div>
+    <div class="kpi-label">초기화 주기</div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- SECTION 1 — 기획 의도 & 흐름 -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<div id="s1" class="section s1">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2>기획 의도 &amp; 콘텐츠 흐름</h2>
+    <span class="section-audience">제품 × 아트 공통</span>
+  </div>
+
+  <h3>배경 — 경쟁이 만드는 세션</h3>
+  <p>현재 게임의 핵심 일일 루프는 <em>레벨 진행 + 메타(도시) 성장</em>이다. 외부 경쟁 요소가 없기 때문에 유저는 "오늘 접속하지 않아도 된다"는 여유를 느낀다. Peak Cup은 <strong>하루에 딱 3시간이라는 시간 제약</strong>을 통해 그 날 접속을 유도하는 강력한 리텐션 훅을 제공한다.</p>
+
+  <ul>
+    <li><strong>문제:</strong> 경쟁이 없어 일일 접속 긴박감이 낮다. 자연스럽게 세션 빈도가 줄어들 수 있음</li>
+    <li><strong>기회:</strong> Royal Match의 King's Cup처럼, 실시간 100인 풀 내 순위 경쟁은 사회적 비교 심리를 자극해 세션 깊이와 접속 빈도를 동시에 끌어올린다</li>
+    <li><strong>목적:</strong> 하루 1회 정해진 시간대에 100명의 유저를 한 풀에 묶어, 승수(레벨 클리어 횟수)로 순위를 가리는 단기 경쟁전을 운영한다</li>
+    <li><strong>범위:</strong> 서버 풀 구성 + 클라 리더보드 UI + 보상 지급. 기존 레벨 클리어 플로우는 변경 없음</li>
+  </ul>
+
+  <div class="callout callout-gold">
+    <strong>핵심 원칙:</strong> 유저는 <em>기존과 똑같이 레벨을 플레이</em>한다. 단지 이벤트 시간 동안 클리어할 때마다 승수가 쌓이고 실시간으로 순위가 반영될 뿐이다. 진입 장벽이 없고, 별도 플레이 모드가 필요 없다. 이것이 Royal Match King's Cup의 핵심이다.
+  </div>
+
+  <h3>이벤트 개요</h3>
+  <table>
+    <thead><tr><th>항목</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td><strong>이벤트명</strong></td><td>Peak Cup</td></tr>
+      <tr><td><strong>운영 시간</strong></td><td>매일 오후 8시~11시 (KST 기준, <code>peak_cup_open_hour_utc</code>로 설정)</td></tr>
+      <tr><td><strong>지속 시간</strong></td><td>3시간 (<code>peak_cup_duration_sec</code> = 10,800)</td></tr>
+      <tr><td><strong>풀 구성</strong></td><td>실 유저 최대 <code>peak_cup_pool_size</code> = 100명 / 미달 시 봇으로 채움</td></tr>
+      <tr><td><strong>순위 지표</strong></td><td>이벤트 시간 내 레벨 클리어 횟수(승수)</td></tr>
+      <tr><td><strong>동점 처리</strong></td><td>동점 시 먼저 달성한 유저가 상위 랭크</td></tr>
+      <tr><td><strong>초기화</strong></td><td>이벤트 종료 시 순위 확정 → 보상 지급 → 다음 날 새 풀 구성</td></tr>
+      <tr><td><strong>참가 조건</strong></td><td>무료, 별도 참가 조건 없음. 이벤트 시간 내 레벨 클리어 시 자동 참가 처리</td></tr>
+    </tbody>
+  </table>
+
+  <h3>순위 보상 구조 (제안)</h3>
+  <p>보상 수치는 시트 탭 변수로 관리. 아래는 방향성 예시이며 실수치는 Section 3 밸런스 시트 참조.</p>
+  <table>
+    <thead><tr><th>순위</th><th>보상 방향성</th></tr></thead>
+    <tbody>
+      <tr><td><span class="rank-1">1위</span></td><td>골드 대량 + 프리미엄 부스터 2~3종</td></tr>
+      <tr><td><span class="rank-2">2~3위</span></td><td>골드 중량 + 부스터 1~2종</td></tr>
+      <tr><td><span class="rank-3">4~10위</span></td><td>골드 소량 + 부스터 1종</td></tr>
+      <tr><td><span class="rank-low">11~30위</span></td><td>골드 소량</td></tr>
+      <tr><td><span class="rank-low">31~60위</span></td><td>골드 위로금</td></tr>
+      <tr><td><span class="rank-low">61~100위</span></td><td>참가 보상 없음 (또는 소량 골드)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <!-- 1-1. 플레이어 경험 흐름 -->
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s1-flow">1-1 플레이어 경험 흐름</h2>
+  <div class="flow-steps">
+    <div class="flow-step" data-n="1">
+      <div>
+        <div class="flow-step-title">이벤트 시작 알림 수신</div>
+        <div class="flow-step-desc">매일 오후 8시, 이벤트 시작 시 푸시 알림 발송. 알림 탭 시 게임 실행 → 로비에 Peak Cup 배너/탭 노출. 이벤트 시작 전 로비에 카운트다운 배너 노출 (예: "1시간 후 시작").</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="2">
+      <div>
+        <div class="flow-step-title">풀 배정 &amp; 리더보드 진입</div>
+        <div class="flow-step-desc">이벤트 시간 내 최초 레벨 클리어 시 서버에서 100인 풀에 자동 배정. 리더보드 버튼 탭 시 현재 순위 화면 진입. 내 현재 순위 + 상위/하위 플레이어 승수 확인 가능.</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="3">
+      <div>
+        <div class="flow-step-title">레벨 플레이 → 승수 적립</div>
+        <div class="flow-step-desc">기존과 동일하게 레벨을 클리어하면 승수가 1 증가. 클리어 완료 연출 후 "Peak Cup +1" 피드백 토스트 노출. 실시간으로 리더보드 순위 반영 (폴링 또는 실시간 업데이트).</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="4">
+      <div>
+        <div class="flow-step-title">이벤트 종료 (오후 11시)</div>
+        <div class="flow-step-desc">카운트다운이 0에 도달하면 순위 확정. 게임 플레이 중이라면 현재 판 종료 후 결과 반영 (진행 중인 판은 카운트하지 않음). 최종 리더보드 화면으로 자동 전환.</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="5">
+      <div>
+        <div class="flow-step-title">결과 &amp; 보상 수령</div>
+        <div class="flow-step-desc">최종 순위와 보상 내역이 담긴 결과 팝업 노출. "보상 수령" 탭 시 인벤토리에 지급. 이벤트 종료 후 24시간까지 보상 수령 대기 상태 유지. 다음 날 오후 8시에 새 풀 구성.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <!-- 1-2. KPI -->
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s1-kpi">1-2 기대 KPI &amp; 성공 지표</h2>
+  <table>
+    <thead>
+      <tr><th>지표</th><th>측정 방법</th><th>목표</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>이벤트 시간대 DAU 증가</strong></td>
+        <td>이벤트 적용 전·후 오후 8~11시 구간 DAU 비교</td>
+        <td>해당 시간대 DAU +15% 이상</td>
+      </tr>
+      <tr>
+        <td><strong>이벤트 시간대 세션 깊이</strong></td>
+        <td>이벤트 운영 시간 내 1인 평균 레벨 클리어 횟수</td>
+        <td>비이벤트 동시간대 대비 +20%</td>
+      </tr>
+      <tr>
+        <td><strong>참가율</strong></td>
+        <td>이벤트 시간 내 접속 유저 중 1승 이상 달성 비율</td>
+        <td>접속자의 60% 이상</td>
+      </tr>
+      <tr>
+        <td><strong>리더보드 체크율</strong></td>
+        <td>이벤트 참가자 중 리더보드 화면을 1회 이상 진입한 비율</td>
+        <td>참가자의 50% 이상</td>
+      </tr>
+      <tr>
+        <td><strong>이벤트 연속 참가율</strong></td>
+        <td>전날 참가자 중 다음날도 참가한 비율 (7일 평균)</td>
+        <td>40% 이상</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- SECTION 2 — 아트 가이드 -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<div id="s2" class="section s2">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <h2>아트 가이드</h2>
+    <span class="section-audience">아트팀</span>
+  </div>
+
+  <h3>전체 방향성</h3>
+  <ul>
+    <li>긴장감과 열기를 표현하는 색상 — 골드, 진한 주황, 딥 네이비 계열의 대비</li>
+    <li>타이머 카운트다운이 메인 시각 요소 — 숫자가 크고 선명하게, 시간이 줄수록 색상이 더 강렬해지는 느낌</li>
+    <li>리더보드는 깔끔하고 읽기 쉽게 — 내 순위는 항상 화면 내 고정 표시, 다른 플레이어들과 구분되는 강조</li>
+    <li>1위 뱃지는 왕관 모티프, 2·3위는 메달 모티프 — 기존 게임의 시각 언어와 통일</li>
+    <li>승수가 오를 때마다 경쾌한 +1 피드백 — 과하지 않되 인지 가능한 수준</li>
+  </ul>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h3 id="s2-wf1">와이어프레임 1 — 로비 진입점 (이벤트 배너)</h3>
+  <div class="wf-wrap">
+    <svg viewBox="0 0 360 220" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-width:480px;display:block;margin:0 auto">
+      <defs>
+        <linearGradient id="bannerGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#1e1040"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+        <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#f59e0b"/>
+          <stop offset="100%" stop-color="#fbbf24"/>
+        </linearGradient>
+      </defs>
+      <!-- 로비 배경 (추상) -->
+      <rect width="360" height="220" fill="#0f172a"/>
+      <!-- 로비 상단 바 -->
+      <rect x="0" y="0" width="360" height="44" fill="#1a1d27"/>
+      <text x="16" y="28" font-size="13" fill="#e2e8f0" font-weight="700">Solitaire City</text>
+      <!-- 리소스 표시 (오른쪽) -->
+      <text x="300" y="28" font-size="12" fill="#fbbf24">🪙 12,400</text>
+
+      <!-- Peak Cup 배너 (로비 상단 고정) -->
+      <rect x="12" y="54" width="336" height="72" rx="12" fill="url(#bannerGrad)" stroke="rgba(245,158,11,0.5)" stroke-width="1.5"/>
+      <!-- 왕관 아이콘 영역 -->
+      <rect x="22" y="64" width="52" height="52" rx="10" fill="rgba(245,158,11,0.15)"/>
+      <text x="48" y="98" text-anchor="middle" font-size="28">👑</text>
+      <!-- 텍스트 -->
+      <text x="84" y="80" font-size="14" fill="#fbbf24" font-weight="800">Peak Cup</text>
+      <text x="84" y="96" font-size="11" fill="#94a3b8">100인 경쟁전 · 오늘만!</text>
+      <!-- 카운트다운 -->
+      <rect x="226" y="68" width="108" height="32" rx="8" fill="rgba(245,158,11,0.2)"/>
+      <text x="280" y="79" text-anchor="middle" font-size="9" fill="#fbbf24" font-weight="700" letter-spacing="0.5">남은 시간</text>
+      <text x="280" y="94" text-anchor="middle" font-size="14" fill="#f59e0b" font-weight="800">02:14:37</text>
+      <!-- 참가 버튼 -->
+      <rect x="228" y="104" width="108" height="14" rx="7" fill="url(#goldGrad)"/>
+      <text x="282" y="115" text-anchor="middle" font-size="9" fill="#1a1100" font-weight="800">내 순위 보기</text>
+
+      <!-- 로비 레벨 버튼 (아래) -->
+      <rect x="60" y="140" width="240" height="56" rx="28" fill="#7c3aed" opacity="0.8"/>
+      <text x="180" y="174" text-anchor="middle" font-size="16" fill="#fff" font-weight="800">레벨 플레이 →</text>
+    </svg>
+    <p class="wf-caption">로비 화면 — 이벤트 운영 시간 동안 Peak Cup 배너가 로비 상단에 고정 노출. 카운트다운 실시간 표시.</p>
+  </div>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h3 id="s2-wf2">와이어프레임 2 — 실시간 리더보드 화면</h3>
+  <div class="wf-wrap">
+    <svg viewBox="0 0 360 560" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-width:480px;display:block;margin:0 auto">
+      <defs>
+        <linearGradient id="lbBg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1e1040"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+        <linearGradient id="myRowGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="rgba(167,139,250,0.25)"/>
+          <stop offset="100%" stop-color="rgba(167,139,250,0.05)"/>
+        </linearGradient>
+      </defs>
+      <rect width="360" height="560" fill="url(#lbBg)"/>
+
+      <!-- 헤더 -->
+      <rect x="0" y="0" width="360" height="56" fill="rgba(0,0,0,0.3)"/>
+      <text x="30" y="22" font-size="11" fill="#94a3b8" font-weight="600">← 뒤로</text>
+      <text x="180" y="25" text-anchor="middle" font-size="15" fill="#f1f5f9" font-weight="800">Peak Cup</text>
+      <text x="180" y="42" text-anchor="middle" font-size="11" fill="#f59e0b">⏱ 01:47:22 남음</text>
+
+      <!-- TOP 3 포디엄 영역 -->
+      <rect x="12" y="64" width="336" height="110" rx="10" fill="rgba(255,255,255,0.04)"/>
+
+      <!-- 2위 -->
+      <circle cx="100" cy="106" r="22" fill="#334155" stroke="#64748b" stroke-width="2"/>
+      <text x="100" y="112" text-anchor="middle" font-size="11" fill="#e2e8f0" font-weight="700">Alex</text>
+      <rect x="76" y="126" width="48" height="22" rx="6" fill="#475569"/>
+      <text x="100" y="141" text-anchor="middle" font-size="9" fill="#94a3b8" font-weight="700">🥈 23승</text>
+
+      <!-- 1위 -->
+      <circle cx="180" cy="92" r="28" fill="#292240" stroke="#f59e0b" stroke-width="2.5"/>
+      <text x="180" y="87" text-anchor="middle" font-size="14">👑</text>
+      <text x="180" y="100" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="800">Mia</text>
+      <rect x="150" y="118" width="60" height="24" rx="8" fill="rgba(245,158,11,0.3)"/>
+      <text x="180" y="134" text-anchor="middle" font-size="10" fill="#fbbf24" font-weight="800">🏆 31승</text>
+
+      <!-- 3위 -->
+      <circle cx="260" cy="110" r="20" fill="#292010" stroke="#fb923c" stroke-width="1.5"/>
+      <text x="260" y="115" text-anchor="middle" font-size="10" fill="#e2e8f0" font-weight="700">Jo</text>
+      <rect x="238" y="128" width="44" height="20" rx="5" fill="#3b1f0a"/>
+      <text x="260" y="142" text-anchor="middle" font-size="9" fill="#fb923c" font-weight="700">🥉 19승</text>
+
+      <!-- 리더보드 리스트 -->
+      <!-- 4위 -->
+      <rect x="12" y="184" width="336" height="44" rx="8" fill="rgba(255,255,255,0.03)"/>
+      <text x="28" y="211" font-size="12" fill="#64748b" font-weight="700">4</text>
+      <circle cx="54" cy="206" r="14" fill="#1e3a5f"/>
+      <text x="54" y="210" text-anchor="middle" font-size="9" fill="#93c5fd">Sam</text>
+      <text x="76" y="211" font-size="12" fill="#e2e8f0">Sam_82</text>
+      <text x="330" y="211" text-anchor="end" font-size="12" fill="#94a3b8" font-weight="600">17승</text>
+
+      <!-- 5위 -->
+      <rect x="12" y="232" width="336" height="44" rx="8" fill="rgba(255,255,255,0.03)"/>
+      <text x="28" y="259" font-size="12" fill="#64748b" font-weight="700">5</text>
+      <circle cx="54" cy="254" r="14" fill="#1e3a5f"/>
+      <text x="54" y="258" text-anchor="middle" font-size="9" fill="#93c5fd">Ray</text>
+      <text x="76" y="259" font-size="12" fill="#e2e8f0">RayPlay</text>
+      <text x="330" y="259" text-anchor="end" font-size="12" fill="#94a3b8" font-weight="600">14승</text>
+
+      <!-- 중간 생략 -->
+      <text x="180" y="298" text-anchor="middle" font-size="11" fill="#475569">· · · · ·</text>
+
+      <!-- 구분선 — 내 순위 -->
+      <line x1="12" y1="312" x2="348" y2="312" stroke="#a78bfa" stroke-width="0.8" stroke-dasharray="4 3"/>
+      <text x="20" y="310" font-size="9" fill="#a78bfa" font-weight="700">내 순위</text>
+
+      <!-- 내 순위 행 (고정) -->
+      <rect x="12" y="318" width="336" height="52" rx="10" fill="url(#myRowGrad)" stroke="rgba(167,139,250,0.4)" stroke-width="1"/>
+      <text x="28" y="349" font-size="13" fill="#a78bfa" font-weight="800">23</text>
+      <circle cx="56" cy="344" r="16" fill="#2e1065"/>
+      <text x="56" y="348" text-anchor="middle" font-size="9" fill="#c4b5fd" font-weight="700">나</text>
+      <text x="80" y="349" font-size="13" fill="#e2e8f0" font-weight="700">나의 닉네임</text>
+      <text x="330" y="349" text-anchor="end" font-size="13" fill="#a78bfa" font-weight="800">8승</text>
+
+      <!-- 보상 미리보기 -->
+      <rect x="12" y="380" width="336" height="52" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+      <text x="24" y="402" font-size="11" fill="#64748b" font-weight="600">내 순위 보상 (23위)</text>
+      <text x="24" y="422" font-size="12" fill="#94a3b8">🪙 골드 보상 예정 (11~30위 구간)</text>
+
+      <!-- 플레이 버튼 -->
+      <rect x="40" y="448" width="280" height="52" rx="26" fill="#7c3aed"/>
+      <text x="180" y="480" text-anchor="middle" font-size="15" fill="#fff" font-weight="800">레벨 플레이하기</text>
+
+      <!-- 닫기 -->
+      <text x="180" y="530" text-anchor="middle" font-size="12" fill="#475569">닫기</text>
+    </svg>
+    <p class="wf-caption">리더보드 화면 — TOP3 포디엄, 순위 리스트, 내 순위 고정 표시, 현재 구간 보상 미리보기. 플레이 버튼으로 바로 레벨 진입 가능.</p>
+  </div>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h3 id="s2-wf3">와이어프레임 3 — 이벤트 종료 결과 화면</h3>
+  <div class="wf-wrap">
+    <svg viewBox="0 0 360 460" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-width:480px;display:block;margin:0 auto">
+      <defs>
+        <linearGradient id="resultBg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1a0f3c"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+        <linearGradient id="claimBtn" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#f59e0b"/>
+          <stop offset="100%" stop-color="#fbbf24"/>
+        </linearGradient>
+      </defs>
+      <rect width="360" height="460" rx="16" fill="url(#resultBg)" stroke="rgba(167,139,250,0.3)" stroke-width="1.5"/>
+
+      <!-- 타이틀 -->
+      <text x="180" y="46" text-anchor="middle" font-size="22" fill="#f1f5f9" font-weight="800">Peak Cup 결과</text>
+      <text x="180" y="66" text-anchor="middle" font-size="12" fill="#94a3b8">오늘의 경쟁이 끝났습니다!</text>
+
+      <!-- 내 최종 순위 (큰 표시) -->
+      <rect x="60" y="82" width="240" height="90" rx="14" fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.35)" stroke-width="1.5"/>
+      <text x="180" y="114" text-anchor="middle" font-size="11" fill="#94a3b8" font-weight="600">최종 순위</text>
+      <text x="180" y="148" text-anchor="middle" font-size="42" fill="#a78bfa" font-weight="900">23위</text>
+      <text x="180" y="166" text-anchor="middle" font-size="11" fill="#64748b">100명 중 · 총 8승</text>
+
+      <!-- 보상 영역 -->
+      <text x="24" y="200" font-size="13" fill="#e2e8f0" font-weight="700">받을 보상</text>
+      <rect x="12" y="210" width="336" height="68" rx="10" fill="rgba(255,255,255,0.05)"/>
+      <!-- 골드 아이콘 -->
+      <rect x="24" y="220" width="40" height="40" rx="8" fill="rgba(251,191,36,0.2)"/>
+      <text x="44" y="247" text-anchor="middle" font-size="20">🪙</text>
+      <text x="74" y="237" font-size="13" fill="#e2e8f0" font-weight="600">골드</text>
+      <text x="74" y="254" font-size="11" fill="#94a3b8">랭킹 보상 (11~30위)</text>
+      <text x="338" y="244" text-anchor="end" font-size="15" fill="#fbbf24" font-weight="800">+ [peak_cup_rank_11_30_gold]</text>
+
+      <!-- 내일 안내 -->
+      <rect x="12" y="292" width="336" height="44" rx="8" fill="rgba(96,165,250,0.08)" stroke="rgba(96,165,250,0.2)" stroke-width="1"/>
+      <text x="24" y="316" font-size="12" fill="#60a5fa">📅 내일 오후 8시에 새로운 Peak Cup이 시작됩니다</text>
+
+      <!-- 보상 수령 버튼 -->
+      <rect x="32" y="352" width="296" height="52" rx="26" fill="url(#claimBtn)"/>
+      <text x="180" y="384" text-anchor="middle" font-size="16" fill="#1a1100" font-weight="800">보상 수령하기</text>
+
+      <!-- 닫기 -->
+      <text x="180" y="432" text-anchor="middle" font-size="12" fill="#475569">나중에 수령</text>
+      <text x="180" y="450" text-anchor="middle" font-size="10" fill="#334155">(24시간 내 수령 가능)</text>
+    </svg>
+    <p class="wf-caption">결과 팝업 — 최종 순위, 보상 내역, 내일 안내 표시. 보상은 24시간 내 언제든 수령 가능.</p>
+  </div>
+
+  <h3>필요 에셋 목록</h3>
+  <table>
+    <thead><tr><th>에셋</th><th>내용</th><th>우선순위</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Peak Cup 로비 배너</td>
+        <td>왕관 + 경쟁감 표현. 골드/딥네이비 계열. 가로형 배너.</td>
+        <td><span class="prio-high">High</span></td>
+      </tr>
+      <tr>
+        <td>TOP3 아바타 프레임</td>
+        <td>1위(왕관), 2위(은메달), 3위(동메달) 프레임. 기존 프로필 시스템과 연동</td>
+        <td><span class="prio-high">High</span></td>
+      </tr>
+      <tr>
+        <td>+1 피드백 토스트 UI</td>
+        <td>레벨 클리어 후 "Peak Cup +1" 표시. 경쾌하고 가볍게, easeOut 계열 슬라이드</td>
+        <td><span class="prio-mid">Mid</span></td>
+      </tr>
+      <tr>
+        <td>이벤트 결과 배경</td>
+        <td>딥 퍼플~네이비 계열 그래디언트. 별빛 파티클 가볍게</td>
+        <td><span class="prio-mid">Mid</span></td>
+      </tr>
+      <tr>
+        <td>카운트다운 타이머 UI</td>
+        <td>숫자 폰트 굵고 선명하게. 1시간 이하면 색상이 주황→빨간색으로 전환</td>
+        <td><span class="prio-mid">Mid</span></td>
+      </tr>
+      <tr>
+        <td>봇 아바타 풀</td>
+        <td>실 유저가 적을 때 채우는 봇 프로필 이미지 5~10종. 실 유저와 구분 불가하게</td>
+        <td><span class="prio-low">Low</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- SECTION 3 — 개발 스펙 -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<div id="s3" class="section s3">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <h2>개발 스펙</h2>
+    <span class="section-audience">개발팀</span>
+  </div>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s3-bs">3-1 밸런스 시트 변수</h2>
+
+  <p>신규 시트 탭 2개 신설 제안: <code>peak_cup_config</code> (이벤트 기본 설정), <code>peak_cup_rank_reward</code> (순위별 보상). 실 key_number는 시트 워크플로우 단계에서 확정.</p>
+
+  <div class="tab-badge">peak_cup_config (신규 탭 제안)</div>
+  <div class="bs-block">
+    <table class="bs-table">
+      <thead>
+        <tr><th>변수명</th><th>제안값</th><th>단위</th><th>설명</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>peak_cup_in_use</td><td>0</td><td>bool (0/1)</td><td>이벤트 활성화 여부. 0=비활성, 1=활성</td></tr>
+        <tr><td>peak_cup_open_hour_utc</td><td>11</td><td>hour (0~23)</td><td>이벤트 시작 시각 (UTC). 11 UTC = 20 KST</td></tr>
+        <tr><td>peak_cup_duration_sec</td><td>10800</td><td>sec</td><td>이벤트 지속 시간. 10800 = 3시간</td></tr>
+        <tr><td>peak_cup_pool_size</td><td>100</td><td>count</td><td>1개 풀의 최대 유저 수</td></tr>
+        <tr><td>peak_cup_min_real_players</td><td>10</td><td>count</td><td>이벤트 시작 최소 실 유저 수. 미달 시 10분 대기 후 봇 채움</td></tr>
+        <tr><td>peak_cup_bot_fill_enabled</td><td>1</td><td>bool</td><td>봇 채움 활성화 여부</td></tr>
+        <tr><td>peak_cup_reward_claim_window_sec</td><td>86400</td><td>sec</td><td>이벤트 종료 후 보상 수령 가능 기간. 86400 = 24시간</td></tr>
+        <tr><td>peak_cup_leaderboard_update_interval_sec</td><td>30</td><td>sec</td><td>리더보드 갱신 주기 (폴링 방식일 경우)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-blue">
+    <strong>실시간 vs 폴링:</strong> 리더보드 갱신은 WebSocket 실시간 방식과 폴링 방식 중 선택. 초기 구현은 <code>peak_cup_leaderboard_update_interval_sec</code> 기반 폴링을 권장. 실시간 업데이트는 후속 이터레이션에서 검토.
+  </div>
+
+  <div class="tab-badge">peak_cup_rank_reward (신규 탭 제안)</div>
+  <div class="bs-block">
+    <table class="bs-table">
+      <thead>
+        <tr><th>변수명</th><th>rank_from</th><th>rank_to</th><th>reward_type_1</th><th>reward_amount_1</th><th>reward_type_2</th><th>reward_amount_2</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>peak_cup_rank_reward_1</td><td>1</td><td>1</td><td>currency_gold</td><td>[peak_cup_rank_1_gold]</td><td>booster_wild_card</td><td>[peak_cup_rank_1_booster_count]</td></tr>
+        <tr><td>peak_cup_rank_reward_2</td><td>2</td><td>3</td><td>currency_gold</td><td>[peak_cup_rank_2_3_gold]</td><td>booster_fireworks</td><td>[peak_cup_rank_2_3_booster_count]</td></tr>
+        <tr><td>peak_cup_rank_reward_3</td><td>4</td><td>10</td><td>currency_gold</td><td>[peak_cup_rank_4_10_gold]</td><td>booster_undo</td><td>[peak_cup_rank_4_10_booster_count]</td></tr>
+        <tr><td>peak_cup_rank_reward_4</td><td>11</td><td>30</td><td>currency_gold</td><td>[peak_cup_rank_11_30_gold]</td><td>none</td><td>0</td></tr>
+        <tr><td>peak_cup_rank_reward_5</td><td>31</td><td>60</td><td>currency_gold</td><td>[peak_cup_rank_31_60_gold]</td><td>none</td><td>0</td></tr>
+        <tr><td>peak_cup_rank_reward_6</td><td>61</td><td>100</td><td>none</td><td>0</td><td>none</td><td>0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-yellow">
+    <strong>수치 확정 기준:</strong> 골드 보상 수치는 econ-02 경제 밸런스 에이전트의 일일 골드 수급량 기준으로 산정. 1위 보상은 일반 레벨 클리어 기대 골드의 <code>X배</code>가 되도록 설계. 구체적 수치 확정 전에 시뮬레이션 필요.
+  </div>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s3-logic">3-2 서버 로직</h2>
+
+  <h3>풀 구성 (매칭)</h3>
+  <ul>
+    <li>이벤트 시작 시각 (<code>peak_cup_open_hour_utc</code>) 기준으로 서버에서 당일 활성 유저를 100명씩 풀에 묶음</li>
+    <li>풀 배정 기준: 이벤트 시간 내 최초 레벨 클리어 시점에 미배정 상태면 빈 풀에 할당. 풀이 꽉 찼으면 새 풀 생성</li>
+    <li><code>peak_cup_min_real_players</code>개 미달인 풀은 10분 추가 대기 후 봇으로 나머지 채움</li>
+    <li>풀은 이벤트 종료 시까지 고정. 재배정 없음</li>
+  </ul>
+
+  <h3>승수 집계</h3>
+  <ul>
+    <li>트리거: 레벨 클리어 API 성공 응답 수신 시 (<code>game_end</code> 이벤트, 클리어 판정)</li>
+    <li>이벤트 활성 시간 내 클리어만 카운트. 이벤트 종료 시각 이후에 응답이 도착한 판은 카운트 제외</li>
+    <li>보스 레벨, 튜토리얼 레벨 포함 여부: <strong>포함</strong> (모든 레벨 클리어 = 1승)</li>
+    <li>동점 처리: 서버 수신 시각 기준으로 먼저 도달한 유저가 상위 순위</li>
+  </ul>
+
+  <h3>봇 동작 규칙</h3>
+  <ul>
+    <li>봇 닉네임: 봇 닉네임 풀에서 랜덤 선택. 실 유저와 외관상 구분 불가</li>
+    <li>봇 승수 증가: 이벤트 시간 내 무작위 간격으로 승수 증가 이벤트 발생. 상한은 <code>[bot_max_wins]</code></li>
+    <li>봇은 항상 실 유저보다 낮은 승수 대역에 집중 배치 → 실 유저가 1위권에 도달하기 어렵지 않게</li>
+    <li>봇 상위 순위 점령 방지: 봇 최대 승수는 상위 10% 실 유저 예상 승수보다 낮게 설정 (런칭 후 데이터 기반 조정)</li>
+  </ul>
+
+  <h3>보상 지급</h3>
+  <ul>
+    <li>이벤트 종료 시 서버에서 최종 순위 확정 → 구간 보상 결정 → 보상 수령 대기 상태로 전환</li>
+    <li>유저가 보상 수령 버튼을 탭할 때 실제 지급 (클라 요청 → 서버 처리)</li>
+    <li><code>peak_cup_reward_claim_window_sec</code> 내 미수령 시 자동 지급 (다음 로그인 시)</li>
+    <li>봇은 보상 지급 대상에서 제외</li>
+  </ul>
+
+  <h3>상태 전이</h3>
+  <table>
+    <thead><tr><th>상태</th><th>조건</th><th>다음 상태</th></tr></thead>
+    <tbody>
+      <tr><td><code>IDLE</code></td><td>이벤트 시간 외, 또는 <code>peak_cup_in_use=0</code></td><td>시작 시각 도달 → <code>WAITING</code></td></tr>
+      <tr><td><code>WAITING</code></td><td>이벤트 시작, 풀 구성 중</td><td>최소 인원 충족 → <code>ACTIVE</code></td></tr>
+      <tr><td><code>ACTIVE</code></td><td>이벤트 진행 중, 승수 집계 중</td><td>종료 시각 → <code>ENDED</code></td></tr>
+      <tr><td><code>ENDED</code></td><td>순위 확정, 보상 대기</td><td>수령 완료 또는 윈도우 만료 → <code>IDLE</code></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s3-edge">3-3 엣지 케이스</h2>
+  <table>
+    <thead><tr><th>케이스</th><th>처리 방법</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>이벤트 시간 내 게임 플레이 중 종료 시각 도달</td>
+        <td>현재 진행 중인 판은 승수 카운트 안 함. 서버는 종료 시각 이후 수신된 <code>game_end</code> 이벤트를 무시.</td>
+      </tr>
+      <tr>
+        <td>네트워크 단절로 <code>game_end</code> 지연 수신</td>
+        <td>서버 수신 시각 기준으로 판단. 클리어 시각이 아닌 서버 수신 시각이 이벤트 종료 시각 이전인 경우만 카운트 인정. 별도 허용 시간(grace period)은 두지 않음.</td>
+      </tr>
+      <tr>
+        <td>풀에 실 유저 0명 (서비스 초기)</td>
+        <td>풀 생성하지 않음. 이벤트 화면 자체를 노출하지 않거나 "준비 중" 상태 표시.</td>
+      </tr>
+      <tr>
+        <td>동일 유저가 여러 기기에서 동시 접속</td>
+        <td>같은 유저 ID로 처리. 기기 중 어느 쪽에서 클리어해도 동일 카운트. 풀 배정은 유저 ID 기준 1개.</td>
+      </tr>
+      <tr>
+        <td>이벤트 도중 <code>peak_cup_in_use</code>를 0으로 전환</td>
+        <td>진행 중인 이벤트는 해당 회차를 마무리하고 다음 회차부터 미노출. 강제 중단 금지.</td>
+      </tr>
+      <tr>
+        <td>보상 지급 실패 (서버 오류)</td>
+        <td>재시도 큐에 등록. 수령 윈도우 내 재시도 최대 3회. 윈도우 만료 후에도 미지급 시 CS 수동 처리 플래그 등록.</td>
+      </tr>
+      <tr>
+        <td>어뷰징 — 비정상 승수 (치트)</td>
+        <td>기존 <code>gold_max_limit</code>과 동일한 어뷰징 감지 파이프라인 적용. 이벤트 승수에도 상한(<code>[peak_cup_win_cap]</code>) 설정. 상한 초과 시 해당 회차 참가 무효 처리.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-orange">
+    <strong>참고 — 기존 상수 연계:</strong> 클리어 판정 기준은 기존 <code>game_end</code> 이벤트와 동일. <code>gold_max_limit</code>(10071), <code>is_album_collection_open</code>(10061) 등 기존 const 값에 영향을 주거나 받지 않는다. Peak Cup은 기존 경제 흐름과 <strong>완전히 독립된 레이어</strong>로 동작.
+  </div>
+</div>
+
+</main>
+</body>
+</html>

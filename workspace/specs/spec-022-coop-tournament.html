@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="spec-created" content="2026. 5. 21.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPEC-022 · FB 협력 토너먼트 — 친구와 함께 목표 달성</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--surface3:#2a2f45;
+  --border:#2e3347;--text:#e2e8f0;--text2:#94a3b8;--text-dim:#64748b;
+  --accent:#a78bfa;--accent-bg:rgba(167,139,250,.15);--accent-border:rgba(167,139,250,.35);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.12);--purple-border:rgba(167,139,250,.3);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,.12);--teal-border:rgba(45,212,191,.3);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.12);--blue-border:rgba(96,165,250,.3);
+  --green:#4ade80;--green-bg:rgba(74,222,128,.12);--green-border:rgba(74,222,128,.25);
+  --yellow:#fbbf24;--yellow-bg:rgba(251,191,36,.12);--yellow-border:rgba(251,191,36,.3);
+  --red:#f87171;--red-bg:rgba(248,113,113,.12);--red-border:rgba(248,113,113,.25);
+  --orange:#fb923c;--orange-bg:rgba(251,146,60,.12);--orange-border:rgba(251,146,60,.3);
+  --gold:#f59e0b;--gold-bg:rgba(245,158,11,.12);--gold-border:rgba(245,158,11,.3);
+  --pink:#e879f9;--pink-bg:rgba(232,121,249,.12);--pink-border:rgba(232,121,249,.3);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
+  --text-xs:12px;--text-sm:13px;--text-base:14px;--text-lg:15px;
+  --dur-base:.18s;
+}
+[data-theme=light]{
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--text:#0f172a;--text2:#475569;--text-dim:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--text-lg);line-height:1.7;display:flex}
+.sidenav{position:fixed;left:0;top:0;height:100vh;width:210px;background:var(--surface);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;gap:4px;z-index:200;overflow-y:auto}
+.sidenav-logo{padding:0 20px 20px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:var(--text-sm);color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all var(--dur-base)}
+.nav-item:hover,.nav-item.active{color:var(--text);border-left-color:var(--accent);background:var(--accent-bg)}
+.nav-num{font-size:10px;font-weight:700;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.n1{background:var(--purple-bg);color:var(--purple)}
+.n2{background:var(--teal-bg);color:var(--teal)}
+.n3{background:var(--blue-bg);color:var(--blue)}
+.main{margin-left:210px;flex:1;padding:60px 56px 80px;max-width:920px}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-toggle:hover{transform:scale(1.1)}
+.back-btn{position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;text-decoration:none}
+.back-btn:hover{color:var(--text)}
+.spec-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;margin-bottom:14px}
+h1{font-size:26px;font-weight:800;margin-bottom:8px;line-height:1.3}
+.subtitle{color:var(--text2);font-size:var(--text-base);margin-bottom:32px}
+a{color:var(--accent);text-decoration:none}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:4px;margin-bottom:40px}
+.kpi-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+[data-theme=light] .kpi-card{background:rgba(0,0,0,0.03)}
+.kpi-card .kpi-val{font-size:16px;font-weight:800;color:var(--accent)}
+.kpi-card .kpi-label{font-size:12px;color:var(--text2);margin-top:4px}
+.section{margin-bottom:56px;padding-top:40px}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.section-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+.section-audience{display:inline-block;border-radius:4px;padding:3px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.s1 .section-num{background:var(--purple-bg);color:var(--purple)}
+.s1 .section-audience{background:var(--purple-bg);color:var(--purple)}
+.s2 .section-num{background:var(--teal-bg);color:var(--teal)}
+.s2 .section-audience{background:var(--teal-bg);color:var(--teal)}
+.s3 .section-num{background:var(--blue-bg);color:var(--blue)}
+.s3 .section-audience{background:var(--blue-bg);color:var(--blue)}
+h2{font-size:20px;font-weight:700;margin:28px 0 12px}
+h3{font-size:15px;font-weight:600;color:var(--text2);margin:20px 0 8px}
+p,li{color:var(--text2)}
+ul,ol{padding-left:20px;margin:8px 0}
+li{margin:4px 0}
+.flow-steps{display:flex;flex-direction:column}
+.flow-step{display:flex;gap:16px;padding:14px 0;border-left:2px solid var(--border);padding-left:20px;position:relative}
+.flow-step::before{content:attr(data-n);position:absolute;left:-12px;top:14px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.flow-step:last-child{border-left-color:transparent}
+.flow-step-title{font-weight:600;margin-bottom:2px}
+.flow-step-desc{font-size:13px;color:var(--text2)}
+table{width:100%;border-collapse:collapse;margin:16px 0}
+th{background:var(--surface2);color:var(--text);font-size:13px;font-weight:600;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border)}
+tr:hover td{background:var(--surface2)}
+.bs-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;margin:16px 0}
+.bs-table{width:100%;border-collapse:collapse}
+.bs-table th{background:var(--surface3);color:var(--text);font-size:12px;padding:8px 12px;text-align:left;border:1px solid var(--border)}
+.bs-table td{padding:8px 12px;font-size:12px;color:var(--text2);border:1px solid var(--border);font-family:monospace}
+.bs-table tr:hover td{background:var(--surface3)}
+.tab-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:2px 8px;font-size:11px;font-family:monospace;margin:12px 0 4px}
+.wf-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin:16px 0}
+.wf-caption{font-size:12px;color:var(--text-dim);margin-top:8px;text-align:center}
+.callout{border-radius:var(--radius-md);padding:14px 18px;margin:16px 0;font-size:var(--text-base)}
+.callout-orange{background:var(--orange-bg);border-left:3px solid var(--orange)}
+.callout-blue{background:var(--blue-bg);border-left:3px solid var(--blue)}
+.callout-yellow{background:var(--yellow-bg);border-left:3px solid var(--yellow)}
+.callout-green{background:var(--green-bg);border-left:3px solid var(--green)}
+.callout-gold{background:var(--gold-bg);border-left:3px solid var(--gold)}
+.callout-pink{background:var(--pink-bg);border-left:3px solid var(--pink)}
+.callout-purple{background:var(--purple-bg);border-left:3px solid var(--purple)}
+.callout strong{color:var(--text)}
+code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(--text-xs);font-family:monospace;color:var(--accent)}
+pre{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:12px;color:var(--green);overflow-x:auto;margin:12px 0;line-height:1.6}
+pre .kw{color:var(--accent)}
+pre .str{color:var(--yellow)}
+pre .cm{color:var(--text-dim)}
+.note{background:var(--surface2);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:var(--text2);margin:12px 0}
+.note strong{color:var(--text)}
+.prio-high{background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.prio-mid{background:var(--yellow-bg);color:var(--yellow);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.prio-low{background:var(--green-bg);color:var(--green);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+/* 협력 진행 바 */
+.goal-bar-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0}
+.goal-bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:6px}
+.goal-bar-track{height:14px;background:var(--surface3);border-radius:7px;overflow:hidden;position:relative}
+.goal-bar-fill{height:100%;border-radius:7px;background:linear-gradient(90deg,var(--purple),var(--teal));transition:width .4s ease}
+.goal-bar-members{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.member-chip{display:flex;align-items:center;gap:5px;background:var(--surface3);border-radius:var(--radius-full);padding:3px 10px 3px 4px;font-size:11px}
+.member-avatar{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.m-me{background:var(--purple-bg);color:var(--purple)}
+.m-1{background:var(--teal-bg);color:var(--teal)}
+.m-2{background:var(--orange-bg);color:var(--orange)}
+.m-3{background:var(--pink-bg);color:var(--pink)}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<nav class="sidenav">
+  <div class="sidenav-logo">SPEC-022</div>
+  <a class="nav-item" href="#s1"><span class="nav-num n1">1</span>기획 의도</a>
+  <a class="nav-item" href="#s1-mechanic"><span class="nav-num n1">↳</span>협력 메커닉</a>
+  <a class="nav-item" href="#s1-flow"><span class="nav-num n1">↳</span>플레이 흐름</a>
+  <a class="nav-item" href="#s1-kpi"><span class="nav-num n1">↳</span>성공 지표</a>
+  <a class="nav-item" href="#s2"><span class="nav-num n2">2</span>아트 가이드</a>
+  <a class="nav-item" href="#s2-wf1"><span class="nav-num n2">↳</span>그룹 챌린지 UI</a>
+  <a class="nav-item" href="#s2-wf2"><span class="nav-num n2">↳</span>목표 달성 팝업</a>
+  <a class="nav-item" href="#s3"><span class="nav-num n3">3</span>개발 스펙</a>
+  <a class="nav-item" href="#s3-fb"><span class="nav-num n3">↳</span>FB 토너먼트 API</a>
+  <a class="nav-item" href="#s3-bs"><span class="nav-num n3">↳</span>밸런스 시트</a>
+  <a class="nav-item" href="#s3-logic"><span class="nav-num n3">↳</span>서버 로직</a>
+  <a class="nav-item" href="#s3-edge"><span class="nav-num n3">↳</span>엣지 케이스</a>
+</nav>
+
+<main class="main">
+<span class="spec-badge">소셜 × 협력 콘텐츠</span>
+<h1>FB 협력 토너먼트<br>— 친구와 함께 목표 달성</h1>
+<p class="subtitle">Facebook 친구 2~5명이 한 팀이 되어 누적 점수로 공동 목표를 달성하는 협력형 이벤트. FB Instant Tournament API의 소셜 확산력과 자체 서버의 협력 스코어 집계를 결합한다.</p>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-val">2~5인</div>
+    <div class="kpi-label">팀 구성</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">24시간</div>
+    <div class="kpi-label">챌린지 기간</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">공동 목표</div>
+    <div class="kpi-label">승리 조건</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-val">전원 보상</div>
+    <div class="kpi-label">목표 달성 시</div>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- SECTION 1 — 기획 의도 & 흐름 -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<div id="s1" class="section s1">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2>기획 의도 &amp; 콘텐츠 흐름</h2>
+    <span class="section-audience">제품 × 아트 공통</span>
+  </div>
+
+  <h3>배경 — 경쟁이 아닌 협력이 만드는 바이럴</h3>
+  <p>Facebook Instant Tournament는 기본적으로 개인 점수 경쟁 구조다. 그러나 플레이어가 <em>서로 경쟁하는 것이 아니라 함께 목표를 달성</em>하는 협력 구조로 전환하면 두 가지 장점이 생긴다.</p>
+  <ul>
+    <li><strong>바이럴 동기 강화:</strong> 경쟁은 "내가 이겨야 하므로 혼자" 하려는 경향이 있지만, 협력은 "더 많은 친구를 초대해야 목표를 달성할 수 있다"는 초대 동기를 만든다</li>
+    <li><strong>긍정적 사회 감정:</strong> 함께 성공했을 때의 보상 공유 경험은 게임에 대한 우호적 기억을 남긴다. 재참여율·입소문 지표 개선 기대</li>
+    <li><strong>기존 코어 루프 유지:</strong> Peak Cup(SPEC-021)과 동일하게 유저는 기존 레벨을 플레이하면 된다. 별도 모드 없음</li>
+  </ul>
+
+  <div class="callout callout-gold">
+    <strong>핵심 원칙:</strong> FB 토너먼트 API는 <em>소셜 초대 및 공유 레이어</em>로만 활용한다. 협력 스코어 집계와 목표 달성 판정은 자체 서버에서 처리한다. FB API의 <code>payload</code> 필드에 그룹 목표값과 챌린지 ID를 심어 두 시스템을 연결한다.
+  </div>
+
+  <h3>이벤트 개요</h3>
+  <table>
+    <thead><tr><th>항목</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td><strong>이벤트명</strong></td><td>협력 챌린지 (Group Challenge)</td></tr>
+      <tr><td><strong>팀 구성</strong></td><td>챌린지 생성자가 FB 친구 1~4명 초대 (총 2~5인)</td></tr>
+      <tr><td><strong>목표 구조</strong></td><td>팀 누적 점수(<code>group_total_score</code>)가 <code>coop_goal_score</code>에 도달하면 달성</td></tr>
+      <tr><td><strong>개인 기여 점수</strong></td><td>레벨 클리어 시 획득한 점수(star score × 배율)를 그룹 풀에 누적</td></tr>
+      <tr><td><strong>제한 시간</strong></td><td><code>coop_duration_sec</code> = 86,400 (24시간). 시간 내 미달성 시 실패</td></tr>
+      <tr><td><strong>보상</strong></td><td>목표 달성 시 <strong>팀원 전원</strong>에게 동일한 보상 지급. 미달성 시 무보상</td></tr>
+      <tr><td><strong>생성 조건</strong></td><td>FB 로그인 상태 + <code>coop_min_player_level</code> 이상인 유저만 챌린지 생성 가능</td></tr>
+      <tr><td><strong>중복 참가</strong></td><td>유저 1명이 동시에 진행할 수 있는 챌린지 최대 <code>coop_max_active_per_user</code>개</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s1-mechanic">1-1 협력 메커닉 상세</h2>
+
+  <h3>목표 점수 산정 방식</h3>
+  <p>고정 목표가 아닌 <strong>팀 인원 수 × 기준 점수</strong>로 자동 산정한다. 인원이 많을수록 목표도 비례 상승하지만, 1인당 기여 부담은 동일하게 유지한다.</p>
+  <table>
+    <thead><tr><th>팀 인원</th><th>목표 점수 산식</th><th>예시 (기준 50,000점)</th></tr></thead>
+    <tbody>
+      <tr><td>2인</td><td><code>coop_base_goal × 2</code></td><td>100,000점</td></tr>
+      <tr><td>3인</td><td><code>coop_base_goal × 3</code></td><td>150,000점</td></tr>
+      <tr><td>4인</td><td><code>coop_base_goal × 4</code></td><td>200,000점</td></tr>
+      <tr><td>5인</td><td><code>coop_base_goal × 5</code></td><td>250,000점</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-blue">
+    <strong>단계 목표(Milestone) 옵션:</strong> 초기 출시는 단일 목표 달성 구조로 단순하게 시작한다. 후속 이터레이션에서 <strong>중간 마일스톤</strong>(25%, 50%, 75% 도달 시 소량 보상)을 추가해 달성 경험을 단계화할 수 있다.
+  </div>
+
+  <h3>개인 기여 점수 계산</h3>
+  <ul>
+    <li>레벨 클리어 1회 = 스타 점수(<code>star_score</code>) × <code>coop_score_multiplier</code></li>
+    <li>스타 점수: ★1 = 1,000점 / ★2 = 2,500점 / ★3 = 5,000점 (예시, 실수치는 시트 확정)</li>
+    <li>기여 점수에는 상한(<code>coop_max_score_per_level</code>)을 두어 어뷰징 방지</li>
+    <li>리트라이 실패(레벨 클리어 못함)는 점수 기여 없음</li>
+  </ul>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s1-flow">1-2 플레이어 경험 흐름</h2>
+
+  <div class="flow-steps">
+    <div class="flow-step" data-n="1">
+      <div>
+        <div class="flow-step-title">챌린지 생성 (호스트)</div>
+        <div class="flow-step-desc">로비의 "친구와 도전" 버튼 탭 → 챌린지 생성 화면에서 참가 인원 슬롯(2~5인) 선택 → <code>FBInstant.tournament.createAsync()</code> 호출 → FB 메신저 스레드에 챌린지 카드 자동 공유. 카드에는 목표 점수, 남은 시간, 현재 진행률이 표시됨.</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="2">
+      <div>
+        <div class="flow-step-title">초대 수락 (팀원)</div>
+        <div class="flow-step-desc">메신저 챌린지 카드의 "참여하기" 탭 → 게임 실행 → <code>FBInstant.tournament.joinAsync(tournamentID)</code> → 서버에 참가 등록. 로비에 그룹 챌린지 배너 즉시 노출. 팀 정원 초과 시 "이미 팀이 가득 찼습니다" 안내.</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="3">
+      <div>
+        <div class="flow-step-title">레벨 플레이 → 점수 기여</div>
+        <div class="flow-step-desc">기존 레벨 클리어 시 개인 기여 점수가 그룹 풀에 자동 누적. 클리어 완료 연출 후 "+[점수] 팀에 기여!" 피드백 토스트 노출. 로비 챌린지 배너의 진행 바(progress bar)가 실시간 업데이트.</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="4">
+      <div>
+        <div class="flow-step-title">상황 공유 (선택)</div>
+        <div class="flow-step-desc">로비 챌린지 배너의 "친구에게 응원 요청" 버튼 탭 → <code>FBInstant.tournament.shareTournamentAsync()</code> → 현재 진행률이 담긴 카드를 메신저에 재공유. 팀원 독려 또는 추가 참가 유도에 활용.</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="5">
+      <div>
+        <div class="flow-step-title">목표 달성 또는 시간 초과</div>
+        <div class="flow-step-desc"><strong>달성:</strong> 서버에서 목표 도달 감지 → 모든 팀원에게 푸시 알림 발송 + 인게임 팝업 노출 → 팀원 전원 동일 보상 지급. <strong>실패:</strong> 24시간 타이머 만료 시 조용히 종료, 팀원에게 결과 요약 알림(소량 위로 골드 지급 여부는 <code>coop_fail_consolation</code> 설정에 따름).</div>
+      </div>
+    </div>
+    <div class="flow-step" data-n="6">
+      <div>
+        <div class="flow-step-title">보상 수령</div>
+        <div class="flow-step-desc">결과 팝업에서 "보상 수령" 탭 시 지급. <code>coop_reward_claim_window_sec</code> 내 미수령 시 자동 지급. 메신저에 달성 결과 카드 자동 공유 (팀원 이름 + 달성 시간 표시).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s1-kpi">1-3 기대 KPI &amp; 성공 지표</h2>
+  <table>
+    <thead><tr><th>지표</th><th>측정 방법</th><th>목표</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>초대 전환율</strong></td>
+        <td>챌린지 카드를 받은 유저 중 실제 게임 참가 비율</td>
+        <td>30% 이상</td>
+      </tr>
+      <tr>
+        <td><strong>챌린지 달성률</strong></td>
+        <td>생성된 챌린지 중 24시간 내 목표 달성 비율</td>
+        <td>50~65% (너무 쉽거나 어렵지 않게)</td>
+      </tr>
+      <tr>
+        <td><strong>챌린지 참여 세션 깊이</strong></td>
+        <td>챌린지 참가 유저의 평균 일일 레벨 클리어 수 vs 비참가 유저</td>
+        <td>참가 유저 +25% 이상</td>
+      </tr>
+      <tr>
+        <td><strong>신규 유저 초대 수</strong></td>
+        <td>챌린지를 통해 재초대된 휴면 유저(14일 이상 미접속) 비율</td>
+        <td>전체 챌린지 참가자 중 15% 이상</td>
+      </tr>
+      <tr>
+        <td><strong>재참여율</strong></td>
+        <td>첫 챌린지 참가 후 7일 이내 2번째 챌린지 참가 비율</td>
+        <td>45% 이상</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- SECTION 2 — 아트 가이드 -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<div id="s2" class="section s2">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <h2>아트 가이드</h2>
+    <span class="section-audience">아트팀</span>
+  </div>
+
+  <h3>전체 방향성</h3>
+  <ul>
+    <li><strong>협력감 표현:</strong> 경쟁(빨강·금색 긴장감)이 아닌 협력(민트·보라 따뜻한 연대감) 팔레트</li>
+    <li><strong>진행 바가 핵심 UI:</strong> 그룹 누적 점수 → 목표 진행률을 한 눈에 보여주는 가로 바. 채워질수록 색상 전환 (보라 → 민트 → 골드)</li>
+    <li><strong>팀원 기여 시각화:</strong> 진행 바 아래 팀원 아바타 칩이 나열되고, 각자 기여한 점수 비율을 작게 표시</li>
+    <li><strong>달성 연출:</strong> 목표 도달 시 바가 가득 차며 골드로 폭발적 변환 + 경쾌한 파티클. 팀원 아바타가 모두 점프하는 짧은 애니</li>
+    <li>기존 Peak Cup 에셋과 충돌 없이 독립적으로 관리</li>
+  </ul>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h3 id="s2-wf1">와이어프레임 1 — 로비 그룹 챌린지 배너 &amp; 진행 UI</h3>
+  <div class="wf-wrap">
+    <svg viewBox="0 0 360 280" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-width:480px;display:block;margin:0 auto">
+      <defs>
+        <linearGradient id="coopGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#1a1040"/>
+          <stop offset="100%" stop-color="#0f2a25"/>
+        </linearGradient>
+        <linearGradient id="barGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#a78bfa"/>
+          <stop offset="60%" stop-color="#2dd4bf"/>
+          <stop offset="100%" stop-color="#f59e0b"/>
+        </linearGradient>
+        <linearGradient id="btnGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#7c3aed"/>
+          <stop offset="100%" stop-color="#0d9488"/>
+        </linearGradient>
+      </defs>
+
+      <!-- 로비 배경 -->
+      <rect width="360" height="280" fill="#0f172a"/>
+      <!-- 상단 바 -->
+      <rect x="0" y="0" width="360" height="44" fill="#1a1d27"/>
+      <text x="16" y="28" font-size="13" fill="#e2e8f0" font-weight="700">Solitaire City</text>
+      <text x="300" y="28" font-size="12" fill="#fbbf24">🪙 8,200</text>
+
+      <!-- 협력 챌린지 배너 -->
+      <rect x="12" y="54" width="336" height="106" rx="12" fill="url(#coopGrad)" stroke="rgba(45,212,191,0.45)" stroke-width="1.5"/>
+
+      <!-- 헤더 -->
+      <text x="24" y="76" font-size="11" fill="#2dd4bf" font-weight="800" letter-spacing="0.5">🤝 협력 챌린지</text>
+      <text x="340" y="76" text-anchor="end" font-size="10" fill="#94a3b8">21:43:00 남음</text>
+
+      <!-- 목표 라벨 -->
+      <text x="24" y="93" font-size="10" fill="#94a3b8">팀 목표</text>
+      <text x="340" y="93" text-anchor="end" font-size="11" fill="#e2e8f0" font-weight="700">147,200 / 200,000점</text>
+
+      <!-- 진행 바 -->
+      <rect x="24" y="99" width="312" height="10" rx="5" fill="rgba(255,255,255,0.1)"/>
+      <rect x="24" y="99" width="230" height="10" rx="5" fill="url(#barGrad)"/>
+      <text x="258" y="108" font-size="8" fill="#f59e0b" font-weight="700">74%</text>
+
+      <!-- 팀원 칩 -->
+      <!-- 나 -->
+      <rect x="24" y="116" width="66" height="22" rx="11" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.4)" stroke-width="1"/>
+      <circle cx="34" cy="127" r="8" fill="rgba(167,139,250,0.3)"/>
+      <text x="34" y="131" text-anchor="middle" font-size="7" fill="#c4b5fd" font-weight="700">나</text>
+      <text x="56" y="131" font-size="9" fill="#c4b5fd" font-weight="600">42k</text>
+
+      <!-- 팀원1 -->
+      <rect x="95" y="116" width="70" height="22" rx="11" fill="rgba(45,212,191,0.12)" stroke="rgba(45,212,191,0.3)" stroke-width="1"/>
+      <circle cx="105" cy="127" r="8" fill="rgba(45,212,191,0.2)"/>
+      <text x="105" y="131" text-anchor="middle" font-size="7" fill="#5eead4">A</text>
+      <text x="125" y="131" font-size="9" fill="#5eead4">38k</text>
+
+      <!-- 팀원2 -->
+      <rect x="170" y="116" width="70" height="22" rx="11" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.3)" stroke-width="1"/>
+      <circle cx="180" cy="127" r="8" fill="rgba(251,146,60,0.2)"/>
+      <text x="180" y="131" text-anchor="middle" font-size="7" fill="#fdba74">B</text>
+      <text x="200" y="131" font-size="9" fill="#fdba74">37k</text>
+
+      <!-- 팀원3 미참여 -->
+      <rect x="245" y="116" width="92" height="22" rx="11" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="3 2"/>
+      <circle cx="255" cy="127" r="8" fill="rgba(255,255,255,0.08)"/>
+      <text x="255" y="131" text-anchor="middle" font-size="8" fill="#475569">?</text>
+      <text x="272" y="131" font-size="9" fill="#475569">대기중</text>
+
+      <!-- 응원 요청 버튼 -->
+      <rect x="24" y="145" width="140" height="10" rx="5" fill="url(#btnGrad)"/>
+      <text x="94" y="153" text-anchor="middle" font-size="7" fill="#fff" font-weight="700">응원 요청 / 공유</text>
+
+      <!-- 레벨 플레이 버튼 -->
+      <rect x="60" y="174" width="240" height="52" rx="26" fill="#7c3aed" opacity="0.8"/>
+      <text x="180" y="206" text-anchor="middle" font-size="15" fill="#fff" font-weight="800">레벨 플레이 →</text>
+      <text x="180" y="220" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.6)">클리어하면 팀에 점수 기여</text>
+
+      <!-- 새 챌린지 생성 -->
+      <text x="180" y="258" text-anchor="middle" font-size="11" fill="#475569">+ 새 챌린지 만들기</text>
+    </svg>
+    <p class="wf-caption">로비 배너 — 진행 바 + 팀원별 기여 칩 + 공유 버튼. 배너를 탭하면 상세 챌린지 화면으로 진입.</p>
+  </div>
+
+  <!-- 실제 UI 컴포넌트 미리보기 -->
+  <div class="goal-bar-wrap">
+    <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">그룹 진행 바 컴포넌트 (HTML 프리뷰)</div>
+    <div class="goal-bar-label">
+      <span>팀 누적 점수</span>
+      <span style="color:var(--teal);font-weight:700">147,200 / 200,000점 (74%)</span>
+    </div>
+    <div class="goal-bar-track">
+      <div class="goal-bar-fill" style="width:74%"></div>
+    </div>
+    <div class="goal-bar-members">
+      <div class="member-chip"><div class="member-avatar m-me">나</div><span style="color:var(--text)">나</span><span style="color:var(--purple)">42,000점</span></div>
+      <div class="member-chip"><div class="member-avatar m-1">A</div><span style="color:var(--text)">Alex</span><span style="color:var(--teal)">38,200점</span></div>
+      <div class="member-chip"><div class="member-avatar m-2">B</div><span style="color:var(--text)">Beth</span><span style="color:var(--orange)">37,000점</span></div>
+      <div class="member-chip"><div class="member-avatar m-3" style="background:rgba(255,255,255,0.08);color:var(--text-dim)">?</div><span style="color:var(--text-dim)">대기중</span></div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h3 id="s2-wf2">와이어프레임 2 — 목표 달성 팝업</h3>
+  <div class="wf-wrap">
+    <svg viewBox="0 0 360 420" width="100%" xmlns="http://www.w3.org/2000/svg" style="max-width:480px;display:block;margin:0 auto">
+      <defs>
+        <linearGradient id="successBg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0d2818"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+        <linearGradient id="claimBtn2" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#059669"/>
+          <stop offset="100%" stop-color="#0d9488"/>
+        </linearGradient>
+      </defs>
+      <rect width="360" height="420" rx="16" fill="url(#successBg)" stroke="rgba(45,212,191,0.4)" stroke-width="1.5"/>
+
+      <!-- 파티클 (단순) -->
+      <text x="50"  y="40"  font-size="14">✨</text>
+      <text x="290" y="38"  font-size="12">🎉</text>
+      <text x="170" y="22"  font-size="10">⭐</text>
+      <text x="100" y="30"  font-size="8">✦</text>
+      <text x="240" y="55"  font-size="8">✦</text>
+
+      <!-- 타이틀 -->
+      <text x="180" y="68" text-anchor="middle" font-size="20" fill="#4ade80" font-weight="900">목표 달성!</text>
+      <text x="180" y="88" text-anchor="middle" font-size="12" fill="#94a3b8">팀이 함께 해냈습니다 🎊</text>
+
+      <!-- 달성 수치 -->
+      <rect x="40" y="100" width="280" height="70" rx="12" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.3)" stroke-width="1"/>
+      <text x="180" y="128" text-anchor="middle" font-size="11" fill="#94a3b8">최종 팀 점수</text>
+      <text x="180" y="155" text-anchor="middle" font-size="28" fill="#4ade80" font-weight="900">218,400점</text>
+      <text x="180" y="170" text-anchor="middle" font-size="10" fill="#64748b">목표 200,000점 달성 (13시간 22분 소요)</text>
+
+      <!-- 팀원 기여 -->
+      <text x="24" y="198" font-size="12" fill="#e2e8f0" font-weight="700">팀원 기여</text>
+      <rect x="12" y="206" width="336" height="64" rx="8" fill="rgba(255,255,255,0.04)"/>
+      <!-- 4명 기여 원형 표시 -->
+      <circle cx="48"  cy="238" r="18" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.5)" stroke-width="1.5"/>
+      <text x="48"  y="234" text-anchor="middle" font-size="8" fill="#c4b5fd">나</text>
+      <text x="48"  y="246" text-anchor="middle" font-size="8" fill="#c4b5fd">42k</text>
+      <circle cx="108" cy="238" r="18" fill="rgba(45,212,191,0.2)" stroke="rgba(45,212,191,0.5)" stroke-width="1.5"/>
+      <text x="108" y="234" text-anchor="middle" font-size="8" fill="#5eead4">A</text>
+      <text x="108" y="246" text-anchor="middle" font-size="8" fill="#5eead4">58k</text>
+      <circle cx="168" cy="238" r="18" fill="rgba(251,146,60,0.2)" stroke="rgba(251,146,60,0.5)" stroke-width="1.5"/>
+      <text x="168" y="234" text-anchor="middle" font-size="8" fill="#fdba74">B</text>
+      <text x="168" y="246" text-anchor="middle" font-size="8" fill="#fdba74">62k</text>
+      <circle cx="228" cy="238" r="18" fill="rgba(232,121,249,0.2)" stroke="rgba(232,121,249,0.5)" stroke-width="1.5"/>
+      <text x="228" y="234" text-anchor="middle" font-size="8" fill="#f0abfc">C</text>
+      <text x="228" y="246" text-anchor="middle" font-size="8" fill="#f0abfc">56k</text>
+
+      <!-- MVP 표시 -->
+      <rect x="270" y="218" width="68" height="40" rx="8" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.4)" stroke-width="1"/>
+      <text x="304" y="235" text-anchor="middle" font-size="9" fill="#fbbf24">🏅 MVP</text>
+      <text x="304" y="248" text-anchor="middle" font-size="9" fill="#fbbf24" font-weight="700">Beth</text>
+
+      <!-- 보상 영역 -->
+      <text x="24" y="294" font-size="12" fill="#e2e8f0" font-weight="700">전원 보상</text>
+      <rect x="12" y="302" width="336" height="52" rx="8" fill="rgba(255,255,255,0.04)"/>
+      <rect x="24" y="312" width="36" height="36" rx="8" fill="rgba(251,191,36,0.2)"/>
+      <text x="42" y="336" text-anchor="middle" font-size="18">🪙</text>
+      <text x="70" y="326" font-size="13" fill="#e2e8f0" font-weight="600">골드 + 부스터</text>
+      <text x="70" y="342" font-size="11" fill="#94a3b8">협력 챌린지 달성 보상</text>
+      <text x="342" y="334" text-anchor="end" font-size="13" fill="#fbbf24" font-weight="800">[coop_reward_gold]</text>
+
+      <!-- 공유 + 수령 버튼 -->
+      <rect x="12" y="368" width="154" height="40" rx="20" fill="rgba(45,212,191,0.15)" stroke="rgba(45,212,191,0.4)" stroke-width="1"/>
+      <text x="89" y="393" text-anchor="middle" font-size="12" fill="#2dd4bf" font-weight="700">메신저에 공유</text>
+
+      <rect x="174" y="368" width="174" height="40" rx="20" fill="url(#claimBtn2)"/>
+      <text x="261" y="393" text-anchor="middle" font-size="13" fill="#fff" font-weight="800">보상 수령하기</text>
+    </svg>
+    <p class="wf-caption">목표 달성 팝업 — 팀 점수, 팀원 기여도, MVP(최다 기여자), 공동 보상 표시. 메신저 공유 버튼으로 달성 결과 자동 전파.</p>
+  </div>
+
+  <h3>필요 에셋 목록</h3>
+  <table>
+    <thead><tr><th>에셋</th><th>내용</th><th>우선순위</th></tr></thead>
+    <tbody>
+      <tr><td>협력 챌린지 로비 배너</td><td>민트+보라 계열 협력 무드. "팀과 함께" 모티프. 가로형.</td><td><span class="prio-high">High</span></td></tr>
+      <tr><td>진행 바 완성 연출</td><td>바가 100% 도달 시 골드 파티클 버스트. 0.5초 짧은 연출.</td><td><span class="prio-high">High</span></td></tr>
+      <tr><td>FB 메신저 챌린지 카드 이미지</td><td>1200×628px. 게임 스크린샷 + 목표 점수 텍스트 오버레이. <code>createAsync</code>에 base64로 전달.</td><td><span class="prio-high">High</span></td></tr>
+      <tr><td>기여 토스트 UI</td><td>레벨 클리어 후 "+[점수] 팀에 기여!" 슬라이드업 토스트. 팀 진행률도 함께 표시.</td><td><span class="prio-mid">Mid</span></td></tr>
+      <tr><td>MVP 배지</td><td>최다 기여자에게 달리는 메달 아이콘. 결과 화면에만 노출.</td><td><span class="prio-mid">Mid</span></td></tr>
+      <tr><td>달성/실패 효과음</td><td>달성: 밝고 경쾌한 팡파레(1초). 실패: 조용하고 짧게(과하지 않게).</td><td><span class="prio-low">Low</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- SECTION 3 — 개발 스펙 -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<div id="s3" class="section s3">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <h2>개발 스펙</h2>
+    <span class="section-audience">개발팀</span>
+  </div>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s3-fb">3-1 Facebook Instant Tournament API 연동</h2>
+
+  <div class="callout callout-purple">
+    <strong>아키텍처 원칙:</strong> FB Instant Tournament API는 <em>소셜 발견 &amp; 초대 레이어</em>만 담당한다. 협력 스코어 집계·목표 달성 판정·보상 지급은 자체 서버에서 처리한다. 두 시스템은 <code>tournament.getID()</code>로 반환되는 토너먼트 ID와 <code>payload</code> 필드를 통해 연결된다.
+  </div>
+
+  <h3>챌린지 생성 흐름</h3>
+  <pre><span class="cm">// 호스트가 챌린지 생성 버튼 탭 시</span>
+<span class="kw">const</span> endTime = Math.floor(Date.now() / 1000) + coopDurationSec; <span class="cm">// 현재+24h</span>
+
+<span class="kw">const</span> tournament = <span class="kw">await</span> FBInstant.tournament.createAsync({
+  initialScore: 0,
+  config: {
+    title: <span class="str">"친구와 함께 도전하세요!"</span>,
+    image: challengeCardBase64, <span class="cm">// 아트팀 제공 카드 이미지</span>
+    sortOrder: <span class="str">'HIGHER_IS_BETTER'</span>,
+    scoreType:  <span class="str">'NUMERIC'</span>,
+    endTime:    endTime,
+  },
+  payload: JSON.stringify({
+    type:        <span class="str">'cooperative'</span>,
+    challengeId: newChallengeId,   <span class="cm">// 서버에서 미리 발급한 챌린지 ID</span>
+    groupGoal:   groupGoalScore,   <span class="cm">// 팀 인원 × coop_base_goal</span>
+  }),
+});
+
+<span class="kw">const</span> fbTournamentId = tournament.getID();
+<span class="cm">// 서버에 fbTournamentId 등록 → 참가자 조회 시 사용</span>
+await serverApi.registerChallenge(newChallengeId, fbTournamentId);
+
+<span class="cm">// 메신저에 챌린지 카드 자동 공유</span>
+<span class="kw">await</span> FBInstant.tournament.shareTournamentAsync({
+  score: 0,
+  data: { challengeId: newChallengeId },
+});</pre>
+
+  <h3>팀원 참가 흐름</h3>
+  <pre><span class="cm">// 메신저 카드 탭 → 게임 실행 시 진입점</span>
+<span class="kw">const</span> entryPointData = FBInstant.getEntryPointData();
+<span class="kw">if</span> (entryPointData?.challengeId) {
+  <span class="kw">await</span> FBInstant.tournament.joinAsync(entryPointData.fbTournamentId);
+  <span class="kw">await</span> serverApi.joinChallenge(entryPointData.challengeId, playerId);
+  <span class="cm">// 정원 초과 시 서버에서 error: 'CHALLENGE_FULL' 반환 → UI 안내</span>
+}</pre>
+
+  <h3>레벨 클리어 시 점수 기여</h3>
+  <pre><span class="cm">// game_end 이벤트 처리 (기존 레벨 클리어 파이프라인에 추가)</span>
+<span class="kw">if</span> (activeChallenges.length > 0 &amp;&amp; levelCleared) {
+  <span class="kw">const</span> contribution = calcContribution(starScore); <span class="cm">// star×multiplier, 상한 적용</span>
+
+  <span class="cm">// 자체 서버에 기여 점수 누적</span>
+  <span class="kw">await</span> serverApi.postContribution(challengeId, playerId, contribution);
+
+  <span class="cm">// FB 토너먼트에도 개인 누적 점수 업데이트 (리더보드 표시용)</span>
+  <span class="kw">await</span> FBInstant.tournament.postScoreAsync(myTotalContribution);
+
+  <span class="cm">// 서버 응답에 목표 달성 여부 포함 → 달성 시 클라 팝업 트리거</span>
+}</pre>
+
+  <div class="callout callout-yellow">
+    <strong>주의 — postScoreAsync 호출 빈도:</strong> 레벨 클리어마다 매번 호출하면 FB API 레이트 리밋에 걸릴 수 있다. 호출 간격을 최소 <strong>10초</strong> 이상 두거나 배치 업데이트 방식을 검토. 최악의 경우 FB 점수는 약간의 지연을 허용하고, 실제 협력 집계는 자체 서버만으로 동작하도록 설계.
+  </div>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s3-bs">3-2 밸런스 시트 변수</h2>
+
+  <p>신규 시트 탭 2개 신설 제안: <code>coop_challenge_config</code>, <code>coop_reward_config</code>.</p>
+
+  <div class="tab-badge">coop_challenge_config (신규 탭)</div>
+  <div class="bs-block">
+    <table class="bs-table">
+      <thead><tr><th>변수명</th><th>제안값</th><th>단위</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td>coop_in_use</td><td>0</td><td>bool</td><td>협력 챌린지 기능 활성화 여부</td></tr>
+        <tr><td>coop_min_player_level</td><td>20</td><td>level</td><td>챌린지 생성 가능 최소 레벨 (너무 초반 유저 제외)</td></tr>
+        <tr><td>coop_max_team_size</td><td>5</td><td>count</td><td>팀 최대 인원</td></tr>
+        <tr><td>coop_min_team_size</td><td>2</td><td>count</td><td>챌린지 시작 최소 인원</td></tr>
+        <tr><td>coop_base_goal</td><td>50000</td><td>score</td><td>1인당 기준 목표 점수. 팀 목표 = base_goal × 팀원 수</td></tr>
+        <tr><td>coop_duration_sec</td><td>86400</td><td>sec</td><td>챌린지 제한 시간 (86400 = 24시간)</td></tr>
+        <tr><td>coop_score_multiplier</td><td>1.0</td><td>배율</td><td>레벨 클리어 star_score에 곱하는 배율</td></tr>
+        <tr><td>coop_max_score_per_level</td><td>8000</td><td>score</td><td>레벨 1회 클리어로 기여 가능한 최대 점수 (어뷰징 방지)</td></tr>
+        <tr><td>coop_max_active_per_user</td><td>3</td><td>count</td><td>유저 1인이 동시에 참가 가능한 챌린지 수</td></tr>
+        <tr><td>coop_reward_claim_window_sec</td><td>86400</td><td>sec</td><td>달성 후 보상 수령 가능 기간</td></tr>
+        <tr><td>coop_fail_consolation</td><td>0</td><td>bool</td><td>실패 시 위로 골드 지급 여부 (0=지급 안함)</td></tr>
+        <tr><td>coop_leaderboard_update_sec</td><td>15</td><td>sec</td><td>그룹 진행 바 폴링 갱신 주기</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tab-badge">coop_reward_config (신규 탭)</div>
+  <div class="bs-block">
+    <table class="bs-table">
+      <thead><tr><th>변수명</th><th>제안값</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td>coop_reward_gold</td><td>[TBD]</td><td>목표 달성 시 팀원 전원에게 지급되는 골드량. econ-02 기준 산정 필요.</td></tr>
+        <tr><td>coop_reward_booster_type</td><td>booster_wild_card</td><td>함께 지급되는 부스터 종류</td></tr>
+        <tr><td>coop_reward_booster_count</td><td>2</td><td>부스터 지급 개수</td></tr>
+        <tr><td>coop_fail_consolation_gold</td><td>0</td><td>실패 시 위로 골드 (coop_fail_consolation=1일 때만 유효)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-yellow">
+    <strong>보상 수치 확정 기준:</strong> 협력 챌린지 보상은 <em>1인 기준 일반 레벨 24시간 기대 골드의 50~70%</em> 수준으로 설계. 너무 많으면 골드 공급 과잉, 너무 적으면 참여 동기 부족. econ-02 에이전트 검토 필요.
+  </div>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s3-logic">3-3 서버 로직</h2>
+
+  <h3>챌린지 생명주기 (상태 전이)</h3>
+  <table>
+    <thead><tr><th>상태</th><th>진입 조건</th><th>다음 상태</th></tr></thead>
+    <tbody>
+      <tr><td><code>CREATED</code></td><td>호스트가 챌린지 생성. FB 토너먼트 ID 발급 완료.</td><td>팀원 참가 → <code>ACTIVE</code> (최소 인원 충족 시 자동 전환. 미충족이더라도 호스트가 직접 시작 버튼 탭 시 전환 가능.)</td></tr>
+      <tr><td><code>ACTIVE</code></td><td>팀 구성 완료, 점수 집계 시작.</td><td>목표 달성 → <code>SUCCESS</code> / 시간 초과 → <code>FAILED</code></td></tr>
+      <tr><td><code>SUCCESS</code></td><td>group_total_score ≥ group_goal.</td><td>보상 수령 또는 윈도우 만료 → <code>CLOSED</code></td></tr>
+      <tr><td><code>FAILED</code></td><td>endTime 도달, 목표 미달성.</td><td>위로 지급(옵션) 후 → <code>CLOSED</code></td></tr>
+      <tr><td><code>CLOSED</code></td><td>모든 처리 완료.</td><td>종료 (레코드 보관)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>점수 집계 API 엔드포인트 (제안)</h3>
+  <table>
+    <thead><tr><th>엔드포인트</th><th>동작</th></tr></thead>
+    <tbody>
+      <tr><td><code>POST /challenge/create</code></td><td>챌린지 생성, challengeId 발급. fbTournamentId 등록.</td></tr>
+      <tr><td><code>POST /challenge/join</code></td><td>팀원 참가 등록. 정원 초과 시 오류 반환.</td></tr>
+      <tr><td><code>POST /challenge/contribute</code></td><td>점수 기여 기록. group_total_score 업데이트. 달성 여부 응답에 포함.</td></tr>
+      <tr><td><code>GET  /challenge/status</code></td><td>현재 group_total_score, 팀원 기여 목록, 남은 시간 반환. 클라 폴링용.</td></tr>
+      <tr><td><code>POST /challenge/claim</code></td><td>보상 수령 처리. 중복 수령 방지 (idempotent).</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ────────────────────────────────────────────────────────────────────── -->
+  <h2 id="s3-edge">3-4 엣지 케이스</h2>
+  <table>
+    <thead><tr><th>케이스</th><th>처리 방법</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>호스트만 참가, 팀원 미수락</td>
+        <td><code>CREATED</code> 상태 유지. <code>coop_duration_sec</code> 내 최소 인원 미충족 시 자동 <code>FAILED</code> 전환. 호스트에게 알림.</td>
+      </tr>
+      <tr>
+        <td>팀원이 챌린지 도중 FB 연결 해제</td>
+        <td>기존 기여 점수는 유지. FB 연결이 끊긴 팀원의 신규 기여는 서버에서 userId 기반으로 계속 집계. (FB API 오류는 자체 서버 로직과 독립)</td>
+      </tr>
+      <tr>
+        <td>정원 초과 참가 시도</td>
+        <td>서버에서 <code>CHALLENGE_FULL</code> 오류 반환. 클라에서 "팀이 가득 찼습니다" 안내. FB joinAsync는 성공해도 서버 참가 등록은 거부.</td>
+      </tr>
+      <tr>
+        <td>동시에 여러 챌린지 목표 달성</td>
+        <td>각 챌린지 독립적으로 처리. 순서 보장 필요 없음. 보상은 챌린지별로 개별 지급.</td>
+      </tr>
+      <tr>
+        <td>목표 달성 직후 추가 레벨 클리어 (초과 점수)</td>
+        <td>달성 후 기여는 집계하지 않음. <code>SUCCESS</code> 상태 전환 즉시 contribute API 잠금.</td>
+      </tr>
+      <tr>
+        <td>동일 유저의 중복 보상 수령 시도</td>
+        <td>claim API idempotent 처리. 서버에서 수령 기록 확인 후 이미 지급된 경우 성공 응답만 반환 (재지급 없음).</td>
+      </tr>
+      <tr>
+        <td>FB tournament.postScoreAsync 실패</td>
+        <td>FB 점수 업데이트는 베스트 에포트(best-effort). 실패해도 자체 서버 집계와 달성 판정은 영향 없음. 클라 에러 로그만 기록.</td>
+      </tr>
+      <tr>
+        <td><code>coop_in_use</code>를 0으로 전환 (운영 중 비활성화)</td>
+        <td>진행 중인 챌린지는 해당 회차 완료까지 유지. 신규 챌린지 생성만 차단. 강제 중단 없음.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-orange">
+    <strong>FB Instant Tournament API 제약 사항:</strong>
+    <ul style="margin:8px 0 0;padding-left:18px">
+      <li>토너먼트는 <strong>경쟁 리더보드 구조</strong>가 기본이다. 협력 목표 달성 여부는 FB API가 아닌 자체 서버가 판정한다</li>
+      <li><code>getTournamentsAsync()</code>로 유저가 참가 중인 토너먼트 목록 조회 가능 — 앱 실행 시 활성 챌린지 복원에 활용</li>
+      <li>토너먼트 ID는 FB 메신저 스레드 컨텍스트와 연결된다 — 같은 스레드의 친구들에게만 공유됨</li>
+      <li><code>endTime</code>은 생성 시 고정된다. 연장/단축 불가. 서버에서 별도 연장 로직은 FB 토너먼트와 무관하게 처리 가능</li>
+    </ul>
+  </div>
+</div>
+
+</main>
+
+<script>
+(function () {
+  const SPEC_ID = 'spec-022';
+
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',    cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',  cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',    cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',   cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',  cls: 'badge-yellow' },
+    social:  { label: '🤝 소셜',    cls: 'badge-blue'   },
+    etc:     { label: '📌 기타',    cls: 'badge-blue'   },
+  };
+
+  // ── 사이드바 네비 하이라이트 ──
+  const links    = document.querySelectorAll('.nav-item');
+  const sections = document.querySelectorAll('[id]');
+  function activate() {
+    const scrollY = window.pageYOffset + 140;
+    let active = null;
+    sections.forEach(function (s) {
+      if (s.offsetTop <= scrollY) active = s.id;
+    });
+    links.forEach(function (l) {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + active);
+    });
+  }
+  window.addEventListener('scroll', activate);
+  activate();
+})();
+</script>
+<script src="memo.js"></script>
+</body>
+</html>
