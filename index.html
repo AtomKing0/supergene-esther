@@ -26,6 +26,7 @@
     --ext:            #ffb347;
     --collab:         #4ecdc4;
     --deploy:         #f4845f;
+    --update:         #818cf8;
 
     --economy-bg:     rgba(92,184,255,0.07);
     --balance-bg:     rgba(114,232,138,0.07);
@@ -33,6 +34,7 @@
     --ext-bg:         rgba(255,179,71,0.07);
     --collab-bg:      rgba(78,205,196,0.07);
     --deploy-bg:      rgba(244,132,95,0.07);
+    --update-bg:      rgba(129,140,248,0.07);
 
     --economy-border: rgba(92,184,255,0.2);
     --balance-border: rgba(114,232,138,0.2);
@@ -40,6 +42,7 @@
     --ext-border:     rgba(255,179,71,0.2);
     --collab-border:  rgba(78,205,196,0.2);
     --deploy-border:  rgba(244,132,95,0.2);
+    --update-border:  rgba(129,140,248,0.2);
 
     --radius-card: 12px;
     --radius-md:   10px;
@@ -61,6 +64,7 @@
     --ext:            #c26a00;
     --collab:         #148a87;
     --deploy:         #c44a2a;
+    --update:         #4f46e5;
 
     --economy-bg:     rgba(29,111,212,0.06);
     --balance-bg:     rgba(21,140,58,0.06);
@@ -68,6 +72,7 @@
     --ext-bg:         rgba(194,106,0,0.06);
     --collab-bg:      rgba(20,138,135,0.06);
     --deploy-bg:      rgba(196,74,42,0.06);
+    --update-bg:      rgba(79,70,229,0.06);
 
     --economy-border: rgba(29,111,212,0.2);
     --balance-border: rgba(21,140,58,0.2);
@@ -75,6 +80,7 @@
     --ext-border:     rgba(194,106,0,0.2);
     --collab-border:  rgba(20,138,135,0.2);
     --deploy-border:  rgba(196,74,42,0.2);
+    --update-border:  rgba(79,70,229,0.2);
   }
 
   /* ─── 기본 ──────────────────────────────────────── */
@@ -209,6 +215,8 @@
   .nav a.ext:hover,    .nav a.ext.active    { background: var(--ext-bg); }
   .nav a.tools         { border-color: var(--deploy-border); color: var(--deploy); }
   .nav a.tools:hover,  .nav a.tools.active  { background: var(--deploy-bg); }
+  .nav a.update        { border-color: var(--update-border); color: var(--update); }
+  .nav a.update:hover, .nav a.update.active { background: var(--update-bg); }
 
   /* ─── 메인 ──────────────────────────────────────── */
   .main { max-width: 880px; margin: 0 auto; padding: 40px 24px 100px; }
@@ -227,6 +235,7 @@
   .section:has(.section-header.economy) .section-body { border-left-color: var(--economy-border); }
   .section:has(.section-header.balance) .section-body { border-left-color: var(--balance-border); }
   .section:has(.section-header.tools)   .section-body { border-left-color: var(--deploy-border); }
+  .section:has(.section-header.update)  .section-body { border-left-color: var(--update-border); }
 
   .section-header {
     display: flex;
@@ -242,8 +251,10 @@
   .section-header.plan    { border-left-color: var(--plan); }
   .section-header.ext     { border-left-color: var(--ext); }
   .section-header.tools   { border-left-color: var(--deploy); }
+  .section-header.update  { border-left-color: var(--update); }
   .section-badge.ext     { background: var(--ext-bg); color: var(--ext); border: 1px solid var(--ext-border); }
   .section-badge.tools   { background: var(--deploy-bg); color: var(--deploy); border: 1px solid var(--deploy-border); }
+  .section-badge.update  { background: var(--update-bg); color: var(--update); border: 1px solid var(--update-border); }
 
   .section-badge {
     font-size: 10px;
@@ -631,6 +642,78 @@
     .stat-div { display: none; }
     .section-title { font-size: 18px; }
   }
+
+  /* ─── LIVE 트래킹 배너 ──────────────────────────── */
+  .live-section {
+    margin-bottom: 56px;
+  }
+  .live-card {
+    display: flex; align-items: center; gap: 20px;
+    background: linear-gradient(135deg, rgba(34,197,94,0.06) 0%, rgba(79,142,247,0.06) 100%);
+    border: 1.5px solid rgba(34,197,94,0.3);
+    border-radius: 14px; padding: 18px 22px;
+    text-decoration: none; color: var(--text);
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .live-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(34,197,94,0.03), transparent);
+    pointer-events: none;
+  }
+  .live-card:hover {
+    border-color: rgba(34,197,94,0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(34,197,94,0.12);
+  }
+  .live-badge {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 5px; flex-shrink: 0;
+  }
+  .live-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 0 rgba(34,197,94,0.6);
+    animation: live-pulse 1.8s ease-out infinite;
+  }
+  @keyframes live-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+    70%  { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+    100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+  }
+  .live-tag {
+    font-size: 9px; font-weight: 800; letter-spacing: 1.2px;
+    color: #22c55e; text-transform: uppercase;
+  }
+  .live-content { flex: 1; min-width: 0; }
+  .live-title {
+    font-size: 17px; font-weight: 800; color: var(--text);
+    margin-bottom: 3px; letter-spacing: -0.3px;
+  }
+  .live-subtitle { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
+  .live-funnel {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .lf-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .lf-label { font-size: 9px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .lf-val   { font-size: 20px; font-weight: 900; color: var(--text); line-height: 1; }
+  .lf-val.danger { color: #ef4444; }
+  .lf-arrow { font-size: 14px; color: var(--border); margin-top: 12px; }
+  .lf-target {
+    margin-left: 8px; margin-top: 10px;
+    font-size: 11px; font-weight: 700; color: #22c55e;
+    background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 6px; padding: 3px 10px; white-space: nowrap;
+  }
+  .live-meta {
+    display: flex; gap: 8px; margin-top: 10px;
+    font-size: 11px; color: var(--text-dim);
+  }
+  .live-arrow {
+    font-size: 20px; color: rgba(34,197,94,0.5); flex-shrink: 0;
+    transition: transform 0.2s, color 0.2s;
+  }
+  .live-card:hover .live-arrow { transform: translateX(4px); color: #22c55e; }
 </style>
 </head>
 <body>
@@ -658,6 +741,7 @@
 <!-- ─── 네비 ─────────────────────────────────────── -->
 <nav class="nav">
   <a href="#tools"      class="tools">협업 & 배포</a>
+  <a href="#updates"    class="update">업데이트 기획서</a>
   <a href="#planning"   class="plan">기획서</a>
   <a href="#design"     class="economy">수치 설계</a>
   <a href="#validation" class="balance">시뮬 & 검증</a>
@@ -665,6 +749,48 @@
 
 <!-- ─── 메인 ─────────────────────────────────────── -->
 <div class="main">
+
+  <!-- ─── 라이브 데이터 트래킹 ──────────────────────── -->
+  <div class="live-section">
+    <a class="live-card" href="17_pst_funnel_dashboard.html" target="_self">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        <div class="live-tag">LIVE</div>
+      </div>
+      <div class="live-content">
+        <div class="live-title">PST 런칭 퍼널 대시보드</div>
+        <div class="live-subtitle">Solitaire City Journey · 온보딩 개선 추이 실시간 모니터링 · 매일 업데이트</div>
+        <div class="live-funnel">
+          <div class="lf-item">
+            <span class="lf-label">첫 터치 (P1)</span>
+            <span class="lf-val">66.0%</span>
+          </div>
+          <span class="lf-arrow">→</span>
+          <div class="lf-item">
+            <span class="lf-label">게임 완료</span>
+            <span class="lf-val">63.8%</span>
+          </div>
+          <span class="lf-arrow">→</span>
+          <div class="lf-item">
+            <span class="lf-label">avg 판수 (P2)</span>
+            <span class="lf-val">4.74판</span>
+          </div>
+          <span class="lf-target" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <span>🟡 P1 첫터치 66.0% (목표 80%)</span>
+            <span>🟡 P2 판수 4.74 → 목표 5.5판</span>
+          </span>
+        </div>
+        <div class="live-meta">
+          <span>마지막 업데이트: 2026-05-21</span>
+          <span>·</span>
+          <span>PST v186 · n=47</span>
+          <span>·</span>
+          <span>Toss 플랫폼</span>
+        </div>
+      </div>
+      <span class="live-arrow">→</span>
+    </a>
+  </div>
 
   <!-- ─── 협업 & 배포 도구 ─────────────────────────── -->
   <div class="section" id="tools">
@@ -743,6 +869,87 @@
 
     </div><!-- /section-body -->
   </div><!-- /section#tools -->
+
+  <!-- ─── 업데이트 기획서 ──────────────────────────── -->
+  <div class="section" id="updates">
+    <div class="section-header update">
+      <span class="section-badge update">Updates</span>
+      <div class="section-info">
+        <div class="section-title">업데이트 기획서</div>
+        <div class="section-desc">라이브 데이터 기반 온보딩·밸런스 개선 스펙</div>
+      </div>
+      <span class="section-count">3 docs</span>
+    </div>
+    <div class="section-body">
+
+    <div class="subsection-label first">온보딩 개선</div>
+    <div class="card-group">
+
+    <a class="card update" href="19_p2_iter2_plan.html">
+      <div class="card-top">
+        <span class="card-title">P2: 인당 플레이 판수 개선 — 2차 이터레이션 제안</span>
+        <div class="card-badges">
+          <span class="status-inline" style="background:var(--update-bg);color:var(--update);border:1px solid var(--update-border);">진행중</span>
+          <span class="card-version">v1.0</span>
+        </div>
+      </div>
+      <div class="card-desc">1차 결과 기반 2차 제안. B1(4→5판 자동 진입), B2(5판+ 스트릭 보상 연출 강화), B3(1판 완료율 모니터링). 현재 3.84판 → 목표 4.8판+.</div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">판수 개선</span>
+          <span class="tag">P2</span>
+          <span class="tag">2차 이터레이션</span>
+        </div>
+        <span class="card-date">2026-05-18</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card update" href="18_p2_rounds_plan.html">
+      <div class="card-top">
+        <span class="card-title">P2: 인당 플레이 판수 개선 기획안 (1차)</span>
+        <div class="card-badges">
+          <span class="status-inline" style="background:#C6F6D5;color:#22543D;border:1px solid #68D391;">배포 완료</span>
+          <span class="card-version">v1.0</span>
+        </div>
+      </div>
+      <div class="card-desc">A1(3→4판 튜토 개편 +22.4%), A2(5레벨 완료율 +36.1%), A3(1→2판 로비 스킵) 배포 완료. v170~v177 합산 n=324. 평균 판수 4.04판.</div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">판수 개선</span>
+          <span class="tag">P2</span>
+          <span class="tag">퍼널 분석</span>
+          <span class="tag">배포 완료</span>
+        </div>
+        <span class="card-date">2026-05-14</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card update" href="16_onboarding_improvement_spec.html">
+      <div class="card-top">
+        <span class="card-title">P1: NRU 온보딩 개선 스펙 — 솔리테어 시티 저니</span>
+        <div class="card-badges">
+          <span class="status-inline" style="background:var(--update-bg);color:var(--update);border:1px solid var(--update-border);">진행중</span>
+          <span class="card-version">v1.1</span>
+        </div>
+      </div>
+      <div class="card-desc">퍼널 분석(2026-05-08~11) 기반 이탈 구간 특정. 튜토리얼 강화(힌트 속도·인덱스 애니메이션), 10초 미만 비정상 유저 원인 조사, 터치 트래킹 로그 추가 등 5개 항목 정의. 배포 마감 오늘 16:00.</div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">NRU 퍼널</span>
+          <span class="tag">튜토리얼</span>
+          <span class="tag">온보딩</span>
+          <span class="tag">버그조사</span>
+        </div>
+        <span class="card-date">2026-05-11</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    </div><!-- /.card-group -->
+    </div><!-- /section-body -->
+  </div><!-- /section#updates -->
 
   <!-- ① 기획서 -->
   <div class="section" id="planning">
