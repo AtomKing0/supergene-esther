@@ -1,1 +1,0 @@
-if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/supergene-esther/city2048/sw.js', { scope: '/supergene-esther/city2048/' })})}
