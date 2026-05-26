@@ -811,21 +811,12 @@ const HISTORY = [
   { date:'2026-05-15', label:'v177 A2·A3 (5/15~5/19)',      version:'177', updatedAt:'2026-05-20', period:'5/15~5/19',
     noise:true, desc:'[판수 증대] 강제 튜토 5레벨 확장 · 2레벨까지 클리어 후 즉시 진입 · TUT_0005_b 진입·클리어 확인',
     pst:{ players:1049, start:97.6, touch:34.9, finish:32.0, rounds:2.40, rvPerRound:0.0663 } },
-  { date:'2026-05-19', label:'v180~186 (5/19~5/21)',         version:'186', updatedAt:'2026-05-22', period:'5/19~5/21',
+  { date:'2026-05-19', label:'v180~186 (5/19~5/21)', verLabel:'v180~186', version:'186', updatedAt:'2026-05-22', period:'5/19~5/21',
     desc:'v186 5/21 추가 · 3일 누적 (5/21 ALL n=213 신규)',
     pst:{ players:487,  start:98.5, touch:57.7, finish:53.6, rounds:3.59, rvPerRound:0.1248 } },
-  { date:'2026-05-22', label:'v186 (5/22)',                   version:'186', updatedAt:'2026-05-23', period:'5/22',
-    noise:true, desc:'5/22 신규 · 스마트발송 노이즈 주의 (ALL 41.5%) · 오가닉 68.6% (n=35)',
-    pst:{ players:236, start:96.6, touch:41.5, finish:40.7, rounds:2.93, rvPerRound:0.1124 } },
-  { date:'2026-05-23', label:'v186 (5/23)',                   version:'186', updatedAt:'2026-05-26', period:'5/23',
-    noise:true, desc:'5/23 신규 · NRU 333명 · ALL 첫터치 43.5% (+2pp vs 5/22) · 오가닉 n=53 · ALL 판수 2.68판 · RV/게임 오가닉 0.1745',
-    pst:{ players:333, start:96.7, touch:43.5, finish:40.2, rounds:2.68, rvPerRound:0.1149 } },
-  { date:'2026-05-24', label:'v186 (5/24)',                   version:'186', updatedAt:'2026-05-26', period:'5/24',
-    minor:true, desc:'5/24 (일) · NRU 71명 · ALL 판수 3.18판 · 오가닉 2.68판 (n=63)',
-    pst:{ players:71, start:96.7, touch:43.5, finish:40.2, rounds:3.18, rvPerRound:0.0841 } },
-  { date:'2026-05-25', label:'v186 (5/25)',                   version:'186', updatedAt:'2026-05-26', period:'5/25',
-    latest:true, desc:'5/25 (월) · NRU 56명 · ALL 판수 5.29판 ↑ · 오가닉 5.44판 ✅ · RV/게임 오가닉 0.2041 급등',
-    pst:{ players:56, start:96.7, touch:43.5, finish:40.2, rounds:5.29, rvPerRound:0.2027 } },
+  { date:'2026-05-22', label:'v186 (5/22~5/25)',              verLabel:'v186', version:'186', updatedAt:'2026-05-26', period:'5/22~5/25',
+    latest:true, desc:'5/22~5/25 누적 · ALL n=696 · 첫터치 42.8% (5/22~23 실측) · 판수 3.03판 (5/25 단일 5.29판↑) · RV/게임 0.118',
+    pst:{ players:696, start:96.7, touch:42.8, finish:40.4, rounds:3.03, rvPerRound:0.1180 } },
 ];
 
 const REF = {
@@ -959,7 +950,7 @@ function render() {
       <th style="color:#9097b4;">n</th><th>게임 시작</th><th>첫터치</th>
       <th>완료율</th><th>vs v136</th></tr>`;
     HISTORY.forEach((h, i) => {
-      const vc = VCV[h.version] || '#9AA0B8';
+      const vc = VCV[h.verLabel ? h.verLabel.replace('v','') : h.version] || '#9AA0B8';
       const compRate = round1(h.pst.finish / h.pst.touch * 100);
       const d = h.pst.touch - bTouch;
       const cls = h.base ? 'td-base' : d > 0.4 ? 'td-pos' : d < -0.4 ? 'td-neg' : 'td-base';
@@ -973,7 +964,7 @@ function render() {
       const prefix = h.minor ? '↳ ' : '';
       const descRow = (h.desc && !h.minor) ? `<tr style="background:${h.noise?'#FFFBEB':'#F8F9FB'};"><td colspan="7" style="padding:2px 8px 5px ${indent+10}px;font-size:9px;color:#7A7F94;font-style:italic;">└ ${h.desc}</td></tr>` : '';
       tbody.innerHTML += `<tr style="background:${bgColor};">
-        <td style="font-weight:${fw};color:${vc};padding-left:${indent}px;">${prefix}v${h.version}${badge}${noiseTag}</td>
+        <td style="font-weight:${fw};color:${vc};padding-left:${indent}px;">${prefix}${h.verLabel||'v'+h.version}${badge}${noiseTag}</td>
         <td style="color:#9097b4;font-size:10px;">${h.period||h.date}</td>
         <td style="color:#9097b4;font-size:10px;">${h.pst.players}</td>
         <td>${pct(h.pst.start)}</td>
@@ -1111,7 +1102,7 @@ function updateEngagementChart() {
   const src    = orgMode ? DATA_ORGANIC_VER : HISTORY;
   const labels = orgMode
     ? DATA_ORGANIC_VER.map(r => r.ver === 'v180~186' ? ['v180~','186'] : r.ver)
-    : HISTORY.map(h => h.version ? `v${h.version}` : h.date);
+    : HISTORY.map(h => h.verLabel || (h.version ? `v${h.version}` : h.date));
   const n = src.length;
   const roundsData = orgMode
     ? DATA_ORGANIC_VER.map(r => r.rounds ?? null)
@@ -1227,7 +1218,7 @@ function updateCharts(p) {
     tSecond  = DATA_ORGANIC_VER.map(r => r.finish != null ? round1(r.finish / r.touch * 100) : null);
     n = DATA_ORGANIC_VER.length;
   } else {
-    tLabels  = HISTORY.map(h => h.version ? 'v' + h.version : h.date);
+    tLabels  = HISTORY.map(h => h.verLabel || (h.version ? 'v' + h.version : h.date));
     tTouches = HISTORY.map(h => h.pst.touch);
     tSecond  = HISTORY.map(h => round1(h.pst.finish / h.pst.touch * 100));
     n = HISTORY.length;
