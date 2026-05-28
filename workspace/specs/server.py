@@ -23,6 +23,11 @@ from pydantic import BaseModel
 
 BASE_DIR = Path(__file__).parent
 AGENTS_DIR = BASE_DIR.parent.parent / ".claude" / "agents"
+AGENT_DIRS = [
+    AGENTS_DIR,
+    Path("/Users/estherpark/esther_solitaire/solitaire-esther-1/.claude/agents"),
+    Path.home() / ".claude" / "agents",
+]
 
 SPREADSHEET_ID = "1oLbpsJjiDz0pdljaGBQznrSZcXA7aypFyJihnQ8_iiM"
 SHEETS_KEY_FILE = BASE_DIR.parent.parent / "solitaire-currency" / "pst-agent-187157cdb8b7.json"
@@ -137,9 +142,16 @@ async def sb_delete(table: str, request: Request):
 # ── 에이전트 ─────────────────────────────────────────────────
 
 def load_agent_system_prompt(agent_name: str) -> str:
-    agent_file = AGENTS_DIR / f"{agent_name}.md"
-    if not agent_file.exists():
-        raise FileNotFoundError(f"에이전트 파일 없음: {agent_file}")
+    checked = []
+    agent_file = None
+    for agent_dir in AGENT_DIRS:
+        candidate = agent_dir / f"{agent_name}.md"
+        checked.append(str(candidate))
+        if candidate.exists():
+            agent_file = candidate
+            break
+    if agent_file is None:
+        raise FileNotFoundError("에이전트 파일 없음: " + " | ".join(checked))
     content = agent_file.read_text(encoding="utf-8")
     content = re.sub(r"^---\n.*?\n---\n", "", content, flags=re.DOTALL)
     return content.strip()
@@ -147,9 +159,11 @@ def load_agent_system_prompt(agent_name: str) -> str:
 
 @app.get("/api/agents")
 async def list_agents():
-    if not AGENTS_DIR.exists():
-        return {"agents": []}
-    return {"agents": [f.stem for f in sorted(AGENTS_DIR.glob("*.md"))]}
+    agents = set()
+    for agent_dir in AGENT_DIRS:
+        if agent_dir.exists():
+            agents.update(f.stem for f in agent_dir.glob("*.md"))
+    return {"agents": sorted(agents)}
 
 
 # ── Google Sheets 컨텍스트 ────────────────────────────────────
