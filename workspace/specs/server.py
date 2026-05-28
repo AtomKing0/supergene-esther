@@ -251,19 +251,11 @@ class GPTRequest(BaseModel):
     model: str | None = None
 
 
-def _strip_sse_prefix(line: str) -> str:
-    return line[5:].strip() if line.startswith("data:") else line.strip()
-
-
 @app.post("/api/gpt")
 async def run_gpt(req: GPTRequest):
     prompt = req.prompt.strip()
     if not prompt:
         raise HTTPException(status_code=400, detail="프롬프트를 입력해주세요")
-
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY 미설정")
 
     instructions = ""
     if req.agent:
@@ -276,54 +268,49 @@ async def run_gpt(req: GPTRequest):
         sheets = await _get_sheets_context()
         prompt = _build_spec_context(BASE_DIR.parent.parent, sheets) + "\n\n" + prompt
 
-    payload = {
-        "model": req.model or os.environ.get("OPENAI_MODEL", "gpt-5"),
-        "input": prompt,
-        "stream": True,
-        "stream_options": {"include_obfuscation": False},
-    }
     if instructions:
-        payload["instructions"] = instructions
+        prompt = "[에이전트 지침]\n" + instructions + "\n\n[요청]\n" + prompt
+
+    cmd = [
+        "codex",
+        "exec",
+        "--json",
+        "-s",
+        os.environ.get("CODEX_SANDBOX", "workspace-write"),
+        "-C",
+        str(BASE_DIR.parent.parent),
+    ]
+    model = req.model or os.environ.get("CODEX_MODEL")
+    if model:
+        cmd += ["-m", model]
+    cmd.append(prompt)
 
     async def stream_output():
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        }
-        try:
-            async with httpx.AsyncClient(timeout=None) as client:
-                async with client.stream(
-                    "POST",
-                    "https://api.openai.com/v1/responses",
-                    headers=headers,
-                    json=payload,
-                ) as res:
-                    if res.status_code >= 400:
-                        body = await res.aread()
-                        yield f"⚠️ GPT API 오류 ({res.status_code}): {body.decode('utf-8', errors='replace')}"
-                        return
-
-                    async for line in res.aiter_lines():
-                        if not line or not line.startswith("data:"):
-                            continue
-                        data = _strip_sse_prefix(line)
-                        if data == "[DONE]":
-                            break
-                        try:
-                            event = json.loads(data)
-                        except json.JSONDecodeError:
-                            continue
-                        event_type = event.get("type")
-                        if event_type == "response.output_text.delta":
-                            yield event.get("delta", "")
-                        elif event_type == "error":
-                            err = event.get("error") or {}
-                            yield f"\n\n⚠️ {err.get('message', 'GPT 스트리밍 오류')}"
-                        elif event_type == "response.failed":
-                            err = (event.get("response") or {}).get("error") or {}
-                            yield f"\n\n⚠️ {err.get('message', 'GPT 응답 생성 실패')}"
-        except Exception as e:
-            yield f"⚠️ GPT 서버 연결 실패: {e}"
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.DEVNULL,
+            cwd=str(BASE_DIR.parent.parent),
+        )
+        async for raw in proc.stdout:
+            line = raw.decode("utf-8", errors="replace").strip()
+            if not line:
+                continue
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if event.get("type") == "item.completed":
+                item = event.get("item") or {}
+                if item.get("type") == "agent_message" and item.get("text"):
+                    yield item["text"]
+            elif event.get("type") == "error":
+                yield "\n\n⚠️ " + str(event.get("message") or event)
+        await proc.wait()
+        if proc.returncode != 0:
+            err = (await proc.stderr.read()).decode("utf-8", errors="replace").strip()
+            yield "\n\n⚠️ GPT CLI 오류" + (": " + err if err else "")
 
     return StreamingResponse(stream_output(), media_type="text/plain; charset=utf-8")
 
