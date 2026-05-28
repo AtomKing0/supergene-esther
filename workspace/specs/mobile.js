@@ -247,7 +247,7 @@
     bindHandles();
   }
 
-  /* ── 4. 스펙 상세 페이지: 인라인 채팅 FAB ── */
+  /* ── 4. 스펙 상세 페이지: 인라인 GPT 채팅 FAB ── */
   function initSpecChat() {
     if (!document.querySelector('.sidenav')) return; // 스펙 페이지만
     if (document.getElementById('specList'))  return; // 인덱스 제외
@@ -256,7 +256,7 @@
     var fab = document.createElement('button');
     fab.className = 'claude-fab';
     fab.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:450;width:50px;height:50px;border-radius:50%;border:none;background:var(--accent,#a78bfa);color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.4)';
-    fab.title = 'Claude에게 아이디어 말하기';
+    fab.title = 'GPT와 대화하기';
     fab.innerHTML = '✨';
     document.body.appendChild(fab);
 
@@ -292,7 +292,7 @@
     overlay.innerHTML = [
       '<div id="specChatModal" onclick="event.stopPropagation()">',
       '  <div id="specChatHeader">',
-      '    <span style="font-weight:700;font-size:14px">✨ 아이디어 말하기</span>',
+      '    <span style="font-weight:700;font-size:14px">✨ GPT와 대화하기</span>',
       '    <span style="font-size:11px;color:var(--text-dim,#64748b)">⚡ content-spec-writer</span>',
       '    <button id="specChatClose" style="background:none;border:none;color:var(--text-dim,#64748b);font-size:18px;cursor:pointer;padding:0 4px">✕</button>',
       '  </div>',
@@ -367,7 +367,7 @@
       var prompt = '[대상 spec 파일: ' + specFile + ']\n';
       if (_scHistory.length) {
         prompt += '[이전 대화]\n' + _scHistory.map(function(m) {
-          return (m.role === 'user' ? '사용자: ' : 'Claude: ') + m.text;
+          return (m.role === 'user' ? '사용자: ' : 'GPT: ') + m.text;
         }).join('\n\n') + '\n\n';
       }
       prompt += '[수정 요청]\n' + userText;
@@ -384,7 +384,7 @@
       typingWrap.innerHTML = '<div class="sc-bubble"><div class="sc-dots"><span></span><span></span><span></span></div></div>';
       document.getElementById('specChatHistory').appendChild(typingWrap);
 
-      fetch('/api/claude', {
+      fetch('/api/gpt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: prompt, agent: 'content-spec-writer' }),

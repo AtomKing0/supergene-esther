@@ -215,7 +215,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border);border-radius:3px; }
 
-/* ── Claude FAB ── */
+/* ── GPT FAB ── */
 .claude-fab { position:fixed;bottom:24px;right:24px;z-index:var(--z-float);width:56px;height:56px;border-radius:var(--radius-full);border:none;background:var(--accent);color:#fff;font-size:24px;cursor:pointer;box-shadow:var(--shadow-md);display:flex;align-items:center;justify-content:center;transition:all var(--dur-base); }
 .claude-fab:hover { transform:scale(1.08); }
 .claude-result { white-space:pre-wrap;font-size:var(--text-sm);line-height:1.8;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;max-height:320px;overflow-y:auto; }
@@ -382,7 +382,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
        ondragover="onDragOver(event)" ondrop="onDrop(event)"></div>
   <div class="empty-state" id="emptyState" style="display:none;">
     <div class="icon">📄</div>
-    <p>아직 기획서가 없습니다.<br>Claude에게 아이디어를 던지면<br>기획서 파일을 만들어드립니다.</p>
+    <p>아직 기획서가 없습니다.<br>GPT와 아이디어를 나누며<br>기획 방향을 정리해보세요.</p>
   </div>
 </div>
 
@@ -1377,10 +1377,10 @@ initFromSupabase();
 
 <script src="memo.js"></script>
 
-<!-- ── Claude FAB ── -->
-<button class="claude-fab" onclick="openClaudeModal()" title="Claude에게 물어보기">✨</button>
+<!-- ── GPT FAB ── -->
+<button class="claude-fab" onclick="openGptModal()" title="GPT와 대화하기">✨</button>
 
-<!-- ── Claude 모달 ── -->
+<!-- ── GPT 모달 ── -->
 <style>
 #claudeOverlay .sheet-modal {
   display: flex;
@@ -1489,7 +1489,7 @@ initFromSupabase();
 <div class="sheet-overlay" id="claudeOverlay" onclick="closeClaudeModal(event)">
   <div class="sheet-modal" onclick="event.stopPropagation()">
     <div class="sheet-header" style="flex-shrink:0">
-      <div class="sheet-title">✨ Claude에게 물어보기</div>
+      <div class="sheet-title">✨ GPT와 대화하기</div>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:11px;color:var(--text-dim)">⚡ content-spec-writer</span>
         <button class="sheet-close" onclick="closeClaudeModal()">✕</button>
@@ -1592,12 +1592,16 @@ function handleClaudeKey(e) {
   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submitClaude(); }
 }
 
+function openGptModal() {
+  openClaudeModal();
+}
+
 async function submitClaude() {
   const ta = document.getElementById('claudePrompt');
   const userText = ta.value.trim();
   if (!userText) return;
 
-  const apiBase = 'http://localhost:8081';
+  const apiBase = window.location.protocol === 'file:' ? 'http://localhost:8081' : '';
 
   const btn = document.getElementById('claudeSubmit');
   btn.disabled = true;
@@ -1612,13 +1616,13 @@ async function submitClaude() {
   let prompt = userText;
   if (_chatHistory.length > 1) {
     const ctx = _chatHistory.slice(0, -1).map(m =>
-      (m.role === 'user' ? '사용자: ' : 'Claude: ') + m.text
+      (m.role === 'user' ? '사용자: ' : 'GPT: ') + m.text
     ).join('\n\n');
     prompt = '[이전 대화]\n' + ctx + '\n\n[현재 질문]\n' + userText;
   }
 
   try {
-    const res = await fetch(apiBase + '/api/claude', {
+    const res = await fetch(apiBase + '/api/gpt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, agent: 'content-spec-writer' }),
@@ -1651,7 +1655,7 @@ async function submitClaude() {
     }
 
     _chatHistory.push({ role: 'ai', text: full });
-    // 새 spec 파일이 생성됐으면 모달 닫고 해당 페이지로 이동
+    // 응답에 spec 파일명이 포함됐으면 해당 페이지로 이동
     const specMatch = full.match(/spec-0*(\d+)-[\w-]+\.html/);
     if (specMatch) {
       bubble.innerHTML += '<br><br><small style="opacity:0.6">⏳ 기획서로 이동 중...</small>';
@@ -1668,6 +1672,11 @@ async function submitClaude() {
     document.getElementById('claudePrompt').focus();
   }
 }
+
+// 이전 onclick/모바일 스크립트 호환용 alias.
+window.openClaudeModal = openClaudeModal;
+window.openGptModal = openGptModal;
+window.submitClaude = submitClaude;
 </script>
 </body>
 </html>
