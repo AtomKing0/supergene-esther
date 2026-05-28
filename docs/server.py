@@ -349,19 +349,31 @@ class Handler(SimpleHTTPRequestHandler):
 
                 cmd.append(prompt)
                 env = {k: v for k, v in os.environ.items() if k != 'ANTHROPIC_API_KEY'}
-                result = _sp.run(cmd, capture_output=True, text=True, cwd=ROOT, env=env,
-                                 stdin=_sp.DEVNULL)
-                output = result.stdout
-                if result.returncode != 0 and result.stderr:
-                    output += f'\n\n⚠️ {result.stderr.strip()}'
-
-                out_bytes = output.encode('utf-8')
+                proc = _sp.Popen(cmd, stdout=_sp.PIPE, stderr=_sp.PIPE,
+                                 stdin=_sp.DEVNULL, cwd=ROOT, env=env)
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/plain; charset=utf-8')
-                self.send_header('Content-Length', len(out_bytes))
+                self.send_header('Transfer-Encoding', 'chunked')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
-                self.wfile.write(out_bytes)
+                while True:
+                    chunk = proc.stdout.read(256)
+                    if not chunk:
+                        break
+                    self.wfile.write(f'{len(chunk):x}\r\n'.encode())
+                    self.wfile.write(chunk)
+                    self.wfile.write(b'\r\n')
+                    self.wfile.flush()
+                proc.wait()
+                if proc.returncode != 0:
+                    err = proc.stderr.read().decode('utf-8', errors='replace').strip()
+                    if err:
+                        msg = f'\n\n⚠️ {err}'.encode('utf-8')
+                        self.wfile.write(f'{len(msg):x}\r\n'.encode())
+                        self.wfile.write(msg)
+                        self.wfile.write(b'\r\n')
+                self.wfile.write(b'0\r\n\r\n')
+                self.wfile.flush()
 
             else:
                 self._json(404, {'ok': False, 'error': f'unknown path: {self.path}'})
