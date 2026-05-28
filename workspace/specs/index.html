@@ -1444,6 +1444,39 @@ initFromSupabase();
   border-top: 1px solid var(--border);
   background: var(--surface);
 }
+#chatAttachPreview {
+  display: none;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 14px 0;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.chat-attach-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 180px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 11px;
+}
+.chat-attach-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-attach-chip button {
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
 #claudePrompt {
   flex: 1;
   min-height: 40px;
@@ -1459,6 +1492,20 @@ initFromSupabase();
   outline: none;
   line-height: 1.5;
   overflow-y: auto;
+}
+#chatAttachBtn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 #claudeSubmit {
   flex-shrink: 0;
@@ -1496,7 +1543,10 @@ initFromSupabase();
       </div>
     </div>
     <div id="chatHistory"></div>
+    <div id="chatAttachPreview"></div>
     <div id="chatInputArea">
+      <button id="chatAttachBtn" onclick="document.getElementById('chatImageInput').click()" title="이미지 첨부">＋</button>
+      <input id="chatImageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple style="display:none" onchange="handleChatImages(this.files)">
       <textarea id="claudePrompt" placeholder="메시지 입력… (Cmd+Enter 전송)" rows="1"
         oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px'"
         onkeydown="handleClaudeKey(event)"></textarea>
@@ -1507,6 +1557,7 @@ initFromSupabase();
 
 <script>
 var _chatHistory = [];
+var _chatImages = [];
 
 function mdToHtml(text) {
   return text
@@ -1542,6 +1593,49 @@ function showTyping() {
 function removeTyping() {
   const t = document.getElementById('chatTyping');
   if (t) t.remove();
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderChatImagePreview() {
+  const wrap = document.getElementById('chatAttachPreview');
+  if (!wrap) return;
+  if (!_chatImages.length) {
+    wrap.style.display = 'none';
+    wrap.innerHTML = '';
+    return;
+  }
+  wrap.style.display = 'flex';
+  wrap.innerHTML = _chatImages.map((img, i) =>
+    '<div class="chat-attach-chip"><span>📎 ' + mdToHtml(img.name) + '</span><button onclick="removeChatImage(' + i + ')" title="첨부 제거">×</button></div>'
+  ).join('');
+}
+
+function removeChatImage(idx) {
+  _chatImages.splice(idx, 1);
+  renderChatImagePreview();
+}
+
+async function handleChatImages(files) {
+  const incoming = Array.from(files || []);
+  const room = Math.max(0, 4 - _chatImages.length);
+  for (const file of incoming.slice(0, room)) {
+    if (!file.type.startsWith('image/')) continue;
+    if (file.size > 8 * 1024 * 1024) {
+      appendMsg('ai', '⚠️ 이미지 용량은 8MB 이하만 가능합니다: ' + file.name);
+      continue;
+    }
+    _chatImages.push({ name: file.name, data: await fileToDataUrl(file) });
+  }
+  document.getElementById('chatImageInput').value = '';
+  renderChatImagePreview();
 }
 
 let _claudeLockY = 0;
@@ -1599,7 +1693,8 @@ function openGptModal() {
 async function submitClaude() {
   const ta = document.getElementById('claudePrompt');
   const userText = ta.value.trim();
-  if (!userText) return;
+  const images = _chatImages.slice();
+  if (!userText && !images.length) return;
 
   const apiBase = window.location.protocol === 'file:' ? 'http://localhost:8081' : '';
 
@@ -1607,9 +1702,11 @@ async function submitClaude() {
   btn.disabled = true;
   ta.value = '';
   ta.style.height = 'auto';
+  _chatImages = [];
+  renderChatImagePreview();
 
   _chatHistory.push({ role: 'user', text: userText });
-  appendMsg('user', userText);
+  appendMsg('user', userText + (images.length ? '\n\n📎 이미지 ' + images.length + '장 첨부' : ''));
   showTyping();
 
   // 대화 기록을 컨텍스트로 포함
@@ -1625,7 +1722,7 @@ async function submitClaude() {
     const res = await fetch(apiBase + '/api/gpt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, agent: 'content-spec-writer' }),
+      body: JSON.stringify({ prompt, agent: 'content-spec-writer', images }),
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));

@@ -1,9 +1,12 @@
 import asyncio
+import base64
 import json
+import mimetypes
 import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -249,13 +252,45 @@ class GPTRequest(BaseModel):
     prompt: str
     agent: str | None = None
     model: str | None = None
+    images: list[dict[str, str]] = []
+
+
+def _decode_gpt_images(images: list[dict[str, str]]) -> list[str]:
+    if len(images) > 4:
+        raise HTTPException(status_code=400, detail="이미지는 최대 4장까지 첨부할 수 있습니다")
+
+    paths: list[str] = []
+    for idx, image in enumerate(images):
+        name = image.get("name") or f"image-{idx + 1}.png"
+        data_url = image.get("data") or ""
+        match = re.match(r"^data:(image/(?:png|jpeg|jpg|webp|gif));base64,(.+)$", data_url, re.DOTALL)
+        if not match:
+            raise HTTPException(status_code=400, detail=f"지원하지 않는 이미지 형식입니다: {name}")
+
+        mime, encoded = match.groups()
+        try:
+            raw = base64.b64decode(encoded, validate=True)
+        except Exception:
+            raise HTTPException(status_code=400, detail=f"이미지 디코딩 실패: {name}")
+        if len(raw) > 8 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail=f"이미지 용량은 8MB 이하만 가능합니다: {name}")
+
+        ext = mimetypes.guess_extension(mime.replace("jpg", "jpeg")) or ".png"
+        fd, path = tempfile.mkstemp(prefix="spec-chat-", suffix=ext)
+        with os.fdopen(fd, "wb") as f:
+            f.write(raw)
+        paths.append(path)
+    return paths
 
 
 @app.post("/api/gpt")
 async def run_gpt(req: GPTRequest):
     prompt = req.prompt.strip()
+    image_paths = _decode_gpt_images(req.images)
+    if not prompt and not image_paths:
+        raise HTTPException(status_code=400, detail="메시지 또는 이미지를 입력해주세요")
     if not prompt:
-        raise HTTPException(status_code=400, detail="프롬프트를 입력해주세요")
+        prompt = "첨부 이미지를 분석해줘."
 
     instructions = ""
     if req.agent:
@@ -283,34 +318,44 @@ async def run_gpt(req: GPTRequest):
     model = req.model or os.environ.get("CODEX_MODEL")
     if model:
         cmd += ["-m", model]
+    for path in image_paths:
+        cmd += ["-i", path]
+    cmd.append("--")
     cmd.append(prompt)
 
     async def stream_output():
-        proc = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            stdin=asyncio.subprocess.DEVNULL,
-            cwd=str(BASE_DIR.parent.parent),
-        )
-        async for raw in proc.stdout:
-            line = raw.decode("utf-8", errors="replace").strip()
-            if not line:
-                continue
-            try:
-                event = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if event.get("type") == "item.completed":
-                item = event.get("item") or {}
-                if item.get("type") == "agent_message" and item.get("text"):
-                    yield item["text"]
-            elif event.get("type") == "error":
-                yield "\n\n⚠️ " + str(event.get("message") or event)
-        await proc.wait()
-        if proc.returncode != 0:
-            err = (await proc.stderr.read()).decode("utf-8", errors="replace").strip()
-            yield "\n\n⚠️ GPT CLI 오류" + (": " + err if err else "")
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                stdin=asyncio.subprocess.DEVNULL,
+                cwd=str(BASE_DIR.parent.parent),
+            )
+            async for raw in proc.stdout:
+                line = raw.decode("utf-8", errors="replace").strip()
+                if not line:
+                    continue
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if event.get("type") == "item.completed":
+                    item = event.get("item") or {}
+                    if item.get("type") == "agent_message" and item.get("text"):
+                        yield item["text"]
+                elif event.get("type") == "error":
+                    yield "\n\n⚠️ " + str(event.get("message") or event)
+            await proc.wait()
+            if proc.returncode != 0:
+                err = (await proc.stderr.read()).decode("utf-8", errors="replace").strip()
+                yield "\n\n⚠️ GPT CLI 오류" + (": " + err if err else "")
+        finally:
+            for path in image_paths:
+                try:
+                    os.unlink(path)
+                except OSError:
+                    pass
 
     return StreamingResponse(stream_output(), media_type="text/plain; charset=utf-8")
 

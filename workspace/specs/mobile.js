@@ -268,6 +268,10 @@
       '#specChatModal{width:100%;max-width:700px;max-height:70vh;background:var(--surface,#1a1d27);border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden}',
       '#specChatHeader{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border,#2e3347);flex-shrink:0}',
       '#specChatHistory{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}',
+      '#specChatAttachPreview{display:none;gap:6px;flex-wrap:wrap;padding:8px 12px 0;border-top:1px solid var(--border,#2e3347);background:var(--surface,#1a1d27)}',
+      '.sc-attach-chip{display:inline-flex;align-items:center;gap:6px;max-width:180px;padding:4px 8px;border:1px solid var(--border,#2e3347);border-radius:999px;background:var(--surface2,#222636);color:var(--text-dim,#64748b);font-size:11px}',
+      '.sc-attach-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.sc-attach-chip button{border:0;background:transparent;color:var(--text-dim,#64748b);font-size:13px;width:auto;height:auto;padding:0;cursor:pointer}',
       '.sc-msg{max-width:85%;display:flex;flex-direction:column}',
       '.sc-msg.user{align-self:flex-end;align-items:flex-end}',
       '.sc-msg.ai{align-self:flex-start}',
@@ -297,7 +301,10 @@
       '    <button id="specChatClose" style="background:none;border:none;color:var(--text-dim,#64748b);font-size:18px;cursor:pointer;padding:0 4px">✕</button>',
       '  </div>',
       '  <div id="specChatHistory"></div>',
+      '  <div id="specChatAttachPreview"></div>',
       '  <div id="specChatInput">',
+      '    <button id="specChatAttachBtn" onclick="document.getElementById(\'specChatImageInput\').click()" title="이미지 첨부">＋</button>',
+      '    <input id="specChatImageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple style="display:none" onchange="specChatImagesChanged(this.files)">',
       '    <textarea id="specChatTa" placeholder="아이디어를 자유롭게 말해보세요… (Cmd+Enter)" rows="1"',
       '      oninput="this.style.height=\'auto\';this.style.height=Math.min(this.scrollHeight,100)+\'px\'"',
       '      onkeydown="if(event.key===\'Enter\'&&(event.metaKey||event.ctrlKey)){event.preventDefault();specChatSend()}"></textarea>',
@@ -335,6 +342,7 @@
     document.getElementById('specChatClose').addEventListener('click', closeChat);
 
     var _scHistory = [];
+    var _scImages = [];
 
     function mdToHtml(t) {
       return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -356,11 +364,56 @@
       return bub;
     }
 
+    function scFileToDataUrl(file) {
+      return new Promise(function(resolve, reject) {
+        var reader = new FileReader();
+        reader.onload = function() { resolve(reader.result); };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderScImages() {
+      var wrap = document.getElementById('specChatAttachPreview');
+      if (!wrap) return;
+      if (!_scImages.length) {
+        wrap.style.display = 'none';
+        wrap.innerHTML = '';
+        return;
+      }
+      wrap.style.display = 'flex';
+      wrap.innerHTML = _scImages.map(function(img, i) {
+        return '<div class="sc-attach-chip"><span>📎 ' + mdToHtml(img.name) + '</span><button onclick="specChatRemoveImage(' + i + ')" title="첨부 제거">×</button></div>';
+      }).join('');
+    }
+
+    window.specChatRemoveImage = function(idx) {
+      _scImages.splice(idx, 1);
+      renderScImages();
+    };
+
+    window.specChatImagesChanged = async function(files) {
+      var incoming = Array.prototype.slice.call(files || []);
+      var room = Math.max(0, 4 - _scImages.length);
+      for (var i = 0; i < incoming.slice(0, room).length; i++) {
+        var file = incoming[i];
+        if (!file.type || file.type.indexOf('image/') !== 0) continue;
+        if (file.size > 8 * 1024 * 1024) {
+          scAppend('ai', '⚠️ 이미지 용량은 8MB 이하만 가능합니다: ' + file.name);
+          continue;
+        }
+        _scImages.push({ name: file.name, data: await scFileToDataUrl(file) });
+      }
+      document.getElementById('specChatImageInput').value = '';
+      renderScImages();
+    };
+
     window.specChatSend = function () {
       var ta  = document.getElementById('specChatTa');
       var btn = document.getElementById('specChatBtn');
       var userText = ta.value.trim();
-      if (!userText || btn.disabled) return;
+      var images = _scImages.slice();
+      if ((!userText && !images.length) || btn.disabled) return;
 
       // 현재 spec 파일명을 컨텍스트로 포함
       var specFile = window.location.pathname.split('/').pop();
@@ -373,8 +426,10 @@
       prompt += '[수정 요청]\n' + userText;
 
       _scHistory.push({ role: 'user', text: userText });
-      scAppend('user', userText);
+      scAppend('user', userText + (images.length ? '\n\n📎 이미지 ' + images.length + '장 첨부' : ''));
       ta.value = ''; ta.style.height = 'auto';
+      _scImages = [];
+      renderScImages();
       btn.disabled = true;
 
       // 타이핑 인디케이터
@@ -387,7 +442,7 @@
       fetch('/api/gpt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: prompt, agent: 'content-spec-writer' }),
+        body: JSON.stringify({ prompt: prompt, agent: 'content-spec-writer', images: images }),
       }).then(function (res) {
         var t = document.getElementById('scTyping');
         if (t) t.remove();
