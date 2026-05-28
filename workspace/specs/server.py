@@ -11,6 +11,7 @@ import httpx
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -39,6 +40,12 @@ async def lifespan(application: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ── 모바일 CSS/JS 자동 주입 미들웨어 ──────────────────────────
 
@@ -244,8 +251,7 @@ async def run_claude(req: ClaudeRequest):
         raise HTTPException(status_code=400, detail="프롬프트를 입력해주세요")
 
     env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
-    cmd = ["claude", "-p", "--model", "sonnet",
-           "--allowedTools", "Bash,Read,Write,Edit,Glob,Grep"]
+    cmd = ["claude", "-p", "--model", "sonnet"]
 
     if req.agent:
         try:
