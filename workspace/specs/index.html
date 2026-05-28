@@ -1593,10 +1593,7 @@ async function submitClaude() {
   if (!userText) return;
 
   const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
-  if (!isLocal) {
-    appendMsg('ai', '⚠️ Claude 기능은 로컬 서버(localhost:8080)에서만 사용 가능합니다.\n\n터미널에서 `./run.sh`를 실행한 후 http://localhost:8080 으로 접속해 주세요.');
-    return;
-  }
+  const apiBase = isLocal ? '' : 'http://localhost:8080';
 
   const btn = document.getElementById('claudeSubmit');
   btn.disabled = true;
@@ -1617,7 +1614,7 @@ async function submitClaude() {
   }
 
   try {
-    const res = await fetch('/api/claude', {
+    const res = await fetch(apiBase + '/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, agent: 'content-spec-writer' }),
