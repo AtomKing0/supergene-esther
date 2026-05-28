@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="spec-created" content="2026. 5. 28.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPEC-023 · 시티 꾸미기 덱 이스터에그</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--surface3:#2a2f45;
+  --border:#2e3347;--text:#e2e8f0;--text2:#94a3b8;--text-dim:#64748b;
+  --accent:#2dd4bf;--accent-bg:rgba(45,212,191,.15);--accent-border:rgba(45,212,191,.35);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.12);--purple-border:rgba(167,139,250,.3);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,.12);--teal-border:rgba(45,212,191,.3);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.12);--blue-border:rgba(96,165,250,.3);
+  --green:#4ade80;--green-bg:rgba(74,222,128,.12);--green-border:rgba(74,222,128,.25);
+  --yellow:#fbbf24;--yellow-bg:rgba(251,191,36,.12);--yellow-border:rgba(251,191,36,.3);
+  --red:#f87171;--red-bg:rgba(248,113,113,.12);--red-border:rgba(248,113,113,.25);
+  --pink:#f472b6;--pink-bg:rgba(244,114,182,.12);--pink-border:rgba(244,114,182,.3);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
+  --text-xs:12px;--text-sm:13px;--text-base:14px;--text-lg:15px;
+  --dur-base:.18s;
+}
+[data-theme=light]{
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--text:#0f172a;--text2:#475569;--text-dim:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--text-lg);line-height:1.7;display:flex}
+.sidenav{position:fixed;left:0;top:0;height:100vh;width:200px;background:var(--surface);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;gap:4px;z-index:200}
+.sidenav-logo{padding:0 20px 20px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:var(--text-sm);color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all var(--dur-base)}
+.nav-item:hover,.nav-item.active{color:var(--text);border-left-color:var(--accent);background:var(--accent-bg)}
+.nav-num{font-size:10px;font-weight:700;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.n1{background:var(--purple-bg);color:var(--purple)}.n2{background:var(--teal-bg);color:var(--teal)}.n3{background:var(--blue-bg);color:var(--blue)}
+.main{margin-left:200px;flex:1;padding:60px 56px 80px;max-width:940px}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-toggle:hover{transform:scale(1.1)}
+.back-btn{position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;text-decoration:none}
+.back-btn:hover{color:var(--text)}
+.spec-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;margin-bottom:14px}
+h1{font-size:26px;font-weight:800;margin-bottom:8px;line-height:1.3}
+.subtitle{color:var(--text2);font-size:var(--text-base);margin-bottom:28px}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600}
+.badge-teal{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+.badge-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.badge-yellow{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border)}
+.badge-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:40px}
+.kpi-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+[data-theme=light] .kpi-card{background:rgba(0,0,0,.03)}
+.kpi-label{font-size:.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.kpi-value{font-size:1.7rem;font-weight:800;line-height:1}
+.kpi-sub{font-size:.75rem;color:var(--text2);margin-top:4px}
+section{padding:52px 0;border-bottom:1px solid var(--border)}
+section:last-child{border-bottom:none}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.section-num{width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;flex-shrink:0}
+.section-num-1{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.section-num-2{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+.section-num-3{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.section-meta{display:flex;flex-direction:column;gap:2px}
+.section-title{font-size:1.45rem;font-weight:700;line-height:1.2}
+.section-audience{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px}
+.aud-all{background:var(--purple-bg);color:var(--purple)}.aud-art{background:var(--teal-bg);color:var(--teal)}.aud-dev{background:var(--blue-bg);color:var(--blue)}
+h3{font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2)}
+p{margin-bottom:14px;color:var(--text2);font-size:.93rem}
+p strong{color:var(--text)}
+table{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:.84rem}
+thead th{background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border)}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+tbody tr:hover td{background:var(--surface2)}
+tbody td:first-child{color:var(--text);font-weight:600}
+ul,ol{padding-left:1.4em;color:var(--text2);font-size:.92rem}
+li{margin-bottom:6px}li strong{color:var(--text)}
+code{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:var(--text-xs);font-family:monospace;color:var(--accent)}
+.callout{border-radius:10px;padding:16px 20px;margin:20px 0;font-size:.88rem}
+.callout-teal{background:var(--teal-bg);border-left:3px solid var(--teal)}
+.callout-yellow{background:var(--yellow-bg);border-left:3px solid var(--yellow)}
+.callout-blue{background:var(--blue-bg);border-left:3px solid var(--blue)}
+.callout strong{color:var(--text)}
+.flow-step{display:flex;gap:14px;margin-bottom:14px;align-items:flex-start}
+.flow-dot{width:28px;height:28px;border-radius:50%;background:var(--teal-bg);border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--teal);flex-shrink:0;margin-top:2px}
+.flow-body{flex:1}.flow-body strong{color:var(--text);font-size:.9rem}.flow-body p{margin:2px 0 0;font-size:.84rem;color:var(--text2)}
+.deck-chip{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:2px 8px;font-size:11px;color:var(--accent);font-weight:700}
+.bs-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin:16px 0}
+.bs-row{display:flex;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.86rem;flex-wrap:wrap}
+.bs-row:last-child{border-bottom:none}
+.bs-var{font-family:monospace;color:var(--blue);font-weight:600;min-width:260px}.bs-val{font-family:monospace;color:var(--green);font-size:.8rem;min-width:90px}.bs-desc{color:var(--text2);font-size:.82rem;flex:1}
+@media(max-width:760px){body{display:block}.sidenav{display:none}.main{margin-left:0;padding:54px 18px 80px}.back-btn{right:64px}.kpi-grid{grid-template-columns:1fr 1fr}table{font-size:.78rem}}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<nav class="sidenav">
+  <div class="sidenav-logo">SPEC-023</div>
+  <a class="nav-item" href="#s1"><span class="nav-num n1">1</span>기획 의도</a>
+  <a class="nav-item" href="#s2"><span class="nav-num n2">2</span>이스터에그 목록</a>
+  <a class="nav-item" href="#s3"><span class="nav-num n3">3</span>개발 스펙</a>
+</nav>
+<main class="main">
+  <div><span class="spec-badge">SPEC-023</span></div>
+  <h1>시티 꾸미기 덱 이스터에그</h1>
+  <p class="subtitle">도시 꾸미기 화면의 특정 오브젝트를 터치하면 해당 도시 테마의 덱 스킨이 해금되는 숨은 수집 콘텐츠. 베니스 커플 터치 → 하트 덱 해금 같은 작은 발견감을 여러 도시로 확장한다.</p>
+
+  <div class="badge-row">
+    <span id="hero-tag" class="badge badge-teal">📦 콘텐츠</span>
+    <span id="hero-priority" class="badge badge-yellow">🟡 보통 우선순위</span>
+    <span id="hero-status" class="badge badge-blue">🔵 검토중</span>
+    <span class="badge badge-green">Agent: content-spec-writer</span>
+    <span class="badge badge-teal">Review: PM</span>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">초기 적용 도시</div><div class="kpi-value" style="color:var(--teal)">6개</div><div class="kpi-sub">런칭/초기 업데이트 도시 우선</div></div>
+    <div class="kpi-card"><div class="kpi-label">보상 타입</div><div class="kpi-value" style="color:var(--purple)">덱 스킨</div><div class="kpi-sub">재화 보상 없음, 수집 보상만</div></div>
+    <div class="kpi-card"><div class="kpi-label">트리거</div><div class="kpi-value" style="color:var(--yellow)">숨은 터치</div><div class="kpi-sub">도시 완성 후 1회 해금</div></div>
+    <div class="kpi-card"><div class="kpi-label">목표 지표</div><div class="kpi-value" style="color:var(--green)">탐색률</div><div class="kpi-sub">꾸미기 화면 체류/재방문 증가</div></div>
+  </div>
+
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">1</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도 &amp; 콘텐츠 흐름</div>
+      <span class="section-audience aud-all">제품 × 아트 공통</span>
+    </div>
+  </div>
+
+  <h3>왜 만드는가</h3>
+  <p>도시 꾸미기는 유저가 해머를 소진해 시각적으로 완성감을 얻는 메타 콘텐츠지만, 완성 후에는 다시 만질 이유가 약합니다. <strong>덱 이스터에그</strong>는 완성된 도시 안에 작은 상호작용과 수집 보상을 심어서, 유저가 도시를 다시 둘러보게 만드는 장치입니다.</p>
+  <p>보상은 밸런스에 영향을 주지 않는 카드 뒷면 스킨으로 제한합니다. 즉시 사용 가능한 실용 보상은 아니지만, 발견 순간의 만족감과 덱 컬렉션 진입 동기를 제공합니다. 도시별 아트 디테일을 보상으로 연결하기 때문에 꾸미기 화면의 감정적 가치도 올라갑니다.</p>
+
+  <div class="callout callout-teal">
+    <strong>핵심 원칙:</strong> 유저가 공략 없이도 우연히 발견할 수 있어야 한다. 단, 아무 곳이나 난타해서 열리는 보상이 아니라 도시의 스토리 오브젝트를 터치했을 때만 열리는 구조로 만든다.
+  </div>
+
+  <h3>플레이어 경험 흐름</h3>
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>도시 완성</strong><p>도시 꾸미기 3단계 또는 최종 상태까지 완료하면 이스터에그 터치 판정이 활성화된다. 미완성 단계에서는 오브젝트가 보이더라도 해금되지 않는다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>오브젝트 터치</strong><p>유저가 도시 화면에서 특정 인물, 장식물, 간판, 조형물을 터치한다. 첫 터치 때만 짧은 반응 연출이 재생된다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>덱 스킨 해금</strong><p>카드가 뒤집히는 미니 연출 후 "숨겨진 덱 스킨 발견!" 토스트와 함께 덱 스킨이 컬렉션에 추가된다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>덱 컬렉션 연결</strong><p>토스트 또는 해금 팝업 CTA를 누르면 덱 컬렉션으로 이동한다. 덱 컬렉션이 아직 닫힌 빌드라면 해금만 저장하고 CTA는 숨긴다.</p></div></div>
+
+  <h3>운영 위치</h3>
+  <table>
+    <thead><tr><th>항목</th><th>정책</th><th>이유</th></tr></thead>
+    <tbody>
+      <tr><td>해금 조건</td><td>해당 도시 꾸미기 최종 완성 + 특정 오브젝트 최초 터치</td><td>진행 보상과 탐색 보상을 동시에 만족</td></tr>
+      <tr><td>힌트 노출</td><td>기본 무힌트. 시즌/공지에서 "도시에 숨겨진 덱" 정도만 암시 가능</td><td>이스터에그의 발견감 유지</td></tr>
+      <tr><td>반복 터치</td><td>해금 후에는 동일 오브젝트 터치 시 짧은 반응만 재생</td><td>이미 획득한 보상 중복 지급 방지</td></tr>
+      <tr><td>보상 가치</td><td>성능 없는 덱 스킨. 재화, 부스터, 진행 가속 없음</td><td>밸런스 리스크 제거</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">2</div>
+    <div class="section-meta">
+      <div class="section-title">이스터에그 목록 &amp; 아트 가이드</div>
+      <span class="section-audience aud-art">아트팀</span>
+    </div>
+  </div>
+
+  <h3>초기 제안 6종</h3>
+  <table>
+    <thead><tr><th>도시</th><th>터치 대상</th><th>해금 덱</th><th>아트 메모</th></tr></thead>
+    <tbody>
+      <tr><td>Venice</td><td>운하 옆 할아버지·할머니 커플</td><td><span class="deck-chip">Heart Canal Deck</span></td><td>카드 중앙에 곤돌라의 S자 곡선을 하트 실루엣처럼 배치. 상단에는 작은 다리 아치, 하단에는 물결 패턴을 넣어 베니스 운하 느낌을 유지한다. 메인 컬러는 와인 레드와 따뜻한 아이보리, 포인트는 골드 라인. 하트는 너무 발렌타인처럼 보이지 않게 손그림 엠블럼 톤으로 처리.</td></tr>
+      <tr><td>New York</td><td>루프탑 재즈 간판 또는 야경 네온 사인</td><td><span class="deck-chip">Midnight Skyline Deck</span></td><td>카드 하단 1/3에 맨해튼식 스카이라인 실루엣을 넣고, 중앙에는 재즈 클럽 간판처럼 보이는 세로형 네온 프레임을 배치. 배경은 미드나잇 네이비와 블랙 그라데이션, 창문 불빛은 골드 픽셀로 촘촘하게 표현한다. 모서리에는 카드 수트 대신 작은 별/음표 패턴을 반복해 밤 도시와 음악 분위기를 함께 전달.</td></tr>
+      <tr><td>Sapporo</td><td>눈 조각 축제장의 작은 별 조명</td><td><span class="deck-chip">Snow Lantern Deck</span></td><td>중앙 심볼은 눈 등불을 카드 모양으로 단순화하고, 주변에는 육각 눈 결정 패턴을 얇게 반복한다. 팔레트는 페일 블루, 화이트, 실버를 기본으로 하되 등불 내부만 연한 옐로우로 따뜻하게 강조. 카드 외곽선은 얼음처럼 반투명한 이중 보더를 사용해 축소 상태에서도 차갑고 깨끗한 인상이 나게 한다.</td></tr>
+      <tr><td>Cairo</td><td>석양에 맞춰진 오벨리스크 그림자 끝</td><td><span class="deck-chip">Sun Relic Deck</span></td><td>중앙에는 오벨리스크와 태양 원반을 결합한 세로형 문장을 배치한다. 배경은 사막 모래결을 닮은 미세 패턴, 외곽은 고대 장식 테두리처럼 기하학 라인을 반복. 메인 컬러는 샌드 골드와 번트 오렌지, 포인트는 청록 보석색. 피라미드 실루엣은 하단에 작게만 넣어 카드가 관광 엽서처럼 보이지 않게 절제한다.</td></tr>
+      <tr><td>Prague</td><td>천문시계의 작은 별 장식</td><td><span class="deck-chip">Clockwork Star Deck</span></td><td>카드 중앙에 천문시계 다이얼을 단순화한 원형 심볼을 두고, 내부에 별자리 점과 톱니 패턴을 겹친다. 배경은 딥 블루, 테두리는 오래된 황동 느낌의 브라스 골드. 카드 네 귀퉁이에는 작은 별 장식을 넣어 실제 카드 수트처럼 보이게 한다. 전체 질감은 낡은 금속과 밤하늘이 섞인 느낌으로, 기계적이지만 동화적인 톤을 목표로 한다.</td></tr>
+      <tr><td>Tokyo</td><td>골목 네온 랜턴 3개를 순서대로 터치</td><td><span class="deck-chip">Neon Blossom Deck</span></td><td>세로로 늘어선 네온 랜턴 3개를 카드 중앙 축으로 배치하고, 주변에는 벚꽃잎을 네온 라인으로 표현한다. 배경은 거의 검정에 가까운 인디고, 포인트는 마젠타와 시안. 패턴은 과밀하지 않게 랜턴 주변에만 집중시켜 작은 카드 사이즈에서도 중심이 또렷해야 한다. 전통 등불 실루엣과 현대 네온 컬러가 동시에 보이는 것이 핵심.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>후보 풀 — 업데이트 도시 확장</h3>
+  <table>
+    <thead><tr><th>도시</th><th>터치 대상</th><th>덱 컨셉</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>Barcelona</td><td>모자이크 벤치의 빠진 타일</td><td>Gaudi Mosaic Deck</td><td>도형 패턴이 강해 카드백 식별성 좋음</td></tr>
+      <tr><td>Rio de Janeiro</td><td>축제 무대의 리듬 조명</td><td>Festival Spark Deck</td><td>색종이, 조명, 리듬 라인 중심</td></tr>
+      <tr><td>Marrakech</td><td>시장 찻잔 세트의 가운데 잔</td><td>Mint Mosaic Deck</td><td>초록/금색 패턴으로 프리미엄감</td></tr>
+      <tr><td>Paris</td><td>카페 테이블 위 접힌 엽서</td><td>Postcard Romance Deck</td><td>도시 후반부 보상으로 가치 높음</td></tr>
+      <tr><td>Kyoto</td><td>등불길 끝의 작은 종</td><td>Temple Lantern Deck</td><td>차분한 붉은색/먹색 조합</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow">
+    <strong>아트 제작 범위:</strong> 도시당 신규 덱 스킨 1장, 해금 팝업용 썸네일 1장, 오브젝트 반응 이펙트 1종. 도시 배경 자체를 크게 수정하지 않고 기존 장식물에 터치 판정과 미세 연출을 얹는 방향.
+  </div>
+
+  <h3>덱 스킨 공통 규격</h3>
+  <ul>
+    <li>카드 뒷면은 실제 플레이 중 축소되어도 알아볼 수 있도록 중앙 심볼 1개 + 반복 패턴 1개 구조를 기본으로 한다.</li>
+    <li>도시 이름을 직접 텍스트로 넣지 않는다. 스킨은 언어권과 무관하게 도시 분위기로만 식별되어야 한다.</li>
+    <li>희귀도 표기는 <code>Hidden</code> 또는 <code>Secret</code> 라벨을 사용한다. 판매 덱, 시즌 덱과 구분 필요.</li>
+    <li>해금 팝업에서는 도시 이름과 덱 이름을 함께 보여준다. 예: "Venice의 숨겨진 덱 발견 — Heart Canal Deck".</li>
+  </ul>
+</section>
+
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">3</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀</span>
+    </div>
+  </div>
+
+  <h3>데이터 구조 제안</h3>
+  <div class="bs-block">
+    <div class="bs-row"><span class="bs-var">city_deck_easter_egg_id</span><span class="bs-val">venice_heart_canal</span><span class="bs-desc">이스터에그 고유 키. 도시 ID + 덱 컨셉 조합</span></div>
+    <div class="bs-row"><span class="bs-var">city_id</span><span class="bs-val">venice</span><span class="bs-desc">12_art_production_schedule.html의 도시 ID와 동일하게 사용</span></div>
+    <div class="bs-row"><span class="bs-var">touch_target_id</span><span class="bs-val">deco_couple_01</span><span class="bs-desc">도시 꾸미기 씬 내 터치 가능한 오브젝트 ID</span></div>
+    <div class="bs-row"><span class="bs-var">required_deco_stage</span><span class="bs-val">3</span><span class="bs-desc">해당 도시 최종 완성 단계. 단계 명칭은 실제 꾸미기 시스템 기준으로 매핑</span></div>
+    <div class="bs-row"><span class="bs-var">reward_deck_id</span><span class="bs-val">deck_heart_canal</span><span class="bs-desc">덱 컬렉션 보상 ID</span></div>
+    <div class="bs-row"><span class="bs-var">in_use</span><span class="bs-val">true</span><span class="bs-desc">운영 중 개별 도시 ON/OFF 가능</span></div>
+  </div>
+
+  <h3>해금 조건</h3>
+  <ul>
+    <li>유저가 해당 도시를 해금했고, 꾸미기 최종 단계까지 완료한 상태여야 한다.</li>
+    <li>터치 대상 오브젝트가 현재 화면에 보이는 상태여야 한다. 화면 밖 터치, 확대/이동 중 터치, UI 오버레이 위 터치는 무효 처리한다.</li>
+    <li>서버 또는 세이브 데이터에 <code>city_deck_easter_egg_id</code> 획득 기록이 없을 때만 보상을 지급한다.</li>
+    <li>덱 컬렉션이 닫힌 빌드에서도 획득 플래그와 보상 덱 ID는 저장한다. 컬렉션 오픈 시 자동 노출한다.</li>
+  </ul>
+
+  <h3>연출 및 UX 처리</h3>
+  <table>
+    <thead><tr><th>상황</th><th>처리</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>최초 터치 성공</td><td>오브젝트 반응 연출 → 카드 플립 미니 팝업 → 보상 저장 → 토스트/CTA</td><td>전체 2초 이내 권장</td></tr>
+      <tr><td>이미 획득 후 재터치</td><td>오브젝트 반응 연출만 재생. 보상 팝업 없음</td><td>쿨다운 3초 적용</td></tr>
+      <tr><td>미완성 도시 터치</td><td>아무 반응 없음 또는 일반 오브젝트 터치 반응만</td><td>보상 힌트 과노출 방지</td></tr>
+      <tr><td>보상 지급 실패</td><td>팝업 노출 전 지급 API 완료 확인. 실패 시 "다시 시도" 없이 조용히 취소</td><td>재터치로 재시도 가능</td></tr>
+    </tbody>
+  </table>
+
+  <h3>분석 이벤트</h3>
+  <table>
+    <thead><tr><th>이벤트</th><th>파라미터</th><th>목적</th></tr></thead>
+    <tbody>
+      <tr><td><code>city_deck_egg_view_target</code></td><td><code>city_id</code>, <code>touch_target_id</code>, <code>deco_stage</code></td><td>오브젝트가 화면에 노출된 모수 확인</td></tr>
+      <tr><td><code>city_deck_egg_tap</code></td><td><code>city_id</code>, <code>touch_target_id</code>, <code>is_first</code></td><td>발견 전환율 계산</td></tr>
+      <tr><td><code>city_deck_egg_unlock</code></td><td><code>city_id</code>, <code>reward_deck_id</code>, <code>deco_stage</code></td><td>실제 해금 수와 오류 모니터링</td></tr>
+      <tr><td><code>city_deck_egg_go_collection</code></td><td><code>reward_deck_id</code>, <code>source</code></td><td>덱 컬렉션 진입 유도 효과 확인</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-blue">
+    <strong>PM 검수 메모:</strong> 초기 6종은 준비된 도시 목록 중 런칭/초기 업데이트 노출 가능성이 높은 도시를 우선 배치했다. 실제 아트 완료 순서가 바뀌면 <code>in_use</code>만 도시별로 켜고 끄는 방식으로 운영한다.
+  </div>
+</section>
+
+</main>
+</body>
+</html>
