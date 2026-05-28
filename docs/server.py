@@ -321,6 +321,41 @@ class Handler(SimpleHTTPRequestHandler):
                 print(f'[copy] {src} → {dest}')
                 self._json(200, {'ok': True, 'dest': dest})
 
+            elif self.path == '/api/claude':
+                import re as _re, subprocess as _sp
+                data = json.loads(body)
+                prompt = data.get('prompt', '').strip()
+                agent_name = data.get('agent')
+                if not prompt:
+                    self._json(400, {'ok': False, 'error': '프롬프트를 입력해주세요'})
+                    return
+
+                agents_dir = os.path.join(ROOT, '.claude', 'agents')
+                cmd = ['claude', '-p', '--model', 'sonnet',
+                       '--allowedTools', 'Bash,Read,Write,Edit,Glob,Grep']
+
+                if agent_name:
+                    agent_file = os.path.join(agents_dir, f'{agent_name}.md')
+                    if os.path.exists(agent_file):
+                        content = open(agent_file, encoding='utf-8').read()
+                        content = _re.sub(r'^---\n.*?\n---\n', '', content, flags=_re.DOTALL).strip()
+                        cmd += ['--system-prompt', content]
+
+                cmd.append(prompt)
+                env = {k: v for k, v in os.environ.items() if k != 'ANTHROPIC_API_KEY'}
+                result = _sp.run(cmd, capture_output=True, text=True, cwd=ROOT, env=env)
+                output = result.stdout
+                if result.returncode != 0 and result.stderr:
+                    output += f'\n\n⚠️ {result.stderr.strip()}'
+
+                out_bytes = output.encode('utf-8')
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/plain; charset=utf-8')
+                self.send_header('Content-Length', len(out_bytes))
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(out_bytes)
+
             else:
                 self._json(404, {'ok': False, 'error': f'unknown path: {self.path}'})
 

@@ -1,7 +1,7 @@
 /* ── 플로팅 메모장 (공유 모듈) ─────────────────────────────────────
  * 각 페이지에 <script src="memo.js"></script> 한 줄로 삽입.
  * localStorage 키: memo-{파일명} (확장자 제외)
- * 위치: 우측 하단 고정 (bottom:24px, right:16px) — 모든 페이지 동일
+ * 위치: 좌측 하단 고정 (bottom:24px, left:16px) — 모든 페이지 동일
  */
 (function () {
   /* ── CSS 주입 ── */
@@ -9,7 +9,7 @@
 .memo-widget {
   position: fixed;
   bottom: 24px;
-  right: 16px;
+  left: 16px;
   z-index: 500;
   width: 272px;
   background: var(--surface);
