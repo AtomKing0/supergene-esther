@@ -331,8 +331,7 @@ class Handler(SimpleHTTPRequestHandler):
                     return
 
                 agents_dir = os.path.join(ROOT, '.claude', 'agents')
-                cmd = ['claude', '-p', '--model', 'sonnet',
-                       '--allowedTools', 'Bash,Read,Write,Edit,Glob,Grep']
+                cmd = ['claude', '-p', '--model', 'sonnet']
 
                 if agent_name:
                     agent_file = os.path.join(agents_dir, f'{agent_name}.md')
@@ -343,7 +342,8 @@ class Handler(SimpleHTTPRequestHandler):
 
                 cmd.append(prompt)
                 env = {k: v for k, v in os.environ.items() if k != 'ANTHROPIC_API_KEY'}
-                result = _sp.run(cmd, capture_output=True, text=True, cwd=ROOT, env=env)
+                result = _sp.run(cmd, capture_output=True, text=True, cwd=ROOT, env=env,
+                                 stdin=_sp.DEVNULL)
                 output = result.stdout
                 if result.returncode != 0 and result.stderr:
                     output += f'\n\n⚠️ {result.stderr.strip()}'
