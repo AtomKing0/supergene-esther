@@ -297,6 +297,79 @@ def _decode_gpt_images(images: list[dict[str, str]]) -> list[str]:
     return paths
 
 
+def _git_spec_status(root: Path) -> dict[str, str]:
+    result = subprocess.run(
+        ["git", "status", "--porcelain", "--", "workspace/specs"],
+        cwd=str(root),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return {}
+
+    status: dict[str, str] = {}
+    for line in result.stdout.splitlines():
+        if not line:
+            continue
+        path = line[3:]
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1]
+        status[path] = line[:2]
+    return status
+
+
+def _changed_spec_paths(before: dict[str, str], after: dict[str, str]) -> list[str]:
+    paths = []
+    for path, state in after.items():
+        if before.get(path) != state or state == "??":
+            paths.append(path)
+    return sorted(paths)
+
+
+def _commit_and_push_spec_changes(root: Path, paths: list[str]) -> str:
+    if not paths:
+        return "변경된 spec 파일이 없어 git push를 건너뜁니다."
+
+    add_result = subprocess.run(
+        ["git", "add", "--", *paths],
+        cwd=str(root),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if add_result.returncode != 0:
+        return "⚠️ git add 실패: " + (add_result.stderr or add_result.stdout).strip()
+
+    spec_ids = sorted(set(re.findall(r"spec-\d+[a-z]?", "\n".join(paths))))
+    label = ", ".join(spec_ids) if spec_ids else "spec updates"
+    commit_msg = f"docs: add/update {label} from GPT spec chat"
+    commit_result = subprocess.run(
+        ["git", "commit", "-m", commit_msg],
+        cwd=str(root),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if commit_result.returncode != 0:
+        msg = (commit_result.stderr or commit_result.stdout).strip()
+        if "nothing to commit" in msg.lower():
+            return "변경된 spec 파일이 없어 git push를 건너뜁니다."
+        return "⚠️ git commit 실패: " + msg
+
+    push_result = subprocess.run(
+        ["git", "push", "origin", "main"],
+        cwd=str(root),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if push_result.returncode != 0:
+        return "⚠️ git push 실패: " + (push_result.stderr or push_result.stdout).strip()
+
+    return "✅ git push 완료: " + commit_msg
+
+
 @app.post("/api/gpt")
 async def run_gpt(req: GPTRequest):
     prompt = req.prompt.strip()
@@ -313,9 +386,13 @@ async def run_gpt(req: GPTRequest):
         except FileNotFoundError as e:
             raise HTTPException(status_code=404, detail=str(e))
 
+    root = BASE_DIR.parent.parent
+    should_auto_push = req.agent == "content-spec-writer"
+    before_spec_status = _git_spec_status(root) if should_auto_push else {}
+
     if req.agent == "content-spec-writer":
         sheets = await _get_sheets_context()
-        prompt = _build_spec_context(BASE_DIR.parent.parent, sheets) + "\n\n" + prompt
+        prompt = _build_spec_context(root, sheets) + "\n\n" + prompt
 
     if instructions:
         prompt = "[에이전트 지침]\n" + instructions + "\n\n[요청]\n" + prompt
@@ -327,7 +404,7 @@ async def run_gpt(req: GPTRequest):
         "-s",
         os.environ.get("CODEX_SANDBOX", "workspace-write"),
         "-C",
-        str(BASE_DIR.parent.parent),
+        str(root),
     ]
     model = req.model or os.environ.get("CODEX_MODEL")
     if model:
@@ -344,7 +421,7 @@ async def run_gpt(req: GPTRequest):
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
                 stdin=asyncio.subprocess.DEVNULL,
-                cwd=str(BASE_DIR.parent.parent),
+                cwd=str(root),
             )
             async for raw in proc.stdout:
                 line = raw.decode("utf-8", errors="replace").strip()
@@ -364,6 +441,11 @@ async def run_gpt(req: GPTRequest):
             if proc.returncode != 0:
                 err = (await proc.stderr.read()).decode("utf-8", errors="replace").strip()
                 yield "\n\n⚠️ GPT CLI 오류" + (": " + err if err else "")
+            elif should_auto_push:
+                after_spec_status = _git_spec_status(root)
+                paths = _changed_spec_paths(before_spec_status, after_spec_status)
+                result = await asyncio.to_thread(_commit_and_push_spec_changes, root, paths)
+                yield "\n\n---\n" + result
         finally:
             for path in image_paths:
                 try:
