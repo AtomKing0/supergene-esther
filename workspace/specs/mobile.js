@@ -2,6 +2,40 @@
 (function () {
   'use strict';
 
+  /* ── 0. 외부 모바일 devtools 비활성화 ── */
+  function initDisableDevtools() {
+    function removeDevtools() {
+      try {
+        if (window.eruda && typeof window.eruda.destroy === 'function') {
+          window.eruda.destroy();
+        }
+      } catch (e) {}
+      try {
+        if (window.vConsole && typeof window.vConsole.destroy === 'function') {
+          window.vConsole.destroy();
+        }
+      } catch (e) {}
+
+      [
+        '#eruda',
+        '.eruda-container',
+        '.eruda-entry-btn',
+        '#__vconsole',
+        '.vc-switch',
+        '.vc-mask',
+        '.vc-panel',
+      ].forEach(function (selector) {
+        document.querySelectorAll(selector).forEach(function (el) {
+          el.remove();
+        });
+      });
+    }
+
+    removeDevtools();
+    setTimeout(removeDevtools, 250);
+    setTimeout(removeDevtools, 1000);
+  }
+
   /* ── 1. 스펙 상세 페이지: sidenav 햄버거 토글 ── */
   function initSidenav() {
     var sidenav = document.querySelector('.sidenav, .nav-sidebar');
@@ -558,6 +592,7 @@
 
   /* ── 초기화 ── */
   function init() {
+    initDisableDevtools();
     initSidenav();
     initTopControls();
     initStatusWidget();
