@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PST FTUE — 단일 배포 카드</title>
+<style>
+  :root{
+    --bg:#eef1f6; --card:#fff; --ink:#1b2330; --muted:#7a8499; --line:#e9edf3;
+    --u1:#6b5fd6;
+    --plan:#6b5fd6; --plansoft:#efedfb; --dev:#2f6fe0; --devsoft:#e8f1fe;
+    --qa:#2f9e63; --qasoft:#e7f5ee; --srv:#0c7c8c; --srvsoft:#e1f3f5;
+    --good:#2f9e63; --mid:#c47f12; --midsoft:#fbf2e0; --kpi:#b4530e; --kpisoft:#fcefe2;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--ink);
+    font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo',sans-serif;
+    padding:28px 18px 40px; display:flex; flex-direction:column; align-items:center; gap:14px;}
+  .banner{width:min(1180px,97vw); background:#fff; border:1px solid var(--line); border-left:4px solid var(--ink);
+    border-radius:12px; padding:11px 20px; font-size:13px; line-height:1.5; box-shadow:0 6px 18px rgba(30,40,70,.06);}
+  .banner b{font-weight:800;} .banner .em{color:var(--kpi); font-weight:800;}
+  .card{width:min(1180px,97vw); background:var(--card);
+    border-radius:20px; box-shadow:0 18px 50px rgba(30,40,70,.13); overflow:hidden;
+    display:flex; flex-direction:column;}
+  .hd{padding:18px 32px 15px; display:flex; align-items:center; gap:20px; color:#fff;
+    background:linear-gradient(120deg,#6b5fd6,#4f7fe0);}
+  .num{font-size:12px; font-weight:800; letter-spacing:.13em; opacity:.9;}
+  .hd h1{font-size:25px; font-weight:800; line-height:1.12; margin-top:2px;}
+  .hd .sub{font-size:13px; opacity:.92; margin-top:3px; font-weight:500;}
+  .when{margin-left:auto; text-align:right; font-size:12px; line-height:1.45;
+    background:rgba(255,255,255,.16); padding:9px 15px; border-radius:11px; white-space:nowrap;}
+  .when b{font-size:13.5px;}
+  .thead,.item{display:grid; grid-template-columns:206px 1fr 1.2fr;}
+  .thead{padding:6px 32px; background:#f6f7fb; border-bottom:1px solid var(--line);
+    font-size:10px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--muted);}
+  .cat{padding:6px 32px; background:#fbfbfd; border-bottom:1px solid var(--line);
+    font-size:11px; font-weight:800; color:var(--u1); letter-spacing:.03em; display:flex; align-items:center; gap:8px;}
+  .cat .ct{font-size:9.5px; color:var(--muted); font-weight:700;}
+  .item{padding:0 32px; border-bottom:1px solid var(--line); align-items:stretch;}
+  .item:last-child{border-bottom:none;}
+  .item.dim{opacity:.4;}
+  .item[onclick]{cursor:pointer;} .item[onclick]:hover{background:#f3f6fc;}                 /* 시트 반영 완료(QA만) — 행 전체 희미 */
+  .item>div{padding:8px 0; display:flex; flex-direction:column; justify-content:center;}
+  .item>div+div{padding-left:14px;}
+  .ino{gap:3px;}
+  .itop{display:flex; align-items:center; gap:6px;}
+  .rb{font-size:11px; font-weight:800; padding:2px 8px; border-radius:7px; min-width:34px; text-align:center;
+    background:var(--plansoft); color:var(--plan);}
+  .st{font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:6px;}
+  .st.wait{background:var(--midsoft); color:var(--mid);}
+  .st.qa{background:var(--qasoft); color:var(--qa);}
+  .st.srv{background:var(--srvsoft); color:var(--srv);}
+  .iname{font-size:12.5px; font-weight:800; line-height:1.2;}
+  .kpi{font-size:10.5px; font-weight:700; color:#4a5267; line-height:1.3; display:flex; gap:5px; align-items:baseline;}
+  .kpi .t{flex-shrink:0; font-size:9px; font-weight:800; color:var(--kpi); background:var(--kpisoft); padding:1px 6px; border-radius:5px;}
+  .intent{font-size:11.5px; line-height:1.4; color:#39414f;}
+  .intent .v{font-weight:800; color:var(--u1);}
+  .parts{gap:3px; border-left:1px dashed var(--line);}
+  .p{display:flex; align-items:flex-start; gap:7px; font-size:11.5px; line-height:1.32;}
+  .p.done{opacity:.4;}                    /* 기획 완료 부분 — 희미 */
+  .pt{flex-shrink:0; font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px; min-width:34px; text-align:center; margin-top:1px;}
+  .pt.plan{background:var(--plansoft); color:var(--plan);}
+  .pt.dev{background:var(--devsoft); color:var(--dev);}
+  .pt.qa{background:var(--qasoft); color:var(--qa);}
+  .pt.srv{background:var(--srvsoft); color:var(--srv);}
+  .pt.none{background:#eef0f4; color:var(--muted);}
+  .p code{font-family:'SF Mono',Menlo,monospace; font-size:10.5px; background:#f1f3f8; padding:0 5px; border-radius:4px; color:#3a3f6b;}
+  .ok{color:var(--good); font-weight:800;}
+  .foot{padding:9px 32px; font-size:11.5px; color:var(--muted); background:#f7f8fb;
+    border-top:1px solid var(--line); display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .hlink{font-family:'SF Mono',Menlo,monospace; font-size:10.5px; font-weight:700; text-decoration:none;
+    padding:3px 9px; border-radius:7px; display:inline-flex; align-items:center; gap:4px;}
+  .hlink.g1{color:var(--u1); background:var(--plansoft);}
+  .hlink.g2{color:var(--dev); background:var(--devsoft);}
+  .hlink.srv{color:var(--srv); background:var(--srvsoft);}
+  .hlink:hover{outline:2px solid currentColor;}
+  .chip{font-size:10px; font-weight:800; padding:2px 8px; border-radius:7px;}
+  .chip.done{background:var(--qasoft); color:var(--qa);}
+  .chip.wait{background:var(--midsoft); color:var(--mid);}
+  .legend{display:flex; gap:6px; margin-left:auto; align-items:center;}
+  .pagenote{font-size:12px; color:var(--muted); margin-top:2px;}
+  @media print{ body{background:#fff; padding:0;} .banner{display:none;} .card{box-shadow:none; width:100%; border-radius:0;} }
+
+
+
+
+
+
+
+
+  /* ===== 상세 기획서 (scoped) ===== */
+.detaildoc{
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --card2: #eef1f5;
+    --line: #dfe3ea;
+    --text: #1b2330;
+    --muted: #687287;
+    --accent: #2f6fe0;
+    --high: #d83a4d;
+    --mid: #c47f12;
+    --low: #2f9e63;
+    --good: #2f9e63;
+    --purple: #6b5fd6;
+  }.detaildoc *{ box-sizing: border-box; margin: 0; padding: 0; }.detaildoc{ background: var(--bg); color: var(--text); font-family: 'Pretendard', -apple-system, 'Apple SD Gothic Neo', sans-serif; line-height: 1.65; padding: 40px 24px 80px; }.detaildoc .wrap{ max-width: 1100px; margin: 0 auto; }.detaildoc h1{ font-size: 25px; margin-bottom: 6px; }.detaildoc .sub{ color: var(--muted); font-size: 14px; margin-bottom: 28px; }.detaildoc h2{ font-size: 19px; margin: 46px 0 14px; padding-left: 12px; border-left: 4px solid var(--accent); }.detaildoc h3{ font-size: 15px; margin: 16px 0 8px; color: var(--accent); }.detaildoc .card{ background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; margin-bottom: 16px; }.detaildoc .spec{ border-left: 4px solid var(--mid); }.detaildoc .spec.high{ border-left-color: var(--high); }.detaildoc .spec.low{ border-left-color: var(--low); }.detaildoc .spec.good{ border-left-color: var(--good); background: linear-gradient(to right, rgba(81,185,126,.05), var(--card)); }.detaildoc .spec-head{ display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }.detaildoc .spec-head h3{ font-size: 16.5px; margin: 0; color: var(--text); }.detaildoc .badge{ font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 10px; white-space: nowrap; }.detaildoc .badge.high{ background: rgba(239,91,107,.15); color: var(--high); }.detaildoc .badge.mid{ background: rgba(240,169,58,.15); color: var(--mid); }.detaildoc .badge.low{ background: rgba(81,185,126,.15); color: var(--low); }.detaildoc .badge.good{ background: rgba(81,185,126,.2); color: var(--good); }.detaildoc .badge.r{ background: rgba(79,142,247,.13); color: var(--accent); }.detaildoc .badge.ts{ background: var(--card2); color: var(--accent); border: 1px solid var(--line); }.detaildoc .badge.kpi{ background: rgba(79,142,247,.12); color: var(--accent); }.detaildoc .badge.decide{ background: rgba(138,124,240,.15); color: var(--purple); }.detaildoc .badge.dev{ background: rgba(79,142,247,.16); color: var(--accent); border: 1px solid rgba(79,142,247,.35); }.detaildoc .badge.plan{ background: rgba(138,124,240,.16); color: var(--purple); border: 1px solid rgba(138,124,240,.35); }.detaildoc .badge.art{ background: rgba(240,169,58,.16); color: var(--mid); border: 1px solid rgba(240,169,58,.35); }.detaildoc .badge.qa{ background: rgba(81,185,126,.16); color: var(--good); border: 1px solid rgba(81,185,126,.35); }.detaildoc .badge.srv{ background: rgba(12,124,140,.14); color: #0c7c8c; border: 1px solid rgba(12,124,140,.35); }.detaildoc tr.wdone{ opacity: .5; }.detaildoc td .wchip{ min-width:40px; display:inline-block; text-align:center; }.detaildoc .parts{ display: inline-flex; gap: 4px; flex-wrap: wrap; margin-left: auto; padding-left: 10px; justify-content: flex-end; }.detaildoc .parts .badge{ font-size: 10px; padding: 2px 8px; }.detaildoc .wave{ border-left: 4px solid var(--purple); }.detaildoc .wave-head{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }.detaildoc .wave-num{ background: var(--purple); color: #fff; font-weight: 800; font-size: 13px; padding: 3px 12px; border-radius: 8px; }.detaildoc .wave-head h3{ margin: 0; font-size: 16.5px; color: var(--text); }.detaildoc .wave-when{ font-size: 12px; color: var(--muted); }.detaildoc .obs{ background: rgba(79,142,247,.06); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-top: 10px; font-size: 13px; }.detaildoc .obs .lbl{ font-weight: 700; color: var(--accent); font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 4px; }.detaildoc .gate{ background: rgba(138,124,240,.07); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-top: 8px; font-size: 13px; }.detaildoc .gate .lbl{ font-weight: 700; color: var(--purple); font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 4px; }.detaildoc .cols{ display: grid; grid-template-columns: 1fr 360px; gap: 20px; margin-top: 12px; align-items: start; }.detaildoc @media (max-width: 860px) {.detaildoc .cols{ grid-template-columns: 1fr; } }
+  .shot{ background: var(--card2); border: 1px solid var(--line); border-radius: 10px; padding: 8px; }.detaildoc .shot img{ width: 100%; border-radius: 6px; display: block; cursor: zoom-in; }.detaildoc .shot .cap{ font-size: 11.5px; color: var(--muted); padding: 6px 4px 0; text-align: center; }.detaildoc .shot + .shot{ margin-top: 10px; }.detaildoc .shot-row{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }.detaildoc .sec-label{ font-size: 12.5px; font-weight: 700; color: var(--accent); margin: 14px 0 4px; text-transform: uppercase; letter-spacing: .04em; }.detaildoc .sec-label.problem{ color: var(--high); }.detaildoc .sec-label.fix{ color: var(--low); }.detaildoc p.body{ font-size: 13.5px; }.detaildoc ul, .detaildoc ol{ padding-left: 18px; font-size: 13.5px; }.detaildoc li{ margin-bottom: 5px; }.detaildoc .muted{ color: var(--muted); }.detaildoc .hl{ color: var(--high); font-weight: 700; }.detaildoc code{ font-family: 'SF Mono', Menlo, monospace; font-size: 12.5px; background: var(--card2); padding: 1px 6px; border-radius: 4px; color: #0a66c2; }.detaildoc table{ width: 100%; border-collapse: collapse; font-size: 13.5px; }.detaildoc th{ text-align: left; color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--line); }.detaildoc td{ padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }.detaildoc tr:last-child td{ border-bottom: none; }.detaildoc .flow{ display: flex; gap: 6px; overflow-x: auto; padding: 8px 0; }.detaildoc .flow .step{ background: var(--card2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 104px; font-size: 11.5px; text-align: center; flex-shrink: 0; }.detaildoc .flow .step .t{ font-weight: 700; color: var(--accent); font-size: 11px; }.detaildoc .flow .step.cut{ border-color: rgba(239,91,107,.5); background: rgba(239,91,107,.07); }.detaildoc .flow .step.new{ border-color: rgba(81,185,126,.5); background: rgba(81,185,126,.07); }.detaildoc .flow .arrow{ align-self: center; color: var(--muted); flex-shrink: 0; }.detaildoc .footer{ margin-top: 48px; font-size: 12px; color: var(--muted); text-align: center; }
+
+  .detaildoc .card{box-shadow:none!important; width:auto!important; display:block!important; overflow:visible!important; aspect-ratio:auto!important;}
+  .detaildoc .parts{border-left:0!important;}
+</style>
+</head>
+<body>
+
+<div id="top" class="banner" style="border-left-color:var(--dev);">
+  <div style="font-size:13.5px; font-weight:800; margin-bottom:6px;">왜 이 업데이트인가 — SPM이 짚은 EQR V4 포커스</div>
+  <div style="display:flex; gap:10px; align-items:stretch; flex-wrap:wrap; font-size:12px; line-height:1.45;">
+    <div style="flex:1; min-width:220px; background:#f6f7fb; border-radius:8px; padding:8px 12px;"><b style="color:var(--dev);">SPM이 짚은 핵심</b><br>EQR V4 = <b>CDR 리텐션 3시그널</b>(D14·WAU@14·좋아요 비율). 최상단 레버 = <b>온보딩(첫 세션 완료율)</b>. <b>수익화는 미평가.</b></div>
+    <div style="align-self:center; color:var(--muted); font-weight:800;">→</div>
+    <div style="flex:1; min-width:220px; background:#f6f7fb; border-radius:8px; padding:8px 12px;"><b style="color:var(--dev);">그래서 포커스</b><br>① 첫인상 마찰(빈 소셜·손실 프레임) ② 첫 세션 이탈 요인(강제 광고) ③ 복귀 페이싱·평점</div>
+    <div style="align-self:center; color:var(--muted); font-weight:800;">→</div>
+    <div style="flex:1; min-width:200px; background:#eef4fe; border-radius:8px; padding:8px 12px;"><b style="color:var(--dev);">아래 일감</b><br>9개 일감을 첫 세션에 포커스해 동시 적용</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="hd">
+    <div>
+      <div class="num">PST FTUE · 첫 세션 개선 업데이트</div>
+      <h1>첫 세션 개선 — 9개 일감 동시 적용</h1>
+      <div class="sub">마찰·첫인상 정돈 + 수익화 + 복귀 페이싱 + 외부 채널</div>
+    </div>
+    <div class="when"><b>Toss 개선 업데이트</b><br>EQR 제출(07/01) 전 · R8 서버 병행</div>
+  </div>
+
+  <div class="thead"><div>일감 · 상태 · 개선 KPI</div><div>의도</div><div>파트별 진행</div></div>
+
+  <!-- 마찰·첫인상 -->
+  <div class="cat">마찰 · 첫인상 정돈 <span class="ct">빈 소셜·손실 프레임 제거</span></div>
+
+  <div class="item" onclick="var e=document.getElementById('d-r3');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});">
+    <div class="ino"><div class="itop"><span class="rb">R3</span><span class="st qa">QA만</span></div>
+      <div class="iname">입장료 카피 교체</div><div class="kpi"><span class="t">KPI</span>New UAP 60s (60초 체류)</div></div>
+    <div class="intent">시작 30초 첫 규칙이 "플레이엔 돈 든다"는 <span class="v">손실 프레임</span> → "보상이 더 크다" 기대 프레임. 첫인상 마찰 제거</div>
+    <div class="parts">
+      <div class="p done"><span class="pt plan">기획</span><span><code>string</code> T_TUT_PRE_LEVEL 전 10로케일 교체 <span class="ok">✓</span></span></div>
+      <div class="p done"><span class="pt none">개발</span><span>없음 (string만)</span></div>
+      <div class="p"><span class="pt qa">QA</span><span>레벨 팝업 카피 주요 로케일 반영 확인</span></div>
+    </div>
+  </div>
+
+  <div class="item" onclick="var e=document.getElementById('d-r5');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});">
+    <div class="ino"><div class="itop"><span class="rb">R5</span><span class="st wait">개발 대기</span></div>
+      <div class="iname">친구 패널 게이트 Lv.15</div><div class="kpi"><span class="t">KPI</span>좋아요 비율(첫인상·평점)</div></div>
+    <div class="intent"><span class="v">빈 친구 패널 = 빈 리더보드(R8)와 같은 "보기 안 좋은" 첫인상</span>. 그래프 빌 동안 숨김(Lv.15) → 첫인상 정돈. (초대 전환은 부차)</div>
+    <div class="parts">
+      <div class="p done"><span class="pt plan">기획</span><span><code>const</code> friend_panel_unlock_level=15 <span class="ok">✓</span></span></div>
+      <div class="p"><span class="pt dev">개발</span><span>레벨&lt;15 패널 비표시 + 잠금 부스터 그레이스케일</span></div>
+      <div class="p"><span class="pt qa">QA</span><span>Lv.15 전후 노출·빈 공간 없음</span></div>
+    </div>
+  </div>
+
+  <div class="item" onclick="var e=document.getElementById('d-r8');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});">
+    <div class="ino"><div class="itop"><span class="rb">R8</span><span class="st srv">서버 재량</span></div>
+      <div class="iname">리더보드 봇</div><div class="kpi"><span class="t">KPI</span>좋아요 비율(평점) · WAU@14</div></div>
+    <div class="intent"><span class="v">빈 리더보드(2명·296 vs 2) = "사람 없는 게임"</span>처럼 보여 퀄·평점↓. <b>구체 설계는 서버팀 재량</b>, 원하는 바만 전달</div>
+    <div class="parts">
+      <div class="p done"><span class="pt plan">기획</span><span>원하는 바 정의: 초기 채움·세션 내 동일 봇·자연스러움·보상 봇 제외 <span class="ok">✓</span></span></div>
+      <div class="p"><span class="pt srv">서버</span><span>분포·성장·닉네임·리셋 등 <b>설계·구현 재량</b>(이전 프로젝트 경험)</span></div>
+      <div class="p"><span class="pt qa">QA</span><span>채워 보이는지 / 세션 내 봇 일관 / 보상 봇 제외</span></div>
+    </div>
+  </div>
+
+  <!-- 수익화 -->
+  <div class="cat">수익화 정리 <span class="ct">강제 광고·IAP 자동팝업 전체 off (수익화 평가 무관 Q5)</span></div>
+
+  <div class="item" onclick="var e=document.getElementById('d-r4');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});">
+    <div class="ino"><div class="itop"><span class="rb">R4</span><span class="st wait">개발 대기</span></div>
+      <div class="iname">RV(x2) 노출 게이트</div><div class="kpi"><span class="t">KPI</span>New UAP 60s · ARPDAU 가드레일</div></div>
+    <div class="intent">신규가 더 큰 보상(광고 x2)에 끌려 RV 이탈하면 <span class="v">광고가 60초 체류를 직접 깎음</span>. 첫 3판 광고 0</div>
+    <div class="parts">
+      <div class="p done"><span class="pt plan">기획</span><span><code>const</code> rv_double_unlock_clear_count=3 <span class="ok">✓</span></span></div>
+      <div class="p"><span class="pt dev">개발</span><span>누적 클리어&lt;3 → x2 비노출 + 누적 클리어수 소스(P0)</span></div>
+      <div class="p"><span class="pt qa">QA</span><span>1·2판 미노출 / 3판부터 노출</span></div>
+    </div>
+  </div>
+
+  <div class="item" onclick="var e=document.getElementById('d-r11');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});">
+    <div class="ino"><div class="itop"><span class="rb">R11</span><span class="st qa">QA만</span></div>
+      <div class="iname">전면(IT) 광고 전체 off</div><div class="kpi"><span class="t">KPI</span>D14 리텐션</div></div>
+    <div class="intent">수익화 평가 무관(Q5)이라 평가 기간 <span class="v">전면 광고 전부 off</span>. 보상형 RV(R4)는 자발적·잔존 +효과라 유지</div>
+    <div class="parts">
+      <div class="p done"><span class="pt plan">기획</span><span><code>const</code> interstitial_ad_level_clear_interval 3→0(기존 변수) <span class="ok">✓</span></span></div>
+      <div class="p"><span class="pt dev">개발 확인</span><span>클라가 <b>interval=0을 off로 honor</b>하는지 검증("0=노출 안함" 정의 존재). 코드 신설 아님, 미동작 시 가드만</span></div>
+      <div class="p"><span class="pt qa">QA</span><span>전면 광고 안 뜨는지 확인</span></div>
+    </div>
+  </div>
+
+  <div class="item" onclick="var e=document.getElementById('d-r12');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});">
+    <div class="ino"><div class="itop"><span class="rb">R12</span><span class="st wait">개발 대기</span></div>
+      <div class="iname">IAP 자동팝업 off</div><div class="kpi"><span class="t">KPI</span>D14 리텐션</div></div>
+    <div class="intent">전환 0의 순마찰(첫날 4% 노출·구매 0.1%·97.5% 닫음). 수익화 평가 무관(Q5)이라 <span class="v">자동팝업 off</span>. 수동 상점 진입은 유지</div>
+    <div class="parts">
+      <div class="p done"><span class="pt plan">기획</span><span><code>const</code> is_iap_popup_open=0 추가(신규 토글) <span class="ok">✓</span></span></div>
+      <div class="p"><span class="pt dev">개발</span><span>신규 변수 → 클라가 플래그=0이면 자동팝업 미발동(is_daily_wheel_open 패턴)</span></div>
+      <div class="p"><span class="pt qa">QA</span><span>자동팝업 안 뜨는지 / 수동 상점 정상</span></div>
+    </div>
+  </div>
+
+  <!-- 복귀 페이싱 -->
+  <div class="cat">복귀 페이싱 <span class="ct">해금 타이밍 — 시트값만, 클라 기 참조</span></div>
+
+  <div class="item" onclick="var e=document.getElementById('d-r7');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});">
+    <div class="ino"><div class="itop"><span class="rb">R7</span><span class="st qa">QA만</span></div>
+      <div class="iname">출석 해금 Lv.7</div><div class="kpi"><span class="t">KPI</span>D1 리텐션 (복귀 후킹)</div></div>
+    <div class="intent">"내일 보상" 락인을 <span class="v">이탈 전(첫 세션 안 = 평균 9~10판)</span>에 노출 → D1 후킹. ※ 핵심 콘텐츠 streak은 미변경</div>
+    <div class="parts">
+      <div class="p done"><span class="pt plan">기획</span><span><code>unlock</code> content_daily_check 4→7 <span class="ok">✓</span></span></div>
+      <div class="p done"><span class="pt none">개발</span><span>없음 — 클라가 unlock 파라미터 기 참조</span></div>
+      <div class="p"><span class="pt qa">QA</span><span>Lv.7 해금 타이밍 확인</span></div>
+    </div>
+  </div>
+
+  <div class="item" onclick="var e=document.getElementById('d-r9');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});">
+    <div class="ino"><div class="itop"><span class="rb">R9</span><span class="st qa">QA만</span></div>
+      <div class="iname">오늘의 미션 해금 Lv.13</div><div class="kpi"><span class="t">KPI</span>D14 리텐션 (세션2+ 새로움)</div></div>
+    <div class="intent">첫 5분 9개 시스템 캐스케이드 완화 → <span class="v">세션2+ 새로움 보존(D14)</span>. 미션은 능동 목표라 세션2로 미룸</div>
+    <div class="parts">
+      <div class="p done"><span class="pt plan">기획</span><span><code>unlock</code> content_daily_task 10→13 <span class="ok">✓</span></span></div>
+      <div class="p done"><span class="pt none">개발</span><span>없음 — 클라 기 참조</span></div>
+      <div class="p"><span class="pt qa">QA</span><span>미션 Lv.13 해금 확인</span></div>
+    </div>
+  </div>
+
+  <!-- 외부 채널 -->
+  <div class="cat">외부 채널 <span class="ct">팔로우 유도</span></div>
+
+  <div class="item" onclick="var e=document.getElementById('d-fan');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});">
+    <div class="ino"><div class="itop"><span class="rb">팝업</span><span class="st wait">개발 대기</span></div>
+      <div class="iname">인박스 팬페이지 팝업</div><div class="kpi"><span class="t">KPI</span>팬페이지 팔로우 전환 (외부 채널)</div></div>
+    <div class="intent">인박스 지점 팬페이지 팔로우 팝업을 <span class="v">const로 on/off</span> 제어. 소프트런칭 초기 off, 그래프·시점 무르익으면 on</div>
+    <div class="parts">
+      <div class="p done"><span class="pt plan">기획</span><span><code>const</code> is_inbox_fanpage_follow_popup_open=0 <span class="ok">✓</span></span></div>
+      <div class="p"><span class="pt dev">개발</span><span>플래그로 팝업 노출 on/off 제어</span></div>
+      <div class="p"><span class="pt qa">QA</span><span>0=미노출 / 1=노출 확인</span></div>
+    </div>
+  </div>
+
+  <!-- 크로스 프로모션 -->
+  <div class="cat">크로스 프로모션 (유입) <span class="ct">자사 게임에 솔리테어 배너 → 고관여 유입 · 🔒 홀딩</span></div>
+
+  <div class="item" style="opacity:.6;" onclick="var e=document.getElementById('d-cp');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});">
+    <div class="ino"><div class="itop"><span class="rb" style="background:var(--midsoft); color:var(--mid);">CP</span><span class="st" style="background:rgba(120,132,153,.18); color:#5a6678;">🔒 홀딩</span></div>
+      <div class="iname">솔리테어 배너 (3 게임)</div><div class="kpi"><span class="t">KPI</span>고관여 유입 → D14·평점·WAU</div></div>
+    <div class="intent">자사 잘되는 게임(Coin Match·The Puzzle·Mahjong)에 <span class="v">솔리테어 CP 배너</span> 심어 고관여 유저 유입. <b>노출 패턴 분석·결정 후 추가 자료 전달 예정 → 그때 착수</b></div>
+    <div class="parts">
+      <div class="p"><span class="pt none">상태</span><span><b>홀딩</b> — 노출 패턴 분석/결정 대기, 자료 받으면 기획·개발·QA 착수</span></div>
+    </div>
+  </div>
+
+  <div class="foot"><span class="chip done">시트 ✓ 반영</span><span class="chip wait">개발 대기</span>
+    <span style="font-size:10.5px; color:var(--muted);">희미한 '기획' 줄 = 기획 완료 · 상태칩(QA만/개발 대기/개발 확인/서버)으로 남은 작업 구분</span>
+    <a class="hlink g1" href="pst_ftue_dev_handoff.md">📄 개발 핸드오프 (통합 · 서버 R8 포함)</a>
+    <div class="legend"><span class="pt plan">기획</span><span class="pt dev">개발</span><span class="pt qa">QA</span><span class="pt srv">서버</span></div></div>
+</div>
+
+<div style="width:min(1180px,97vw); margin:2px auto 0; font-size:12px; line-height:1.5; color:#4a5267; background:#fff; border:1px solid var(--line); border-radius:10px; padding:9px 14px;">
+  <b>개발 필요 분류 (시트↔개발 싱크 기준):</b> <span style="color:var(--mid); font-weight:800;">없던 변수 추가 = 개발 필요</span> → R4·R5·팬페이지 · <span style="color:var(--qa); font-weight:800;">기존 변수 값 변경/string = 개발 불필요·QA만</span> → R3·R7·R9 · <span style="color:var(--dev); font-weight:800;">기존 변수 off 동작 확인</span> → R11(interval=0) · <span style="color:var(--mid); font-weight:800;">신규 const → 개발 필요</span> → R12(is_iap_popup_open).
+</div>
+
+<div class="pagenote">PST FTUE · 9개 일감 · 일감별 상태·개선 KPI · 계측은 현존 이벤트로 대체(목록 제외) · 2026-06-17 · 라이브 시트 1oLb</div>
+
+<style>
+  html{scroll-behavior:smooth;}
+  #fabToc{position:fixed; right:20px; bottom:20px; z-index:200; background:#2f6fe0; color:#fff; border:none; border-radius:24px; padding:11px 17px; font-size:13px; font-weight:800; cursor:pointer; box-shadow:0 6px 18px rgba(30,40,70,.28); font-family:inherit;}
+  #fabMenu{position:fixed; right:20px; bottom:66px; z-index:200; display:none; background:#fff; border:1px solid #e9edf3; border-radius:12px; box-shadow:0 14px 40px rgba(30,40,70,.22); padding:8px; min-width:190px; max-height:72vh; overflow:auto; font-family:inherit;}
+  #fabMenu.open{display:block;}
+  #fabMenu a{display:block; padding:7px 12px; font-size:13px; color:#1b2330; text-decoration:none; border-radius:7px;}
+  #fabMenu a:hover{background:#f3f6fc;}
+  #fabMenu .hd{font-size:10px; font-weight:800; color:#7a8499; padding:4px 12px 2px; letter-spacing:.04em;}
+</style>
+<button id="fabToc" onclick="document.getElementById('fabMenu').classList.toggle('open')">≡ 목차</button>
+<nav id="fabMenu" onclick="this.classList.remove('open')">
+  <div class="hd">바로가기</div>
+  <a href="#top">▲ 맨 위 (카드 요약)</a>
+  <a href="#sec-1">1. 목적 · 원칙</a>
+  <a href="#sec-2">2. 롤아웃</a>
+  <a href="#sec-3">3. 상세 스펙</a>
+  <a href="#sec-4">4. 계측</a>
+  <a href="#sec-5">5. 결정 사항</a>
+  <a href="#sec-6">6. 검증</a>
+  <a href="#sec-7">7. 공수</a>
+  <a href="#sec-appendix">부록 A~F</a>
+  <a href="#d-cp">CP 배너 (홀딩)</a>
+</nav>
+
+<div style="width:min(1180px,97vw); margin:30px auto 10px; border-top:2px solid #ccd4e0; padding-top:16px;">
+  <div style="font-size:19px; font-weight:800; color:#1b2330;">▼ 상세 기획서 (전체)</div>
+  <div style="font-size:12.5px; color:#7a8499; margin-top:3px;">위 카드가 요약·현황 — 아래는 목적·롤아웃·스펙·결정·검증·부록 (SPM 포커스/현황은 위 카드 참조)</div>
+</div>
+<div class="detaildoc" style="width:min(1180px,97vw); margin:0 auto; border:1px solid var(--line); border-radius:12px; overflow:hidden;">
+<div class="wrap">
+
+<h1>PST 첫 세션 기획서 <span style="font-size:14px; color:var(--muted); font-weight:500;">FTUE 실플레이 기반 · v2.0</span></h1>
+<div class="sub">
+작성 2026-06-11 · 갱신 2026-06-17 · 작성자 Esther · 상태: <b style="color:var(--low);">라이브 시트(1oLb) 반영 완료 — 개발 핸드오프 진행</b> (§실제 적용 현황) · 롤아웃: 단일 빌드 동시 배포(EQR 제출 전 Toss 개선)→관찰(BigQuery Toss)→운영 튜닝 (§2)<br>
+근거: 06/11 IG 빌드 FTUE 레코딩 2분 7초(2초 간격 64프레임 전수 분석) + <b>06/11 Meta Q1~Q6 회신</b> — 본문 캡처는 모두 실플레이 화면<br>
+상위 문서: <a href="pst_eqr_v4_action_plan.html" style="color:var(--accent);">EQR V4 액션플랜</a> P0-1 · 일정: 기획 확정 06/17 (M1) → 개발 06/18~24 → <b>07/01 EQR 리뷰 제출 빌드 탑재</b>
+</div>
+
+<!-- ============ 1. 목적/원칙 ============ -->
+<h2 id="sec-1">1. 목적과 설계 원칙</h2>
+<div class="card">
+<p class="body"><b>대상 지표 (06/11 Meta 회신으로 재정의): CDR 3시그널.</b> Promoted 티어는 CDR(Content Distribution Ranking)이 결정하며, 시그널은 ① <b>신규 유저 D14 리텐션</b> ② <b>WAU@14</b> ③ <b>좋아요 비율</b>(좋아요/싫어요, 60일 롤링). Meta가 명시한 인과 사슬이 본 기획의 존재 이유다: <b>"강력한 온보딩 — 높은 첫 세션 완료율 → D14 리텐션에 직접적 영향"</b>, 그리고 리소스 투자 1순위 = 온보딩 개선. 60초·첫 세션은 그 자체가 평가 지표가 아니라 <b>D14로 가는 퍼널의 최상단</b>이다.</p>
+<div style="background:var(--card2); border:1px solid var(--line); border-radius:8px; padding:10px 14px; margin-top:10px; font-size:13px;">
+Meta 결론 인용: <i>"게임플레이의 첫 5분을 훌륭하게 만드는 데 집중하세요. 신규 플레이어가 Day 14를 넘겨 유지된다면, Promoted 티어로 가는 올바른 경로에 있는 것입니다."</i> → 본 기획의 범위를 첫 60초에서 <b>첫 세션(~5분)</b>으로 확장한다 (§F 함의 참조).
+</div>
+<ol style="margin-top:10px;">
+  <li><b>플레이 구조는 건드리지 않는다</b> — 첫 승리 10초·플레이=튜토리얼은 검증된 강점(§E). 본 기획의 대상은 플레이 사이의 비플레이 요소뿐</li>
+  <li><b>제거 대상은 "시간"이 아니라 "이탈 포인트"</b> — UAP 60s는 체류 카운트이므로 시티 구경도 60초에 포함된다. 죽은 화면·팝업 연쇄·광고 진입로만 제거</li>
+  <li><b>아웃게임 메타는 보여준다</b> — "콘텐츠가 많은 게임" 인식은 체류 동기. 단, 마찰 없이(쇼케이스 연출로)</li>
+  <li><b>비용·광고·소셜은 게임이 좋아진 후에</b> — 손실 프레임 금지, 광고는 클리어 3회 후, 소셜은 레벨 게이트</li>
+  <li><b>보상은 유저 액션으로 받는다</b> — 액션 없이 자동 지급(호로록)하지 않는다. 받는 행위와 생색 연출이 있어야 "어떤 보상을 받았는지" 인지가 생긴다 (06/11 피드백)</li>
+  <li><b>해금 레벨 설계 기준 = IG 타 게임 인당 평균 판수 9~10판</b> — FTUE 관련 해금·게이트는 9판 이내에 배치해야 평균 유저가 경험한다 (06/11 피드백)</li>
+</ol>
+</div>
+
+<!-- ============ 2. 롤아웃 플랜 ============ -->
+<h2 id="sec-2">2. 롤아웃 플랜 — 단일 배포 + 운영 관찰</h2>
+<div class="card">
+<p class="body"><b>게임은 Toss 플랫폼에 라이브(소프트런칭).</b> EQR 제출(07/01) 전에 Toss에서 <b>개선 업데이트를 1회 적용</b>하고 관찰한다. <span class="hl">[06/16 결정] 9개 일감을 2회로 나누지 않고 <b>한 빌드에 동시 배포</b></span> — 표본 ~140 NRU/일·2주 시한이라 분리 실측의 통계적 실익이 없고(개별 효과 +1~2pp는 분리해도 검출 불가), 순차 배포 시 각 관찰 윈도우가 1주 미만이라 D7·D14를 못 본다. 대신 <b>퍼널 계측으로 단계별 개선·이탈 이동을 간접 확인</b>하고, <b>수익화(R4·R11)만 ARPDAU 가드레일로 분리 모니터</b>(번들이어도 수익화 건드린 건 이 둘뿐이라 소거법 귀속 가능). 아래 <b>그룹 ①②는 분류용</b>(배포 순서 아님). 운영 관찰(구 Wave3)은 빌드가 아니라 출시 후 시트/서버 원격 파라미터 튜닝.</p>
+<p class="body" style="margin-top:8px;"><span class="hl">⚠ 시트 vs 빌드:</span> 시트 파라미터 변경(R3·R7·R9·R11·R12 등)은 클라가 기 참조하므로 <b>빌드 없이 다음 sync 시 발효</b> = 이미 라이브 시트 반영 완료. <b>신규 클라 로직이 필요한 항목은 R4·R5·팬페이지</b>(+R8 서버). 수익화(R4·R11·R12)는 EQR 제출 빌드에 포함.</p>
+<p class="body" style="margin-top:8px;">관찰은 <b>BigQuery <code>game-log-359704.raw.solitaire_city_journey_toss</code></b>. 현존 이벤트로 출시 첫날부터 베이스라인 측정, §4 신규 계측으로 보강. <b>업데이트 1 관찰 쿼리(Q1~Q5)는 <code>pst_ftue_wave1_queries.sql</code></b>(도구 <code>bq</code> CLI, 계정 esther@supergene.co).</p>
+</div>
+
+<!-- 그룹 ① (분류, 단일 배포) -->
+<div class="card wave">
+  <div class="wave-head"><span class="wave-num">그룹 ①</span><h3>첫 세션 마찰 제거 + 수익화 + 계측 + 서버</h3><span class="wave-when">단일 빌드 동시 배포 · 분류용 · R8 서버 병행</span></div>
+  <table>
+    <tr><th style="width:54px;">일감</th><th>진행 + 적용</th><th style="width:120px;">상태</th></tr>
+    <tr><td><b>R3</b></td><td><b>입장료 카피 교체</b> — string_code <code>T_TUT_PRE_LEVEL</code> 전 10개 로케일. 클라 로직 변경 없음</td><td><span class="badge good">✓ 시트 반영 · QA만</span></td></tr>
+    <tr><td><b>R5</b></td><td><b>친구 패널 게이트</b> — <span class="hl">빈 친구 패널 = 빈 리더보드(R8)와 같은 첫인상 마찰</span>. const <code>friend_panel_unlock_level</code>=15(그래프 빌 동안 숨김). <b>개발:</b> 레벨&lt;15 패널 비표시 + 잠금 부스터 그레이스케일</td><td><span class="badge mid">✓ 시트 · 개발 대기</span></td></tr>
+    <tr><td><b>R8</b></td><td><b>리더보드 봇</b> — 빈 리더보드 첫인상 마찰. <b>구체 설계는 서버팀 재량</b>, 원하는 바만 전달(초기 채움·세션 내 동일 봇·자연스러움·보상 봇 제외). <code>pst_ftue_dev_handoff.md §3</code></td><td><span class="badge dev">서버 재량</span></td></tr>
+    <tr><td><b>R4</b></td><td><b>RV(x2) 노출 게이트</b> — const <code>rv_double_unlock_clear_count</code>=3 추가됨. <b>개발:</b> 누적 클리어&lt;N이면 x2 비노출 분기 + 누적 클리어수 소스(§8 P0)</td><td><span class="badge mid">✓ 시트 · 개발 대기</span></td></tr>
+    <tr><td><b>R11</b></td><td><b>전면(IT) 광고 전체 off</b> — <code>interstitial_ad_level_clear_interval</code> 3 → <b>0</b>("0=노출 안함"). 수익화 평가 무관(Q5)이라 평가 기간 전부 제거. 시트값만·개발 불필요</td><td><span class="badge good">시트 off · QA만</span></td></tr>
+    <tr><td><b>R12</b></td><td><b>IAP 자동팝업 off</b> — 신규 const <code>is_iap_popup_open</code>=0(토글). content_iap_popup 15 유지. <b>클라가 플래그로 자동팝업 제어 — 개발 필요</b></td><td><span class="badge mid">✓ 시트 · 개발 대기</span></td></tr>
+    <tr><td><b>계측</b></td><td><b>현존 이벤트로 충분</b>(§4). nth_event 퍼널 쿼리로 퍼널·이탈·D14 코호트 측정. 신규 없음, <code>level_index</code>만 선택</td><td><span class="badge low">현존 활용</span></td></tr>
+  </table>
+  <div class="obs"><span class="lbl">관찰 (BigQuery Toss · pst_ftue_wave1_queries.sql)</span><b>Q1</b> NRU 첫 세션 퍼널 도달률(10/30/<b>60초 체류</b>) · <b>Q2</b> 첫터치/첫클리어 시간 p50/p90 · <b>Q3</b> R4·R11 가드레일(x2 시도율·<b>ARPDAU 프록시</b>) · <b>Q4</b> D1/D7/<b>D14 코호트</b> · <b>Q5</b> 이탈 지점 분포</div>
+</div>
+
+<!-- 그룹 ② (분류, 같은 빌드) -->
+<div class="card wave" style="border-left-color:var(--accent);">
+  <div class="wave-head"><span class="wave-num" style="background:var(--accent);">그룹 ②</span><h3>복귀 페이싱 · 외부 채널</h3><span class="wave-when">단일 빌드 동시 배포 · 그룹 ①과 같은 빌드</span></div>
+  <table>
+    <tr><th style="width:54px;">일감</th><th>진행 + 적용</th><th style="width:120px;">상태</th></tr>
+    <tr><td><b>R7</b></td><td><b>출석 해금 Lv.7</b> — <code>content_daily_check</code> <code>condition_val</code> 4→7. 클라가 unlock 파라미터 기 참조</td><td><span class="badge good">✓ 시트 반영 · QA만</span></td></tr>
+    <tr><td><b>R9</b></td><td><b>미션 해금 Lv.13</b> — 오늘의 미션 <code>content_daily_task</code> 10→13(데일리 휠은 9 유지). 클라 기 참조</td><td><span class="badge good">✓ 시트 반영 · QA만</span></td></tr>
+    <tr><td>신규</td><td><b>인박스 팬페이지 팝업</b> — const <code>is_inbox_fanpage_follow_popup_open</code>=0 추가됨. <b>개발:</b> 플래그로 팝업 on/off 제어</td><td><span class="badge mid">✓ 시트 · 개발 대기</span></td></tr>
+  </table>
+  <div class="obs"><span class="lbl">관찰 (BigQuery Toss)</span>① <code>6020_USER_CURRENT_LEVEL</code> + 판수 분포 — 출석7·미션13 도달이 평균 9~10판과 정합한지 ② 데일리 첫 도달 레벨·시점(현존 이벤트 nth) ③ <code>6000_FRIEND_COUNT</code> 친구 패널(Lv.15) 노출 후 초대 전환</div>
+  <div class="gate"><span class="lbl">출시 후 운영 튜닝</span>• 데일리 도달이 평균 판수 대비 이르거나 늦으면 <code>condition_val</code> 미세조정 • 친구 게이트 <code>friend_panel_unlock_level</code> — DAU·전환 보고 15에서 하향</div>
+</div>
+
+<!-- 운영 관찰 (빌드 아님) -->
+<div class="card" style="border-left:4px solid var(--muted);">
+  <div class="wave-head"><span class="wave-num" style="background:var(--muted);">운영 관찰</span><h3>관찰 기반 파라미터 튜닝 (빌드 아님)</h3><span class="wave-when">CSB 30일 — 시트/서버 원격 파라미터만 조정</span></div>
+  <p class="body">신규 구현 없이 <b>BigQuery Toss 관찰 → 시트/서버 원격 파라미터 조정</b>으로 운영. 신규 빌드가 필요한 변경(예: 추가 클라 로직)은 별도 업데이트로 분리 — 단 수익화 변경은 CSB 시작 전에만.</p>
+  <table>
+    <tr><th style="width:160px;">관찰 대상</th><th>튜닝 액션</th></tr>
+    <tr><td>베팅 잔고·이탈 (현행 강제 베팅 모니터)</td><td>강제 베팅 참여가 잔고 경제 과부하·초기 이탈에 유의 기여하는지 관찰 → 문제 시 베팅 시점·강도 재조정(빌드 필요 시 별도)</td></tr>
+    <tr><td>친구 패널 초대 전환 (R5)</td><td><code>friend_panel_unlock_level</code>=15 → DAU 확보·전환 데이터 보고 하향(시트값만, 빌드 무관)</td></tr>
+    <tr><td>리더보드 실유저 수 (R8)</td><td>봇 축소 임계: 실유저 ≥30→봇15, ≥50→0 (서버 원격 파라미터, 빌드 무관)</td></tr>
+  </table>
+</div>
+
+<!-- ============ 3. 스펙 ============ -->
+<h2 id="sec-3">3. 상세 스펙 (카테고리별)</h2>
+<p class="sub" style="margin:-6px 0 4px;">스펙 카드를 <b>카드(<code>pst_ftue_update_cards.html</code>)와 동일한 카테고리 순서</b>로 묶었다 — 마찰·첫인상 → 수익화 → 복귀 페이싱 → 외부 채널 → 제외. 단일 빌드 동시 배포라 배포 순서 아님. 계측은 §4(현존 이벤트로 충분). R 번호는 식별자일 뿐.</p>
+
+<h3 style="margin-top:30px; padding:7px 14px; background:rgba(138,124,240,.10); border-radius:8px; color:var(--purple); border-left:3px solid var(--purple);">▸ 마찰 · 첫인상 정돈 — 빈 소셜(친구 패널·리더보드)·손실 프레임 제거</h3>
+<!-- R3 -->
+<div id="d-r3" class="card spec">
+  <div class="spec-head"><span class="badge r">R3</span><h3>입장료 툴팁 카피 교체 (시점 유지)</h3><span class="badge ts">AS-IS 0:30</span><span class="badge kpi">New UAP 60s</span><span class="badge low">확인만 · string 교체</span><span class="parts"><span class="badge plan">기획</span><span class="badge qa">QA</span></span></div>
+  <div class="cols">
+    <div>
+      <div class="sec-label problem">① 의도 · 현상</div>
+      <p class="body">시티 첫 진입 직후 레벨 팝업에서 마스코트가 <b>"게임을 하려면 입장료가 필요해요!"</b>를 첫 메타 메시지로 전달한다. 게임 시작 30초 — 아직 게임이 좋아지기 전 — 에 배우는 첫 규칙이 "플레이에는 돈이 든다"는 손실 프레임이다.</p>
+      <div class="sec-label" style="color:var(--mid);">② 영향 (KPI)</div>
+      <p class="body" style="margin:0 0 6px;"><b>New UAP 60s</b></p>
+      <div class="sec-label fix">③ 작업</div>
+      <table>
+        <tr><td style="width:90px;">AS-IS</td><td>"게임을 하려면 입장료가 필요해요!" — 손실 프레임</td></tr>
+        <tr><td>TO-BE 확정</td><td><b>"입장료보다 더 큰 보상이 기다려요!"</b> — 캐주얼 톤 기준 채택. 보상 마진 수치와 모순 없음 확인 완료 (06/11)</td></tr>
+        <tr><td>EN</td><td>"Win back more than your entry fee!" — EQR ⑥ 영어 필수, KR과 동시 적용</td></tr>
+        <tr><td>적용 위치</td><td><b>밸런스시트(1oLb) string 테이블</b>(PST_string_code) — 입장료 툴팁 말풍선 string_code 교체. 팝업 하단 입장료 수치 표기는 유지</td></tr>
+        <tr class="wdone"><td><span class="badge plan wchip">기획</span></td><td>string 테이블에서 해당 코드 텍스트 교체 — <b>클라 로직 변경 없음</b>. <span class="hl">⚠ KR/EN뿐 아니라 string_code의 전 지원 로케일(ES·PT·ID 등) 모두 교체</span>. 정확한 string_code key는 개발과 대조 확정</td></tr>
+        <tr><td><span class="badge qa wchip">QA</span></td><td>레벨 진입 팝업(2090_PRE_LEVEL_SHOW)에서 교체 카피가 주요 로케일에 반영됐는지 확인</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="shot"><img src="pst_ftue_assets/crop_fee_tooltip.png"><div class="cap">AS-IS 0:30 — 교체 대상 카피 (실제 캡처 확대)</div></div>
+      <div class="shot"><img src="pst_ftue_assets/crop_fee_line.png"><div class="cap">팝업 하단 입장료 1,200 표기는 유지 — 바꾸는 건 말풍선의 프레이밍뿐</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- R5 -->
+<div id="d-r5" class="card spec">
+  <div class="spec-head"><span class="badge r">R5</span><h3>친구 초대 패널 레벨 게이트</h3><span class="badge ts">AS-IS 0:52</span><span class="badge kpi">좋아요 비율·첫인상 (R8과 동류)</span><span class="badge good">반영 const friend_panel_unlock_level=15 (06/16)</span><span class="parts"><span class="badge dev">개발</span><span class="badge plan">기획</span><span class="badge qa">QA</span></span></div>
+  <div class="cols">
+    <div>
+      <div class="sec-label problem">① 의도 · 현상</div>
+      <p class="body">레벨 4 입장 팝업(0:52)에 <b>"아직 이 레벨에 친구가 없어요!" + 초대 버튼</b> 패널이 뜬다. 친구 기능이 뭔지도 모르는 신규에게 결핍부터 보여주는 빈 소셜 노출이다. 잠긴 부스터 3종도 행동 불가능한 시각 노이즈.</p>
+      <div class="sec-label" style="color:var(--mid);">② 영향 (KPI)</div>
+      <p class="body" style="margin:0 0 6px;"><b>좋아요 비율·첫인상 (R8과 동류)</b></p>
+      <div class="sec-label fix">③ 작업</div>
+      <table>
+        <tr><td style="width:96px;">실제 적용 (06/16)</td><td><b>const <code>friend_panel_unlock_level</code> = 15</b> (원안 unlock 행 Lv.6에서 변경). 이유: ① unlock 행 방식은 친구 패널이 unlock으로 제어되는지 불확실(§8 P1) → const 토글이 안전 ② <b>소프트런칭은 소셜 그래프가 비어</b> Lv.6 노출 시 여전히 "빈 친구" 첫인상 위험 ③ "게임에 몰입해 <b>친구를 부르고 싶은 시점</b>"(베팅 졸업·실스테이지 안착 이후 = Lv.15)에 노출하는 게 초대 품질·잔존 정합. const라 DAU 확보 후 실데이터로 하향 튜닝</td></tr>
+        <tr><td>적용 위치</td><td><b>라이브 시트(1oLb) <code>const</code> 탭</b> 신규 <code>friend_panel_unlock_level</code>=15 (key 10087) + workspace <code>const_toss.json</code> sync. <b>클라가 이 레벨로 패널 게이트하는 로직 필요</b>(개발 핸드오프)</td></tr>
+        <tr class="wdone"><td><span class="badge plan wchip">기획</span></td><td>unlock 탭 행 추가(condition_val=6) + 친구 패널 노출 카피 점검</td></tr>
+        <tr><td><span class="badge dev wchip">개발</span></td><td>레벨 6 미만이면 패널 영역 비표시(팝업 높이 축소, 빈 공간 금지). 잠금 부스터 3종은 <b>기존 부스터 아이콘을 그레이스케일 처리한 실루엣 + 해금 레벨 표기</b> — <b>신규 아트 제작 없음</b>(아트 칩 제외 사유)</td></tr>
+        <tr><td><span class="badge qa wchip">QA</span></td><td>레벨 6 미만 패널·빈공간 미노출 / 레벨 6 도달 시 노출 / 부스터 실루엣 표기 확인</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="shot"><img src="pst_ftue_assets/crop_friend_panel.png"><div class="cap">AS-IS 0:52 — 게이트 대상 패널 (실제 캡처 확대)</div></div>
+      <div class="shot"><img src="pst_ftue_assets/07_level4_empty_social.png"><div class="cap">AS-IS 0:52 — 전체 팝업. 유효 행동은 플레이 1개인데 화면 요소는 7~8개</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- R8 -->
+<div id="d-r8" class="card spec">
+  <div class="spec-head"><span class="badge r">R8</span><h3>리더보드 봇</h3><span class="badge ts">AS-IS 2:00</span><span class="badge kpi">좋아요 비율 · WAU@14</span><span class="badge good">서버 재량 설계 (원하는 바만)</span><span class="parts"><span class="badge dev">서버</span><span class="badge plan">기획</span></span></div>
+  <div class="cols">
+    <div>
+      <div class="sec-label problem">① 의도 · 현상</div>
+      <p class="body">FTUE 말미 리더보드 자동 오픈 시 <b>이번 주 보드에 2명</b>, 1위 296점 vs 내 2점. 경쟁 동기가 아니라 "아무도 안 하는 게임"이라는 역효과 사회적 증거다. 소프트런칭 초기엔 이 상태가 기본값이 된다.</p>
+      <p class="body" style="margin-top:6px;"><b>Meta 회신으로 중요도 상향:</b> ① 평점은 <b>게임플레이 직후 플랫폼 좋아요/싫어요 프롬프트</b>로 수집 — 세션 마지막 인상이 평점을 결정하는데, 현재 FTUE의 마지막 화면이 바로 이 빈 리더보드다. ② Meta가 Promoted 공통 특징으로 "소셜 기능(리더보드·챌린지·토너먼트) 활용 게임의 높은 인게이지먼트"를 명시 — 리더보드를 죽여두는 것 자체가 손해.</p>
+      <div class="sec-label" style="color:var(--mid);">② 영향 (KPI)</div>
+      <p class="body" style="margin:0 0 6px;"><b>좋아요 비율 · WAU@14</b></p>
+      <div class="sec-label fix">③ 작업</div>
+      <p class="body" style="margin-bottom:6px;">봇 수·점수 분포·성장·닉네임/아바타·리셋 주기 등 구현 방식은 <b>서버에서 알아서 설계</b>한다. 기획이 바라는 결과만 전달:</p>
+      <table>
+        <tr><td style="width:96px;">채움</td><td>리더보드가 <b>초기부터 자연스럽게 채워져</b> 보일 것 — 빈/거의 빈 리스트(2명·296 vs 2)는 "사람 없는 게임"처럼 보여 퀄·평점을 깎음</td></tr>
+        <tr><td>세션 일관성</td><td><b>같은 세션 안에서 다시 봤을 때 동일한 봇 유저</b>가 보일 것 (새로고침마다 봇이 바뀌면 가짜 티 남)</td></tr>
+        <tr><td>자연스러움</td><td>가짜 티 안 나게. 신규가 너무 절망적이지 않게 <b>추월 가능한 분포</b>면 좋음</td></tr>
+        <tr><td>보상</td><td><b>랭킹 보상은 봇 제외</b>, 실유저만 산정. 실유저 충분히 늘면 봇 비중 축소</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="shot"><img src="pst_ftue_assets/crop_leaderboard.png"><div class="cap">AS-IS 2:00 — 이번 주 보드 2명, 296 vs 2 (실제 캡처 확대)</div></div>
+      <div class="shot"><img src="pst_ftue_assets/13_leaderboard.png"><div class="cap">AS-IS 2:00 — 역대 기록 탭은 5명 — 주간 보드의 공허가 더 두드러진다</div></div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:30px; padding:7px 14px; background:rgba(138,124,240,.10); border-radius:8px; color:var(--mid); border-left:3px solid var(--mid);">▸ 수익화 정리 — 첫 세션 마찰 제거 (수익화 평가 무관 Q5 → 평가 기간 IT·IAP팝업 전체 off)</h3>
+<!-- R4 -->
+<div id="d-r4" class="card spec high">
+  <div class="spec-head"><span class="badge r">R4</span><h3>RV(x2 받기) 노출 게이트 — 클리어 3회까지 비노출</h3><span class="badge ts">AS-IS 0:10 / 0:46 / 1:54</span><span class="badge kpi">New UAP 60s · EQR ④</span><span class="parts"><span class="badge dev">개발</span><span class="badge plan">기획</span><span class="badge qa">QA</span></span></div>
+  <div class="cols">
+    <div>
+      <div class="sec-label problem">① 의도 · 현상</div>
+      <p class="body">첫 클리어(0:10)부터 모든 완료 화면에 <b>받기 / x2 받기</b> 2버튼이 뜨고, 광고 쪽(주황)이 더 크고 화려하다. 신규 유저가 더 큰 보상에 끌려 광고를 탔다가 30초짜리 RV에서 이탈하면 <b>광고가 New UAP 60s를 직접 깎는다.</b> 영상 내 완료 화면 3회 모두 동일 패턴.</p>
+      <div class="sec-label" style="color:var(--mid);">② 영향 (KPI)</div>
+      <p class="body" style="margin:0 0 6px;"><b>New UAP 60s · EQR ④</b></p>
+      <div class="sec-label fix">③ 작업</div>
+      <table>
+        <tr><td style="width:96px;">규칙</td><td>누적 클리어 &lt; N이면 x2 받기 비노출 — 받기 단일 버튼 중앙 배치. <b>계정 누적 클리어 기준</b>(세션 아님), 재방문 시에도 일관</td></tr>
+        <tr><td>적용 위치</td><td><b>밸런스시트(1oLb) <code>const</code> 탭</b>(PST_const.json) — 신규 행: <code>const_name</code>=<code>rv_double_unlock_clear_count</code>, <code>const_value</code>=<b>3</b>. 기존 <code>entry_cost_*</code> 행과 동일 구조(원격 조정 가능)</td></tr>
+        <tr class="wdone"><td><span class="badge plan wchip">기획</span></td><td>const 탭에 rv_double_unlock_clear_count=3 추가 (3 = 첫 60초 클리어 2회 완전 차단 + TUT_0003까지 광고 0)</td></tr>
+        <tr><td><span class="badge dev wchip">개발</span></td><td>누적 클리어 &lt; N이면 x2 버튼(2420/2421) 비노출·받기 단일 버튼 분기. 노출 후 광고 표식(필름 아이콘) 유지</td></tr>
+        <tr><td><span class="badge qa wchip">QA</span></td><td>1·2판 x2 미노출 / 3판부터 노출 / 재방문 시 누적 기준 유지 확인</td></tr>
+        <tr><td>수익 영향</td><td>첫 3판 한정. Toss 판당 RV 0.1476 기준 인당 최대 0.44회분이나 FTUE 초반 전환은 그보다 낮아 영향 미미 추정 — <b>Q3 ARPDAU 가드레일</b>로 모니터링(§2 그룹①)</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="shot"><img src="pst_ftue_assets/crop_rv_buttons.png"><div class="cap">AS-IS 0:10 — 첫 클리어 보상 버튼 (실제 캡처 확대). 광고(x2)가 기본 받기보다 시각 우위</div></div>
+      <div class="shot"><img src="pst_ftue_assets/12_clear3_rv.png"><div class="cap">AS-IS 1:54 — 세 번째 완료 화면까지 동일 패턴 반복</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- R11 -->
+<div id="d-r11" class="card spec high">
+  <div class="spec-head"><span class="badge r">R11</span><h3>전면(IT) 광고 — <span style="color:var(--low);">전체 off</span></h3><span class="badge ts">AS-IS 첫날 10.1%·중위 262초</span><span class="badge kpi">D14</span><span class="badge good">확정 IT off · 시트값만</span><span class="parts"><span class="badge qa">QA</span></span></div>
+  <div class="sec-label problem">① 의도 · 현상</div>
+  <p class="body">NRU 첫날 <b>10.1%가 전면(IT) 광고에 노출</b>, 중위 <b>262초</b>. 전면 광고는 RV(보상형·자발적)와 달리 <b>강제·비보상</b>이라 이탈 자극이 크다. <b>EQR V4 수익화 평가 무관(Q5, Meta 직접 확인)</b> → 평가 기간엔 첫 세션만이 아니라 <b>전부 끄는 게 CDR 최적</b>(평가 이득 0, 리텐션 리스크만).</p>
+  <div class="sec-label" style="color:var(--mid);">② 영향 (KPI)</div>
+      <p class="body" style="margin:0 0 6px;"><b>D14</b></p>
+      <div class="sec-label fix">③ 작업</div>
+  <table>
+    <tr><td style="width:96px;">규칙</td><td><b>전면 광고 전체 비노출</b>(평가 기간). 수동/보상형 RV(R4)는 자발적·잔존 +효과라 유지</td></tr>
+    <tr><td>적용 (시트)</td><td><b><code>const</code> <code>interstitial_ad_level_clear_interval</code> 3 → 0</b>("0=노출 안함"). <b>기존 변수 값 변경 → 개발 불필요</b>(클라가 기 참조)</td></tr>
+    <tr><td><span class="badge qa wchip">QA</span></td><td>전면 광고 전혀 안 뜨는지 확인</td></tr>
+    <tr><td>복원</td><td>Promoted 확보 후 다시 켤 때 interval 값 복귀(시트값만, 빌드 무관)</td></tr>
+  </table>
+</div>
+
+<!-- R12 -->
+<div id="d-r12" class="card spec">
+  <div class="spec-head"><span class="badge r">R12</span><h3>IAP 자동팝업(Starter Pack) — <span style="color:var(--low);">off</span></h3><span class="badge ts">AS-IS 첫날 4.0%·구매 0.1%</span><span class="badge kpi">D14</span><span class="badge good">확정 자동팝업 off · const 토글</span><span class="parts"><span class="badge dev">개발</span><span class="badge plan">기획</span><span class="badge qa">QA</span></span></div>
+  <div class="sec-label problem">① 의도 · 현상</div>
+  <p class="body"><code>special_offer_1</code>(Starter Pack, $1.99)가 <b>자동 팝업</b>된다. NRU 첫날 <b>4.0% 노출</b>(<code>8070_SPECIAL_DEAL_POPUP</code>), 구매 시도 0.1%, <b>97.5%가 그냥 닫음</b> — <b>전환 0의 순마찰</b>. <b>EQR V4 수익화 평가 무관(Q5)</b>이라 빼도 평가 손실 0.</p>
+  <div class="sec-label" style="color:var(--mid);">② 영향 (KPI)</div>
+      <p class="body" style="margin:0 0 6px;"><b>D14</b></p>
+      <div class="sec-label fix">③ 작업</div>
+  <table>
+    <tr><td style="width:96px;">규칙</td><td>special_offer <b>자동 팝업 비노출</b>(평가 기간). <b>유저 직접 상점 진입 노출은 유지</b>(차단 아님)</td></tr>
+    <tr><td>적용 (시트)</td><td><b>신규 const <code>is_iap_popup_open</code> = 0</b>(자동팝업 on/off 토글, 0=숨김). content_iap_popup(노출 레벨 게이트)은 15 유지. <span class="muted">999 하이게이트 편법 대신 전용 토글로 깔끔하게</span></td></tr>
+    <tr><td><span class="badge plan wchip">기획</span></td><td><code>const</code> is_iap_popup_open=0 추가 (✓ 라이브 반영)</td></tr>
+    <tr><td><span class="badge dev wchip">개발</span></td><td><b>신규 변수 → 개발 필요.</b> 클라가 <code>is_iap_popup_open</code>=0이면 자동팝업 미발동하도록 분기(<code>is_daily_wheel_open</code> 등과 동일 패턴)</td></tr>
+    <tr><td><span class="badge qa wchip">QA</span></td><td>자동 팝업 안 뜨는지 / 수동 상점 정상 확인</td></tr>
+    <tr><td>복원</td><td>Promoted 확보 후 <code>is_iap_popup_open</code>=1로 켜기(시트값만)</td></tr>
+  </table>
+</div>
+
+<h3 style="margin-top:30px; padding:7px 14px; background:rgba(138,124,240,.10); border-radius:8px; color:var(--accent); border-left:3px solid var(--accent);">▸ 복귀 페이싱 — 해금 타이밍 (시트값만·클라 기 참조)</h3>
+<!-- R7 -->
+<div id="d-r7" class="card spec">
+  <div class="spec-head"><span class="badge r">R7</span><h3>데일리 기프트 해금 시기 이동</h3><span class="badge ts">AS-IS 1:20~1:28</span><span class="badge kpi">WAU@14</span><span class="badge good">반영 content_daily_check Lv.7 (06/16)</span><span class="parts"><span class="badge dev">개발</span><span class="badge plan">기획</span><span class="badge qa">QA</span></span></div>
+  <div class="cols">
+    <div>
+      <div class="sec-label problem">① 의도 · 현상</div>
+      <p class="body">TUT_0004 클리어 후 시티 복귀 직후 <b>오늘의 선물(7일 출석) → 럭키 체스트 튜토리얼</b>이 연속 스택으로 뜬다. 둘 다 재방문 장치인데 첫 세션 한가운데에 연달아 소비되면서, 특히 데일리 기프트의 "내일 더 큰 보상" 메시지가 게임에 애착이 생기기 전에 휘발된다.</p>
+      <div class="sec-label" style="color:var(--mid);">② 영향 (KPI)</div>
+      <p class="body" style="margin:0 0 6px;"><b>WAU@14</b></p>
+      <div class="sec-label fix">③ 작업</div>
+      <table>
+        <tr><td style="width:96px;">실제 적용 (06/16)</td><td><b>출석 = <code>content_daily_check</code>, <code>condition_val</code> 4 → 7.</b> <span class="hl">원안의 content_streak이 아님</span> — streak(연속 보상 미터)은 인게임 핵심 콘텐츠라 해금 시점 미변경(5 유지). daily_check를 평균 첫 세션(9~10판) <b>안</b>인 7판에 둬, D1 7.5% 현실에서 "내일 보상" 락인을 <b>이탈 전</b> 노출 → D1 후킹</td></tr>
+        <tr><td>적용 위치</td><td><b>라이브 시트(1oLb) <code>unlock</code> 탭</b> <code>content_daily_check</code> 행 <code>condition_val</code> 7 (<code>condition_type</code>=level_clear 유지). 라이브 반영 + workspace <code>unlock_toss.json</code> sync 완료</td></tr>
+        <tr class="wdone"><td><span class="badge plan wchip">기획</span></td><td><code>unlock</code> content_daily_check <code>condition_val</code> 4→7 (✓ 라이브 반영 완료)</td></tr>
+        <tr class="wdone"><td><span class="badge dev wchip">개발</span></td><td><b>없음</b> — 클라가 unlock 파라미터(condition_val)를 기 참조, 시트값만으로 발효(기존 변수 값 변경)</td></tr>
+        <tr><td><span class="badge qa wchip">QA</span></td><td>출석이 더 이른 시점이 아닌 Lv.7(7판 클리어) 도달 시 해금되는지 확인</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="shot"><img src="pst_ftue_assets/09_daily_gift.png"><div class="cap">AS-IS 1:20 — 오늘의 선물 팝업 (이동 대상)</div></div>
+      <div class="shot"><img src="pst_ftue_assets/10_lucky_chest.png"><div class="cap">AS-IS 1:24 — 곧바로 럭키 체스트 튜토리얼 (현 위치 유지, 단독 노출화)</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- R9 -->
+<div id="d-r9" class="card spec high">
+  <div class="spec-head"><span class="badge r">R9</span><h3>신규 시스템 해금 캐스케이드 분산 — "데일리는 복귀했을 때 소개한다"</h3><span class="badge ts">AS-IS 0:30~4:48</span><span class="badge kpi">D14 · WAU@14</span><span class="badge good">반영 미션 Lv.13·휠 9 유지 (06/16)</span><span class="parts"><span class="badge dev">개발</span><span class="badge plan">기획</span><span class="badge qa">QA</span></span></div>
+  <div class="cols">
+    <div>
+      <div class="sec-label problem">① 의도 · 현상</div>
+      <p class="body">첫 5분에 시스템 소개 9개 — 평균 33초당 1개씩 새 개념이 주입되고, 특히 3:24~4:48에 데코·휠·베팅·미션 4개가 84초 안에 연쇄된다. 각 소개가 툴팁+팝업으로 플레이를 중단시키며, 학습이 누적되지 않고 휘발된다. "콘텐츠 많음" 인식은 자산이지만, <b>전부 첫 세션에 소비하면 세션 2 이후의 새로움이 남지 않는다</b> — D14 윈도우 14일을 채울 페이싱 자원의 조기 소진.</p>
+      <div class="sec-label" style="color:var(--mid);">② 영향 (KPI)</div>
+      <p class="body" style="margin:0 0 6px;"><b>D14 · WAU@14</b></p>
+      <div class="sec-label fix">③ 작업</div>
+      <p class="body" style="margin:0 0 6px;"><b>데일리 3종을 평균 첫 세션 종점(9~10판) "직후"인 레벨 11·12·13에 순차 배치.</b> 평균 유저는 세션 2 초반에 하나씩 만나 복귀 직후 "받을 것·돌릴 것·할 일"이 생기고, 헤비 유저는 첫 세션 후반에 자연 도달해 소외되지 않는다. 레벨 게이트라 세션 판정 의존이 없어 웹 환경에서도 안정적 — R7(데일리 기프트)도 같은 방식으로 통일.</p>
+      <table>
+        <tr><td style="width:96px;">세션 1 유지</td><td>입장료(R3)·리더보드(R8 봇 선행)·컬렉션 앨범·시티 데코·럭키 체스트 — 코어 루프와 메타의 뼈대 + 4시간 재방문 동기 1개</td></tr>
+        <tr><td>해금 레벨</td><td><b>실제 적용 (06/16):</b> 출석(content_daily_check) <b>7</b> · 데일리 휠(content_daily_wheel) <b>9 유지</b>(원안 12에서 조정 — 락인 콘텐츠를 첫 세션 밖으로 너무 미루지 않음) · 오늘의 미션(content_daily_task) <b>13</b>(능동 목표라 세션2). <span class="muted">streak(데일리 기프트로 오인했던 키)은 핵심 콘텐츠라 미변경</span></td></tr>
+        <tr><td>적용 위치</td><td>라이브 <code>unlock</code> 탭 — <code>content_daily_task</code> <code>condition_val</code> 10→13. <code>content_daily_wheel</code>은 9 유지(변경 없음). 둘 다 <b>기존 행</b>(신규 행 아님)</td></tr>
+        <tr class="wdone"><td><span class="badge plan wchip">기획</span></td><td><code>unlock</code> content_daily_task 10→13 · 휠 9 유지 (✓ 라이브 반영 완료)</td></tr>
+        <tr class="wdone"><td><span class="badge dev wchip">개발</span></td><td><b>없음</b> — 클라가 unlock 파라미터를 기 참조(기존 변수 값 변경, 캐스케이드 큐안은 드랍)</td></tr>
+        <tr><td><span class="badge qa wchip">QA</span></td><td>오늘의 미션 Lv.13 / 데일리 휠 Lv.9 해금 확인</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="shot"><img src="pst_ftue_assets/22_wheel_tutorial.png"><div class="cap">AS-IS 3:58 — 데일리 휠 소개 (R9: Lv.12 해금 지연 대상)</div></div>
+      <div class="shot"><img src="pst_ftue_assets/25_mission_unlock.png"><div class="cap">AS-IS 4:48 — 오늘의 미션 해금 (R9: Lv.13 해금 지연 대상)</div></div>
+      <div class="shot"><img src="pst_ftue_assets/21_deco_tutorial.png"><div class="cap">AS-IS 3:24 — 시티 데코 튜토리얼 (유지 — 코어 메타)</div></div>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:30px; padding:7px 14px; background:rgba(138,124,240,.10); border-radius:8px; color:var(--low); border-left:3px solid var(--low);">▸ 외부 채널</h3>
+<!-- 팬페이지 -->
+<div id="d-fan" class="card spec">
+  <div class="spec-head"><span class="badge r">팝업</span><h3>인박스 팬페이지 팔로우 팝업</h3><span class="badge kpi">팬페이지 팔로우 전환</span><span class="badge good">반영 const is_inbox_fanpage_follow_popup_open=0 (06/16)</span><span class="parts"><span class="badge dev">개발</span><span class="badge plan">기획</span><span class="badge qa">QA</span></span></div>
+  <div class="sec-label problem">① 의도 · 현상</div>
+  <p class="body">인박스(우편함) 지점에서 팬페이지 팔로우를 유도하는 팝업 — <b>외부 채널(팬페이지 팔로워) 확보 레버</b>. 소프트런칭 초기엔 off, 그래프·시점 무르익으면 on.</p>
+  <div class="sec-label" style="color:var(--mid);">② 영향 (KPI)</div>
+  <p class="body" style="margin:0 0 6px;"><b>팬페이지 팔로우 전환 (외부 채널)</b></p>
+  <div class="sec-label fix">③ 작업</div>
+  <table>
+    <tr><td style="width:96px;">적용 (시트)</td><td><b>신규 const <code>is_inbox_fanpage_follow_popup_open</code> = 0</b> (0=숨김, 1=노출)</td></tr>
+    <tr class="wdone"><td><span class="badge plan wchip">기획</span></td><td>const 추가 (✓ 라이브 반영)</td></tr>
+    <tr><td><span class="badge dev wchip">개발</span></td><td><b>신규 변수 → 개발 필요.</b> 클라가 플래그로 인박스 팬페이지 팝업 on/off 제어</td></tr>
+    <tr><td><span class="badge qa wchip">QA</span></td><td>0=미노출 / 1=노출 확인</td></tr>
+  </table>
+</div>
+
+<h3 style="margin-top:30px; padding:7px 14px; background:rgba(138,124,240,.10); border-radius:8px; color:var(--muted); border-left:3px solid var(--muted);">▸ 제외 / 작업 없음</h3>
+<!-- R1 · R6 제거 (06/16) -->
+<div class="card spec" style="opacity:.72;">
+  <div class="spec-head"><span class="badge r">R1 · R6</span><h3 style="text-decoration:line-through;">완료 화면 경량화 / 시티 씬 프리로드</h3><span class="badge" style="background:rgba(239,91,107,.15); color:var(--high);">제거 (06/16)</span></div>
+  <p class="body"><b>R1·R6 기획 제거.</b> 둘 다 라이브 빌드에서 정상 동작(R1 빈 전환 1초 미만·받기→다음판 정상 / R6 블랙스크린은 개발 환경 한정, 라이브 미발생)으로 확인돼 <b>실제 작업이 없는 항목</b>이라 기획에서 드랍. 별도 검증·개발 불필요.</p>
+</div>
+
+<!-- R2 -->
+<div class="card spec" style="opacity:.72;">
+  <div class="spec-head"><span class="badge r">R2</span><h3 style="text-decoration:line-through;">시티 복귀 — 보상 수령 이펙트 동안 콘텐츠 자연 노출</h3><span class="badge ts">AS-IS 0:26~0:30</span><span class="badge" style="background:rgba(239,91,107,.15); color:var(--high);">제외 (06/15)</span></div>
+  <div class="sec-label" style="color:var(--high);">스펙 제외 결정 (06/15)</div>
+  <p class="body"><b>R2 제외.</b> 시티 복귀 시퀀스에 별도 연출을 얹는 방향은 — 기존 이펙트 재활용·팝업 타이밍 시퀀싱뿐이라 해도 — 직접적 연출 추가가 게임 톤과 잘 맞지 않는다고 판단. 현 동작을 그대로 유지하며 본 스펙은 드랍한다. (R6 해소로 라이브에선 시티 첫 전환 블랙스크린도 없어 첫 인상 자체의 마찰은 이미 낮음)</p>
+</div>
+
+<!-- ============ 4. 계측 ============ -->
+<h2 id="sec-4">4. 계측 — 현존 이벤트로 충분 (신규 최소화)</h2>
+<div class="card">
+<p class="body"><b style="color:var(--low);">재평가 (06/16): 신규 계측 거의 불필요 — 현존 이벤트만으로 퍼널·이탈·리텐션 측정이 된다.</b> 실제 BigQuery 쿼리(nth_event × 300초 윈도우, NRU 필터)로 ① 퍼널 진행·도달률 ② 이탈 지점(마지막 nth_event) ③ 단계별 도달 시간 ④ <code>log_date</code>+<code>logincount_total</code>로 D1/D7/D14 코호트까지 전부 뽑힌다. 한 번에 배포하는 본 롤아웃의 attribution(퍼널 단계별 개선·이탈 이동)도 이 쿼리로 충분하다. <b>→ 계측 일감 = "신규 이벤트 개발"이 아니라 "현존 이벤트 쿼리 세트 정비".</b></p>
+<table>
+  <tr><th style="width:120px;">구분</th><th style="width:240px;">계측</th><th>비고</th></tr>
+  <tr><td><span class="badge low">현존 ✓</span></td><td><code>1010_LOAD</code> / <code>9990_FIRST_TOUCH</code> / <code>2150_CARD_MATCH</code> / <code>2400_FINISH_RESULT</code></td><td>로드·첫터치·첫매칭·클리어 퍼널 — 현존. <span class="hl">9990 언더로깅(51.8%) → 퍼널 신뢰지표는 TUTO 계열</span></td></tr>
+  <tr><td><span class="badge low">현존 ✓</span></td><td><code>1110/1120/1130_PLAYTIME_10S/30S/60S</code></td><td>10/30/60초 체류 — 60초 도달률 = 1130</td></tr>
+  <tr><td><span class="badge low">현존 ✓</span></td><td>nth_event 순서 · 300초 윈도우 · 마지막 nth_event</td><td><b>5분 체류·이탈 지점·세션 완료</b>를 모두 근사 → 신규 min5·quit_point·session_complete <b>불필요(드랍)</b></td></tr>
+  <tr><td><span class="badge" style="background:rgba(239,91,107,.13); color:var(--high);">드랍</span></td><td style="text-decoration:line-through;">ftue_session_complete / ftue_min5 / ftue_popup_impression / ftue_quit_point</td><td>현존 근사로 대체. <b>popup_impression은 R9 캐스케이드 큐를 안 하므로 측정 대상 자체가 없음</b></td></tr>
+  <tr><td><span class="badge mid">선택</span></td><td><code>level_index</code> (파라미터 1개)</td><td>"레벨 단위" 퍼널을 정밀하게 볼 때만. <b>현 쿼리는 event 코드 기반이라 스테이지 라벨 중복(TUT_0002@Lv9) 오염을 안 탐 → 지금은 불필요</b>, 추후 대비 옵션</td></tr>
+</table>
+<p class="body muted" style="margin-top:8px;"><b>게임 로그로 안 잡히는 2가지(별도 경로):</b> ① <b>좋아요 비율(R5·R8 KPI)</b> = Toss 플랫폼 수집(Alex 경유) — 어떤 게임 이벤트도 대체 못 함 · ② <b>변경 발효 확인</b>(R4 게이트 발동·친구패널 숨김 등) = 측정이 아니라 QA 영역. 코호트 사슬(첫 세션 완료 근사 → D1/D7/D14)은 현존 이벤트+log_date로 연결.</p>
+<p class="body" style="margin-top:8px;"><span class="hl">참고(추후):</span> 레벨 9에 <code>TUT_0002</code> 스테이지 라벨 재등장으로 <b>스테이지 라벨 기준</b> 분석은 오염될 수 있음 — 단 현 퍼널 분석은 event 코드 기반이라 무관. 레벨 단위 분석이 필요해지면 그때 <code>level_index</code> 추가.</p>
+</div>
+
+<!-- ============ 5. 결정 사항 ============ -->
+<h2 id="sec-5">5. 결정 사항 (확정 — 시뮬레이션 검증 완료)</h2>
+<div class="card">
+<table>
+  <tr><th style="width:60px;">#</th><th style="width:200px;">항목</th><th>확정 내용과 근거</th><th style="width:130px;">상태</th></tr>
+  <tr><td><span class="badge decide">D1</span></td><td>친구 패널 게이트 (R5)</td><td><b>const <code>friend_panel_unlock_level</code> = 15.</b> 빈 친구 패널 = 빈 리더보드 같은 첫인상 마찰(R8과 동류). 빈 소셜 그래프 회피 + 게임 몰입 시점 노출, const라 DAU 확보 후 하향 튜닝</td><td><span class="badge good">확정</span></td></tr>
+  <tr><td><span class="badge decide">D3</span></td><td>리더보드 봇 (R8)</td><td><b>구체 설계는 서버팀 재량</b>(이전 프로젝트 경험). 기획이 바라는 결과만: ① 초기부터 자연스럽게 채워져 보일 것 ② 같은 세션 내 동일 봇 유지 ③ 자연스럽게(추월 가능) ④ 보상은 봇 제외. <span class="muted">(§3 R8 · 부록 B 시뮬레이션은 참고용 초안)</span></td><td><span class="badge good">서버 재량</span></td></tr>
+  <tr><td><span class="badge decide">D4</span></td><td>데일리 페이싱 (R7·R9)</td><td><b>출석(content_daily_check) Lv.7 · 오늘의 미션(content_daily_task) Lv.13 · 데일리 휠 9.</b> 출석은 평균 첫 세션(9~10판) 안에 둬 "내일 보상" 락인을 이탈 전 노출(D1 후킹), 미션은 능동 목표라 세션2로</td><td><span class="badge good">확정</span></td></tr>
+  <tr><td><span class="badge decide">D6</span></td><td>전면(IT) 광고 (R11)</td><td><b>전체 off.</b> 수익화 평가 무관(Q5, Meta 직접 확인)이라 평가 기간엔 전부 제거. <code>const interstitial_ad_level_clear_interval</code> = 0("0=노출 안함", 시트값만·개발 불필요). 보상형 RV(R4)는 자발적·잔존 +효과라 유지. Promoted 확보 후 복원</td><td><span class="badge good">확정</span></td></tr>
+  <tr><td><span class="badge decide">D7</span></td><td>IAP 자동팝업 (R12)</td><td><b>자동팝업 off.</b> 수익화 평가 무관(Q5) → 전환 0의 순마찰 제거. <b>신규 const <code>is_iap_popup_open</code>=0</b>(전용 on/off 토글, 999 하이게이트 편법 대신). content_iap_popup 15 유지. <b>클라 구현 필요</b>. Promoted 후 켜기</td><td><span class="badge good">확정</span></td></tr>
+</table>
+</div>
+
+<!-- ============ 6. 검증 ============ -->
+<h2 id="sec-6">6. 성공 기준과 검증 계획</h2>
+<div class="card">
+<table>
+  <tr><th style="width:240px;">지표</th><th style="width:190px;">베이스라인</th><th>목표</th></tr>
+  <tr><td>60초 체류 도달률</td><td><b>42.7%</b> (실측 06/15, §A)</td><td>R-set 적용 후 +1~2pp 예측(§A-3) → 소프트런칭 W1 실측 재확인</td></tr>
+  <tr><td>첫 터치 도달률</td><td>Toss v188 누적 80.3%</td><td>IG ≥ 80% 재현 — 미달 시 플랫폼 고유 마찰 조사 우선</td></tr>
+  <tr><td>첫 클리어 도달 시간</td><td><b>p50 28초</b> (실측 06/15, §A)</td><td>중위값 ≤ 15초 목표 — 현재 1.9배. 튜토리얼 내부 이탈(§A-3)이 주원인</td></tr>
+  <tr><td>시티 전환 무반응 시간</td><td>개발 환경 2~4초 (라이브 미발생 확인)</td><td>라이브 빌드 0초 검증 1회 + <code>city_load_ms</code>로 IG 저속 환경 상시 확인</td></tr>
+  <tr><td>60초 내 비플레이 마찰 요소</td><td>완료 2(RV 포함)·레벨 팝업 2</td><td>첫 세션 RV·강제광고·손실 프레임 0 (R4·R11·R3). <span class="muted">R1·R6은 라이브 정상 동작 확인으로 제거</span></td></tr>
+  <tr><td>ARPDAU (가드레일)</td><td>소프트런칭 W1</td><td>R4·R11로 인한 유의미한 하락 없음 — 하락 시 R4 N값 조정. 수익화는 EQR 제출 빌드에 포함되므로 평가 전 모니터</td></tr>
+  <tr><td><b>첫 세션 완료율</b> <span class="badge mid" style="font-size:10px;">v0.4</span></td><td>소프트런칭 W1 실측</td><td>Meta 명시 D14 직결 변수 — W2에 베이스라인 +5pp</td></tr>
+  <tr><td><b>D14 코호트 리텐션</b> <span class="badge mid" style="font-size:10px;">v0.4</span></td><td>소프트런칭 첫 코호트 (7/8 진입분 → 7/22 측정)</td><td>CDR 시그널 본체 — 첫 세션 완료 여부별 분리 측정으로 인과 검증</td></tr>
+  <tr><td><b>지역(Asia) DAU</b> <span class="badge mid" style="font-size:10px;">v0.4</span></td><td>—</td><td><b>300+ 유지</b> — CDR 신뢰 시그널 최소선. 미달 시 글로벌 폴백 평가 리스크 (P2 유입 목표와 공유)</td></tr>
+</table>
+<p class="body muted" style="margin-top:8px;">검증 순서: ① Toss 프록시로 베이스라인 가설(06/13) → ② 소프트런칭 W1 실측(~07/14) → ③ 괴리 구간 튜닝 → ④ CSB 진입. <b>Meta 회신으로 CSB 30일 중 온보딩·밸런스 업데이트가 공식 허용되어, 검증은 출시 게이트 1회가 아니라 30일 연속 튜닝 루프로 운영한다</b> (단, D14 윈도우가 14일이므로 CSB 전반부 개선일수록 시그널 반영 기회가 큼 — 빠른 이터레이션 우선).</p>
+</div>
+
+<!-- ============ 7. 공수 ============ -->
+<h2 id="sec-7">7. 개발 공수 추정과 스코프 컷 라인</h2>
+<div class="card">
+<table>
+  <tr><th style="width:60px;">스펙</th><th>작업</th><th style="width:90px;">공수(추정)</th><th style="width:100px;">우선순위</th></tr>
+  <tr><td>R4</td><td>RV 노출 게이트 (카운터+분기)</td><td>0.3d</td><td><span class="badge high">필수</span></td></tr>
+  <tr><td>R3</td><td>입장료 카피 교체 — string 전 로케일 반영 완료(클라 작업 없음)</td><td>0d</td><td><span class="badge low">완료·QA</span></td></tr>
+  <tr style="opacity:.55;"><td style="text-decoration:line-through;">R1</td><td style="text-decoration:line-through;">완료 화면</td><td>—</td><td><span class="badge" style="background:rgba(239,91,107,.15); color:var(--high);">제거 (06/16)</span></td></tr>
+  <tr style="opacity:.55;"><td style="text-decoration:line-through;">R6</td><td style="text-decoration:line-through;">시티 전환</td><td>—</td><td><span class="badge" style="background:rgba(239,91,107,.15); color:var(--high);">제거 (06/16)</span></td></tr>
+  <tr><td>계측</td><td><span class="hl">[재평가 06/16]</span> 신규 4종 <b>드랍</b> — 현존 이벤트 쿼리로 충분(§4). level_index만 선택(0~0.1d)</td><td>~0d</td><td><span class="badge low">현존 활용</span></td></tr>
+  <tr style="opacity:.6;"><td>R2</td><td style="text-decoration:line-through;">시티 복귀 팝업 시퀀싱</td><td>—</td><td><span class="badge" style="background:rgba(239,91,107,.15); color:var(--high);">제외</span></td></tr>
+  <tr><td>R5</td><td>친구 패널 레벨 게이트 (레벨&lt;15 비표시 + 부스터 그레이스케일)</td><td>0.3d</td><td><span class="badge mid">권장</span></td></tr>
+  <tr><td>R7</td><td>출석 해금 — 시트값만, 클라 기 참조</td><td>0d</td><td><span class="badge low">완료·QA</span></td></tr>
+  <tr><td>R9</td><td>미션 해금 — 시트값만, 클라 기 참조 (캐스케이드 큐안 드랍)</td><td>0d</td><td><span class="badge low">완료·QA</span></td></tr>
+  <tr><td>R11</td><td>전면(IT) 광고 전체 off — interval=0(기존 변수). 클라가 0=off honor하는지 <b>개발 확인</b></td><td>~0d</td><td><span class="badge mid">개발 확인 + QA</span></td></tr>
+  <tr><td>R12</td><td>IAP 자동팝업 off — 신규 const <code>is_iap_popup_open</code>=0. 클라가 플래그로 자동팝업 제어</td><td>0.2d</td><td><span class="badge mid">개발 필요</span></td></tr>
+  <tr><td>팬페이지</td><td>인박스 팬페이지 팝업 on/off 제어 (const 플래그)</td><td>0.2d</td><td><span class="badge mid">권장</span></td></tr>
+  <tr><td>R8</td><td>리더보드 봇 시드 (서버)</td><td>1.5d</td><td><span class="badge low">병행</span></td></tr>
+  <tr><td colspan="2"><b>합계 (클라 빌드 작업, R8 서버 제외)</b></td><td><b>~0.8d</b></td><td class="muted">R4 0.3 + R5 0.3 + 팬페이지 0.2 / 나머지 0d·QA</td></tr>
+</table>
+<p class="body" style="margin-top:8px;"><b>대부분이 시트 반영으로 완료(R3·R7·R9·R11·R12 = 0d·QA만), 계측 신규 없음.</b> 남은 클라 빌드 = <b>R4·R5·팬페이지 ~0.8d</b> (R8 서버 1.5d 별도·병행). <span class="hl">선결: §8 Open Questions(R4 누적클리어수 소스·R5 제어 방식) 해소 후 공수 확정.</span></p>
+</div>
+
+<!-- ============ 부록 (Appendix) ============ -->
+<h2 id="sec-appendix" style="border-left-color:var(--muted); color:var(--muted); margin-top:64px;">부록 (Appendix) — 배경 · 분석 자료</h2>
+<p class="sub" style="margin-bottom:20px;">아래는 실제 진행 업무가 아니라 의사결정 근거·분석 자료다. 본문(2~8장) 결론의 출처로 참조. A 베이스라인 분석 · B 시뮬레이션 · C 첫 5분 분석 · D AS-IS/TO-BE · E 지킬 것(강점) · F Meta 회신 함의.</p>
+
+<!-- ============ 부록 A. 베이스라인 & 개선 예측 ============ -->
+<h2>부록 A. 베이스라인 실측 & 개선 예측 — 출시 전 시뮬레이션 (BigQuery Toss, 2026-06-15)</h2>
+<div class="card">
+<p class="body">소프트런칭 전 <b>현 라이브(AS-IS) 상태를 BigQuery Toss로 실측</b>해 비교 기준을 만들고, 각 웨이브의 개선폭을 예측한다. 데이터: <code>solitaire_city_journey_toss</code> 최근 14일(NRU 1,958명) / 코호트는 D14 관측가능 구간(n=2,980). 쿼리 <code>pst_ftue_wave1_queries.sql</code>.</p>
+
+<h3>A-1. AS-IS 베이스라인 (실측값)</h3>
+<table>
+  <tr><th style="width:230px;">지표</th><th style="width:110px;">실측</th><th>해석</th></tr>
+  <tr><td>60초 체류율</td><td><b>42.7%</b></td><td>10초 66.2% → 30초 51.4% → 60초 42.7%. 초반 급감</td></tr>
+  <tr><td>첫 클리어 도달률 / 시간</td><td><b>48.8% / p50 28초</b></td><td>NRU 절반만 첫 보드 클리어. 중위 28초 = 목표 ≤15초의 1.9배(숙련자 10초)</td></tr>
+  <tr><td>D1 / D7 / D14 리텐션</td><td><b>7.5% / 2.0% / 1.2%</b></td><td>인스턴트플레이(웹·무설치) 특성상 구조적으로 낮음 — CDR은 지역 상대평가라 절대값보다 개선 추세가 관건</td></tr>
+  <tr><td>클리어당 받기 / x2 시도 / RV 완주</td><td>76.7% / 21.2% / <b>90.4%</b></td><td>RV 완주율 90% = 광고 자체 이탈은 작음(~9.6%)</td></tr>
+  <tr><td class="hl">이탈 지점 1위 — 튜토리얼 인트로</td><td class="hl"><b>27.0%</b></td><td class="hl">NRU 마지막 이벤트 1위가 <code>2110_TUTO_INGAME_INTRO</code>. + 튜토 스텝 11.1% → <b>이탈의 ~43%가 튜토리얼 내부</b></td></tr>
+  <tr><td>이탈 지점 — 완료화면 / 로드후 / 입장팝업</td><td>9.2% / 8.6% / 3.2%</td><td><code>2400</code> 완료화면(R1) 9.2% · <code>1010</code> 로드 직후 8.6% · <code>2090</code> 입장팝업(R3) 3.2%</td></tr>
+  <tr><td>첫 세션 수익화 노출 — IT광고 / IAP오퍼 / 상점</td><td>10.1% / 4.0% / 3.2%</td><td>IT(<code>4000</code>) 중위 262초·강제 비보상 → R11(const <code>interstitial_ad_level_clear_interval</code>) · 오퍼 팝업(<code>8070</code>) 중위 748초·구매 0.1%·97.5% 닫음 → R12(Lv.14↑+맥락) · EQR 수익 미평가라 제거 가능</td></tr>
+</table>
+
+<h3>A-2. R4 RV 게이트 — 데이터 재검증 (가설 수정)</h3>
+<div class="obs" style="margin-top:0;"><span class="lbl">발견</span>첫날 RV 진입 NRU의 D1 <b>9.6%</b> vs 미진입 <b>5.8%</b> — <b>RV 시청자가 오히려 더 잘 남는다</b>(인게이지먼트 프록시). RV 완주율도 90.4%로 광고 이탈은 작음. → <b>R4의 "초기 RV가 리텐션을 깎는다" 가설은 실데이터로 기각</b>. R4는 리텐션 개선장치가 아니라 <b>EQR ④ 광고정책 준수·온보딩 청결</b> 목적으로 재정의. 수익 영향(x2 시도 21%, 첫 3판 한정)은 Q3 ARPDAU 가드레일로만 관리, 별도 리텐션 KPI 미부여.</div>
+
+<h3>A-3. 개선 예측 (웨이브별, 보수적)</h3>
+<p class="body muted" style="margin:0 0 8px;">모델: 각 수정의 <b>대응 이탈지점 share × 회복률(유사 온보딩 A/B 기준 10~25%)</b>. 정밀 측정은 업데이트별 실측으로 대체.</p>
+<table>
+  <tr><th style="width:160px;">웨이브 / 일감</th><th style="width:150px;">대상 지표</th><th>예측 개선폭</th></tr>
+  <tr><td><b>W1 R3</b> 입장료 카피</td><td>입장팝업 이탈 3.2%</td><td>손실 프레임 제거로 일부 회복 → 진행률 <b>+0.3~0.6pp</b> (0공수 대비 양호)</td></tr>
+  <tr><td><b>W1 R1·R6</b> 완료화면·로드</td><td>완료화면 이탈 9.2%</td><td>현 동작 정상 확인만 — <b>~0</b> (이미 마찰 낮음)</td></tr>
+  <tr><td><b>W1 R4</b> RV 게이트</td><td>리텐션</td><td><b>~0 (데이터 기각)</b> · 목적은 광고정책 준수 · 수익은 가드레일 관리</td></tr>
+  <tr><td><b>W1 R8</b> 리더보드 봇</td><td>좋아요 비율(평점)</td><td>빈 리더보드 이탈 &lt;2% → 리텐션 직접효과 작음. <b>평점 시그널(CDR ③) 개선이 주효과</b> — 정성</td></tr>
+  <tr><td><b>W2 R9·R7·R5</b> 페이싱·게이트</td><td>D14 · 세션2+ 신규성</td><td>캐스케이드(84초 4시스템) 완화로 세션2+ 새로움 보존 → <b>D14 +0.1~0.3pp</b> (정성, 누적효과)</td></tr>
+  <tr><td><b>W3 R10</b> 베팅 완화</td><td>잔고 고갈 이탈</td><td>골드 트랜잭션 이탈(3.7%) 일부 완화 — <b>관찰 후 확정</b></td></tr>
+  <tr><td colspan="2"><b>R-set 합산 예측</b></td><td>60초 체류 42.7% → <b>43.5~45% (+1~2pp)</b> · D14 1.2% → <b>1.3~1.5% (+0.1~0.3pp)</b></td></tr>
+</table>
+
+<div class="gate" style="margin-top:12px;"><span class="lbl">⚠ 데이터가 가리키는 진짜 레버 (R-set 범위 밖)</span><b>NRU 이탈의 ~43%가 튜토리얼 내부</b>(인트로 27% + 스텝 11%)에서 발생하고, 첫 클리어 도달이 48.8%에 불과하다. R1~R10은 모두 <b>튜토리얼을 통과한 뒤</b>의 마찰을 다루므로, 현 스코프만으로 큰 리텐션 점프는 어렵다. 아래 §A-4에서 이 드롭을 분해했다.</div>
+
+<h3 style="margin-top:18px;">A-4. 튜토 인트로 <code>2110</code> 27% 드롭 — 원인 분해</h3>
+<p class="body">신뢰 가능한 TUTO 경로로 첫 세션 퍼널을 재구성(% = 전체 NRU 대비, 괄호=로그인 후 중위 경과초):</p>
+<div class="flow">
+  <div class="step"><div class="t">0s</div>1000 로그인<br><b>100%</b></div><div class="arrow">→</div>
+  <div class="step"><div class="t">1s</div>1010 로드<br><b>96.9%</b></div><div class="arrow">→</div>
+  <div class="step"><div class="t">3s</div>2110 인트로<br><b>88.6%</b></div><div class="arrow">→</div>
+  <div class="step cut"><div class="t">7s</div>2141 첫스텝<br><b>61.5%</b><br><span style="color:var(--high);">−27.1pp</span></div><div class="arrow">→</div>
+  <div class="step"><div class="t">11s</div>2150 첫매칭<br><b>50.8%</b></div><div class="arrow">→</div>
+  <div class="step"><div class="t">28s</div>2400 첫클리어<br><b>48.8%</b></div>
+</div>
+<p class="body" style="margin-top:6px;"><b>단일 최대 누수 = 인트로(2110) → 첫 스텝완료(2141), 로그인 후 3~7초 구간에서 27pp 증발.</b> 가설을 단계적으로 검증한 결과, 원인은 OS도 튜토리얼 설계도 아닌 <b>유입경로(트래픽 의도)</b>로 좁혀졌다:</p>
+<table>
+  <tr><th style="width:210px;">가설</th><th>검증</th><th style="width:140px;">결론</th></tr>
+  <tr><td>① 로드/렌더 지연(죽은 화면)</td><td>로드(1010)→인트로(2110) p50 <b>2초</b>·양 OS 동일. 진행자는 인트로→첫스텝 3~4초로 빠름</td><td><b>원인 아님</b></td></tr>
+  <tr><td>② iOS 웹뷰 기술 페널티</td><td>블렌디드로는 iOS 55% vs 비iOS 72%로 보였으나 — <b>유입경로 통제 시 promotion에선 iOS 82.7% ≈ 비iOS 81.4%로 격차 소멸</b>. iOS의 74%가 push에 몰려 생긴 <b>심슨의 역설</b>이었음</td><td><b>주원인 아님</b> (push 내 잔여 iOS −13pp는 2차 과제)</td></tr>
+  <tr><td class="hl">③ 유입경로(트래픽 의도)</td><td class="hl">동일 화면 통과율이 <b>promotion 81~83% vs push 43~56%</b> — OS 무관 <b>~30pp 격차</b>. push(Toss 알림 노출→무심코 탭)는 저의도, promotion은 고의도. 06/10 "드롭"의 정체 = promotion→push 트래픽 믹스 시프트(캠페인 종료)</td><td class="hl"><b>지배적 원인</b></td></tr>
+</table>
+<div class="gate" style="margin-top:10px;"><span class="lbl">정정된 결론 & 권고 액션</span>
+<b>튜토리얼 자체는 고의도(promotion) 트래픽에서 82% 통과로 멀쩡하다.</b> 27% 드롭의 본질은 온보딩·iOS 버그가 아니라 <b>push 유입의 저의도</b>다(통과 ~45%). 따라서: · <b>[P2 유입·최우선]</b> push 노출 타겟팅/품질이 진짜 레버 — UA·Toss와 push 서피싱 조건 점검, 또는 push NRU는 기대 전환을 낮게 잡고 평가. · <b>[계측 필수]</b> 모든 FTUE·리텐션 KPI를 <b>entrypoint별로 분리</b>해서 읽을 것 — 블렌디드 베이스라인(60초 42.7%·D14 1.2%)은 push 비중에 오염됨. · <b>[2차]</b> push 내 잔여 iOS −13pp만 별도 저순위 확인. · "첫 승리 10초=강점"은 <b>고의도 유저에서 유효</b>로 재기술. R-set은 이 트래픽 문제를 못 고치므로 리텐션 점프는 유입 품질 개선과 분담.</div>
+</div>
+
+<!-- ============ 부록 B. 시뮬레이션 ============ -->
+<h2>부록 B. 시뮬레이션 검증 (확정 파라미터 기준)</h2>
+<div class="card">
+<p class="body"><b>방법:</b> 확정 파라미터(RV=3클리어, 친구 패널 Lv.6, 데일리 Lv.11/12/13, 복귀당 소개 ≤1, 봇 3밴드)로 4개 페르소나의 7일 진행을 시뮬레이션. 승률: 튜토리얼 100%, 이후 75%. 페르소나: 평균(9~10판/일) / 헤비(D1 18판) / 라이트(5판/일) / 이탈위험(3판 후 미복귀).</p>
+
+<h3>검증 통과 항목</h3>
+<table>
+  <tr><th style="width:280px;">체크</th><th>결과</th></tr>
+  <tr><td>첫 60초(클리어 1~2) 내 광고·시스템 소개 0</td><td>✅ 전 페르소나 — RV 첫 노출은 정확히 클리어 #3</td></tr>
+  <tr><td>시티 복귀 1회당 소개 ≤ 1</td><td>✅ 전 페르소나 위반 0 — 헤비 유저가 한 세션에 Lv.13까지 돌파해도 소개는 복귀마다 1개씩 순차 (기프트→판10 복귀, 휠→판11, 미션→판12)</td></tr>
+  <tr><td>평균 유저: 데일리 3종이 세션 경계에 분산되는가</td><td>✅ D1 마지막 복귀에 기프트(= 종료 모멘트의 "내일 보상" 예고 — D1 후킹 의도와 정합), D2 초반에 휠·미션 순차</td></tr>
+  <tr><td>라이트 유저(5판/일) 소외 없는가</td><td>✅ D2 기프트, D3 휠·미션 — 오히려 D2·D3 복귀 보상으로 작동</td></tr>
+  <tr><td>리더보드: 추월 경험이 기본값인가</td><td>✅ 평균 D1 25위 → D2 17위 → D7 13위 (주간 추월 13명). 라이트도 D3 19위 → D7 16위. 헤비 D1부터 17위</td></tr>
+</table>
+
+<h3>시뮬레이션이 잡아낸 설계 결함 2건 (보정 완료)</h3>
+<table>
+  <tr><th style="width:280px;">발견</th><th>보정</th></tr>
+  <tr><td>봇 하위 밴드 초안(5~50점)에서 <b>신규 유저 D1 = 26명 중 꼴찌</b> — "절망 격차 금지" 의도 위반</td><td>하위 밴드 시작점을 2~25점으로 하향 → D1부터 추월 대상 존재</td></tr>
+  <tr><td>봇 일괄 성장(+2~6/일)이 라이트·평균 유저의 추월을 계속 무효화 — D2에 추월 6명이 증가 후 2명으로 역전</td><td>밴드별 차등 성장 도입: 하위 +0~1/일(휴면 역할) — 추월이 누적·유지됨</td></tr>
+</table>
+
+<h3>의도적 허용 (결함 아님)</h3>
+<ul>
+  <li><b>이탈위험군(3판)은 시스템 소개 0</b> — 럭키 체스트(판4 트리거)도 못 만남. 이 군의 복귀는 인게임 장치가 아닌 봇 메시지(P0-3)의 역할로 정의</li>
+  <li><b>헤비 유저는 D1에 데일리 3종을 모두 만남</b> — 첫 세션 후반 자연 도달이므로 소외 방지 의도에 부합. 단 캐스케이드는 복귀당 1개 규칙으로 통제됨</li>
+</ul>
+<p class="body muted" style="margin-top:6px;">시뮬레이션 스크립트: <code>pst_ftue_sim.py</code> (리포 보존 — 파라미터 변경 시 재실행으로 회귀 검증). 한계: 승률·스타 획득량은 가정값(75% / 승당 1.5) — 소프트런칭 실측으로 보정 필요.</p>
+</div>
+
+<!-- ============ 부록 C. 첫 5분 분석 ============ -->
+<h2>부록 C. 첫 5분 확장 분석 (06/11 추가 레코딩 5분 57초)</h2>
+<div class="card">
+<p class="body">Meta "첫 5분" 기준에 맞춰 풀 세션 레코딩(5:57)을 추가 분석. 0~2분은 1차 영상과 동일 플로우 재확인. <b>2~6분 구간에서 신규 시스템 소개가 연쇄적으로 쏟아진다:</b></p>
+<table style="margin-top:8px;">
+  <tr><th style="width:80px;">시점</th><th>해금/소개</th><th style="width:230px;">비고</th></tr>
+  <tr><td>0:30</td><td>① 입장료</td><td>R3 카피 교체 — 유지</td></tr>
+  <tr><td>1:20 / 1:24</td><td>② 데일리 기프트 / ③ 럭키 체스트</td><td>②는 R7로 세션 2 이동 결정</td></tr>
+  <tr><td>1:52</td><td>④ 리더보드</td><td>R8 봇 충전 선행 조건</td></tr>
+  <tr><td>2:24</td><td>⑤ 컬렉션 앨범 ("퍼즐 피스를 모아보세요")</td><td>수집 후킹 — 유지 적합</td></tr>
+  <tr><td>3:24</td><td>⑥ 시티 데코 ("탭해서 꾸며봐요", 업그레이드 0/15)</td><td>코어 메타 — 유지 적합</td></tr>
+  <tr><td>3:58</td><td>⑦ 데일리 휠</td><td rowspan="2" style="vertical-align:middle;"><b>84초 안에 4개 시스템</b> 연쇄 소개 (3:24~4:48)</td></tr>
+  <tr><td>4:16</td><td>⑧ 베팅(배수) + 입장료 1,200→1,800 인상</td></tr>
+  <tr><td>4:48</td><td>⑨ 오늘의 미션 (데일리 태스크)</td><td>—</td></tr>
+  <tr><td>4:32~</td><td>첫 일반 스테이지(CC_0145) 진입, 새 비주얼 테마</td><td>✅ 튜토리얼 졸업 시점 양호 (판수 ~10판 = 평균 정합)</td></tr>
+</table>
+<p class="body muted" style="margin-top:8px;">긍정 확인: 세션 종료 화면이 시티(자연 종료 시) — 마지막 인상 양호 / 데코 첫 경험과 일반 스테이지 전환 페이싱은 평균 판수(9~10판)와 정합 / 새 테마 전환이 "콘텐츠 많음" 인식에 기여.</p>
+</div>
+
+<!-- ============ 부록 D. AS-IS / TO-BE ============ -->
+<h2>부록 D. AS-IS → TO-BE 플로우</h2>
+<div class="card">
+<h3>AS-IS (실측, 숙련자 기준 — 신규 유저는 각 구간이 더 늘어짐)</h3>
+<div class="flow">
+  <div class="step"><div class="t">0:00~0:08</div>보드1</div><div class="arrow">→</div>
+  <div class="step cut"><div class="t">0:10</div>완료 화면<br><b>+RV 버튼</b></div><div class="arrow">→</div>
+  <div class="step"><div class="t">0:14~0:22</div>보드2</div><div class="arrow">→</div>
+  <div class="step cut"><div class="t">0:24</div>완료 화면<br><b>+RV 버튼</b></div><div class="arrow">→</div>
+  <div class="step cut"><div class="t">0:26</div><b>블랙스크린<br>2~4초</b></div><div class="arrow">→</div>
+  <div class="step"><div class="t">0:28</div>시티 진입</div><div class="arrow">→</div>
+  <div class="step cut"><div class="t">0:30</div>레벨 팝업<br><b>"입장료 필요"</b></div><div class="arrow">→</div>
+  <div class="step"><div class="t">0:32~0:44</div>보드3</div><div class="arrow">→</div>
+  <div class="step cut"><div class="t">0:46~0:52</div>완료→시티→팝업<br><b>"친구 없음"</b></div><div class="arrow">→</div>
+  <div class="step"><div class="t">0:56~</div>보드4</div>
+</div>
+<p class="body muted">60초 내 화면 전환 8회+ · 광고 진입로 2회 · 손실 프레임 1회 · 죽은 화면 1회 · 빈 소셜 1회</p>
+
+<h3 style="margin-top:22px;">TO-BE (R1~R6 적용 후)</h3>
+<div class="flow">
+  <div class="step"><div class="t">0:00~0:08</div>보드1</div><div class="arrow">→</div>
+  <div class="step new"><div class="t">0:10</div>완료 화면<br><b>받기 1버튼·생색 연출</b></div><div class="arrow">→</div>
+  <div class="step new"><div class="t">0:12~0:20</div>보드2<br><b>(빈 전환 제거, 즉시 딜)</b></div><div class="arrow">→</div>
+  <div class="step new"><div class="t">0:22</div>완료 화면<br>받기 1버튼</div><div class="arrow">→</div>
+  <div class="step new"><div class="t">0:24~0:30</div><b>시티 복귀+보상 수령 이펙트</b><br>이펙트 중 콘텐츠 자연 노출·팝업 0</div><div class="arrow">→</div>
+  <div class="step new"><div class="t">0:31</div>레벨 팝업<br><b>보상 프레임 카피</b></div><div class="arrow">→</div>
+  <div class="step"><div class="t">0:33~0:45</div>보드3</div><div class="arrow">→</div>
+  <div class="step"><div class="t">0:47~</div>완료 화면<br>(RV 없음)→보드4</div>
+</div>
+<p class="body muted">60초 내: 승리 2회(받기 액션 유지) + 시티 자연 노출 1회 · 광고 0 · 죽은 화면 0 · 손실 프레임 0 · 빈 소셜 0 · 빈 전환 화면 0</p>
+</div>
+
+<!-- ============ 부록 E. 지킬 것 ============ -->
+<h2>부록 E. 지킬 것 — 검증된 강점 (변경 금지)</h2>
+<div class="card spec good">
+  <div class="spec-head"><span class="badge good">GOOD</span><h3>첫 승리 10초 · 플레이가 곧 튜토리얼</h3><span class="badge ts">0:00 ~ 0:10</span></div>
+  <div class="cols">
+    <div>
+      <p class="body">진입 즉시 TUT_0001 보드가 떠 있고, 첫 보드는 2·3·4·5 순차 클리어가 강제되는 구성이라 실패할 수 없다. 별도 튜토리얼 화면 없이 마스코트 말풍선 하나로 학습이 끝나며 <b>첫 승리가 10초에 완결</b>된다. 60초 안에 승리 경험이 2~3회 들어가는 이 구조가 New UAP 60s의 가장 강력한 장치다.</p>
+      <p class="body" style="margin-top:8px;">아래 R1~R8은 전부 이 플레이 구간 <b>바깥</b>의 변경이다. 보드 구성·딜 속도·말풍선 가이드는 변경 금지.</p>
+    </div>
+    <div>
+      <div class="shot"><img src="pst_ftue_assets/00_first_board.png"><div class="cap">0:00 — 진입 즉시 첫 보드 + 말풍선 가이드</div></div>
+      <div class="shot"><img src="pst_ftue_assets/01_first_clear_imminent.png"><div class="cap">0:06 — J·Q·K·A 연쇄, 10초에 첫 승리</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+<h2 style="margin-top:0;">부록 F. Meta 회신(06/11) 함의 5가지</h2>
+<table>
+  <tr><th style="width:200px;">회신 내용</th><th>본 기획 반영</th></tr>
+  <tr>
+    <td><b>평가 = D14 리텐션 중심</b><br><span class="muted">"첫 세션 완료율 → D14 직접 영향", 투자 1순위 = 온보딩</span></td>
+    <td>본 기획(R1~R8)의 우선순위가 Meta 공식 가이드로 검증됨. 측정 목표를 60초 통과율에서 <b>첫 세션 완료율 + D14 코호트</b>로 확장 — 계측에 세션 완료 이벤트 추가(§4)</td>
+  </tr>
+  <tr>
+    <td><b>"첫 5분"이 기준 단위</b></td>
+    <td><b>분석 완료 (06/11 추가 레코딩 5분 57초)</b> — §C에 2~6분 구간 분석 추가. 핵심 발견: 첫 5분에 신규 시스템 소개 9개(해금 캐스케이드 과밀) → R9·R10 신설</td>
+  </tr>
+  <tr>
+    <td><b>평점 = 플랫폼 좋아요/싫어요</b><br><span class="muted">게임플레이 후 Meta 프롬프트 표시, 60일 롤링, 개발사 대시보드 열람 불가(개선 중)</span></td>
+    <td><b>자체 평점 프롬프트(P0-2) 역할 축소</b> — 수집 주체가 플랫폼이므로 우리가 할 일은 "세션이 긍정 모멘트로 끝나게" 만드는 것. 세션 마지막 인상이 좋아요/싫어요를 결정 → <b>R8(빈 리더보드) 중요도 상향</b>. 평점 현황은 Alex 경유 확인 루틴 수립</td>
+  </tr>
+  <tr>
+    <td><b>CSB 30일 + 적극 업데이트 권장</b><br><span class="muted">버그·퍼포먼스 필수, 온보딩 개선 강력 권장, 밸런스 허용. 금지: 코어 루프·수익화 구조 변경</span></td>
+    <td>"수정 불가" 가정 해제 — <b>R1~R7은 출시 전 탑재가 최선이나, CSB 중 데이터 기반 튜닝 루프가 공식 허용됨</b>(원격 파라미터 설계가 그대로 유효). 단 R4(RV 게이트)는 출시 전 확정 필수 — CSB 중 수익화 변경은 금지 영역</td>
+  </tr>
+  <tr>
+    <td><b>지역 단위 상대평가, 신뢰 시그널 최소 300 지역 DAU</b><br><span class="muted">장르 아님. 미달 시 글로벌 폴백</span></td>
+    <td>경쟁군 = Asia 지역 전체 (장르 무관). <b>소프트런칭~CSB 유입 목표에 "지역 DAU 300+" 추가</b> — 미달 시 글로벌 폴백 랭킹으로 평가받는 리스크. P2(유입)와 공유</td>
+  </tr>
+</table>
+</div>
+
+<!-- ============ 부록 F-2. Meta 추가 답변 ============ -->
+<div class="card">
+<h2 style="margin-top:0;">부록 F-2. Meta 추가 답변 (EQR V4 / CDR 후속, 06/16)</h2>
+<p class="body">SPM 경유 Meta 후속 Q&A 5건. 기존 함의를 <b>강화·확정</b>하고, 평점 메커니즘에 새 디테일을 더한다.</p>
+<table>
+  <tr><th style="width:230px;">Meta 답변</th><th>기획 반영</th></tr>
+  <tr><td><b>Q1. 3시그널은 균형 — 한 지표로 보완 안 됨</b><br><span class="muted">전체적(holistic) 점수. 리텐션 높아도 평점 나쁘면(또는 반대) Promoted 어려움. balanced strength가 Promoted 공통 프로필</span></td><td><b>리텐션(D14)·평점(좋아요) 양쪽을 다 잡아야 함</b> — 우리 일감 구성이 이미 정합: 페이싱(R7·R9)=리텐션, 빈 소셜 첫인상(R5·R8)=평점. 한쪽만 강한 설계 지양</td></tr>
+  <tr><td><b>Q2. 장르 가중치 없음 — 동일 기준</b><br><span class="muted">공정장치 = 지역 랭킹. 솔리테어든 전략이든 "자기 오디언스 대비 강한 리텐션"이면 동일 평가</span></td><td>장르 핸디캡 없음 = <b>Asia 지역 경쟁군 내 절대 품질</b>로 승부. 베이스라인 낮다고 불리하지 않음(상대평가)</td></tr>
+  <tr><td><b>Q3. 평점 표시 조건 (신규 디테일)</b><br><span class="muted">세션 종료 후 Arcade에서 표시 · <b>유저가 플랫폼 게임 3개 이상 플레이</b>해야(기준점) · 게임당 쿨다운(수일) · <b>"첫 몇 세션이 인상을 형성한 뒤 평가"</b></span></td><td><b>첫 세션~첫 몇 세션 품질이 평점의 직접 레버</b>로 확정 — R5·R8(첫인상)·세션 마지막 인상 관리가 곧 평점 관리. 추가 시사: 평점 유저는 <b>플랫폼 다게임 경험자</b>(눈높이 높음) → 첫인상 정돈 더 중요</td></tr>
+  <tr><td><b>Q4. 지역 성과 → 지역 노출</b><br><span class="muted">지역 랭킹이 디스커버리 노출 결정. Asia 강세 → Asia 노출↑. 글로벌 폴백은 지역 데이터 얇을 때</span></td><td><b>Asia 집중 = 노출 확대 직결.</b> "지역(Asia) DAU 300+" 목표(§6) 재확인 — 지역 단위로 성과를 쌓아야 그 지역 노출이 커짐</td></tr>
+  <tr><td><b>Q5. 수익화는 평가 무관 — 직간접 모두</b> <span class="badge high" style="font-size:10px;">확정</span><br><span class="muted">광고 노출 빈도·매출·IAP 등 일체 미반영. 순수 player satisfaction(평점·D14·WAU@14)만</span></td><td><span class="hl">기존 "수익 미평가 추정" → Meta 직접 확인으로 격상.</span> <b>→ 평가 기간엔 전면(IT) 광고·IAP 자동팝업을 전체 off(R11·R12), RV는 게이트(R4)</b> — "평가 손실 0"이라 첫 세션만이 아니라 전부 제거가 CDR 최적. (수익은 Promoted 확보 후 복원)</td></tr>
+</table>
+
+<h3 style="margin-top:18px;">Q1 함의 — 3시그널 균형 점검 (레버 매핑) ⚠ WAU 갭</h3>
+<p class="body">균형(한 지표로 보완 안 됨)이 핵심이므로, 3시그널 각각에 전담 레버가 있는지 점검:</p>
+<table>
+  <tr><th style="width:200px;">CDR 시그널</th><th>본 기획의 레버</th><th style="width:120px;">커버리지</th></tr>
+  <tr><td><b>① 신규 D14 리텐션</b></td><td>첫 세션 완료(마찰 제거 R3·R4·R11)·복귀 페이싱(R7·R9)·14일 출시 이벤트(P0-3)·CP 고의도 유입</td><td><span class="badge low">강 (본 기획 핵심)</span></td></tr>
+  <tr><td><b>② 좋아요 비율(평점)</b></td><td>첫인상(R5·R8 빈 소셜 정돈)·세션 마지막 인상·CP 다게임 고관여 유입(Q3)</td><td><span class="badge mid">중~강</span></td></tr>
+  <tr><td><b>③ WAU@14 (주간 활성 잔존)</b></td><td>데일리 루프(출석·휠·미션)·복귀 훅·주간 재방문 이벤트</td><td><span class="badge high">약 — 보강 필요</span></td></tr>
+</table>
+<div class="gate" style="margin-top:10px;"><span class="lbl">추가 기획 권고 (Q1 균형)</span>본 기획은 <b>D14·평점에 집중</b>돼 있으나, <b>WAU@14(주간 습관 = 첫 세션 밖 레버)는 상대적으로 약하다.</b> 첫 세션만 잘 만들고 주간 재방문 루프가 약하면 Q1 균형에서 감점된다. → <b>WAU 전담 점검·보강 권장:</b> ① 데일리 루프 타이밍(현 출석7/휠9/미션13)이 D1~D7 재방문을 실제로 끌어내는지 ② 14일 출시 이벤트(P0-3)의 D7·D14 피크 설계 ③ D1~D7 복귀 훅(푸시·보상 곡선) ④ 주간 단위 목표/리더보드 리셋이 "주간 활성"을 유도하는지. <span class="muted">→ 별도 "주간 잔존(WAU@14) 보강 기획" 후속 일감 제안.</span></div>
+</div>
+
+<!-- ============ 연계 일감 — 크로스 프로모션 ============ -->
+<div id="d-cp" class="card" style="border-left:4px solid var(--mid); background:linear-gradient(to right, rgba(196,127,18,.06), var(--card));">
+<h2 style="margin-top:0; border-left-color:var(--mid);">연계 일감 — 크로스 프로모션(CP): 솔리테어 배너 심기 <span class="badge" style="background:rgba(120,132,153,.18); color:#5a6678;">🔒 홀딩</span></h2>
+<div class="gate" style="border-left-color:var(--mid); margin-bottom:8px;"><span class="lbl" style="color:var(--mid);">홀딩 — 결정 대기</span><b>노출 패턴 분석 및 결정 후 추가 자료 전달 예정.</b> 그때 본 섹션을 구체화·착수한다. (아래는 방향성 메모)</div>
+<p class="body"><b>자사 잘되는 게임에 솔리테어 CP 배너를 심어, 퀄리티 좋은 고관여 유저를 솔리테어로 유입</b>한다. 배너 작업은 <b>각 게임에서</b> 진행 — 대상: <b>Coin Match · The Puzzle · Mahjong</b>.</p>
+<div class="gate" style="margin-top:4px;"><span class="lbl">왜 이게 FTUE/CDR과 직결되나</span>① <b>유입 품질</b> — §A-4 실측: 고의도(promotion) 유입은 첫 스텝 통과 82% vs 저의도(push) 45%. 자사 게임 CP 배너를 누른 유저는 <b>고의도</b>라 push 대비 잔존이 구조적으로 높음 → 첫 세션 완료율·D14를 끌어올림. ② <b>평점</b>(Q3): 평점은 플랫폼 게임 3개+ 플레이한 유저만 줄 수 있는데, 자사 게임 유저는 이미 그 조건을 만족하는 <b>다게임 고관여층</b> → 긍정 평점 가능성↑. ③ 즉 CP 유입은 <b>D14·평점·WAU@14 3시그널을 동시에 끌어올리는 유입 품질 레버</b>(수익화 무관, Q5).</div>
+<table style="margin-top:10px;">
+  <tr><th style="width:160px;">게임</th><th>CP 배너 작업</th><th style="width:90px;">상태</th></tr>
+  <tr><td><b>Coin Match</b></td><td rowspan="3">각 게임 클라이언트에 <b>솔리테어 CP 배너 심기</b> — 노출 위치·트리거(세션 종료/로비 등)·소재·클릭→솔리테어 진입 동선 정의 + 계측(노출/클릭/유입 전환). 잘되는(고DAU) 게임 우선.</td><td><span class="badge mid">배너 작업 필요</span></td></tr>
+  <tr><td><b>The Puzzle</b></td><td><span class="badge mid">배너 작업 필요</span></td></tr>
+  <tr><td><b>Mahjong</b></td><td><span class="badge mid">배너 작업 필요</span></td></tr>
+</table>
+<p class="body muted" style="margin-top:6px;">유입된 고관여 유저가 첫 세션을 잘 통과하도록, 본 FTUE 개선(마찰 제거·첫인상)이 선행/병행돼야 CP 효과가 극대화됨. 배너 소재·노출 정책은 각 게임팀과 협의.</p>
+</div>
+
+<div class="footer">PST 첫 세션 기획서 v2.0 (FTUE 실플레이 기반) · 2026-06-16 · 작성 Esther · 캡처 pst_ftue_assets/ · 시뮬 pst_ftue_sim.py · 관찰 쿼리 pst_ftue_wave1_queries.sql</div>
+
+</div>
+</div>
+
+</body>
+</html>
