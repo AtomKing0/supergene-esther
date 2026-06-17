@@ -763,27 +763,27 @@
         <div class="live-funnel">
           <div class="lf-item">
             <span class="lf-label">첫 터치 (P1)</span>
-            <span class="lf-val" style="color:#2CB87A;font-weight:900;">80.2%</span>
+            <span class="lf-val" id="lx-touch" style="color:#2CB87A;font-weight:900;">80.2%</span>
           </div>
           <span class="lf-arrow">→</span>
           <div class="lf-item">
             <span class="lf-label">게임 완료</span>
-            <span class="lf-val">64.9%</span>
+            <span class="lf-val" id="lx-finish">64.9%</span>
           </div>
           <span class="lf-arrow">→</span>
           <div class="lf-item">
             <span class="lf-label">avg 판수 (P2)</span>
-            <span class="lf-val">4.10판</span>
+            <span class="lf-val" id="lx-rounds">4.10판</span>
           </div>
           <span class="lf-target" style="display:flex;gap:10px;flex-wrap:wrap;">
-            <span>✅ P1 v188 누적(6/2~6/15, 6/10~12 결측) 오가닉 80.2% (n=902)·ALL 79.4% (n=940) → 오가닉 목표 80% 유지 ✅ (최근 일별 오가닉 71.7→82.3→83.9) · 완료율 오가닉 64.9%·ALL 63.8%</span>
-            <span>🟡 P2 v188 누적(6/2~6/15) 오가닉 4.10판·ALL 4.10판 · 판당 RV 오가닉 0.1635·ALL 0.1586 (6/14 RV 0.29 급등) · 일별 변동 모니터링</span>
+            <span id="lx-p1">✅ P1 v188 누적(6/2~6/15, 6/10~12 결측) 오가닉 80.2% (n=902)·ALL 79.4% (n=940) → 오가닉 목표 80% 유지 ✅ (최근 일별 오가닉 71.7→82.3→83.9) · 완료율 오가닉 64.9%·ALL 63.8%</span>
+            <span id="lx-p2">🟡 P2 v188 누적(6/2~6/15) 오가닉 4.10판·ALL 4.10판 · 판당 RV 오가닉 0.1635·ALL 0.1586 (6/14 RV 0.29 급등) · 일별 변동 모니터링</span>
           </span>
         </div>
         <div class="live-meta">
-          <span>마지막 업데이트: 2026-06-16</span>
+          <span id="lx-date">마지막 업데이트: 2026-06-16</span>
           <span>·</span>
-          <span>PST v188 · n=902 (6/2~6/15 누적)</span>
+          <span id="lx-meta">PST v188 · n=902 (6/2~6/15 누적)</span>
           <span>·</span>
           <span>Toss 플랫폼</span>
         </div>
@@ -1339,6 +1339,30 @@ function toggleDeployExtra() {
     entries.forEach(e => { if (e.isIntersecting) activate(e.target.id); });
   }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
   sections.forEach(s => observer.observe(s));
+})();
+</script>
+
+<!-- ══ PST LIVE: pst_live.json 읽어 라이브 박스 갱신. 실패 시 정적 값 유지 ══ -->
+<script>
+(async function(){
+  try{
+    var res = await fetch('pst_live.json?_=' + Date.now());
+    if(!res.ok) return;
+    var L = await res.json();
+    if(!L || !L.all || !L.org) return;
+    var ver = L.version || '188', ok = L.org.touchPct>=80;
+    var rd = L.recentDaily||[], seqOrg = rd.map(function(x){return x.orgTouch;}).join('→');
+    var gapTxt = L.gap ? ', '+L.gap+' 결측' : '';
+    var set = function(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; };
+    set('lx-touch', L.org.touchPct+'%');
+    var t=document.getElementById('lx-touch'); if(t) t.style.color = ok ? '#2CB87A' : '#E8A13C';
+    set('lx-finish', L.org.finishPct+'%');
+    set('lx-rounds', L.org.rounds+'판');
+    set('lx-p1', (ok?'✅':'⚠️')+' P1 v'+ver+' 누적('+L.periodLabel+gapTxt+') 오가닉 '+L.org.touchPct+'% (n='+L.org.n+')·ALL '+L.all.touchPct+'% (n='+L.all.n+') → 오가닉 목표 80% '+(ok?'유지 ✅':'미달 ⚠️')+' (최근 오가닉 '+seqOrg+') · 완료율 오가닉 '+L.org.finishPct+'%·ALL '+L.all.finishPct+'%');
+    set('lx-p2', '🟡 P2 v'+ver+' 누적('+L.periodLabel+') 오가닉 '+L.org.rounds+'판·ALL '+L.all.rounds+'판 · 판당 RV 오가닉 '+L.org.rv+'·ALL '+L.all.rv+' · 일별 변동 모니터링');
+    set('lx-date', '마지막 업데이트: '+L.updatedAt);
+    set('lx-meta', 'PST v'+ver+' · n='+L.org.n+' ('+L.periodLabel+' 누적)');
+  }catch(e){ /* 폴백: 정적 값 유지 */ }
 })();
 </script>
 
