@@ -1,0 +1,913 @@
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>크로스 프로모션 효율 분석 & <span class="g-chip g-sol">솔리테어 시티 저니</span> CP 전략</title>
+<style>
+:root{--navy:#13335c;--blue:#2E75B6;--sky:#EAF2FB;--grey:#5a5a5a;--red:#C0392B;--green:#1E8449;--amber:#E67E22;--line:#dcdcdc;}
+*{box-sizing:border-box;}
+body{font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",-apple-system,sans-serif;color:#222;line-height:1.6;max-width:860px;margin:0 auto;padding:36px 34px 70px;font-size:15px;background:#fff;}
+.top{color:#999;font-size:12.5px;margin:0 0 6px;}
+.title{color:var(--navy);font-size:24px;font-weight:800;margin:0 0 2px;}
+.subtitle{color:var(--grey);font-size:14px;margin:0 0 16px;}
+.decision{background:var(--navy);color:#fff;border-radius:14px;padding:22px 26px;margin:0 0 22px;}
+.decision .lbl{font-size:13px;opacity:.7;letter-spacing:.5px;}
+.decision .main{font-size:21px;font-weight:800;margin:4px 0 10px;line-height:1.35;}
+.decision .main span{color:#7Fd0a0;}
+.decision .sub{font-size:14.5px;opacity:.95;line-height:1.7;}
+.decision .sub p{margin:0 0 8px;}
+.decision .note-in{font-size:12.5px;opacity:.8;margin-top:10px;}
+.decision .sub ul.cl{list-style:none;padding:0;margin:0;}
+.decision .sub ul.cl li{margin:0 0 11px;line-height:1.6;}
+.decision .sub .h{color:#7Fd0a0;font-weight:800;font-size:15px;}
+.context-box{background:var(--navy);color:#fff;border-radius:14px;padding:20px 26px;margin:0 0 20px;}
+.context-box .lbl{font-size:12px;opacity:.7;letter-spacing:0;margin-bottom:8px;}
+.context-box .body{font-size:14px;line-height:1.7;opacity:.95;}
+.context-box .body ul{list-style:none;padding:0;margin:6px 0 0;}
+.context-box .body li{margin:0 0 6px;padding-left:22px;position:relative;}
+.context-box .body li::before{color:#7Fd0a0;font-weight:700;position:absolute;left:0;}
+.context-box .body li.q1::before{content:"①";}
+.context-box .body li.q2::before{content:"②";}
+.context-box .body li.q3::before{content:"③";}
+.context-box .body li.q4::before{content:"④";}
+.context-box .body li.q5::before{content:"⑤";}
+.answer-box{border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:0 0 14px;}
+.answer-box .q-lbl{font-size:15px;color:var(--navy);font-weight:800;letter-spacing:.2px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.answer-box .q-lbl .q-num{background:var(--navy);color:#fff;font-size:13px;font-weight:900;padding:4px 12px;border-radius:6px;letter-spacing:.5px;font-family:monospace;}
+.answer-box .verdict{font-size:14.5px;font-weight:800;color:var(--navy);margin-bottom:6px;}
+.answer-box .detail{font-size:13.5px;color:#444;line-height:1.7;}
+.answer-box .detail ul{margin:6px 0 12px 18px;padding:0;}
+.answer-box .detail li{margin:8px 0;font-size:13.5px;line-height:1.65;}
+.answer-box .detail li>b:first-child{display:block;margin-bottom:3px;color:#1a1a2e;}
+.answer-box .detail .blk{display:block;font-weight:700;color:#1a1a2e;margin:12px 0 4px;}
+.action-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:0 0 28px;}
+.action-card{border-radius:12px;padding:15px 17px;font-size:13.5px;line-height:1.65;}
+.action-card.now{background:#EAF6EE;border:1.5px solid var(--green);}
+.action-card.soon{background:#EAF2FB;border:1.5px solid var(--blue);}
+.action-card.later{background:#f7f7f7;border:1px solid var(--line);}
+.action-card .ac-title{font-weight:800;font-size:14px;color:var(--navy);margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid rgba(0,0,0,.08);}
+.action-card ul{margin:0;padding-left:16px;}
+.action-card li{margin:5px 0;font-size:13px;}
+h2{color:var(--navy);font-size:17px;font-weight:800;margin:32px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--sky);}
+h3{color:var(--navy);font-size:15px;margin:22px 0 8px;}
+b{color:var(--navy);}
+table{border-collapse:collapse;width:100%;margin:8px 0;font-size:13.5px;}
+th,td{border-bottom:1px solid var(--line);padding:11px 12px;text-align:left;vertical-align:top;}
+th{color:var(--grey);font-weight:600;font-size:12.5px;border-bottom:2px solid var(--navy);background:none;}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
+tr.hi td{background:#EAF6EE;}
+tr.warn td{background:#FFF8EC;}
+.summary-table{table-layout:fixed;}
+.summary-table th,.summary-table td{padding:10px 9px;word-break:keep-all;}
+.summary-table th{line-height:1.35;}
+.tag{display:inline-block;padding:3px 12px;border-radius:20px;font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;}
+.tag.go{background:var(--green);}.tag.alt{background:var(--blue);}.tag.warn{background:var(--amber);}.tag.no{background:#aaa;}
+.cand{border:1px solid var(--line);border-radius:12px;padding:15px 19px;margin:12px 0;}
+.cand.lead{border:1.5px solid var(--green);background:#F2FAF5;}
+.cand.caution{border:1.5px solid var(--amber);background:#FFFBF2;}
+.cand.alert{border:1.5px solid var(--red);background:#FEF0EF;}
+.cand .ch{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:10px;border-bottom:1px solid #eee;margin-bottom:9px;}
+.cand .ch .nm{font-size:16.5px;font-weight:800;color:var(--navy);}
+.cand .ch .rt{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.cand .ch .rt .ef{font-size:13px;color:var(--grey);}
+.cand .sec{margin-top:8px;}
+.cand .sec .lab{font-size:11.5px;font-weight:700;color:var(--grey);letter-spacing:.3px;margin-bottom:2px;}
+.cand .sec ul{margin:0;padding-left:18px;}
+.cand .sec li{font-size:13.5px;line-height:1.55;margin:4px 0;}
+.cand.mini li{margin:2px 0;}
+.todo .row{display:flex;gap:14px;align-items:flex-start;margin:10px 0;}
+.todo .n{flex-shrink:0;width:26px;height:26px;border-radius:7px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+.todo .bt{font-size:14px;line-height:1.5;padding-top:2px;}
+.note{font-size:13.5px;color:#444;background:#f7f7f7;border-radius:9px;padding:13px 16px;margin:10px 0;line-height:1.65;}
+.note.amber{background:#FFF8EC;border-left:3px solid var(--amber);}
+.note.red{background:#FEF0EF;border-left:3px solid var(--red);}
+.note.green{background:#F2FAF5;border-left:3px solid var(--green);}
+.appx{margin-top:46px;padding-top:8px;border-top:3px solid var(--navy);}
+.appx .lbl{color:#999;font-size:13px;font-weight:700;letter-spacing:.5px;}
+.box{border-radius:9px;padding:12px 16px;margin:10px 0;font-size:13.5px;line-height:1.65;}
+.box.info{background:var(--sky);}
+.box.warn{background:#FFF8EC;border-left:3px solid var(--amber);}
+.box.verified{background:#F2FAF5;border-left:3px solid var(--green);}
+.box.alert{background:#FEF0EF;border-left:3px solid var(--red);}
+.box b{color:var(--navy);}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.g{color:var(--green);font-weight:700;}.r{color:var(--red);font-weight:700;}.am{color:var(--amber);font-weight:700;}
+.hl{color:#0F6FC4;font-weight:700;}
+ul{margin:8px 0;padding-left:20px;}li{margin:5px 0;font-size:13.5px;line-height:1.6;}
+.foot{font-size:12px;color:#aaa;margin-top:8px;}
+small.pp{color:#888;font-weight:400;}
+.decision-needed{background:#13335c;border:2px solid #7Fd0a0;border-radius:12px;padding:18px 22px;margin:24px 0;color:#fff;}
+.decision-needed ul{margin:10px 0 0;padding-left:20px;}
+.decision-needed li{margin:8px 0;font-size:13.5px;line-height:1.7;letter-spacing:-.01em;}
+.decision-needed .lbl{font-size:12px;opacity:.7;letter-spacing:0;margin-bottom:6px;}
+.decision-needed ul{list-style:none;padding:0;margin:0;}
+.decision-needed li{font-size:13.5px;line-height:1.65;margin:0 0 8px;padding-left:16px;position:relative;}
+.decision-needed li::before{content:"▷";position:absolute;left:0;color:#7Fd0a0;font-size:11px;}
+.verified-badge{display:inline-block;background:#1E8449;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.3px;vertical-align:middle;margin-left:6px;}
+.pattern-box{border-radius:10px;padding:14px 18px;margin:10px 0;font-size:13.5px;line-height:1.65;background:#EAF2FB;border-left:4px solid var(--blue);}
+.pattern-box .p-num{display:inline-block;background:var(--navy);color:#fff;font-weight:800;font-size:12px;padding:2px 8px;border-radius:10px;margin-right:6px;}
+.strategy-box{border-radius:10px;padding:14px 18px;margin:10px 0;font-size:13.5px;line-height:1.65;border-left:4px solid var(--navy);background:#F4F7FB;}
+.strategy-box .s-num{display:inline-block;background:var(--navy);color:#fff;font-weight:800;font-size:12px;padding:2px 8px;border-radius:10px;margin-right:6px;}
+.method-box{border-radius:10px;padding:14px 18px;margin:10px 0;font-size:13.5px;line-height:1.65;}
+.method-box.wrong{background:#FEF0EF;border-left:4px solid var(--red);}
+.method-box.right{background:#F2FAF5;border-left:4px solid var(--green);}
+.method-box .m-lbl{font-size:11.5px;font-weight:800;letter-spacing:0;margin-bottom:6px;}
+.method-box.wrong .m-lbl{color:var(--red);}
+.method-box.right .m-lbl{color:var(--green);}
+.implication-box{background:var(--navy);color:#fff;border-radius:10px;padding:16px 20px;margin:14px 0;}
+.implication-box .i-lbl{font-size:12px;opacity:.7;letter-spacing:0;margin-bottom:6px;}
+.implication-box ul{list-style:none;padding:0;margin:0;}
+.implication-box li{font-size:13.5px;line-height:1.65;margin:0 0 8px;padding-left:14px;position:relative;}
+.implication-box li::before{content:"▶";position:absolute;left:0;color:#7Fd0a0;font-size:10px;top:4px;}
+.src-section{border:1.5px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0;}
+.src-section.best{border-color:var(--green);background:#F9FDF9;}
+.src-section .src-title{font-size:14.5px;font-weight:800;color:var(--navy);margin-bottom:8px;}
+@media print{body{padding:0 8px;font-size:12.5px;}.appx{page-break-before:always;}table,.box,.two,.cand{page-break-inside:avoid;}}
+@media (max-width:620px){.two{grid-template-columns:1fr;}.three{grid-template-columns:1fr;}.action-grid{grid-template-columns:1fr;}}
+
+/* 게임명 칩 */
+.g-chip{display:inline-block;border-radius:5px;padding:1px 8px;font-size:11.5px;font-weight:700;line-height:1.7;vertical-align:middle;white-space:nowrap;}
+.g-coin{background:#fff0e6;color:#c94b00;border:1px solid #f4b68a;}
+.g-cozy{background:#e6f5f2;color:#0a6b5e;border:1px solid #8ecdc5;}
+.g-mahjong{background:#fdecea;color:#a93226;border:1px solid #f0a89e;}
+.g-puzzle{background:#f3ecfb;color:#5b2c8d;border:1px solid #c9a6e8;}
+.g-pbm{background:#e8f1f8;color:#154360;border:1px solid #8cb4d4;}
+.g-sol{background:#fef8e7;color:#9a6900;border:1px solid #f0d080;}
+.g-smile{background:#f2f2f2;color:#666;border:1px solid #ccc;}
+.g-spaceblast{background:#f2f2f2;color:#555;border:1px solid #ccc;}
+.src-concl{background:#f0f7ff;border-left:4px solid #2471a3;border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:13px;line-height:1.7;}
+
+.part-header{background:#f8f9fa;border-left:5px solid var(--navy);border-radius:0 8px 8px 0;padding:14px 20px;margin:36px 0 20px;}
+.part-header h2{margin:0;font-size:18px;color:var(--navy);}
+.part-header .part-desc{font-size:12.5px;color:#666;margin:4px 0 0;}
+.part-concl{background:#f0f4fa;border:1px solid #c5d3e8;border-radius:10px;padding:14px 18px;margin:0 0 24px;font-size:13px;line-height:1.75;}
+.part-concl ul{margin:4px 0 0 16px;padding:0;}
+.part-concl li{margin:4px 0;}
+.sec-concl{background:#f7f9fc;border-left:3px solid #7fb3d3;padding:10px 14px;margin:10px 0 0;border-radius:0 6px 6px 0;font-size:13px;line-height:1.7;}
+</style></head><body>
+
+<div class="top">게임 기획팀 · 2026.06.17 · 데이터: IG(페이스북 Instant Games) · 리텐션: classic DN · 팝업 vs 미션 비교: 2026-03~06 · 소스 고정 비교: 기간별 상이(각 섹션 명시)</div>
+<div class="title">크로스 프로모션 효율 분석 &amp; <span class="g-chip g-sol">솔리테어 시티 저니</span> CP 전략</div>
+<div class="subtitle"><span class="g-chip g-sol">솔리테어 시티 저니</span> IG 런칭 대비 — CP 효율 측정 → 노출 기준 최적화 → 신작 전략</div>
+
+<!-- ===== PART 0. 질문별 답 ===== -->
+<h2>PART 0. 질문별 답</h2>
+
+<!-- Q① -->
+<div class="answer-box">
+<div class="q-lbl"><span class="q-num">Q1</span> 노출 기준 통일 필요한가 + 5개 게임 모두 운영하는 게 좋은가</div>
+<div class="verdict">5개 다 운영이 맞음. 노출 시점·빈도 통일 불가. <b>최우선 국가는 US</b>(eCPM·리텐션 모두 최상), 솔리테어 연결 시 5개 게임 모두 <b>T1(US·CA·GB·AU·DE·FR) 필터 적용</b>으로 통일. <b>노출 위치는 미션 우선·팝업 병행</b>(미션 품질↑·팝업 볼륨↑).</div>
+<div class="detail">
+<ul>
+<li>
+  <b>5개 모두 운영 — IT 광고가 안 채워지는 구좌를 크로스로 대체하는 게 항상 유리.</b>
+  <ul style="margin-top:4px;">
+    <li>크로스 팝업 D7 <span class="hl">6.3%</span> vs 광고 <span class="hl">1.5%</span>·오가닉 <span class="hl">1.6%</span> — 4배 차이. 빈 구좌로 두는 것보다 크로스가 압도적.</li>
+  </ul>
+</li>
+<li>
+  <b>노출 시점·빈도는 게임마다 달라도 괜찮음 — IT 광고 fill 실패 결과물이라 통일 불가.</b>
+  <ul style="margin-top:4px;">
+    <li><span class="g-chip g-coin">코인매치</span> 1인당 35회, <span class="g-chip g-mahjong">마종</span>·<span class="g-chip g-cozy">코지타일즈</span> 5~6회인 건 설계 차이가 아니라 광고 fill 실패 빈도 차이. 임의로 통일하면 빈 구좌만 생김.</li>
+  </ul>
+</li>
+<li>
+  <b>국가 필터 통일 방법 — 솔리테어용 슬롯에 T1(US·CA·GB·AU·DE·FR) 필터 설정.</b>
+  <ul style="margin-top:4px;">
+    <li>현재 <span class="g-chip g-pbm">퍼즐블록마스터</span> US <span class="hl">71.6%</span> vs <span class="g-chip g-puzzle">더퍼즐</span> 필리핀 <span class="hl">27.5%</span>·인도 <span class="hl">18.1%</span>로 제각각. 기존 게임 간 크로스는 현 설정 그대로, 솔리테어 슬롯에만 T1 필터 추가.</li>
+    <li>클라 사이드 설정이라 게임별로 개별 적용 가능. 패치 없이 솔리테어 연결 시 일괄 설정.</li>
+  </ul>
+</li>
+<li>
+  <b>제일 좋은 국가는 US — 단독 최우선, 그다음 T1.</b>
+  <ul style="margin-top:4px;">
+    <li>US는 eCPM 최고(<span class="g-chip g-mahjong">마종</span> RV <span class="hl">$34.07</span> 등)에 리텐션도 최상. 목적지=<span class="g-chip g-cozy">코지타일즈</span> 고정·소스별로 쪼개 봐도 US D7이 비US 대비 높거나 동등(소스 고정 비교 참조). 비US는 단가가 낮아 후순위지, 활동성이 나쁜 게 아님.</li>
+    <li>US 단독으로 깔고, 볼륨이 부족하면 T1(US·CA·GB·AU·DE·FR)까지 확장하는 순서가 안전.</li>
+  </ul>
+</li>
+<li>
+  <b>노출 위치는 미션 우선·팝업 병행.</b>
+  <ul style="margin-top:4px;">
+    <li>미션이 팝업보다 D7·D14·판수 전반 우위 — <span class="g-chip g-mahjong">마종</span> 미션 D7 <span class="hl">6.6%</span> vs 팝업 <span class="hl">3.5%</span>(2배). 유저가 직접 골라 들어와 의도가 강함.</li>
+    <li>팝업은 IT fill 실패 구좌를 자동으로 채워 볼륨 확보에 유리. 솔리테어는 <b>미션(품질)+팝업(볼륨) 둘 다 연결</b>하되, 품질 추적은 미션 유입 기준으로.</li>
+  </ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div class="answer-box">
+<div class="q-lbl"><span class="q-num">Q2</span> 효율 높은 소스로 가중 배분해야 하는가</div>
+<div class="verdict">해야 함. 회계상 마진은 <span class="g-chip g-cozy">코지타일즈</span>·<span class="g-chip g-mahjong">마종</span>만 흑자(최대 <b>13배</b> 차이)지만, <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>은 <b>끄지 말고 국가(US/T1) 필터 걸어 볼륨 소스로 유지</b> — 빈 구좌라 실손실 작고, US 한정 시 리텐션은 오히려 상위.</div>
+<div class="detail">
+<ul>
+<li>
+  <b>크로스 채널 자체는 최고 효율 — 모든 소스에서 광고·오가닉 대비 압도적.</b>
+  <ul style="margin-top:4px;">
+    <li>크로스 D7 <span class="hl">6.3%</span> vs 광고 <span class="hl">1.5%</span>(4배). IT·RV 활동량도 6~8배. 채널을 끄는 건 손해.</li>
+  </ul>
+</li>
+<li>
+  <b>from 게임별 마진 차이가 극명 — 어느 게임에서 오느냐가 효율의 핵심 변수.</b>
+  <ul style="margin-top:4px;">
+    <li>from <span class="g-chip g-cozy">코지타일즈</span>: NRU 획득 비용 $0.10, 14일 회수 $0.70 → 마진 <span class="hl" style="color:#1E8449;">+$0.61</span> 흑자.</li>
+    <li>from <span class="g-chip g-mahjong">마종</span>: 획득 비용 $0.26, 14일 회수 $0.44 → 마진 <span class="hl" style="color:#1E8449;">+$0.19</span> 흑자.</li>
+    <li>from <span class="g-chip g-puzzle">더퍼즐</span>: 획득 비용 $5.95, 14일 회수 $0.44 → 마진 <span class="hl" style="color:#c0392b;">-$5.51</span> 적자.</li>
+    <li>from <span class="g-chip g-coin">코인매치</span>: 획득 비용 $11.53, 14일 회수 $0.44 → 마진 <span class="hl" style="color:#c0392b;">-$11.08</span> 적자.</li>
+    <li>from <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>이 크로스를 많이 뿌리는 건 효율적이어서가 아니라 IT fill 실패가 잦아서. 노출 볼륨과 효율은 별개.</li>
+  </ul>
+  <div style="background:#f4f7fb;border-left:3px solid #2471a3;border-radius:0 6px 6px 0;padding:8px 12px;margin:8px 0 4px;font-size:12.5px;line-height:1.7;">
+    <b>마진 공식</b><br>
+    <b>14일 마진 = 14일 합산 회수 − NRU 1명 획득비용</b><br>
+    · 획득비용 = (소스 게임의 일 노출수 ÷ 일 신규 NRU) × (소스 IT eCPM ÷ 1,000)<br>
+    · 회수 = (NRU의 14일 IT 이벤트 × 도착 IT eCPM + 14일 RV 이벤트 × 도착 RV eCPM) ÷ 1,000<br>
+    <span style="color:#666;">→ 흑자/적자를 가르는 핵심 변수는 <b>"NRU 1명당 소진 노출수"</b>(전환 효율): <span class="g-chip g-cozy">코지타일즈</span> 10회 vs <span class="g-chip g-coin">코인매치</span> 1,533회 = <span class="hl">153배</span> 차이. eCPM이 아니라 노출 낭비가 적자의 본질.</span><br>
+    <span style="color:#888;font-size:11.5px;">출처: 노출수·NRU = BQ 최근 30일 / IT·RV 이벤트 = BQ 코호트 2026-04~05 / eCPM = P0 실측 보고서(stat.ad_ecpm 2024-04-09 최종, 현재 단가 변동 가능·방향성 참고값).</span>
+  </div>
+</li>
+<li>
+  <b><span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>은 적자지만 끄지 말 것 — 빈 구좌라 실손실 작고, 고리텐션 유저를 대량으로 보내주는 볼륨 소스.</b>
+  <ul style="margin-top:4px;">
+    <li>적자는 (a) IT fill 실패로 노출이 낭비돼 획득비용이 부풀고 (b) 비US 저단가 유입이 대량으로 섞여서 생긴 <b>회계상 적자</b>지, 유저 품질 탓이 아님. 어차피 비어 있던 구좌라 노출 기회비용 자체가 거의 0.</li>
+    <li><b>국가를 통제하면 결론이 바뀜.</b> 목적지=<span class="g-chip g-cozy">코지타일즈</span> 고정·소스별 분해(코호트 2026-04~06): <span class="g-chip g-puzzle">더퍼즐</span> US D7 <span class="hl">6.6%</span>(3개 소스 중 최상)·비US D7 3.4%, <span class="g-chip g-coin">코인매치</span> US D7 <span class="hl">5.1%</span>·비US 4.4%, <span class="g-chip g-mahjong">마종</span> US D7 <span class="hl">6.0%</span>·비US 7.0%. 즉 <span class="g-chip g-puzzle">더퍼즐</span>·<span class="g-chip g-coin">코인매치</span>가 보내는 비US 대량 유입이 평균을 깎는 것이지, US 한정 시 리텐션은 오히려 상위권.</li>
+    <li><b>솔리테어 런칭 초기 볼륨 확보에 활용</b> — US/T1 필터를 걸어 <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>의 대량 노출 구좌를 솔리테어로 돌리면 고리텐션 유저를 빠르게 모을 수 있음. 단가 낮은 비US는 필터로 걸러냄.</li>
+  </ul>
+</li>
+<li>
+  <b><span class="g-chip g-smile">Smile</span>(외부 게임)·<span class="g-chip g-spaceblast">스페이스블래스트</span>는 <span class="g-chip g-mahjong">마종</span> 크로스 평균을 끌어내리는 저품질 소스.</b>
+  <ul style="margin-top:4px;">
+    <li><span class="g-chip g-smile">Smile</span>→<span class="g-chip g-mahjong">마종</span> 유입 NRU ~11,686명, D7 <span class="hl">1.9%</span>. 이 소스가 <span class="g-chip g-mahjong">마종</span> 전체 크로스 평균을 낮춰 "<span class="g-chip g-mahjong">마종</span> 최하위" 오해 유발. 제거 필요.</li>
+  </ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div class="answer-box">
+<div class="q-lbl"><span class="q-num">Q3</span> 어느 게임 소스에서 온 유저가 크로스 후 가장 잘 남는가</div>
+<div class="verdict"><span class="g-chip g-cozy">코지타일즈</span>에서 온 유저가 모든 소스 중 가장 잘 남음. 그 유저를 <span class="g-chip g-mahjong">마종</span>으로 보낼 때(<span class="g-chip g-cozy">코지타일즈</span>→<span class="g-chip g-mahjong">마종</span>) 도착지 중 최상 — D7 8.7%·합산 매출 $0.74/인 1위.</div>
+<div class="detail">
+<ul>
+<li>
+  <b>소스를 고정해서 비교해야 정확 — 섞어서 평균 내면 오염된 결론 나옴.</b>
+  <ul style="margin-top:4px;">
+    <li><span class="g-chip g-smile">Smile</span>→<span class="g-chip g-mahjong">마종</span> D7 <span class="hl">1.9%</span>와 <span class="g-chip g-cozy">코지타일즈</span>→<span class="g-chip g-mahjong">마종</span> D7 <span class="hl">8.7%</span>를 섞으면 <span class="g-chip g-mahjong">마종</span>이 최하위로 보임. 실제로는 최상위.</li>
+    <li>같은 소스에서 온 유저끼리만 비교해야 유의미.</li>
+  </ul>
+</li>
+<li>
+  <b>from <span class="g-chip g-cozy">코지타일즈</span> 기준 게임별 비교 (2026-01~04, 팝업):</b>
+  <ul style="margin-top:4px;">
+    <li>to <span class="g-chip g-mahjong">마종</span>: NRU 2,218 / D7 <span class="hl">8.7%</span> / D14 <span class="hl">5.8%</span> / 합산매출 <span class="hl">$0.74</span>/인 / 소셜발행 <span class="hl">8.25</span>회 → 전 지표 1위.</li>
+    <li>to <span class="g-chip g-coin">코인매치</span>: D7 <span class="hl">5.6%</span> / RV 매출 <span class="hl">$0.20</span>/인(RV 높음).</li>
+  </ul>
+</li>
+<li>
+  <b>장르 핏과 리텐션 순위가 일치 — 단 "장르핏(리텐션)"과 "마진(획득비용)"은 별개의 축.</b>
+  <ul style="margin-top:4px;">
+    <li>솔로 메타(<span class="g-chip g-cozy">코지타일즈</span>·<span class="g-chip g-mahjong">마종</span>) 유저끼리 서로 잘 남음. 경쟁형(<span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>)은 RV 매출이 높고 장기 리텐션은 솔로 메타보다 다소 낮음.</li>
+    <li><b><span class="g-chip g-puzzle">더퍼즐</span>↔<span class="g-chip g-coin">코인매치</span> 페어가 나쁜 게 아님.</b> 둘 다 경쟁형 동일 장르라 장르핏은 양호 — <span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-coin">코인매치</span> US D7 <span class="hl">10.7%</span>(PART 3-4)로 리텐션 높음. 운영전략에서 이 둘의 "소스 비중"을 따로 보는 건 <b>장르핏이 아니라 마진(획득비용) 축</b> 때문. 노출 전환이 비효율적이라 회계상 적자일 뿐, 페어로서 보내는 유저 품질은 좋음.</li>
+    <li>정리: <b>리텐션 핏(어느 페어가 잘 남나)과 마진(획득이 얼마나 효율적인가)은 따로 읽어야 함.</b> 한 페어가 리텐션은 좋아도 마진은 적자일 수 있고(<span class="g-chip g-puzzle">더퍼즐</span>↔<span class="g-chip g-coin">코인매치</span>), 그 경우 끄지 말고 국가 필터로 품질만 살리는 게 정답.</li>
+  </ul>
+</li>
+<li>
+  <b>페어 현황 — <span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-mahjong">마종</span> 자리가 현재 신규 유입 0명으로 비어 있음.</b>
+  <ul style="margin-top:4px;">
+    <li>2025년 <span class="g-chip g-mahjong">마종</span> 런칭 때 월 9~10만 세션 피크, 현재 재방문만 남음. 이 자리가 신작 연결에 활용 가능. 세부 → PART 2-3.</li>
+  </ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div class="answer-box">
+<div class="q-lbl"><span class="q-num">Q4</span> <span class="g-chip g-sol">솔리테어</span>는 5개에서 다 받을 것인가, 겹치는 유저는</div>
+<div class="verdict">5개 게임 모두에서 <span class="g-chip g-sol">솔리테어</span>로 크로스 보냄. WAU@14·D14 기준 고관여 유저 초기 대량 유입이 목표. 같은 유저가 여러 게임에서 중복 노출돼도 기술적으로 걸러낼 수 없으니 초기엔 포함.</div>
+<div class="detail">
+<ul>
+<li>
+  <b>어느 게임에서 <span class="g-chip g-sol">솔리테어</span>로 보내는 크로스가 더 좋은 유저를 데려오나 (WAU@14·D14 기준).</b>
+  <ul style="margin-top:4px;">
+    <li><span class="g-chip g-cozy">코지 타일즈</span> 1순위 — D14 최상·솔로 메타·US <span class="hl">45.6%</span></li>
+    <li><span class="g-chip g-mahjong">마종</span> 2순위 — 소셜 발행 <span class="hl">8.25</span>회·US <span class="hl">47.3%</span></li>
+    <li><span class="g-chip g-puzzle">더퍼즐</span>·<span class="g-chip g-coin">코인매치</span> 3순위 — 볼륨 확보용. IT 광고가 채워지지 않는 빈 구좌가 많아(실패율 <span class="hl">13.8%</span>·<span class="hl">15.8%</span>로 노출 많음</li>
+    <li><span class="g-chip g-smile">Smile</span>·<span class="g-chip g-spaceblast">스페이스블래스트</span> 제외 — D14 <span class="hl">1%</span> 미만</li>
+  </ul>
+</li>
+<li>
+  <b>겹치는 유저 dedup 불가 — FB Instant 앱별 ID 완전 분리.</b>
+  <ul style="margin-top:4px;">
+    <li>중복 제거·교차 빈도제한 기술적 불가. 초기엔 포함(도달 우선), 빈도제한은 각 게임 내에서만.</li>
+    <li>측정 기준: <span class="g-chip g-sol">솔리테어</span> 내 신규 유저 WAU@14·D14 리텐션.</li>
+  </ul>
+</li>
+</ul>
+</div>
+</div>
+
+<!-- ===== 솔리테어 CP 운영 전략 ===== -->
+<h2><span class="g-chip g-sol">솔리테어 시티 저니</span> CP 운영 전략</h2>
+
+<div style="display:flex;flex-direction:column;gap:14px;margin:0 0 28px;">
+
+<div class="action-card now" style="border-left:6px solid #c0392b;background:#fdf3f2;border-radius:0 8px 8px 0;">
+<div class="ac-title" style="color:#c0392b;">PHASE 1. 런칭 — <span class="g-chip g-sol">솔리테어</span> 집중</div>
+<table style="width:100%;font-size:13px;line-height:1.7;border-collapse:collapse;">
+<tr style="border-bottom:1px solid rgba(0,0,0,.08);">
+  <td style="width:22%;padding:6px 8px;font-weight:700;color:#444;">소스 설정</td>
+  <td style="padding:6px 8px;">
+    5개 게임(<span class="g-chip g-cozy">코지타일즈</span>·<span class="g-chip g-mahjong">마종</span>·<span class="g-chip g-puzzle">더퍼즐</span>·<span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-pbm">퍼블마</span>) 크로스 프로모션 로테이션에서 <span class="g-chip g-sol">솔리테어</span>를 1번째로 노출. 기존 게임은 2순위.<br>
+    <span class="g-chip g-smile">Smile</span>·<span class="g-chip g-spaceblast">스페이스블래스트</span>는 로테이션에서 완전 제거 (D14 1% 미만).
+  </td>
+</tr>
+<tr style="border-bottom:1px solid rgba(0,0,0,.08);">
+  <td style="padding:6px 8px;font-weight:700;color:#444;">노출 방식</td>
+  <td style="padding:6px 8px;"><span class="g-chip g-sol">솔리테어</span> 1순위 노출 → 기존 게임과 번갈아 반복. IT 광고 fill 실패 시 <span class="g-chip g-sol">솔리테어</span> 자동 대체 노출.</td>
+</tr>
+<tr style="border-bottom:1px solid rgba(0,0,0,.08);">
+  <td style="padding:6px 8px;font-weight:700;color:#444;">국가</td>
+  <td style="padding:6px 8px;"><b>T1 전체(US·CA·GB·AU·DE·FR) 처음부터 적용.</b></td>
+</tr>
+<tr>
+  <td style="padding:6px 8px;font-weight:700;color:#444;">성공 기준</td>
+  <td style="padding:6px 8px;"><span class="g-chip g-sol">솔리테어</span> 신규 유저 WAU@14·D14 리텐션 추적.</td>
+</tr>
+</table>
+</div>
+
+<div class="action-card soon" style="border-left:6px solid #2471a3;background:#eaf2fb;border-radius:0 8px 8px 0;">
+<div class="ac-title" style="color:#2471a3;">PHASE 2. 안정화 — 기존 5개 게임 페어 재정립 + <span class="g-chip g-sol">솔리테어</span> 재검토</div>
+<table style="width:100%;font-size:13px;line-height:1.7;border-collapse:collapse;">
+<tr style="border-bottom:1px solid rgba(0,0,0,.08);">
+  <td style="width:22%;padding:6px 8px;font-weight:700;color:#444;">게임별 노출 추천<br>(팝업·미션)</td>
+  <td style="padding:6px 8px;">
+    <b><span class="g-chip g-sol">솔리테어</span>를 항상 1순위로, 뒤에 각 게임 상위 페어 배치.</b> 5개 게임 모두 페어 보유.
+    <table style="width:100%;margin-top:8px;font-size:12px;border-collapse:collapse;">
+    <tr style="border-bottom:1px solid rgba(0,0,0,.15);">
+      <th style="text-align:left;padding:5px 6px;color:#666;font-weight:600;white-space:nowrap;">노출처</th>
+      <th style="text-align:left;padding:5px 6px;color:#666;font-weight:600;">팝업 — 신작 교차 반복</th>
+      <th style="text-align:left;padding:5px 6px;color:#666;font-weight:600;">미션 — 상위 페어 3종</th>
+    </tr>
+    <tr style="border-bottom:1px solid rgba(0,0,0,.06);">
+      <td style="padding:5px 6px;"><span class="g-chip g-cozy">코지타일즈</span></td>
+      <td style="padding:5px 6px;"><span class="g-chip g-sol">솔리테어</span> › <span class="g-chip g-mahjong">마종</span> › <span class="g-chip g-sol">솔리테어</span> …</td>
+      <td style="padding:5px 6px;"><span class="g-chip g-sol">솔리테어</span> › <span class="g-chip g-mahjong">마종</span> › <span class="g-chip g-pbm">퍼블마</span></td>
+    </tr>
+    <tr style="border-bottom:1px solid rgba(0,0,0,.06);">
+      <td style="padding:5px 6px;"><span class="g-chip g-mahjong">마종</span></td>
+      <td style="padding:5px 6px;"><span class="g-chip g-sol">솔리테어</span> › <span class="g-chip g-cozy">코지</span> › <span class="g-chip g-sol">솔리테어</span> …</td>
+      <td style="padding:5px 6px;"><span class="g-chip g-sol">솔리테어</span> › <span class="g-chip g-cozy">코지</span> › <span class="g-chip g-puzzle">더퍼즐</span></td>
+    </tr>
+    <tr style="border-bottom:1px solid rgba(0,0,0,.06);">
+      <td style="padding:5px 6px;"><span class="g-chip g-puzzle">더퍼즐</span></td>
+      <td style="padding:5px 6px;"><span class="g-chip g-sol">솔리테어</span> › <span class="g-chip g-coin">코인매치</span> › <span class="g-chip g-sol">솔리테어</span> …</td>
+      <td style="padding:5px 6px;"><span class="g-chip g-sol">솔리테어</span> › <span class="g-chip g-coin">코인매치</span> › <span class="g-chip g-pbm">퍼블마</span></td>
+    </tr>
+    <tr style="border-bottom:1px solid rgba(0,0,0,.06);">
+      <td style="padding:5px 6px;"><span class="g-chip g-coin">코인매치</span></td>
+      <td style="padding:5px 6px;"><span class="g-chip g-sol">솔리테어</span> › <span class="g-chip g-cozy">코지</span> › <span class="g-chip g-sol">솔리테어</span> …</td>
+      <td style="padding:5px 6px;"><span class="g-chip g-sol">솔리테어</span> › <span class="g-chip g-cozy">코지</span> › <span class="g-chip g-puzzle">더퍼즐</span></td>
+    </tr>
+    <tr>
+      <td style="padding:5px 6px;"><span class="g-chip g-pbm">퍼블마</span></td>
+      <td style="padding:5px 6px;"><span class="g-chip g-sol">솔리테어</span> › <span class="g-chip g-mahjong">마종</span> › <span class="g-chip g-sol">솔리테어</span> …</td>
+      <td style="padding:5px 6px;"><span class="g-chip g-sol">솔리테어</span> › <span class="g-chip g-mahjong">마종</span> › <span class="g-chip g-coin">코인매치</span></td>
+    </tr>
+    </table>
+    <small style="color:#888;">팝업=신작과 최우량 페어 1종 교차 반복(빈도 높음·자동) / 미션=상위 페어 3종 노출(유저 선택·품질 높음). 페어 랭킹은 US D7 기준.</small>
+  </td>
+</tr>
+<tr style="border-bottom:1px solid rgba(0,0,0,.08);">
+  <td style="padding:6px 8px;font-weight:700;color:#444;"><span class="g-chip g-sol">솔리테어</span><br>재검토</td>
+  <td style="padding:6px 8px;">
+    라이브 후 데이터 확인 후 결정 — 지금은 알 수 없음.<br>
+    · WAU@14·D14 리텐션 실측<br>
+    · eCPM 실측 → 소스별 마진 재계산<br>
+    · 결과 보고 기존 게임 로테이션 편입 또는 비중 조정
+  </td>
+</tr>
+<tr>
+  <td style="padding:6px 8px;font-weight:700;color:#444;">미션 CP</td>
+  <td style="padding:6px 8px;"><span class="g-chip g-sol">솔리테어</span> 미션 연결 권고. 미션 유입 유저가 팝업보다 D14 높음 — <span class="g-chip g-mahjong">마종</span> 기준 <span class="hl">6.6%</span> vs <span class="hl">3.5%</span>.</td>
+</tr>
+</table>
+<p class="foot" style="margin:10px 8px 0;line-height:1.7;">※ 페어별 실측 리텐션 — <span class="g-chip g-cozy">코지</span>→<span class="g-chip g-mahjong">마종</span> D7 8.7% / <span class="g-chip g-puzzle">더퍼즐</span>↔<span class="g-chip g-coin">코인매치</span> US D7 10.7% / <span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-pbm">퍼블마</span> US D7 9.6%·판수 34.5(전 페어 최고) / <span class="g-chip g-cozy">코지</span>→<span class="g-chip g-pbm">퍼블마</span> 수신 US D7 11.9%(최상) / <span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-mahjong">마종</span> US D7 7.8%(2025 피크) / <span class="g-chip g-mahjong">마종</span>→<span class="g-chip g-puzzle">더퍼즐</span> D7 9.9%(신설). 상세 → PART 2-3·부록.</p>
+</div>
+
+
+
+</div>
+
+<!-- ===== PART 1. 현황 ===== -->
+<div class="part-header">
+<h2>PART 1. 현재 운영 현황</h2>
+<div class="part-desc">5개 게임 크로스 프로모션이 지금 어떻게 돌아가고 있나 — 노출 구조, 채널 효율, 소스별 마진</div>
+</div>
+<div class="part-concl">
+<b>PART 1 핵심 정리</b>
+<ul>
+<li>크로스 채널 자체가 최고 효율 — <span class="g-chip g-coin">코인매치</span> 기준 D7 <span class="hl">6.3%</span>로 광고(<span class="hl">1.5%</span>)의 4배, 1인당 RV·IT는 6~8배. IT fill 실패로 빈 구좌를 공백으로 두느니 크로스로 채우는 게 압도적 유리.</li>
+<li>노출 볼륨과 효율은 별개 — <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span> 노출이 많은 건 IT fill 실패 탓이지 효율이 아님(팝업형 CTR <span class="hl">39~47%</span> vs <span class="g-chip g-coin">코인매치</span> 인터스티셜 <span class="hl">10%</span>). 최대 페어는 <span class="g-chip g-coin">코인매치</span>→<span class="g-chip g-cozy">코지타일즈</span>(글로벌 <span class="hl">67K</span>), <span class="g-chip g-pbm">퍼블마</span>는 받기만 함.</li>
+<li>소스별 마진은 <span class="g-chip g-cozy">코지타일즈</span>·<span class="g-chip g-mahjong">마종</span>만 흑자, <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>은 회계상 적자(90일 LTV도 미회수). 단 빈 구좌라 실손실 작고 국가 필터 시 우량 — 차단 아닌 필터가 정답.</li>
+<li>노출 위치는 미션이 팝업보다 품질 우위 — <span class="g-chip g-mahjong">마종</span> 미션 D7 <span class="hl">6.6%</span> vs 팝업 <span class="hl">3.5%</span>(2배). 단 팝업 급감 시점 데이터라 팝업 과소평가 가능.</li>
+</ul>
+</div>
+
+<div class="box info">
+<b>용어</b><br>
+<b>팝업</b>: IT(인터스티셜) 광고 구좌에 크로스를 대체 노출. 유저가 게임 중 자동으로 봄.<br>
+<b>미션</b>: 로비 별도 구좌, 유저가 직접 선택해서 여는 방식. 2026-03부터 도입.
+</div>
+
+
+<h3>1-1. FROM-TO 전체 세션 매트릭스 (5/19~6/15, 팝업+미션)</h3>
+
+<table class="summary-table">
+<colgroup><col style="width:26%"><col style="width:26%"><col style="width:16%"><col style="width:16%"><col style="width:16%"></colgroup>
+<tr><th>FROM</th><th>TO</th><th class="num">글로벌 세션</th><th class="num">US 세션</th><th>비고</th></tr>
+<tr class="warn"><td><span class="g-chip g-coin">코인매치</span></td><td><span class="g-chip g-cozy">코지 타일즈</span></td><td class="num">67,330</td><td class="num">5,525</td><td>글로벌 최대</td></tr>
+<tr class="warn"><td><span class="g-chip g-puzzle">더퍼즐</span></td><td><span class="g-chip g-cozy">코지 타일즈</span></td><td class="num">46,564</td><td class="num">2,239</td><td></td></tr>
+<tr><td><span class="g-chip g-mahjong">마종</span></td><td><span class="g-chip g-cozy">코지 타일즈</span></td><td class="num">39,558</td><td class="num">7,198</td><td></td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td><span class="g-chip g-puzzle">더퍼즐</span></td><td class="num">36,998</td><td class="num">2,868</td><td></td></tr>
+<tr><td><span class="g-chip g-cozy">코지 타일즈</span></td><td><span class="g-chip g-mahjong">마종</span></td><td class="num">34,378</td><td class="num">4,810</td><td></td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span></td><td><span class="g-chip g-coin">코인매치</span></td><td class="num">29,650</td><td class="num">1,294</td><td></td></tr>
+<tr><td><span class="g-chip g-cozy">코지 타일즈</span></td><td><span class="g-chip g-coin">코인매치</span></td><td class="num">9,089</td><td class="num">1,065</td><td></td></tr>
+<tr><td><span class="g-chip g-cozy">코지 타일즈</span></td><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td class="num">2,439</td><td class="num">266</td><td></td></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td><span class="g-chip g-mahjong">마종</span></td><td class="num">2,034</td><td class="num">885</td><td></td></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td><span class="g-chip g-coin">코인매치</span></td><td class="num">1,269</td><td class="num">543</td><td></td></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td><span class="g-chip g-cozy">코지 타일즈</span></td><td class="num">337</td><td class="num">140</td><td></td></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td><span class="g-chip g-puzzle">더퍼즐</span></td><td class="num">227</td><td class="num">112</td><td></td></tr>
+</table>
+<div class="box info" style="font-size:12.5px;">
+페어 운영 이력(과거 연결했다가 끊긴 페어, 신설 페어 등 세부) → PART 2-3 참조.
+</div>
+<div class="sec-concl"><span class="g-chip g-coin">코인매치</span>→<span class="g-chip g-cozy">코지타일즈</span>(글로벌 <span class="hl">67K</span>)가 최대 페어. <span class="g-chip g-mahjong">마종</span>·<span class="g-chip g-puzzle">더퍼즐</span>도 코지타일즈로 대량 송출. <span class="g-chip g-pbm">퍼블마</span>는 내보내는 연결 없이 받는 역할만.</div>
+
+<h3>1-2. IT 구좌 대비 크로스 점유율 (최근 7일)</h3>
+<p style="font-size:13.5px;color:#333;margin:0 0 10px;line-height:1.7;"><b><span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>이 노출 많은 건 IT fill 실패율이 높아서. 팝업형 CTR(39~47%)이 <span class="g-chip g-coin">코인매치</span> 인터스티셜(10%)보다 4배 높음.</b></p>
+<table class="summary-table">
+<colgroup><col style="width:22%"><col style="width:14%"><col style="width:14%"><col style="width:13%"><col style="width:10%"><col style="width:27%"></colgroup>
+<tr><th>게임</th><th class="num">IT 노출</th><th class="num">크로스 노출</th><th class="num">점유율</th><th class="num">CTR</th><th>비고</th></tr>
+<tr class="warn"><td><span class="g-chip g-coin">코인매치</span></td><td class="num">188만</td><td class="num">35만</td><td class="num">15.8%</td><td class="num">10.1%</td><td>점유 최대, 1인당 노출 35회</td></tr>
+<tr class="warn"><td><span class="g-chip g-puzzle">더퍼즐</span></td><td class="num">49만</td><td class="num">8만</td><td class="num">13.8%</td><td class="num">33.3%</td><td></td></tr>
+<tr><td><span class="g-chip g-mahjong">마종</span></td><td class="num">191만</td><td class="num">3.5만</td><td class="num">1.8%</td><td class="num">43.6%</td><td>1인당 노출 5회</td></tr>
+<tr><td><span class="g-chip g-cozy">코지 타일즈</span></td><td class="num">177만</td><td class="num">2.9만</td><td class="num">1.6%</td><td class="num">46.0%</td><td>CTR 최고, 1인당 노출 6회</td></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td class="num">51만</td><td class="num">0.9만</td><td class="num">1.8%</td><td class="num">13.1%</td><td></td></tr>
+</table>
+<div class="box info"><span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>이 크로스 노출이 많은 건 IT 광고 fill 실패가 그만큼 자주 일어나기 때문. 설계 차이 아님.</div>
+
+<div class="sec-concl">팝업형 CTR(<span class="hl">39~47%</span>)이 <span class="g-chip g-coin">코인매치</span> 인터스티셜(<span class="hl">10%</span>) 대비 4배 높음. <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>이 노출 많은 건 IT 광고 fill 실패 빈도가 높아서이지 효율적이어서가 아님.</div>
+<h3>1-3. 채널별 효율 (<span class="g-chip g-coin">코인매치</span> 기준, 가입 후 14일, 2026-03~06)</h3>
+
+<table class="summary-table">
+<colgroup><col style="width:20%"><col style="width:10%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:19%"></colgroup>
+<tr><th>채널</th><th class="num">NRU</th><th class="num">D1%</th><th class="num">D7%</th><th class="num">D14%</th><th class="num">판수/인</th><th class="num">RV/인</th><th class="num">IT/인</th><th>비고</th></tr>
+<tr class="hi"><td><b>크로스-미션</b></td><td class="num">1,416</td><td class="num g"><b>20.9</b></td><td class="num g"><b>6.4</b></td><td class="num g"><b>4.7</b></td><td class="num g"><b>18.4</b></td><td class="num">13.0</td><td class="num">13.5</td><td class="g">D14 팝업 대비 우위</td></tr>
+<tr class="hi"><td><b>크로스-팝업</b></td><td class="num">2,601</td><td class="num g"><b>17.3</b></td><td class="num g"><b>6.3</b></td><td class="num g"><b>3.6</b></td><td class="num g"><b>15.8</b></td><td class="num g"><b>14.3</b></td><td class="num g"><b>14.7</b></td><td class="g">D7 광고 대비 4배</td></tr>
+<tr><td>오가닉·기타</td><td class="num">1,945,140</td><td class="num">3.7</td><td class="num">1.6</td><td class="num">0.8</td><td class="num">4.4</td><td class="num">2.0</td><td class="num">2.2</td><td></td></tr>
+<tr class="warn"><td>광고(AD)</td><td class="num">450,354</td><td class="num">4.7</td><td class="num r">1.5</td><td class="num r">0.9</td><td class="num">4.6</td><td class="num">2.5</td><td class="num">1.9</td><td></td></tr>
+</table>
+<div class="box verified"><b>크로스는 오가닉·광고 대비 D7 4배, 1인당 RV·IT 6~8배.</b> IT fill 실패 구좌를 공백으로 두는 것보다 크로스로 채우는 게 압도적으로 유리함.</div>
+
+<h3>1-4. 팝업 vs 미션 품질 (2026-03~06)</h3>
+
+<table class="summary-table">
+<colgroup><col style="width:18%"><col style="width:8%"><col style="width:9%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:14%"></colgroup>
+<tr><th>to 게임</th><th>유형</th><th class="num">NRU</th><th class="num">D1%</th><th class="num">D7%</th><th class="num">D14%</th><th class="num">판수/인</th><th class="num">RV/인</th><th class="num">IT/인</th><th>비고</th></tr>
+<tr class="hi"><td><span class="g-chip g-mahjong">마종</span></td><td>미션</td><td class="num">4,727</td><td class="num">18.4</td><td class="num g"><b>6.6</b></td><td class="num g"><b>4.7</b></td><td class="num g"><b>22.4</b></td><td class="num">4.0</td><td class="num">16.3</td><td class="g">D7 팝업 대비 2배</td></tr>
+<tr><td><span class="g-chip g-mahjong">마종</span></td><td>팝업</td><td class="num">20,043</td><td class="num">10.6</td><td class="num">3.5</td><td class="num">2.2</td><td class="num">8.6</td><td class="num">2.0</td><td class="num">6.4</td><td class="am">팝업 급감 시점 영향</td></tr>
+<tr class="hi"><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td>미션</td><td class="num">5,823</td><td class="num">18.4</td><td class="num">7.1</td><td class="num">5.2</td><td class="num">26.2</td><td class="num">6.6</td><td class="num">15.1</td><td></td></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td>팝업</td><td class="num">371</td><td class="num">17.0</td><td class="num">6.7</td><td class="num g"><b>5.9</b></td><td class="num">27.9</td><td class="num">6.1</td><td class="num">21.6</td><td class="g">팝업 D14 근소 우위</td></tr>
+<tr class="hi"><td><span class="g-chip g-coin">코인매치</span></td><td>미션</td><td class="num">1,416</td><td class="num">20.9</td><td class="num">6.4</td><td class="num g"><b>4.7</b></td><td class="num">18.4</td><td class="num">13.0</td><td class="num">13.5</td><td class="g">미션 D14 우위</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td>팝업</td><td class="num">2,601</td><td class="num">17.3</td><td class="num">6.3</td><td class="num">3.6</td><td class="num">15.8</td><td class="num">14.3</td><td class="num">14.7</td><td></td></tr>
+<tr class="hi"><td><span class="g-chip g-puzzle">더퍼즐</span></td><td>미션</td><td class="num">2,982</td><td class="num">15.2</td><td class="num">4.8</td><td class="num">3.4</td><td class="num">11.8</td><td class="num">7.8</td><td class="num">6.8</td><td class="g">미션 우위</td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span></td><td>팝업</td><td class="num">2,166</td><td class="num">14.3</td><td class="num">4.0</td><td class="num">2.8</td><td class="num">9.2</td><td class="num">8.1</td><td class="num">8.1</td><td></td></tr>
+<tr><td><span class="g-chip g-cozy">코지 타일즈</span></td><td>팝업만</td><td class="num">45,889</td><td class="num">13.6</td><td class="num">4.0</td><td class="num">2.8</td><td class="num">16.6</td><td class="num">2.9</td><td class="num">11.8</td><td>미션 없음</td></tr>
+</table>
+<div class="box warn">미션이 팝업보다 D7·D14 리텐션·판수 전반 우위. <span class="g-chip g-mahjong">마종</span> 특히 두드러짐(팝업 D7 <span class="hl">3.5%</span> vs 미션 <span class="hl">6.6%</span>, 2배). 단 <span class="g-chip g-mahjong">마종</span> 팝업은 팝업 급감 시점 영향으로 품질 과소 측정됐을 가능성 있음 — 방향성만 참고.</div>
+
+<div class="sec-concl">미션이 팝업보다 D14·판수 전반 우위. 특히 <span class="g-chip g-mahjong">마종</span>: 미션 D7 <span class="hl">6.6%</span> vs 팝업 <span class="hl">3.5%</span>(2배). 단 팝업이 급감 추세인 시점 데이터라 팝업 과소평가 가능.</div>
+<h3>1-5. 기회비용 — 크로스 노출 대신 IT 광고를 뺀 마진이 맞는가</h3>
+
+<p style="font-size:13.5px;color:#333;margin:0 0 12px;line-height:1.7;">
+<b><span class="g-chip g-cozy">코지타일즈</span>·<span class="g-chip g-mahjong">마종</span>을 소스로 쓸 때는 흑자, <span class="g-chip g-puzzle">더퍼즐</span>·<span class="g-chip g-coin">코인매치</span>는 적자.</b> 노출당 잃는 IT 광고 수익 대비 유입 유저가 만들어주는 IT+RV 수익의 마진이 소스마다 극명하게 갈림. <span class="g-chip g-coin">코인매치</span>가 크로스를 많이 뿌리는 건 IT fill 실패 탓이지, 효율적이어서가 아님.
+</p>
+
+<table class="summary-table">
+<colgroup><col style="width:14%"><col style="width:12%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:8%"></colgroup>
+<tr>
+  <th>소스 게임</th>
+  <th class="num">IT eCPM<br><small>(소스)</small></th>
+  <th class="num">노출당<br>IT 기회비용</th>
+  <th class="num">NRU 1명<br>획득 비용¹</th>
+  <th class="num">14일<br>IT 회수²</th>
+  <th class="num">14일<br>RV 회수²</th>
+  <th class="num">14일<br>합산 회수</th>
+  <th class="num">14일<br>마진</th>
+  <th>판정</th>
+</tr>
+<tr class="hi">
+  <td><span class="g-chip g-cozy">코지타일즈</span></td>
+  <td class="num">$9.52</td>
+  <td class="num">$0.010</td>
+  <td class="num"><b>$0.10</b></td>
+  <td class="num">$0.30</td>
+  <td class="num">$0.13</td>
+  <td class="num"><b>$0.43</b></td>
+  <td class="num g"><b>+$0.33</b></td>
+  <td class="g">✅ 흑자</td>
+</tr>
+<tr class="hi">
+  <td><span class="g-chip g-mahjong">마종</span></td>
+  <td class="num">$14.35</td>
+  <td class="num">$0.016</td>
+  <td class="num"><b>$0.26</b></td>
+  <td class="num">$0.29</td>
+  <td class="num">$0.15</td>
+  <td class="num"><b>$0.44</b></td>
+  <td class="num g"><b>+$0.19</b></td>
+  <td class="g">✅ 흑자</td>
+</tr>
+<tr>
+  <td><span class="g-chip g-puzzle">더퍼즐</span></td>
+  <td class="num">$11.06</td>
+  <td class="num">$0.011</td>
+  <td class="num"><b>$5.95</b></td>
+  <td class="num">$0.29</td>
+  <td class="num">$0.15</td>
+  <td class="num"><b>$0.44</b></td>
+  <td class="num warn"><b>-$5.51</b></td>
+  <td class="warn">⚠️ 적자<br><small>손익분기 ~180일</small></td>
+</tr>
+<tr>
+  <td><span class="g-chip g-coin">코인매치</span></td>
+  <td class="num">$7.52</td>
+  <td class="num">$0.008</td>
+  <td class="num"><b>$11.53</b></td>
+  <td class="num">$0.29</td>
+  <td class="num">$0.15</td>
+  <td class="num"><b>$0.44</b></td>
+  <td class="num" style="color:#c0392b;"><b>-$11.08</b></td>
+  <td style="color:#c0392b;">❌ 심각 적자<br><small>손익분기 ~370일</small></td>
+</tr>
+</table>
+<p class="foot">¹ NRU 획득 비용 = (일 노출수 ÷ 일 신규NRU) × 노출당 IT 기회비용. 최근 30일 실측: 코지 10회/인·<span class="g-chip g-mahjong">마종</span> 18회/인·<span class="g-chip g-puzzle">더퍼즐</span> 538회/인·<span class="g-chip g-coin">코인매치</span> 1,533회/인.<br>
+² 14일 IT+RV 회수 = to 게임에서 NRU가 14일간 발생시키는 IT·RV 이벤트 × 도착 게임 eCPM. (to 게임 기준 코지·<span class="g-chip g-mahjong">마종</span> 코호트 실측, 도착게임 eCPM 적용)</p>
+
+<div class="src-concl">
+<b>결론 — <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>의 크로스 노출이 많은 건 IT fill 실패 때문이지 효율적이어서가 아님.</b><br>
+NRU 1명 획득에 <span class="g-chip g-coin">코인매치</span> $11.53·<span class="g-chip g-puzzle">더퍼즐</span> $5.95이 드는데 14일 회수는 $0.44 → 손실 구조. <span class="g-chip g-cozy">코지타일즈</span>·<span class="g-chip g-mahjong">마종</span>은 fill 실패율 낮아 노출 적지만 NRU 전환이 효율적 → 흑자. <span class="g-chip g-sol">솔리테어</span> 연결 시 <b><span class="g-chip g-cozy">코지타일즈</span>·<span class="g-chip g-mahjong">마종</span> 소스를 늘리고 <span class="g-chip g-coin">코인매치</span> 의존을 낮추는 것이 수익 최적화에도 맞음.</b>
+</div>
+
+<h3>1-6. LTV 분석 — 90일 누적 수익으로 본 소스별 가치</h3>
+<p style="font-size:13.5px;color:#333;margin:0 0 12px;line-height:1.7;"><b>from <span class="g-chip g-cozy">코지타일즈</span>에서 온 유저는 14일부터 흑자, 90일 LTV $1.35로 획득비의 13.5배. from <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>은 90일이 지나도 적자 미해소.</b></p>
+
+<table class="summary-table">
+<colgroup><col style="width:22%"><col style="width:12%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:12%"><col style="width:12%"></colgroup>
+<tr><th>from → to</th><th class="num">NRU<br>획득비</th><th class="num">활성 1일<br>광고수익</th><th class="num">14일<br>LTV</th><th class="num">30일<br>LTV</th><th class="num">60일<br>LTV</th><th class="num">90일<br>LTV</th><th>판정</th></tr>
+<tr class="hi"><td><span class="g-chip g-cozy">코지타일즈</span>→<span class="g-chip g-mahjong">마종</span></td><td class="num"><b>$0.10</b></td><td class="num">$0.284</td><td class="num g"><b>$0.70</b></td><td class="num g">$0.93</td><td class="num g">$1.20</td><td class="num g"><b>$1.35</b></td><td class="g">✅ 14일부터 흑자<br>획득비의 13.5배</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span>→<span class="g-chip g-cozy">코지타일즈</span></td><td class="num"><b>$11.53</b></td><td class="num">$0.221</td><td class="num warn">$0.44</td><td class="num warn">$0.57</td><td class="num warn">$0.71</td><td class="num warn"><b>$0.78</b></td><td class="warn">❌ 90일 LTV $0.78<br>획득비 $11.53 미회수</td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-cozy">코지타일즈</span></td><td class="num"><b>$5.95</b></td><td class="num">$0.214</td><td class="num warn">$0.46</td><td class="num warn">$0.60</td><td class="num warn">$0.75</td><td class="num warn"><b>$0.82</b></td><td class="warn">❌ 90일 LTV $0.82<br>획득비 $5.95 미회수</td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-coin">코인매치</span></td><td class="num"><b>$5.95</b></td><td class="num">$0.156</td><td class="num warn">$0.35</td><td class="num warn">$0.41</td><td class="num warn">$0.47</td><td class="num warn"><b>$0.50</b></td><td class="warn">❌ 90일 LTV $0.50<br>획득비 $5.95 미회수</td></tr>
+</table>
+<p class="foot">활성 1일 광고수익 = 리텐션 가중 IT·RV 이벤트 × eCPM. 리텐션 곡선은 D1·D7·D14·D30 실측값 구간 지수보간. eCPM = FB Monetization Manager 2026-06 글로벌 기준.</p>
+
+<div class="src-concl">
+<b>LTV 결론:</b><br>
+from <span class="g-chip g-cozy">코지타일즈</span>→to <span class="g-chip g-mahjong">마종</span>은 <b>90일 LTV $1.35로 획득비($0.10)의 13.5배</b> — 크로스 채널 최우선 소스. 반면 from <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>은 유저가 활동을 잘 해도(일 $0.15~0.22) 노출 낭비로 인한 획득비가 너무 커서 <b>90일이 지나도 손익분기 불가.</b> 단 from <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>은 IT fill 실패로 어차피 빈 구좌라 기회비용 자체가 낮다는 관점에서 완전 차단보다는 <b>노출 빈도 그대로 두되 소스 품질 모니터링</b>이 현실적.
+</div>type html>
+<div class="part-header">
+<h2>PART 2. 크로스로 들어온 유저, 어느 게임에서 얼마나 잘 남는가</h2>
+<div class="part-desc">게임별 크로스 유입 유저 활동성 · Smile 오염 교정 · 페어 운영 이력 및 품질</div>
+</div>
+<div class="part-concl">
+<b>PART 2 핵심 정리</b>
+<ul>
+<li><span class="g-chip g-smile">Smile</span>(외부 게임) 소스가 <span class="g-chip g-mahjong">마종</span> 크로스 평균을 오염 — Smile D7 <span class="hl">1.9%</span>가 섞여 마종이 최하위처럼 보이지만, Smile 제거하면 <span class="g-chip g-cozy">코지타일즈</span>→<span class="g-chip g-mahjong">마종</span> D7 <span class="hl">8.7%</span>로 1위.</li>
+<li>소스 혼합 기준 <span class="g-chip g-pbm">퍼즐블록마스터</span> US D7 <span class="hl">11.9%</span>·D14 <span class="hl">7.1%</span> 1위. 현재 수신 세션이 가장 적은데도 유저 품질 최상.</li>
+<li><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-mahjong">마종</span>은 2025년 런칭 때 월 9~10만 세션 피크였다가 현재 신규 유입 <span class="hl">0명</span>(재방문만). 이 자리가 신작 연결에 활용 가능.</li>
+</ul>
+</div>
+<h3>2-1. 게임별 크로스 유입 유저 활동성 (소스 혼합 기준, 코호트 2026-04-01~05-15, 14일 추적)</h3>
+
+<div class="box warn" style="margin-bottom:12px;">소스 구성이 게임마다 달라 직접 비교 주의. <span class="g-chip g-mahjong">마종</span>의 낮은 수치는 <span class="g-chip g-smile">Smile</span> 소스 오염 탓 — 2-2에서 교정값 제공.</div>
+
+<p><b>글로벌</b></p>
+<table class="summary-table">
+<colgroup><col style="width:22%"><col style="width:9%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:18%"></colgroup>
+<tr><th>게임</th><th class="num">NRU</th><th class="num">D1%</th><th class="num">D7%</th><th class="num">D14%</th><th class="num">판수/인</th><th class="num">IT/인</th><th class="num">RV/인</th><th>비고</th></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td class="num">3,096</td><td class="num">17.0</td><td class="num">5.6</td><td class="num">4.0</td><td class="num">22.2</td><td class="num">12.7</td><td class="num">5.2</td><td></td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td class="num">1,907</td><td class="num">17.7</td><td class="num">6.6</td><td class="num">4.1</td><td class="num">18.0</td><td class="num">15.1</td><td class="num">15.1</td><td>RV 높음</td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span></td><td class="num">2,142</td><td class="num">13.7</td><td class="num">4.2</td><td class="num">3.0</td><td class="num">10.4</td><td class="num">7.0</td><td class="num">7.0</td><td></td></tr>
+<tr><td><span class="g-chip g-cozy">코지 타일즈</span></td><td class="num">20,786</td><td class="num">14.0</td><td class="num">4.1</td><td class="num">2.7</td><td class="num">15.2</td><td class="num">10.1</td><td class="num">2.6</td><td></td></tr>
+<tr><td><span class="g-chip g-mahjong">마종</span></td><td class="num">10,032</td><td class="num">12.7</td><td class="num">4.0</td><td class="num">2.7</td><td class="num">11.5</td><td class="num">8.4</td><td class="num">2.3</td><td><span class="g-chip g-smile">Smile</span> 오염</td></tr>
+</table>
+
+<p><b>US</b></p>
+<table class="summary-table">
+<colgroup><col style="width:22%"><col style="width:9%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:18%"></colgroup>
+<tr><th>게임</th><th class="num">NRU</th><th class="num">D1%</th><th class="num">D7%</th><th class="num">D14%</th><th class="num">판수/인</th><th class="num">IT/인</th><th class="num">RV/인</th><th>비고</th></tr>
+<tr class="hi"><td><b><span class="g-chip g-pbm">퍼즐 블록 마스터</span></b></td><td class="num">379</td><td class="num g"><b>24.5</b></td><td class="num g"><b>11.9</b></td><td class="num g"><b>7.1</b></td><td class="num g"><b>32.6</b></td><td class="num g"><b>19.8</b></td><td class="num">10.5</td><td class="g">전 지표 1위</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td class="num">248</td><td class="num">18.1</td><td class="num">6.5</td><td class="num">6.0</td><td class="num">18.3</td><td class="num">17.8</td><td class="num g"><b>19.5</b></td><td class="g">RV 최고</td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span></td><td class="num">358</td><td class="num">21.5</td><td class="num">7.3</td><td class="num">5.0</td><td class="num">15.0</td><td class="num">10.1</td><td class="num">11.3</td><td></td></tr>
+<tr><td><span class="g-chip g-cozy">코지 타일즈</span></td><td class="num">1,583</td><td class="num">14.6</td><td class="num">6.4</td><td class="num">5.7</td><td class="num">21.1</td><td class="num">16.4</td><td class="num">3.9</td><td></td></tr>
+<tr><td><span class="g-chip g-mahjong">마종</span></td><td class="num">2,375</td><td class="num">10.9</td><td class="num">4.2</td><td class="num">2.4</td><td class="num">9.0</td><td class="num">5.9</td><td class="num">1.7</td><td><span class="g-chip g-smile">Smile</span> 오염</td></tr>
+</table>
+<div class="box verified">US 기준 <span class="g-chip g-pbm">퍼즐 블록 마스터</span> D7 <span class="hl">11.9%</span>·D14 <span class="hl">7.1%</span>·판수 <span class="hl">32.6</span>으로 전 지표 1위 — 현재 받는 세션이 <span class="hl">769</span>건으로 가장 적은데도 품질이 최상. <span class="g-chip g-mahjong">마종</span>은 소스 혼합 기준 D7 <span class="hl">4.2%</span>로 최하위지만 아래(2-2)에서 <span class="g-chip g-smile">Smile</span> 오염 교정 시 역전됨.</div>
+
+<h3>2-2. <span class="g-chip g-smile">Smile</span> 오염 교정 — <span class="g-chip g-mahjong">마종</span> 리텐션이 낮은 이유</h3>
+
+<div class="two">
+<div class="method-box wrong">
+<div class="m-lbl">X 소스 혼합 평균 (오류)</div>
+<span class="g-chip g-smile">Smile</span> → <span class="g-chip g-mahjong">마종</span> 유입: NRU ~<span class="hl">11,686</span>명, D7 <span class="hl">1.9%</span><br><br>
+대량 유입된 저품질 소스가 <span class="g-chip g-mahjong">마종</span> 전체 평균을 끌어내림. → "<span class="g-chip g-mahjong">마종</span> 최하위" 오결론.
+</div>
+<div class="method-box right">
+<div class="m-lbl">O 소스 고정 비교 (교정값)</div>
+from <span class="g-chip g-cozy">코지 타일즈</span> → to <span class="g-chip g-mahjong">마종</span>: NRU <span class="hl">2,218</span>명, D7 <span class="hl">8.7%</span>·D14 <span class="hl">5.8%</span>·합산 매출 <span class="hl">$0.74</span>/인<br><br>
+소스 고정 시 <span class="g-chip g-mahjong">마종</span>이 실제 최고 TO 게임으로 역전됨.
+</div>
+</div>
+
+<div class="sec-concl"><span class="g-chip g-smile">Smile</span> 제거 시 <span class="g-chip g-mahjong">마종</span> 크로스 평균 역전 — <span class="g-chip g-cozy">코지타일즈</span>→<span class="g-chip g-mahjong">마종</span> D7 <span class="hl">8.7%</span>로 실제 최상위. "마종 최하위"는 소스 오염이 만든 오결론.</div>
+<h3>2-3. 페어 운영 이력 — 크로스 유입 유저 활동성 포함</h3>
+
+<div class="box info" style="margin-bottom:10px;font-size:12.5px;">
+크로스 연결은 <b>신작 런칭 시 활성화(신규 획득) → 이후 소량 유지(재방문 re-engagement)</b> 구조. 활동성은 신규 기준으로만 측정. 기간에 따라 신규/재방문 구성이 달라 직접 비교 시 주의.
+</div>
+
+<table class="summary-table">
+<colgroup><col style="width:18%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:17%"></colgroup>
+<tr><th>페어 (기간)</th><th class="num">NRU</th><th class="num">D1</th><th class="num">D7</th><th class="num">D14</th><th class="num">판수/인</th><th class="num">RV/인</th><th class="num">IT/인</th><th>비고</th></tr>
+
+<tr class="hi"><td><b><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-mahjong">마종</span></b><br><small>2025-07~09 피크 (글로벌)</small></td>
+<td class="num"><b>27,916</b></td><td class="num">19.6%</td><td class="num"><b>6.2%</b></td><td class="num">4.0%</td><td class="num">21.7</td><td class="num">9.3</td><td class="num">24.9</td>
+<td><span class="g-chip g-mahjong">마종</span> 런칭 직후. 신규 40% 포함. 재활성화 시 동일 품질·볼륨 기대.</td></tr>
+
+<tr class="hi"><td><b><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-mahjong">마종</span></b><br><small>2025-07~09 피크 (US)</small></td>
+<td class="num"><b>1,495</b></td><td class="num">21.8%</td><td class="num"><b>7.8%</b></td><td class="num">6.8%</td><td class="num">27.1</td><td class="num">10.6</td><td class="num">32.2</td>
+<td>US 기준 품질 더 높음. D30 5.4%로 장기 잔존 확인.</td></tr>
+
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-mahjong">마종</span><br><small>2026-01~04 최근</small></td>
+<td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td>
+<td><b>신규 유입 0명.</b> 전량 재방문(logincount≥2) — 런칭 이후 신규 소진, re-engagement 채널로 전환됨.</td></tr>
+
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-pbm">퍼즐블록마스터</span><br><small>2025-10~12 (글로벌)</small></td>
+<td class="num">5,638</td><td class="num">19.0%</td><td class="num">6.3%</td><td class="num">4.0%</td><td class="num">34.6</td><td class="num">4.6</td><td class="num">17.3</td>
+<td><span class="g-chip g-pbm">퍼블마</span> 런칭 직후. 판수 34.6으로 전 페어 최고 — <span class="g-chip g-pbm">퍼블마</span> 특성.</td></tr>
+
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-pbm">퍼즐블록마스터</span><br><small>2025-10~12 (US)</small></td>
+<td class="num">626</td><td class="num">20.3%</td><td class="num">9.6%</td><td class="num">6.2%</td><td class="num">34.5</td><td class="num">5.7</td><td class="num">17.8</td>
+<td>US D7 9.6% — <span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-mahjong">마종</span> US(7.8%)보다 높음. <span class="g-chip g-pbm">퍼블마</span> 게임성과 <span class="g-chip g-puzzle">더퍼즐</span> 유저 성향 핏 확인.</td></tr>
+
+<tr><td><span class="g-chip g-mahjong">마종</span>→<span class="g-chip g-puzzle">더퍼즐</span><br><small>2026-03~05 (글로벌)</small></td>
+<td class="num">111</td><td class="num">19.8%</td><td class="num">9.9%</td><td class="num">7.2%</td><td class="num">20.6</td><td class="num">14.4</td><td class="num">17.0</td>
+<td>신설. 표본 작지만 D7 9.9%로 품질 높음. RV 14.4로 광고 활동성도 우수.</td></tr>
+
+<tr><td><span class="g-chip g-mahjong">마종</span>→<span class="g-chip g-coin">코인매치</span><br><small>2026-03~05</small></td>
+<td class="num">40</td><td class="num">10.0%</td><td class="num">2.5%</td><td class="num">5.0%</td><td class="num">18.5</td><td class="num">21.6</td><td class="num">8.9</td>
+<td>표본 극소(40명). RV 21.6 높음. D7 수치 불안정 — 방향성만 참고.</td></tr>
+</table>
+
+<div class="src-concl">
+<b>페어별 결론:</b><br>
+<b><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-mahjong">마종</span> 재활성화 추천.</b> 피크기 글로벌 D7 <span class="hl">6.2%</span>·US D7 <span class="hl">7.8%</span>·판수 27.1로 검증된 품질. 단 <b>2026년에는 이미 신규 소진 — <span class="g-chip g-sol">솔리테어</span> 연결로 교체하면 신규 유입 재개 기대.</b> <span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-mahjong">마종</span> 자리에 <span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-sol">솔리테어</span>를 넣는 것이 현실적.<br><br>
+<b><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-pbm">퍼즐블록마스터</span>도 품질 우수.</b> US D7 <span class="hl">9.6%</span>·판수 34.5로 전 페어 중 최고 활동성. <span class="g-chip g-pbm">퍼블마</span> DAU 감소로 규모는 축소됐지만 보내는 유저 품질은 입증됨.<br><br>
+<b><span class="g-chip g-mahjong">마종</span>→<span class="g-chip g-puzzle">더퍼즐</span> 신설 페어: 표본 작지만 D7 9.9% 고품질.</b> <span class="g-chip g-mahjong">마종</span> 유저가 <span class="g-chip g-puzzle">더퍼즐</span>로 가서 잘 남음 — 향후 <span class="g-chip g-sol">솔리테어</span>도 <span class="g-chip g-mahjong">마종</span>→<span class="g-chip g-sol">솔리테어</span>로 연결 시 유사한 품질 기대 가능.
+</div>
+
+<div class="part-header">
+<h2>PART 3. 소스를 고정해서 쪼개면 — 어디서 온 유저가 더 좋은가</h2>
+<div class="part-desc">from 게임별 소스 고정 비교 · 소셜 활동성 · 광고 매출 + 소셜 발행 통합</div>
+</div>
+<div class="part-concl">
+<b>PART 3 핵심 정리</b>
+<ul>
+<li>from <span class="g-chip g-cozy">코지타일즈</span> → to <span class="g-chip g-mahjong">마종</span>이 D7 <span class="hl">8.7%</span>·합산 광고 매출 <span class="hl">$0.74</span>/인·소셜 발행 <span class="hl">8.25</span>회로 전 지표 1위.</li>
+<li>from <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>에서 온 유저는 D1은 <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span> 도착 우위, D14 이후는 <span class="g-chip g-cozy">코지타일즈</span> 역전. RV 매출은 경쟁형 게임 도착이 높음.</li>
+<li>소셜 활동성도 <span class="g-chip g-mahjong">마종</span> 도착이 압도 — <span class="hl">1.70</span>/인으로 <span class="g-chip g-coin">코인매치</span>(0.52)의 3배. 토너먼트 생성이 바이럴로 이어지는 구조.</li>
+</ul>
+</div>
+<h3>3-1. 왜 소스를 고정해야 하나</h3>
+
+<div class="two">
+<div class="method-box wrong">
+<div class="m-lbl">X 잘못된 방법 — 소스 혼합 평균</div>
+모든 from 게임을 섞어 to 게임별 리텐션 평균 비교.<br><br>
+<span class="g-chip g-mahjong">마종</span>으로 오는 유저 다수가 from <span class="g-chip g-smile">Smile</span> (NRU ~<span class="hl">11,686</span>명, D7 <span class="hl">1.9%</span>) — 평균을 낮춤. from <span class="g-chip g-cozy">코지 타일즈</span>(~<span class="hl">2,218</span>명, D7 <span class="hl">8.7%</span>)와 섞으면 "<span class="g-chip g-mahjong">마종</span> 최하위" 오결론.
+</div>
+<div class="method-box right">
+<div class="m-lbl">O 올바른 방법 — 소스 고정 비교</div>
+from 게임을 고정하고, 같은 from 게임에서 온 유저가 to 게임마다 어떻게 다른지 비교.<br><br>
+"<span class="g-chip g-cozy">코지 타일즈</span>에서 온 유저"가 <span class="g-chip g-mahjong">마종</span>·<span class="g-chip g-coin">코인매치</span> 중 어디로 갈 때 더 잘 남는가? 같은 소스 = 같은 출발선.
+</div>
+</div>
+
+<h3>3-2. from <span class="g-chip g-cozy">코지 타일즈</span> → to 비교 (2026-01~04)</h3>
+
+<div class="src-section best">
+<div class="src-title">from <span class="g-chip g-cozy">코지 타일즈</span> 소스 고정 — D7·D14·D30·합산 매출 전 지표 <span class="g-chip g-mahjong">마종</span> 1위</div>
+<div class="box info" style="margin-bottom:10px;font-size:12.5px;">기간: 2026-01~04. 팝업 한정·미션 제외.</div>
+<table class="summary-table">
+<colgroup><col style="width:18%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:9%"><col style="width:16%"></colgroup>
+<tr><th>to</th><th class="num">NRU</th><th class="num">D1%</th><th class="num">D7%</th><th class="num">D14%</th><th class="num">D30%</th><th class="num">판수/인</th><th class="num">RV/인</th><th class="num">합산/인</th><th>비고</th></tr>
+<tr class="hi"><td><b><span class="g-chip g-mahjong">마종</span></b></td><td class="num">2,218</td><td class="num g"><b>23.8</b></td><td class="num g"><b>8.7</b></td><td class="num g"><b>5.8</b></td><td class="num g"><b>4.2</b></td><td class="num g"><b>22.9</b></td><td class="num">7.2</td><td class="num g"><b>$0.74</b></td><td class="g">전 지표 1위</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td class="num">267</td><td class="num">19.1</td><td class="num">5.6</td><td class="num">4.5</td><td class="num">2.6</td><td class="num">14.6</td><td class="num g"><b>10.8</b></td><td class="num">$0.37</td><td>RV 높음</td></tr>
+</table>
+<div class="implication-box">
+<div class="i-lbl">from <span class="g-chip g-cozy">코지 타일즈</span> → 결론</div>
+<ul>
+<li><span class="g-chip g-mahjong">마종</span>이 D7·D14·D30·합산 광고 매출 전 구간 1위. 소스 고정 비교에서 <span class="g-chip g-mahjong">마종</span>은 최하위가 아닌 최상위.</li>
+<li>합산 매출 <span style="color:#7Fd0a0;font-weight:700;">$0.74</span>/인 vs <span class="g-chip g-coin">코인매치</span> <span style="color:#7Fd0a0;font-weight:700;">$0.37</span> — <span class="g-chip g-mahjong">마종</span> RV eCPM <span style="color:#7Fd0a0;font-weight:700;">$34.07</span>이 결정적 (<span class="g-chip g-coin">코인매치</span> $9.92의 3.4배).</li>
+<li>소셜 발행도 <span class="g-chip g-mahjong">마종</span> <span style="color:#7Fd0a0;font-weight:700;">8.25</span>회·토너먼트 생성 <span style="color:#7Fd0a0;font-weight:700;">5.33</span>회로 바이럴 기여 최상.</li>
+<li><span class="g-chip g-sol">솔리테어 시티 저니</span>는 솔로 메타 장르로 <span class="g-chip g-mahjong">마종</span>과 동일 분류 → from <span class="g-chip g-cozy">코지 타일즈</span> 유저가 최적 소스로 예상됨.</li>
+</ul>
+</div>
+</div>
+
+<div class="sec-concl">from <span class="g-chip g-cozy">코지타일즈</span>에서 온 유저는 to <span class="g-chip g-mahjong">마종</span>에서 D7 <span class="hl">8.7%</span>·D14 <span class="hl">5.8%</span>·합산 매출 <span class="hl">$0.74</span>/인으로 전 지표 1위. to <span class="g-chip g-coin">코인매치</span>는 RV 매출(<span class="hl">$0.20</span>/인) 높음.</div>
+<h3>3-3. from <span class="g-chip g-coin">코인매치</span> → to 비교 (2025-11~2026-02)</h3>
+
+<div class="src-section">
+<div class="src-title">from <span class="g-chip g-coin">코인매치</span> 소스 고정 — D7 이후·판수·IT는 <span class="g-chip g-cozy">코지 타일즈</span>, D1·RV는 <span class="g-chip g-puzzle">더퍼즐</span></div>
+<div class="box info" style="margin-bottom:10px;font-size:12.5px;">기간: 2025-11~2026-02. 팝업 한정·미션 제외.</div>
+<table class="summary-table">
+<colgroup><col style="width:18%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:15%"></colgroup>
+<tr><th>to</th><th class="num">NRU</th><th class="num">D1%</th><th class="num">D7%</th><th class="num">D14%</th><th class="num">D30%</th><th class="num">판수/인</th><th class="num">RV/인</th><th class="num">IT/인</th><th>비고</th></tr>
+<tr class="hi"><td><b><span class="g-chip g-cozy">코지 타일즈</span></b></td><td class="num">12,939</td><td class="num">15.8</td><td class="num g"><b>5.8</b></td><td class="num g"><b>4.3</b></td><td class="num g"><b>2.9</b></td><td class="num g"><b>28.8</b></td><td class="num">4.9</td><td class="num g"><b>18.9</b></td><td class="g">D7 이후·판수·IT 우위</td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span></td><td class="num">8,670</td><td class="num g"><b>17.4</b></td><td class="num">4.6</td><td class="num">2.7</td><td class="num">1.3</td><td class="num">10.8</td><td class="num g"><b>8.8</b></td><td class="num">8.9</td><td>D1만 우위, RV 높음</td></tr>
+</table>
+<div class="src-concl">D1은 <span class="g-chip g-puzzle">더퍼즐</span> 우위(<span class="hl">17.4%</span> vs <span class="hl">15.8%</span>), D7 이후는 <span class="g-chip g-cozy">코지 타일즈</span> 역전. <span class="g-chip g-cozy">코지 타일즈</span>는 1인당 판수 <span class="hl">28.8</span>회·IT <span class="hl">18.9</span>회로 활동량도 압도. <span class="g-chip g-puzzle">더퍼즐</span>은 RV <span class="hl">8.8</span>회로 단기 광고 매출형.</div>
+</div>
+
+<h3>3-4. from <span class="g-chip g-puzzle">더퍼즐</span> → to 비교 (2025-11~2026-02)</h3>
+
+<div class="src-section">
+<div class="src-title">from <span class="g-chip g-puzzle">더퍼즐</span> 소스 고정 — D1·RV는 <span class="g-chip g-coin">코인매치</span>, 장기·소셜은 <span class="g-chip g-cozy">코지 타일즈</span></div>
+<div class="box info" style="margin-bottom:10px;font-size:12.5px;">기간: 2025-11~2026-02. 팝업 한정·미션 제외.</div>
+<table class="summary-table">
+<colgroup><col style="width:18%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:15%"></colgroup>
+<tr><th>to</th><th class="num">NRU</th><th class="num">D1%</th><th class="num">D7%</th><th class="num">D14%</th><th class="num">D30%</th><th class="num">판수/인</th><th class="num">RV/인</th><th class="num">IT/인</th><th>비고</th></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td class="num">9,200</td><td class="num g"><b>23.2</b></td><td class="num">6.5</td><td class="num">3.3</td><td class="num">2.0</td><td class="num">18.0</td><td class="num g"><b>18.8</b></td><td class="num">14.8</td><td class="g">D1·RV 최고</td></tr>
+<tr class="hi"><td><b><span class="g-chip g-cozy">코지 타일즈</span></b></td><td class="num">9,557</td><td class="num">17.5</td><td class="num">6.6</td><td class="num g"><b>4.9</b></td><td class="num g"><b>3.3</b></td><td class="num g"><b>33.2</b></td><td class="num">5.4</td><td class="num g"><b>22.7</b></td><td class="g">D14·D30·판수·IT 우위</td></tr>
+</table>
+<div class="src-concl">D1은 <span class="g-chip g-coin">코인매치</span>(<span class="hl">23.2%</span> vs <span class="hl">17.5%</span>), D14·D30은 <span class="g-chip g-cozy">코지 타일즈</span> 역전(<span class="hl">4.9%</span> vs <span class="hl">3.3%</span>). RV는 <span class="g-chip g-coin">코인매치</span> <span class="hl">18.8</span>회 vs <span class="g-chip g-cozy">코지 타일즈</span> <span class="hl">5.4</span>회로 3.5배 차이. 소셜 발행은 <span class="g-chip g-cozy">코지 타일즈</span> <span class="hl">14.48</span>회로 압도.</div>
+</div>
+
+<h3>3-5. 소셜 활동성 (from <span class="g-chip g-cozy">코지 타일즈</span>, 5/1~6/15)</h3>
+
+<div class="box info" style="margin-bottom:10px;font-size:12.5px;">데이터: 다른 기획자 제공 시트. <span class="g-chip g-cozy">코지 타일즈</span> 소스 한정. 1인당 소셜 활동 = 메시지 + 토너먼트 생성 + 토너먼트 공유 합산.</div>
+
+<table class="summary-table">
+<colgroup><col style="width:16%"><col style="width:8%"><col style="width:8%"><col style="width:11%"><col style="width:11%"><col style="width:12%"><col style="width:12%"><col style="width:10%"><col style="width:12%"></colgroup>
+<tr><th>to</th><th>구분</th><th class="num">NRU</th><th class="num">소셜/인</th><th class="num">메시지/인</th><th class="num">토너먼트생성/인</th><th class="num">토너먼트공유/인</th><th class="num">판수/인</th><th>비고</th></tr>
+<tr class="hi"><td><b><span class="g-chip g-mahjong">마종</span></b></td><td>전체</td><td class="num">2,256</td><td class="num g"><b>1.70</b></td><td class="num">0.42</td><td class="num g"><b>1.28</b></td><td class="num">0.01</td><td class="num">5.59</td><td class="g"><span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-pbm">퍼블마</span> 대비 3배</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td>전체</td><td class="num">481</td><td class="num">0.52</td><td class="num">0.40</td><td class="num">0.08</td><td class="num">0.04</td><td class="num">3.64</td><td></td></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td>전체</td><td class="num">252</td><td class="num">0.54</td><td class="num">0.13</td><td class="num">0.26</td><td class="num">0.15</td><td class="num">5.08</td><td></td></tr>
+<tr class="hi"><td><b><span class="g-chip g-mahjong">마종</span></b></td><td>US</td><td class="num">279</td><td class="num g"><b>1.52</b></td><td class="num">0.41</td><td class="num g"><b>1.10</b></td><td class="num">0.01</td><td class="num">5.33</td><td class="g">US도 동일 패턴</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td>US</td><td class="num">126</td><td class="num">0.44</td><td class="num">0.36</td><td class="num">0.06</td><td class="num">0.02</td><td class="num">3.23</td><td></td></tr>
+</table>
+<div class="implication-box">
+<div class="i-lbl">소셜 활동성 결론</div>
+<ul>
+<li><span class="g-chip g-mahjong">마종</span>이 소셜 활동성도 압도 — <span style="color:#7Fd0a0;font-weight:700;">1.70</span>/인으로 <span class="g-chip g-coin">코인매치</span>(<span style="color:#7Fd0a0;font-weight:700;">0.52</span>)의 3배. 토너먼트 생성 <span style="color:#7Fd0a0;font-weight:700;">1.28</span>/인이 핵심.</li>
+<li>재방문 유저(RU): <span class="g-chip g-mahjong">마종</span> RU 1인당 소셜 <span style="color:#7Fd0a0;font-weight:700;">4.87</span>/인 (NRU 1.70의 약 3배) — 붙으면 더 활발해지는 구조.</li>
+</ul>
+</div>
+
+<div class="sec-concl">from <span class="g-chip g-cozy">코지타일즈</span> 기준 to <span class="g-chip g-mahjong">마종</span>이 소셜 <span class="hl">1.70</span>/인으로 to <span class="g-chip g-coin">코인매치</span>(<span class="hl">0.52</span>)의 3배. 토너먼트 생성(<span class="hl">1.28</span>/인)이 핵심 — 소셜 발행 → 바이럴 유입 구조.</div>
+<h3>3-6. 소스 고정 — 광고 매출 + 소셜 발행 통합</h3>
+
+<p>eCPM: <span class="g-chip g-mahjong">마종</span> IT <span class="hl">$15.76</span>·RV <span class="hl">$34.07</span> / <span class="g-chip g-coin">코인매치</span> IT <span class="hl">$5.96</span>·RV <span class="hl">$9.92</span> / <span class="g-chip g-cozy">코지 타일즈</span> IT <span class="hl">$9.52</span>·RV <span class="hl">$16.86</span>(추정)</p>
+
+<table class="summary-table">
+<colgroup><col style="width:20%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:10%"></colgroup>
+<tr><th>from→to</th><th class="num">NRU</th><th class="num">IT/인</th><th class="num">RV/인</th><th class="num">IT매출/인</th><th class="num">RV매출/인</th><th class="num">합산/인</th><th class="num">소셜/인</th><th class="num">토너먼트생성/인</th></tr>
+<tr class="hi"><td><span class="g-chip g-cozy">코지</span>→<span class="g-chip g-mahjong">마종</span></td><td class="num">1,933</td><td class="num">28.0</td><td class="num">8.9</td><td class="num g"><b>$0.44</b></td><td class="num g"><b>$0.30</b></td><td class="num g"><b>$0.74</b></td><td class="num g"><b>8.25</b></td><td class="num g"><b>5.33</b></td></tr>
+<tr><td><span class="g-chip g-cozy">코지</span>→<span class="g-chip g-coin">코인매치</span></td><td class="num">227</td><td class="num">29.2</td><td class="num">19.9</td><td class="num">$0.17</td><td class="num">$0.20</td><td class="num">$0.37</td><td class="num">7.18</td><td class="num">1.06</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span>→<span class="g-chip g-cozy">코지</span></td><td class="num">9,894</td><td class="num">30.7</td><td class="num">8.2</td><td class="num">$0.29</td><td class="num">$0.14</td><td class="num">$0.43</td><td class="num">13.34</td><td class="num">3.52</td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-coin">코인매치</span></td><td class="num">8,037</td><td class="num">19.0</td><td class="num">18.8</td><td class="num">$0.11</td><td class="num">$0.19</td><td class="num">$0.30</td><td class="num">8.42</td><td class="num">0.38</td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span>→<span class="g-chip g-cozy">코지</span></td><td class="num">7,874</td><td class="num">32.0</td><td class="num">8.2</td><td class="num">$0.30</td><td class="num">$0.14</td><td class="num">$0.44</td><td class="num">14.48</td><td class="num">3.82</td></tr>
+</table>
+<div class="box verified">from <span class="g-chip g-cozy">코지 타일즈</span>→to <span class="g-chip g-mahjong">마종</span>이 합산 <span class="hl">$0.74</span>/인으로 1위. <span class="g-chip g-mahjong">마종</span> RV eCPM <span class="hl">$34.07</span>이 결정적. 소셜 발행도 <span class="hl">8.25</span>회로 최고.</div>
+
+<!-- ===== 캐비엇 ===== -->
+<div class="note amber">
+<b>캐비엇</b>
+<ul style="margin:8px 0 0 18px;padding:0;">
+<li><b>노출 시점·빈도:</b> IT fill 실패 결과물이라 게임마다 다름. 통일 불가.</li>
+<li><b>필리핀 유저:</b> eCPM이 US 대비 낮아 우선순위 낮추지만, 크로스 유입 필리핀 유저 D7 <span class="hl">2.7%</span>로 전체 평균 <span class="hl">1.4%</span>의 2배 — 활동성 낮음이 아닌 단가 낮음.</li>
+<li><b>eCPM:</b> P0 실측 기준 (<span class="g-chip g-mahjong">마종</span> IT $15.76·RV $34.07 / <span class="g-chip g-coin">코인매치</span> IT $5.96·RV $9.92 / <span class="g-chip g-cozy">코지 타일즈</span> IT $9.52·RV $16.86 추정). 최근 변동 가능.</li>
+<li><b>소스 고정 비교 기간:</b> pair마다 다름 — <span class="g-chip g-cozy">코지 타일즈</span> 소스: 2026-01~04 / <span class="g-chip g-coin">코인매치</span>·from <span class="g-chip g-puzzle">더퍼즐</span>: 2025-11~2026-02.</li>
+<li><b>팝업 vs 미션:</b> 팝업이 이미 급감 추세라 팝업 품질 과소평가 가능.</li>
+<li><b>소셜 활동성:</b> 다른 기획자 시트, from <span class="g-chip g-cozy">코지 타일즈</span> 한정 (2026-05~06-15).</li>
+<li><b><span class="g-chip g-sol">솔리테어</span> eCPM:</b> 미실측 — 런칭 후 재계산.</li>
+<li><b>리텐션:</b> classic DN (정확히 N일째 재로그인).</li>
+</ul>
+</div>
+
+<!-- ===================== 부록 ===================== -->
+<div class="appx">
+<div class="lbl">부록 — 원천 데이터</div>
+
+<div class="part-header" style="margin-top:48px;">
+<h2>부록</h2>
+<div class="part-desc">원천 데이터 표 · 데이터 출처 · 분석 기간 · 캐비엇</div>
+</div>
+<h3>부록 A. 팝업 vs 미션 원천표 (2026-03~06)</h3>
+<table>
+<colgroup><col style="width:18%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:22%"></colgroup>
+<tr><th>to</th><th>유형</th><th class="num">NRU</th><th class="num">D1%</th><th class="num">D7%</th><th class="num">D14%</th><th class="num">판수/인</th><th class="num">RV/인</th><th class="num">IT/인</th><th>비고</th></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td>미션</td><td class="num">1,416</td><td class="num">20.9</td><td class="num">6.4</td><td class="num">4.7</td><td class="num">18.4</td><td class="num">13.0</td><td class="num">13.5</td><td></td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td>팝업</td><td class="num">2,601</td><td class="num">17.3</td><td class="num">6.3</td><td class="num">3.6</td><td class="num">15.8</td><td class="num">14.3</td><td class="num">14.7</td><td></td></tr>
+<tr><td><span class="g-chip g-mahjong">마종</span></td><td>미션</td><td class="num">4,727</td><td class="num">18.4</td><td class="num">6.6</td><td class="num">4.7</td><td class="num">22.4</td><td class="num">4.0</td><td class="num">16.3</td><td></td></tr>
+<tr><td><span class="g-chip g-mahjong">마종</span></td><td>팝업</td><td class="num">20,043</td><td class="num">10.6</td><td class="num">3.5</td><td class="num">2.2</td><td class="num">8.6</td><td class="num">2.0</td><td class="num">6.4</td><td>팝업 급감 시점</td></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td>미션</td><td class="num">5,823</td><td class="num">18.4</td><td class="num">7.1</td><td class="num">5.2</td><td class="num">26.2</td><td class="num">6.6</td><td class="num">15.1</td><td></td></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td>팝업</td><td class="num">371</td><td class="num">17.0</td><td class="num">6.7</td><td class="num">5.9</td><td class="num">27.9</td><td class="num">6.1</td><td class="num">21.6</td><td></td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span></td><td>미션</td><td class="num">2,982</td><td class="num">15.2</td><td class="num">4.8</td><td class="num">3.4</td><td class="num">11.8</td><td class="num">7.8</td><td class="num">6.8</td><td></td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span></td><td>팝업</td><td class="num">2,166</td><td class="num">14.3</td><td class="num">4.0</td><td class="num">2.8</td><td class="num">9.2</td><td class="num">8.1</td><td class="num">8.1</td><td></td></tr>
+<tr><td><span class="g-chip g-cozy">코지 타일즈</span></td><td>팝업만</td><td class="num">45,889</td><td class="num">13.6</td><td class="num">4.0</td><td class="num">2.8</td><td class="num">16.6</td><td class="num">2.9</td><td class="num">11.8</td><td>미션 없음</td></tr>
+</table>
+<p class="foot">※ 기간 2026-03~06. 팝업 급감 중인 시점 — 팝업 품질 과소평가 가능. 방향성만 참고.</p>
+
+<h3>부록 B. 소스 고정 원천표 — from <span class="g-chip g-cozy">코지 타일즈</span> (2026-01~04)</h3>
+<table>
+<colgroup><col style="width:20%"><col style="width:9%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:12%"></colgroup>
+<tr><th>to</th><th class="num">NRU</th><th class="num">D1%</th><th class="num">D7%</th><th class="num">D14%</th><th class="num">D30%</th><th class="num">판수/인</th><th class="num">RV/인</th><th class="num">IT/인</th><th>비고</th></tr>
+<tr class="hi"><td><b><span class="g-chip g-mahjong">마종</span></b></td><td class="num">2,218</td><td class="num">23.8</td><td class="num">8.7</td><td class="num">5.8</td><td class="num">4.2</td><td class="num">22.9</td><td class="num">7.2</td><td class="num">22.8</td><td>글로벌 1위</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td class="num">267</td><td class="num">19.1</td><td class="num">5.6</td><td class="num">4.5</td><td class="num">2.6</td><td class="num">14.6</td><td class="num">10.8</td><td class="num">18.3</td><td>RV 최고</td></tr>
+<tr><td><span class="g-chip g-mahjong">마종</span> (US)</td><td class="num">190</td><td class="num">20.0</td><td class="num">8.9</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td>교차 검증 완료 <span class="verified-badge">검증</span></td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span> (US)</td><td class="num">84</td><td class="num">—</td><td class="num">8.3</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td>표본 작음</td></tr>
+</table>
+<p class="foot">※ 팝업 한정·미션 제외. D30은 기간 말미 코호트 포함으로 과소 추정 가능성.</p>
+
+<h3>부록 C. 소스 고정 원천표 — from <span class="g-chip g-coin">코인매치</span> (2025-11~2026-02)</h3>
+<table>
+<colgroup><col style="width:20%"><col style="width:9%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:12%"></colgroup>
+<tr><th>to</th><th class="num">NRU</th><th class="num">D1%</th><th class="num">D7%</th><th class="num">D14%</th><th class="num">D30%</th><th class="num">판수/인</th><th class="num">RV/인</th><th class="num">IT/인</th><th>비고</th></tr>
+<tr class="hi"><td><b><span class="g-chip g-cozy">코지 타일즈</span></b></td><td class="num">12,939</td><td class="num">15.8</td><td class="num">5.8</td><td class="num">4.3</td><td class="num">2.9</td><td class="num">28.8</td><td class="num">4.9</td><td class="num">18.9</td><td>D7 이후 우위</td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span></td><td class="num">8,670</td><td class="num">17.4</td><td class="num">4.6</td><td class="num">2.7</td><td class="num">1.3</td><td class="num">10.8</td><td class="num">8.8</td><td class="num">8.9</td><td>D1만 우위</td></tr>
+<tr><td><span class="g-chip g-cozy">코지 타일즈</span> (US)</td><td class="num">2,030</td><td class="num">—</td><td class="num">8.5</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td></td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span> (US)</td><td class="num">1,399</td><td class="num">—</td><td class="num">7.2</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td></td></tr>
+</table>
+<p class="foot">※ 팝업 한정·미션 제외.</p>
+
+<h3>부록 D. 소스 고정 원천표 — from <span class="g-chip g-puzzle">더퍼즐</span> (2025-11~2026-02)</h3>
+<table>
+<colgroup><col style="width:20%"><col style="width:9%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:12%"></colgroup>
+<tr><th>to</th><th class="num">NRU</th><th class="num">D1%</th><th class="num">D7%</th><th class="num">D14%</th><th class="num">D30%</th><th class="num">판수/인</th><th class="num">RV/인</th><th class="num">IT/인</th><th>비고</th></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td class="num">9,200</td><td class="num">23.2</td><td class="num">6.5</td><td class="num">3.3</td><td class="num">2.0</td><td class="num">18.0</td><td class="num">14.4</td><td class="num">14.8</td><td>D1·RV 최고</td></tr>
+<tr class="hi"><td><b><span class="g-chip g-cozy">코지 타일즈</span></b></td><td class="num">9,557</td><td class="num">17.5</td><td class="num">6.6</td><td class="num">4.9</td><td class="num">3.3</td><td class="num">33.2</td><td class="num">5.4</td><td class="num">22.7</td><td>D14·D30·판수·IT 우위</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span> (US)</td><td class="num">935</td><td class="num">27.0</td><td class="num">10.7</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td></td></tr>
+<tr><td><span class="g-chip g-cozy">코지 타일즈</span> (US)</td><td class="num">985</td><td class="num">24.9</td><td class="num">12.5</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td></td></tr>
+</table>
+<p class="foot">※ 팝업 한정·미션 제외. 1인당 RV <span class="g-chip g-coin">코인매치</span> 14.4 vs <span class="g-chip g-cozy">코지 타일즈</span> 5.4 — 2.7배 차이.</p>
+
+<h3>부록 E. 소셜 활동성 원천표 (from <span class="g-chip g-cozy">코지 타일즈</span>, 5/1~6/15)</h3>
+<table>
+<colgroup><col style="width:18%"><col style="width:8%"><col style="width:8%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:9%"><col style="width:8%"></colgroup>
+<tr><th>to</th><th>구분</th><th class="num">NRU</th><th class="num">소셜/인</th><th class="num">메시지/인</th><th class="num">토너먼트생성/인</th><th class="num">토너먼트공유/인</th><th class="num">판수/인</th><th class="num">RV/인</th><th class="num">IT/인</th></tr>
+<tr class="hi"><td><span class="g-chip g-mahjong">마종</span></td><td>전체</td><td class="num">2,256</td><td class="num">1.70</td><td class="num">0.42</td><td class="num">1.28</td><td class="num">0.01</td><td class="num">5.59</td><td class="num">0.10</td><td class="num">0.24</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td>전체</td><td class="num">481</td><td class="num">0.52</td><td class="num">0.40</td><td class="num">0.08</td><td class="num">0.04</td><td class="num">3.64</td><td class="num">0.21</td><td class="num">0.04</td></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td>전체</td><td class="num">252</td><td class="num">0.54</td><td class="num">0.13</td><td class="num">0.26</td><td class="num">0.15</td><td class="num">5.08</td><td class="num">0.11</td><td class="num">0.38</td></tr>
+<tr class="hi"><td><span class="g-chip g-mahjong">마종</span></td><td>US</td><td class="num">279</td><td class="num">1.52</td><td class="num">0.41</td><td class="num">1.10</td><td class="num">0.01</td><td class="num">5.33</td><td class="num">0.17</td><td class="num">0.33</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td>US</td><td class="num">126</td><td class="num">0.44</td><td class="num">0.36</td><td class="num">0.06</td><td class="num">0.02</td><td class="num">3.23</td><td class="num">0.29</td><td class="num">0.00</td></tr>
+<tr><td><span class="g-chip g-pbm">퍼즐 블록 마스터</span></td><td>US</td><td class="num">48</td><td class="num">0.46</td><td class="num">0.25</td><td class="num">0.00</td><td class="num">0.21</td><td class="num">3.98</td><td class="num">0.31</td><td class="num">0.25</td></tr>
+</table>
+<p class="foot">※ 재방문 유저(RU): <span class="g-chip g-mahjong">마종</span> RU 1인당 소셜 4.87 (NRU 1.70의 약 3배). 데이터: 다른 기획자 제공 시트.</p>
+
+<h3>부록 F. 국가 통제 소스 검증 — 목적지 <span class="g-chip g-cozy">코지 타일즈</span> 고정 (코호트 2026-04-01~06-08)</h3>
+<p style="font-size:13px;color:#333;margin:0 0 8px;line-height:1.7;">Q2 "국가 통제하면 <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span>도 우량 볼륨 소스" 검증용. 목적지를 <span class="g-chip g-cozy">코지 타일즈</span> 하나로 고정해 소스만 비교(같은 도착지=공정 비교), 다시 US/비US로 분리.</p>
+<table class="summary-table">
+<colgroup><col style="width:20%"><col style="width:16%"><col style="width:16%"><col style="width:16%"><col style="width:32%"></colgroup>
+<tr><th>소스 → <span class="g-chip g-cozy">코지</span></th><th class="num">US NRU / D7</th><th class="num">비US NRU / D7</th><th class="num">US D1</th><th>해석</th></tr>
+<tr class="hi"><td><span class="g-chip g-mahjong">마종</span></td><td class="num">936 / <b>6.0%</b></td><td class="num">2,954 / <b>7.0%</b></td><td class="num">14.9%</td><td class="g">US·비US 모두 상위 — 국가 무관 우량 소스</td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span></td><td class="num">696 / <b>6.6%</b></td><td class="num">12,907 / 3.4%</td><td class="num">15.2%</td><td>US D7 3개 중 최상. 비US 대량·저품질이 평균 깎음</td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td class="num">684 / <b>5.1%</b></td><td class="num">11,837 / 4.4%</td><td class="num">11.3%</td><td>US 양호. 비US 대량 유입이 다수</td></tr>
+</table>
+<p class="foot">※ 팝업 한정·미션 제외. classic DN. <span class="g-chip g-puzzle">더퍼즐</span>·<span class="g-chip g-coin">코인매치</span>는 비US 유입이 NRU의 약 95% — 이 저단가 대량 유입이 blended 적자/저품질의 주원인. US 한정 시 <span class="g-chip g-puzzle">더퍼즐</span> D7 6.6%로 오히려 최상위. → 비중 축소가 아니라 <b>국가 필터</b>가 정답.</p>
+
+<h3>부록 G. 데이터 출처 · 분석 기간 · 캐비엇</h3>
+<table class="summary-table">
+<colgroup><col style="width:22%"><col style="width:28%"><col style="width:25%"><col style="width:25%"></colgroup>
+<tr><th>분석 항목</th><th>데이터 출처</th><th>분석 기간 (코호트)</th><th>주요 캐비엇</th></tr>
+<tr><td>크로스 노출 현황 (IT 점유율·CTR·국가)</td><td>BigQuery raw — 5종 prod 로그</td><td>최근 7일 (2026-06-10~16)</td><td>6/17 당일 부분일 제외</td></tr>
+<tr><td>채널별 효율 비교 (크로스 vs 광고·오가닉)</td><td>BigQuery <span class="g-chip g-coin">코인매치</span> prod 로그</td><td>코호트 2026-03-01~06-01, 추적 ~07-15</td><td><span class="g-chip g-coin">코인매치</span> 기준. 타 게임 동일 방향성 추정.</td></tr>
+<tr><td>팝업 vs 미션 품질 비교</td><td>BigQuery 5종 prod 로그</td><td>코호트 2026-03-01~06-01, 추적 ~07-15</td><td>미션 도입(2026-03) 이후. 팝업 급감 추세라 팝업 품질 과소평가 가능.</td></tr>
+<tr><td>소스 고정 비교 — from <span class="g-chip g-cozy">코지 타일즈</span></td><td>BigQuery <span class="g-chip g-mahjong">마종</span>·<span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-pbm">퍼즐 블록 마스터</span> prod 로그</td><td>코호트 2026-01-01~04-30, 추적 ~07-15</td><td><span class="g-chip g-cozy">코지 타일즈</span> 데이터 2025-11 시작. <span class="g-chip g-coin">코인매치</span> NRU 267명으로 표본 작음.</td></tr>
+<tr><td>소스 고정 비교 — from <span class="g-chip g-coin">코인매치</span>·from <span class="g-chip g-puzzle">더퍼즐</span></td><td>BigQuery <span class="g-chip g-cozy">코지 타일즈</span>·<span class="g-chip g-puzzle">더퍼즐</span>·<span class="g-chip g-coin">코인매치</span> prod 로그</td><td>코호트 2025-11-01~2026-02-28, 추적 ~07-15</td><td><span class="g-chip g-cozy">코지 타일즈</span> 데이터 시작(2025-11)에 맞춰 기간 설정.</td></tr>
+<tr><td>광고 매출 환산 (IT·RV 14일)</td><td>BigQuery 로그 × eCPM (P0 보고서)</td><td>위 소스 고정 코호트 동일</td><td>eCPM: <span class="g-chip g-mahjong">마종</span> IT $15.76·RV $34.07 / <span class="g-chip g-coin">코인매치</span> IT $5.96·RV $9.92 / <span class="g-chip g-cozy">코지 타일즈</span> IT $9.52·RV $16.86(추정). 최근 변동 가능.</td></tr>
+<tr><td>소셜 활동성 (메시지·토너먼트 생성·공유)</td><td>다른 기획자 제공 시트</td><td>2026-05-01~06-15, from <span class="g-chip g-cozy">코지 타일즈</span> 한정</td><td>BigQuery 직접 집계 아님. from <span class="g-chip g-cozy">코지 타일즈</span> 소스만 존재.</td></tr>
+<tr><td><span class="g-chip g-mahjong">마종</span> 런칭 스파이크 실측</td><td>BigQuery <span class="g-chip g-mahjong">마종</span> prod 로그</td><td>2025-05-01~08-03</td><td>2025-06-15주 신규 0명 — 트래킹 공백 또는 일시 중단 의심.</td></tr>
+<tr><td>필리핀 유저 활동성</td><td>BigQuery <span class="g-chip g-puzzle">더퍼즐</span> prod 로그</td><td>코호트 2026-01-01~03-15, 추적 ~04-30</td><td>to 게임 <span class="g-chip g-puzzle">더퍼즐</span>만 분석. 타 게임 필리핀 유저 별도 실측 필요.</td></tr>
+</table>
+
+<div class="box info" style="margin-top:14px;font-size:12.5px;">
+<b>공통 필터 (모든 BigQuery 쿼리 적용):</b> <code>is_dev IS DISTINCT FROM TRUE AND player_id &gt; 0</code><br>
+<b>리텐션 정의:</b> classic DN — 가입일 기준 정확히 N일째 재로그인 (대시보드 avg_dN과 동일)<br>
+<b>크로스 팝업 식별:</b> <code>UPPER(social) LIKE '%CROSS%' AND NOT LIKE '%MISSION%'</code><br>
+<b>미션 식별:</b> <code>UPPER(social) LIKE '%CROSS%' AND LIKE '%MISSION%'</code>
+</div>
+</div>
+
+</body></html>
