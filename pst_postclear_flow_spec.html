@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PST 결과 후 플로우 단축 기획서</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Pretendard','Apple SD Gothic Neo','Segoe UI',sans-serif;background:#eef2f7;color:#1d2733;line-height:1.62;padding:32px 16px;}
+  .wrap{max-width:1040px;margin:0 auto;}
+  h1{font-size:27px;font-weight:800;letter-spacing:-.6px;color:#10243d;}
+  .sub{color:#5e6e80;font-size:14px;margin:6px 0 24px;}
+  .card{background:#fff;border-radius:16px;padding:24px 28px;margin-bottom:20px;box-shadow:0 4px 18px rgba(20,40,70,.06);border:1px solid #e6ecf3;}
+  .card h2{font-size:19px;font-weight:800;color:#13314f;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .card h3{font-size:15px;font-weight:800;color:#2a3a4d;margin:16px 0 6px;}
+  .card .desc{font-size:13.5px;color:#67788b;margin-bottom:14px;}
+  .tldr{background:linear-gradient(100deg,#103a5c,#16527d);color:#eaf3fb;}
+  .tldr h2{color:#fff;}
+  .tldr li{margin:7px 0 7px 4px;font-size:15px;list-style:none;padding-left:22px;position:relative;}
+  .tldr li:before{content:"▸";position:absolute;left:0;color:#5fd0a0;font-weight:800;}
+  .tldr b{color:#fff;}
+  .sect{font-size:22px;font-weight:800;color:#10243d;letter-spacing:-.5px;margin:34px 0 4px;padding-top:10px;border-top:2px dashed #cfd9e6;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px;}
+  th,td{padding:9px 10px;text-align:center;border-bottom:1px solid #eef2f6;}
+  th{background:#f5f8fb;color:#4a5d72;font-weight:700;font-size:12.5px;}
+  td.lbl,th.lbl{text-align:left;font-weight:600;color:#2a3a4d;}
+  .best{color:#1c9e63;font-weight:800;} .worst{color:#d2453f;font-weight:800;}
+  .note{font-size:13px;color:#52637a;background:#f6f9fc;border-radius:10px;padding:12px 14px;margin-top:12px;border:1px solid #e9eff5;}
+  .note b{color:#22364b;}
+  .warn{border-left:5px solid #e8a33d;background:#fffaf0;}
+  .warn h2{color:#b9791b;}
+  .ok{border-left:5px solid #2f9e6a;background:#f3fbf7;}
+  .miss{border-left:5px solid #d2453f;background:#fdf3f2;}
+  .miss h2{color:#c0392b;}
+  code{background:#eef2f6;padding:1px 6px;border-radius:5px;font-size:12.5px;}
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin:10px 0;}
+  .step{flex:1;min-width:118px;background:#f5f8fb;border:1px solid #e2e9f1;border-radius:12px;padding:12px 10px;text-align:center;position:relative;}
+  .step .n{display:inline-block;width:22px;height:22px;line-height:22px;border-radius:50%;background:#2f7fd1;color:#fff;font-size:12px;font-weight:800;margin-bottom:6px;}
+  .step .t{font-size:13px;font-weight:700;color:#22364b;}
+  .step .s{font-size:11.5px;color:#7a8a9a;margin-top:3px;}
+  .arr{display:flex;align-items:center;justify-content:center;font-size:20px;color:#9fb2c6;padding:0 6px;font-weight:800;}
+  .flow.tobe .step{background:#f1f9f3;border-color:#cfe9d8;} .flow.tobe .step .n{background:#2f9e6a;}
+  .flow.cut .step{opacity:.5;background:#fdeceb;border-color:#f3cfcd;} .flow.cut .step .n{background:#d2453f;}
+  .shots{display:flex;flex-wrap:wrap;gap:18px;margin:14px 0;}
+  .shot{flex:1;min-width:240px;max-width:330px;}
+  .shot img{width:100%;border-radius:10px;border:1px solid #d8e0ea;box-shadow:0 2px 8px rgba(20,40,70,.08);}
+  .shot .cap{font-size:12px;color:#52637a;margin-top:6px;text-align:center;}
+  .shot .cap b{color:#22364b;}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;}
+  .tag.dev{background:#eaf1fb;color:#2f6fc2;} .tag.plan{background:#f3eafe;color:#7b46c9;} .tag.art{background:#fdeef4;color:#c9468a;} .tag.qa{background:#eafaf1;color:#1c9e63;} .tag.eco{background:#fff3e0;color:#c47d1a;}
+  .foot{font-size:11.5px;color:#9aa7b6;text-align:center;margin-top:8px;}
+  ul.clean{list-style:none;} ul.clean li{margin:8px 0;padding-left:20px;position:relative;font-size:14px;}
+  ul.clean li:before{content:"•";position:absolute;left:4px;color:#2f7fd1;font-weight:800;}
+  ul.miss li:before{content:"!";color:#d2453f;}
+  .pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;background:#eef2f6;color:#4a5d72;margin-left:6px;}
+  /* annotated screenshots — 1.5x, 테두리 박스 + 외부 리더 라벨 */
+  .annofig{display:flex;gap:24px 60px;flex-wrap:wrap;align-items:flex-start;margin:16px 0 12px;}
+  .anno{position:relative;display:inline-block;width:360px;margin:8px 172px 46px 4px;flex:0 0 auto;}
+  .anno img{width:100%;border-radius:10px;border:1px solid #d8e0ea;box-shadow:0 3px 14px rgba(20,40,70,.14);display:block;}
+  .box{position:absolute;border-radius:6px;background:transparent;}
+  .box.r{border:3px solid #e23b3b;box-shadow:0 0 0 1px rgba(255,255,255,.55),0 0 7px rgba(226,59,59,.35);}
+  .box.g{border:3px solid #1c9e63;box-shadow:0 0 0 1px rgba(255,255,255,.55),0 0 7px rgba(28,158,99,.35);}
+  .box.a{border:3px solid #d9831f;box-shadow:0 0 0 1px rgba(255,255,255,.55),0 0 7px rgba(217,131,31,.35);}
+  .lead{position:absolute;z-index:4;border-top:2px dashed #e23b3b;height:0;}
+  .lead.g{border-color:#1c9e63;} .lead.a{border-color:#d9831f;}
+  .lead.v{height:auto;width:0;border-top:none;border-left:2px dashed #e23b3b;}
+  .lead.v.g{border-left-color:#1c9e63;} .lead.v.a{border-left-color:#d9831f;}
+  /* arrowheads */
+  .lead:not(.v):after{content:"";position:absolute;right:-3px;top:-5px;width:0;height:0;border:5px solid transparent;}
+  .lead:not(.v).r:after{border-left-color:#e23b3b;} .lead:not(.v).g:after{border-left-color:#1c9e63;} .lead:not(.v).a:after{border-left-color:#d9831f;}
+  .lead.v:after{content:"";position:absolute;bottom:-3px;left:-5px;width:0;height:0;border:5px solid transparent;}
+  .lead.v.g:after{border-top-color:#1c9e63;} .lead.v.a:after{border-top-color:#d9831f;}
+  .olabel{position:absolute;font-size:12px;font-weight:800;padding:4px 11px;border-radius:6px;color:#fff;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.28);z-index:5;}
+  .olabel.r{background:#e23b3b;} .olabel.g{background:#1c9e63;} .olabel.a{background:#d9831f;}
+  .annocap{font-size:13px;color:#52637a;align-self:center;max-width:280px;line-height:1.62;}
+  .annocap b{color:#22364b;}
+  /* reference block */
+  .refbox{display:flex;gap:18px;align-items:center;border:2px dashed #aab8c6;background:#f6f9fc;border-radius:12px;padding:14px 18px;margin:6px 0 14px;}
+  .refbox .rimg{width:300px;flex:0 0 auto;}
+  .refbox .rimg img{width:100%;border-radius:8px;border:1px solid #d8e0ea;box-shadow:0 2px 8px rgba(20,40,70,.10);display:block;}
+  .refbox .rtxt{font-size:13.5px;color:#52637a;line-height:1.62;}
+  .refbox .rtxt b{color:#22364b;}
+  .reftag{display:inline-block;font-size:11px;font-weight:800;color:#fff;background:#7a8a9a;padding:3px 10px;border-radius:6px;margin-bottom:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>PST 결과 후 플로우 단축 기획서</h1>
+  <div class="sub">Solitaire City Journey · 클리어→다음판 사이 뎁스 제거로 인당 판수↑ · 작성 2026-06-23 · 근거 = <code>pst_ftue_funnel_analysis.html</code> ②부 · 화면 = <code>pst_ftue_assets/</code></div>
+
+  <!-- TL;DR -->
+  <div class="card tldr">
+    <h2>한눈에</h2>
+    <ul>
+      <li><b>문제</b> — PST 인당 판수가 구조적으로 적음(가입 2주 5.7판, d0→2주 ×1.6로 첫날 후 정체). 판당 RV는 이미 충분히 높은데(0.136) 판수가 적어 인당 RV는 낮음(0.77). <b>레버 = RV 밀도가 아니라 판수.</b></li>
+      <li><b>제1요인 = 클리어→다음판 사이 뎁스</b> — 받기 → 로비 수령 → 플레이 → 프리레벨 팝업(배수·부스터·입장료) → 다음판. <b>탭 4회+ · 화면전환 3회.</b></li>
+      <li><b>해법</b> — 결과 화면에서 보상·이벤트 <b>인라인 정산</b> + <b>[다음판] 직행</b>. 로비·프리레벨 팝업은 기본 경로에서 제거.</li>
+      <li><b>프리레벨 팝업 제거에 딸려오는 결정</b> — ① <b>입장료 폐지</b>(지불→보상 환급의 왕복 구조라 폐지해도 골드 중립) ② <b>부스터(폭죽)는 인게임 배치</b> ③ <b>배수 1배</b> ④ 데코는 망치(=플레이수) 기반 자동 진입 ⑤ 결과 화면 [홈] 버튼.</li>
+      <li><b>RV 안전</b> — PST RV의 <b>68.7%가 결과 화면 x2 받기</b>에서 발생(우리가 유지하는 화면). 프리레벨 부스터는 RV 구좌 아님. <b>판수↑ = 결과 화면 노출↑ = RV↑.</b></li>
+      <li><b>경제는 별도 숙제(§7) — 단순 중립 아님</b> <span class="tag eco">P0</span> — 입장료는 유일 대형 싱크(85%). 폐지 효과는 보상 계산식(개발 확인)에 따라 순잉여 +16M~+49M/주로 갈림. 해법 = <b>판보상·수익 불변, "다른 채널"의 골드/티켓을 코스튬·망치·퍼즐피스로 전환</b>(§7). 티켓도 동반 재설계.</li>
+    </ul>
+  </div>
+
+  <!-- ===== 1. 배경 ===== -->
+  <div class="sect">1. 배경 — 왜 판수인가</div>
+  <div class="card">
+    <h2>📊 PST 인당 판수가 낮고, 첫날 후 정체</h2>
+    <div class="desc">유입경로(promotion)·런칭 경과주차를 맞춘 코호트 기준. 출처 = <code>pst_ftue_funnel_analysis.html</code> ②부.</div>
+    <table>
+      <tr><th class="lbl">지표 (promotion 코호트, 가입 2주)</th><th>PST</th><th>해석</th></tr>
+      <tr><td class="lbl">인당 판수 (d0)</td><td>3.9</td><td>첫날 플레이</td></tr>
+      <tr><td class="lbl">인당 판수 (2주)</td><td class="worst">5.7</td><td>2주간 거의 안 늚</td></tr>
+      <tr><td class="lbl">d0→2주 성장</td><td class="worst">×1.6</td><td>첫날 후 복귀·재플레이 약함</td></tr>
+      <tr><td class="lbl">판당 RV</td><td class="best">0.136</td><td>판당 수익화는 이미 충분</td></tr>
+      <tr><td class="lbl">인당 RV (2주)</td><td class="worst">0.77</td><td>판수가 적어 총 RV 낮음</td></tr>
+      <tr><td class="lbl">D14 리텐션</td><td class="worst">1.7</td><td>적게 플레이 = 적게 남음</td></tr>
+    </table>
+    <div class="note"><b>핵심 논리</b>: "판당 RV"는 이미 높게 누르고 있는데 "판수"가 병목이라 인당 RV·리텐션이 낮음. <b>판당 RV를 더 짜는 건 마찰만 키움 → 판수를 늘려야 함.</b> 클리어 직후 다음판으로 가는 마찰을 줄이면 판수가 직접 오름(FTUE 트랙 R1·R11·R4와 같은 방향).</div>
+  </div>
+
+  <!-- ===== 2. AS-IS ===== -->
+  <div class="sect">2. AS-IS — 현재 결과 후 플로우</div>
+  <div class="card">
+    <h2>🔁 클리어 → 다음판 = 탭 4회+ · 화면전환 3회</h2>
+    <div class="flow">
+      <div class="step"><span class="n">1</span><div class="t">레벨 완료</div><div class="s">보드 클리어</div></div>
+      <div class="arr">›</div>
+      <div class="step"><span class="n">2</span><div class="t">완료 화면</div><div class="s">[받기] / [x2 받기]</div></div>
+      <div class="arr">›</div>
+      <div class="step"><span class="n">3</span><div class="t">로비 이동·수령</div><div class="s">도시 화면</div></div>
+      <div class="arr">›</div>
+      <div class="step"><span class="n">4</span><div class="t">플레이 버튼</div><div class="s">재진입</div></div>
+      <div class="arr">›</div>
+      <div class="step"><span class="n">5</span><div class="t">프리레벨 팝업</div><div class="s">배수·부스터·입장료</div></div>
+      <div class="arr">›</div>
+      <div class="step"><span class="n">6</span><div class="t">다음판 시작</div></div>
+    </div>
+    <div class="shots">
+      <div class="shot"><img src="pst_ftue_assets/result_clean.png" alt="완료 화면"><div class="cap"><b>②완료 화면</b><br>보상 정산 + [받기]/[x2 받기] · 우측 이벤트 미터</div></div>
+      <div class="shot"><img src="pst_ftue_assets/04_city_first.png" alt="로비"><div class="cap"><b>③로비(도시)</b><br>받기 후 강제 이동</div></div>
+      <div class="shot"><img src="pst_ftue_assets/prelevel_popup_clean.png" alt="프리레벨 팝업"><div class="cap"><b>⑤프리레벨 팝업</b><br>배수(−/+)·부스터·입장료·[플레이]</div></div>
+    </div>
+    <div class="note"><b>마찰 지점</b> — (a) 받기 후 <b>강제 로비 경유</b>로 매 판 흐름이 끊김. (b) <b>프리레벨 팝업의 배수·부스터·입장료 3중 결정</b>이 다음판 진입 전 비용을 키움(NRU에 특히 무거움).</div>
+  </div>
+
+  <!-- ===== 3. 단축 원칙 ===== -->
+  <div class="sect">3. 단축 원칙</div>
+  <div class="card ok">
+    <h2>✅ "결과 화면에서 끝내고 바로 다음판"</h2>
+    <ul class="clean">
+      <li><b>결과 화면 단일화</b> — 보상 수령·이벤트 정산·다음 행동 선택을 결과 화면 하나에서 완결.</li>
+      <li><b>기본 동선 = 다음판</b> — 로비·프리레벨 팝업 같은 중간 단계를 기본 경로에서 제거. 흐름이 끊기지 않아 "한 판 더"가 쉬움.</li>
+      <li><b>진입 전 결정 제거</b> — 배수·부스터·입장료 같은 다음판 진입 전 의사결정을 없애거나 인게임·자동으로 흡수.</li>
+      <li><b>이탈은 선택지로만</b> — 로비(도시·데코·상점)는 [홈] 버튼·조건부 자동 진입으로 접근. 강제하지 않음.</li>
+    </ul>
+  </div>
+
+  <!-- ===== 4. TO-BE ===== -->
+  <div class="sect">4. TO-BE — 제안 플로우 & 설계 결정</div>
+  <div class="card">
+    <h2>🎯 결과 화면 인라인 정산 → [다음판] 직행 (탭 1회)</h2>
+    <div class="flow tobe">
+      <div class="step"><span class="n">1</span><div class="t">레벨 완료</div></div>
+      <div class="arr">›</div>
+      <div class="step"><span class="n">2</span><div class="t">결과 화면</div><div class="s">보상·이벤트 인라인 정산<br>[다음판] · [x2 받기] · [홈]</div></div>
+      <div class="arr">›</div>
+      <div class="step"><span class="n">3</span><div class="t">다음판 시작</div><div class="s">입장료·팝업 없이 즉시</div></div>
+    </div>
+    <div class="flow cut" style="margin-top:6px;">
+      <div class="step"><span class="n">✕</span><div class="t">로비 강제 경유</div></div>
+      <div class="arr">✕</div>
+      <div class="step"><span class="n">✕</span><div class="t">프리레벨 팝업</div></div>
+      <div class="arr">✕</div>
+      <div class="step"><span class="n">✕</span><div class="t">입장료</div></div>
+    </div>
+
+    <h3>결정 ① — 입장료 폐지 (골드 중립)</h3>
+    <div class="annofig">
+      <div class="anno">
+        <img src="pst_ftue_assets/prelevel_popup_clean.png" alt="프리레벨 팝업 입장료">
+        <div class="box r" style="top:84%;left:39%;width:24%;height:11%;"></div>
+        <div class="lead r" style="top:89.5%;left:63%;width:41%;"></div>
+        <div class="olabel r" style="top:89.5%;left:105%;transform:translateY(-50%);">입장료 폐지</div>
+      </div>
+      <div class="annocap">팝업 하단 <b>입장료 🪙 영역에 빨간 테두리</b> → 화면 밖 라벨. 지불→보상 환급 왕복(net zero)이라 빼도 골드 중립. 팝업이 사라지며 입장료 동선 전부 제거.</div>
+    </div>
+    <ul class="clean">
+      <li><b>프리레벨 팝업이 사라지면 입장료도 폐지.</b> 다음판은 비용 없이 즉시 시작.</li>
+      <li>입장료 폐지의 <b>플레이 동선</b>은 단순(비용 없이 즉시 시작). 단 <b>골드 경제는 별도 숙제</b> — 입장료가 유일 대형 싱크라 폐지 시 인플레 리스크. "왕복 net-zero"는 보상 계산식이 entry+margin일 때만 성립(<b>미검증·P0</b>). 해법·진단 = <b>§7</b>.</li>
+      <li>잔액 부족 게이트는 사라져도 무방 — 골드는 아이템 구매 시에만 필요(§6).</li>
+    </ul>
+
+    <h3>결정 ② — 부스터(폭죽)는 인게임 배치</h3>
+    <div class="annofig">
+      <div class="anno">
+        <img src="pst_ftue_assets/prelevel_popup_clean.png" alt="프리레벨 부스터">
+        <div class="box a" style="top:60%;left:33%;width:34%;height:15%;"></div>
+        <div class="lead a" style="top:67.5%;left:67%;width:37%;"></div>
+        <div class="olabel a" style="top:67.5%;left:105%;transform:translateY(-50%);">부스터 선택 제거</div>
+      </div>
+      <div class="anno">
+        <img src="pst_ftue_assets/board_ingame_wild.png" alt="인게임 보드(와일드)">
+        <div class="box g" style="top:74%;left:82%;width:9.5%;height:25%;"></div>
+        <div class="lead g" style="top:86.5%;left:91.5%;width:13%;"></div>
+        <div class="olabel g" style="top:86.5%;left:105%;transform:translateY(-50%);">와일드 왼쪽·카드형</div>
+      </div>
+      <div class="annocap"><b>팝업 부스터 선택 제거</b>(주황) → <b>인게임에 카드 형태로 배치</b>. 위치 = <b>와일드카드 바로 왼쪽</b>(초록). 폭죽·골든티켓 이동, 와카·undo·extradeck은 이미 인게임.</div>
+    </div>
+    <div class="refbox">
+      <div class="rimg"><img src="pst_ftue_assets/booster_card_ref.png" alt="카드형 부스터 레퍼런스"></div>
+      <div class="rtxt"><span class="reftag">📎 레퍼런스</span><br><b>카드형 부스터 배치 예시</b> (타 게임). 하단에 <b>카드 형태</b>로 조커·아이템 부스터가 나열됨 — 우리도 이 스타일로 <b>와일드카드 왼쪽</b>에 배치.</div>
+    </div>
+    <ul class="clean">
+      <li>프리레벨 팝업의 부스터 장착 단계 제거 → <b>인게임 카드 형태로, 와일드카드 왼쪽에</b> 배치(참고 이미지 스타일). <span class="tag dev">개발</span><span class="tag art">아트</span></li>
+      <li><b>⚠ 튜토리얼 노출 필요 — 의사결정 사안</b>: 부스터를 인게임 카드형으로 옮기면 <b>해당 위치·사용법 튜토리얼이 새로 노출</b>되어야 함. 방식 택1 → <b>(a) 하드코딩</b>(간단·빠름, 단 const 제어 밖) vs <b>(b) `tutorial_guide`에 전용 항목 1개 신설</b>(데이터로 on/off·순서 제어, 기존 튜토 체계와 일관·권장). <span class="tag plan">기획</span><span class="tag dev">개발</span></li>
+    </ul>
+
+    <h3>결정 ③ — 배수 1배</h3>
+    <div class="annofig">
+      <div class="anno">
+        <img src="pst_ftue_assets/prelevel_popup_clean.png" alt="배수 컨트롤">
+        <div class="box r" style="top:32%;left:34%;width:32%;height:13%;"></div>
+        <div class="lead r" style="top:38.5%;left:66%;width:38%;"></div>
+        <div class="olabel r" style="top:38.5%;left:105%;transform:translateY(-50%);">배수 제거 → 1배</div>
+      </div>
+      <div class="annocap"><b>배수 (−) x2 (+) 영역에 빨간 테두리</b> → 화면 밖 라벨. 스테이크(입장료)가 사라지니 배수도 폐지하고 1배로. 보상 = 카드매칭 + 스트릭(왜곡 없음).</div>
+    </div>
+    <ul class="clean">
+      <li>입장료(스테이크)가 사라지므로 배수도 폐지, <b>1배로 진행</b>. 배수 선택(−/+) UI 제거. 보상 = 카드매칭 + 스트릭(왜곡 없음).</li>
+      <li><span class="tag eco">경제</span> 1배·입장료 0 전환 시 <b>난이도·보상 곡선 1회 점검</b>(베팅 연동으로 튜닝됐던 부분 확인). x2 받기(RV)는 그대로 base 보상의 더블 → 표기 혼동 없음(1배라 ×2가 명확).</li>
+    </ul>
+
+    <h3>결정 ④ — 꾸미기(데코) 메타는 망치(=플레이수) 기반 자동 진입</h3>
+    <div class="annofig">
+      <div class="anno">
+        <img src="pst_ftue_assets/28_deco_progress.png" alt="데코 메타">
+        <div class="box g" style="top:80%;left:33%;width:34%;height:18%;"></div>
+        <div class="lead g" style="top:89%;left:67%;width:37%;"></div>
+        <div class="olabel g" style="top:89%;left:105%;transform:translateY(-50%);">망치 임계 시 자동 꾸미기</div>
+      </div>
+      <div class="annocap">도시의 <b>[업그레이드](망치 재화)</b> 강조. 망치 수 = 플레이 수 → 임계 도달 시에만 결과 후 자동 진입 + 자동 꾸미기 1회, 그 외엔 다음판 직행. 빈도가 플레이 수에 자연 비례.</div>
+    </div>
+    <ul class="clean">
+      <li>로비 강제 경유를 없애면 데코 노출 동선이 사라짐 → <b>데코 재화(망치)가 "1스텝 꾸미기" 임계 도달 시에만</b> 결과 후 로비 자동 진입 + 자동 꾸미기 연출 1회, 그 외엔 다음판 직행.</li>
+      <li><b>망치 수 = 플레이 수</b>이므로 자동 진입 빈도는 <b>플레이 수에 자연 비례</b> — N판마다 1회 꼴로 데코 진입. 이 비례에 맞춰 임계값 조정.</li>
+      <li><span class="tag plan">기획</span> "1스텝 꾸미기 = 망치 N개 = N판" 환산값·세션당 상한 정의.</li>
+      <li><b>⚠ 현재 데코 비용 = 망치 + 골드 합산.</b> 자동 꾸미기에서 <b>골드까지 자동 차감하면 UX 부담</b>(입장료 폐지로 골드는 더 귀해짐) → <b>자동 경로는 망치 단독</b> 권장. 골드는 <b>유저가 도시에서 직접 수동 업그레이드</b>할 때만 쓰는 스피드업 선택지로 남겨 골드 싱크 일부 유지. <span class="tag eco">경제</span></li>
+    </ul>
+
+    <h3>결정 ⑤ — [받기] 한 번에 결과+이벤트 동시 수령 → 다음판</h3>
+    <div class="annofig">
+      <div class="anno">
+        <img src="pst_ftue_assets/result_clean.png" alt="결과 화면 이벤트 미터">
+        <div class="box g" style="top:14%;left:85%;width:15%;height:56%;"></div>
+        <div class="lead g" style="top:42%;left:100%;width:4%;"></div>
+        <div class="olabel g" style="top:42%;left:105%;transform:translateY(-50%);">받기에 묶어 자동 수령</div>
+      </div>
+      <div class="annocap">이벤트 진척(우측 상-중단 <b>카드수집 28/40·트로피 40/45 미터</b>)은 <b>이미 결과 화면에 노출됨</b> → 신규 UI 불필요. 이벤트 보상도 <b>[받기]에 묶어 자동 수령</b>(별도 탭 없음).</div>
+    </div>
+    <ul class="clean">
+      <li><b>수령 플로우 = [받기] 1번</b>: ⓐ 결과 보상 + ⓑ 이벤트 마일스톤 보상(도달 시) <b>동시 수령</b> → ⓒ <b>다음 판으로 즉시 이동</b>. 이벤트용 별도 탭/화면 없음.</li>
+      <li>이벤트 진척 미터는 이미 결과 화면 우측에 노출 → 추가 인라인 UI 불필요(수령 로직만 [받기]에 연결).</li>
+      <li><b>로비 강제 이동 금지</b> — 마일스톤 보상도 결과 화면 [받기]에서 처리, 끝나면 다음판 직행.</li>
+    </ul>
+
+    <h3>결정 ⑥ — 결과 화면 [홈] 버튼</h3>
+    <div class="annofig">
+      <div class="anno">
+        <img src="pst_ftue_assets/result_clean.png" alt="결과 화면 버튼 배치">
+        <div class="box g" style="top:70%;left:26%;width:21%;height:13%;"></div>
+        <div class="box a" style="top:70%;left:52%;width:26%;height:13%;"></div>
+        <div class="box g" style="top:12%;left:2%;width:13%;height:8%;"></div>
+        <div class="lead v g" style="top:20%;left:8%;height:5%;"></div>
+        <div class="olabel g" style="top:25%;left:1%;">[홈] 골드 아래 신설</div>
+        <div class="lead v g" style="top:83%;left:36%;height:20%;"></div>
+        <div class="olabel g" style="top:104%;left:14%;">[받기]=수령+다음판</div>
+        <div class="lead v a" style="top:83%;left:65%;height:20%;"></div>
+        <div class="olabel a" style="top:104%;left:57%;">x2 받기 유지</div>
+      </div>
+      <div class="annocap"><b>[받기] = 결과+이벤트 수령 후 다음판 직행</b>(주 CTA), <b>[x2 받기] 유지</b>(RV 68.7% 구좌), <b>[홈]은 골드 재화 바로 아래</b> 신설. 기본 동선이 "받기→다음판"이 되도록 시각 위계 설계.</div>
+    </div>
+    <ul class="clean">
+      <li>다음판 직행이 기본, 로비로 가고 싶은 유저용 <b>명시적 [홈] 버튼</b>을 <b>좌상단 골드 재화 바로 아래</b>에 신설. 시각 위계: <b>[다음판] 주 CTA(최대)</b> · [x2 받기] 보조 · [홈] 작은 아이콘. <span class="tag art">아트</span></li>
+    </ul>
+
+    <h3>결정 ①②③ 영향 — 사라지는/이전되는 튜토리얼 (tutorial_guide·unlock 대조)</h3>
+    <table>
+      <tr><th class="lbl">tutorial_guide</th><th>content_id</th><th>현재 위치</th><th>unlock</th><th>처리</th></tr>
+      <tr><td class="lbl">230005</td><td>content_pre_level_popup<br><code>T_TUT_PRE_LEVEL</code></td><td>pre_level / PLAYBUTTON</td><td>50106 (Lv3)</td><td class="worst">❌ 삭제 (팝업 제거)</td></tr>
+      <tr><td class="lbl">230018</td><td>content_betting_2<br><code>T_TUT_BETTING_2</code></td><td>pre_level / BETTINGBUTTON</td><td>50009 (Lv10)</td><td class="worst">❌ 삭제 (배수 폐지)</td></tr>
+      <tr><td class="lbl">230022</td><td>content_betting_4<br><code>T_TUT_BETTING_4</code></td><td>pre_level / BETTINGBUTTON</td><td>50050 (Lv20)</td><td class="worst">❌ 삭제 (배수 폐지)</td></tr>
+      <tr><td class="lbl">(튜토 없음)</td><td>content_betting_1</td><td>—</td><td>50008 (Lv3)</td><td class="worst">❌ unlock 삭제 (배수 폐지)</td></tr>
+      <tr><td class="lbl">230014</td><td>booster_fireworks<br><code>T_TUT_FIREWORKS</code></td><td>pre_level / BOOSTER1</td><td>50051 (Lv5)</td><td><b>🔄 인게임 튜토로 이전</b> (카드형·와일드 왼쪽)</td></tr>
+      <tr><td class="lbl">230025</td><td>booster_golden_ticket<br><code>T_TUT_GOLDEN_TICKET</code></td><td>pre_level / BOOSTER2</td><td>50052 (Lv8)</td><td><b>🔄 인게임 튜토로 이전</b></td></tr>
+      <tr><td class="lbl">230003</td><td>content_lobby_play<br><code>T_TUT_LOBBY_PLAY</code></td><td>lobby / LOBBYPLAYBUTTON</td><td>—</td><td class="worst">❌ 삭제 (다음판 직행=로비 플레이 단계 없음)</td></tr>
+      <tr><td class="lbl">230029</td><td>content_lobby_play_2</td><td>lobby / LOBBYPLAYBUTTON</td><td>—</td><td class="worst">❌ 삭제</td></tr>
+    </table>
+    <div class="note">
+      <b>① 삭제</b>(팝업·배수·로비플레이 종속): 프리레벨 팝업 인트로·베팅1/2/4·로비 플레이 튜토 → tutorial_guide 행 + 해당 unlock 제거.<br>
+      <b>② 이전</b>(부스터): <code>booster_fireworks</code>·<code>booster_golden_ticket</code>는 pre_level(BOOSTER1/2)에 붙어 있어 팝업과 함께 사라짐 → <b>인게임 카드형 위치(와일드 왼쪽) 전용 튜토로 신설</b>. 기존 인게임 부스터 튜토 패턴(<code>booster_wild_card</code> 230013: play_scene=ingame·trigger=first_appear) 그대로 따르면 됨.<br>
+      <b>③ 유지</b>(이미 인게임, 변경 없음): <code>booster_undo</code>(230015)·<code>booster_wild_card</code>(230013)·<code>booster_extra_deck</code>(230016).<br>
+      → <b>이 "이전" 2건이 §10 P0의 튜토리얼 의사결정</b>(하드코딩 vs tutorial_guide 전용 항목)과 직결. 권장 = tutorial_guide에 ingame 전용 항목 신설.
+    </div>
+  </div>
+
+  <!-- ===== 5. RV 구좌 분석 ===== -->
+  <div class="sect">5. RV 구좌 분석 — 플로우 변경이 RV에 미치는 영향</div>
+  <div class="card">
+    <h2>📺 PST RV의 68.7%는 결과 화면 x2 받기 (우리가 유지)</h2>
+    <div class="desc">BigQuery <code>4200_RV_START</code> · <code>data.type</code> 기준 · 6/8~6/22. PST 판당 RV가 어느 구좌에서 나오는지.</div>
+    <table>
+      <tr><th class="lbl">RV 구좌</th><th>위치</th><th>비중</th><th>플로우 변경 영향</th></tr>
+      <tr><td class="lbl">x2 받기 (ingame_reward_double)</td><td>결과 화면</td><td class="best">68.7%</td><td><span class="tag qa">유지</span> 영향 없음 · 판수↑로 노출↑</td></tr>
+      <tr><td class="lbl">lobby_free_gold</td><td>로비</td><td>11.1%</td><td>로비 축소 시 일부 감소 — 홈/자동진입으로 접근 유지</td></tr>
+      <tr><td class="lbl">free_coin</td><td>로비/팝업</td><td>8.0%</td><td>위치 재배치 시 보존 가능</td></tr>
+      <tr><td class="lbl">shop</td><td>상점</td><td>5.4%</td><td>영향 없음</td></tr>
+      <tr><td class="lbl">daily_gift_missed</td><td>출석</td><td>4.5%</td><td>영향 없음</td></tr>
+      <tr><td class="lbl">daily_change_task</td><td>태스크</td><td>2.2%</td><td>영향 없음</td></tr>
+    </table>
+    <div class="note"><b>결론</b>: 주 RV(68.7%)는 우리가 유지하는 결과 화면 x2 받기. <b>프리레벨 부스터는 RV 구좌가 아님</b>(골드/아이템). 즉 플로우 단축은 RV 매출을 안 건드리고, <b>판수가 늘면 결과 화면 노출이 늘어 RV가 오히려 증가</b>. 로비 무료골드(11%)만 로비 축소의 잠재 영향인데 [홈]·조건부 자동진입으로 회수 가능.</div>
+  </div>
+
+  <!-- ===== 6. 경제 영향 & 놓친 부분 ===== -->
+  <div class="sect">6. 점검 포인트</div>
+  <div class="card warn">
+    <h2>⚠ 같이 확인할 것 (실질 과제)</h2>
+    <ul class="clean">
+      <li><b>난이도·보상 곡선 점검 (핵심)</b> — 배수 1배·입장료 0 전환 시, 베팅 연동으로 튜닝됐던 보상/난이도가 어긋나지 않는지 1회 점검. 보상 = 카드매칭 + 스트릭으로 단순화되므로 레벨별 기대 보상·난이도 곡선 재확인. <span class="tag eco">경제</span><span class="tag plan">기획</span></li>
+      <li><b>전면(IT) 광고 빈도</b> — 판수가 늘면 <code>interstitial_ad_level_clear_interval</code> 발동이 잦아져 마찰·이탈 위험. R11(첫 세션 off) 유지 + 인터벌 재점검. <span class="tag dev">개발</span></li>
+      <li><b>데코 자동 진입 빈도</b> — 망치(=플레이수) 기반이라 자연 비례하지만, 너무 잦으면 "강제 이탈" 재발 → 세션당 상한·환산값 설정. <span class="tag plan">기획</span></li>
+      <li><b>데코 골드 싱크</b> — 자동 꾸미기를 망치 단독으로 하면 기존 데코의 골드 싱크가 줄어듦. 골드 인플레 모니터 + 수동 데코·상점으로 싱크 보완. <span class="tag eco">경제</span></li>
+      <li><b>세션 길이·피로</b> — 즉시 재시작이 번아웃 유발하지 않는지 세션 길이·이탈 모니터.</li>
+    </ul>
+    <h2 style="margin-top:14px;">✓ 확인 완료 — 이슈 아님</h2>
+    <ul class="clean">
+      <li><b>골드 경제 — 플레이 동선은 단순하나 인플레는 별도 과제</b> → §7에서 진단·해결(채널 화폐전환 주·신규싱크 보조). 규모는 보상 계산식(P0) 종속. 단순 net-zero로 끝나는 문제 아님.</li>
+      <li><b>잔액 부족 게이트</b> — 골드는 아이템 구매 시에만 필요 → 입장료 폐지로 플레이 게이트가 사라져도 문제 없음(구매 시점에 안내).</li>
+      <li><b>배수 ↔ x2 받기 중복</b> — 배수 1배라 x2 받기(RV)가 base의 명확한 ×2. 혼동 없음.</li>
+    </ul>
+  </div>
+
+  <!-- ===== 7. 경제 상세 ===== -->
+  <div class="sect">7. 경제 상세 — 골드 밸런스 (입장료 폐지의 진짜 숙제)</div>
+  <div class="card">
+    <h2>💰 골드 수도꼭지 vs 싱크 진단</h2>
+    <div class="desc">BQ <code>9400_GOLD_TRANSACTION_LOG</code> · <code>latency.api</code>별 · 6/15~6/21(7일) · 활성 ~312명. 잔액로드(get-data/login)는 제외.</div>
+    <table>
+      <tr><th class="lbl">수도꼭지 (earn)</th><th>주간 골드</th><th class="lbl">싱크 (spend)</th><th>주간 골드</th></tr>
+      <tr><td class="lbl">판 보상 (game-end)</td><td class="best">+41.5M</td><td class="lbl">입장료 (game-start)</td><td class="worst">−33.4M</td></tr>
+      <tr><td class="lbl">컬렉션</td><td>+6.0M</td><td class="lbl">부스터 구매</td><td>−5.6M</td></tr>
+      <tr><td class="lbl">RV (x2받기+RV골드)</td><td>+5.7M</td><td class="lbl">데코</td><td>−0.25M</td></tr>
+      <tr><td class="lbl">방치 골드</td><td>+0.9M</td><td class="lbl"></td><td></td></tr>
+      <tr><td class="lbl">데일리(기프트+태스크)</td><td>+0.9M</td><td class="lbl"></td><td></td></tr>
+    </table>
+    <div class="note">
+      <b>① 입장료 폐지 효과는 보상 계산식(P0)에 종속</b> <span class="tag eco">P0</span> — const에 <code>reward_margin</code> 키 <b>부재</b>(밸런스시트 검증). 보상이 <code>ingame_combo_reward</code>+<code>remaining_deck_reward</code>로 <b>인게임에서 버는 독립 구조</b>일 수 있음. <b>(가)</b> 보상=entry+margin 왕복이면 판보상 자동축소 → 순잉여 ~+16M 유지. <b>(나)</b> 보상 독립이면 판보상 +41.5M 그대로 남아 <b>순잉여 +49M/주로 즉시 급증</b>. → 개발 확인이 규모를 가름.<br>
+      <b>② 입장료=유일 대형 싱크(전체 싱크 85%)·강제(100% 판)</b> — 폐지 시 완충 소멸. 단 신규 싱크(실패 Continue 등)는 <b>선택(전환율)</b>이라 강제 싱크를 단독 대체 불가(가장 공격적 가정서도 −33.4M의 ~21%). <b>판수↑(post-clear v2 목적)가 인플레를 증폭</b>(판수 ×2.86 시 +137M/주).<br>
+      <b>③ ⚠ 티켓도 동반 사망</b> — 구조화 채널의 비골드 보상 다수가 <code>currency_ticket</code>(= 보조 입장료). 입장료 폐지 시 <b>골드+티켓 둘 다 입장료 경제 산물</b>이라 함께 재설계 대상.<br>
+      <b>④ ∴ 핵심 레버 = "골드 싱크 신설"이 아니라 "다른 채널의 화폐 믹스 전환"</b> — 인게임 수익·판보상 지급(소소)은 불변. 구조화 보상 채널(meta_city 425K·이벤트·앨범·데일리…)의 골드/티켓을 <b>코스튬·망치·퍼즐피스</b>로 전환 → 지급은 풍성·골드만 희소화(IAP 가치 보호). 상세 = <code>pst_postclear_economy_verification.html</code> · <code>pst_postclear_reward_redesign.html</code>.
+    </div>
+    <h3>설계 — ①채널 화폐전환(주) + ②신규 싱크(보조)</h3>
+    <ul class="clean">
+      <li><b>★ 주(主) 레버 = 다른 채널의 골드/티켓 → 비골드 전환</b> — 구조화 보상 채널(meta_city·이벤트 마일/랭킹·앨범·데일리·휠)의 골드·티켓 슬롯을 <b>코스튬/스킨(신규)·망치·퍼즐피스</b>로 치환. 지급 개수·연출은 유지(체감 너프 방지) → <b>지급 풍성·골드 희소·수익 보호</b>. V4 선례(<code>gold270→ticket×1</code>) 확장. <span class="tag eco">경제</span></li>
+      <li><b>인게임 수익 보호 가드</b> — 부스터 무료공급 증량 금지(IAP 번들 잠식 방지)·골드 희소 유지(IAP 골드 가치)·인피니트는 상위 보상에 소량만.</li>
+      <li><b>신규 골드 싱크(보조)</b> — 코스튬/골드 상점 ⓐ·실패 Continue(near-miss) ⓑ·부스터 골드 즉시충전 ⓒ. 단 선택 싱크라 단독으론 입장료 공백을 다 못 메움(보조).</li>
+      <li><b>자동 꾸미기 = 망치 단독(골드 0)</b> / 수동 꾸미기(도시) = 망치+골드 유지(선택형 싱크). <span class="tag eco">경제</span></li>
+      <li><b>판 보상 = 손대지 않음</b> — 지급 이미 소소·인게임 수익 직결. 인플레는 채널전환으로 잡음. (단 P0가 독립으로 확정되면 라이프 게이팅 또는 판보상 구조 재논의 별도 트랙.) <span class="tag eco">경제</span></li>
+    </ul>
+    <h3>방치 골드 / RV 골드 — 현 지급량 적정성</h3>
+    <table>
+      <tr><th class="lbl">항목</th><th>현재</th><th>실측</th><th>판정</th></tr>
+      <tr><td class="lbl">방치 골드</td><td>cap 8,000 / 4시간</td><td>105명·인당 ~8.5K/주(~1.2K/일)</td><td>전체 4% 수준·복귀유인 → <b>현 수준 유지, 증액 금지</b></td></tr>
+      <tr><td class="lbl">RV 골드</td><td>2,000/회(상점·인박스·팝업) + x2받기 doubling</td><td>x2받기가 RV 골드의 대부분(+5.6M)</td><td>광고 engagement 견인 → <b>양 유지</b>, 단 골드 가치(싱크) 선행 필요</td></tr>
+    </table>
+    <div class="note"><b>방치·RV 골드 결론</b>: 둘 다 <b>양 자체는 유지</b>가 맞음(방치=복귀유인, RV=광고수익). 문제는 양이 아니라 <b>골드가 쓸 데 없어 잉여라는 것</b> → 증액하지 말고, 위 싱크 신설로 골드 가치를 올려야 이 보상들도 의미를 가짐. 인플레가 심해지면 1순위 축소 대상은 큰 수도꼭지(컬렉션·x2받기)이지 방치(작음)가 아님.</div>
+    <h3>자동 꾸미기 → 로비 이동, 괜찮은가</h3>
+    <ul class="clean">
+      <li><b>허용 가능 — 단 조건부.</b> 자동 꾸미기는 로비 이동을 수반하지만, 매 판 강제와 달리 <b>가끔(망치 임계) 있는 보상 연출</b>이라 긍정적. 단 ① <b>빈도 상한</b>(N판당·세션당 1회) ② <b>완료 즉시 [다음판]으로 자동 복귀</b>(로비 방치 금지)가 전제.</li>
+      <li>이 두 조건이 어려우면 대안: 데코를 <b>결과 화면 인라인 진척 표시</b>로만 두고 로비 이동 없이 처리(연출은 약해지나 루프 무중단).</li>
+    </ul>
+  </div>
+
+  <!-- ===== 8. 화면별 변경 명세 ===== -->
+  <div class="sect">8. 화면별 변경 명세</div>
+  <div class="card">
+    <table>
+      <tr><th class="lbl">화면</th><th>AS-IS</th><th>TO-BE</th><th>파트</th></tr>
+      <tr><td class="lbl">완료/결과 화면 (02)</td><td>[받기]/[x2 받기] → 로비 이동</td><td><b>인라인 정산</b> + <b>[다음판] 주 CTA</b> · [x2 받기] 보조 · <b>[홈] 추가</b> · 이벤트 진척 인라인</td><td><span class="tag dev">개발</span><span class="tag art">아트</span><span class="tag plan">기획</span></td></tr>
+      <tr><td class="lbl">로비(도시) (04/28)</td><td>매 클리어 강제 경유</td><td>기본 경로서 제거 · <b>데코 재화 임계 시에만 자동 진입+자동 꾸미기</b> · [홈] 수동 진입</td><td><span class="tag dev">개발</span><span class="tag plan">기획</span></td></tr>
+      <tr><td class="lbl">프리레벨 팝업</td><td>배수·부스터·입장료·[플레이]</td><td><b>제거</b> · 입장료 폐지 · 배수 1배 · 부스터는 인게임</td><td><span class="tag dev">개발</span><span class="tag eco">경제</span><span class="tag plan">기획</span><span class="tag qa">QA</span></td></tr>
+      <tr><td class="lbl">인게임 보드</td><td>부스터 진입 전 장착</td><td><b>폭죽 등 부스터 인게임 사용 버튼</b> 추가</td><td><span class="tag dev">개발</span><span class="tag art">아트</span></td></tr>
+      <tr><td class="lbl">이벤트 정산</td><td>로비/별도 화면</td><td>결과 화면 인라인 오버레이</td><td><span class="tag dev">개발</span><span class="tag plan">기획</span></td></tr>
+      <tr><td class="lbl">경제 테이블</td><td>입장료 지불→보상 환급(왕복) + 베팅</td><td>입장료 0 · 배수 1배 · 보상 = 카드매칭+스트릭(골드 중립) · 난이도/보상 곡선 점검</td><td><span class="tag eco">경제</span><span class="tag plan">기획</span></td></tr>
+    </table>
+  </div>
+
+  <!-- ===== 9. 성공지표 ===== -->
+  <div class="sect">9. 성공 지표 & 검증</div>
+  <div class="card">
+    <ul class="clean">
+      <li><b>1차(직접)</b>: 인당 판수(세션당·가입 2주) — 현 5.7 → 상향, d0→2주 ×1.6 개선.</li>
+      <li><b>2차(연결)</b>: D1/D7/D14 리텐션 · 인당 RV(판수↑로 총 RV 회복) · 세션 길이.</li>
+      <li><b>가드레일</b>: <b>골드 잔고·인플레율(핵심)</b> — 입장료 폐지로 대형 싱크가 사라져 골드 잉여 가속 우려(§7). 신규 싱크 소비율·골드 중앙값 추이 모니터. + 결과 화면 x2 전환율(RV) · IT 광고 노출/이탈 · 데코 진척률 · 레벨별 보상/난이도(곡선).</li>
+      <li><b>방법</b>: A/B(신규 코호트, 유입경로 분리, promotion 일치 전후). BigQuery <code>solitaire_city_journey_toss</code>.</li>
+    </ul>
+    <div class="foot">기획 초안 · 화면 = pst_ftue_assets · 데이터 = pst_ftue_funnel_analysis.html ②부 · RV 구좌 = 4200_RV_START data.type · 2026-06-23</div>
+  </div>
+
+  <!-- ===== 10. 개발 적용 방식 ===== -->
+  <div class="sect" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <span>10. 밸런스시트 const 적용</span>
+    <a href="solitaire-esther-1/workspace/pst_postclear_v2_handoff.md" download style="font-size:13px;font-weight:700;color:#fff;background:#2f7fd1;padding:8px 15px;border-radius:8px;text-decoration:none;">📄 개발 핸드오프 문서 ⬇</a>
+  </div>
+  <div class="card ok">
+    <h2>✅ 마스터 1개 + 종속 3그룹 (const 탭 기준)</h2>
+    <div class="desc">실제 PST <code>const</code> 탭에 그대로 옮길 수 있게 정리. 종속 값/동작을 <b>"한 질문"에 대응하는 3그룹</b>으로 묶음 — ① 프리레벨 팝업 띄울까? ② 보상 어디서 받을까(로비/결과)? ③ 꾸미기 자동/수동? 평소엔 마스터만 켜고, 그룹 플래그는 그룹 단위 A/B용.</div>
+
+    <h3>온오프 구조 — 마스터 1개 + 그룹 플래그 3개</h3>
+    <table>
+      <tr><th class="lbl">const (on/off)</th><th>v1→v2</th><th>켜면 (그룹 내용 = desc)</th></tr>
+      <tr style="background:#eafaf1;"><td class="lbl"><b>is_quick_next_loop_open</b></td><td>0 → 1</td><td><b>★마스터</b> — "결과 후 로비 없이 바로 다음판" 전체. 0=킬스위치(전부 v1), 1=정합 검증 후 그룹 적용</td></tr>
+      <tr style="background:#f3f9ff;"><td class="lbl"><b>is_prelevel_popup_open</b></td><td>1 → 0</td><td><b>그룹① 프리레벨 팝업 스킵·다음판 직행</b> — 입장료 폐지·배수 1배·부스터 인게임 카드형 포함(전부 팝업 안에 있던 것 → 같이 켜고 같이 꺼야 함)</td></tr>
+      <tr style="background:#f3f9ff;"><td class="lbl"><b>is_reward_on_result_open</b></td><td>0 → 1</td><td><b>그룹② 보상 결과화면 수령</b> — [받기] 1번에 결과+이벤트 마일스톤 동시 수령→다음판·[홈] 버튼. <b>※①과 항상 동일</b></td></tr>
+      <tr style="background:#f3f9ff;"><td class="lbl"><b>is_deco_auto_open</b></td><td>0 → 1</td><td><b>그룹③ 데코 자동</b> — 망치 임계 시 자동 꾸미기·골드 미사용. ①②와 독립(단독 A/B)</td></tr>
+    </table>
+    <div class="note"><b>✅ 정합 게이트 (그룹이 정합해야 마스터가 돈다)</b> — <code>v2적용 = is_quick_next_loop_open AND 그룹정합()</code>. <b>그룹①⟺②는 반드시 동일</b>(①만 켜고 ② 끄면 "다음판 직행했는데 보상은 로비서" 모순) → 불일치 시 <b>전체 v1 폴백 + 경고 로그</b>. 그룹③ 독립. 평소 운영: 마스터만 ON.</div>
+    <div class="note"><b>그룹이 참조하는 <code>_v2</code> 값</b>(시트에 보임·튜닝용, 동작 전환은 위 플래그가 함): <b>그룹①</b> <code>entry_cost_base_v2</code>=0·<code>entry_cost_increase_v2</code>=0·<code>entry_cost_max_cap_v2</code>=0 / <b>그룹③</b> <code>deco_auto_hammer_threshold_v2</code>=<b>5</b>(Normal ~5판당 자동꾸미기 1회·로비이동 빈도상한)·<code>deco_auto_use_gold_v2</code>=0. (배수 1배·부스터 인게임·[홈]·[받기] 동시수령은 const 값 아닌 코드 분기 — [B])</div>
+
+    <h3>[C] 변경 없음 — v1 유지 (확인용)</h3>
+    <ul class="clean">
+      <li><b>⚠ 보상 계산식 P0 확인 필요</b> — const에 <code>reward_margin</code> 키가 <b>실재하지 않음</b>(밸런스시트 검증). 보상이 <code>ingame_combo_reward</code>+<code>remaining_deck_reward</code>로 <b>인게임에서 벌어들이는 독립 구조</b>일 가능성 → 이 경우 입장료=0이어도 판보상 +41.5M/주 유지되어 <b>보상테이블 재작업 불가피</b>. "자동으로 margin만 남음" 가정은 개발 확인 전까지 <b>미검증</b>. 경제 영향 = <code>pst_postclear_economy_verification.html</code>.</li>
+      <li><b>card_maching_gold_*</b>·ingame_combo_reward·remaining_deck_reward — 실 게임 보상, 유지.</li>
+      <li><b>idle_gold_*</b>(cap 8000) — 방치 골드 유지(§7) · <b>shop/inbox/popup_free_gold_amount</b>(2000) — RV 골드 유지(§7).</li>
+    </ul>
+
+    <h3>개발 / A/B</h3>
+    <ul class="clean">
+      <li>신/구 path 둘 다 동봉 → <code>if(is_quick_next_loop_open AND 그룹정합) v2 else v1</code>. <b>서버(game-start/end)+클라(UI) 같은 마스터</b> 읽음(SSOT). v2 값 누락 시 v1 폴백.</li>
+      <li>출시 OFF → 검증 ON → 롤백 OFF. <b>A/B = 마스터 단위(번들 전체) 또는 그룹 단위</b>(①/②/③ 독립). 단계 적용도 그룹별 가능(예: ③ 데코만 먼저). const 유저버킷 미지원 시 difficulty_tier처럼 서버가 세그먼트별 값 반환.</li>
+    </ul>
+
+    <h3>⚠ 착수 전 확인 (P0)</h3>
+    <ul class="clean">
+      <li>보상이 실제로 <code>entry_cost + reward_margin</code> 합으로 계산되는가 → 그래야 entry=0 시 보상=margin 자동(보상테이블 재작업 X).</li>
+      <li>배수 1배 고정 시 <code>puzzle_piece_drop_amount_betting_1</code>(=1)만 적용됨 → 퍼즐피스 수급 곡선 점검.</li>
+      <li>데코 비용·자동 진입이 const로 제어 가능한지 — <b>현재 const 탭에 deco 항목 없음 → [A]의 deco_* 신규 추가 필요</b>(또는 decoration 테이블에).</li>
+      <li><b>인게임 부스터 튜토리얼 방식 결정</b> — <code>booster_fireworks</code>·<code>booster_golden_ticket</code> 튜토가 pre_level에서 사라짐 → 인게임 카드형(와일드 왼쪽)용으로 <b>이전</b> 필요(§4 튜토 영향표). <b>(a) 하드코딩</b> vs <b>(b) <code>tutorial_guide</code> ingame 전용 항목 신설</b>(<code>booster_wild_card</code> 패턴, 데이터 제어 → 권장). 삭제 대상(팝업·베팅·로비플레이 튜토)도 함께 정리.</li>
+    </ul>
+  </div>
+
+  <!-- ===== 11. QA 체크리스트 ===== -->
+  <div class="sect">11. QA 체크리스트 — 확인 항목 · 방법 · 엣지 케이스</div>
+  <div class="card">
+    <table>
+      <tr><th class="lbl" style="width:14%;">영역</th><th class="lbl" style="width:26%;">확인 항목</th><th class="lbl" style="width:28%;">확인 방법</th><th class="lbl">⚠ 엣지 케이스</th></tr>
+      <tr>
+        <td class="lbl">마스터 / 정합 게이트</td>
+        <td>마스터 OFF=전부 v1(현 동작) · ON=3그룹 v2. 그룹①≠② 불일치 시 전체 v1 폴백+경고 로그</td>
+        <td>밸런스시트 <code>is_quick_next_loop_open</code> 0/1 토글 후 세션 갱신, 동작 비교. 그룹①=1·②=0 강제 설정 후 로그 확인</td>
+        <td>v2 값 셀 비움 → v1 폴백되는지 · 불일치 시 반쪽 적용 안 되는지 · 세션 중 플래그 바뀌면 다음 세션부터 반영</td>
+      </tr>
+      <tr>
+        <td class="lbl">그룹① 팝업·입장료·배수·부스터</td>
+        <td>클리어→다음판 직행(팝업 X) · 입장료 차감 0 · 배수 1배 고정 · 부스터 인게임 카드형(와일드 왼쪽)</td>
+        <td>클리어→다음판 탭 수=1 확인 · 클리어 전후 골드 변화(입장료 차감 0) · 인게임 부스터 위치/카드형 확인</td>
+        <td>골드 0에서도 다음판 진입(입장료 없음=무제한) · 첫판/튜토에서도 팝업 X · <b>보상=margin만</b> 지급 검증 · 부스터 미보유 시 카드 비활성 표시</td>
+      </tr>
+      <tr>
+        <td class="lbl">그룹② 보상·이벤트·홈</td>
+        <td>[받기] 1번에 결과+이벤트 마일스톤 동시 수령→다음판 즉시 이동 · [홈] 골드 아래 노출·동작</td>
+        <td>마일스톤 도달 판 클리어→[받기]→결과·이벤트 보상 둘 다 인벤 반영·로비 안 거침 확인 · [홈] 눌러 로비 진입 확인</td>
+        <td>마일스톤 미도달=결과 보상만+다음판 · 마일스톤 다중 동시 도달 전부 수령 · 이벤트 없음/종료 시 정상 · <b>x2 받기 후</b> 플로우(RV→다음판)</td>
+      </tr>
+      <tr>
+        <td class="lbl">그룹③ 데코 자동</td>
+        <td>망치 임계 도달 시만 자동 진입+자동 꾸미기→다음판 복귀 · 골드 미차감(망치만)</td>
+        <td>망치 임계 모이는 판 클리어→자동 로비 진입·꾸미기 연출·다음판 복귀 확인 · 골드 변화 0 확인</td>
+        <td>임계 직전/직후 경계 · 자동 꾸미기 후 <b>로비 방치 안 되고 다음판 복귀</b> · 빈도 상한(세션당 N회) 준수 · 망치+골드 보유 시 골드 안 빠짐 · 수동 꾸미기는 골드+망치 정상</td>
+      </tr>
+      <tr>
+        <td class="lbl">튜토리얼</td>
+        <td>삭제 튜토(팝업·베팅·로비플레이) 미노출 · 이전 부스터 튜토(폭죽·골든티켓) 인게임 카드 위치서 노출</td>
+        <td>신규 계정 진행하며 레벨별 튜토 노출 확인 · 폭죽(Lv5)·골든티켓(Lv8) 언락 시 인게임 튜토 트리거 확인</td>
+        <td>기존 유저(튜토 이미 본 계정) 중복/누락 없는지 · 삭제 튜토의 unlock도 정리됐는지 · 튜토 순서 꼬임 없음</td>
+      </tr>
+      <tr>
+        <td class="lbl">경제 / 광고</td>
+        <td>입장료 폐지 후 순 골드 변화 없음(왕복) · 판수↑로 IT 전면광고 빈도 정상</td>
+        <td>동일 판 v1/v2 클리어 시 순 골드 증감 비교(같아야) · 연속 플레이 시 IT 광고 인터벌 확인 · 골드 잔고 장기 추이</td>
+        <td>무제한 플레이 시 골드 누적 폭주 모니터(인플레) · IT 광고 과다 노출 안 됨(R11 첫 세션 off 유지)</td>
+      </tr>
+    </table>
+    <div class="note"><b>회귀 테스트</b>: 마스터 OFF에서 <b>현 라이브와 100% 동일</b>해야 함(신/구 path 분기라 OFF=현행). 출시 직후 OFF 상태 회귀 먼저 통과 후 ON 검증.</div>
+  </div>
+</div>
+</body>
+</html>
