@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PST 대시보드 업데이트 보고서 — 2026-06-24</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: #f1f3f8;
+    color: #1a1d2e;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    background: #fff;
+  }
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #2d3561 100%);
+    color: #fff;
+    padding: 28px 24px 22px;
+  }
+  .header-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #8b95c9;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.3;
+  }
+  .header-meta {
+    font-size: 11px;
+    color: #8b95c9;
+    margin-top: 6px;
+  }
+
+  /* SECTION */
+  .section {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e8ecf4;
+  }
+  .section:last-child { border-bottom: none; }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #7a7f94;
+    margin-bottom: 14px;
+  }
+
+  /* ALERT BOX */
+  .alert {
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .alert.warning {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+  }
+  .alert.info {
+    background: #eff6ff;
+    border-left: 4px solid #4f8ef7;
+    color: #1e40af;
+  }
+  .alert.success {
+    background: #f0fdf4;
+    border-left: 4px solid #2cb87a;
+    color: #14532d;
+  }
+  .alert strong { display: block; margin-bottom: 4px; }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .kpi-card {
+    background: #f7f8fb;
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 1px solid #e2e6ef;
+  }
+  .kpi-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #7a7f94;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+  }
+  .kpi-val {
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+  .kpi-val.blue { color: #4f8ef7; }
+  .kpi-val.green { color: #2cb87a; }
+  .kpi-val.orange { color: #d97706; }
+  .kpi-val.purple { color: #9b59b6; }
+  .kpi-sub {
+    font-size: 10px;
+    color: #9aa0b8;
+    margin-top: 2px;
+  }
+  .kpi-delta {
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 3px;
+  }
+  .kpi-delta.up { color: #2cb87a; }
+  .kpi-delta.down { color: #e53e3e; }
+  .kpi-delta.neutral { color: #d97706; }
+
+  /* TABLE */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .data-table th {
+    background: #f7f8fb;
+    color: #7a7f94;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e2e6ef;
+  }
+  .data-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid #f0f2f7;
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr.highlight td { background: #eff6ff; }
+  .data-table tr.warn-row td { background: #fffbeb; }
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge.new { background: #dbeafe; color: #1d4ed8; }
+  .badge.prev { background: #f0f2f7; color: #7a7f94; }
+  .badge.warn { background: #fef3c7; color: #92400e; }
+
+  /* TREND ROW */
+  .trend-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f2f7;
+  }
+  .trend-row:last-child { border-bottom: none; }
+  .trend-ver {
+    width: 60px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #4a5068;
+    flex-shrink: 0;
+  }
+  .trend-bar-bg {
+    flex: 1;
+    height: 14px;
+    background: #e8ecf4;
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .trend-bar-fill {
+    height: 100%;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    padding-left: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .trend-ms {
+    width: 60px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ACTION ITEMS */
+  .action-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f2f7;
+  }
+  .action-item:last-child { border-bottom: none; }
+  .action-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .action-dot.p1 { background: #dbeafe; color: #1d4ed8; }
+  .action-dot.p2 { background: #d1fae5; color: #065f46; }
+  .action-dot.warn { background: #fef3c7; color: #92400e; }
+  .action-body { flex: 1; }
+  .action-title { font-weight: 700; font-size: 13px; color: #1a1d2e; margin-bottom: 3px; }
+  .action-desc { font-size: 12px; color: #4a5068; line-height: 1.5; }
+
+  /* FOOTER */
+  .footer {
+    background: #f7f8fb;
+    padding: 16px 24px;
+    font-size: 11px;
+    color: #9aa0b8;
+    text-align: center;
+    line-height: 1.7;
+  }
+  .footer a { color: #4f8ef7; text-decoration: none; }
+
+  /* MOBILE */
+  @media (max-width: 480px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .kpi-val { font-size: 18px; }
+    .header h1 { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-tag">PST 퍼널 대시보드 · 자동 업데이트 보고서</div>
+    <h1>v202 신규 데이터 반영 완료<br>2026-06-24 업데이트</h1>
+    <div class="header-meta">데이터 기준: 2026-06-22 ~ 2026-06-23 · v202 빌드</div>
+  </div>
+
+  <!-- ALERT -->
+  <div class="section">
+    <div class="section-title">주요 알림</div>
+    <div class="alert warning">
+      <strong>⚠️ 첫터치율 72.7% — 소량 데이터 (n=22), 해석 주의</strong>
+      6/22 데이터 n=22 기준으로, 통계적으로 신뢰하기에 너무 작습니다. 6/23 이후 PST 이벤트 데이터 축적 후 재확인 필요. v188 기준 ORG 80.2% 달성 여부는 아직 판단 불가.
+    </div>
+    <div class="alert success">
+      <strong>✅ 판수 개선 확인 (P2)</strong>
+      v202 ALL 5.07판 / ORG 5.52판 → v188 4.10판 대비 +0.97판(ALL), +1.42판(ORG) 증가. 판수 개선 목표 유효.
+    </div>
+    <div class="alert info">
+      <strong>🔵 로딩 시간 v202 — v188과 동일 수준 유지</strong>
+      v202 중앙값 2,672ms (n=89) vs v188 2,687ms — 차이 -15ms로 사실상 동일. 추가 최적화 없음.
+    </div>
+  </div>
+
+  <!-- KPI SUMMARY -->
+  <div class="section">
+    <div class="section-title">핵심 KPI 요약 (v202 신규)</div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">첫터치율 (P1)</div>
+        <div class="kpi-val orange">72.7%</div>
+        <div class="kpi-sub">v202 · 6/22 n=22 (소량)</div>
+        <div class="kpi-delta down">↓ vs v188 ORG 80.2%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">완료율</div>
+        <div class="kpi-val green">100%</div>
+        <div class="kpi-sub">터치→완료 (n=16/16)</div>
+        <div class="kpi-delta up">↑ vs v188 81%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">인당 판수 ORG</div>
+        <div class="kpi-val blue">5.52판</div>
+        <div class="kpi-sub">v202 ORG n=81</div>
+        <div class="kpi-delta up">↑ +1.42판 vs v188</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">판당 RV</div>
+        <div class="kpi-val purple">0.081</div>
+        <div class="kpi-sub">ORG · RV 램프업 중</div>
+        <div class="kpi-delta neutral">↑ 6/22→6/23 트렌드</div>
+      </div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">ALL NRU (6/22~23)</div>
+        <div class="kpi-val blue">90명</div>
+        <div class="kpi-sub">6/22 n=22 + 6/23 n=68</div>
+        <div class="kpi-delta up">↑ 성장 중</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">로딩 시간 (중앙값)</div>
+        <div class="kpi-val orange">2,672ms</div>
+        <div class="kpi-sub">v202 · n=89</div>
+        <div class="kpi-delta neutral">≈ v188 2,687ms</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FUNNEL TREND -->
+  <div class="section">
+    <div class="section-title">버전별 퍼널 추이</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>버전</th>
+          <th>기간</th>
+          <th>n</th>
+          <th>첫터치</th>
+          <th>완료율</th>
+          <th>판수</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>v136</strong> <span class="badge prev">기준</span></td>
+          <td style="color:#9aa0b8;font-size:11px;">5/7~5/11</td>
+          <td style="color:#9aa0b8;">613</td>
+          <td>48.3%</td>
+          <td>93.8%</td>
+          <td>2.91판</td>
+        </tr>
+        <tr>
+          <td><strong>v188</strong> <span class="badge prev">이전</span></td>
+          <td style="color:#9aa0b8;font-size:11px;">6/2~6/15</td>
+          <td style="color:#9aa0b8;">940</td>
+          <td style="color:#2cb87a;font-weight:700;">79.4%</td>
+          <td>63.8%</td>
+          <td>4.10판</td>
+        </tr>
+        <tr class="highlight">
+          <td><strong>v202</strong> <span class="badge new">최신</span></td>
+          <td style="color:#9aa0b8;font-size:11px;">6/22~6/23</td>
+          <td style="color:#9aa0b8;">90</td>
+          <td style="color:#d97706;font-weight:700;">72.7% ⚠️</td>
+          <td style="color:#2cb87a;font-weight:700;">100%</td>
+          <td style="color:#4f8ef7;font-weight:700;">5.07판</td>
+        </tr>
+        <tr class="highlight" style="background:#f0fdf4;">
+          <td><strong>v202 ORG</strong> <span class="badge new">최신</span></td>
+          <td style="color:#9aa0b8;font-size:11px;">6/22~6/23</td>
+          <td style="color:#9aa0b8;">81</td>
+          <td style="color:#d97706;font-weight:700;">72.7% ⚠️</td>
+          <td style="color:#2cb87a;font-weight:700;">100%</td>
+          <td style="color:#4f8ef7;font-weight:700;">5.52판</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="font-size:10px;color:#9aa0b8;margin-top:8px;">⚠️ v202 첫터치율은 6/22 n=22 기준 — 6/23 PST 이벤트 데이터 아직 미수집. 데이터 축적 후 재평가 필요.</div>
+  </div>
+
+  <!-- 판수 / RV 상세 -->
+  <div class="section">
+    <div class="section-title">판수 / RV 일별 트렌드 (v202)</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>날짜</th>
+          <th>구분</th>
+          <th>NRU</th>
+          <th>판수/인</th>
+          <th>RV/게임</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="warn-row">
+          <td>6/21</td>
+          <td style="color:#9aa0b8;">ALL (v201)</td>
+          <td style="color:#9aa0b8;">4</td>
+          <td>1.50</td>
+          <td style="color:#9aa0b8;">0.000</td>
+        </tr>
+        <tr>
+          <td>6/22</td>
+          <td>ALL (v202)</td>
+          <td>22</td>
+          <td>4.18</td>
+          <td style="color:#d97706;">0.022</td>
+        </tr>
+        <tr class="highlight">
+          <td>6/23</td>
+          <td><strong>ALL (v202)</strong></td>
+          <td><strong>68</strong></td>
+          <td style="color:#4f8ef7;font-weight:700;">5.35판</td>
+          <td style="color:#2cb87a;font-weight:700;">0.093 ↑</td>
+        </tr>
+        <tr class="highlight" style="background:#f0fdf4;">
+          <td>6/23</td>
+          <td><strong>ORG (v202)</strong></td>
+          <td><strong>59</strong></td>
+          <td style="color:#4f8ef7;font-weight:700;">6.02판</td>
+          <td style="color:#2cb87a;font-weight:700;">0.096 ↑</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="font-size:10px;color:#9aa0b8;margin-top:8px;">RV: 6/22→6/23 0.022→0.093으로 4.2배 상승 중. 게임 초기 RV 램프업 패턴으로 판단.</div>
+  </div>
+
+  <!-- 로딩 시간 -->
+  <div class="section">
+    <div class="section-title">로딩 시간 추이 (중앙값 기준)</div>
+    <div class="trend-row">
+      <div class="trend-ver">v136</div>
+      <div class="trend-bar-bg"><div class="trend-bar-fill" style="width:100%;background:linear-gradient(90deg,#e53e3e,#c53030);">7,709ms</div></div>
+      <div class="trend-ms" style="color:#e53e3e;">7,709ms</div>
+    </div>
+    <div class="trend-row">
+      <div class="trend-ver">v186</div>
+      <div class="trend-bar-bg"><div class="trend-bar-fill" style="width:32%;background:linear-gradient(90deg,#2cb87a,#1a9a63);">2,463ms</div></div>
+      <div class="trend-ms" style="color:#2cb87a;">2,463ms</div>
+    </div>
+    <div class="trend-row">
+      <div class="trend-ver">v188</div>
+      <div class="trend-bar-bg"><div class="trend-bar-fill" style="width:34.9%;background:linear-gradient(90deg,#f6ad55,#d97706);">2,687ms</div></div>
+      <div class="trend-ms" style="color:#d97706;">2,687ms</div>
+    </div>
+    <div class="trend-row">
+      <div class="trend-ver" style="color:#4f8ef7;">v202 ★</div>
+      <div class="trend-bar-bg"><div class="trend-bar-fill" style="width:34.7%;background:linear-gradient(90deg,#f6ad55,#d97706);">2,672ms</div></div>
+      <div class="trend-ms" style="color:#d97706;">2,672ms</div>
+    </div>
+    <div style="font-size:10px;color:#9aa0b8;margin-top:6px;">v202 중앙값 2,672ms (n=89) — v188 2,687ms 대비 -15ms로 사실상 동일. 추가 최적화 효과 없음.</div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="section">
+    <div class="section-title">액션 아이템 현황</div>
+    <div class="action-item">
+      <div class="action-dot p1">P1</div>
+      <div class="action-body">
+        <div class="action-title">첫터치 80% 달성 · 안정화</div>
+        <div class="action-desc">
+          v202 초기 72.7% (n=22 소량) — 신뢰도 낮음, 데이터 축적 후 재평가<br>
+          v188 누적 ORG 80.2% (n=902) 기준점 유지<br>
+          <span style="color:#d97706;font-weight:700;">→ 6/24 이후 v202 PST 이벤트 데이터 축적 모니터링 필요</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-dot p2">P2</div>
+      <div class="action-body">
+        <div class="action-title">인당 플레이 판수 개선</div>
+        <div class="action-desc">
+          v202 ALL 5.07판 / ORG 5.52판 ↑ (v188 4.10판 대비 개선)<br>
+          판당 RV 0.079(ALL)/0.081(ORG) — RV 램프업 진행 중<br>
+          <span style="color:#2cb87a;font-weight:700;">→ 판수 개선 효과 확인 ✅ · RV 추세 지속 모니터링</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-item">
+      <div class="action-dot warn">!</div>
+      <div class="action-body">
+        <div class="action-title">데이터 파이프라인 확인 필요</div>
+        <div class="action-desc">
+          6/23 PST 이벤트 데이터(player_count by event)가 아직 집계 안 됨<br>
+          판수_RV 시트에는 6/23 NRU=68 확인되나 PST 퍼널 이벤트는 6/22까지만 수집<br>
+          <span style="color:#d97706;font-weight:700;">→ 내일(6/25) 재집계 후 첫터치율 업데이트 예정</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT WAS UPDATED -->
+  <div class="section">
+    <div class="section-title">오늘 업데이트한 내용</div>
+    <table class="data-table">
+      <thead>
+        <tr><th>파일</th><th>변경 내용</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:700;white-space:nowrap;">17_pst_funnel_<br>dashboard.html</td>
+          <td style="font-size:12px;color:#4a5068;">
+            • HISTORY에 v202 항목 추가 (ALL n=90)<br>
+            • DATA_ORGANIC_VER에 v202 항목 추가 (ORG n=81)<br>
+            • 로딩시간 패널 v202 행 추가 (2,672ms)<br>
+            • 액션카드 P1/P2 설명 v202 기준 업데이트
+          </td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;white-space:nowrap;">index.html</td>
+          <td style="font-size:12px;color:#4a5068;">
+            • 라이브 카드: 첫터치 72.7%, 완료 72.7%, 판수 5.52판<br>
+            • P1/P2 상태 텍스트 v202 기준 업데이트<br>
+            • 마지막 업데이트 날짜 → 2026-06-24
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div style="margin-bottom:6px;">
+      <a href="https://atomking0.github.io/supergene-esther/17_pst_funnel_dashboard.html">📊 PST 퍼널 대시보드 열기</a>
+      &nbsp;·&nbsp;
+      <a href="https://atomking0.github.io/supergene-esther/index.html">🏠 인덱스</a>
+    </div>
+    <div>자동 업데이트 보고서 · 2026-06-24 · PST Solitaire City Journey</div>
+  </div>
+
+</div>
+</body>
+</html>
