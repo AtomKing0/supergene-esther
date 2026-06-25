@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>솔리테어 시티 저니 — 포스팅 크로스프로모 캠페인 기획서 (1차 = 마종 파일럿)</title>
+<style>
+  :root{ --ink:#1b2330; --sub:#5b6675; --line:#e3e7ee; --bg:#f6f8fb; --accent:#2563eb; --good:#15803d; --warn:#d9480f; --soft:#eef3fe; }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; color:var(--ink); background:var(--bg); margin:0; padding:32px 18px; line-height:1.62; }
+  .wrap{ max-width:960px; margin:0 auto; background:#fff; border:1px solid var(--line); border-radius:14px; padding:38px 44px; }
+  h1{ font-size:24px; margin:0 0 4px; letter-spacing:-.5px; }
+  .meta{ color:var(--sub); font-size:13px; margin-bottom:8px; }
+  .super{ background:var(--soft); border-left:3px solid var(--accent); padding:12px 16px; border-radius:0 8px 8px 0; font-size:14px; margin:18px 0 6px; }
+  h2{ font-size:18px; margin:32px 0 12px; padding-top:18px; border-top:1px solid var(--line); letter-spacing:-.3px; }
+  h2 .n{ color:var(--accent); font-weight:800; margin-right:8px; }
+  h3{ font-size:14.5px; margin:18px 0 6px; clear:both; }
+  .postsample{ float:right; width:298px; max-width:44%; margin:2px 0 10px 18px; border-radius:12px; box-shadow:0 6px 18px rgba(20,40,70,.18); border:1px solid #d8deea; }
+  .scap{ float:right; clear:right; width:298px; max-width:44%; text-align:center; font-size:11px; color:#5b6675; margin:-4px 0 14px 18px; }
+  .refwrap{ display:flex; flex-wrap:wrap; gap:14px; margin:12px 0 4px; clear:both; }
+  .refshot{ width:100%; border-radius:10px; border:1px solid #dfe3ea; display:block; box-shadow:0 3px 12px rgba(20,40,70,.10); }
+  .shotcap{ font-size:11px; color:#5b6675; text-align:center; margin-top:6px; line-height:1.45; }
+  .shotcap b{ color:#1b2330; }
+  p,li{ font-size:14px; }
+  table{ width:100%; border-collapse:collapse; margin:10px 0; font-size:13px; }
+  th,td{ border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th{ background:#f2f5fa; font-weight:600; }
+  td.num,th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+  .good{ color:var(--good); font-weight:700; }
+  .warn{ color:var(--warn); font-weight:700; }
+  .tbd{ color:var(--warn); font-weight:600; }
+  ul,ol{ padding-left:20px; margin:6px 0; }
+  .copy{ background:#0f1626; color:#e8eefc; border-radius:10px; padding:14px 18px; font-size:13px; line-height:1.6; margin:8px 0; white-space:pre-wrap; }
+  .copy .lbl{ display:inline-block; font-size:11px; font-weight:700; color:#8fb4ff; letter-spacing:.5px; margin-bottom:6px; }
+  .warnbox{ background:#fff4ec; border-left:3px solid var(--warn); padding:10px 14px; border-radius:0 8px 8px 0; font-size:13px; margin:10px 0; }
+  .pill{ font-size:11px; padding:2px 8px; border-radius:6px; }
+  .p-wait{ background:#fff4ec; color:var(--warn); }
+  .p-do{ background:#e7f5ec; color:var(--good); }
+  .foot{ color:var(--sub); font-size:12px; margin-top:30px; border-top:1px solid var(--line); padding-top:14px; }
+  .tl{ display:flex; flex-direction:column; gap:0; margin:14px 0; }
+  .tl .step{ border-left:3px solid var(--accent); padding:0 0 16px 20px; font-size:13px; line-height:1.5; position:relative; }
+  .tl .step:last-child{ padding-bottom:2px; }
+  .tl .step:before{ content:""; position:absolute; left:-7.5px; top:2px; width:12px; height:12px; border-radius:50%; background:var(--accent); border:2px solid #fff; }
+  .tl .step > b:first-child{ display:block; font-size:12.5px; font-weight:800; color:var(--accent); margin-bottom:2px; }
+  .tl .step.hot{ border-color:var(--warn); }
+  .tl .step.hot:before{ background:var(--warn); }
+  .tl .step.hot > b:first-child{ color:var(--warn); }
+  .uflow{ display:flex; flex-direction:column; margin:8px 0; }
+  .ustep{ display:flex; gap:14px; padding:14px 0; border-top:1px solid var(--line); align-items:flex-start; }
+  .ustep:first-child{ border-top:none; }
+  .unum{ flex:none; width:30px; height:30px; border-radius:50%; color:#fff; font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center; }
+  .unum.u{ background:var(--accent); } .unum.o{ background:#7a8493; }
+  .ubody{ flex:1; }
+  .ubody .who{ font-size:10px; font-weight:800; letter-spacing:.4px; padding:1px 7px; border-radius:10px; }
+  .who.cu{ background:#e7f0ff; color:#2563eb; } .who.co{ background:#eef1f6; color:#5b6675; }
+  .ubody h4{ font-size:14px; margin:4px 0 3px; }
+  .ubody p{ font-size:12.8px; color:#3b4658; }
+  .ubody .t{ font-size:12px; color:var(--good); margin-top:2px; }
+  .ushot{ flex:none; width:240px; }
+  .ushot img{ width:100%; border-radius:8px; border:1px solid var(--line); display:block; }
+  .ushot .cap{ font-size:10px; color:var(--sub); text-align:center; margin-top:3px; }
+  /* language toggle */
+  .langtoggle{ position:fixed; top:16px; right:16px; z-index:100; display:flex; background:#fff; border:1px solid var(--line); border-radius:20px; overflow:hidden; box-shadow:0 2px 12px rgba(20,40,70,.14); }
+  .langtoggle button{ border:none; background:#fff; color:var(--sub); font-weight:700; font-size:12.5px; padding:7px 16px; cursor:pointer; font-family:inherit; }
+  .langtoggle button.active{ background:var(--accent); color:#fff; }
+  body:not(.lang-en) .en-only{ display:none; }
+  body.lang-en .ko-only{ display:none; }
+</style>
+</head>
+<body>
+<div class="langtoggle">
+  <button id="btn-ko" class="active" onclick="setLang('ko')">한국어</button>
+  <button id="btn-en" onclick="setLang('en')">English</button>
+</div>
+<div class="wrap">
+
+<!-- ========================= 한국어 ========================= -->
+<div class="ko-only">
+
+<h1>솔리테어 시티 저니 — 포스팅 크로스프로모 캠페인 기획서 (1차 = 마종 파일럿)</h1>
+<div class="meta">2026-06-25 · 담당 에스더 · 데이터 근거: BigQuery 질 실측 + Andre 팬페이지 도달 데이터 · <b>스코프: 1차 파일럿 = 마종 단독 · 확대 후보(코인매치·코지) = ~D5 유입량 보고 결정</b></div>
+
+<div class="super"><b>🎯 목적</b>
+<ul style="margin:7px 0 0;padding-left:20px;line-height:1.7">
+  <li>솔리테어 시티 저니 <b>콜드스타트 14일 평가창</b>에 장르적합 유저 유입 → <b>D14 리텐션·WAU@14 부양</b> → <b>Meta Promoted Tier 진입</b></li>
+  <li>채널 = 자사 게임 팬페이지/그룹에 <b>플레이 링크 포스팅</b>(shareable_link)</li>
+  <li>후킹 = <b>"솔리테어 7일 출석 완료 → 소스게임 골드 지급"</b></li>
+</ul>
+</div>
+
+<div class="warnbox"><b>⚑ 결론 — 1차 = 마종 단독 파일럿</b>
+<ul style="margin:7px 0 4px;padding-left:20px;line-height:1.7">
+  <li>이벤트에 <b>공수 발생</b> — 아트(7일 출석 화면 UID 노출) + 클라+서버(소스게임 인박스 지급 어드민, <b>1일+</b>)</li>
+  <li>전 게임 동시 확대 전 <b>마종 1종 먼저 집행 → 이벤트 시작 후 ~D5 유입량(엔트리 shareable_link 유저 수) 체크 → 코인매치·코지·더퍼즐 확대 여부 빠르게 결정</b> (D14 리텐션은 최종 평가지, 확대 게이트 아님)</li>
+  <li>마종 선정 = <b>질 앵커(D7 6.5%, 코지 다음 2위)</b> + 도달 중간(2,051) → <b>질·물량 밸런스가 파일럿에 적합</b></li>
+</ul>
+<span style="font-size:11.5px;color:var(--sub)">※ 아래 §2 분석은 확대 후보 우선순위로 유지.</span></div>
+
+<h2><span class="n">1</span>왜 포스팅(shareable_link)인가 — 데이터 근거</h2>
+<ul>
+  <li><b>광고(C2P) 유입은 콜드스타트 14일 지표서 제외</b>되지만, <b>포스팅·커뮤니티 유입은 오가닉과 동일하게 반영</b>(평점도 전원 반영) → 포스팅이 정답 채널.</li>
+  <li>BigQuery 실측(자사 4종): <b>포스팅(shareable_link)·인게임 CP 유입의 D7 리텐션이 광고의 4~5배.</b> 끈끈한 장르적합 유저를 데려옴. → <b>포스팅으로 진행, 광고는 안 씀.</b></li>
+</ul>
+
+<h2><span class="n">2</span>대상 선정 — 도달 × 질 × 적합도 (파일럿=마종 · 나머지=확대 후보 우선순위)</h2>
+<p>세 축으로 본다. <b>도달</b> = 팬페이지 일일 방문수(Andre). <b>질</b> = 포스팅(shareable_link) 인입 유저의 D7 리텐션(BigQuery 실측). <b>장르/메타 적합도</b> = 솔리테어 시티 저니(카드매칭 + 도시·꾸미기 메타)와의 궁합 — 솔CJ는 꾸미기 메타가 리텐션 엔진이라 이 축이 핵심. <b>퀄지수 = 도달 × 질.</b></p>
+<table>
+  <tr><th>진행</th><th>게임</th><th class="num">일 방문(도달)</th><th class="num">D7(질)</th><th>장르/메타 적합</th><th class="num">퀄지수</th><th class="num">비중</th><th>판정</th></tr>
+  <tr><td class="warn">확대 후보</td><td><b>코인매치</b> Coin Match</td><td class="num"><b>4,103</b></td><td class="num">3.4%</td><td>중 (매치 인접)</td><td class="num good">139</td><td class="num">30%</td><td>도달 1위 → 물량 앵커</td></tr>
+  <tr><td class="good">★ 파일럿</td><td><b>마종</b> Mahjong</td><td class="num">2,051</td><td class="num good">6.5%</td><td>중하 (타일매칭)</td><td class="num good">133</td><td class="num">29%</td><td>질 2위 → 질 앵커</td></tr>
+  <tr><td class="warn">확대 후보</td><td><b>코지</b> Cozy Tiles</td><td class="num">1,201</td><td class="num good">8.7%</td><td class="good">최상 (꾸미기+코지아트=솔CJ 직결)</td><td class="num good">104</td><td class="num">23%</td><td>질 1위 + 메타 직결 → 적합 앵커</td></tr>
+  <tr><td class="warn">2차 보류</td><td>더퍼즐 The Puzzle</td><td class="num">3,538</td><td class="num warn">1.6%</td><td class="warn">하 (순수 퍼즐·메타 없음)</td><td class="num warn">57</td><td class="num">12%</td><td>도달 크나 질 낮음 + 적합 최하</td></tr>
+  <tr><td class="warn">드롭</td><td>퍼블마 Puzzle Block Master</td><td class="num"><b>183</b></td><td class="num">13.6%</td><td>하 (블록 퍼즐)</td><td class="num warn">25</td><td class="num">5%</td><td>도달 183 → 절대량 미미</td></tr>
+</table>
+<div class="warnbox"><b>상위 3종(코인매치·코지·마종) = 퀄 트래픽의 82%.</b> 한 축씩 앵커 — 코인매치=도달 1위(물량), 코지=질 1위+꾸미기 메타 직결(적합), <b>마종=질 2위(→ 파일럿 1순위)</b>. <b>더퍼즐 2차 보류·퍼블마 드롭.</b></div>
+<p style="font-size:12px;color:var(--sub)">※ 질 = shareable_link D7(BigQuery 실측, 4종 동일 기준). 표본이 캠페인 부재로 작아 캠페인 후 실측 보정.</p>
+
+<h2><span class="n">3</span>타임라인 (역산)</h2>
+<div class="tl">
+  <div class="step"><b>7/1(수)</b>EQR v4 제출 · IG 기능 QA 시작 · 포스팅 소재 제작 병행</div>
+  <div class="step"><b>7/1~ (영업일 5~7)</b>IG 기능 QA 진행</div>
+  <div class="step hot"><b>~7/7 전</b>선결 작업 — <b>아트</b>: 7일 출석 화면 UID 노출 · <b>클라+서버</b>: 마종 인박스 지급 경로(1일+). 파일럿 전 완료</div>
+  <div class="step hot"><b>~7/7–7/9</b>QA 완료 → <b>소프트 런칭(콜드스타트 D0)</b> · 게임 런칭 포스트 = Andre (커밍순은 이미 게시됨)</div>
+  <div class="step hot"><b>D0</b><b>마종 파일럿</b> 퀘스트 포스트 + 고정댓글 게시(Andre)</div>
+  <div class="step"><b>D0–D5</b>유입 골든타임 (재게시·고정·댓글 독려)</div>
+  <div class="step hot"><b>~D5</b><b>유입량 체크 → 확대 결정</b> — 엔트리(shareable_link) 유입 유저 수 보고 코인매치·코지 확대 여부 <b>빠르게</b> 판단 (D14 안 기다림)</div>
+  <div class="step"><b>~D14 (D0+14)</b>응모 마감 → <b>마종 40명 추첨</b> → 인박스 지급 · <b>D14 리텐션·WAU@14 = 최종 평가(Promoted Tier)</b></div>
+</div>
+<p><b>핵심 제약:</b> 7일 출석이 D14 내 완료되려면 유저가 <b>D7까지 설치·시작</b>해야 함 → 포스팅·독려 화력은 <b>D0~D5 집중</b>. (정확한 D0는 QA 완료일 확정 후 — Andre에 공유)</p>
+
+<h2><span class="n">4</span>참여 플로우 — 댓글 응모 + 추첨 + 인박스 지급 (Gossip Harbor 방식)</h2>
+<p style="font-size:13px;color:var(--sub)">설계 원칙: <b>오퍼는 단순, 마찰은 최소.</b> 소스게임 UID <b>1개</b> + 7일 스샷만 댓글로 → 추첨 → 소스게임 <b>인박스</b>로 지급(코드 시스템 불필요). Gossip Harbor·Seaside Escape가 쓰는 검증된 방식.</p>
+<p style="font-size:12px;color:var(--sub)">※ 각 단계 오른쪽 = <b>실제 Gossip Harbor 레퍼런스 캡처</b>(우리 솔리테어 화면은 자체 목업). 출처 facebook.com/GossipHarbor(2026-05-18).</p>
+<div class="uflow">
+  <div class="ustep">
+    <div class="unum u">1</div>
+    <div class="ubody"><span class="who cu">USER</span>
+      <h4>소스게임 포스트의 플레이 링크 클릭 → 솔리테어 바로 실행</h4>
+      <p>마종 팬페이지/그룹 포스트(파일럿). <b>IG라 설치 없이 링크 클릭 = 게임 바로 진입.</b> 링크 FB share 형식(→ shareable_link 집계).</p>
+      <p class="t">✔ 설치 단계 없음.</p></div>
+    <div class="ushot"><img src="cp_assets/ref/gh_post.png" alt="실제 기브어웨이 포스트"><div class="cap">실제 레퍼런스<br>GH 기브어웨이 포스트(👍8.3K)</div></div>
+  </div>
+  <div class="ustep">
+    <div class="unum u">2</div>
+    <div class="ubody"><span class="who cu">USER</span>
+      <h4>솔리테어 7일 출석 완료 → 7일차 화면 스샷</h4>
+      <p>"오늘의 선물!" 출석부 7일차까지 수령 = 7개 다른 날 복귀 = 우리가 평가받는 리텐션과 일치(의도된 핵심). 완료 화면 캡처.</p>
+      <p class="t" style="color:var(--warn)">🎨 <b>작업 필요(아트)</b> — 7일 출석 완료 화면 <b>구석에 솔리테어 게임 UID 노출</b>. 스샷이 UID를 자체 포함 → 이 <b>솔리테어 UID = 4번 신원·중복 검증의 키</b>. (5번 지급은 3번 댓글의 <b>마종 UID</b>로.)</p></div>
+    <div class="ushot"><img src="cp_assets/solitaire_7day.png" alt="7일 출석"><div class="cap">솔리테어 7일 출석부</div></div>
+  </div>
+  <div class="ustep">
+    <div class="unum u">3</div>
+    <div class="ubody"><span class="who cu">USER</span>
+      <h4>그 포스트에 댓글 — 마종 UID + 7일 스샷</h4>
+      <p><code>마종 UID: ___ + 7일 출석 스샷 첨부</code>. <b>UID 1개</b>(마종 세팅에서 확인, 인박스 지급용). 스샷엔 솔리테어 UID 자동 노출(위 아트작업) → 검증.</p>
+      <p class="t">✔ FB 내 완결(이탈 0) + 댓글 노출=바이럴.</p></div>
+    <div class="ushot"><img src="cp_assets/ref/gh_comments.png" alt="유저 game ID 댓글"><div class="cap">실제 레퍼런스<br>유저 game ID 댓글(다국어)</div></div>
+  </div>
+  <div class="ustep">
+    <div class="unum o">4</div>
+    <div class="ubody"><span class="who co">OPS</span>
+      <h4>댓글 모아 신원·중복 검증 → 추첨 → 당첨자 발표</h4>
+      <p>댓글 수집(수동) → 7일 스샷 확인. <b>신원·중복(스샷 재사용) 검증 = 스샷 구석의 솔리테어 UID(2번 아트작업)로 중복 응모·재사용 거름</b> → <b>마종 40명 추첨(파일럿)</b>, <b>응모 마감 후 1회 일괄</b>. 댓글로 당첨자 명단 발표("Event closed · Congrats…").</p></div>
+    <div class="ushot"><img src="cp_assets/ref/gh_winners.png" alt="당첨자 발표 댓글"><div class="cap">실제 레퍼런스<br>당첨자 발표(Event closed)</div></div>
+  </div>
+  <div class="ustep">
+    <div class="unum o">5</div>
+    <div class="ubody"><span class="who co">OPS</span>
+      <h4>당첨자 마종 UID로 인박스 지급 + 답글</h4>
+      <p>당첨자 <b>마종 UID로 어드민 지급 → 마종 인박스 도착</b>(코드 불필요). 댓글에 "당첨/지급완료" 답글 + 시트 기록.</p>
+      <p class="t" style="color:var(--warn)">🛠 <b>작업 필요(클라+서버 모두)</b> — 마종 인박스로 보상 지급하는 <b>어드민/지급 경로</b> 구현·연동. 본 이벤트의 주 공수.</p></div>
+  </div>
+</div>
+
+<h2><span class="n">5</span>운영 R&R — 누가 뭘 (PH(Andre) / Game Team)</h2>
+<table>
+  <tr><th>R&R</th><th>항목</th><th>산출물</th></tr>
+  <tr><td colspan="3" style="background:#e7f5ec;font-weight:800;font-size:12.5px;color:#15803d">🟢 PH (Andre) — 팬페이지 운영·소재</td></tr>
+  <tr><td class="good"><b>PH(Andre)</b></td><td>① 포스트 게시</td><td>마종 페이지/그룹에 퀘스트 포스트 + 고정댓글 게시 (D0)</td></tr>
+  <tr><td class="good"><b>PH(Andre)</b></td><td>② 당첨자 발표</td><td>Game Team이 전달한 명단을 댓글로 "Event closed · Congrats…" 게시</td></tr>
+  <tr><td class="good"><b>PH(Andre)</b></td><td>③ 퀘스트 포스트 소재(이미지/문구)</td><td>마종 퀘스트 포스트 + 고정댓글(보상·훅) 제작 — 참고 §7</td></tr>
+  <tr><td colspan="3" style="background:#e8eefc;font-weight:800;font-size:12.5px;color:#2563eb">🔵 Game Team — 그 외 <b>전부</b></td></tr>
+  <tr><td class="tbd">Game Team<br><span style="font-size:11px;color:var(--sub)">아트</span></td><td class="warn"><b>아트 — 7일 출석 화면 UID 노출</b></td><td>출석 완료 화면 구석에 솔리테어 UID 표시(검증 키)</td></tr>
+  <tr><td class="tbd">Game Team<br><span style="font-size:11px;color:var(--sub)">클라·서버</span></td><td class="warn"><b>클라+서버 — 마종 인박스 지급 경로</b></td><td>당첨자에게 마종 인박스로 지급 어드민. <b>주 공수(1일+)·파일럿 선결</b></td></tr>
+  <tr><td class="tbd">Game Team<br><span style="font-size:11px;color:var(--sub)">@hailey</span></td><td><b>소스 게임 보상 산정</b></td><td>마종 등 소스게임 지급 코인 양 결정 <b>(@hailey)</b></td></tr>
+  <tr><td>Game Team<br><span style="font-size:11px;color:var(--sub)">서버</span></td><td>댓글 수집 + 신원·중복 검증 + 추첨 + 인박스 지급 실행 + 명단 전달</td><td>댓글 수집 → 솔리테어 UID로 검증 → 마종 40명 추첨(마감 후 1회) → 마종 인박스 지급 → 당첨 명단 PH(Andre)에 전달. <b>서버 진행</b></td></tr>
+</table>
+<p style="font-size:12.5px;color:var(--sub);margin-top:6px"><b>R&R 요약</b> — 🟢 <b>PH(Andre)</b> = 포스트 게시 + 당첨자 발표 + 소재 제작. 🔵 <b>Game Team</b> = 아트(UID)·클라/서버·보상 산정(@hailey)·검증/추첨/지급(서버) 등 <b>그 외 전부</b>.</p>
+
+<h2><span class="n">6</span>보상 골드 — 파일럿(마종)만 · 확대분은 추후 진행 시 고민</h2>
+<p>방침(보스): 솔리테어 퀄리티 우선, 소스게임 밸런스 무관 → 후하게(가상재화라 우리 실비용 0). <b>파일럿 = 마종만</b>. ⚠️ <b>마종 지급 코인 양은 Hailey가 지정</b> — 확정 후 반영. <b>확대 후보(코인매치·코지·더퍼즐 등) 보상은 확대 진행 시 고민</b>(현재 미확정).</p>
+<table>
+  <tr><th>진행</th><th>게임</th><th>화폐</th><th class="num">지급 보상</th><th>비고</th></tr>
+  <tr><td class="good">★ 파일럿</td><td><b>마종</b></td><td>Coins</td><td class="num warn">Hailey 지정 ⏳</td><td>~$5 기준(잠정 1,300 Coins)</td></tr>
+  <tr><td class="warn">확대 후보</td><td>코인매치</td><td>Coins</td><td class="num warn">추후 고민 ⏳</td><td>확대 진행 시 결정</td></tr>
+  <tr><td class="warn">확대 후보</td><td>코지</td><td>Coins</td><td class="num warn">추후 고민 ⏳</td><td>확대 진행 시 결정</td></tr>
+  <tr><td class="warn">2차 보류</td><td>더퍼즐</td><td>Coins</td><td class="num warn">추후 고민 ⏳</td><td>확대 진행 시 결정</td></tr>
+  <tr><td class="warn">드롭</td><td>퍼블마</td><td>Gold</td><td class="num warn">추후 고민 ⏳</td><td>확대 진행 시 결정</td></tr>
+</table>
+
+<h2><span class="n">7</span>참고자료 — 퀘스트형 포스팅 예시 (글로벌 FB · 영문)</h2>
+<div class="warnbox" style="font-size:13px"><b>📎 참고용 — 똑같이 안 써도 됨.</b> 아래는 예시 카피·이미지. <b>핵심(솔리테어 7일 출석 · ID 댓글 응모 · 인박스 지급 · 스캠 경고문)만 지키면 톤·문구·디자인은 자유 변형 OK.</b></div>
+<p style="font-size:13px;color:var(--sub)">※ 게임 <b>커밍순·런칭(게임 자체 안내) 포스트는 Andre 담당</b> — 본 범위 아님. 여기는 우리 <b>퀘스트형 포스팅</b>만. 게임별 2종 — ① <b>퀘스트 포스트</b>(D0 게시, 초단순) · ② <b>고정 응모 댓글</b>(응모 방법). <code>[PLAY_LINK]</code>=FB share/플레이 링크(→ shareable_link 집계).</p>
+<p style="font-size:12px;color:var(--sub)">※ 포맷은 업계 표준 반영 — Gossip Harbor·Seaside Escape·Travel Town 공통: <b>게임 ID 댓글 응모 → 인박스 지급 · 공유/좋아요 보너스 응모권 · 스캠 경고문</b>. (단 그들은 플레이 인증 없이 ID만 받음 — 우리는 타 게임 리텐션이 목적이라 7일 출석 인증을 추가.)</p>
+
+<p style="font-size:14px;color:var(--good);font-weight:800;margin-top:4px">★ 파일럿 1순위 — Mahjong (마종) 단독 먼저</p>
+<h3>★ Mahjong (마종) — 1,300 Coins · <span style="color:var(--good)">파일럿</span></h3>
+<img class="postsample" src="post_samples/post_mahjong.jpg" alt="Mahjong 퀘스트 포스트 이미지 샘플">
+<div class="scap">▲ 크로스프로모 샘플 (소스게임 + 솔리테어 아트)</div>
+<div class="copy"><span class="lbl">QUEST POST</span>🀄 Mahjong Giveaway 🀄
+🎉 Love tile-matching? Now try card-matching! 🃏
+🔍 Play Solitaire City Journey for 7 days, then drop your Mahjong ID in the comments for a chance to win 🎁 1,300 Coins 🎁 — sent straight to your Mahjong inbox!
+▶️ Play now: [PLAY_LINK]
+(How to enter 👇)</div>
+<div class="copy"><span class="lbl">PINNED ENTRY COMMENT</span>📋 How to enter:
+1️⃣ Play Solitaire City Journey for 7 days (grab your daily gift each day!)
+2️⃣ Reply here with your Mahjong ID (find it in Settings ⚙️) + a screenshot of your 7-day check-in
+3️⃣ We'll draw winners & send 1,300 Coins to your Mahjong inbox 💛
+🎁 40 winners · entry open for 2 weeks — winners drawn right after! 🎲
+BONUS: Share 🔄 and like 👍 this post for more chances to win!
+❗ Please DON'T BELIEVE any of those scam accounts in the comments that direct you to external links! We will NEVER ask for any of your private information other than your Mahjong ID.</div>
+
+<p style="font-size:13px;color:var(--warn);font-weight:700;margin-top:20px">▶ 확대 후보 (파일럿 효율 보고 결정 — 코인매치 · 코지)</p>
+<h3>① Coin Match (코인매치) — 20,000,000 Coins · <span style="color:var(--warn)">확대 후보</span></h3>
+<img class="postsample" src="post_samples/post_coinmatch.jpg" alt="Coin Match 퀘스트 포스트 이미지 샘플">
+<div class="scap">▲ 크로스프로모 샘플 (소스게임 + 솔리테어 아트)</div>
+<div class="copy"><span class="lbl">QUEST POST</span>🪙 Coin Match Giveaway 🪙
+🎉 Love matching? Now match cards! 🃏
+🔍 Play Solitaire City Journey for 7 days, then drop your Coin Match ID in the comments for a chance to win 🎁 20,000,000 Coins 🎁 — sent straight to your Coin Match inbox!
+▶️ Play now: [PLAY_LINK]
+(How to enter 👇)</div>
+<div class="copy"><span class="lbl">PINNED ENTRY COMMENT</span>📋 How to enter:
+1️⃣ Play Solitaire City Journey for 7 days (grab your daily gift each day!)
+2️⃣ Reply here with your Coin Match ID (find it in Settings ⚙️) + a screenshot of your 7-day check-in
+3️⃣ We'll draw winners & send 20,000,000 Coins to your Coin Match inbox 💛
+🎁 80 winners · entry open for 2 weeks — winners drawn right after! 🎲
+BONUS: Share 🔄 and like 👍 this post for more chances to win!
+❗ Please DON'T BELIEVE any of those scam accounts in the comments that direct you to external links! We will NEVER ask for any of your private information other than your Coin Match ID.</div>
+
+<h3>② Cozy Tiles (코지) — 900 Coins · <span style="color:var(--warn)">확대 후보</span></h3>
+<img class="postsample" src="post_samples/post_cozy.jpg" alt="Cozy Tiles 퀘스트 포스트 이미지 샘플">
+<div class="scap">▲ 크로스프로모 샘플 (소스게임 + 솔리테어 아트)</div>
+<div class="copy"><span class="lbl">QUEST POST</span>🏙️ Cozy Tiles Giveaway 🏙️
+🎉 Cozy vibes + city building — right up your alley! 🃏
+🔍 Play Solitaire City Journey for 7 days, then drop your Cozy Tiles ID in the comments for a chance to win 🎁 900 Coins 🎁 — sent straight to your Cozy Tiles inbox!
+▶️ Play now: [PLAY_LINK]
+(How to enter 👇)</div>
+<div class="copy"><span class="lbl">PINNED ENTRY COMMENT</span>📋 How to enter:
+1️⃣ Play Solitaire City Journey for 7 days (grab your daily gift each day!)
+2️⃣ Reply here with your Cozy Tiles ID (find it in Settings ⚙️) + a screenshot of your 7-day check-in
+3️⃣ We'll draw winners & send 900 Coins to your Cozy Tiles inbox 💛
+🎁 25 winners · entry open for 2 weeks — winners drawn right after! 🎲
+BONUS: Share 🔄 and like 👍 this post for more chances to win!
+❗ Please DON'T BELIEVE any of those scam accounts in the comments that direct you to external links! We will NEVER ask for any of your private information other than your Cozy Tiles ID.</div>
+
+<p style="font-size:13px;color:var(--warn);font-weight:700;margin-top:18px">▶ 2차 보류 (추가 확장 시 — 더퍼즐)</p>
+<h3>The Puzzle (더퍼즐) — 150,000,000 Coins · 2차 보류용</h3>
+<div class="copy"><span class="lbl">QUEST POST</span>🧩 The Puzzle Giveaway 🧩
+🎉 Puzzle lovers — meet your next obsession! 🃏
+🔍 Play Solitaire City Journey for 7 days, then drop your The Puzzle ID in the comments for a chance to win 🎁 150,000,000 Coins 🎁 — sent straight to your The Puzzle inbox!
+▶️ Play now: [PLAY_LINK]
+(How to enter 👇)</div>
+<div class="copy"><span class="lbl">PINNED ENTRY COMMENT</span>📋 How to enter:
+1️⃣ Play Solitaire City Journey for 7 days (grab your daily gift each day!)
+2️⃣ Reply here with your The Puzzle ID (find it in Settings ⚙️) + a screenshot of your 7-day check-in
+3️⃣ We'll draw winners & send 150,000,000 Coins to your The Puzzle inbox 💛
+🎁 70 winners · entry open for 2 weeks — winners drawn right after! 🎲
+BONUS: Share 🔄 and like 👍 this post for more chances to win!
+❗ Please DON'T BELIEVE any of those scam accounts in the comments that direct you to external links! We will NEVER ask for any of your private information other than your The Puzzle ID.</div>
+<p style="font-size:12.5px;color:var(--sub)">※ 드롭(퍼블마 5,500 Gold)은 추가 시 동일 템플릿에 숫자·게임명만 치환.</p>
+
+<h2><span class="n">8</span>미결정 · 대기</h2>
+<table>
+  <tr><th>항목</th><th>상태</th></tr>
+  <tr><td>게임 선정(스코프)</td><td><span class="pill p-do">확정 — <b>1차 파일럿 = 마종 단독</b></span> · 확대(코인매치·코지·더퍼즐)는 <b>이벤트 시작 후 ~D5 유입량 보고 결정</b></td></tr>
+  <tr><td><b>아트 — 7일 출석 화면 UID 노출</b></td><td><span class="pill p-wait">작업 대기 · 파일럿 선결</span></td></tr>
+  <tr><td><b>클라+서버 — 마종 인박스 지급 경로</b></td><td><span class="pill p-wait">작업 대기 — 주 공수 1일+ · 파일럿 선결</span></td></tr>
+  <tr><td><b>마종 지급 코인 양</b></td><td><span class="pill p-wait">Hailey 지정 필요</span> (현 1,300 잠정 · 확대 후보는 확대 진행 시 고민)</td></tr>
+  <tr><td>지급 방식</td><td><span class="pill p-do">추첨 → 소스게임 인박스 (1-UID, Gossip Harbor 방식)</span></td></tr>
+  <tr><td>당첨자 수(N) · 추첨 주기</td><td><span class="pill p-do">파일럿 — 마종 40명 · 응모 마감 후 1회 일괄</span> (확대 시 도달 비례)</td></tr>
+  <tr><td>콜드스타트 정확한 D0</td><td><span class="pill p-wait">QA 완료일 확인</span></td></tr>
+  <tr><td>R&R</td><td><span class="pill p-do">🟢 PH(Andre) = 게시·당첨자 발표·소재 · 🔵 Game Team = 아트·클라/서버·보상산정(@hailey)·검증/추첨/지급(서버)</span></td></tr>
+  <tr><td>캠페인 기획 + 포스팅 완성본</td><td><span class="pill p-do">본 문서 완료</span></td></tr>
+</table>
+
+<h2><span class="n">9</span>성공 지표 (KPI)</h2>
+<ul>
+  <li><b>즉시(D0~):</b> 포스팅 경유 유입 수(shareable_link) · 응모(7일 완료) 댓글 수</li>
+  <li><b>중간(~D14):</b> 콜드스타트 D14 리텐션·WAU@14 기여분 · 평점 상승</li>
+  <li><b>최종:</b> Meta Promoted Tier 진입 여부</li>
+</ul>
+
+<div class="foot">
+<b>다음 단계</b> — ① <b>작업 발주 — 아트(7일 출석 화면 UID 노출) + 클라+서버(마종 인박스 지급 경로)</b>(주 공수 1일+, 파일럿 선결) ② 마종 세팅 userID = 로그 player_id 동일 확인(테스트 1개) ③ 댓글 수집 권한 확인(페이지 관리자/Business Suite) ④ 마종 이미지 소재 확정(참고 §7 완료) ⑤ 정확한 D0(QA 완료일) 확정 → Andre 공유 ⑥ <b>~D5 유입량 체크 → 코인매치·코지·더퍼즐 확대 여부 빠르게 판단</b> (D14 리텐션은 최종 평가).<br>
+<b>본 문서가 단일 완성본</b> — 데이터 근거·스코프·참여 플로우·포스팅 완성본·보상·타임라인·운영·KPI 전부 통합.
+</div>
+
+</div>
+<!-- ========================= English ========================= -->
+<div class="en-only">
+
+<h1>Solitaire City Journey — Posting Cross-Promo Campaign Plan (Phase 1 = Mahjong Pilot)</h1>
+<div class="meta">2026-06-25 · Owner: Esther · Data: BigQuery quality measurement + Andre fan-page reach · <b>Scope: Phase 1 pilot = Mahjong only · Expansion candidates (Coin Match·Cozy) = decided on ~D5 inflow</b></div>
+
+<div class="super"><b>🎯 Purpose</b>
+<ul style="margin:7px 0 0;padding-left:20px;line-height:1.7">
+  <li>Drive genre-fit users into Solitaire City Journey's <b>cold-start 14-day evaluation window</b> → boost <b>D14 retention·WAU@14</b> → <b>enter Meta Promoted Tier</b></li>
+  <li>Channel = <b>play-link posting</b> (shareable_link) on our own games' fan pages/groups</li>
+  <li>Hook = <b>"Complete 7-day Solitaire check-in → source-game gold reward"</b></li>
+</ul>
+</div>
+
+<div class="warnbox"><b>⚑ Conclusion — Phase 1 = Mahjong-only pilot</b>
+<ul style="margin:7px 0 4px;padding-left:20px;line-height:1.7">
+  <li><b>Event needs effort</b> — Art (UID on 7-day check-in screen) + Client+Server (source-game inbox payout admin, <b>1+ day</b>)</li>
+  <li>Before expanding to all games, <b>run Mahjong alone first → check inflow volume (users via the entry/shareable_link) around ~D5 → decide Coin Match·Cozy·The Puzzle expansion fast</b> (D14 retention = final eval, not the expansion gate)</li>
+  <li>Mahjong chosen = <b>quality anchor (D7 6.5%, 2nd after Cozy)</b> + mid reach (2,051) → <b>quality·volume balance fits a pilot</b></li>
+</ul>
+<span style="font-size:11.5px;color:var(--sub)">※ The §2 analysis below is kept as the expansion priority.</span></div>
+
+<h2><span class="n">1</span>Why Posting (shareable_link) — data basis</h2>
+<ul>
+  <li><b>Ad (C2P) inflow is excluded from cold-start 14-day metrics</b>, but <b>posting/community inflow counts the same as organic</b> (ratings too) → posting is the right channel.</li>
+  <li>BigQuery (our 4 games): <b>posting (shareable_link)·in-game CP inflow D7 retention is 4–5× ads.</b> Brings sticky genre-fit users. → <b>Use posting, no ads.</b></li>
+</ul>
+
+<h2><span class="n">2</span>Target Selection — Reach × Quality × Fit (pilot=Mahjong · rest=expansion priority)</h2>
+<p>Three axes. <b>Reach</b> = daily fan-page visits (Andre). <b>Quality</b> = D7 retention of posting (shareable_link) inflow (BigQuery). <b>Genre/meta fit</b> = match with Solitaire City Journey (card-matching + city·decoration meta) — SCJ's decoration meta is its retention engine, so this axis is key. <b>Quality index = Reach × Quality.</b></p>
+<table>
+  <tr><th>Status</th><th>Game</th><th class="num">Daily visits (reach)</th><th class="num">D7 (quality)</th><th>Genre/meta fit</th><th class="num">Quality idx</th><th class="num">Share</th><th>Verdict</th></tr>
+  <tr><td class="warn">Expansion</td><td><b>Coin Match</b></td><td class="num"><b>4,103</b></td><td class="num">3.4%</td><td>Mid (match-adjacent)</td><td class="num good">139</td><td class="num">30%</td><td>Reach #1 → volume anchor</td></tr>
+  <tr><td class="good">★ Pilot</td><td><b>Mahjong</b></td><td class="num">2,051</td><td class="num good">6.5%</td><td>Mid-low (tile-matching)</td><td class="num good">133</td><td class="num">29%</td><td>Quality #2 → quality anchor</td></tr>
+  <tr><td class="warn">Expansion</td><td><b>Cozy Tiles</b></td><td class="num">1,201</td><td class="num good">8.7%</td><td class="good">Top (decoration+cozy art = direct SCJ fit)</td><td class="num good">104</td><td class="num">23%</td><td>Quality #1 + meta fit → fit anchor</td></tr>
+  <tr><td class="warn">Phase 2 hold</td><td>The Puzzle</td><td class="num">3,538</td><td class="num warn">1.6%</td><td class="warn">Low (pure puzzle, no meta)</td><td class="num warn">57</td><td class="num">12%</td><td>High reach but low quality + lowest fit</td></tr>
+  <tr><td class="warn">Drop</td><td>Puzzle Block Master</td><td class="num"><b>183</b></td><td class="num">13.6%</td><td>Low (block puzzle)</td><td class="num warn">25</td><td class="num">5%</td><td>Reach 183 → negligible volume</td></tr>
+</table>
+<div class="warnbox"><b>Top 3 (Coin Match·Cozy·Mahjong) = 82% of quality traffic.</b> One anchor each — Coin Match=reach #1 (volume), Cozy=quality #1+decoration meta fit, <b>Mahjong=quality #2 (→ pilot #1)</b>. <b>The Puzzle Phase-2 hold·PBM drop.</b></div>
+<p style="font-size:12px;color:var(--sub)">※ Quality = shareable_link D7 (BigQuery, same basis for 4 games). Sample is small (no prior campaign) → recalibrate after the campaign.</p>
+
+<h2><span class="n">3</span>Timeline (back-calculated)</h2>
+<div class="tl">
+  <div class="step"><b>7/1 (Wed)</b>EQR v4 submission · IG functional QA starts · posting assets in parallel</div>
+  <div class="step"><b>7/1~ (5–7 biz days)</b>IG functional QA</div>
+  <div class="step hot"><b>before ~7/7</b>Pre-work — <b>Art</b>: UID on 7-day check-in screen · <b>Client+Server</b>: Mahjong inbox payout path (1+ day). Done before pilot</div>
+  <div class="step hot"><b>~7/7–7/9</b>QA done → <b>soft launch (cold start D0)</b> · game launch post = Andre (coming-soon already posted)</div>
+  <div class="step hot"><b>D0</b><b>Mahjong pilot</b> quest post + pinned comment (Andre)</div>
+  <div class="step"><b>D0–D5</b>inflow golden time (re-post·pin·comment nudges)</div>
+  <div class="step hot"><b>~D5</b><b>Inflow check → expansion decision</b> — gauge users coming via the entry (shareable_link), decide Coin Match/Cozy expansion <b>fast</b> (don't wait for D14)</div>
+  <div class="step"><b>~D14 (D0+14)</b>entry closes → <b>draw 40 Mahjong winners</b> → inbox payout · <b>D14 retention·WAU@14 = final eval (Promoted Tier)</b></div>
+</div>
+<p><b>Key constraint:</b> for the 7-day check-in to finish within D14, users must <b>install/start by D7</b> → concentrate posting·nudges in <b>D0–D5</b>. (Exact D0 after QA completion — shared with Andre.)</p>
+
+<h2><span class="n">4</span>Participation Flow — comment entry + draw + inbox payout (Gossip Harbor style)</h2>
+<p style="font-size:13px;color:var(--sub)">Design principle: <b>simple offer, minimal friction.</b> Source-game UID <b>(1)</b> + 7-day screenshot via comment → draw → payout to source-game <b>inbox</b> (no code system). Proven method used by Gossip Harbor·Seaside Escape.</p>
+<p style="font-size:12px;color:var(--sub)">※ Right of each step = <b>real Gossip Harbor reference capture</b> (our Solitaire screens are mockups). Source: facebook.com/GossipHarbor (2026-05-18).</p>
+<div class="uflow">
+  <div class="ustep">
+    <div class="unum u">1</div>
+    <div class="ubody"><span class="who cu">USER</span>
+      <h4>Click the play link in the source-game post → Solitaire launches instantly</h4>
+      <p>Mahjong fan page/group post (pilot). <b>On IG, click = instant play, no install.</b> FB share-format link (→ shareable_link).</p>
+      <p class="t">✔ No install step.</p></div>
+    <div class="ushot"><img src="cp_assets/ref/gh_post.png" alt="real giveaway post"><div class="cap">Real reference<br>GH giveaway post (👍8.3K)</div></div>
+  </div>
+  <div class="ustep">
+    <div class="unum u">2</div>
+    <div class="ubody"><span class="who cu">USER</span>
+      <h4>Complete 7-day Solitaire check-in → screenshot the day-7 screen</h4>
+      <p>Claiming the "Daily Gift!" through day 7 = returning on 7 different days = exactly the retention we're judged on (the intended core). Capture the completion screen.</p>
+      <p class="t" style="color:var(--warn)">🎨 <b>Work needed (Art)</b> — show the <b>Solitaire game UID in a corner</b> of the 7-day completion screen. The screenshot self-contains the UID → this <b>Solitaire UID = the key for Step-4 identity/dup verification</b>. (Step-5 payout uses the <b>Mahjong UID</b> from Step 3.)</p></div>
+    <div class="ushot"><img src="cp_assets/solitaire_7day.png" alt="7-day check-in"><div class="cap">Solitaire 7-day check-in</div></div>
+  </div>
+  <div class="ustep">
+    <div class="unum u">3</div>
+    <div class="ubody"><span class="who cu">USER</span>
+      <h4>Comment on the post — Mahjong UID + 7-day screenshot</h4>
+      <p><code>Mahjong UID: ___ + attach 7-day check-in screenshot</code>. <b>UID 1</b> (from Mahjong settings, for inbox payout). The screenshot auto-shows the Solitaire UID (art work above) → verification.</p>
+      <p class="t">✔ Completed within FB (zero drop-off) + comment exposure = viral.</p></div>
+    <div class="ushot"><img src="cp_assets/ref/gh_comments.png" alt="users posting game IDs"><div class="cap">Real reference<br>users posting game IDs (multilingual)</div></div>
+  </div>
+  <div class="ustep">
+    <div class="unum o">4</div>
+    <div class="ubody"><span class="who co">OPS</span>
+      <h4>Collect comments, verify identity/dup → draw → announce winners</h4>
+      <p>Collect comments → check 7-day screenshots. <b>Identity/dup (screenshot reuse) verification = filter duplicate/reused entries by the Solitaire UID in the corner (Step-2 art work)</b> → <b>draw 40 Mahjong winners (pilot)</b>, <b>one batch after entry closes</b>. Announce the winner list by comment ("Event closed · Congrats…").</p></div>
+    <div class="ushot"><img src="cp_assets/ref/gh_winners.png" alt="winner announcement comment"><div class="cap">Real reference<br>winner announcement (Event closed)</div></div>
+  </div>
+  <div class="ustep">
+    <div class="unum o">5</div>
+    <div class="ubody"><span class="who co">OPS</span>
+      <h4>Pay winners to Mahjong inbox + reply</h4>
+      <p>Pay winners via <b>Mahjong UID through admin → arrives in Mahjong inbox</b> (no code). Reply "winner/paid" on comments + log to sheet.</p>
+      <p class="t" style="color:var(--warn)">🛠 <b>Work needed (Client+Server both)</b> — build/integrate the <b>admin/payout path</b> that delivers rewards to the Mahjong inbox. The main effort of this event.</p></div>
+  </div>
+</div>
+
+<h2><span class="n">5</span>Ops R&R — who does what (PH(Andre) / Game Team)</h2>
+<table>
+  <tr><th>R&R</th><th>Item</th><th>Deliverable</th></tr>
+  <tr><td colspan="3" style="background:#e7f5ec;font-weight:800;font-size:12.5px;color:#15803d">🟢 PH (Andre) — fan-page ops·assets</td></tr>
+  <tr><td class="good"><b>PH(Andre)</b></td><td>① Post publishing</td><td>Publish quest post + pinned comment on Mahjong page/group (D0)</td></tr>
+  <tr><td class="good"><b>PH(Andre)</b></td><td>② Winner announcement</td><td>Post the list Game Team provides as a comment ("Event closed · Congrats…")</td></tr>
+  <tr><td class="good"><b>PH(Andre)</b></td><td>③ Quest post assets (image/copy)</td><td>Produce Mahjong quest post + pinned comment (reward·hook) — see §7</td></tr>
+  <tr><td colspan="3" style="background:#e8eefc;font-weight:800;font-size:12.5px;color:#2563eb">🔵 Game Team — everything else</td></tr>
+  <tr><td class="tbd">Game Team<br><span style="font-size:11px;color:var(--sub)">Art</span></td><td class="warn"><b>Art — UID on 7-day check-in screen</b></td><td>Show Solitaire UID in a corner of the completion screen (verification key)</td></tr>
+  <tr><td class="tbd">Game Team<br><span style="font-size:11px;color:var(--sub)">Client·Server</span></td><td class="warn"><b>Client+Server — Mahjong inbox payout path</b></td><td>Admin to pay winners into the Mahjong inbox. <b>Main effort (1+ day)·pilot prerequisite</b></td></tr>
+  <tr><td class="tbd">Game Team<br><span style="font-size:11px;color:var(--sub)">@hailey</span></td><td><b>Source-game reward sizing</b></td><td>Decide payout coin amount for Mahjong etc. <b>(@hailey)</b></td></tr>
+  <tr><td>Game Team<br><span style="font-size:11px;color:var(--sub)">Server</span></td><td>Comment collection + identity/dup verify + draw + inbox payout + list handoff</td><td>Collect → verify by Solitaire UID → draw 40 Mahjong winners (one batch) → Mahjong inbox payout → hand winner list to PH(Andre). <b>Server-run.</b></td></tr>
+</table>
+<p style="font-size:12.5px;color:var(--sub);margin-top:6px"><b>R&R summary</b> — 🟢 <b>PH(Andre)</b> = post publishing + winner announcement + asset production. 🔵 <b>Game Team</b> = art(UID)·client/server·reward sizing(@hailey)·verify/draw/payout(server) etc., everything else.</p>
+
+<h2><span class="n">6</span>Reward Gold — Mahjong pilot only · expansion TBD later</h2>
+<p>Policy (boss): Solitaire quality first, source-game balance irrelevant → be generous (virtual currency, zero real cost to us). <b>Pilot = Mahjong only.</b> ⚠️ <b>Mahjong payout coin amount set by Hailey</b> — reflect once confirmed. <b>Expansion candidates (Coin Match·Cozy·The Puzzle etc.) reward TBD at expansion time</b> (currently undecided).</p>
+<table>
+  <tr><th>Status</th><th>Game</th><th>Currency</th><th class="num">Payout reward</th><th>Note</th></tr>
+  <tr><td class="good">★ Pilot</td><td><b>Mahjong</b></td><td>Coins</td><td class="num warn">Hailey to set ⏳</td><td>~$5 basis (tentative 1,300 Coins)</td></tr>
+  <tr><td class="warn">Expansion</td><td>Coin Match</td><td>Coins</td><td class="num warn">TBD later ⏳</td><td>decided at expansion</td></tr>
+  <tr><td class="warn">Expansion</td><td>Cozy</td><td>Coins</td><td class="num warn">TBD later ⏳</td><td>decided at expansion</td></tr>
+  <tr><td class="warn">Phase 2 hold</td><td>The Puzzle</td><td>Coins</td><td class="num warn">TBD later ⏳</td><td>decided at expansion</td></tr>
+  <tr><td class="warn">Drop</td><td>PBM</td><td>Gold</td><td class="num warn">TBD later ⏳</td><td>decided at expansion</td></tr>
+</table>
+
+<h2><span class="n">7</span>Reference — quest posting examples (global FB · English)</h2>
+<div class="warnbox" style="font-size:13px"><b>📎 Reference only — no need to copy verbatim.</b> Below are sample copy·images. <b>As long as the core (Solitaire 7-day check-in · ID comment entry · inbox payout · scam warning) is kept, tone·wording·design can be freely adapted.</b></div>
+<p style="font-size:13px;color:var(--sub)">※ Game <b>coming-soon/launch posts = Andre</b> (out of scope). Here = our <b>quest posting</b> only. 2 per game — ① <b>quest post</b> (D0, ultra-simple) · ② <b>pinned entry comment</b> (how to enter). <code>[PLAY_LINK]</code>=FB share/play link (→ shareable_link).</p>
+<p style="font-size:12px;color:var(--sub)">※ Format follows industry standard — Gossip Harbor·Seaside Escape·Travel Town common: <b>game-ID comment entry → inbox payout · share/like bonus entries · scam warning</b>. (They take ID only without play verification — we add 7-day check-in since cross-game retention is the goal.)</p>
+
+<p style="font-size:14px;color:var(--good);font-weight:800;margin-top:4px">★ Pilot #1 — Mahjong only first</p>
+<h3>★ Mahjong — 1,300 Coins · <span style="color:var(--good)">Pilot</span></h3>
+<img class="postsample" src="post_samples/post_mahjong.jpg" alt="Mahjong quest post sample">
+<div class="scap">▲ Cross-promo sample (source game + Solitaire art)</div>
+<div class="copy"><span class="lbl">QUEST POST</span>🀄 Mahjong Giveaway 🀄
+🎉 Love tile-matching? Now try card-matching! 🃏
+🔍 Play Solitaire City Journey for 7 days, then drop your Mahjong ID in the comments for a chance to win 🎁 1,300 Coins 🎁 — sent straight to your Mahjong inbox!
+▶️ Play now: [PLAY_LINK]
+(How to enter 👇)</div>
+<div class="copy"><span class="lbl">PINNED ENTRY COMMENT</span>📋 How to enter:
+1️⃣ Play Solitaire City Journey for 7 days (grab your daily gift each day!)
+2️⃣ Reply here with your Mahjong ID (find it in Settings ⚙️) + a screenshot of your 7-day check-in
+3️⃣ We'll draw winners & send 1,300 Coins to your Mahjong inbox 💛
+🎁 40 winners · entry open for 2 weeks — winners drawn right after! 🎲
+BONUS: Share 🔄 and like 👍 this post for more chances to win!
+❗ Please DON'T BELIEVE any of those scam accounts in the comments that direct you to external links! We will NEVER ask for any of your private information other than your Mahjong ID.</div>
+
+<p style="font-size:13px;color:var(--warn);font-weight:700;margin-top:20px">▶ Expansion candidates (decided after pilot — Coin Match · Cozy)</p>
+<h3>① Coin Match — 20,000,000 Coins · <span style="color:var(--warn)">Expansion</span></h3>
+<img class="postsample" src="post_samples/post_coinmatch.jpg" alt="Coin Match quest post sample">
+<div class="scap">▲ Cross-promo sample (source game + Solitaire art)</div>
+<div class="copy"><span class="lbl">QUEST POST</span>🪙 Coin Match Giveaway 🪙
+🎉 Love matching? Now match cards! 🃏
+🔍 Play Solitaire City Journey for 7 days, then drop your Coin Match ID in the comments for a chance to win 🎁 20,000,000 Coins 🎁 — sent straight to your Coin Match inbox!
+▶️ Play now: [PLAY_LINK]
+(How to enter 👇)</div>
+<div class="copy"><span class="lbl">PINNED ENTRY COMMENT</span>📋 How to enter:
+1️⃣ Play Solitaire City Journey for 7 days (grab your daily gift each day!)
+2️⃣ Reply here with your Coin Match ID (find it in Settings ⚙️) + a screenshot of your 7-day check-in
+3️⃣ We'll draw winners & send 20,000,000 Coins to your Coin Match inbox 💛
+🎁 80 winners · entry open for 2 weeks — winners drawn right after! 🎲
+BONUS: Share 🔄 and like 👍 this post for more chances to win!
+❗ Please DON'T BELIEVE any of those scam accounts in the comments that direct you to external links! We will NEVER ask for any of your private information other than your Coin Match ID.</div>
+
+<h3>② Cozy Tiles — 900 Coins · <span style="color:var(--warn)">Expansion</span></h3>
+<img class="postsample" src="post_samples/post_cozy.jpg" alt="Cozy Tiles quest post sample">
+<div class="scap">▲ Cross-promo sample (source game + Solitaire art)</div>
+<div class="copy"><span class="lbl">QUEST POST</span>🏙️ Cozy Tiles Giveaway 🏙️
+🎉 Cozy vibes + city building — right up your alley! 🃏
+🔍 Play Solitaire City Journey for 7 days, then drop your Cozy Tiles ID in the comments for a chance to win 🎁 900 Coins 🎁 — sent straight to your Cozy Tiles inbox!
+▶️ Play now: [PLAY_LINK]
+(How to enter 👇)</div>
+<div class="copy"><span class="lbl">PINNED ENTRY COMMENT</span>📋 How to enter:
+1️⃣ Play Solitaire City Journey for 7 days (grab your daily gift each day!)
+2️⃣ Reply here with your Cozy Tiles ID (find it in Settings ⚙️) + a screenshot of your 7-day check-in
+3️⃣ We'll draw winners & send 900 Coins to your Cozy Tiles inbox 💛
+🎁 25 winners · entry open for 2 weeks — winners drawn right after! 🎲
+BONUS: Share 🔄 and like 👍 this post for more chances to win!
+❗ Please DON'T BELIEVE any of those scam accounts in the comments that direct you to external links! We will NEVER ask for any of your private information other than your Cozy Tiles ID.</div>
+
+<p style="font-size:13px;color:var(--warn);font-weight:700;margin-top:18px">▶ Phase 2 hold (when expanding further — The Puzzle)</p>
+<h3>The Puzzle — 150,000,000 Coins · Phase-2 hold</h3>
+<div class="copy"><span class="lbl">QUEST POST</span>🧩 The Puzzle Giveaway 🧩
+🎉 Puzzle lovers — meet your next obsession! 🃏
+🔍 Play Solitaire City Journey for 7 days, then drop your The Puzzle ID in the comments for a chance to win 🎁 150,000,000 Coins 🎁 — sent straight to your The Puzzle inbox!
+▶️ Play now: [PLAY_LINK]
+(How to enter 👇)</div>
+<div class="copy"><span class="lbl">PINNED ENTRY COMMENT</span>📋 How to enter:
+1️⃣ Play Solitaire City Journey for 7 days (grab your daily gift each day!)
+2️⃣ Reply here with your The Puzzle ID (find it in Settings ⚙️) + a screenshot of your 7-day check-in
+3️⃣ We'll draw winners & send 150,000,000 Coins to your The Puzzle inbox 💛
+🎁 70 winners · entry open for 2 weeks — winners drawn right after! 🎲
+BONUS: Share 🔄 and like 👍 this post for more chances to win!
+❗ Please DON'T BELIEVE any of those scam accounts in the comments that direct you to external links! We will NEVER ask for any of your private information other than your The Puzzle ID.</div>
+<p style="font-size:12.5px;color:var(--sub)">※ Drop (PBM 5,500 Gold) — on adding, just swap the number·game name into the same template.</p>
+
+<h2><span class="n">8</span>Open Items · Pending</h2>
+<table>
+  <tr><th>Item</th><th>Status</th></tr>
+  <tr><td>Game selection (scope)</td><td><span class="pill p-do">Confirmed — <b>Phase 1 pilot = Mahjong only</b></span> · expansion (Coin Match·Cozy·The Puzzle) <b>decided on ~D5 inflow volume</b></td></tr>
+  <tr><td><b>Art — UID on 7-day check-in screen</b></td><td><span class="pill p-wait">Pending · pilot prerequisite</span></td></tr>
+  <tr><td><b>Client+Server — Mahjong inbox payout path</b></td><td><span class="pill p-wait">Pending — main effort 1+ day · pilot prerequisite</span></td></tr>
+  <tr><td><b>Mahjong payout coin amount</b></td><td><span class="pill p-wait">Hailey to set</span> (1,300 tentative · expansion TBD later)</td></tr>
+  <tr><td>Payout method</td><td><span class="pill p-do">Draw → source-game inbox (1-UID, Gossip Harbor style)</span></td></tr>
+  <tr><td>Winner count(N) · draw cadence</td><td><span class="pill p-do">Pilot — 40 Mahjong winners · one batch after entry closes</span> (expansion: proportional to reach)</td></tr>
+  <tr><td>Cold-start exact D0</td><td><span class="pill p-wait">Confirm at QA completion</span></td></tr>
+  <tr><td>R&R</td><td><span class="pill p-do">🟢 PH(Andre) = publishing·winner announcement·assets · 🔵 Game Team = art·client/server·reward sizing(@hailey)·verify/draw/payout(server)</span></td></tr>
+  <tr><td>Campaign plan + posting finals</td><td><span class="pill p-do">This doc complete</span></td></tr>
+</table>
+
+<h2><span class="n">9</span>KPIs</h2>
+<ul>
+  <li><b>Immediate (D0~):</b> posting inflow count (shareable_link) · entry (7-day done) comment count</li>
+  <li><b>Mid (~D14):</b> cold-start D14 retention·WAU@14 contribution · rating lift</li>
+  <li><b>Final:</b> Meta Promoted Tier entry</li>
+</ul>
+
+<div class="foot">
+<b>Next steps</b> — ① <b>Kick off work — Art (UID on 7-day check-in screen) + Client+Server (Mahjong inbox payout path)</b> (main effort 1+ day, pilot prerequisite) ② Verify Mahjong settings userID = log player_id (1 test) ③ Confirm comment-collection permission (page admin/Business Suite) ④ Finalize Mahjong image assets (ref §7 done) ⑤ Confirm exact D0 (QA completion) → share with Andre ⑥ <b>Check ~D5 inflow volume → decide Coin Match·Cozy·The Puzzle expansion fast</b> (D14 retention = final eval).<br>
+<b>This doc is the single source</b> — data basis·scope·flow·posting finals·reward·timeline·ops·KPIs all integrated.
+</div>
+
+</div>
+
+</div>
+<script>
+function setLang(l){
+  document.body.classList.toggle('lang-en', l==='en');
+  document.getElementById('btn-ko').classList.toggle('active', l==='ko');
+  document.getElementById('btn-en').classList.toggle('active', l==='en');
+  document.documentElement.lang = l;
+}
+</script>
+</body>
+</html>
