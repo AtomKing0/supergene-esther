@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PST 데일리 리포트 — 2026-06-26</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: #F0F4F8; color: #1A1D2E; font-size: 14px; line-height: 1.6; }
+.wrapper { max-width: 600px; margin: 0 auto; padding: 16px; }
+.header { background: linear-gradient(135deg, #1A1D2E 0%, #2D3561 100%); border-radius: 14px; padding: 24px 20px; color: #fff; margin-bottom: 16px; }
+.header-tag { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #7A8DC8; text-transform: uppercase; margin-bottom: 8px; }
+.header h1 { font-size: 22px; font-weight: 900; line-height: 1.2; margin-bottom: 4px; }
+.header-sub { font-size: 12px; color: #9AA0C8; }
+.card { background: #fff; border-radius: 12px; padding: 18px 16px; margin-bottom: 12px; border: 1px solid #E2E6EF; }
+.card-title { font-size: 12px; font-weight: 700; color: #7A7F94; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.kpi-item { background: #F7F8FB; border-radius: 8px; padding: 12px 10px; border: 1px solid #E2E6EF; }
+.kpi-label { font-size: 10px; color: #9AA0B8; font-weight: 600; margin-bottom: 3px; }
+.kpi-val { font-size: 22px; font-weight: 900; line-height: 1.1; }
+.kpi-sub { font-size: 10px; color: #9AA0B8; margin-top: 2px; }
+.kpi-delta { font-size: 11px; font-weight: 700; margin-top: 4px; }
+.green { color: #2CB87A; } .orange { color: #D97706; } .red { color: #E53E3E; } .blue { color: #4F8EF7; } .gray { color: #9AA0B8; } .purple { color: #9B59B6; }
+.day-table { width: 100%; border-collapse: collapse; }
+.day-table th { font-size: 10px; font-weight: 700; color: #9AA0B8; text-align: right; padding: 4px 6px; border-bottom: 2px solid #E2E6EF; }
+.day-table th:first-child { text-align: left; }
+.day-table td { font-size: 12px; color: #4A5068; padding: 7px 6px; text-align: right; border-bottom: 1px solid #F0F2F7; }
+.day-table td:first-child { text-align: left; font-weight: 600; color: #1A1D2E; }
+.day-table tr:last-child td { border-bottom: none; }
+.new-row td { background: #EFF6FF !important; }
+.seg-org { font-size: 10px; color: #9AA0B8; font-weight: 400; }
+.alert { border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 12px; font-weight: 600; line-height: 1.5; }
+.alert.warn { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+.alert.ok { background: #ECFDF5; border: 1px solid #6EE7B7; color: #065F46; }
+.alert.info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+.alert.purple { background: #F5F3FF; border: 1px solid #C4B5FD; color: #5B21B6; }
+.funnel-row { margin-bottom: 10px; }
+.funnel-row-head { display: flex; justify-content: space-between; margin-bottom: 3px; }
+.funnel-label { font-size: 11px; font-weight: 600; color: #4A5068; }
+.funnel-pct { font-size: 13px; font-weight: 800; }
+.bar-bg { height: 10px; background: #E2E6EF; border-radius: 5px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 5px; }
+.action-item { border-radius: 8px; padding: 12px; margin-bottom: 8px; border-left: 3px solid; }
+.action-item.warn { background: #FEFCE8; border-color: #D97706; }
+.action-item.ok { background: #F0FFF4; border-color: #2CB87A; }
+.action-item.purple { background: #F5F3FF; border-color: #9B59B6; }
+.action-badge { font-size: 10px; font-weight: 700; margin-bottom: 4px; }
+.action-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.action-desc { font-size: 11px; color: #4A5068; line-height: 1.5; }
+.load-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.load-ver { width: 32px; font-size: 10px; font-weight: 700; color: #4A5068; flex-shrink: 0; }
+.load-bar-bg { flex: 1; height: 14px; background: #E2E6EF; border-radius: 7px; overflow: hidden; }
+.load-bar-fill { height: 100%; border-radius: 7px; display: flex; align-items: center; padding-left: 6px; font-size: 9px; font-weight: 700; color: #fff; }
+.load-val { width: 60px; font-size: 10px; font-weight: 700; text-align: right; flex-shrink: 0; }
+.divider { border: none; border-top: 1px solid #E2E6EF; margin: 12px 0; }
+.footer { text-align: center; padding: 16px; font-size: 11px; color: #9AA0B8; background: #fff; border-radius: 12px; margin-top: 16px; border: 1px solid #E2E6EF; }
+.footer a { color: #4F8EF7; text-decoration: none; }
+.new-badge { display: inline-block; background: #4F8EF7; color: #fff; font-size: 9px; font-weight: 700; border-radius: 3px; padding: 1px 4px; margin-left: 4px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<div class="header">
+  <div class="header-tag">PST Daily Report &middot; 자동 생성 · 2026-06-26</div>
+  <h1>v202 6/25 데이터 반영<br>판수·RV 역대 최고치 ↑</h1>
+  <div class="header-sub">Solitaire City Journey &middot; Toss 플랫폼 &middot; 6/25 단일 5.50판 · RV 0.166 급등</div>
+</div>
+
+<div class="alert purple">🚀 <strong>HOT:</strong> 6/25 판당 RV <strong>0.166 (ORG/ALL)</strong> — v202 기간 최고치! 6/22→0.022→6/23→0.093→6/24→0.066→6/25→0.166 뚜렷한 상승 추세.</div>
+<div class="alert ok">✅ <strong>6/23 첫터치 목표 초과:</strong> 6/23 단일 <strong>82.4%(ALL) / 88.1%(ORG)</strong> — 목표 80% 초과 달성. 누적 72.7%는 6/22 저조일(PST 노이즈) 영향.</div>
+<div class="alert ok">✅ <strong>판수 지속 개선:</strong> 6/25 단일 <strong>5.50판 (ALL/ORG)</strong> — v202 누적 ALL 5.12판·ORG 5.32판 (v188 4.10판 대비 +1.22판↑).</div>
+<div class="alert warn">⚠️ <strong>누적 첫터치 72.7% 지속:</strong> 6/22 저조(PST 진입 이슈 추정) 영향으로 누적 80% 미달 상태. 6/24~25 PST 퍼널 세분 데이터 집계 시 정확한 최신 첫터치율 확인 필요.</div>
+
+<div class="card">
+  <div class="card-title">📅 v202 일별 트렌드 (6/22~6/25)</div>
+  <table class="day-table">
+    <thead>
+      <tr>
+        <th>날짜/세그</th>
+        <th>NRU</th>
+        <th>판수</th>
+        <th>판당 RV</th>
+        <th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>6/22 ALL</td>
+        <td class="orange">22</td>
+        <td class="orange">—</td>
+        <td class="orange">0.022</td>
+        <td class="orange" style="font-size:10px;">PST 저조일</td>
+      </tr>
+      <tr style="background:#FFF5F5;">
+        <td>6/22 <span class="seg-org">ORG</span></td>
+        <td>22</td>
+        <td class="orange">—</td>
+        <td class="orange">0.022</td>
+        <td class="orange" style="font-size:10px;">저조(누적 왜곡)</td>
+      </tr>
+      <tr>
+        <td>6/23 ALL</td>
+        <td class="green">68</td>
+        <td class="green">—</td>
+        <td class="green">0.093</td>
+        <td class="green" style="font-size:10px;">첫터치 82.4%✅</td>
+      </tr>
+      <tr style="background:#ECFDF5;">
+        <td>6/23 <span class="seg-org">ORG</span></td>
+        <td class="green">59</td>
+        <td class="green">—</td>
+        <td class="green">0.096</td>
+        <td class="green" style="font-size:10px;">첫터치 88.1%✅</td>
+      </tr>
+      <tr>
+        <td>6/24 ALL</td>
+        <td class="blue">42</td>
+        <td class="blue">—</td>
+        <td class="orange">0.066</td>
+        <td class="gray" style="font-size:10px;">안정</td>
+      </tr>
+      <tr style="background:#EFF6FF;">
+        <td>6/24 <span class="seg-org">ORG</span></td>
+        <td class="blue">42</td>
+        <td class="blue">—</td>
+        <td class="orange">0.066</td>
+        <td class="gray" style="font-size:10px;">안정</td>
+      </tr>
+      <tr class="new-row">
+        <td>6/25 ALL <span class="new-badge">NEW</span></td>
+        <td class="green">58</td>
+        <td class="green"><strong>5.50판 ↑↑</strong></td>
+        <td class="purple"><strong>0.166 ↑↑↑</strong></td>
+        <td class="purple" style="font-size:10px;">역대 최고!</td>
+      </tr>
+      <tr class="new-row">
+        <td>6/25 <span class="seg-org">ORG</span> <span class="new-badge">NEW</span></td>
+        <td class="green">58</td>
+        <td class="green"><strong>5.50판 ↑↑</strong></td>
+        <td class="purple"><strong>0.166 ↑↑↑</strong></td>
+        <td class="purple" style="font-size:10px;">역대 최고!</td>
+      </tr>
+    </tbody>
+  </table>
+  <hr class="divider">
+  <p style="font-size:11px;color:#7A7F94;line-height:1.5;">
+    <strong>핵심:</strong> 6/25 거의 전원 오가닉(58/58). 판수 5.50판·rv0.166은 v202 기간 최고치. <strong>상승 추세 구조적 개선 여부 모니터링 필요.</strong>
+  </p>
+</div>
+
+<div class="card">
+  <div class="card-title">📊 v202 누적 현황 (6/22~6/25)</div>
+  <div class="kpi-grid">
+    <div class="kpi-item">
+      <div class="kpi-label">ALL 누적 NRU</div>
+      <div class="kpi-val blue">190명</div>
+      <div class="kpi-sub">6/22~6/25 (22+68+42+58)</div>
+      <div class="kpi-delta green">+58 vs 이전(n=132)</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-label">ORG 누적 NRU</div>
+      <div class="kpi-val blue">181명</div>
+      <div class="kpi-sub">6/22~6/25 (22+59+42+58)</div>
+      <div class="kpi-delta green">+58 vs 이전(n=123)</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-label">ALL 누적 판수</div>
+      <div class="kpi-val green">5.12판</div>
+      <div class="kpi-sub">v188 4.10판 대비</div>
+      <div class="kpi-delta green">▲ +1.02판 ↑</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-label">ORG 누적 판수</div>
+      <div class="kpi-val green">5.32판</div>
+      <div class="kpi-sub">v188 4.10판 대비</div>
+      <div class="kpi-delta green">▲ +1.22판 ↑</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-label">ALL 누적 rv/game</div>
+      <div class="kpi-val purple">0.105</div>
+      <div class="kpi-sub">이전(6/22~24) 0.075</div>
+      <div class="kpi-delta purple">▲ +0.030 (6/25 효과)</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-label">ORG 누적 rv/game</div>
+      <div class="kpi-val purple">0.106</div>
+      <div class="kpi-sub">이전(6/22~24) 0.076</div>
+      <div class="kpi-delta purple">▲ +0.030 (6/25 효과)</div>
+    </div>
+  </div>
+  <div class="alert info" style="margin-bottom:0;">📌 로딩 중앙값 v202 <strong>2,672ms</strong> (n=166). 이전 측정 2,625ms(n=130) 대비 +47ms. v188(2,687ms) 대비 -15ms로 소폭 개선 유지.</div>
+</div>
+
+<div class="card">
+  <div class="card-title">🎯 P1 PST 첫터치율 현황</div>
+  <div class="funnel-row">
+    <div class="funnel-row-head"><span class="funnel-label">목표 80%</span><span class="funnel-pct" style="color:#E8832A;">80%</span></div>
+    <div class="bar-bg"><div class="bar-fill" style="width:80%;background:#E8832A;"></div></div>
+  </div>
+  <div class="funnel-row">
+    <div class="funnel-row-head"><span class="funnel-label">v188 ORG 누적 (6/2~6/9) — 목표 달성 ✅</span><span class="funnel-pct green">80.2%</span></div>
+    <div class="bar-bg"><div class="bar-fill" style="width:80.2%;background:linear-gradient(90deg,#2CB87A,#1A9A63);"></div></div>
+  </div>
+  <div class="funnel-row">
+    <div class="funnel-row-head"><span class="funnel-label">v202 6/23 단일 ALL — 목표 초과 ✅</span><span class="funnel-pct green">82.4%</span></div>
+    <div class="bar-bg"><div class="bar-fill" style="width:82.4%;background:linear-gradient(90deg,#2CB87A,#1A9A63);"></div></div>
+  </div>
+  <div class="funnel-row">
+    <div class="funnel-row-head"><span class="funnel-label">v202 6/23 단일 ORG — 목표 초과 ✅</span><span class="funnel-pct green">88.1%</span></div>
+    <div class="bar-bg"><div class="bar-fill" style="width:88.1%;background:linear-gradient(90deg,#2CB87A,#1A9A63);"></div></div>
+  </div>
+  <div class="funnel-row">
+    <div class="funnel-row-head"><span class="funnel-label">v202 누적 (6/22~6/25) ORG — 6/22 저조 포함 ⚠️</span><span class="funnel-pct orange">72.7%</span></div>
+    <div class="bar-bg"><div class="bar-fill" style="width:72.7%;background:linear-gradient(90deg,#D97706,#B45309);"></div></div>
+  </div>
+  <div class="alert warn" style="margin-top:10px;margin-bottom:0;">⚠️ 누적 72.7%는 6/22 PST 진입 저조(첫터치 이벤트 집계 이슈 추정) 영향. 6/23 단일 88.1%(ORG)는 목표 초과. 6/24~25 PST 이벤트 세분 데이터 수집 후 정확한 최신 첫터치율 재계산 필요.</div>
+</div>
+
+<div class="card">
+  <div class="card-title">⚡ 로딩 시간 현황 (중앙값)</div>
+  <div class="load-row">
+    <div class="load-ver">v136</div>
+    <div class="load-bar-bg"><div class="load-bar-fill" style="width:100%;background:linear-gradient(90deg,#E53E3E,#C53030);">7,709ms</div></div>
+    <div class="load-val red">7,709ms</div>
+  </div>
+  <div class="load-row">
+    <div class="load-ver">v186</div>
+    <div class="load-bar-bg"><div class="load-bar-fill" style="width:31.9%;background:linear-gradient(90deg,#2CB87A,#1A9A63);">2,463ms</div></div>
+    <div class="load-val green">2,463ms</div>
+  </div>
+  <div class="load-row">
+    <div class="load-ver">v188</div>
+    <div class="load-bar-bg"><div class="load-bar-fill" style="width:34.8%;background:linear-gradient(90deg,#2CB87A,#1A9A63);">2,687ms</div></div>
+    <div class="load-val green">2,687ms</div>
+  </div>
+  <div class="load-row">
+    <div class="load-ver" style="font-weight:900;color:#4F8EF7;">v202</div>
+    <div class="load-bar-bg"><div class="load-bar-fill" style="width:34.7%;background:linear-gradient(90deg,#D97706,#B45309);">2,672ms</div></div>
+    <div class="load-val orange">2,672ms</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:11px;">
+    <span class="green">✅ v188 대비 -15ms 개선</span>
+    <span class="orange">⚠️ v186 대비 +209ms</span>
+    <span class="orange">⚠️ v136 대비 -65.3%</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">🗂️ 개선 액션 아이템 현황</div>
+  <div class="action-item purple">
+    <div class="action-badge purple">🚀 모니터링 — RV 상승 추세</div>
+    <div class="action-title">6/25 RV 0.166 급등 — 구조적 개선 여부 확인</div>
+    <div class="action-desc">
+      6/25 ORG/ALL rv/game=<strong>0.166</strong>. v202 기간 최고치. 일별 추세: 0.022→0.093→0.066→0.166.<br>
+      원인 가설: ① 유저 행동 개선(판수 증가 → RV 노출 증가) ② 광고 단가 변동 ③ RV 위치·빈도 변경<br>
+      → 6/26 데이터 확인 후 추세 지속 여부 판단.
+    </div>
+  </div>
+  <div class="action-item warn">
+    <div class="action-badge orange">⚠️ P1 — 누적 첫터치 72.7% 미달</div>
+    <div class="action-title">6/22 PST 저조 원인 파악 · 6/24~25 퍼널 데이터 확인</div>
+    <div class="action-desc">
+      6/22 저조로 누적 첫터치 72.7% (목표 80% 미달). 6/23 단일 88.1%(ORG) 달성.<br>
+      6/24~25 PST 이벤트 세분 데이터 수집 후 최신 첫터치율 재계산 필요.<br>
+      → 6/22 저조가 일회성이면 6/23+ 평균으로 목표 달성 가능성 높음.
+    </div>
+  </div>
+  <div class="action-item ok">
+    <div class="action-badge" style="color:#065F46;">✅ P2 — 판수 개선 지속</div>
+    <div class="action-title">인당 플레이 판수 v202 5.12판(ALL) / 5.32판(ORG)</div>
+    <div class="action-desc">
+      v188 4.10판 대비 +1.02~1.22판 개선. 6/25 단일 5.50판 역대 최고치.<br>
+      판수·RV 동반 상승으로 수익성 지표 개선 추세 뚜렷.<br>
+      → 2차 이터레이션(B2·B3) 기획 시 현 수준 기준선으로 활용 권장.
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">🔗 대시보드 업데이트 현황</div>
+  <div class="alert ok" style="margin-bottom:0;">✅ <strong>대시보드 및 GitHub Pages 업데이트 완료</strong> — v202 6/22~6/25 항목 반영 · 판수·RV·로딩 최신화 · index.html 라이브카드 업데이트 · GitHub API로 자동 배포 완료 (commit: 3b42ed81)</div>
+</div>
+
+<div class="footer">
+  <div style="margin-bottom:6px;"><a href="https://atomking0.github.io/supergene-esther/17_pst_funnel_dashboard.html" target="_blank">📊 PST 퍼널 대시보드 바로가기 →</a></div>
+  <div style="margin-bottom:4px;"><a href="https://atomking0.github.io/supergene-esther/" target="_blank">📁 인덱스 페이지 →</a></div>
+  <div>자동 생성: 2026-06-26 · Claude Code 데일리 루틴</div>
+  <div style="margin-top:4px;font-size:10px;color:#CBD5E0;">데이터 기준: 판수_RV(6/25 신규) · PST 퍼널(6/23 기준) · 로딩시간(v202 n=166 누적)</div>
+</div>
+
+</div>
+</body>
+</html>
