@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PST 대시보드 업데이트 리포트 - 2026-06-28</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: #F0F2F7; color: #1A1D2E; font-size: 14px; line-height: 1.6; }
+.container { max-width: 600px; margin: 0 auto; padding: 16px; }
+.header { background: linear-gradient(135deg, #1A1D2E 0%, #2D3250 100%); border-radius: 14px; padding: 24px 20px; margin-bottom: 16px; color: #fff; }
+.header h1 { font-size: 20px; font-weight: 900; margin-bottom: 4px; }
+.header .sub { font-size: 12px; color: #9AA0B8; }
+.header .date { font-size: 11px; color: #6B7280; margin-top: 8px; }
+.section { background: #fff; border-radius: 12px; padding: 18px 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.section-title { font-size: 11px; font-weight: 700; color: #9AA0B8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kpi-card { background: #F8F9FB; border-radius: 8px; padding: 12px; }
+.kpi-label { font-size: 10px; color: #9AA0B8; font-weight: 600; margin-bottom: 4px; }
+.kpi-val { font-size: 22px; font-weight: 900; line-height: 1; }
+.kpi-val.green { color: #2CB87A; }
+.kpi-val.orange { color: #E8832A; }
+.kpi-val.red { color: #E53E3E; }
+.kpi-val.blue { color: #4F8EF7; }
+.kpi-delta { font-size: 10px; margin-top: 4px; }
+.kpi-delta.up { color: #2CB87A; }
+.kpi-delta.down { color: #E53E3E; }
+.kpi-delta.warn { color: #E8832A; }
+.funnel { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.funnel-step { text-align: center; flex: 1; min-width: 70px; }
+.funnel-pct { font-size: 20px; font-weight: 900; }
+.funnel-label { font-size: 9px; color: #9AA0B8; margin-top: 2px; }
+.funnel-arrow { color: #CBD5E0; font-size: 14px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; margin-right: 4px; margin-bottom: 4px; }
+.tag-warn { background: #FFF3CD; color: #92400E; border: 1px solid #FDE68A; }
+.tag-ok { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+.tag-info { background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD; }
+.tag-alert { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+.table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.table th { background: #F8F9FB; padding: 7px 8px; text-align: left; color: #6B7280; font-weight: 600; font-size: 10px; border-bottom: 1px solid #E5E7EB; }
+.table td { padding: 7px 8px; border-bottom: 1px solid #F3F4F6; }
+.table tr:last-child td { border-bottom: none; }
+.table .latest td { background: #EFF6FF; font-weight: 700; }
+.highlight { background: #FFF7ED; border-left: 3px solid #F59E0B; padding: 10px 12px; border-radius: 0 8px 8px 0; margin: 10px 0; font-size: 12px; }
+.alert-box { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 10px 12px; margin: 10px 0; font-size: 12px; }
+.ok-box { background: #F0FDF4; border: 1px solid #86EFAC; border-radius: 8px; padding: 10px 12px; margin: 10px 0; font-size: 12px; }
+.link-btn { display: block; text-align: center; background: #4F8EF7; color: #fff; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; margin: 8px 0; }
+.link-btn:hover { background: #3B7CE8; }
+.sep { height: 1px; background: #E5E7EB; margin: 12px 0; }
+.daily-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #F3F4F6; font-size: 12px; }
+.daily-row:last-child { border-bottom: none; }
+.daily-date { font-weight: 600; color: #4A5068; width: 45px; }
+.daily-val { text-align: right; }
+.daily-noise { font-size: 9px; color: #E53E3E; font-weight: 700; }
+.footer { text-align: center; color: #9AA0B8; font-size: 11px; padding: 16px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+  <div class="sub">📊 PST 대시보드 자동 업데이트 리포트</div>
+  <h1>v202 신규 데이터 업데이트</h1>
+  <div class="date">기준일: 2026-06-28 · 데이터 범위: 2026-06-25 ~ 2026-06-27</div>
+</div>
+
+<!-- Quick Summary -->
+<div class="section">
+  <div class="section-title">⚡ 핵심 요약</div>
+  <div>
+    <span class="tag tag-warn">⚠️ 첫터치 79.3% — 목표 80% 0.7pp 미달</span>
+    <span class="tag tag-ok">✅ 완료율 75.9% — v188 대비 +11pp 대폭 개선</span>
+    <span class="tag tag-alert">🔴 6/27 RV/판수 노이즈 확인 필요</span>
+    <span class="tag tag-info">📦 v202 신규 (n=130, 3일 누적)</span>
+  </div>
+  <div class="sep"></div>
+  <div style="font-size:12px;color:#4A5068;">
+    v202로 신규 버전 데이터가 업데이트 되었습니다. ALL=ORGANIC (유료 유입 없음).<br>
+    대시보드와 인덱스 페이지에 최신 데이터가 반영되었습니다.
+  </div>
+</div>
+
+<!-- Funnel KPIs -->
+<div class="section">
+  <div class="section-title">🎯 PST 퍼널 지표 (v202, 6/25~6/27)</div>
+  <div class="funnel">
+    <div class="funnel-step">
+      <div class="funnel-pct" style="color:#4F8EF7;">100.0%</div>
+      <div class="funnel-label">① 게임 시작</div>
+    </div>
+    <div class="funnel-arrow">→</div>
+    <div class="funnel-step">
+      <div class="funnel-pct" style="color:#E8832A;">79.3%</div>
+      <div class="funnel-label">② 첫 터치</div>
+    </div>
+    <div class="funnel-arrow">→</div>
+    <div class="funnel-step">
+      <div class="funnel-pct" style="color:#2CB87A;">75.9%</div>
+      <div class="funnel-label">③ 게임 완료</div>
+    </div>
+  </div>
+  <div class="kpi-grid" style="margin-top:12px;">
+    <div class="kpi-card">
+      <div class="kpi-label">첫 터치율 (P1 목표)</div>
+      <div class="kpi-val orange">79.3%</div>
+      <div class="kpi-delta warn">⚠️ 목표 80% 0.7pp 미달</div>
+      <div class="kpi-delta" style="color:#9AA0B8;font-size:9px;">vs v188 ALL 79.4% (-0.1pp)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">첫 게임 완료율</div>
+      <div class="kpi-val green">75.9%</div>
+      <div class="kpi-delta up">↑ +11.0pp vs v188 ORG</div>
+      <div class="kpi-delta" style="color:#9AA0B8;font-size:9px;">v188 ORG 64.9% → v202 75.9%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">총 NRU (3일)</div>
+      <div class="kpi-val blue">130명</div>
+      <div class="kpi-delta" style="color:#9AA0B8;">ALL = ORGANIC</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">로딩 중앙값</div>
+      <div class="kpi-val orange">2,627ms</div>
+      <div class="kpi-delta up">v188 대비 -60ms ↓개선</div>
+      <div class="kpi-delta warn">v186 대비 +164ms ⚠️</div>
+    </div>
+  </div>
+</div>
+
+<!-- Engagement -->
+<div class="section">
+  <div class="section-title">🎮 인게임 인게이지먼트 (판수·RV)</div>
+  <div class="alert-box">
+    <strong>⚠️ 6월 27일 이상 급등 — 원인 확인 필요</strong><br>
+    6/27 판수 9.53판·RV 0.5216으로 비정상적 급등. 정상 2일 (6/25~26) 평균은 판수 5.07판·RV 0.156.
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>날짜</th>
+        <th>NRU</th>
+        <th>게임수</th>
+        <th>판수/인</th>
+        <th>RV/게임</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>6/25</td>
+        <td>58</td>
+        <td>319</td>
+        <td>5.50</td>
+        <td>0.1661</td>
+      </tr>
+      <tr>
+        <td>6/26</td>
+        <td>38</td>
+        <td>176</td>
+        <td>4.63</td>
+        <td>0.1364</td>
+      </tr>
+      <tr style="background:#FEF2F2;">
+        <td><strong>6/27</strong> <span class="daily-noise">⚠️노이즈</span></td>
+        <td>34</td>
+        <td>324</td>
+        <td><strong style="color:#E53E3E;">9.53</strong></td>
+        <td><strong style="color:#E53E3E;">0.5216</strong></td>
+      </tr>
+      <tr style="background:#EFF6FF;font-weight:700;">
+        <td>3일 합계</td>
+        <td>130</td>
+        <td>819</td>
+        <td>6.30</td>
+        <td>0.300</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sep"></div>
+  <div style="font-size:11px;color:#6B7280;">
+    정상일(6/25~26) 기준: 판수 5.07판 · RV 0.156<br>
+    3일 합계 v188 ORG 4.10판 대비 +0.97판 가능성 (노이즈 제외 시)
+  </div>
+</div>
+
+<!-- Version Comparison -->
+<div class="section">
+  <div class="section-title">📈 버전별 PST 퍼널 추이</div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>버전</th>
+        <th>기간</th>
+        <th>n</th>
+        <th>첫터치</th>
+        <th>완료율</th>
+        <th>vs 기준</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="background:#EEF3FF;">
+        <td style="color:#4F8EF7;font-weight:700;">v136 <span style="font-size:9px;background:#EEF3FF;color:#2563EB;padding:1px 4px;border-radius:3px;">기준</span></td>
+        <td style="color:#9AA0B8;font-size:11px;">5/7~5/11</td>
+        <td style="color:#9AA0B8;font-size:11px;">613</td>
+        <td>48.3%</td>
+        <td>96.1%</td>
+        <td style="color:#9AA0B8;">기준</td>
+      </tr>
+      <tr>
+        <td style="color:#E8832A;font-weight:700;">v146~163</td>
+        <td style="color:#9AA0B8;font-size:11px;">5/11~5/13</td>
+        <td style="color:#9AA0B8;font-size:11px;">159</td>
+        <td><span style="color:#2CB87A;font-weight:700;">78.0%</span></td>
+        <td>74.2%</td>
+        <td style="color:#2CB87A;font-weight:700;">+29.7pp</td>
+      </tr>
+      <tr>
+        <td style="color:#6366F1;font-weight:700;">v186</td>
+        <td style="color:#9AA0B8;font-size:11px;">5/22~6/1</td>
+        <td style="color:#9AA0B8;font-size:11px;">1,949</td>
+        <td>46.5%</td>
+        <td>95.5%</td>
+        <td style="color:#E53E3E;font-weight:700;">-1.8pp</td>
+      </tr>
+      <tr>
+        <td style="color:#9AA0B8;font-weight:700;">v188</td>
+        <td style="color:#9AA0B8;font-size:11px;">6/2~6/15</td>
+        <td style="color:#9AA0B8;font-size:11px;">940</td>
+        <td>79.4%</td>
+        <td>64.5%</td>
+        <td style="color:#2CB87A;font-weight:700;">+31.1pp</td>
+      </tr>
+      <tr class="latest">
+        <td style="color:#4F8EF7;font-weight:700;">v202 <span style="font-size:9px;background:#E0F2FE;color:#0369A1;padding:1px 4px;border-radius:3px;">최신</span></td>
+        <td style="color:#9AA0B8;font-size:11px;">6/25~6/27</td>
+        <td style="color:#9AA0B8;font-size:11px;">130</td>
+        <td style="color:#E8832A;">79.3%</td>
+        <td style="color:#2CB87A;">95.7%</td>
+        <td style="color:#2CB87A;font-weight:700;">+31.0pp</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size:10px;color:#9AA0B8;margin-top:8px;">완료율 = 첫 게임 완료수/첫 터치수</div>
+</div>
+
+<!-- Loading Time -->
+<div class="section">
+  <div class="section-title">⏱ 로딩 시간 변화</div>
+  <div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+      <span style="color:#4A5068;font-weight:600;">v186</span>
+      <span style="color:#D97706;">2,463ms</span>
+    </div>
+    <div style="height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;">
+      <div style="width:32%;height:100%;background:linear-gradient(90deg,#F6AD55,#D97706);border-radius:4px;"></div>
+    </div>
+  </div>
+  <div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+      <span style="color:#4A5068;font-weight:600;">v188</span>
+      <span style="color:#D97706;">2,687ms <span style="font-size:9px;color:#E53E3E;">+224ms vs v186</span></span>
+    </div>
+    <div style="height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;">
+      <div style="width:34.9%;height:100%;background:linear-gradient(90deg,#F6AD55,#D97706);border-radius:4px;"></div>
+    </div>
+  </div>
+  <div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+      <span style="color:#4F8EF7;font-weight:700;">v202 ← 최신</span>
+      <span style="color:#E8832A;">2,627ms <span style="font-size:9px;color:#2CB87A;">-60ms vs v188 ↓</span></span>
+    </div>
+    <div style="height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;">
+      <div style="width:34.1%;height:100%;background:linear-gradient(90deg,#F6AD55,#D97706);border-radius:4px;"></div>
+    </div>
+  </div>
+  <div class="highlight">
+    v202 로딩이 v188 대비 60ms 개선 ↓. 그러나 v186(2,463ms) 대비로는 여전히 +164ms ⚠️
+  </div>
+</div>
+
+<!-- P1/P2 Status -->
+<div class="section">
+  <div class="section-title">📋 P1·P2 액션 현황</div>
+  <div class="alert-box" style="margin-bottom:8px;">
+    <strong>P1 — 첫터치 79.3% (목표 80% 0.7pp 미달)</strong><br>
+    v202 3일 기준 79.3%. v188 ALL 79.4%와 거의 동등. 단, n=130 소표본(3일)이므로 추이 계속 모니터링 필요.
+  </div>
+  <div class="ok-box">
+    <strong>완료율 75.9% 대폭 개선!</strong><br>
+    v188 ORG 64.9% 대비 +11pp 상승. 첫 게임 완료까지의 경험이 개선된 것으로 해석 가능.
+  </div>
+  <div class="sep"></div>
+  <div style="font-size:12px;color:#4A5068;">
+    <strong>P2 판수:</strong> 6/27 노이즈 제외 정상 2일 평균 5.07판. v188 ORG 4.10판 대비 소폭 증가 가능성. 6/27 이상 급등 원인 확인 후 재평가 필요.
+  </div>
+</div>
+
+<!-- Links -->
+<div class="section">
+  <div class="section-title">🔗 대시보드 바로가기</div>
+  <a class="link-btn" href="https://atomking0.github.io/supergene-esther/17_pst_funnel_dashboard.html" target="_blank">📊 PST 퍼널 대시보드 열기</a>
+  <a class="link-btn" href="https://atomking0.github.io/supergene-esther/index.html" style="background:#2CB87A;" target="_blank">🏠 인덱스 페이지 열기</a>
+</div>
+
+<div class="footer">
+  자동 업데이트 · 2026-06-28 · PST Dashboard Report<br>
+  데이터 소스: Google Sheets (판수_RV · PST · 로딩시간)
+</div>
+
+</div>
+</body>
+</html>
