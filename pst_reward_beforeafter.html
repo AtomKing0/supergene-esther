@@ -56,8 +56,12 @@ table.matrix td.tbl{font-family:'SF Mono',Menlo,monospace;font-size:11px;color:#
 table.matrix td.na{text-align:center;color:#b8c2cd;background:#fafbfc;}
 table.matrix td.mcell label{display:flex;align-items:center;gap:6px;cursor:pointer;}
 table.matrix td.mcell .mchk{width:15px;height:15px;cursor:pointer;flex:0 0 auto;}
-table.matrix td.mcell.checked{background:#f0f7f1;}
-table.matrix td.mcell.checked .mtx{color:#9aa7b6;text-decoration:line-through;}
+table.matrix td.mcell.prodone{opacity:.55;background:#f4f7fb;}
+table.matrix td.mcell.prodone .mtx{color:#9aa7b6;text-decoration:line-through;}
+.stages{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap;}
+.stg{font-size:9px;font-weight:700;display:inline-flex;align-items:center;gap:2px;background:#f4f7fb;border:1px solid #dde6ef;border-radius:4px;padding:1px 4px;cursor:pointer;color:#5e6e80;white-space:nowrap;}
+.stg input{width:11px;height:11px;cursor:pointer;margin:0;}
+.stg.on{background:#dff3e6;color:#1c7a3c;border-color:#bfe3cc;}
 .depb{font-size:9.5px;font-weight:800;margin-top:4px;display:inline-block;padding:1px 6px;border-radius:4px;}
 .dep-done{background:#dff3e6;color:#1c7a3c;} .dep-pend{background:#fff0db;color:#8a5a00;}
 .dep-off{background:#dff3e6;color:#1c7a3c;} .dep-no{background:#fdecec;color:#9a2b2b;} .dep-client{background:#eef2ff;color:#3a3ad6;}
@@ -71,73 +75,73 @@ table.matrix td.mcell.checked .mtx{color:#9aa7b6;text-decoration:line-through;}
 </style></head><body>
 <h1>PST 골드 경제 조정 — 채널별 Before / After (시트 반영안)</h1>
 <p class="sub"><b>A/B 설계</b> · <span style="color:#c0392b;font-weight:700;">골드 감액 = A·B 공통</span>(베이스라인 경제픽스·인플레 교란 없음) / <span style="color:#3a3ad6;font-weight:700;">아이템 타입 치환 = B 전용</span>(post-clear v2·프리부스터 제거, 고정표 클라 1패스) · 슬롯 수 불변 · 좌=현재 라이브(1oLb)/우=제안 · 2026-06-24</p>
-<div class="mxbox"><h2>🗺 통합 트래커 — 빌드별 밸런스시트 패치 (계획 + 배포현황)</h2>
+<div class="mxbox"><h2>🗺 통합 트래커 — 빌드별 밸런스시트 패치 (계획 + 단계별 진행)</h2>
 <div class="mxleg">
 <span class="mxbk b-ig"><b>IG (무접미사)</b> — Facebook prod · 마스터 소스</span>
 <span class="mxbk b-toss"><b>_toss (라이브 A)</b> — Toss prod · 골드량 조절만</span>
 <span class="mxbk b-tossb"><b>_toss_b (FTUE B)</b> — Toss_B prod · post-clear v2(자동꾸미기 등)</span>
  · <a href="https://atomking0.github.io/supergene-esther/pst_postclear_flow_spec.html" target="_blank">_toss_b(v2) 기획서 ↗</a></div>
-<p class="mxnote" style="margin:0 0 8px"><b>배포현황 = 2026-06-30 prod export 실측</b> · 현재 3플랫폼 골드·데코 <b>동일 배포</b>(분기 전) · 배포완료=daily_wheel·collection×2 · 나머지 5종 패치대기. 체크박스 = 에스더 직접 확인(토글·저장).</p>
+<p class="mxnote" style="margin:0 0 8px">각 셀 = 계획값 + <b>패치 3단계</b>(<span class="stg on" style="margin:0 2px">DEV패치</span>→<span class="stg on" style="margin:0 2px">PROD예약</span>→<span class="stg on" style="margin:0 2px">PROD완료</span>) 직접 토글·저장. 초기값=2026-06-30 prod export 실측(완료=daily_wheel·collection×2·const _toss OFF). PROD완료 시 셀 흐려짐.</p>
 <table class="matrix"><tr><th>영역</th><th>시트 테이블</th><th class="b-ig">IG (Facebook)</th><th class="b-toss">_toss (라이브 A)</th><th class="b-tossb">_toss_b (FTUE B)</th></tr>
 <tr>
 <td class="area">골드 수도꼭지 인하<br>(3빌드 공통)</td><td class="tbl"><b>daily_gift</b></td>
-<td class="mcell b-ig" data-key="daily_gift@ig"><label><input type="checkbox" class="mchk" data-key="daily_gift@ig"> <span class="mtx">골드 ×0.5</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
-<td class="mcell b-toss" data-key="daily_gift@toss"><label><input type="checkbox" class="mchk" data-key="daily_gift@toss"> <span class="mtx">골드 ×0.5</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
-<td class="mcell b-tossb" data-key="daily_gift@tossb"><label><input type="checkbox" class="mchk" data-key="daily_gift@tossb"> <span class="mtx">골드 ×0.5</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
+<td class="mcell b-ig"><span class="mtx">골드 ×0.5</span><div class="stages"><label class="stg" data-k="daily_gift@ig@dev"><input type="checkbox" class="schk" data-key="daily_gift@ig@dev" data-def="0">DEV패치</label><label class="stg" data-k="daily_gift@ig@resv"><input type="checkbox" class="schk" data-key="daily_gift@ig@resv" data-def="0">PROD예약</label><label class="stg" data-k="daily_gift@ig@prod"><input type="checkbox" class="schk" data-key="daily_gift@ig@prod" data-def="0">PROD완료</label></div></td>
+<td class="mcell b-toss"><span class="mtx">골드 ×0.5</span><div class="stages"><label class="stg" data-k="daily_gift@toss@dev"><input type="checkbox" class="schk" data-key="daily_gift@toss@dev" data-def="0">DEV패치</label><label class="stg" data-k="daily_gift@toss@resv"><input type="checkbox" class="schk" data-key="daily_gift@toss@resv" data-def="0">PROD예약</label><label class="stg" data-k="daily_gift@toss@prod"><input type="checkbox" class="schk" data-key="daily_gift@toss@prod" data-def="0">PROD완료</label></div></td>
+<td class="mcell b-tossb"><span class="mtx">골드 ×0.5</span><div class="stages"><label class="stg" data-k="daily_gift@tossb@dev"><input type="checkbox" class="schk" data-key="daily_gift@tossb@dev" data-def="0">DEV패치</label><label class="stg" data-k="daily_gift@tossb@resv"><input type="checkbox" class="schk" data-key="daily_gift@tossb@resv" data-def="0">PROD예약</label><label class="stg" data-k="daily_gift@tossb@prod"><input type="checkbox" class="schk" data-key="daily_gift@tossb@prod" data-def="0">PROD완료</label></div></td>
 </tr>
 <tr>
 <td class="area"></td><td class="tbl"><b>daily_wheel</b></td>
-<td class="mcell b-ig checked" data-key="daily_wheel@ig"><label><input type="checkbox" class="mchk" data-key="daily_wheel@ig" checked> <span class="mtx">골드 ×0.5</span></label><div class="depb dep-done">✓ 배포완료</div></td>
-<td class="mcell b-toss checked" data-key="daily_wheel@toss"><label><input type="checkbox" class="mchk" data-key="daily_wheel@toss" checked> <span class="mtx">골드 ×0.5</span></label><div class="depb dep-done">✓ 배포완료</div></td>
-<td class="mcell b-tossb checked" data-key="daily_wheel@tossb"><label><input type="checkbox" class="mchk" data-key="daily_wheel@tossb" checked> <span class="mtx">골드 ×0.5</span></label><div class="depb dep-done">✓ 배포완료</div></td>
+<td class="mcell b-ig"><span class="mtx">골드 ×0.5</span><div class="stages"><label class="stg" data-k="daily_wheel@ig@dev"><input type="checkbox" class="schk" data-key="daily_wheel@ig@dev" data-def="1">DEV패치</label><label class="stg" data-k="daily_wheel@ig@resv"><input type="checkbox" class="schk" data-key="daily_wheel@ig@resv" data-def="1">PROD예약</label><label class="stg" data-k="daily_wheel@ig@prod"><input type="checkbox" class="schk" data-key="daily_wheel@ig@prod" data-def="1">PROD완료</label></div></td>
+<td class="mcell b-toss"><span class="mtx">골드 ×0.5</span><div class="stages"><label class="stg" data-k="daily_wheel@toss@dev"><input type="checkbox" class="schk" data-key="daily_wheel@toss@dev" data-def="1">DEV패치</label><label class="stg" data-k="daily_wheel@toss@resv"><input type="checkbox" class="schk" data-key="daily_wheel@toss@resv" data-def="1">PROD예약</label><label class="stg" data-k="daily_wheel@toss@prod"><input type="checkbox" class="schk" data-key="daily_wheel@toss@prod" data-def="1">PROD완료</label></div></td>
+<td class="mcell b-tossb"><span class="mtx">골드 ×0.5</span><div class="stages"><label class="stg" data-k="daily_wheel@tossb@dev"><input type="checkbox" class="schk" data-key="daily_wheel@tossb@dev" data-def="1">DEV패치</label><label class="stg" data-k="daily_wheel@tossb@resv"><input type="checkbox" class="schk" data-key="daily_wheel@tossb@resv" data-def="1">PROD예약</label><label class="stg" data-k="daily_wheel@tossb@prod"><input type="checkbox" class="schk" data-key="daily_wheel@tossb@prod" data-def="1">PROD완료</label></div></td>
 </tr>
 <tr>
 <td class="area"></td><td class="tbl"><b>collection_album_milestone</b></td>
-<td class="mcell b-ig checked" data-key="collection_album_milestone@ig"><label><input type="checkbox" class="mchk" data-key="collection_album_milestone@ig" checked> <span class="mtx">골드 ×0.4</span></label><div class="depb dep-done">✓ 배포완료</div></td>
-<td class="mcell b-toss checked" data-key="collection_album_milestone@toss"><label><input type="checkbox" class="mchk" data-key="collection_album_milestone@toss" checked> <span class="mtx">골드 ×0.4</span></label><div class="depb dep-done">✓ 배포완료</div></td>
-<td class="mcell b-tossb checked" data-key="collection_album_milestone@tossb"><label><input type="checkbox" class="mchk" data-key="collection_album_milestone@tossb" checked> <span class="mtx">골드 ×0.4</span></label><div class="depb dep-done">✓ 배포완료</div></td>
+<td class="mcell b-ig"><span class="mtx">골드 ×0.4</span><div class="stages"><label class="stg" data-k="collection_album_milestone@ig@dev"><input type="checkbox" class="schk" data-key="collection_album_milestone@ig@dev" data-def="1">DEV패치</label><label class="stg" data-k="collection_album_milestone@ig@resv"><input type="checkbox" class="schk" data-key="collection_album_milestone@ig@resv" data-def="1">PROD예약</label><label class="stg" data-k="collection_album_milestone@ig@prod"><input type="checkbox" class="schk" data-key="collection_album_milestone@ig@prod" data-def="1">PROD완료</label></div></td>
+<td class="mcell b-toss"><span class="mtx">골드 ×0.4</span><div class="stages"><label class="stg" data-k="collection_album_milestone@toss@dev"><input type="checkbox" class="schk" data-key="collection_album_milestone@toss@dev" data-def="1">DEV패치</label><label class="stg" data-k="collection_album_milestone@toss@resv"><input type="checkbox" class="schk" data-key="collection_album_milestone@toss@resv" data-def="1">PROD예약</label><label class="stg" data-k="collection_album_milestone@toss@prod"><input type="checkbox" class="schk" data-key="collection_album_milestone@toss@prod" data-def="1">PROD완료</label></div></td>
+<td class="mcell b-tossb"><span class="mtx">골드 ×0.4</span><div class="stages"><label class="stg" data-k="collection_album_milestone@tossb@dev"><input type="checkbox" class="schk" data-key="collection_album_milestone@tossb@dev" data-def="1">DEV패치</label><label class="stg" data-k="collection_album_milestone@tossb@resv"><input type="checkbox" class="schk" data-key="collection_album_milestone@tossb@resv" data-def="1">PROD예약</label><label class="stg" data-k="collection_album_milestone@tossb@prod"><input type="checkbox" class="schk" data-key="collection_album_milestone@tossb@prod" data-def="1">PROD완료</label></div></td>
 </tr>
 <tr>
 <td class="area"></td><td class="tbl"><b>collection_album_puzzle_list</b></td>
-<td class="mcell b-ig checked" data-key="collection_album_puzzle_list@ig"><label><input type="checkbox" class="mchk" data-key="collection_album_puzzle_list@ig" checked> <span class="mtx">reward_1 ×0.4</span></label><div class="depb dep-done">✓ 배포완료</div></td>
-<td class="mcell b-toss checked" data-key="collection_album_puzzle_list@toss"><label><input type="checkbox" class="mchk" data-key="collection_album_puzzle_list@toss" checked> <span class="mtx">reward_1 ×0.4</span></label><div class="depb dep-done">✓ 배포완료</div></td>
-<td class="mcell b-tossb checked" data-key="collection_album_puzzle_list@tossb"><label><input type="checkbox" class="mchk" data-key="collection_album_puzzle_list@tossb" checked> <span class="mtx">reward_1 ×0.4</span></label><div class="depb dep-done">✓ 배포완료</div></td>
+<td class="mcell b-ig"><span class="mtx">reward_1 ×0.4</span><div class="stages"><label class="stg" data-k="collection_album_puzzle_list@ig@dev"><input type="checkbox" class="schk" data-key="collection_album_puzzle_list@ig@dev" data-def="1">DEV패치</label><label class="stg" data-k="collection_album_puzzle_list@ig@resv"><input type="checkbox" class="schk" data-key="collection_album_puzzle_list@ig@resv" data-def="1">PROD예약</label><label class="stg" data-k="collection_album_puzzle_list@ig@prod"><input type="checkbox" class="schk" data-key="collection_album_puzzle_list@ig@prod" data-def="1">PROD완료</label></div></td>
+<td class="mcell b-toss"><span class="mtx">reward_1 ×0.4</span><div class="stages"><label class="stg" data-k="collection_album_puzzle_list@toss@dev"><input type="checkbox" class="schk" data-key="collection_album_puzzle_list@toss@dev" data-def="1">DEV패치</label><label class="stg" data-k="collection_album_puzzle_list@toss@resv"><input type="checkbox" class="schk" data-key="collection_album_puzzle_list@toss@resv" data-def="1">PROD예약</label><label class="stg" data-k="collection_album_puzzle_list@toss@prod"><input type="checkbox" class="schk" data-key="collection_album_puzzle_list@toss@prod" data-def="1">PROD완료</label></div></td>
+<td class="mcell b-tossb"><span class="mtx">reward_1 ×0.4</span><div class="stages"><label class="stg" data-k="collection_album_puzzle_list@tossb@dev"><input type="checkbox" class="schk" data-key="collection_album_puzzle_list@tossb@dev" data-def="1">DEV패치</label><label class="stg" data-k="collection_album_puzzle_list@tossb@resv"><input type="checkbox" class="schk" data-key="collection_album_puzzle_list@tossb@resv" data-def="1">PROD예약</label><label class="stg" data-k="collection_album_puzzle_list@tossb@prod"><input type="checkbox" class="schk" data-key="collection_album_puzzle_list@tossb@prod" data-def="1">PROD완료</label></div></td>
 </tr>
 <tr>
 <td class="area"></td><td class="tbl"><b>meta_city_list</b></td>
-<td class="mcell b-ig" data-key="meta_city_list@ig"><label><input type="checkbox" class="mchk" data-key="meta_city_list@ig"> <span class="mtx">완성골드 ×0.4</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
-<td class="mcell b-toss" data-key="meta_city_list@toss"><label><input type="checkbox" class="mchk" data-key="meta_city_list@toss"> <span class="mtx">완성골드 ×0.4</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
-<td class="mcell b-tossb" data-key="meta_city_list@tossb"><label><input type="checkbox" class="mchk" data-key="meta_city_list@tossb"> <span class="mtx">완성골드 ×0.4</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
+<td class="mcell b-ig"><span class="mtx">완성골드 ×0.4</span><div class="stages"><label class="stg" data-k="meta_city_list@ig@dev"><input type="checkbox" class="schk" data-key="meta_city_list@ig@dev" data-def="0">DEV패치</label><label class="stg" data-k="meta_city_list@ig@resv"><input type="checkbox" class="schk" data-key="meta_city_list@ig@resv" data-def="0">PROD예약</label><label class="stg" data-k="meta_city_list@ig@prod"><input type="checkbox" class="schk" data-key="meta_city_list@ig@prod" data-def="0">PROD완료</label></div></td>
+<td class="mcell b-toss"><span class="mtx">완성골드 ×0.4</span><div class="stages"><label class="stg" data-k="meta_city_list@toss@dev"><input type="checkbox" class="schk" data-key="meta_city_list@toss@dev" data-def="0">DEV패치</label><label class="stg" data-k="meta_city_list@toss@resv"><input type="checkbox" class="schk" data-key="meta_city_list@toss@resv" data-def="0">PROD예약</label><label class="stg" data-k="meta_city_list@toss@prod"><input type="checkbox" class="schk" data-key="meta_city_list@toss@prod" data-def="0">PROD완료</label></div></td>
+<td class="mcell b-tossb"><span class="mtx">완성골드 ×0.4</span><div class="stages"><label class="stg" data-k="meta_city_list@tossb@dev"><input type="checkbox" class="schk" data-key="meta_city_list@tossb@dev" data-def="0">DEV패치</label><label class="stg" data-k="meta_city_list@tossb@resv"><input type="checkbox" class="schk" data-key="meta_city_list@tossb@resv" data-def="0">PROD예약</label><label class="stg" data-k="meta_city_list@tossb@prod"><input type="checkbox" class="schk" data-key="meta_city_list@tossb@prod" data-def="0">PROD완료</label></div></td>
 </tr>
 <tr>
 <td class="area"></td><td class="tbl"><b>event_milestone</b></td>
-<td class="mcell b-ig" data-key="event_milestone@ig"><label><input type="checkbox" class="mchk" data-key="event_milestone@ig"> <span class="mtx">골드 ×0.4</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
-<td class="mcell b-toss" data-key="event_milestone@toss"><label><input type="checkbox" class="mchk" data-key="event_milestone@toss"> <span class="mtx">골드 ×0.4</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
-<td class="mcell b-tossb" data-key="event_milestone@tossb"><label><input type="checkbox" class="mchk" data-key="event_milestone@tossb"> <span class="mtx">골드 ×0.4</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
+<td class="mcell b-ig"><span class="mtx">골드 ×0.4</span><div class="stages"><label class="stg" data-k="event_milestone@ig@dev"><input type="checkbox" class="schk" data-key="event_milestone@ig@dev" data-def="0">DEV패치</label><label class="stg" data-k="event_milestone@ig@resv"><input type="checkbox" class="schk" data-key="event_milestone@ig@resv" data-def="0">PROD예약</label><label class="stg" data-k="event_milestone@ig@prod"><input type="checkbox" class="schk" data-key="event_milestone@ig@prod" data-def="0">PROD완료</label></div></td>
+<td class="mcell b-toss"><span class="mtx">골드 ×0.4</span><div class="stages"><label class="stg" data-k="event_milestone@toss@dev"><input type="checkbox" class="schk" data-key="event_milestone@toss@dev" data-def="0">DEV패치</label><label class="stg" data-k="event_milestone@toss@resv"><input type="checkbox" class="schk" data-key="event_milestone@toss@resv" data-def="0">PROD예약</label><label class="stg" data-k="event_milestone@toss@prod"><input type="checkbox" class="schk" data-key="event_milestone@toss@prod" data-def="0">PROD완료</label></div></td>
+<td class="mcell b-tossb"><span class="mtx">골드 ×0.4</span><div class="stages"><label class="stg" data-k="event_milestone@tossb@dev"><input type="checkbox" class="schk" data-key="event_milestone@tossb@dev" data-def="0">DEV패치</label><label class="stg" data-k="event_milestone@tossb@resv"><input type="checkbox" class="schk" data-key="event_milestone@tossb@resv" data-def="0">PROD예약</label><label class="stg" data-k="event_milestone@tossb@prod"><input type="checkbox" class="schk" data-key="event_milestone@tossb@prod" data-def="0">PROD완료</label></div></td>
 </tr>
 <tr>
 <td class="area"></td><td class="tbl"><b>event_ranking</b></td>
-<td class="mcell b-ig" data-key="event_ranking@ig"><label><input type="checkbox" class="mchk" data-key="event_ranking@ig"> <span class="mtx">골드 ×0.5</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
-<td class="mcell b-toss" data-key="event_ranking@toss"><label><input type="checkbox" class="mchk" data-key="event_ranking@toss"> <span class="mtx">골드 ×0.5</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
-<td class="mcell b-tossb" data-key="event_ranking@tossb"><label><input type="checkbox" class="mchk" data-key="event_ranking@tossb"> <span class="mtx">골드 ×0.5</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
+<td class="mcell b-ig"><span class="mtx">골드 ×0.5</span><div class="stages"><label class="stg" data-k="event_ranking@ig@dev"><input type="checkbox" class="schk" data-key="event_ranking@ig@dev" data-def="0">DEV패치</label><label class="stg" data-k="event_ranking@ig@resv"><input type="checkbox" class="schk" data-key="event_ranking@ig@resv" data-def="0">PROD예약</label><label class="stg" data-k="event_ranking@ig@prod"><input type="checkbox" class="schk" data-key="event_ranking@ig@prod" data-def="0">PROD완료</label></div></td>
+<td class="mcell b-toss"><span class="mtx">골드 ×0.5</span><div class="stages"><label class="stg" data-k="event_ranking@toss@dev"><input type="checkbox" class="schk" data-key="event_ranking@toss@dev" data-def="0">DEV패치</label><label class="stg" data-k="event_ranking@toss@resv"><input type="checkbox" class="schk" data-key="event_ranking@toss@resv" data-def="0">PROD예약</label><label class="stg" data-k="event_ranking@toss@prod"><input type="checkbox" class="schk" data-key="event_ranking@toss@prod" data-def="0">PROD완료</label></div></td>
+<td class="mcell b-tossb"><span class="mtx">골드 ×0.5</span><div class="stages"><label class="stg" data-k="event_ranking@tossb@dev"><input type="checkbox" class="schk" data-key="event_ranking@tossb@dev" data-def="0">DEV패치</label><label class="stg" data-k="event_ranking@tossb@resv"><input type="checkbox" class="schk" data-key="event_ranking@tossb@resv" data-def="0">PROD예약</label><label class="stg" data-k="event_ranking@tossb@prod"><input type="checkbox" class="schk" data-key="event_ranking@tossb@prod" data-def="0">PROD완료</label></div></td>
 </tr>
 <tr>
 <td class="area">데코 (자동꾸미기)</td><td class="tbl"><b>meta_decoration_list</b></td>
-<td class="mcell b-ig" data-key="meta_decoration_list@ig"><label><input type="checkbox" class="mchk" data-key="meta_decoration_list@ig"> <span class="mtx">해머 Cozy + 골드 상한40k곡선</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
-<td class="mcell b-toss" data-key="meta_decoration_list@toss"><label><input type="checkbox" class="mchk" data-key="meta_decoration_list@toss"> <span class="mtx">해머 Cozy + 골드 상한40k곡선</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
-<td class="mcell b-tossb" data-key="meta_decoration_list@tossb"><label><input type="checkbox" class="mchk" data-key="meta_decoration_list@tossb"> <span class="mtx">해머 Cozy + 골드 0</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
+<td class="mcell b-ig"><span class="mtx">해머 Cozy + 골드 상한40k곡선</span><div class="stages"><label class="stg" data-k="meta_decoration_list@ig@dev"><input type="checkbox" class="schk" data-key="meta_decoration_list@ig@dev" data-def="0">DEV패치</label><label class="stg" data-k="meta_decoration_list@ig@resv"><input type="checkbox" class="schk" data-key="meta_decoration_list@ig@resv" data-def="0">PROD예약</label><label class="stg" data-k="meta_decoration_list@ig@prod"><input type="checkbox" class="schk" data-key="meta_decoration_list@ig@prod" data-def="0">PROD완료</label></div></td>
+<td class="mcell b-toss"><span class="mtx">해머 Cozy + 골드 상한40k곡선</span><div class="stages"><label class="stg" data-k="meta_decoration_list@toss@dev"><input type="checkbox" class="schk" data-key="meta_decoration_list@toss@dev" data-def="0">DEV패치</label><label class="stg" data-k="meta_decoration_list@toss@resv"><input type="checkbox" class="schk" data-key="meta_decoration_list@toss@resv" data-def="0">PROD예약</label><label class="stg" data-k="meta_decoration_list@toss@prod"><input type="checkbox" class="schk" data-key="meta_decoration_list@toss@prod" data-def="0">PROD완료</label></div></td>
+<td class="mcell b-tossb"><span class="mtx">해머 Cozy + 골드 0</span><div class="stages"><label class="stg" data-k="meta_decoration_list@tossb@dev"><input type="checkbox" class="schk" data-key="meta_decoration_list@tossb@dev" data-def="0">DEV패치</label><label class="stg" data-k="meta_decoration_list@tossb@resv"><input type="checkbox" class="schk" data-key="meta_decoration_list@tossb@resv" data-def="0">PROD예약</label><label class="stg" data-k="meta_decoration_list@tossb@prod"><input type="checkbox" class="schk" data-key="meta_decoration_list@tossb@prod" data-def="0">PROD완료</label></div></td>
 </tr>
 <tr>
 <td class="area">플로우 (post-clear v2)</td><td class="tbl"><b>const (v2 플래그)</b></td>
-<td class="mcell b-ig" data-key="const (v2 플래그)@ig"><label><input type="checkbox" class="mchk" data-key="const (v2 플래그)@ig"> <span class="mtx">OFF (v1)</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
-<td class="mcell b-toss" data-key="const (v2 플래그)@toss"><label><input type="checkbox" class="mchk" data-key="const (v2 플래그)@toss"> <span class="mtx">OFF (v1)</span></label><div class="depb dep-off">✓ OFF 배포</div></td>
-<td class="mcell b-tossb" data-key="const (v2 플래그)@tossb"><label><input type="checkbox" class="mchk" data-key="const (v2 플래그)@tossb"> <span class="mtx">OFF (v1) · v2 출시 시 ON</span></label><div class="depb dep-pend">⏳ 패치대기</div></td>
+<td class="mcell b-ig"><span class="mtx">OFF (v1)</span><div class="stages"><label class="stg" data-k="const (v2 플래그)@ig@dev"><input type="checkbox" class="schk" data-key="const (v2 플래그)@ig@dev" data-def="0">DEV패치</label><label class="stg" data-k="const (v2 플래그)@ig@resv"><input type="checkbox" class="schk" data-key="const (v2 플래그)@ig@resv" data-def="0">PROD예약</label><label class="stg" data-k="const (v2 플래그)@ig@prod"><input type="checkbox" class="schk" data-key="const (v2 플래그)@ig@prod" data-def="0">PROD완료</label></div></td>
+<td class="mcell b-toss"><span class="mtx">OFF (v1)</span><div class="stages"><label class="stg" data-k="const (v2 플래그)@toss@dev"><input type="checkbox" class="schk" data-key="const (v2 플래그)@toss@dev" data-def="1">DEV패치</label><label class="stg" data-k="const (v2 플래그)@toss@resv"><input type="checkbox" class="schk" data-key="const (v2 플래그)@toss@resv" data-def="1">PROD예약</label><label class="stg" data-k="const (v2 플래그)@toss@prod"><input type="checkbox" class="schk" data-key="const (v2 플래그)@toss@prod" data-def="1">PROD완료</label></div></td>
+<td class="mcell b-tossb"><span class="mtx">OFF (v1) · v2 출시 시 ON</span><div class="stages"><label class="stg" data-k="const (v2 플래그)@tossb@dev"><input type="checkbox" class="schk" data-key="const (v2 플래그)@tossb@dev" data-def="0">DEV패치</label><label class="stg" data-k="const (v2 플래그)@tossb@resv"><input type="checkbox" class="schk" data-key="const (v2 플래그)@tossb@resv" data-def="0">PROD예약</label><label class="stg" data-k="const (v2 플래그)@tossb@prod"><input type="checkbox" class="schk" data-key="const (v2 플래그)@tossb@prod" data-def="0">PROD완료</label></div></td>
 </tr>
 <tr>
 <td class="area">아이템 치환 (클라 강제·시트 미수정)</td><td class="tbl"><b>product·보상 티켓</b></td>
 <td class="na">—</td>
 <td class="na">—</td>
-<td class="mcell b-tossb" data-key="product·보상 티켓@tossb"><label><input type="checkbox" class="mchk" data-key="product·보상 티켓@tossb"> <span class="mtx">클라 B빌드 강제</span></label><div class="depb dep-client">클라 처리(시트 외)</div></td>
+<td class="mcell b-tossb"><span class="mtx">클라 B빌드 강제</span><div class="depb dep-client">클라 처리(시트 외)</div></td>
 </tr>
 </table><p class="mxnote"><b>골드/해머는 3빌드 공통</b> · <b>데코 골드만 _toss_b=0</b>(자동꾸미기) · 아이템 치환은 시트 미수정(클라 B빌드 강제) · const v2 플래그는 현재 _toss에만 존재(OFF). 아래 BEFORE/AFTER 박스에서 테이블별 상세 확인.</p></div>
 <div class="legend"><span class="sw" style="background:#fff0f0;border:1px solid #f0caca;"></span><b>골드 감액(A·B 공통)</b> <span class="sw" style="background:#eef2ff;border:1px solid #c4ccf7;"></span><b>타입 치환(B 전용)</b> — 골든티켓→와카·티켓→되돌리기·인피니트(골티/티켓)→추가덱(수량 유지). <b>폭죽=인게임 이전→유지</b> · <span class="sw" style="background:#fff;border:1px solid #ddd;"></span>유지 · <b>슬롯 수 동일</b></div>
@@ -467,13 +471,18 @@ table.matrix td.mcell.checked .mtx{color:#9aa7b6;text-decoration:line-through;}
   // 빌드 매트릭스 셀 체크박스 (빌드별 독립 추적)
   var MKEY='pst_matrix_checks_v1';
   var msaved={}; try{msaved=JSON.parse(localStorage.getItem(MKEY)||'{}');}catch(e){}
-  document.querySelectorAll('.mchk').forEach(function(c){
-    var k=c.dataset.key, cell=c.closest('td');
-    if(k in msaved){c.checked=msaved[k];}   // 저장값이 있으면 HTML 기본(배포완료=체크)보다 우선
-    if(cell)cell.classList.toggle('checked',c.checked);
+  // 패치 3단계 체크박스 (DEV패치/PROD예약/PROD완료)
+  function syncStg(c){
+    var lab=c.closest('.stg'); if(lab)lab.classList.toggle('on',c.checked);
+    if(c.dataset.key.slice(-5)==='@prod'){ var cell=c.closest('td'); if(cell)cell.classList.toggle('prodone',c.checked); }
+  }
+  document.querySelectorAll('.schk').forEach(function(c){
+    var k=c.dataset.key;
+    c.checked = (k in msaved) ? msaved[k] : (c.dataset.def==='1');
+    syncStg(c);
     c.addEventListener('change',function(){
       msaved[k]=c.checked; localStorage.setItem(MKEY,JSON.stringify(msaved));
-      if(cell)cell.classList.toggle('checked',c.checked);
+      syncStg(c);
     });
   });
 })();
