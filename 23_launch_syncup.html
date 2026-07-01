@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCJ 콜드스타트 런칭 — 싱크업 미팅 노트</title>
+<style>
+  :root{--ink:#1b2330;--sub:#5b6675;--line:#e3e7ee;--bg:#f6f8fb;--accent:#2563eb;--good:#15803d;--warn:#d9480f;--soft:#eef3fe;--hot:#fff4ec;}
+  *{box-sizing:border-box;}
+  body{font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:30px 16px;line-height:1.65;}
+  .wrap{max-width:1400px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:36px 48px;}
+  h1{font-size:25px;margin:0 0 4px;letter-spacing:-.5px;}
+  .meta{color:var(--sub);font-size:13px;margin-bottom:12px;}
+  .goal{background:var(--soft);border-left:3px solid var(--accent);padding:13px 18px;border-radius:0 8px 8px 0;font-size:14.5px;margin:14px 0;}
+  h2{font-size:18.5px;margin:34px 0 12px;padding-top:18px;border-top:2px solid var(--line);letter-spacing:-.3px;}
+  h2 .n{display:inline-block;min-width:25px;height:25px;line-height:25px;text-align:center;background:var(--accent);color:#fff;border-radius:7px;font-size:13.5px;font-weight:800;margin-right:8px;}
+  p,li{font-size:14px;} ul{padding-left:20px;margin:6px 0;} li{margin:4px 0;}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px;}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+  th{background:#eef2f8;font-weight:700;font-size:12.5px;}
+  td.who,th.who{white-space:nowrap;font-weight:700;width:150px;}
+  .warnbox{background:var(--hot);border-left:3px solid var(--warn);padding:12px 16px;border-radius:0 8px 8px 0;font-size:13.5px;margin:12px 0;}
+  .okbox{background:#eef9f1;border-left:3px solid var(--good);padding:12px 16px;border-radius:0 8px 8px 0;font-size:13.5px;margin:12px 0;}
+  .good{color:var(--good);font-weight:700;} .warn{color:var(--warn);font-weight:700;} .sub{color:var(--sub);}
+  .pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 9px;border-radius:20px;white-space:nowrap;}
+  .red{background:#fdeceb;color:#d2453f;} .yel{background:#fff3d6;color:#b9791b;} .grn{background:#e7f7ef;color:var(--good);}
+  .ch{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;}
+  .c1{background:#e7f5ec;color:var(--good);} .c2{background:#fdeede;color:var(--warn);} .c3{background:#e8eefc;color:var(--accent);}
+  ol.dec{counter-reset:d;list-style:none;padding-left:0;}
+  ol.dec li{counter-increment:d;position:relative;padding:7px 0 7px 34px;border-bottom:1px dashed var(--line);font-size:14px;}
+  ol.dec li:before{content:counter(d);position:absolute;left:0;top:6px;width:24px;height:24px;background:var(--warn);color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:12.5px;font-weight:800;}
+  .tl{display:flex;flex-direction:column;gap:0;margin:12px 0;}
+  .tl .s{border-left:3px solid var(--accent);padding:0 0 13px 18px;position:relative;font-size:13px;}
+  .tl .s:last-child{padding-bottom:0;}
+  .tl .s:before{content:"";position:absolute;left:-7.5px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid #fff;}
+  .tl .s.hot{border-color:var(--warn);} .tl .s.hot:before{background:var(--warn);}
+  .tl .s b{display:block;font-size:12.5px;font-weight:800;color:var(--accent);} .tl .s.hot b{color:var(--warn);}
+  code{background:#eef2f6;padding:1px 6px;border-radius:5px;font-size:12.5px;}
+  /* 세로 R&R 카드 */
+  .pcard{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:11px;padding:14px 18px;margin:11px 0;box-shadow:0 1px 3px rgba(20,40,70,.04);}
+  .pcard .ph{font-weight:800;font-size:15.5px;margin-bottom:8px;color:#13314f;}
+  .pcard .prow{display:flex;gap:14px;padding:8px 0;border-top:1px dashed var(--line);font-size:13.5px;line-height:1.65;}
+  .pcard .prow:first-of-type{border-top:none;}
+  .pcard .pk{flex:0 0 92px;color:var(--sub);font-weight:700;font-size:12.5px;padding-top:3px;}
+  .pcard .pv{flex:1;min-width:0;}
+  .chk{display:flex;align-items:flex-start;gap:8px;padding:3px 0;}
+  .chk > input{margin-top:3px;flex:none;width:15px;height:15px;cursor:pointer;accent-color:var(--accent);}
+  .chk .ctext{flex:1;min-width:0;}
+  .chk.done .ctext,.chk.done .ctext b{text-decoration:line-through;color:#9aa7b6;}
+  .owntag{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:5px;background:#eef2f8;color:#46506a;margin-left:3px;white-space:nowrap;}
+  .otags{margin:3px 0 2px 23px;}
+  .chk .otright{flex:none;display:flex;flex-wrap:wrap;justify-content:flex-end;align-content:flex-start;gap:0;margin-left:10px;max-width:50%;}
+  .otag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:14px;border:1px solid #d6deea;background:#fff;color:#46506a;margin:1px 0 1px 5px;cursor:pointer;user-select:none;white-space:nowrap;}
+  .otag.on{background:#e7f7ef;border-color:#bce6cf;color:var(--good);}
+  .otag.on:before{content:"✓ ";font-weight:800;}
+  .fixtag{display:inline-block;font-size:11px;font-weight:800;padding:2px 9px;border-radius:14px;background:#e7f7ef;border:1px solid #bce6cf;color:var(--good);margin:1px 0 1px 5px;white-space:nowrap;}
+  .pg{display:inline-block;font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:5px;margin-right:5px;white-space:nowrap;}
+  .pg-s{background:#e8eefc;color:var(--accent);} .pg-m{background:#fde9e7;color:#c0392b;}
+  .copybox{background:#0f1626;color:#e8eefc;border-radius:10px;padding:14px 18px;font-size:13px;line-height:1.65;white-space:pre-wrap;margin:6px 0;}
+  .copybox .lbl{display:inline-block;font-size:11px;font-weight:800;color:#8fb4ff;letter-spacing:.4px;margin-bottom:6px;}
+  .imgph{width:320px;max-width:100%;aspect-ratio:1/1;border:2px dashed #cfd9e6;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#9aa7b6;font-size:12.5px;font-weight:700;text-align:center;background:#fafbfd;flex:none;padding:10px;}
+  .dsample{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-bottom:6px;}
+  .dsample .cp{flex:1;min-width:300px;}
+  .dsample h4{font-size:14px;margin:16px 0 8px;}
+  .cal td:first-child{text-align:center;white-space:nowrap;width:50px;font-weight:800;color:var(--accent);background:#f4f7fe;}
+  .cal td:nth-child(2){white-space:nowrap;width:96px;}
+  .pgrid{column-count:2;column-gap:16px;margin:10px 0;}
+  .pgrid .pcard{break-inside:avoid;-webkit-column-break-inside:avoid;margin-top:0;margin-bottom:14px;}
+  @media(max-width:900px){.pgrid{column-count:1;}}
+  [data-anchor]{scroll-margin-top:16px;}
+  .foot{color:var(--sub);font-size:12px;margin-top:30px;border-top:1px solid var(--line);padding-top:14px;}
+  /* 상세 운영 액션플랜 = 하나의 덩어리로 강조 */
+  .appendix{background:linear-gradient(180deg,#f4f8ff 0%,#fbfcfe 120px);border:2px solid #c7d7f7;border-radius:16px;padding:6px 26px 26px;margin-top:26px;box-shadow:0 3px 14px rgba(37,99,235,.06);}
+  .appendix > h2:first-child{border-top:none;margin-top:14px;}
+  /* h3 제목 안의 게임 칩(솔리테어·마종) 큼직하게 */
+  h3 .pg{font-size:13.5px;font-weight:800;padding:4px 13px;border-radius:8px;margin-right:8px;vertical-align:middle;}
+  /* Andre 게시 담당 구간 = 하나의 덩어리 */
+  .andre-block{border:2px solid #f0b8b0;border-radius:14px;background:#fff8f6;padding:4px 22px 22px;margin:18px 0 4px;box-shadow:0 2px 10px rgba(192,57,43,.06);}
+  .andre-banner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fde9e7;border:1px solid #f4c4bd;border-radius:12px;padding:13px 20px;margin:14px 0 10px;}
+  .andre-banner .big{font-size:20px;font-weight:800;color:#c0392b;letter-spacing:-.3px;line-height:1.2;}
+  .andre-banner .desc{font-size:12.5px;color:#8a4a1a;}
+  /* 언어 토글 + 오너 편집 잠금 */
+  .topbar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:-8px 0 10px;flex-wrap:wrap;}
+  .langgroup{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+  .langbtn{font:inherit;font-size:12.5px;font-weight:800;padding:6px 14px;border:none;background:#fff;color:var(--sub);cursor:pointer;}
+  .langbtn.active{background:var(--accent);color:#fff;}
+  .lockbtn{font:inherit;font-size:12.5px;font-weight:800;padding:6px 14px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--sub);cursor:pointer;white-space:nowrap;}
+  .lockbtn.unlocked{background:#e7f7ef;color:var(--good);border-color:#bce6cf;}
+  .en{display:none;}
+  body.lang-en .ko{display:none;}
+  body.lang-en .en{display:inline;}
+  body.locked .otag{pointer-events:none;opacity:.9;}
+  body.locked .chk > input{cursor:not-allowed;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <span class="sub" style="font-size:11.5px;margin-right:auto"><span class="ko">체크·태그 편집은 오너(에스더)만 · 상태는 한↔영 공용</span><span class="en">Only the owner (Esther) can edit checks·tags · state is shared across KO↔EN</span></span>
+    <span class="langgroup">
+      <button class="langbtn" data-lang="ko">한국어</button>
+      <button class="langbtn" data-lang="en">EN</button>
+    </span>
+    <button class="lockbtn" id="lockBtn"><span class="ko"></span><span class="en"></span></button>
+  </div>
+
+  <h1><span class="ko">🚀 SCJ 콜드스타트 런칭 — 싱크업 미팅 노트</span><span class="en">🚀 SCJ Cold Start Launch — Sync-up Meeting Notes</span></h1>
+  <div class="meta"><span class="ko">2026-06-30 · Esther · EQR 제출 7/1(미)·7/2(한) → 메타 기능 QA → <b>콜드스타트 D0 = 런칭</b> · 평가틀 = Meta EQR v4 CDR 3시그널</span><span class="en">2026-06-30 · Esther · EQR submission 7/1 (US)·7/2 (KR) → Meta feature QA → <b>Cold Start D0 = Launch</b> · Framework = Meta EQR v4 CDR 3 signals</span></div>
+
+  <div class="goal"><span class="ko"><b>🎯 미팅 목적</b> — 콜드스타트 런칭(D0) 기준으로 <b>각 파트가 런칭 전·당일·후에 뭘 하고, 뭘 미리 준비해야 하는지</b> 실무자들과 맞추는 싱크업.</span><span class="en"><b>🎯 Purpose</b> — A sync-up to align with each team on <b>what they do before / on / after launch (D0) and what must be prepared in advance.</b></span></div>
+
+  <!-- 1. 한눈에 -->
+  <h2><span class="n">1</span><span class="ko">런칭 한눈에</span><span class="en">Launch at a Glance</span></h2>
+  <ul>
+    <li><span class="ko"><b>목표</b> — 콜드스타트 14일 평가창에 장르적합·고품질 유저 유입 → <b>D14 리텐션·WAU@14·좋아요</b> → <b>Meta Promoted Tier</b> 진입</span><span class="en"><b>Goal</b> — Drive genre-fit·high-quality users into the 14-day cold-start window → <b>D14 retention·WAU@14·Likes</b> → enter <b>Meta Promoted Tier</b></span></li>
+    <li><span class="ko"><b>유입 채널 3종</b></span><span class="en"><b>3 acquisition channels</b></span><br>
+      <span class="ch c1">①</span> <span class="ko">타게임 퀘스트 포스팅 — 1차 마종 파일럿</span><span class="en">Cross-game quest posting — Phase 1 Mahjong pilot</span><br>
+      <span class="ch c2">②</span> <span class="ko">자체 팬페이지 — 격일+, 핵심엔진</span><span class="en">Own fan page — every other day+, core engine</span><br>
+      <span class="ch c3">③</span> <span class="ko">5종 인게임 CP — 상시</span><span class="en">5 in-game CPs — always on</span><br>
+      <span class="sub"><span class="ko">※ 광고(C2P)는 14일 지표 제외 → 안 씀</span><span class="en">※ Ads (C2P) excluded from 14-day metrics → not used</span></span></li>
+    <li><span class="ko"><b>확대 로직</b> — 마종 파일럿 → <b>~D5 유입량 보고</b> 코인매치·코지 확대 (<b>D14 리텐션 = 최종 평가</b>, 확대 게이트 아님)</span><span class="en"><b>Scale-up logic</b> — Mahjong pilot → <b>~D5 inflow report</b> → expand Coin Match·Cozy (<b>D14 retention = final evaluation</b>, not a scale-up gate)</span></li>
+  </ul>
+
+  <!-- 2. D0 정의 -->
+  <h2><span class="n">2</span><span class="ko">런칭 일정 구조 (제출 → QA → 콜드스타트 D0)</span><span class="en">Launch Timeline (Submission → QA → Cold Start D0)</span></h2>
+  <div class="okbox">
+    <span class="ko"><b>EQR v4 제출</b>(7/1 미·7/2 한) → <b>메타 기능 QA</b>(5~7영업일) → QA 통과 시 <b>콜드스타트 시작 = D0</b>.<br>
+    <b>D0에 모든 유입 채널이 한 번에 켜짐</b> —<br>
+    ① 인게임 CP 5종 전부 ON<br>
+    ② 타게임 마종 퀘스트 포스트 게시<br>
+    ③ 자체 팬페이지 런칭 기념<br>
+    → <b>즉 D0 = 런칭일.</b><br>
+    <span class="sub">※ 정확한 D0 날짜는 <b>메타 QA 완료일에 정해짐 — 우리가 대시보드로 확정하는 게 아님</b>. 필요 시 담당자에게 문의할지 미팅에서 결정. 본 노트는 "<b>D0 이전 = 선결 준비</b>" 기준.</span></span><span class="en"><b>EQR v4 submission</b> (7/1 US·7/2 KR) → <b>Meta feature QA</b> (5–7 business days) → on QA pass, <b>cold start begins = D0</b>.<br>
+    <b>At D0 all acquisition channels turn on at once</b> —<br>
+    ① All 5 in-game CPs ON<br>
+    ② Cross-game Mahjong quest post published<br>
+    ③ Own fan page launch celebration<br>
+    → <b>i.e., D0 = launch day.</b><br>
+    <span class="sub">※ The exact D0 date is <b>set by Meta's QA completion — not something we fix via dashboard</b>. Decide in the meeting whether to ask the owner if needed. This note is based on "<b>before D0 = prerequisite prep</b>."</span></span>
+  </div>
+  <div class="tl">
+    <div class="s hot"><b><span class="ko">D0 이전</span><span class="en">Before D0</span></b><span class="ko">선결 준비 — 마종 인박스 지급 경로 · 출석화면 UID · 포스트 소재 · CP 5종 · 측정 셋업</span><span class="en">Prerequisite prep — Mahjong inbox reward path · attendance-screen UID · post creatives · 5 CPs · measurement setup</span></div>
+    <div class="s"><b><span class="ko">7/1(미) · 7/2(한)</span><span class="en">7/1 (US) · 7/2 (KR)</span></b><span class="ko">EQR v4 제출</span><span class="en">EQR v4 submission</span></div>
+    <div class="s"><b><span class="ko">제출 후 5~7영업일</span><span class="en">5–7 business days after submission</span></b><span class="ko">메타 기능 QA</span><span class="en">Meta feature QA</span></div>
+    <div class="s hot"><b><span class="ko">D0 = 콜드스타트 시작(런칭)</span><span class="en">D0 = Cold start begins (launch)</span></b><span class="ko">CP 5종 ON + 마종 포스팅 게시 + 자체 팬페이지 런칭 기념 — 전 채널 동시 ON</span><span class="en">5 CPs ON + Mahjong post published + own fan page launch celebration — all channels on at once</span></div>
+    <div class="s hot"><b>~D5</b><span class="ko">유입량 보고 → 코인매치·코지 확대 결정</span><span class="en">Inflow report → decide Coin Match·Cozy expansion</span></div>
+    <div class="s"><b>~D14</b><span class="ko">추첨·지급 · D14 리텐션·WAU@14 = Promoted Tier 최종 평가</span><span class="en">Draw·payout · D14 retention·WAU@14 = Promoted Tier final evaluation</span></div>
+    <div class="s"><b>~D30</b><span class="ko">데이터 밀착 개선(퍼널·온보딩·판수) — <b>안정화</b> (토스에서 한 것처럼)</span><span class="en">Data-driven improvements (funnel·onboarding·rounds) — <b>stabilization</b> (as done on Toss)</span></div>
+    <div class="s"><b>D30 +10</b><span class="ko">수익화 진행 → 마무리</span><span class="en">Monetization → wrap up</span></div>
+  </div>
+
+  <!-- 3. 파트별 R&R -->
+  <h2 data-anchor="rnr"><span class="n">3</span><span class="ko">파트별 R&R (런칭 기준)</span><span class="en">R&R by Team (launch basis)</span></h2>
+  <p style="font-size:12.5px;color:var(--sub);margin:0 0 8px"><span class="ko"><b>담당자</b> — 확정된 일감은 <span class="fixtag" style="font-size:10px;padding:1px 7px">초록 고정 태그</span>. 미확정(기획·운영)은 후보 칩을 클릭해 ✓ 표시·저장.</span><span class="en"><b>Owners</b> — Confirmed tasks get a <span class="fixtag" style="font-size:10px;padding:1px 7px">green fixed tag</span>. Undecided (planning·ops) — click a candidate chip to mark ✓ and save.</span></p>
+
+  <div class="pgrid">
+  <div class="pcard">
+    <div class="ph"><span class="ko">🛠 개발 (클라/서버)</span><span class="en">🛠 Dev (Client/Server)</span></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭 전</span><span class="en">Pre-launch</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="d1"><span class="ctext"><span class="ko">EQR v4 빌드 제출 (7/1)</span><span class="en">Submit EQR v4 build (7/1)</span></span><span class="otright"><span class="fixtag">Hobby</span></span></label>
+      <div class="chk" style="padding-top:6px"><span class="ctext"><span class="ko"><b>인게임 CP 5종</b> 구현·QA — 게임별 진척:</span><span class="en"><b>Implement·QA 5 in-game CPs</b> — progress by game:</span></span></div>
+      <label class="chk" style="margin-left:20px"><input type="checkbox" data-id="cp_pbm" checked><span class="ctext"><span class="ko">퍼블마</span><span class="en">PubMa</span> — <span class="good">✅ <span class="ko">CP 완료</span><span class="en">CP done</span></span> <span class="pill grn" style="font-size:12px;padding:2px 10px"><span class="ko">빌드 #882</span><span class="en">Build #882</span></span></span><span class="otright"><span class="fixtag">Levine</span><span class="fixtag">Hobby</span></span></label>
+      <label class="chk" style="margin-left:20px"><input type="checkbox" data-id="cp_cm" checked><span class="ctext"><span class="ko">코인매치</span><span class="en">Coin Match</span> — <span class="good">✅ <span class="ko">QA완료 (빌드 3352)</span><span class="en">QA done (Build 3352)</span></span></span><span class="otright"><span class="fixtag">Levine</span><span class="fixtag">Hobby</span></span></label>
+      <label class="chk" style="margin-left:20px"><input type="checkbox" data-id="cp_mj"><span class="ctext"><span class="ko">마종 — 개발중 (7/2)</span><span class="en">Mahjong — in dev (7/2)</span></span><span class="otright"><span class="fixtag">Teo</span><span class="fixtag">Raynor</span></span></label>
+      <label class="chk" style="margin-left:20px"><input type="checkbox" data-id="cp_tp"><span class="ctext"><span class="ko">더퍼즐 — 개발중 (7/1)</span><span class="en">The Puzzle — in dev (7/1)</span></span><span class="otright"><span class="fixtag">Parker</span><span class="fixtag">Raynor</span></span></label>
+      <label class="chk" style="margin-left:20px"><input type="checkbox" data-id="cp_cz"><span class="ctext"><span class="ko">코지 — 7/3 빌드 전달</span><span class="en">Cozy — build delivery 7/3</span></span><span class="otright"><span class="fixtag">Teo</span><span class="fixtag">Raynor</span></span></label>
+      <label class="chk"><input type="checkbox" data-id="d3"><span class="ctext"><span class="ko"><b>마종 인박스 지급 경로</b> — <span class="good">클라·서버 작업 중, 7/2(목) 빌드 완료 예정</span></span><span class="en"><b>Mahjong inbox reward path</b> — <span class="good">client·server in progress, build ETA Thu 7/2</span></span></span><span class="otright"><span class="fixtag">Ghost</span><span class="fixtag">Teo</span><span class="fixtag">Raynor</span></span></label>
+    </div></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭일(D0)</span><span class="en">Launch day (D0)</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="d5"><span class="ctext"><span class="ko">CP ON · 빌드 라이브</span><span class="en">CP ON · build live</span></span><span class="otright"><span class="fixtag">Hobby</span><span class="fixtag">Raynor</span></span></label>
+    </div></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭 후</span><span class="en">Post-launch</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="d6"><span class="ctext"><span class="ko">버그·퍼포 핫픽스</span><span class="en">Bug·perf hotfixes</span></span><span class="otright"><span class="fixtag">Levine</span><span class="fixtag">Ghost</span><span class="fixtag">Hobby</span><span class="fixtag">Parker</span></span></label>
+      <label class="chk"><input type="checkbox" data-id="d7"><span class="ctext"><span class="ko"><b>데이터 기반 개선 빌드</b> — 퍼널·온보딩·판수 개선 구현·배포 <span class="sub">(~D30 안정화까지 반복)</span></span><span class="en"><b>Data-driven improvement builds</b> — implement·deploy funnel·onboarding·rounds fixes <span class="sub">(iterate until ~D30 stabilization)</span></span></span><span class="otright"><span class="otag" data-id="d7_dev"><span class="ko">개발팀</span><span class="en">Dev team</span></span></span></label>
+      <label class="chk"><input type="checkbox" data-id="d8"><span class="ctext"><span class="ko"><b>수익화 구현</b> <span class="sub">(D30 안정화 후 +10일)</span></span><span class="en"><b>Monetization build</b> <span class="sub">(+10 days after D30 stabilization)</span></span></span><span class="otright"><span class="otag" data-id="d8_dev"><span class="ko">개발팀</span><span class="en">Dev team</span></span></span></label>
+    </div></div>
+  </div>
+
+  <div class="pcard">
+    <div class="ph"><span class="ko">✅ QA</span><span class="en">✅ QA</span></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭 전</span><span class="en">Pre-launch</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="q1"><span class="ctext"><span class="ko"><b>CP 게임별 QA</b></span><span class="en"><b>Per-game CP QA</b></span></span><span class="otright"><span class="fixtag">Hobby</span></span></label>
+    </div></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭일(D0)</span><span class="en">Launch day (D0)</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="q2"><span class="ctext"><span class="ko">라이브 빌드 1회 확인</span><span class="en">One live-build check</span></span><span class="otright"><span class="fixtag">Hobby</span></span></label>
+    </div></div>
+  </div>
+
+  <div class="pcard">
+    <div class="ph"><span class="ko">🎨 아트</span><span class="en">🎨 Art</span></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭 전</span><span class="en">Pre-launch</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="a1"><span class="ctext"><span class="ko"><b>솔리테어 5일+ 출석화면 UID 노출</b> <span class="sub">(포스팅 검증용)</span></span><span class="en"><b>Solitaire 5-day+ attendance-screen UID display</b> <span class="sub">(for post verification)</span></span></span><span class="otright"><span class="fixtag"><span class="ko">아트</span><span class="en">Art</span></span></span></label>
+      <label class="chk"><input type="checkbox" data-id="a2"><span class="ctext"><span class="ko">자체 팬페이지 콘텐츠 에셋</span><span class="en">Own fan-page content assets</span></span><span class="otright"><span class="fixtag"><span class="ko">아트</span><span class="en">Art</span></span></span></label>
+      <label class="chk"><input type="checkbox" data-id="a3"><span class="ctext"><span class="ko">FTUE R5 부스터 실루엣</span><span class="en">FTUE R5 booster silhouette</span></span><span class="otright"><span class="fixtag"><span class="ko">아트</span><span class="en">Art</span></span></span></label>
+    </div></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭 후</span><span class="en">Post-launch</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="a4"><span class="ctext"><span class="ko">콘텐츠 에셋 지속 공급</span><span class="en">Ongoing content-asset supply</span></span><span class="otright"><span class="fixtag"><span class="ko">아트</span><span class="en">Art</span></span></span></label>
+    </div></div>
+  </div>
+
+  <div class="pcard">
+    <div class="ph"><span class="ko">📊 기획 (Esther)</span><span class="en">📊 Planning (Esther)</span></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭 전</span><span class="en">Pre-launch</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="e1"><span class="ctext"><span class="ko">응모 운영·검증·추첨 가이드</span><span class="en">Entry ops·verification·draw guide</span></span><span class="otright"><span class="otag" data-id="e1_esther">Esther</span></span></label>
+      <label class="chk"><input type="checkbox" data-id="e2"><span class="ctext"><span class="ko">자체 팬페이지 2주 캘린더</span><span class="en">Own fan-page 2-week calendar</span></span><span class="otright"><span class="otag" data-id="e2_esther">Esther</span></span></label>
+      <label class="chk"><input type="checkbox" data-id="e3"><span class="ctext"><span class="ko"><b>측정 셋업</b> <span class="sub">(entrypoint·shareable_link·Asia DAU 베이스라인)</span></span><span class="en"><b>Measurement setup</b> <span class="sub">(entrypoint·shareable_link·Asia DAU baseline)</span></span></span><span class="otright"><span class="otag" data-id="e3_esther">Esther</span></span></label>
+      <label class="chk"><input type="checkbox" data-id="e4" checked><span class="ctext"><span class="ko">파트별 R&R 발송</span><span class="en">Send R&R by team</span></span><span class="otright"><span class="otag" data-id="e4_esther">Esther</span></span></label>
+    </div></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭일(D0)</span><span class="en">Launch day (D0)</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="e5"><span class="ctext"><span class="ko">전 채널 ON 점검</span><span class="en">Verify all channels ON</span></span><span class="otright"><span class="otag" data-id="e5_esther">Esther</span></span></label>
+    </div></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭 후</span><span class="en">Post-launch</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="e6"><span class="ctext"><span class="ko"><b>~D5 유입량 → 확대 결정</b> · 주간 리포트 · D14 리텐션 판정</span><span class="en"><b>~D5 inflow → expansion decision</b> · weekly report · D14 retention verdict</span></span><span class="otright"><span class="otag" data-id="e6_esther">Esther</span></span></label>
+      <label class="chk"><input type="checkbox" data-id="e7"><span class="ctext"><span class="ko"><b>데이터 모니터링 → 개선 기획</b> — 퍼널·온보딩·판수 개선(토스식 밀착) <span class="sub">(~D30 안정화까지)</span></span><span class="en"><b>Data monitoring → improvement planning</b> — funnel·onboarding·rounds (Toss-style hands-on) <span class="sub">(until ~D30 stabilization)</span></span></span><span class="otright"><span class="otag" data-id="e7_esther">Esther</span></span></label>
+      <label class="chk"><input type="checkbox" data-id="e8"><span class="ctext"><span class="ko"><b>+10일 수익화 기획 → 마무리</b> <span class="sub">(D30 안정화 후)</span></span><span class="en"><b>+10-day monetization planning → wrap up</b> <span class="sub">(after D30 stabilization)</span></span></span><span class="otright"><span class="otag" data-id="e8_esther">Esther</span></span></label>
+    </div></div>
+  </div>
+
+  <div class="pcard">
+    <div class="ph"><span class="ko">📣 운영 (Andre)</span><span class="en">📣 Ops (Andre)</span></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭 전</span><span class="en">Pre-launch</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="an1"><span class="ctext"><span class="pg pg-m">🃏 <span class="ko">마종</span><span class="en">Mahjong</span></span><span class="ko"><b>퀘스트 포스트 소재 확정</b> <span class="sub">(초안 완성 · 5일+ 출석화면 반영)</span></span><span class="en"><b>Quest post creative finalized</b> <span class="sub">(draft done · 5-day+ attendance screen reflected)</span></span></span><span class="otright"><span class="otag" data-id="an1_andre">Andre</span></span></label>
+      <label class="chk"><input type="checkbox" data-id="an3" checked><span class="ctext"><span class="pg pg-s">📘 <span class="ko">솔리테어</span><span class="en">Solitaire</span></span><span class="ko">커밍순 게시</span><span class="en">Coming-soon post</span></span><span class="otright"><span class="otag" data-id="an3_andre">Andre</span></span></label>
+      <div class="sub" style="font-size:12px;margin:2px 0 0 23px"><span class="ko">※ 2주 콘텐츠 캘린더는 <b>Esther가 제작</b> → 기획 파트 참조. Andre는 이 캘린더대로 게시.</span><span class="en">※ The 2-week content calendar is <b>produced by Esther</b> → see Planning. Andre posts per this calendar.</span></div>
+    </div></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭일(D0)</span><span class="en">Launch day (D0)</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="an4"><span class="ctext"><span class="pg pg-m">🃏 <span class="ko">마종</span><span class="en">Mahjong</span></span><span class="ko"><b>퀘스트 포스트 게시</b> + 응모 고정댓글 핀</span><span class="en"><b>Publish quest post</b> + pin entry comment</span></span><span class="otright"><span class="otag" data-id="an4_andre">Andre</span></span></label>
+      <label class="chk"><input type="checkbox" data-id="an4b"><span class="ctext"><span class="pg pg-s">📘 <span class="ko">솔리테어</span><span class="en">Solitaire</span></span><span class="ko"><b>런칭 포스트</b> <span class="sub">(런칭 기념 = 게임 안내, 고정핀)</span></span><span class="en"><b>Launch post</b> <span class="sub">(launch celebration = game intro, pinned)</span></span></span><span class="otright"><span class="otag" data-id="an4b_andre">Andre</span></span></label>
+    </div></div>
+    <div class="prow"><div class="pk"><span class="ko">런칭 후</span><span class="en">Post-launch</span></div><div class="pv">
+      <label class="chk"><input type="checkbox" data-id="an5"><span class="ctext"><span class="pg pg-s">📘 <span class="ko">솔리테어</span><span class="en">Solitaire</span></span><span class="ko"><b>격일+ 게시</b> <span class="sub">(14일 8~12회 · 핵심 유입 엔진)</span></span><span class="en"><b>Every-other-day+ posting</b> <span class="sub">(8–12 times over 14 days · core inflow engine)</span></span></span><span class="otright"><span class="otag" data-id="an5_andre">Andre</span></span></label>
+      <div class="ownbox" style="margin:4px 0 6px;background:#fdeede;border-left:3px solid var(--warn);border-radius:0 8px 8px 0;padding:9px 13px;font-size:12.5px">
+        <span class="ko"><b>콘텐츠 믹스 (순환 게시)</b> → <a href="#detail-plan" style="color:var(--warn);font-weight:800">상세 기획서(14일 게시 캘린더·포스트 샘플) 바로가기 ↓</a><br>
+        <span style="color:#8a4a1a">목적 = 우리 채널이라 제약 無 → <b>좋아요 시그널·웜 유저 복귀를 직접 부양</b>(평점·WAU@14에 가장 크게 기여).</span></span><span class="en"><b>Content mix (rotating)</b> → <a href="#detail-plan" style="color:var(--warn);font-weight:800">jump to detailed plan (14-day calendar·post samples) ↓</a><br>
+        <span style="color:#8a4a1a">Purpose = our own channel, no constraints → <b>directly boosts Like signal·warm-user return</b> (biggest contributor to rating·WAU@14).</span></span>
+      </div>
+      <label class="chk"><input type="checkbox" data-id="an6"><span class="ctext"><span class="pg pg-m">🃏 <span class="ko">마종</span><span class="en">Mahjong</span></span><span class="ko"><b>D7 퀘스트 리마인드</b> <span class="sub">(응모 독려)</span></span><span class="en"><b>D7 quest reminder</b> <span class="sub">(encourage entries)</span></span></span><span class="otright"><span class="otag" data-id="an6_andre">Andre</span></span></label>
+      <label class="chk"><input type="checkbox" data-id="an7"><span class="ctext"><span class="pg pg-m">🃏 <span class="ko">마종</span><span class="en">Mahjong</span></span><span class="ko"><b>~D14 당첨자 발표</b> <span class="sub">(Game Team 전달 명단 → "Event closed · Congrats…" 댓글)</span></span><span class="en"><b>~D14 winner announcement</b> <span class="sub">(list from Game Team → "Event closed · Congrats…" comment)</span></span></span><span class="otright"><span class="otag" data-id="an7_andre">Andre</span></span></label>
+    </div></div>
+  </div>
+
+  </div><!-- /pgrid -->
+
+  <!-- 4. 선결 체크리스트 -->
+  <h2><span class="n">4</span><span class="ko">런칭 전 선결 체크리스트</span><span class="en">Pre-launch Prerequisite Checklist</span> <span class="sub" style="font-size:13px;font-weight:400"><span class="ko">(데드라인 = D0 이전)</span><span class="en">(deadline = before D0)</span></span></h2>
+  <table>
+    <tr><th style="width:36px">#</th><th><span class="ko">항목</span><span class="en">Item</span></th><th class="who"><span class="ko">담당</span><span class="en">Owner</span></th><th style="width:160px"><span class="ko">상태</span><span class="en">Status</span></th></tr>
+    <tr><td>1</td><td><span class="ko">EQR v4 빌드 제출</span><span class="en">Submit EQR v4 build</span></td><td class="who"><span class="ko">개발·기획</span><span class="en">Dev·Planning</span></td><td><span class="pill yel"><span class="ko">7/1 예정</span><span class="en">ETA 7/1</span></span></td></tr>
+    <tr><td>2</td><td><span class="ko"><b>마종 인박스 지급 경로</b> <span class="sub">(포스팅 파일럿 선결)</span></span><span class="en"><b>Mahjong inbox reward path</b> <span class="sub">(prereq for posting pilot)</span></span></td><td class="who"><span class="ko">클라+서버</span><span class="en">Client+Server</span></td><td><span class="pill yel"><span class="ko">작업 중 · 7/2(목) 빌드 완료 예정</span><span class="en">in progress · build ETA Thu 7/2</span></span></td></tr>
+    <tr><td>3</td><td><span class="ko"><b>솔리테어 5일+ 출석화면 UID 노출</b></span><span class="en"><b>Solitaire 5-day+ attendance-screen UID display</b></span></td><td class="who"><span class="ko">아트</span><span class="en">Art</span></td><td><span class="pill red"><span class="ko">작업 대기</span><span class="en">pending</span></span></td></tr>
+    <tr><td>4</td><td><span class="ko">마종 퀘스트 포스트 소재 최종</span><span class="en">Mahjong quest post creative final</span></td><td class="who">Andre</td><td><span class="pill yel"><span class="ko">초안 완성·반영 중</span><span class="en">draft done·in revision</span></span></td></tr>
+    <tr><td>5</td><td><span class="ko">인게임 CP 5종 구현·QA <span class="sub">(T1 국가필터 포함)</span></span><span class="en">Implement·QA 5 in-game CPs <span class="sub">(incl. T1 country filter)</span></span></td><td class="who"><span class="ko">개발·QA</span><span class="en">Dev·QA</span></td><td><span class="pill yel"><span class="ko">퍼블마·코인매치 ✅ / 마종 7/2·더퍼즐 7/1·코지 7/3</span><span class="en">PubMa·Coin Match ✅ / Mahjong 7/2·The Puzzle 7/1·Cozy 7/3</span></span></td></tr>
+    <tr><td>6</td><td><span class="ko">측정 셋업(entrypoint별 분리·DAU 베이스라인)</span><span class="en">Measurement setup (split by entrypoint·DAU baseline)</span></td><td class="who">Esther</td><td><span class="pill yel"><span class="ko">진행</span><span class="en">in progress</span></span></td></tr>
+    <tr><td>7</td><td><span class="ko">마종 보상 코인 양 확정</span><span class="en">Mahjong reward coin amount confirmed</span></td><td class="who">Hailey</td><td><span class="pill grn">✅ <span class="ko">300코인</span><span class="en">300 coins</span></span></td></tr>
+  </table>
+
+  <!-- 5. 측정 -->
+  <h2><span class="n">5</span><span class="ko">측정 = 의사결정 게이트</span><span class="en">Measurement = Decision Gate</span></h2>
+  <p style="margin:6px 0 8px"><span class="ko">언제 · 무엇을 보고 · 무엇을 정하는가:</span><span class="en">When · what to look at · what to decide:</span></p>
+  <table>
+    <tr><th style="width:110px"><span class="ko">시점</span><span class="en">Timing</span></th><th><span class="ko">측정</span><span class="en">Measure</span></th><th><span class="ko">판단</span><span class="en">Decision</span></th></tr>
+    <tr><td><b>~D5</b></td><td><span class="ko">엔트리(shareable_link)별 <b>유입량</b> · D1/D3</span><span class="en">Inflow by entry (shareable_link) · D1/D3</span></td><td><span class="ko">마종 파일럿 효율 보고 → <b>코인매치·코지 확대 결정</b></span><span class="en">Report Mahjong pilot efficiency → <b>decide Coin Match·Cozy expansion</b></span></td></tr>
+    <tr><td><b>~D14</b></td><td><span class="ko"><b>D14 리텐션 · WAU@14 · 좋아요 비율</b></span><span class="en"><b>D14 retention · WAU@14 · Like ratio</b></span></td><td><span class="ko">Meta <b>Promoted Tier</b> 최종 평가</span><span class="en">Meta <b>Promoted Tier</b> final evaluation</span></td></tr>
+    <tr><td><b>~D30 / +10</b></td><td><span class="ko">퍼널·온보딩·판수 등 코어 지표</span><span class="en">Core metrics: funnel·onboarding·rounds</span></td><td><span class="ko">밀착 개선 → 안정화 → 수익화</span><span class="en">Hands-on improvement → stabilization → monetization</span></td></tr>
+  </table>
+  <div class="okbox">
+    <span class="ko"><b>읽는 원칙</b><br>
+    • 모든 지표는 <b>entrypoint(유입경로)별로 분리</b>해서 읽기.<br>
+    • 블렌디드(합산)는 push 같은 저강도 유입이 섞여 D14를 깎는 착시 → 채널 ROI 왜곡.</span><span class="en"><b>Reading principle</b><br>
+    • Read every metric <b>split by entrypoint (acquisition path)</b>.<br>
+    • Blended (aggregate) mixes in low-intensity inflow like push, creating an illusion that drags down D14 → distorts channel ROI.</span>
+  </div>
+  <div class="warnbox">
+    <span class="ko"><b>⚠️ "Asia 지역 DAU 300" 가드레일 — 오해 주의</b><br>
+    • 이건 <b>품질 타겟이 아님.</b> Meta는 <b>상대평가를 "지역" 단위</b>로 하는데(우리 유저 기반이 Toss=한국/아시아라 평가 지역이 Asia로 잡힐 가능성), 그 지역의 신뢰 시그널 최소선이 <b>300 DAU</b>(미달 시 글로벌 폴백 = 불리).<br>
+    • 반면 <b>우리 획득 타겟 = T1(US·CA·GB·AU·DE·FR)</b> — 질이 훨씬 좋음. 둘은 <b>별개 축</b>(평가 지역 vs 획득 타겟).<br>
+    • ❓ <b>Alex에게 확인:</b> (1) 우리 평가 지역이 실제 Asia인지, (2) T1로 획득한 유저가 어느 지역 DAU로 집계되는지 → T1 유입이 평가 지역과 어긋나면 "Asia 300"은 가드레일로 안 맞을 수 있음.</span><span class="en"><b>⚠️ "Asia region DAU 300" guardrail — avoid misreading</b><br>
+    • This is <b>not a quality target.</b> Meta grades <b>relatively at the "region" level</b> (since our base is Toss=Korea/Asia, the evaluation region may be set to Asia); the minimum trust-signal floor for that region is <b>300 DAU</b> (below it → global fallback = disadvantageous).<br>
+    • Meanwhile <b>our acquisition target = T1 (US·CA·GB·AU·DE·FR)</b> — much higher quality. These are <b>two separate axes</b> (evaluation region vs acquisition target).<br>
+    • ❓ <b>Confirm with Alex:</b> (1) whether our evaluation region is actually Asia, (2) which region's DAU T1-acquired users count toward → if T1 inflow diverges from the evaluation region, "Asia 300" may not hold as a guardrail.</span>
+  </div>
+
+  <!-- 부록: 상세 운영 액션플랜 -->
+  <div class="appendix">
+  <h2 id="detail-plan" data-anchor="posting"><span class="n">📋</span><span class="ko">상세 운영 액션플랜</span><span class="en">Detailed Ops Action Plan</span> <span class="sub" style="font-size:13px;font-weight:400"><span class="ko">(운영 참고 · 14일 플랜 액기스)</span><span class="en">(ops reference · 14-day plan digest)</span></span></h2>
+  <div class="goal"><span class="ko"><b>전략</b><br>
+    • 콜드스타트 14일(D0~D14)에 <b>장르적합·고품질 유입</b> → <b>D14 리텐션·WAU@14·좋아요</b> → Meta <b>Promoted Tier</b><br>
+    • 광고(C2P)는 14일 지표서 제외 → <b>안 씀</b> (오가닉 / CP만)<br>
+    • 근거: 포스팅·CP 유입 D7 리텐션이 <b>광고의 4~5배</b></span><span class="en"><b>Strategy</b><br>
+    • Over the 14-day cold start (D0–D14), drive <b>genre-fit·high-quality inflow</b> → <b>D14 retention·WAU@14·Likes</b> → Meta <b>Promoted Tier</b><br>
+    • Ads (C2P) excluded from 14-day metrics → <b>not used</b> (organic / CP only)<br>
+    • Basis: D7 retention of posting·CP inflow is <b>4–5× that of ads</b></span></div>
+
+  <h3><span class="ko">채널 3종 — 실행 요지 (외부는 절제 · 자체는 활발 · CP는 상시)</span><span class="en">3 Channels — Execution Summary (external = restrained · own = active · CP = always on)</span></h3>
+  <table>
+    <tr><th style="width:150px"><span class="ko">채널</span><span class="en">Channel</span></th><th><span class="ko">실행 요지</span><span class="en">Execution summary</span></th><th style="width:150px"><span class="ko">강도</span><span class="en">Intensity</span></th></tr>
+    <tr>
+      <td><span class="ch c1">①</span> <span class="ko">타게임 퀘스트 포스팅</span><span class="en">Cross-game quest posting</span></td>
+      <td><span class="ko">• 후킹 = "솔리테어 <b>7일 출석</b>(5일+ 캡처 허용) → <b>마종 코인 추첨</b>"<br>• PLAY_LINK로 IG 즉시 실행 → 댓글(마종 UID + 출석 캡처) 응모 → 마종 인박스 지급<br>• <b>마종 1개 페이지만</b> · 게시 1회 + D7 리마인드 1회<br>• 추첨 ~40명 · 마종 <b>300코인</b></span><span class="en">• Hook = "Solitaire <b>7-day attendance</b> (5-day+ capture allowed) → <b>Mahjong coin draw</b>"<br>• Instant IG launch via PLAY_LINK → enter by comment (Mahjong UID + attendance capture) → Mahjong inbox payout<br>• <b>Mahjong page only</b> · 1 post + 1 D7 reminder<br>• Draw ~40 winners · Mahjong <b>300 coins</b></span></td>
+      <td><span class="pill yel"><span class="ko">1차 마종 단독</span><span class="en">Phase 1 Mahjong only</span></span><br><span class="sub"><span class="ko">코인매치·코지 = 2차</span><span class="en">Coin Match·Cozy = Phase 2</span></span></td>
+    </tr>
+    <tr>
+      <td><span class="ch c2">②</span> <span class="ko">자체 팬페이지</span><span class="en">Own fan page</span></td>
+      <td><span class="ko">• <b>이틀 간격 1건</b> (14일 8건) 게시<br>• 우리 채널이라 제약 無 → 좋아요·웜 복귀를 직접 만드는 <b>핵심 엔진</b><br>• <b>게임 빌드 영향 0</b> 소셜 미니이벤트(A/B/C 맞히기 퀴즈 + 댓글 응모 골드) + 콘텐츠·팁·UGC 믹스</span><span class="en">• <b>1 post every 2 days</b> (8 over 14 days)<br>• Our own channel, no constraints → the <b>core engine</b> that directly drives Likes·warm return<br>• <b>Zero game-build impact</b>: social mini-events (A/B/C guess quiz + comment-entry gold) + content·tips·UGC mix</span></td>
+      <td><span class="pill" style="background:#fdeede;color:#b5430a"><span class="ko">격일 · 매우 활발</span><span class="en">Every other day · very active</span></span></td>
+    </tr>
+    <tr>
+      <td><span class="ch c3">③</span> <span class="ko">인게임 CP (5종)</span><span class="en">In-game CP (5)</span></td>
+      <td><span class="ko">• 5종(코인매치·더퍼즐·마종·코지·퍼블마) <b>팝업+미션CP 1순위 슬롯</b>에 솔리테어<br>• 조건: non-iOS · T1 국가필터 · 미션 RU 한정<br>• D0에 켜고 유지</span><span class="en">• 5 games (Coin Match·The Puzzle·Mahjong·Cozy·PubMa) — Solitaire in the <b>#1 popup + mission-CP slot</b><br>• Conditions: non-iOS · T1 country filter · mission RU only<br>• Turn on at D0 and keep on</span></td>
+      <td><span class="pill grn"><span class="ko">소프트런칭 내내 상시</span><span class="en">Always on throughout soft launch</span></span></td>
+    </tr>
+  </table>
+
+  <div class="andre-block">
+  <div class="andre-banner">
+    <span class="big"><span class="ko">📣 게시 담당 = Andre</span><span class="en">📣 Posting owner = Andre</span></span>
+    <span class="desc"><span class="ko">아래 전체(솔리테어 14일 캘린더 · 포스트 샘플 · 마종 퀘스트 게시)가 Andre 담당 구간입니다.</span><span class="en">Everything below (Solitaire 14-day calendar · post samples · Mahjong quest posts) is Andre's zone.</span></span>
+  </div>
+
+  <h3><span class="pg pg-s">📘 <span class="ko">솔리테어</span><span class="en">Solitaire</span></span> <span class="ko">자체 팬페이지 — 14일 게시 캘린더 (이틀 간격 = 8건)</span><span class="en">Own fan page — 14-Day Posting Calendar (every 2 days = 8 posts)</span></h3>
+  <table class="cal">
+    <tr><th>Day</th><th><span class="ko">유형</span><span class="en">Type</span></th><th><span class="ko">포스트 (기존 에셋만 · 개발 공수 0)</span><span class="en">Post (existing assets only · 0 dev effort)</span></th></tr>
+    <tr><td>D0</td><td><span class="ko">티징·고정핀</span><span class="en">Teaser·pin</span></td><td><span class="ko"><b>여행 시작!</b> 도시 + <b>20개국 컬렉션 앨범</b> 소개 — "당신의 첫 도시를 완성하세요"</span><span class="en"><b>Journey begins!</b> City + <b>20-country collection album</b> intro — "Complete your first city"</span></td></tr>
+    <tr><td>D2</td><td><span class="ko">추첨 이벤트</span><span class="en">Draw event</span></td><td><span class="ko"><b>"A/B/C 중 다음 여행 도시는?"</b> 댓글로 고르기 → <b>골드 추첨</b> <span class="sub">(기존 도시 이미지 3택)</span></span><span class="en"><b>"Which city next: A/B/C?"</b> pick in comments → <b>gold draw</b> <span class="sub">(3 existing city images)</span></span></td></tr>
+    <tr><td>D4</td><td><span class="ko">콘텐츠 티징</span><span class="en">Content teaser</span></td><td><span class="ko"><b>컬렉션 앨범 하이라이트</b> — "어느 나라 앨범 모으는 중?" 댓글 콜 <span class="sub">(도시 클로즈업)</span></span><span class="en"><b>Collection album highlight</b> — "Which country's album?" comment call <span class="sub">(city close-up)</span></span></td></tr>
+    <tr><td>D6</td><td><span class="ko">팁</span><span class="en">Tip</span></td><td><span class="ko"><b>와일드카드 공략</b> — 막힌 보드 해결 → 스트릭 완성 → <b>엑스트라 보상!</b></span><span class="en"><b>Wild card guide</b> — clear a stuck board → complete streak → <b>extra reward!</b></span></td></tr>
+    <tr><td>D8</td><td><span class="ko">추첨 이벤트</span><span class="en">Draw event</span></td><td><span class="ko"><b>"Pick the Lucky Clue"</b> — A/B/C 럭키 랜턴 고르기 댓글 → <b>골드 추첨</b> <span class="sub">(운 기반·정답 없음)</span></span><span class="en"><b>"Pick the Lucky Clue"</b> — pick A/B/C lucky lantern in comments → <b>gold draw</b> <span class="sub">(luck-based·no right answer)</span></span></td></tr>
+    <tr><td>D10</td><td><span class="ko">라이브 이벤트</span><span class="en">Live event</span></td><td><span class="ko"><b>클리어 랭킹(리더보드)</b> 안내 — "이번 주 TOP3 = <b>골든티켓</b>! 지금 도전"</span><span class="en"><b>Clear ranking (leaderboard)</b> — "This week's TOP3 = <b>Golden Ticket</b>! Play now"</span></td></tr>
+    <tr><td>D12</td><td><span class="ko">라이브 이벤트</span><span class="en">Live event</span></td><td><span class="ko"><b>"Follow the Reward Path"</b> — 빨간/검은 카드 + 승리 마일스톤 → <b>골드 + 와일드카드</b></span><span class="en"><b>"Follow the Reward Path"</b> — red/black cards + win milestones → <b>gold + wild card</b></span></td></tr>
+    <tr><td>D14</td><td><span class="ko">티징·예고</span><span class="en">Teaser·preview</span></td><td><span class="ko"><b>다음 도시·이벤트 티저</b> + 가벼운 <b>추첨 이벤트</b> <span class="sub">(지속 운영 느낌 — 마무리/감사 X)</span></span><span class="en"><b>Next city·event teaser</b> + light <b>draw event</b> <span class="sub">(ongoing feel — no wrap-up/thank-you)</span></span></td></tr>
+  </table>
+  <p class="sub" style="font-size:12.5px"><span class="ko">※ 전부 <b>기존 에셋 활용 · 개발 공수 0</b>. 축 = <b>콘텐츠 티징</b> + <b>A/B/C 추첨 이벤트</b>(댓글 응모 → 골드). 인게임 <b>라이브 이벤트</b>(검은 카드→승리→빨간 카드 마일스톤 / 클리어 랭킹)는 <b>그 주 켜진 것에 맞춰</b> 안내. <span class="warn">여름 비치·덱 스킨 등 신규 제작물·베스트 데코 투표(모두 같은 도시)는 제외.</span></span><span class="en">※ All use <b>existing assets · 0 dev effort</b>. Axes = <b>content teasers</b> + <b>A/B/C draw events</b> (comment entry → gold). In-game <b>live events</b> (black card→win→red card milestones / clear ranking) are announced to <b>match whatever is on that week</b>. <span class="warn">Excludes newly produced items like summer beach·deck skins and best-deco votes (all same city).</span></span></p>
+
+  <div class="okbox" style="font-size:13px"><span class="ko"><b>🔗 레퍼런스</b> — 포스팅 톤·비주얼 참고 페이지: </span><span class="en"><b>🔗 Reference</b> — posting tone·visual reference page: </span><a href="https://www.facebook.com/profile.php?id=61567324017383&sk=photos" target="_blank" style="color:var(--accent);font-weight:700"><span class="ko">Facebook 페이지 사진 모음 ↗</span><span class="en">Facebook page photos ↗</span></a></div>
+
+  <h4 style="font-size:14px;margin:18px 0 8px"><span class="ko">📌 D0 런칭 포스트 — 샘플 (자체 팬페이지)</span><span class="en">📌 D0 Launch post — sample (own fan page)</span></h4>
+  <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;">
+    <img src="post_samples/d0_solitaire_launch.png" alt="D0 launch sample" style="width:320px;max-width:100%;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(20,40,70,.12);">
+    <div style="flex:1;min-width:300px;">
+      <div class="copybox"><span class="lbl">POST COPY (Gossip Harbor <span class="ko">스타일</span><span class="en">style</span>)</span>🌍✨ START YOUR JOURNEY! ✨🌍
+🎴 Solitaire City Journey is now LIVE — match cards, travel the world & build your very own cities!
+📖 Collect all <b>20 countries</b> in your Travel Album — 🗼 Paris · 🏛️ Rome · ⛩️ Tokyo & more!
+▶️ Play now: [PLAY_LINK]
+💛 Follow us for daily tips, events & giveaways!
+👇 Which country do you want to visit first? Tell us in the comments!
+✨ Like + Share to start your adventure with friends! 🐾</div>
+      <p class="sub" style="font-size:12px"><span class="ko">※ 우리 채널이라 UID·스캠경고 불필요(퀘스트 응모 아님). 톤만 GH식(이모지·설렘·댓글 참여 콜). <b>고정핀</b>으로 14일 유지.</span><span class="en">※ Our own channel, so no UID·scam warning needed (not a quest entry). GH-style tone only (emoji·excitement·comment call). Keep <b>pinned</b> for 14 days.</span></p>
+    </div>
+  </div>
+
+  <h4 style="font-size:14px;margin:20px 0 8px"><span class="ko">📌 D2 추첨 이벤트 포스트 — 샘플 (자체 팬페이지)</span><span class="en">📌 D2 Draw-event post — sample (own fan page)</span></h4>
+  <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;">
+    <img src="post_samples/d2_where_next.png" alt="D2 draw event sample" style="width:320px;max-width:100%;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(20,40,70,.12);">
+    <div style="flex:1;min-width:300px;">
+      <div class="copybox"><span class="lbl">POST COPY (Gossip Harbor <span class="ko">스타일</span><span class="en">style</span>)</span>🌍 WHERE NEXT? — You choose the next destination! ✈️
+👇 Comment 🅰️ 🅱️ or 🅲️ to pick where we travel next!
+🅰️ Sunny Seaside · 🅱️ Cozy Old Town · 🅲️ Winter Village
+💰 Vote & WIN — we'll draw lucky players & send GOLD to your inbox!
+(Drop your game ID with your vote to claim 💛)
+✨ Like + Share for extra luck! 🐾</div>
+      <p class="sub" style="font-size:12px"><span class="ko">※ 기존 도시 이미지 3택 활용(개발 0). 골드 지급용으로 게임 ID만 가볍게 요청. 반응 좋으면 D8·D14에 동일 포맷 재활용.</span><span class="en">※ Uses 3 existing city images (0 dev). Lightly ask for game ID only for gold payout. If it lands, reuse the format on D8·D14.</span></p>
+    </div>
+  </div>
+
+  <h4 style="font-size:14px;margin:20px 0 8px"><span class="ko">📌 D4 콘텐츠 티징 — 컬렉션 앨범</span><span class="en">📌 D4 Content teaser — collection album</span></h4>
+  <div class="dsample">
+    <img src="post_samples/d4_album.png" alt="D4 collection album sample" style="width:320px;max-width:100%;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(20,40,70,.12);flex:none;">
+    <div class="cp"><div class="copybox"><span class="lbl">POST COPY</span>📖✨ Your Travel Album is filling up! ✨📖
+Collect puzzle pieces as you play and complete albums from <b>20 countries</b> 🌍
+🗼 France · 🏛️ Italy · ⛩️ Japan · 🗽 USA … which one are you collecting?
+🎁 Complete an album for bonus rewards!
+👇 Drop the flag of the country you're collecting right now!
+✨ Like + Share if you love a good collection 🐾</div></div>
+  </div>
+
+  <h4 style="font-size:14px;margin:20px 0 8px"><span class="ko">📌 D6 팁 — 와일드카드</span><span class="en">📌 D6 Tip — wild card</span></h4>
+  <div class="dsample">
+    <img src="post_samples/d6_wildcard.png" alt="D6 wild card sample" style="width:320px;max-width:100%;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(20,40,70,.12);flex:none;">
+    <div class="cp"><div class="copybox"><span class="lbl">POST COPY</span>🃏 STUCK on a board? Meet the WILD CARD! 🃏
+The Wild Card matches <b>ANY</b> card — perfect for breaking through a jam 💥
+🔓 Clear the block → keep your <b>STREAK</b> alive → bag an <b>EXTRA REWARD!</b> 🎁
+Save it for the trickiest moment and watch the combo fly 🚀
+👇 When do YOU save your Wild Card for?
+✨ Like + Share to help a fellow traveller 🐾</div></div>
+  </div>
+
+  <h4 style="font-size:14px;margin:20px 0 8px"><span class="ko">📌 D8 추첨 이벤트 — "Pick the Lucky Clue"</span><span class="en">📌 D8 Draw event — "Pick the Lucky Clue"</span></h4>
+  <div class="dsample">
+    <img src="post_samples/d8_lucky_clue.png" alt="D8 lucky clue sample" style="width:320px;max-width:100%;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(20,40,70,.12);flex:none;">
+    <div class="cp"><div class="copybox"><span class="lbl">POST COPY</span>🏮 PICK THE LUCKY CLUE! 🏮
+Three lucky lanterns are floating up 🎐 — which one holds the gold?
+👇 Comment 🅰️ 🅱️ or 🅲️ with your pick!
+💰 We'll draw lucky guessers & send GOLD to your inbox!
+(Drop your game ID with your pick to claim 💛)
+✨ Like + Share for extra luck! 🐾</div>
+    <p class="sub" style="font-size:12px"><span class="ko">※ 럭키 픽 = 순수 운(정답 없음) → 부담 0·참여율↑. 골드 지급용 게임 ID만 가볍게 요청.</span><span class="en">※ Lucky pick = pure luck (no right answer) → zero pressure·higher participation. Lightly ask for game ID only for gold payout.</span></p></div>
+  </div>
+
+  <h4 style="font-size:14px;margin:20px 0 8px"><span class="ko">📌 D10 라이브 이벤트 — 클리어 랭킹</span><span class="en">📌 D10 Live event — clear ranking</span></h4>
+  <div class="dsample">
+    <img src="post_samples/d10_ranking.png" alt="D10 clear ranking sample" style="width:320px;max-width:100%;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(20,40,70,.12);flex:none;">
+    <div class="cp"><div class="copybox"><span class="lbl">POST COPY</span>🏆 CLIMB TO THE TOP 3! 🏆
+Clear the most levels this week and rise up the <b>Weekly Leaderboard</b> 📈
+🥇🥈🥉 TOP 3 win <b>GOLD</b> — are you close? ⏳
+Every clear counts — keep going, you're almost there!
+👇 What rank are you on right now? Show us!
+✨ Like + Share to challenge your friends 🐾</div>
+    <p class="sub" style="font-size:12px"><span class="ko">※ 인게임 클리어 랭킹(라이브 이벤트) 안내 — 개발 0.</span><span class="en">※ Announces in-game clear ranking (live event) — 0 dev.</span></p></div>
+  </div>
+
+  <h4 style="font-size:14px;margin:20px 0 8px"><span class="ko">📌 D12 라이브 이벤트 — 카드/승리 마일스톤</span><span class="en">📌 D12 Live event — card/win milestone</span></h4>
+  <div class="dsample">
+    <img src="post_samples/d12_reward_path.png" alt="D12 reward path sample" style="width:320px;max-width:100%;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(20,40,70,.12);flex:none;">
+    <div class="cp"><div class="copybox"><span class="lbl">POST COPY</span>🎴 FOLLOW THE REWARD PATH! 🎴
+Live milestone event is ON — the more you play, the more you unlock! 💪
+❤️ Red Cards · ♠️ Black Cards · 🏆 Wins — hit each milestone for rewards!
+💰 Gold + 🃏 Wild Cards up for grabs!
+👇 Which milestone are you closest to?
+✨ Like + Share and keep the streak going 🐾</div>
+    <p class="sub" style="font-size:12px"><span class="ko">※ 인게임 카드·승리 마일스톤(그 주 켜진 이벤트) 안내 — 개발 0.</span><span class="en">※ Announces in-game card·win milestone (event on that week) — 0 dev.</span></p></div>
+  </div>
+
+  <h4 style="font-size:14px;margin:20px 0 8px"><span class="ko">📌 D14 티징·예고 — 다음 콘텐츠 + 추첨</span><span class="en">📌 D14 Teaser·preview — next content + draw</span></h4>
+  <div class="dsample">
+    <img src="post_samples/d14_next.png" alt="D14 다음 도시 티저 샘플 이미지" style="width:320px;max-width:100%;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(20,40,70,.12);flex:none;">
+    <div class="cp"><div class="copybox"><span class="lbl">POST COPY</span>🌍 CHOOSE THE NEXT CITY! ✨ (New event teaser)
+Where should we travel next? 🅰️ 🅱️ or 🅲️ — you decide!
+New cities, new events & more rewards on the way ✈️
+💰 Lucky voters win GOLD to their inbox 💛
+(Drop your game ID with your vote to claim)
+✨ Like + Share — the journey continues! 🐾</div>
+    <p class="sub" style="font-size:12px"><span class="ko">※ 지속 운영 느낌(마무리/감사 X). D2 포맷 재활용.</span><span class="en">※ Ongoing feel (no wrap-up/thank-you). Reuse D2 format.</span></p></div>
+  </div>
+
+  <h3><span class="pg pg-m">🃏 <span class="ko">마종</span><span class="en">Mahjong</span></span> <span class="ko">페이지 — 퀘스트 캠페인 게시 (별도 스트림)</span><span class="en">page — Quest campaign posts (separate stream)</span></h3>
+  <table class="cal">
+    <tr><th>Day</th><th><span class="ko">유형</span><span class="en">Type</span></th><th><span class="ko">포스트</span><span class="en">Post</span></th></tr>
+    <tr><td>D0</td><td><span class="ko">퀘스트</span><span class="en">Quest</span></td><td><span class="ko">마종 퀘스트 포스트 게시 + 응모 고정댓글 핀</span><span class="en">Publish Mahjong quest post + pin entry comment</span></td></tr>
+    <tr><td>D7</td><td><span class="ko">리마인드</span><span class="en">Reminder</span></td><td><span class="ko">퀘스트 응모 독려 (마감 임박)</span><span class="en">Encourage quest entries (deadline near)</span></td></tr>
+    <tr><td>D15</td><td><span class="ko">발표</span><span class="en">Announce</span></td><td><span class="ko">당첨자 발표 "Event closed · Congrats…" → 마종 인박스 지급 <span class="sub">(D14 응모 마감 직후)</span></span><span class="en">Winner announcement "Event closed · Congrats…" → Mahjong inbox payout <span class="sub">(right after D14 entry close)</span></span></td></tr>
+  </table>
+  <p class="sub" style="font-size:12.5px"><span class="ko">※ 마종 페이지 = <b>퀘스트 포스팅(타게임 유입) 전용</b> — 마종 팬 대상. 솔리테어 자체 페이지와 <b>별개 스트림</b>(게시 1회 + 리마인드 + 발표).</span><span class="en">※ Mahjong page = <b>dedicated to quest posting (cross-game inflow)</b> — targets Mahjong fans. A <b>separate stream</b> from Solitaire's own page (1 post + reminder + announcement).</span></p>
+
+  <h4 style="font-size:14px;margin:18px 0 8px"><span class="ko">📌 D0 마종 퀘스트 포스트 — 샘플 (마종 페이지)</span><span class="en">📌 D0 Mahjong quest post — sample (Mahjong page)</span></h4>
+  <div class="dsample">
+    <img src="post_samples/mj_d0_quest.png" alt="마종 퀘스트 포스트 샘플 이미지" style="width:320px;max-width:100%;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(20,40,70,.12);flex:none;">
+    <div class="cp">
+      <div class="copybox"><span class="lbl">QUEST POST</span>🀄 Mahjong Giveaway 🀄
+🎉 Love tile-matching? Now try card-matching! 🃏
+🔍 Play <b>Solitaire City Journey</b> for 7 days, then drop your <b>Mahjong ID</b> in the comments for a chance to win 🎁 <b>300 Coins</b> 🎁 — sent straight to your Mahjong inbox!
+▶️ Play now: [PLAY_LINK]
+(How to enter 👇)</div>
+      <div class="copybox"><span class="lbl">PINNED ENTRY COMMENT</span>📋 How to enter:
+1️⃣ Play Solitaire City Journey — grab your daily gift each day! <b>(5+ day check-in is OK to enter)</b>
+2️⃣ Reply here with your <b>Mahjong ID</b> + a screenshot of your check-in
+3️⃣ We'll draw winners & send 300 Coins to your Mahjong inbox 💛
+🎁 40 winners · entry open for 2 weeks — winners drawn right after! 🎲
+BONUS: Share 🔄 and like 👍 for more chances!
+❗ Beware of scams — we'll NEVER ask for anything but your Mahjong ID.</div>
+      <p class="sub" style="font-size:12px"><span class="ko">※ 상세 = 포스팅 기획서 참조. 이미지에 7일 표기하되 <b>5일+ 캡처 허용</b>.</span><span class="en">※ Details in the posting plan. Image says 7 days but <b>5+ day check-in accepted</b>.</span></p>
+    </div>
+  </div>
+  </div><!-- /andre-block -->
+  </div><!-- /appendix -->
+
+
+  <div class="foot">
+    <span class="ko">참조 — 런칭플랜 <code>solitaire_cj_launch_plan_14d.html</code> · 포스팅 기획서(한/영) <code>22_cross_promo_posting_campaign.html</code> · CP 현황 <code>cp_phase1_slack.html</code><br>
+    ⚠️ 정확한 D0(메타 QA 완료일) 확정 후 절대일자 고정 — 본 노트는 "D0 이전 = 선결 준비" 기준.</span><span class="en">Ref — Launch plan <code>solitaire_cj_launch_plan_14d.html</code> · Posting plan (KR/EN) <code>22_cross_promo_posting_campaign.html</code> · CP status <code>cp_phase1_slack.html</code><br>
+    ⚠️ Fix absolute dates once exact D0 (Meta QA completion) is confirmed — this note is based on "before D0 = prerequisite prep."</span>
+  </div>
+</div>
+<script>
+(function(){
+  var KEY='scj_syncup_chk', saved=JSON.parse(localStorage.getItem(KEY)||'{}');
+  var LANG_KEY='scj_lang', EDIT_KEY='scj_edit';
+  var PASS='scj2026';               // ← 오너 패스코드 (원하면 이 값만 바꾸세요)
+  var editable = sessionStorage.getItem(EDIT_KEY)==='1';
+
+  // ---- 언어 토글 ----
+  function setLang(l){
+    document.body.classList.toggle('lang-en', l==='en');
+    document.documentElement.lang = l;
+    document.querySelectorAll('.langbtn').forEach(function(b){
+      b.classList.toggle('active', b.dataset.lang===l);
+    });
+    localStorage.setItem(LANG_KEY, l);
+  }
+  document.querySelectorAll('.langbtn').forEach(function(b){
+    b.addEventListener('click', function(){ setLang(b.dataset.lang); });
+  });
+  setLang(localStorage.getItem(LANG_KEY)||'ko');
+
+  // ---- 오너 편집 잠금 ----
+  var lockBtn = document.getElementById('lockBtn');
+  function applyLock(){
+    document.body.classList.toggle('locked', !editable);
+    document.querySelectorAll('.chk input[type=checkbox]').forEach(function(cb){ cb.disabled = !editable; });
+    lockBtn.classList.toggle('unlocked', editable);
+    lockBtn.querySelector('.ko').textContent = editable ? '🔓 편집 중 (클릭해 잠금)' : '🔒 편집 잠김 (오너 전용)';
+    lockBtn.querySelector('.en').textContent = editable ? '🔓 Editing (click to lock)' : '🔒 Locked (owner only)';
+  }
+  lockBtn.addEventListener('click', function(){
+    if(editable){
+      editable=false; sessionStorage.removeItem(EDIT_KEY);
+    } else {
+      var p = prompt('오너 패스코드 입력 / Enter owner passcode:');
+      if(p===null) return;
+      if(p===PASS){ editable=true; sessionStorage.setItem(EDIT_KEY,'1'); }
+      else { alert('패스코드가 틀렸습니다 / Wrong passcode'); return; }
+    }
+    applyLock();
+  });
+  applyLock();
+
+  // ---- 체크박스 (언어 무관 단일 소스로 싱크) ----
+  document.querySelectorAll('.chk input[type=checkbox]').forEach(function(cb){
+    var id=cb.dataset.id, lbl=cb.closest('.chk');
+    if(id in saved) cb.checked=saved[id];
+    lbl.classList.toggle('done', cb.checked);
+    cb.addEventListener('change',function(){
+      lbl.classList.toggle('done', cb.checked);
+      saved[id]=cb.checked; localStorage.setItem(KEY, JSON.stringify(saved));
+    });
+  });
+
+  // ---- 담당 후보 태그 (오너 편집 시에만) ----
+  document.querySelectorAll('.otag').forEach(function(t){
+    var id=t.dataset.id;
+    if(saved[id]) t.classList.add('on');
+    t.addEventListener('click',function(){
+      if(!editable) return;
+      t.classList.toggle('on');
+      saved[id]=t.classList.contains('on'); localStorage.setItem(KEY, JSON.stringify(saved));
+    });
+  });
+
+  // ---- 딥링크 라우터 (#anchor 또는 #lang/anchor, 예: #en/rnr) ----
+  function gotoHash(){
+    var h=(location.hash||'').replace(/^#/,''); if(!h) return;
+    var parts=h.split('/'), lang=null, anchor=h;
+    if(parts.length===2 && (parts[0]==='ko'||parts[0]==='en')){ lang=parts[0]; anchor=parts[1]; }
+    if(lang) setLang(lang);
+    setTimeout(function(){
+      var el=document.querySelector('[data-anchor="'+anchor+'"]');
+      if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 90);
+  }
+  window.addEventListener('hashchange', gotoHash);
+  gotoHash();
+})();
+</script>
+</body>
+</html>
