@@ -59,6 +59,16 @@ small.pp{color:#888;font-weight:400;}
 .ver-notice{font-size:13px;padding:6px 14px;border-radius:8px;font-weight:600;}
 .ver-notice.v1{background:var(--v1bg);color:var(--v1);}
 .ver-notice.v2{background:var(--v2bg);color:var(--v2);}
+.infl-kpi{border-radius:12px;padding:18px 22px;margin:0 0 30px;border:1px solid #e3e3e3;}
+.infl-kpi.good{background:#eaf6ee;border-color:#bfe3cc;}
+.infl-kpi.bad{background:#fdeceb;border-color:#f3c7c3;}
+.infl-kpi .k-top{font-size:14px;color:#666;margin-bottom:4px;}
+.infl-kpi .k-big{font-size:38px;font-weight:800;line-height:1.1;letter-spacing:-.5px;}
+.infl-kpi.good .k-big{color:#1c7a3c;}
+.infl-kpi.bad .k-big{color:#c0392b;}
+.infl-kpi .k-sub{font-size:14px;color:#444;margin-top:6px;font-weight:600;}
+.infl-kpi .k-cells{display:flex;gap:26px;margin-top:12px;flex-wrap:wrap;}
+.infl-kpi .k-cell b{font-size:19px;} .infl-kpi .k-cell span{display:block;font-size:12px;color:#777;}
 
 /* ── 버전 조건부 표시 ── */
 .v1-only,.v2-only,.v1-val,.v2-val{transition:opacity .15s;}
@@ -118,6 +128,9 @@ small.pp{color:#888;font-weight:400;}
   <button class="vbtn v2" onclick="setVer('v2')">v2 (B · Toss_B)</button>
   <span class="ver-notice v1" id="verNotice">현재 보기: v1 — 입장료 유지, 데코 골드 소모</span>
 </div>
+
+<!-- 인하 전(현행) 대비 인플레 변화 — 버전별 헤드라인 -->
+<div class="infl-kpi" id="inflKpi"></div>
 
 <!-- ① Source/Sink 균형 -->
 <h2>① Source / Sink 균형</h2>
@@ -381,6 +394,29 @@ function apply(){
     n.textContent = isV1
       ? '현재 보기: v1 — 입장료 유지, 데코 골드 소모, streak_meter_gold 유효'
       : '현재 보기: v2 — 입장료 0, 데코 골드 0, 자동꾸미기, streak_meter_gold 비활성';
+  }
+  // 인하 전(현행) 대비 인플레 변화 KPI
+  var k = document.getElementById('inflKpi');
+  if(k){
+    if(isV1){
+      k.className = 'infl-kpi good';
+      k.innerHTML = '<div class="k-top">인하 전(현행) 대비 인플레이션 변화 · <b>v1 (A)</b></div>'
+        + '<div class="k-big">−19% 감소</div>'
+        + '<div class="k-sub">주간 순잉여 +16M → +12.9M (−3.1M) · 의도대로 인플레 완화</div>'
+        + '<div class="k-cells">'
+        + '<div class="k-cell"><b style="color:#1c7a3c">−14M</b><span>30일 누적 (69M→55M, −20%)</span></div>'
+        + '<div class="k-cell"><b style="color:#1c7a3c">−41M</b><span>90일 누적 (207M→166M, −20%)</span></div>'
+        + '</div>';
+    } else {
+      k.className = 'infl-kpi bad';
+      k.innerHTML = '<div class="k-top">인하 전(현행) 대비 인플레이션 변화 · <b>v2 (B)</b></div>'
+        + '<div class="k-big">+50% 증가 ⚠</div>'
+        + '<div class="k-sub">주간 순잉여 +16M → +24M (+8M) · 감소 아님 — 입장료·데코 싱크 소멸로 오히려 악화</div>'
+        + '<div class="k-cells">'
+        + '<div class="k-cell"><b style="color:#c0392b">+34M</b><span>30일 누적 (69M→103M, +49%)</span></div>'
+        + '<div class="k-cell"><b style="color:#c0392b">+103M</b><span>90일 누적 (207M→310M, +50%)</span></div>'
+        + '</div>';
+    }
   }
   // v1-only / v2-only
   document.querySelectorAll('.v1-only').forEach(function(el){ el.classList.toggle('hidden', !isV1); });
