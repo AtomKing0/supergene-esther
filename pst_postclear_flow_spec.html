@@ -246,7 +246,7 @@
       <li>로비 강제 경유를 없애면 데코 노출 동선이 사라짐 → <b>데코 재화(망치)가 "1스텝 꾸미기" 임계 도달 시에만</b> 결과 후 로비 자동 진입 + 자동 꾸미기 연출 1회, 그 외엔 다음판 직행.</li>
       <li><b>망치 수 = 플레이 수</b>이므로 자동 진입 빈도는 <b>플레이 수에 자연 비례</b> — N판마다 1회 꼴로 데코 진입. 이 비례에 맞춰 임계값 조정.</li>
       <li><b>[확정] const로 제어</b> — <code>auto_deco_round_interval</code>(N판마다 자동꾸미기 1회 발동 주기·로비이동 빈도 상한, 기본 <b>5</b>) · <code>auto_deco_step_per_fire</code>(1회 발동 시 꾸미는 스텝 수, 기본 <b>1</b> = 망치만 차감·골드 0). 두 값으로 "몇 판마다 / 한 번에 몇 스텝" 꾸밀지 데이터 튜닝.</li>
-      <li><b>⚠ 현재 데코 비용 = 망치 + 골드 합산.</b> 자동 꾸미기에서 <b>골드까지 자동 차감하면 UX 부담</b>(입장료 폐지로 골드는 더 귀해짐) → <b>[확정] 자동 경로는 망치만 차감, 골드 미사용(골드 0).</b> 골드는 <b>유저가 도시에서 직접 수동 업그레이드</b>할 때만 쓰는 스피드업 선택지로 남겨 골드 싱크 일부 유지. <span class="tag eco">경제</span></li>
+      <li><b>⚠ 현재 데코 비용 = 망치 + 골드 합산.</b> 입장료 폐지로 골드가 더 귀해짐 → <b>[확정] 데코는 자동·수동 모두 망치만 차감, 골드 완전 미사용(골드 0).</b> 데코에서 골드 비용은 제거. <span class="tag eco">경제</span></li>
     </ul>
 
     <h3>결정 ⑤ — [받기] 한 번에 결과+이벤트 동시 수령 → 다음판</h3>
@@ -330,7 +330,7 @@
       <li><b>난이도·보상 곡선 점검 (핵심)</b> — 배수 1배·입장료 0 전환 시, 베팅 연동으로 튜닝됐던 보상/난이도가 어긋나지 않는지 1회 점검. 보상 = 카드매칭 + 스트릭으로 단순화되므로 레벨별 기대 보상·난이도 곡선 재확인. <span class="tag eco">경제</span><span class="tag plan">기획</span></li>
       <li><b>전면(IT) 광고 빈도</b> — 판수가 늘면 <code>interstitial_ad_level_clear_interval</code> 발동이 잦아져 마찰·이탈 위험. R11(첫 세션 off) 유지 + 인터벌 재점검. <span class="tag dev">개발</span></li>
       <li><b>데코 자동 진입 빈도</b> — 망치(=플레이수) 기반이라 자연 비례하지만, 너무 잦으면 "강제 이탈" 재발 → 세션당 상한·환산값 설정. <span class="tag plan">기획</span></li>
-      <li><b>데코 골드 싱크</b> — 자동 꾸미기를 망치 단독으로 하면 기존 데코의 골드 싱크가 줄어듦. 골드 인플레 모니터 + 수동 데코·상점으로 싱크 보완. <span class="tag eco">경제</span></li>
+      <li><b>데코 골드 싱크 제거</b> — 데코를 자동·수동 모두 망치 전용으로 하면 기존 데코의 골드 싱크가 사라짐. 골드 인플레 모니터 + 상점 등 다른 채널로 싱크 보완. <span class="tag eco">경제</span></li>
       <li><b>세션 길이·피로</b> — 즉시 재시작이 번아웃 유발하지 않는지 세션 길이·이탈 모니터.</li>
     </ul>
     <h2 style="margin-top:14px;">✓ 확인 완료 — 이슈 아님</h2>
@@ -365,7 +365,7 @@
       <li><b>★ 주(主) 레버 = 다른 채널의 골드/티켓 → 비골드 전환</b> — 구조화 보상 채널(meta_city·이벤트 마일/랭킹·앨범·데일리·휠)의 골드 슬롯은 <b>감액</b>(슬롯·수량 유지), 사라지는 아이템(프리부스터 일부·티켓)은 §7-B 고정표로 인게임 부스터 치환. 슬롯·연출 유지(체감 너프 방지) → <b>지급 풍성·골드 희소·수익 보호</b>. V4 선례(<code>gold270→ticket×1</code>) 확장. <span class="tag eco">경제</span></li>
       <li><b>인게임 수익 보호 가드</b> — 부스터 무료공급 증량 금지(IAP 번들 잠식 방지)·골드 희소 유지(IAP 골드 가치)·인피니트는 상위 보상에 소량만.</li>
       <li><b>신규 골드 싱크(보조)</b> — 골드 상점 ⓐ·실패 Continue(near-miss) ⓑ·부스터 골드 즉시충전 ⓒ. 단 선택 싱크라 단독으론 입장료 공백을 다 못 메움(보조).</li>
-      <li><b>자동 꾸미기 = 망치 단독(골드 0)</b> / 수동 꾸미기(도시) = 망치+골드 유지(선택형 싱크). <span class="tag eco">경제</span></li>
+      <li><b>데코 = 망치 전용(골드 0)</b> — 자동·수동 꾸미기 모두 골드 미사용. 데코 골드 싱크는 제거. <span class="tag eco">경제</span></li>
       <li><b>판 보상 = 손대지 않음</b> — 왕복 구조라 entry=0이면 자동으로 마진만 남음(수동 재작업 불필요)·인게임 수익 직결. 인플레는 채널전환으로 잡음. <span class="tag eco">경제</span></li>
     </ul>
     <h3>방치 골드 / RV 골드 — 현 지급량 적정성</h3>
@@ -386,7 +386,7 @@
   <div class="sect">7-B. 클라 작업 — 보상 아이템 타입 치환 (프리부스터·티켓 제거)</div>
   <div class="card">
     <h2>🔧 프리레벨 팝업 제거 → 사라지는 아이템을 지급 보상에서도 일괄 치환</h2>
-    <div class="desc">post-clear v2(B)에서 프리레벨 팝업이 사라짐. <b>폭죽은 인게임 부스터로 이전</b>돼 게임에 그대로 존재하므로 <b>보상 유지(치환 안 함)</b>. 반면 <b>골든티켓</b>(프리미엄·92명 집중 → 무료 지급 희소 유지)과 <b>입장료 대체화폐(티켓)</b>·관련 <b>인피니트</b>는 <b>지급 보상에서 인게임 부스터로 치환</b> → 전 보상 채널에 아래 <b>고정 치환표</b> 적용.</div>
+    <div class="desc">post-clear v2(B)에서 프리레벨 팝업이 사라짐. <b>순수 폭죽(<code>booster_fireworks</code>)은 인게임 부스터로 이전</b>돼 게임에 그대로 존재하므로 <b>보상 유지(치환 안 함)</b>. 단 <b><code>infinite_fireworks_*</code>는 일반 폭죽(<code>booster_fireworks</code>)으로 치환</b>. <b>골든티켓</b>(프리미엄·92명 집중 → 무료 지급 희소 유지)과 <b>입장료 대체화폐(티켓)</b>·관련 <b>인피니트</b>는 <b>지급 보상에서 인게임 부스터로 치환</b> → 전 보상 채널에 아래 <b>고정 치환표</b> 적용.</div>
     <p style="margin:6px 0 14px;"><a href="pst_reward_beforeafter.html" target="_blank" style="display:inline-block;background:#13314f;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13.5px;">📊 채널별 Before / After 전체 보기 →</a> <span style="font-size:12.5px;color:#67788b;">실제 시트 그리드·전 채널·골드(공통)/아이템 치환(B전용) 색 구분</span></p>
 
     <div class="note" style="background:#eef2ff;border-color:#c4ccf7;color:#2a2ab0;">
@@ -396,12 +396,13 @@
     <h3>고정 치환표 (클라 1패스 일괄 · id만 교체 · 수량 n 유지)</h3>
     <table>
       <tr><th class="lbl">대상 (현재 보상에 존재)</th><th>→ 처리</th><th>비고</th></tr>
-      <tr style="background:#f2fbf4;"><td class="lbl"><code>booster_fireworks</code> (프리부스터1·폭죽) + <code>infinite_fireworks_*</code></td><td><b>치환 안 함 — 보상 유지</b></td><td>인게임 부스터로 이전돼 게임에 존재</td></tr>
+      <tr style="background:#f2fbf4;"><td class="lbl"><code>booster_fireworks</code> (프리부스터1·폭죽, 순수)</td><td><b>치환 안 함 — 보상 유지</b></td><td>인게임 부스터로 이전돼 게임에 존재</td></tr>
+      <tr><td class="lbl"><code>infinite_fireworks_*</code> (5m/10m/15m)</td><td>→ <code>booster_fireworks</code></td><td>원본 n 유지 · 인피니트 폭죽은 일반 폭죽으로 치환</td></tr>
       <tr><td class="lbl"><code>booster_golden_ticket</code> (프리부스터2·골든티켓)</td><td>→ <code>booster_wild_card</code></td><td>원본 n 유지 · 프리미엄 희소 유지</td></tr>
       <tr><td class="lbl"><code>currency_ticket</code> (입장료 대체화폐)</td><td>→ <code>booster_undo</code></td><td>원본 n 유지 · 입장료 폐지로 소멸</td></tr>
       <tr><td class="lbl"><code>infinite_gticket_*</code> · <code>infinite_ticket_*</code> (5m/10m/15m)</td><td>→ <code>booster_extra_deck</code></td><td>원본 n 유지 · 프리미엄→최고가 인게임 부스터</td></tr>
     </table>
-    <div class="note">인게임 잔존 부스터(<code>booster_fireworks</code>·<code>booster_wild_card</code>·<code>booster_undo</code>·<code>booster_extra_deck</code>)는 <b>그대로</b>. <b>폭죽은 인게임 이전이라 보상 유지</b>가 맞음(제거 아님). 골든티켓/티켓/관련 인피니트만 치환.</div>
+    <div class="note">인게임 잔존 부스터(<code>booster_fireworks</code>·<code>booster_wild_card</code>·<code>booster_undo</code>·<code>booster_extra_deck</code>)는 <b>그대로</b>. <b>순수 폭죽(<code>booster_fireworks</code>)만 보상 유지</b>(제거 아님). <code>infinite_fireworks_*</code>는 일반 폭죽으로, 골든티켓/티켓/관련 인피니트는 인게임 부스터로 치환.</div>
 
     <h3>적용 대상 탭 (밸런스시트 보상 채널 전체)</h3>
     <ul class="clean">
@@ -409,7 +410,7 @@
       <li>⚠️ <b><code>product</code> 탭(IAP 번들)도 포함</b> — <code>bundle_iap_1~5</code>(190004~008)가 <code>currency_ticket</code> 판매 중(×1·1·2·4·8). 입장료 폐지 시 죽는 화폐라 <b>실결제 상품이 죽은 화폐 지급 방지</b> 위해 동일 치환 필요(ticket→<code>booster_undo</code>). <b>클라가 보상과 동일하게 강제 치환·시트 미수정.</b> <span class="tag dev">개발</span></li>
       <li><b>슬롯 수 불변</b>(id·수량만 교체, 슬롯 추가·삭제 없음) → <b>보상 UI 수정 불필요</b>. <span class="tag dev">개발</span><span class="tag qa">QA</span></li>
     </ul>
-    <div class="note" style="background:#f2fbf4;border-color:#c8ecd2;color:#1c6b34;"><b>QA 검증</b>: B 빌드의 어떤 보상 슬롯·<b>IAP 번들(product)</b>에도 <code>booster_golden_ticket</code>·<code>currency_ticket</code>·<code>infinite_gticket_*</code>·<code>infinite_ticket_*</code> 가 <b>0건</b>이어야 함(치환 누락=버그). <code>booster_fireworks</code>·<code>infinite_fireworks_*</code>는 <b>유지</b>(존재 정상). 수량(n)은 원본과 일치. 산출물 대조 = <a href="pst_reward_beforeafter.html" target="_blank"><b>pst_reward_beforeafter.html</b></a>(B전용 치환 셀 파란색·골드 감액 셀 빨간색·전 채널).</div>
+    <div class="note" style="background:#f2fbf4;border-color:#c8ecd2;color:#1c6b34;"><b>QA 검증</b>: B 빌드의 어떤 보상 슬롯·<b>IAP 번들(product)</b>에도 <code>booster_golden_ticket</code>·<code>currency_ticket</code>·<code>infinite_gticket_*</code>·<code>infinite_ticket_*</code>·<code>infinite_fireworks_*</code> 가 <b>0건</b>이어야 함(치환 누락=버그). <code>booster_fireworks</code>(순수)만 <b>유지</b>(존재 정상). 수량(n)은 원본과 일치. 산출물 대조 = <a href="pst_reward_beforeafter.html" target="_blank"><b>pst_reward_beforeafter.html</b></a>(B전용 치환 셀 파란색·골드 감액 셀 빨간색·전 채널).</div>
   </div>
 
   
@@ -508,7 +509,7 @@
         <td class="lbl">그룹③ 데코 자동</td>
         <td>망치 임계 도달 시만 자동 진입+자동 꾸미기→<b>로비(도시 화면) 도착</b> · 골드 미차감(망치만)</td>
         <td>망치 임계 모이는 판 클리어→자동 로비 진입·꾸미기 연출→<b>로비에 머무름</b> 확인 · 골드 변화 0 확인</td>
-        <td>임계 직전/직후 경계 · 자동 꾸미기 후 <b>로비(도시 화면) 도착·꾸민 도시 노출(다음판 자동복귀 아님)</b> · 빈도 상한(세션당 N회) 준수 · 망치+골드 보유 시 골드 안 빠짐 · 수동 꾸미기는 골드+망치 정상</td>
+        <td>임계 직전/직후 경계 · 자동 꾸미기 후 <b>로비(도시 화면) 도착·꾸민 도시 노출(다음판 자동복귀 아님)</b> · 빈도 상한(세션당 N회) 준수 · 망치+골드 보유 시 골드 안 빠짐(자동·수동 모두) · 수동 꾸미기도 망치만 차감(골드 0)</td>
       </tr>
       <tr>
         <td class="lbl">튜토리얼</td>
