@@ -1,44 +1,54 @@
 #!/usr/bin/env python3
 """
 BigQuery monitoring: solitaire_city_journey KR 외 유저 감시
-환경변수 GOOGLE_SERVICE_ACCOUNT_JSON (base64) 또는
-GOOGLE_APPLICATION_CREDENTIALS (파일경로) 로 인증
+환경변수 GOOGLE_SERVICE_ACCOUNT_JSON (base64) 로 인증
+service_account / authorized_user 양쪽 타입 모두 지원
 """
 import os
 import sys
 import json
 import base64
-import tempfile
 
 def get_credentials():
     b64 = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
-    if b64:
-        try:
-            json_str = base64.b64decode(b64).decode("utf-8")
-            info = json.loads(json_str)
+    if not b64:
+        print("CRED_ERROR:GCP 인증 없음 - 환경변수 GOOGLE_SERVICE_ACCOUNT_JSON(base64) 필요", file=sys.stderr)
+        sys.exit(2)
+
+    try:
+        json_str = base64.b64decode(b64).decode("utf-8")
+        info = json.loads(json_str)
+    except Exception as e:
+        print(f"CRED_ERROR:base64/JSON 파싱 실패: {e}", file=sys.stderr)
+        sys.exit(2)
+
+    cred_type = info.get("type")
+
+    try:
+        if cred_type == "authorized_user":
+            from google.oauth2.credentials import Credentials
+            from google.auth.transport.requests import Request
+            creds = Credentials(
+                token=None,
+                refresh_token=info["refresh_token"],
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=info["client_id"],
+                client_secret=info["client_secret"],
+            )
+            creds.refresh(Request())
+            return creds
+        elif cred_type == "service_account":
             from google.oauth2 import service_account
             return service_account.Credentials.from_service_account_info(
                 info,
                 scopes=["https://www.googleapis.com/auth/bigquery.readonly"],
             )
-        except Exception as e:
-            print(f"CRED_ERROR:GOOGLE_SERVICE_ACCOUNT_JSON 파싱 실패: {e}", file=sys.stderr)
+        else:
+            print(f"CRED_ERROR:지원하지 않는 credentials type: {cred_type}", file=sys.stderr)
             sys.exit(2)
-
-    adc_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-    if adc_path:
-        try:
-            from google.oauth2 import service_account
-            return service_account.Credentials.from_service_account_file(
-                adc_path,
-                scopes=["https://www.googleapis.com/auth/bigquery.readonly"],
-            )
-        except Exception as e:
-            print(f"CRED_ERROR:GOOGLE_APPLICATION_CREDENTIALS 파싱 실패: {e}", file=sys.stderr)
-            sys.exit(2)
-
-    print("CRED_ERROR:GCP 인증 없음 - GOOGLE_SERVICE_ACCOUNT_JSON 또는 GOOGLE_APPLICATION_CREDENTIALS 필요", file=sys.stderr)
-    sys.exit(2)
+    except Exception as e:
+        print(f"CRED_ERROR:인증 초기화 실패: {e}", file=sys.stderr)
+        sys.exit(2)
 
 
 def run():
