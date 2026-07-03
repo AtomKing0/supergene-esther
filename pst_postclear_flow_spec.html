@@ -245,8 +245,8 @@
     <ul class="clean">
       <li>로비 강제 경유를 없애면 데코 노출 동선이 사라짐 → <b>데코 재화(망치)가 "1스텝 꾸미기" 임계 도달 시에만</b> 결과 후 로비 자동 진입 + 자동 꾸미기 연출 1회, 그 외엔 다음판 직행.</li>
       <li><b>망치 수 = 플레이 수</b>이므로 자동 진입 빈도는 <b>플레이 수에 자연 비례</b> — N판마다 1회 꼴로 데코 진입. 이 비례에 맞춰 임계값 조정.</li>
-      <li><span class="tag plan">기획</span> "1스텝 꾸미기 = 망치 N개 = N판" 환산값·세션당 상한 정의.</li>
-      <li><b>⚠ 현재 데코 비용 = 망치 + 골드 합산.</b> 자동 꾸미기에서 <b>골드까지 자동 차감하면 UX 부담</b>(입장료 폐지로 골드는 더 귀해짐) → <b>자동 경로는 망치 단독</b> 권장. 골드는 <b>유저가 도시에서 직접 수동 업그레이드</b>할 때만 쓰는 스피드업 선택지로 남겨 골드 싱크 일부 유지. <span class="tag eco">경제</span></li>
+      <li><b>[확정] const로 제어</b> — <code>auto_deco_round_interval</code>(N판마다 자동꾸미기 1회 발동 주기·로비이동 빈도 상한, 기본 <b>5</b>) · <code>auto_deco_step_per_fire</code>(1회 발동 시 꾸미는 스텝 수, 기본 <b>1</b> = 망치만 차감·골드 0). 두 값으로 "몇 판마다 / 한 번에 몇 스텝" 꾸밀지 데이터 튜닝.</li>
+      <li><b>⚠ 현재 데코 비용 = 망치 + 골드 합산.</b> 자동 꾸미기에서 <b>골드까지 자동 차감하면 UX 부담</b>(입장료 폐지로 골드는 더 귀해짐) → <b>[확정] 자동 경로는 망치만 차감, 골드 미사용(골드 0).</b> 골드는 <b>유저가 도시에서 직접 수동 업그레이드</b>할 때만 쓰는 스피드업 선택지로 남겨 골드 싱크 일부 유지. <span class="tag eco">경제</span></li>
     </ul>
 
     <h3>결정 ⑤ — [받기] 한 번에 결과+이벤트 동시 수령 → 다음판</h3>
@@ -457,7 +457,7 @@
       <tr style="background:#f3f9ff;"><td class="lbl"><b>is_deco_auto_open</b></td><td>0 → 1</td><td><b>그룹③ 데코 자동</b> — 망치 임계 시 자동 꾸미기·골드 미사용. ①②와 독립(단독 A/B)</td></tr>
     </table>
     <div class="note"><b>✅ 정합 게이트 (그룹이 정합해야 마스터가 돈다)</b> — <code>v2적용 = is_quick_next_loop_open AND 그룹정합()</code>. <b>그룹①⟺②는 반드시 동일</b>(①만 켜고 ② 끄면 "다음판 직행했는데 보상은 로비서" 모순) → 불일치 시 <b>전체 v1 폴백 + 경고 로그</b>. 그룹③ 독립. 평소 운영: 마스터만 ON.</div>
-    <div class="note"><b>그룹이 참조하는 <code>_v2</code> 값</b>(시트에 보임·튜닝용, 동작 전환은 위 플래그가 함): <b>그룹①</b> <code>entry_cost_base_v2</code>=0·<code>entry_cost_increase_v2</code>=0·<code>entry_cost_max_cap_v2</code>=0 / <b>그룹③</b> <code>deco_auto_hammer_threshold_v2</code>=<b>5</b>(Normal ~5판당 자동꾸미기 1회·로비이동 빈도상한)·<code>deco_auto_use_gold_v2</code>=0. (배수 1배·부스터 인게임·[홈]·[받기] 동시수령은 const 값 아닌 코드 분기 — [B])</div>
+    <div class="note"><b>그룹이 참조하는 <code>_v2</code> 값</b>(시트에 보임·튜닝용, 동작 전환은 위 플래그가 함): <b>그룹①</b> <code>entry_cost_base_v2</code>=0·<code>entry_cost_increase_v2</code>=0·<code>entry_cost_max_cap_v2</code>=0 / <b>그룹③</b> <code>deco_auto_hammer_threshold_v2</code>=<b>5</b>(Normal ~5판당 자동꾸미기 1회·로비이동 빈도상한)·<code>deco_auto_use_gold_v2</code>=0·<code>auto_deco_round_interval</code>=<b>5</b>(자동꾸미기 발동 주기 — N판마다 1회 자동 진입, 로비이동 빈도 상한 역할. <code>deco_auto_hammer_threshold_v2</code>와 동일 톤으로 튜닝)·<code>auto_deco_step_per_fire</code>=<b>1</b>(1회 발동 시 꾸미는 스텝 수 = 망치만 차감, 골드 0). (배수 1배·부스터 인게임·[홈]·[받기] 동시수령은 const 값 아닌 코드 분기 — [B])</div>
 
     <h3>[C] 변경 없음 — v1 유지 (확인용)</h3>
     <ul class="clean">
