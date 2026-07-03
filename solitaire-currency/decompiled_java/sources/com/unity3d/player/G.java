@@ -1,5 +1,0 @@
-package com.unity3d.player;
-
-/* JADX INFO: loaded from: classes4.dex */
-interface G {
-}

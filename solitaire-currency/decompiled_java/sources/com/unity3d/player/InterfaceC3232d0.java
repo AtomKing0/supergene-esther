@@ -1,6 +1,0 @@
-package com.unity3d.player;
-
-/* JADX INFO: renamed from: com.unity3d.player.d0, reason: case insensitive filesystem */
-/* JADX INFO: loaded from: classes4.dex */
-public interface InterfaceC3232d0 {
-}
