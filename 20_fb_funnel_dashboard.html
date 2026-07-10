@@ -271,6 +271,8 @@ const fmt = (v,d=2)=> v==null?'—':(+v).toFixed(d);
 const pct = v=> v==null?'—':(+v).toFixed(1)+'%';
 const num = v=> v==null?'—':(+v).toLocaleString();
 const dnf = n=> n==null?'—':(n<0?'D-'+Math.abs(n):'D+'+n);  // D0 이전은 D- 표기
+const SOL_L0 = (()=>{const [y,m,dd]=(DATA.launch.sol||'2026-07-13').split('-').map(Number);return new Date(y,m-1,dd);})();
+const solDay = ds => { const p=ds.split('-').map(Number); return Math.round((new Date(p[0],p[1]-1,p[2])-SOL_L0)/86400000); };
 
 document.getElementById('h-updated').textContent = DATA.updated;
 document.getElementById('rd').textContent = DATA.recent_days;
@@ -282,7 +284,15 @@ document.getElementById('ls2').textContent = DATA.launch.sol;
 function segName(){ return SEG==='nru' ? '신규(NRU)' : SEG==='ru' ? '복귀(RU)' : '전체 DAU(팀 KPI)'; }
 function segColorMax(){ return SEG==='nru' ? {r:12, rv:0.15} : SEG==='ru' ? {r:30, rv:0.30} : {r:14, rv:0.30}; }
 // 모드에 따라 데이터 소스 스왑: 최근 = recent / 런칭 동기간 = launch_agg(자기 런칭 D+0~D+16 창)
-function baseOf(code){ return (MODE==='launch' ? (DATA.launch_agg||{})[code] : (DATA.recent||{})[code]) || {}; }
+// 솔리테어 D0 전: 런칭 창이 비어 있으므로 트래킹(D-) 누적값으로 폴백
+function baseOf(code){
+  const src = (MODE==='launch' ? (DATA.launch_agg||{})[code] : (DATA.recent||{})[code]) || {};
+  if (MODE==='launch' && code==='sol' && !((src.nru||{}).n)) {
+    const rec = (DATA.recent||{}).sol || {};
+    return Object.assign({}, rec, { window: (rec.window||'트래킹') + ' — D0 전 임시' });
+  }
+  return src;
+}
 function windowLabel(code){ return (baseOf(code)).window || (code==='sol'?'런칭 후 누적':'최근 '+DATA.recent_days+'일 일별평균'); }
 function solRec(){ return (DATA.recent.sol||{})[SEG] || {}; }
 function launchArr(code, seg){ return ((DATA.launch_series[code]||{})[seg]) || []; }
@@ -455,11 +465,22 @@ function renderPromoted() {
 function renderPosStrip() {
   // 솔리테어 최신 D+N 기준으로 같은 D+N의 코지·퍼블마 자동 비교
   const solNruSeries = launchArr('sol','nru');
-  const lastDay = solNruSeries.length ? Math.max(...solNruSeries.map(p=>p.day)) : 0;
   const at = (code, day) => launchArr(code,'nru').find(p=>p.day===day) || {};
-  const solAt = at('sol', lastDay), cozyAt = at('cozy', lastDay), pbmAt = at('pbm', lastDay);
+  let lastDay, solAt, benchDay;
+  if (solNruSeries.length) {
+    lastDay = Math.max(...solNruSeries.map(p=>p.day));
+    solAt = at('sol', lastDay); benchDay = lastDay;
+    document.getElementById('ps-sub').textContent = `최신 ${dnf(lastDay)} 기준 · 같은 경과일의 코지·퍼블마와 비교 (NRU)`;
+  } else {
+    // D0 전: 최신 트래킹(D-) 일자를 벤치마크 D+0(런칭 첫날)과 임시 비교
+    const sd = (DATA.sol_daily||[]).slice(-1)[0] || {};
+    lastDay = sd.date ? solDay(sd.date) : 0; benchDay = 0;
+    solAt = { rounds: (sd.nru ? Math.round(sd.games/sd.nru*100)/100 : null),
+              touch: sd.touch_pct, d1_pct: sd.d1_pct, n: sd.nru };
+    document.getElementById('ps-sub').textContent = `솔리테어 ${dnf(lastDay)}(D0 전 트래킹) vs 벤치 D+0(런칭 첫날) — 임시 비교`;
+  }
+  const cozyAt = at('cozy', benchDay), pbmAt = at('pbm', benchDay);
   const solN = solRec().n || cumN('sol','nru');
-  document.getElementById('ps-sub').textContent = `최신 D+${lastDay} 기준 · 같은 경과일의 코지·퍼블마와 비교 (NRU)`;
   const cell = (v,f)=> v==null?'—':f(v);
   const rows = [
     {lab:'솔리테어', c:'#4F8EF7', d:solAt},
@@ -467,7 +488,7 @@ function renderPosStrip() {
     {lab:'퍼블마', c:'#E8832A', d:pbmAt},
   ];
   document.getElementById('ps-table-wrap').innerHTML =
-    `<table class="ps-table"><tr><th>게임 (D+${lastDay})</th><th>NRU 판수</th><th>첫터치</th><th>D1</th><th>유입 n</th></tr>`+
+    `<table class="ps-table"><tr><th>게임</th><th>NRU 판수</th><th>첫터치</th><th>D1</th><th>유입 n</th></tr>`+
     rows.map(r=>`<tr>
       <td class="g-lab" style="color:${r.c}">${r.lab}</td>
       <td>${cell(r.d.rounds, v=>v.toFixed(2)+'판')}</td>
@@ -557,27 +578,47 @@ function renderCenter() {
     document.getElementById('center-h').textContent = `런칭 동기간 ${def.label} 추이 (${def.nruOnly?'신규(NRU) 전용':segName()})`;
     document.getElementById('center-sub').innerHTML = `가로축 = 런칭 후 경과일(D+0=런칭일)${def.nruOnly && SEG!=='nru'?' · <b style="color:#7C3AED">현재 세그먼트와 무관하게 NRU 기준</b>':''}`;
 
-    // 솔리테어 데이터 극소 가드
+    // 솔리테어 D0 전(D-) 트래킹 포인트 — sol_daily에서 지표별 변환해 차트에 병합
+    const solPre = (DATA.sol_daily||[]).map(r=>{
+      const day = solDay(r.date);
+      let v = null;
+      if (LTAB==='rounds')      v = effSeg==='dau' ? (r.dau ? r.games/r.dau : null) : (r.nru ? r.games/r.nru : null);
+      else if (LTAB==='touch')  v = r.touch_pct;
+      else if (LTAB==='d1')     v = r.d1_pct;
+      else if (LTAB==='n')      v = effSeg==='dau' ? r.dau : r.nru;
+      return { day, v: v==null ? null : Math.round(v*100)/100 };
+    }).filter(p=>p.day<0 && p.v!=null);
+
     const solArr = launchArr('sol', effSeg);
-    if (solArr.length < 3 && (LTAB==='rounds'||LTAB==='n') && effSeg!=='nru') {
+    if (!solArr.length && !solPre.length && effSeg==='ru') {
       canvas.style.display='none';
       const box = document.createElement('div'); box.className='empty-box';
-      box.innerHTML = `솔리테어 ${segName()} 런칭 궤적 축적 중<br>현재 ${solArr.length}개 포인트 · 코지·퍼블마 곡선 참고`;
+      box.innerHTML = `솔리테어 ${segName()} 런칭 궤적 축적 중<br>코지·퍼블마 곡선 참고`;
       wrap.appendChild(box);
     }
 
-    const maxDay = Math.max(20, ...GAMES.flatMap(g=>launchArr(g.code,effSeg).map(p=>p.day)), ...launchArr('sol','nru').map(p=>p.day));
-    const labels = Array.from({length:maxDay+1},(_,i)=>'D+'+i);
+    const minDay = Math.min(0, ...solPre.map(p=>p.day));
+    const maxDay = Math.max(20, ...GAMES.flatMap(g=>launchArr(g.code,effSeg).map(p=>p.day)));
+    const labels = []; for (let i=minDay; i<=maxDay; i++) labels.push(dnf(i));
     const ds = GAMES.map(g=>{
       const arr = launchArr(g.code, effSeg);
       const map = {}; arr.forEach(p=>map[p.day]=p[def.field]);
-      return { label:g.name, data:labels.map((_,i)=>map[i]??null),
+      if (g.code==='sol') solPre.forEach(p=>{ map[p.day]=p.v; });
+      return { label:g.name, data:labels.map((_,i)=>map[i+minDay]??null),
         borderColor:g.color, backgroundColor:g.color+'18', borderWidth:g.focus?3:2,
         pointRadius:g.focus?5:2.5, pointBackgroundColor:g.color, pointBorderColor:'#fff', pointBorderWidth:1.5,
         spanGaps:true, tension:0.3, fill:false };
     });
-    // 참고선 (D1 탭): 15% 게이트, 마종 16.2%
     const annoPlugins = [];
+    // D0 세로선 (D- 구간이 있을 때 런칭 시점 표시)
+    if (minDay < 0) {
+      annoPlugins.push({id:'d0line',afterDraw(c){const{ctx,chartArea:ca,scales:{x}}=c;
+        const xp=x.getPixelForValue(-minDay); if(xp<ca.left||xp>ca.right)return;
+        ctx.save();ctx.strokeStyle='#4F8EF7';ctx.setLineDash([4,3]);ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(xp,ca.top);ctx.lineTo(xp,ca.bottom);ctx.stroke();
+        ctx.setLineDash([]);ctx.fillStyle='#4F8EF7';ctx.font='700 9px "Noto Sans KR"';ctx.textAlign='left';
+        ctx.fillText('D0 런칭',xp+3,ca.top+10);ctx.restore();}});
+    }
     if (LTAB==='d1') {
       annoPlugins.push({id:'reflines',afterDraw(c){const{ctx,chartArea:ca,scales:{y}}=c;
         [[MAHJONG_D1,'#7C3AED','마종 '+MAHJONG_D1+'% (Promoted)']].forEach(([val,col,txt])=>{
@@ -597,7 +638,9 @@ function renderCenter() {
           y:{min:0,grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>v+def.unit,font:{size:10}},title:{display:true,text:yTitle,font:{size:10}}} } },
       plugins:annoPlugins
     });
-    const solPts = launchArr('sol',effSeg).map(p=>`D+${p.day} ${p[def.field]==null?'—':p[def.field]}${def.unit}`).join(', ');
+    const solPts = [...solPre.map(p=>({day:p.day,val:p.v})),
+                    ...launchArr('sol',effSeg).map(p=>({day:p.day,val:p[def.field]}))]
+      .map(p=>`${dnf(p.day)} ${p.val==null?'—':p.val}${def.unit}`).join(', ');
     document.getElementById('center-note').innerHTML =
       `<span>솔리테어 ${def.label} 궤적:</span> ${solPts||'데이터 축적 중'}`+
       (LTAB==='rounds'?` &nbsp;|&nbsp; 런칭 초기 = 얼리어답터로 판수 높음`:'')+
