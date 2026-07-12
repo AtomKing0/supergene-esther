@@ -265,9 +265,9 @@ body { background:#E8ECF4; overflow-x:hidden; color:#1A1D2E; font-family:'Noto S
           <ul>
             <li><span class="dot" style="background:#3B82F6"></span>Distribution tier: 현재 <b>Standard</b> (7/10 확인) → Promoted 승급 추적</li>
             <li><span class="dot"></span>Highly Rated — 30일 250표부터 표시 · NA·EU 평점이 결정적</li>
-            <li><span class="dot" style="background:#EF4444"></span>Notification health: 현재 <b>Poor</b> → 개선 필요 (차단 위험)</li>
+            <li><span class="dot" style="background:#F59E0B"></span>Notification health: <b>Fair</b> (7/12, Poor에서 개선) → Good 목표</li>
             <li><span class="dot"></span>Key metrics 활성화 — 30일 창 DAU 300 도달 여부</li>
-            <li><span class="dot"></span>마지막 확인일: 2026-07-10</li>
+            <li><span class="dot"></span>마지막 확인일: 2026-07-12</li>
           </ul>
         </div>
       </div>
@@ -295,7 +295,7 @@ const GAMES = [
 const SMALL_N = 30;          // 표본 극소 경고 임계
 const MAHJONG_D1 = 16.2;     // 마종 Promoted 달성 참고선
 // Meta 패널 수동 스냅샷 — 파이썬 상단 META_PANEL에서 주입 (index 전광판과 공용)
-const META_PANEL = {"checked": "2026-07-10", "tier": "Standard", "eqr": true, "playTab": true, "playTabLiveAt": "7/11 19:16", "notifHealth": "Poor", "ratingVotes": null};
+const META_PANEL = {"checked": "2026-07-12", "tier": "Standard", "eqr": true, "playTab": true, "playTabLiveAt": "7/11 19:16", "notifHealth": "Fair", "ratingVotes": null};
 const METRIC_UNLOCK_DAU = 300;   // Meta Key metrics 표시 임계 (30일 창 DAU)
 const RATING_UNLOCK_VOTES = 250; // Game rating 표시 임계 (30일 창 투표 수)
 // 기본값 = 런칭 동기간 × 신규 NRU: 콜드스타트 추적이 목적이고 Promoted 지표(퍼널·D1~D14)가 전부 NRU 코호트 기반
@@ -466,7 +466,10 @@ function renderPromoted() {
       : `진행중 — 현재 최근7일 WAU <b>${num(S.wau_cur)}</b> · 벤치 코지 <b>${num(C.wau14)}</b> / 퍼블마 <b>${num(B.wau14)}</b>`,
       S.wau14!=null?'수집중':'D14 대기', S.wau14!=null?'cb-live':'cb-wait') +
     crit('Highly Rated','좋아요·평점 (전원 반영)', `글로벌 평점 = 권역 점수평균 — <b>Poor가 크게 깎음</b>, 레버는 NA·EU에서 Poor 방지(Fair 사수면 충분·코인매치 사례) · 30일 ${num(RATING_UNLOCK_VOTES)}표부터 표시`, '수동', 'cb-manual') +
-    crit('알림 품질','Notification health', `현재 <b style="color:#B91C1C">${M.notifHealth}</b> — 품질 미개선 시 알림 차단 위험 · 발송 타깃·빈도 점검 필요`, M.notifHealth==='Poor'?'경고':'양호', M.notifHealth==='Poor'?'cb-risk':'cb-live') +
+    crit('알림 품질','Notification health', M.notifHealth==='Poor'
+      ? `현재 <b style="color:#B91C1C">Poor</b> — 품질 미개선 시 알림 차단 위험 · 발송 타깃·빈도 점검 필요`
+      : `현재 <b style="color:${M.notifHealth==='Good'?'#059669':'#D97706'}">${M.notifHealth}</b> — 7/12 Poor→Fair 개선 · Good까지 품질 유지 (메시지 발송 본격화 구간 주시)`,
+      M.notifHealth==='Poor'?'경고':(M.notifHealth==='Good'?'양호':'개선중'), M.notifHealth==='Poor'?'cb-risk':'cb-live') +
     crit('New (콜드스타트)','신규 게임 부스트', `해당 — 런칭 ${P.d0||''} · 콜드스타트 창 유입이 지표 산정에 직결`, '해당', 'cb-live');
 
   // 리텐션 사다리 D1~D14 전체 — 모드(창)·세그먼트(NRU/RU 코호트)에 반응, 솔리테어 칸은 일마다 자동 채움
