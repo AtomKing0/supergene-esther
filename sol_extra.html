@@ -1,235 +1,128 @@
 <!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>자사 게임 출시 초기 지표 비교 — 코지 타일즈 · 퍼즐 블록 마스터 · 솔리테어 시티 저니</title>
+<title>자사 게임 출시 초기 지표 비교</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
   body{font-family:-apple-system,'Apple SD Gothic Neo',sans-serif;margin:0;background:#f6f7f9;color:#1c2530}
-  .wrap{max-width:1180px;margin:0 auto;padding:28px 24px 70px}
-  h1{font-size:22px;margin:0 0 4px}
-  .sub{color:#6b7684;font-size:13px;margin-bottom:20px}
-  h2{font-size:15px;margin:32px 0 12px;color:#2b3440}
-  h2 .t{font-size:11.5px;color:#98a2b0;font-weight:400;margin-left:8px}
-  .hl{color:#0F6FC4;font-weight:700}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 24px 40px}
+  h1{font-size:22px;margin:0 0 4px} .sub{color:#6b7684;font-size:13px;margin-bottom:20px}
+  h2{font-size:15px;margin:30px 0 12px;color:#2b3440} h2 .t{font-size:11.5px;color:#98a2b0;font-weight:400;margin-left:8px}
   .decision{background:#1f2d3d;color:#eef2f7;border-radius:12px;padding:18px 22px;margin:6px 0 8px}
   .decision .main{font-size:15px;font-weight:700;margin-bottom:10px;line-height:1.5}
-  .decision ul{margin:0;padding-left:18px}
-  .decision li{font-size:13px;line-height:1.7;margin-bottom:3px}
-  .decision li b{color:#8fd0ff}
+  .decision ul{margin:0;padding-left:18px} .decision li{font-size:13px;line-height:1.7;margin-bottom:3px} .decision li b{color:#8fd0ff}
   table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e6e9ee;border-radius:12px;overflow:hidden;font-size:12.5px}
   th,td{padding:8px 10px;text-align:center;border-bottom:1px solid #eef1f4;border-right:1px solid #f2f4f7}
-  thead th{background:#fafbfc;color:#6b7684;font-weight:600;font-size:11.5px}
-  thead tr.g th{font-size:12.5px;color:#2b3440}
+  thead th{background:#fafbfc;color:#6b7684;font-weight:600;font-size:11.5px} thead tr.g th{font-size:12.5px;color:#2b3440}
   th.gz{background:#eef5fc}th.gp{background:#eef7f0}th.gs{background:#fdeef1}
-  td.num{text-align:right;font-variant-numeric:tabular-nums}
-  td.day{background:#fafbfc;font-weight:600;color:#48525f}
-  td.date{color:#98a2b0;font-size:11px}
-  td.metric{text-align:left;color:#48525f;font-weight:600;background:#fafbfc}
+  td.num{text-align:right;font-variant-numeric:tabular-nums} td.day{background:#fafbfc;font-weight:600;color:#48525f}
+  td.date{color:#98a2b0;font-size:11px} td.metric{text-align:left;color:#48525f;font-weight:600;background:#fafbfc}
   td.metric small{display:block;color:#9aa4b2;font-weight:400;font-size:10.5px}
-  td.cz{color:#0F6FC4;font-weight:700}td.pb{color:#4a9d5b;font-weight:700}td.so{color:#d94f6a;font-weight:700}
-  td.na{color:#c2c8d0}
+  td.cz{color:#0F6FC4;font-weight:700}td.pb{color:#4a9d5b;font-weight:700}td.so{color:#d94f6a;font-weight:700} td.na{color:#c2c8d0}
   td.sec{text-align:left;background:#f0f3f7;color:#8a94a2;font-weight:600;font-size:11px;letter-spacing:.5px}
-  .chip.pred{background:#e0912f}
   tbody tr:hover td{background:#f9fbfd}
-  .chart{background:#fff;border:1px solid #e6e9ee;border-radius:12px;padding:18px;margin:8px 0 8px}
-  .cols{display:flex;gap:16px;flex-wrap:wrap}
-  .cols>div{flex:1;min-width:320px}
+  .chart{background:#fff;border:1px solid #e6e9ee;border-radius:12px;padding:18px;margin:8px 0}
+  .cols{display:flex;gap:16px;flex-wrap:wrap} .cols>div{flex:1;min-width:320px}
   .chip{display:inline-block;font-size:9.5px;font-weight:600;border-radius:4px;padding:0 4px;margin-left:3px;vertical-align:middle;color:#fff}
-  .chip.cz{background:#0F6FC4}.chip.pb{background:#4a9d5b}.chip.so{background:#d94f6a}
+  .chip.cz{background:#0F6FC4}.chip.pb{background:#4a9d5b}.chip.so{background:#d94f6a} .chip.pred{background:#e0912f}
   .live{background:#d94f6a;color:#fff;border-radius:4px;padding:1px 5px;font-size:9.5px;font-weight:600;margin-left:3px}
-  .bar{height:16px;border-radius:3px;display:inline-block;vertical-align:middle}
-  .ev{font-size:12px;color:#6b7684;line-height:1.9;margin-top:10px}
-  .ev b{color:#2b3440}
+  .ev{font-size:12px;color:#6b7684;line-height:1.9;margin-top:10px} .ev b{color:#2b3440}
   .note{background:#fff8ec;border:1px solid #f0e0bd;border-radius:10px;padding:12px 16px;font-size:12px;color:#7a6a3d;line-height:1.7;margin-top:10px}
-  .foot{color:#98a2b0;font-size:11px;margin-top:18px;line-height:1.7}
-  .foot b{color:#6b7684}
+  .foot{color:#98a2b0;font-size:11px;margin-top:18px;line-height:1.7} .foot b{color:#6b7684}
 </style></head><body><div class="wrap">
-
 <h1>자사 게임 출시 초기 지표 비교</h1>
-<div class="sub">코지 타일즈 · 퍼즐 블록 마스터 · 솔리테어 시티 저니 — 페이스북 Instant Games · 출시 후 경과일 기준 · BigQuery 실측(수익만 추정) · 갱신 2026-07-13</div>
-
+<div class="sub">코지 타일즈 · 퍼즐 블록 마스터 · 솔리테어 시티 저니 — 페이스북 Instant Games · 출시 후 경과일 기준 · BigQuery 실측(수익만 추정) · 벤치=정적·솔리테어=라이브 · 갱신 2026-07-13 15:44:43</div>
 <div class="decision">
-  <div class="main">공유 시트(코지·퍼블마) 지표 = BigQuery 전수 검증 통과. 7/10 출시한 솔리테어 시티 저니를 붙여 주요지표·리텐션·유입경로·국가·추정수익까지 동일 포맷으로 비교함.</div>
+  <div class="main">공유 시트(코지·퍼블마) 지표 = BigQuery 전수 검증 통과. 7/10 출시한 솔리테어 시티 저니를 붙여 주요지표·리텐션·유입경로·국가·추정수익까지 동일 포맷으로 비교(솔 값은 라이브 갱신).</div>
   <ul>
     <li><b>규모</b> — 솔리테어 D0 78 → D1 523(플레이 탭) → D2 876. 코지·퍼블마 초기 구간 하단대이나 궤적은 정상 램프.</li>
-    <li><b>리텐션 최상위</b> — FB 퍼널 대시보드(런칭 코호트 D+0~D+16) 기준 D1 리텐션 솔리테어 16.8% > 퍼블마 15.1% > 코지 14.0%로 솔리테어가 셋 중 가장 높음. US 코호트 D1은 32.6%(표본 작음)로 더 강함. D2 이후는 7/13 미마감이라 집계중.</li>
-    <li><b>참여 동급</b> — 세션 1.3~1.4회/인·일, 인당 판수 9~11판, 판당 51~59초, 활성 플레이타임 8~11분/인·일로 셋 다 비슷한 참여 강도.</li>
-    <li><b>수익 성격 상이</b> — 코지=전면광고(IT) 중심(3.0회/인), 솔리테어=보상형(RV) 중심(2.0회/인). 솔리테어 IT는 콜드스타트 동안 의도적 OFF(현재 0.19회) → 정상화 시 코지식 판 종료 노출로 예측 IT ≈2.6회, 예측 ARPDAU ≈$0.017(현재 $0.012 대비 상승). <b>예측치.</b></li>
-    <li><b>유입·국가 차별</b> — 솔리테어는 소셜맥락 유입 27.9%로 최고(친구 스레드·피드), CP·유료 0(전량 오가닉+소셜). 국가도 코지·퍼블마=베트남 집중인 반면 솔리테어=US·필리핀 선두로 서구 비중 높고 분산됨.</li>
+    <li><b>리텐션 최상위</b> — FB 퍼널 대시보드(런칭 코호트 D+0~D+16) 기준 D1 솔리테어 16.8% &gt; 퍼블마 15.1% &gt; 코지 14.0%. US 코호트 D1은 32.6%(표본 작음)로 더 강함. D2 이후는 미마감 집계중.</li>
+    <li><b>참여 동급</b> — 세션 1.3~1.4회/인·일, 인당 판수 9~11판, 판당 51~59초로 셋 다 비슷한 참여 강도.</li>
+    <li><b>수익 성격 상이</b> — 코지=전면광고(IT) 중심, 솔리테어=보상형(RV) 중심. IT는 콜드스타트 중 의도적 OFF → 정상화 시 예측 IT≈2.6회·예측 ARPDAU≈$0.017. <b>예측치.</b></li>
+    <li><b>유입·국가 차별</b> — 솔리테어는 소셜맥락 유입 비중 최고(친구 스레드·피드), CP·유료 0(전량 오가닉+소셜). 국가도 코지·퍼블마=베트남 집중인 반면 솔리테어=US·필리핀 선두로 서구 비중 높고 분산.</li>
   </ul>
 </div>
-
 <h2>핵심 지표 요약 <span class="t">출시 첫 구간(D0~D2) 기준 · 수익 항목은 추정</span></h2>
 <div id="summary"></div>
-<div class="note">
-<b>수익은 추정치</b> — 페이스북 광고·결제 금액은 로그에 없음(Monetization Manager 별도). 추정 ARPDAU = (IT회/인 × eCPM_IT + RV회/인 × eCPM_RV) 가정치. <b>가정 eCPM: IT $2.0 · RV $6.0</b>(FB IG·신흥국 비중 큰 초기 유저 기준). 실측 대비 방향성 참고용이며, 절대값은 Monetization Manager 확인 필요.<br>
-<b style="color:#c77a1e">전면광고(IT) 예측</b> — 솔리테어는 콜드스타트(~D30) 동안 전면광고를 <b>의도적으로 꺼둠</b>(현재 0.19회는 잔여). 정상화 후 코지처럼 <b>한 판 종료 시 노출</b> 형태로 전환 예정 → 코지의 판당 IT(0.279회/판) 적용 시 예측 IT ≈ <b>2.6회/인·일</b>, 이때 예측 ARPDAU ≈ <b>$0.017</b>. RV·판수 등 나머지는 실측이며 IT 관련 2개 행만 예측치.
-</div>
-
-<h2>리텐션 <span class="t">런칭 코호트 D+0~D+16 · 신규 코호트 Dn 로그인율 · FB 퍼널 대시보드(20) 기준·루커 정합</span></h2>
+<div class="note"><b>수익은 추정치</b> — FB 광고·결제 금액은 로그에 없음. 추정 ARPDAU=(IT회/인×eCPM_IT + RV회/인×eCPM_RV), 가정 eCPM IT $2.0·RV $6.0. <b style="color:#c77a1e">IT 예측</b> — 솔리테어 IT는 콜드스타트(~D30) 의도적 OFF(현재 잔여). 정상화 후 코지식 판 종료 노출 가정, 판당 IT 0.279 적용 → 예측 IT≈2.6회/인·일·예측 ARPDAU≈$0.017. IT 관련 2개 행만 예측이며 나머지는 실측.</div>
+<h2>리텐션 <span class="t">런칭 코호트 D+0~D+16 풀링 · FB 퍼널 대시보드(20) 기준·루커 정합</span></h2>
 <div id="ret"></div>
-<div class="note" style="background:#eef5fc;border-color:#cfe2f5;color:#33587c">
-<b>대시보드 기준으로 보면 솔리테어 D1 16.8%가 셋 중 최상</b>(퍼블마 15.1%·코지 14.0%). 앞서 20.4%로 나왔던 건 '출시 첫날 단일 코호트'라 높게 잡힌 것이고, 런칭 코호트(D+0~D+16) 풀링이 팀 표준. 솔리테어 D2 이후는 7/13 미마감이라 집계중. 참고로 <b>US 코호트</b> D1은 코지 20.7%·퍼블마 20.7%·솔리테어 32.6%(n43, 표본 작음)로, 솔리테어가 평점 핵심 권역에서 특히 강함.
-</div>
-
+<div class="note" style="background:#eef5fc;border-color:#cfe2f5;color:#33587c"><b>대시보드 기준 솔리테어 D1 16.8%가 셋 중 최상</b>(퍼블마 15.1·코지 14.0). 20.4%로 나왔던 건 '출시 첫날 단일 코호트'라 높게 잡힌 것이고, 런칭 코호트(D+0~D+16) 풀링이 팀 표준. 솔 D2+는 미마감 집계중. US 코호트 D1 솔리테어 32.6%(n작음)로 평점 핵심 권역에서 특히 강함.</div>
 <div class="cols">
-  <div>
-    <h2>유입 경로 (신규 유저) <span class="t">D0~D2</span></h2>
-    <div id="entry"></div>
-  </div>
-  <div>
-    <h2>주요 국가 (신규 유저) <span class="t">D0~D2</span></h2>
-    <div id="country"></div>
-  </div>
+  <div><h2>유입 경로 (신규 유저) <span class="t">D0~오늘</span></h2><div id="entry"></div></div>
+  <div><h2>주요 국가 (신규 유저) <span class="t">D0~오늘</span></h2><div id="country"></div></div>
 </div>
-
-<h2>DAU 궤적 <span class="t">출시 후 경과일 D0~D31</span></h2>
+<h2>DAU 궤적 <span class="t">출시 후 경과일 · 솔리테어 진행중일=빈 점</span></h2>
 <div class="chart"><canvas id="c" height="120"></canvas></div>
-
 <h2>일자별 상세 — DAU / NRU(신규) / RU(기존·재방문)</h2>
 <div id="tblwrap"></div>
 <div class="ev" id="events"></div>
-
 <div class="foot">
-<b>정의</b> · DAU=당일 로그인 순유저(1000_LOGIN_COMPLETE distinct) · NRU=당일 첫 로그인 신규(logincount_total=1) · RU=DAU−NRU(당일 재방문 기존 유저) · 인당 판수=2300_GAMEPLAY_FINISH÷person-day · IT=4010_INTERSTITIAL_AD_FINISH · RV=4210_RV_FINISH · is_dev 제외·player_id>0.<br>
-<b>세션·플레이시간</b> · 세션 횟수=로그인(앱 실행) 수÷person-day · 판당 플레이시간=2100_START→2300_FINISH 페어 소요(1~3600초, 유휴 페어 제외) 평균 · 활성 플레이타임=판당시간 합÷person-day. 참고로 앱 체류(세션 스팬, 유휴 포함)는 코지 80분·퍼블마 88분·솔리테어 115분/세션이나 유휴 과다로 활성 기준을 채택.<br>
-<b>전면광고 IT 예측</b> · 솔리테어 IT는 콜드스타트(~D30) 의도적 OFF(현재 0.19 잔여). 정상화 후 코지식 판 종료 노출 가정, 코지 판당 IT 0.279회 적용 → 예측 IT≈2.6회/인·일, 예측 ARPDAU≈$0.017. 표의 'IT 정상화' 2개 행만 예측이며 나머지는 실측.<br>
-<b>리텐션</b> · <b>FB 퍼널 대시보드(20_fb_funnel_dashboard) 기준과 동일</b> — Dn = 신규 코호트가 n일 뒤 로그인한 비율(복귀=로그인, 루커 정합), 런칭 코호트 D+0~D+16 풀링. 코지 n=60,098·퍼블마 n=47,438·솔리테어 n=506(7/11 코호트). 솔리테어 D2 이후는 7/13 미마감이라 집계중. 별도 US 코호트 D1: 코지 20.7%·퍼블마 20.7%·솔리테어 32.6%(n43). (앞서 20.4%로 보고했던 값은 '출시 첫날 단일 코호트'라 대시보드 풀링 기준과 달랐던 것.)<br>
-<b>유입 경로</b> · 신규 유저 기준. 오가닉=단독진입(contextID SOLO·null) · 소셜=친구 스레드/피드/스토리 맥락(THREAD·POST·STORY·context) · CP=크로스프로모(payload.social CROSS_*). 빌드 세대별 로그 스키마 차이로 소셜 세부 분류는 근사.<br>
-<b>경과일 정렬</b> · 코지 D0=2026-01-02 / 퍼블마 D0=2025-10-16 / 솔리테어 D0=2026-07-10 15:40 출시(7/6~9 내부 테스트 제외). 세 게임 모두 D0=출시 당일 소수 유입. 플레이 탭 노출: 코지 D3 · 퍼블마 D5 · 솔리테어 D1(7/11 19:00). 솔리테어 D3(7/13)은 당일 미마감(진행중).<br>
-<b>검증</b> · 퍼블마 32일 DAU·NRU 시트=BigQuery 전량 일치. 코지 NRU 전일 일치, DAU 4일만 ±1~2(지연 로그, 0.04% 미만). 표·요약은 BigQuery 실측 기준.<br>
-<b>소스</b> · game-log-359704.raw.cozy_tiles_prod · puzzle_block_master_prod · solitaire_city_journey (모두 페이스북 Instant Games).
+<b>정의</b> · DAU=당일 로그인 순유저 · NRU=당일 첫 로그인(logincount_total=1) · RU=DAU−NRU · 인당 판수=완료판÷person-day · IT=전면광고 finish · RV=보상형 finish · is_dev 제외.<br>
+<b>리텐션</b> · FB 퍼널 대시보드(20_fb_funnel) 정합 — Dn=신규 코호트 n일 뒤 로그인율, 런칭 코호트 D+0~D+16 풀링. 코지 n=60,098·퍼블마 47,438·솔리테어 7/11 코호트. 솔 D2+ 미마감 집계중.<br>
+<b>경과일</b> · 코지 D0=2026-01-02 · 퍼블마 2025-10-16 · 솔리테어 2026-07-10 출시. 플레이 탭: 코지 D3·퍼블마 D5·솔리테어 D1(7/11). <b>솔리테어 값은 매 실행 BigQuery 라이브</b>, 벤치는 정적(검증본).<br>
+<b>소스</b> · game-log-359704.raw (cozy_tiles_prod · puzzle_block_master_prod · solitaire_city_journey).
 </div>
 </div>
-
 <script>
-// ---------- daily DAU/NRU ----------
-const START={cz:'2026-01-02',pb:'2025-10-16',so:'2026-07-10'};
-const DAU={
-  cz:[8,657,2281,2565,3202,3146,3538,4704,5153,5606,5354,6068,7457,5758,6270,8572,8699,8456,8387,8771,8712,9677,8759,9247,8313,8468,7355,8749,6775,6694,7463,8558],
-  pb:[10,635,1843,2116,2214,2985,3620,3982,4339,4679,5228,4964,5109,5270,5800,6241,6335,7039,6642,6681,6878,6944,7641,8228,8499,7664,7048,8119,7783,9005,9539,9694],
-  so:[78,523,876,314]};
-const NRU={
-  cz:[3,653,2147,2175,2561,2210,2457,3375,3413,3601,3114,3609,4843,3036,3419,5505,5277,4821,4535,4806,4676,5458,4498,4883,3768,4005,3031,4525,2582,2501,3282,4306],
-  pb:[1,623,1713,1737,1724,2335,2741,2775,2835,2927,3265,2842,2797,2833,3111,3346,3331,3802,3324,3242,3326,3237,3795,4207,4179,3433,2826,4037,3562,4556,4962,4985],
-  so:[78,506,781,175]};
-const LIVE={so:3};
-const EV={cz:{0:'출시',3:'플레이 탭 노출',6:'더퍼즐·코인매치 CP',7:'마종 CP·인게임 이벤트'},pb:{5:'플레이 탭 노출'},so:{0:'출시',1:'플레이 탭 노출'}};
-const fmt=n=>n==null?'':n.toLocaleString('en-US');
+const P={"start": {"cz": "2026-01-02", "pb": "2025-10-16", "so": "2026-07-10"}, "dau": {"cz": [8, 657, 2281, 2565, 3202, 3146, 3538, 4704, 5153, 5606, 5354, 6068, 7457, 5758, 6270, 8572, 8699, 8456, 8387, 8771, 8712, 9677, 8759, 9247, 8313, 8468, 7355, 8749, 6775, 6694, 7463, 8558], "pb": [10, 635, 1843, 2116, 2214, 2985, 3620, 3982, 4339, 4679, 5228, 4964, 5109, 5270, 5800, 6241, 6335, 7039, 6642, 6681, 6878, 6944, 7641, 8228, 8499, 7664, 7048, 8119, 7783, 9005, 9539, 9694], "so": [78, 523, 876, 385]}, "nru": {"cz": [3, 653, 2147, 2175, 2561, 2210, 2457, 3375, 3413, 3601, 3114, 3609, 4843, 3036, 3419, 5505, 5277, 4821, 4535, 4806, 4676, 5458, 4498, 4883, 3768, 4005, 3031, 4525, 2582, 2501, 3282, 4306], "pb": [1, 623, 1713, 1737, 1724, 2335, 2741, 2775, 2835, 2927, 3265, 2842, 2797, 2833, 3111, 3346, 3331, 3802, 3324, 3242, 3326, 3237, 3795, 4207, 4179, 3433, 2826, 4037, 3562, 4556, 4962, 4985], "so": [78, 506, 781, 236]}, "live": 3, "ev": {"cz": {"0": "출시", "3": "플레이 탭 노출", "6": "더퍼즐·코인매치 CP", "7": "마종 CP·인게임 이벤트"}, "pb": {"5": "플레이 탭 노출"}, "so": {"0": "출시", "1": "플레이 탭 노출"}}, "M": [["출시일 (FB IG)", "", "2026-01-02", "2025-10-16", "2026-07-10", "plain"], ["D0 DAU", "출시일", "8", "10", "78", "v"], ["D1 DAU", "플레이 램프", "657", "635", "523", "v"], ["D2 DAU", "출시 3일차", "2,281", "1,843", "876", "v"], ["D1 리텐션", "런칭 코호트·대시보드 기준", "14.0%", "15.1%", "16.8%", "v"], ["— 참여 —", "", "", "", "", "sec"], ["세션 횟수", "회/인·일", "1.4", "1.4", "1.34", "v"], ["인당 판수", "판/인·일", "10.9", "11.3", "9.2", "v"], ["판당 플레이시간", "초", "52", "59", "51", "v"], ["활성 플레이타임", "분/인·일", "9.2", "11.1", "7.8", "v"], ["— 수익(광고) · 추정 —", "", "", "", "", "sec"], ["보상형 RV", "회/인·일", "0.42", "0.27", "1.97", "v"], ["전면광고 IT", "회/인·일", "3.04", "0.99", "0.19<small style=\"display:inline;color:#c77a1e\">·콜드스타트 OFF</small>", "v"], ["전면광고 IT · 정상화", "솔리테어 예측", "—", "—", "≈2.6 <span class=\"chip pred\">예측</span>", "vp"], ["추정 ARPDAU", "$/DAU·일", "$0.009", "$0.004", "$0.012", "v"], ["추정 ARPDAU · IT 정상화", "솔리테어 예측", "—", "—", "$0.017 <span class=\"chip pred\">예측</span>", "vp"]], "entry": {"cz": {"organic": 2505, "social": 301, "cp": 0, "total": 2806}, "pb": {"organic": 2018, "social": 148, "cp": 171, "total": 2337}, "so": {"organic": 1182, "social": 386, "cp": 33, "total": 1601}}, "country": {"cz": [["VN", 817], ["PH", 186], ["TH", 142], ["BR", 139], ["US", 113], ["ID", 98], ["MX", 90], ["IN", 79]], "pb": [["VN", 583], ["PH", 218], ["US", 192], ["IN", 137], ["TH", 70], ["BR", 61], ["ID", 54], ["FR", 49]], "so": [["US", 187], ["PH", 145], ["VN", 108], ["BR", 100], ["IN", 79], ["FR", 61], ["CA", 46], ["TH", 45]]}, "ctot": {"cz": 2806, "pb": 2337, "so": 1601}, "ret": {"cz": {"1": "14.0%", "2": "9.9%", "3": "8.4%", "7": "5.9%", "14": "4.3%"}, "pb": {"1": "15.1%", "2": "10.9%", "3": "9.0%", "7": "7.0%", "14": "5.1%"}, "so": {"1": "16.8%", "2": "<span class=\"na\">집계중</span>", "3": "<span class=\"na\">집계중</span>", "7": "<span class=\"na\">집계중</span>", "14": "<span class=\"na\">집계중</span>"}}, "rn": {"cz": "60,098", "pb": "47,438", "so": "506"}};
+const fmt=n=>n==null?'':Number(n).toLocaleString('en-US');
 const addD=(iso,i)=>{const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+i);return (d.getMonth()+1)+'/'+d.getDate();};
-const maxLen=Math.max(DAU.cz.length,DAU.pb.length,DAU.so.length);
-
-// ---------- summary table ----------
-const M=[  // label, sublabel, cz, pb, so, class(plain/v/vp)
- ['출시일 (FB IG)','','2026-01-02','2025-10-16','2026-07-10','plain'],
- ['비교 구간','출시 후 경과일','D0~D2','D0~D2','D0~D2','plain'],
- ['D0 DAU','출시일','8','10','78','v'],
- ['D1 DAU','플레이 램프','657','635','523','v'],
- ['D2 DAU','출시 3일차','2,281','1,843','876','v'],
- ['— 참여 —','','','','','sec'],
- ['세션 횟수','회/인·일','1.4','1.4','1.3','v'],
- ['인당 판수','판/인·일','10.9','11.3','9.2','v'],
- ['판당 플레이시간','초','52','59','51','v'],
- ['활성 플레이타임','분/인·일','9.2','11.1','7.8','v'],
- ['— 수익(광고) · 추정 —','','','','','sec'],
- ['보상형 RV','회/인·일','0.42','0.27','1.97','v'],
- ['전면광고 IT','회/인·일','3.04','0.99','0.19<small style="display:inline;color:#c77a1e">·콜드스타트 OFF</small>','v'],
- ['전면광고 IT · 정상화','솔리테어 예측','—','—','≈2.6 <span class="chip pred">예측</span>','vp'],
- ['추정 ARPDAU','$/DAU·일','$0.009','$0.004','$0.012','v'],
- ['추정 ARPDAU · IT 정상화','솔리테어 예측','—','—','$0.017 <span class="chip pred">예측</span>','vp'],
-];
+const GN={cz:'코지 타일즈',pb:'퍼즐 블록 마스터',so:'솔리테어 시티 저니'}, GC={cz:'#0F6FC4',pb:'#4a9d5b',so:'#d94f6a'};
+const maxLen=Math.max(P.dau.cz.length,P.dau.pb.length,P.dau.so.length);
+// summary
+const na=v=>/집계중|—/.test(v)?' na':'';
 let sh='<table><thead><tr class="g"><th>지표</th><th class="gz">코지 타일즈</th><th class="gp">퍼즐 블록 마스터</th><th class="gs">솔리테어 시티 저니</th></tr></thead><tbody>';
-const na=v=>/관측중|미도달|—/.test(v)?' na':'';
-for(const r of M){
-  if(r[5]==='sec'){ sh+='<tr><td class="sec" colspan="4">'+r[0]+'</td></tr>'; continue; }
+for(const r of P.M){ if(r[5]==='sec'){sh+='<tr><td class="sec" colspan="4">'+r[0]+'</td></tr>';continue;}
   const cls=r[5]==='v'?['cz','pb','so']:r[5]==='vp'?['','','so']:['','',''];
   sh+='<tr><td class="metric">'+r[0]+(r[1]?'<small>'+r[1]+'</small>':'')+'</td>'+
-    '<td class="'+cls[0]+na(r[2])+'">'+r[2]+'</td>'+
-    '<td class="'+cls[1]+na(r[3])+'">'+r[3]+'</td>'+
-    '<td class="'+cls[2]+na(r[4])+'">'+r[4]+'</td></tr>';
-}
-sh+='</tbody></table>';
-document.getElementById('summary').innerHTML=sh;
-
-// ---------- entry buckets ----------
-const ENTRY={ // organic, social, cp  (counts, %of total)
- cz:{organic:2505,social:301,cp:0,total:2806},
- pb:{organic:2018,social:148,cp:171,total:2337},
- so:{organic:984,social:381,cp:0,total:1365}};
-const GN={cz:'코지 타일즈',pb:'퍼즐 블록 마스터',so:'솔리테어 시티 저니'};
-const GC={cz:'#0F6FC4',pb:'#4a9d5b',so:'#d94f6a'};
-let eh='<table><thead><tr><th style="text-align:left">게임</th><th>오가닉/직접</th><th>소셜맥락</th><th>CP(크로스프로모)</th><th>신규 계</th></tr></thead><tbody>';
-for(const g of ['cz','pb','so']){const e=ENTRY[g];const p=n=>(100*n/e.total).toFixed(1)+'%';
+    '<td class="'+cls[0]+na(r[2])+'">'+r[2]+'</td><td class="'+cls[1]+na(r[3])+'">'+r[3]+'</td><td class="'+cls[2]+na(r[4])+'">'+r[4]+'</td></tr>';}
+document.getElementById('summary').innerHTML=sh+'</tbody></table>';
+// entry
+let eh='<table><thead><tr><th style="text-align:left">게임</th><th>오가닉/직접</th><th>소셜맥락</th><th>CP</th><th>신규 계</th></tr></thead><tbody>';
+for(const g of ['cz','pb','so']){const e=P.entry[g];const p=n=>e.total?(100*n/e.total).toFixed(1)+'%':'0%';
  eh+='<tr><td style="text-align:left;font-weight:600;color:'+GC[g]+'">'+GN[g]+'</td>'+
-   '<td class="num">'+fmt(e.organic)+' <small style="color:#98a2b0">'+p(e.organic)+'</small></td>'+
-   '<td class="num">'+fmt(e.social)+' <small style="color:#98a2b0">'+p(e.social)+'</small></td>'+
-   '<td class="num">'+(e.cp?fmt(e.cp)+' <small style="color:#98a2b0">'+p(e.cp)+'</small>':'<span class="na">0</span>')+'</td>'+
-   '<td class="num">'+fmt(e.total)+'</td></tr>';}
-eh+='</tbody></table>';
-document.getElementById('entry').innerHTML=eh;
-
-// ---------- country ----------
-const CT={
- cz:[['VN',817],['PH',186],['TH',142],['BR',139],['US',113],['ID',98],['MX',90],['IN',79]],
- pb:[['VN',583],['PH',218],['US',192],['IN',137],['TH',70],['BR',61],['ID',54],['FR',49]],
- so:[['PH',136],['US',132],['VN',100],['BR',91],['IN',73],['FR',48],['TH',42],['CA',33]]};
-const CTOT={cz:2806,pb:2337,so:1365};
+  '<td class="num">'+fmt(e.organic)+' <small style="color:#98a2b0">'+p(e.organic)+'</small></td>'+
+  '<td class="num">'+fmt(e.social)+' <small style="color:#98a2b0">'+p(e.social)+'</small></td>'+
+  '<td class="num">'+(e.cp?fmt(e.cp)+' <small style="color:#98a2b0">'+p(e.cp)+'</small>':'<span class="na">0</span>')+'</td>'+
+  '<td class="num">'+fmt(e.total)+'</td></tr>';}
+document.getElementById('entry').innerHTML=eh+'</tbody></table>';
+// country
 let ch='<table><thead><tr><th style="text-align:left">순위</th><th class="gz">코지</th><th class="gp">퍼블마</th><th class="gs">솔리테어</th></tr></thead><tbody>';
 for(let i=0;i<8;i++){ch+='<tr><td class="day">'+(i+1)+'</td>';
- for(const g of ['cz','pb','so']){const c=CT[g][i];const pct=(100*c[1]/CTOT[g]).toFixed(0);
-  ch+='<td><b style="color:'+GC[g]+'">'+c[0]+'</b> <small style="color:#98a2b0">'+pct+'%</small></td>';}
+ for(const g of ['cz','pb','so']){const c=P.country[g][i];
+  ch+= c?'<td><b style="color:'+GC[g]+'">'+c[0]+'</b> <small style="color:#98a2b0">'+(100*c[1]/P.ctot[g]).toFixed(0)+'%</small></td>':'<td class="na">—</td>';}
  ch+='</tr>';}
-ch+='</tbody></table>';
-document.getElementById('country').innerHTML=ch;
-
-// ---------- retention ladder (FB 퍼널 대시보드 20 · 런칭 코호트 D+0~D+16) ----------
-const RET=[ // Dn, cozy, pbm, sol
- ['D1','14.0%','15.1%','16.8%'],
- ['D2','9.9%','10.9%','<span class="na">집계중</span>'],
- ['D3','8.4%','9.0%','<span class="na">집계중</span>'],
- ['D7','5.9%','7.0%','<span class="na">집계중</span>'],
- ['D14','4.3%','5.1%','<span class="na">집계중</span>']];
-const RN={cz:'60,098',pb:'47,438',so:'506'};
+document.getElementById('country').innerHTML=ch+'</tbody></table>';
+// retention
+const RD=[1,2,3,7,14];
 let rh='<table><thead><tr><th style="text-align:left">경과일</th>'+
- '<th class="gz">코지 타일즈<br><small style="font-weight:400">코호트 n='+RN.cz+'</small></th>'+
- '<th class="gp">퍼즐 블록 마스터<br><small style="font-weight:400">n='+RN.pb+'</small></th>'+
- '<th class="gs">솔리테어 시티 저니<br><small style="font-weight:400">n='+RN.so+'</small></th></tr></thead><tbody>';
-for(const r of RET){
- const hl=r[0]==='D1'?' style="font-weight:700"':'';
- rh+='<tr><td class="metric">'+r[0]+'</td>'+
-   '<td'+hl+'>'+r[1]+'</td><td'+hl+'>'+r[2]+'</td><td class="so"'+hl+'>'+r[3]+'</td></tr>';}
-rh+='</tbody></table>';
-document.getElementById('ret').innerHTML=rh;
-
-// ---------- daily table ----------
-let h='<table><thead>'+
- '<tr class="g"><th rowspan="2">경과일</th><th class="gz" colspan="4">코지 타일즈</th><th class="gp" colspan="4">퍼즐 블록 마스터</th><th class="gs" colspan="4">솔리테어 시티 저니</th></tr>'+
- '<tr><th class="gz">날짜</th><th class="gz">DAU</th><th class="gz">NRU</th><th class="gz">RU</th>'+
- '<th class="gp">날짜</th><th class="gp">DAU</th><th class="gp">NRU</th><th class="gp">RU</th>'+
- '<th class="gs">날짜</th><th class="gs">DAU</th><th class="gs">NRU</th><th class="gs">RU</th></tr></thead><tbody>';
+ '<th class="gz">코지<br><small style="font-weight:400">n='+P.rn.cz+'</small></th>'+
+ '<th class="gp">퍼블마<br><small style="font-weight:400">n='+P.rn.pb+'</small></th>'+
+ '<th class="gs">솔리테어<br><small style="font-weight:400">n='+P.rn.so+'</small></th></tr></thead><tbody>';
+for(const n of RD){const hl=n===1?' style="font-weight:700"':'';
+ rh+='<tr><td class="metric">D'+n+'</td><td'+hl+'>'+P.ret.cz[n]+'</td><td'+hl+'>'+P.ret.pb[n]+'</td><td class="so"'+hl+'>'+P.ret.so[n]+'</td></tr>';}
+document.getElementById('ret').innerHTML=rh+'</tbody></table>';
+// daily table
+let h='<table><thead><tr class="g"><th rowspan="2">경과일</th><th class="gz" colspan="4">코지 타일즈</th><th class="gp" colspan="4">퍼즐 블록 마스터</th><th class="gs" colspan="4">솔리테어 시티 저니</th></tr>'+
+ '<tr><th class="gz">날짜</th><th class="gz">DAU</th><th class="gz">NRU</th><th class="gz">RU</th><th class="gp">날짜</th><th class="gp">DAU</th><th class="gp">NRU</th><th class="gp">RU</th><th class="gs">날짜</th><th class="gs">DAU</th><th class="gs">NRU</th><th class="gs">RU</th></tr></thead><tbody>';
 for(let i=0;i<maxLen;i++){h+='<tr><td class="day">D'+i+'</td>';
  for(const g of ['cz','pb','so']){
-   if(i<DAU[g].length){const dau=DAU[g][i],nru=NRU[g][i],ru=dau-nru;
-     const live=(LIVE[g]===i)?' <span class="live">진행중</span>':'';
-     const ev=EV[g]&&EV[g][i]?' <span class="chip '+g+'">'+EV[g][i]+'</span>':'';
-     h+='<td class="date">'+addD(START[g],i)+ev+'</td><td class="num">'+fmt(dau)+live+'</td><td class="num">'+fmt(nru)+'</td><td class="num">'+fmt(ru)+'</td>';
+   if(i<P.dau[g].length && P.dau[g][i]!=null){const dau=P.dau[g][i],nru=P.nru[g][i],ru=dau-nru;
+     const live=(g==='so'&&P.live===i)?' <span class="live">진행중</span>':'';
+     const ev=P.ev[g]&&P.ev[g][i]?' <span class="chip '+g+'">'+P.ev[g][i]+'</span>':'';
+     h+='<td class="date">'+addD(P.start[g],i)+ev+'</td><td class="num">'+fmt(dau)+live+'</td><td class="num">'+fmt(nru)+'</td><td class="num">'+fmt(ru)+'</td>';
    } else h+='<td class="date"></td><td class="num"></td><td class="num"></td><td class="num"></td>';}
  h+='</tr>';}
-h+='</tbody></table>';
-document.getElementById('tblwrap').innerHTML=h;
-document.getElementById('events').innerHTML='<b>주요 이벤트</b> &nbsp; '+
- '<span class="chip cz">코지</span> D0 출시·D3 플레이 탭·D6 더퍼즐·코인매치 CP·D7 마종 CP·인게임 이벤트 &nbsp;|&nbsp; '+
- '<span class="chip pb">퍼블마</span> D0 출시·D5 플레이 탭 &nbsp;|&nbsp; '+
- '<span class="chip so">솔리테어</span> D0(7/10 15:40) 출시·D1(7/11 19:00) 플레이 탭 (7/6~9 내부 테스트)';
-
-// ---------- chart ----------
-const soData=DAU.so.map((v,i)=>i===LIVE.so?null:v);
+document.getElementById('tblwrap').innerHTML=h+'</tbody></table>';
+document.getElementById('events').innerHTML='<b>주요 이벤트</b> &nbsp; <span class="chip cz">코지</span> D0 출시·D3 플레이 탭·D6 더퍼즐·코인매치 CP·D7 마종 CP &nbsp;|&nbsp; <span class="chip pb">퍼블마</span> D0 출시·D5 플레이 탭 &nbsp;|&nbsp; <span class="chip so">솔리테어</span> D0(7/10) 출시·D1(7/11) 플레이 탭';
+// chart
+const soData=P.dau.so.map((v,i)=>i===P.live?null:v);
 new Chart(document.getElementById('c'),{type:'line',
   data:{labels:[...Array(maxLen).keys()].map(i=>'D'+i),datasets:[
-    {label:'코지 타일즈',data:DAU.cz,borderColor:'#0F6FC4',backgroundColor:'#0F6FC4',borderWidth:2.5,pointRadius:2,tension:.25},
-    {label:'퍼즐 블록 마스터',data:DAU.pb,borderColor:'#4a9d5b',backgroundColor:'#4a9d5b',borderWidth:2.5,pointRadius:2,tension:.25},
+    {label:'코지 타일즈',data:P.dau.cz,borderColor:'#0F6FC4',backgroundColor:'#0F6FC4',borderWidth:2.5,pointRadius:2,tension:.25},
+    {label:'퍼즐 블록 마스터',data:P.dau.pb,borderColor:'#4a9d5b',backgroundColor:'#4a9d5b',borderWidth:2.5,pointRadius:2,tension:.25},
     {label:'솔리테어 시티 저니',data:soData,borderColor:'#d94f6a',backgroundColor:'#d94f6a',borderWidth:3.5,pointRadius:4,tension:.25,spanGaps:false}]},
   options:{responsive:true,interaction:{mode:'index',intersect:false},
     plugins:{legend:{position:'bottom',labels:{boxWidth:14,font:{size:12}}}},
     scales:{y:{beginAtZero:true,title:{display:true,text:'DAU'}},x:{title:{display:true,text:'출시 후 경과일 (D0=출시일)'}}}}});
-</script>
-</body></html>
+</script></body></html>
