@@ -5,8 +5,14 @@ body{font-family:'Noto Sans KR',sans-serif;background:#EDF0F6;display:flex;flex-
 .card iframe{width:100%;border:0;border-radius:16px;display:block}
 </style>
 <script>
-// iframe 높이 자동 맞춤 — 차트가 비동기 렌더되므로 로드 후에도 여러 번 재계산(내부 스크롤 방지)
-function fit(f,fb){function H(){try{var h=f.contentWindow.document.documentElement.scrollHeight;if(h>50)f.style.height=h+'px';}catch(e){f.style.height=fb;}}H();[250,700,1500,3000].forEach(function(t){setTimeout(H,t);});}
+// iframe 높이 자동 맞춤 — 차트 비동기 렌더 + 버튼/토글 상호작용으로 높이가 바뀌므로
+// ResizeObserver로 콘텐츠 변화를 상시 감지해 재조정(내부 스크롤 완전 방지). setTimeout은 초기 보강.
+function fit(f,fb){
+  function H(){try{var h=f.contentWindow.document.documentElement.scrollHeight;if(h>50)f.style.height=h+'px';}catch(e){f.style.height=fb;}}
+  H();[250,700,1500,3000].forEach(function(t){setTimeout(H,t);});
+  try{var d=f.contentWindow.document;new ResizeObserver(H).observe(d.body);
+    f.contentWindow.addEventListener('click',function(){setTimeout(H,60);setTimeout(H,250);});}catch(e){}
+}
 </script>
 </head><body>
 <div class="card"><iframe id="bench" src="sol_bench.html" onload="fit(this,'840px')"></iframe></div>
