@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<title>동기간 벤치 추세</title><script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+ body{font-family:-apple-system,'Apple SD Gothic Neo',sans-serif;margin:0;background:#f6f7f9;color:#1c2530}
+ .wrap{max-width:1080px;margin:0 auto;padding:26px 24px 40px}
+ h1{font-size:20px;margin:0 0 4px} .sub{color:#6b7684;font-size:12px;margin-bottom:16px}
+ .metrics{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+ .mbtn{border:1px solid #d5dae2;background:#fff;color:#4a5568;border-radius:20px;padding:6px 13px;font-size:12.5px;cursor:pointer;font-weight:600}
+ .mbtn.on{background:#1c2530;color:#fff;border-color:#1c2530}
+ .chart{background:#fff;border:1px solid #e6e9ee;border-radius:12px;padding:16px}
+ .foot{color:#98a2b0;font-size:11px;margin-top:12px;line-height:1.6}
+</style></head><body><div class="wrap">
+<h1>동기간 벤치마크 추세 — 런칭 dayN별</h1>
+<div class="sub">지표 버튼으로 전환 · 하단 범례 클릭으로 게임 on/off · 솔리테어 진행중일(점선·빈 점)=당일 미마감 · D0=런칭일 · 갱신 2026-07-13 13:59:14</div>
+<div class="metrics" id="mbtns"></div>
+<div class="chart"><canvas id="c" height="150"></canvas></div>
+<div class="foot">동기간 누적: 각 지표를 런칭 D0~Di 누적으로 3게임 동일 산식 · D1류=복귀일 끝난 코호트만 풀링(D0~D(i-2)) · 판수/60·600초/첫터치=누적 근사(추세용) · 벤치는 고정 히스토리 캐시, 솔리테어는 라이브</div>
+</div>
+<script>
+const P = {"series": {"sol": {"nru_cum": [506, 1287, 1469], "d1": [null, null, 16.8], "us_d1": [null, null, 32.6], "ru_d1": [null, null, 52.9], "touch": [49.6, 49.4, 53.6], "nru_rounds": [7.6, 8.2, 9.5], "ru_rounds": [24.1, 22.1, 19.3], "p60": [43.7, 43.8, 47.5], "p600": [20.2, 21.2, 24.1], "rvpr": [0.122, 0.204, 0.215]}, "cozy": {"nru_cum": [2147, 4322, 6883, 9093, 11550, 14925, 18338, 21939, 25053, 28662, 33505, 36541, 39960, 45465, 50742, 55563, 60098, 64904, 69580, 75038, 79536, 84419, 88187, 92192, 95223, 99748, 102330, 104831, 108113, 112419, 115773], "d1": [null, null, 14.0, 14.7, 15.2, 15.0, 15.6, 15.9, 16.2, 15.8, 15.8, 15.4, 14.6, 14.7, 14.6, 14.5, 14.2, 14.1, 14.0, 13.8, 13.7, 13.4, 13.3, 13.1, 13.1, 12.9, 12.8, 12.6, 12.5, 12.5, 12.4], "us_d1": [null, null, 19.6, 18.6, 18.7, 17.0, 17.8, 19.5, 21.3, 21.2, 22.1, 21.8, 21.2, 20.8, 20.7, 20.7, 20.7, 20.7, 20.7, 20.5, 20.5, 20.3, 20.0, 19.9, 19.8, 19.5, 19.3, 18.8, 18.8, 18.8, 18.7], "ru_d1": [null, null, 42.5, 48.3, 49.5, 50.1, 50.3, 50.5, 50.4, 50.6, 50.7, 50.8, 50.7, 50.7, 50.8, 50.6, 50.5, 50.6, 50.6, 50.5, 50.5, 50.4, 50.4, 50.3, 50.3, 50.3, 50.4, 50.5, 50.6, 50.7, 50.7], "touch": [76.9, 73.3, 72.1, 71.3, 71.8, 71.8, 72.3, 72.5, 72.3, 71.1, 67.2, 67.0, 67.0, 67.9, 68.2, 68.1, 68.2, 68.0, 67.6, 66.5, 66.3, 65.6, 65.4, 64.7, 64.3, 63.1, 63.0, 63.0, 62.9, 62.0, 61.7], "nru_rounds": [10.9, 10.2, 9.8, 9.7, 9.8, 9.8, 9.8, 9.8, 9.7, 9.3, 8.7, 8.7, 8.6, 8.7, 8.6, 8.6, 8.5, 8.4, 8.3, 8.1, 8.0, 7.9, 7.9, 7.7, 7.6, 7.4, 7.4, 7.4, 7.3, 7.1, 7.1], "ru_rounds": [22.5, 26.5, 26.4, 25.9, 25.9, 25.6, 25.2, 25.1, 25.2, 24.6, 24.1, 24.0, 23.8, 23.7, 23.7, 23.7, 23.5, 23.4, 23.4, 23.2, 22.8, 22.6, 22.4, 22.2, 22.0, 21.8, 21.6, 21.5, 21.4, 21.3, 21.2], "p60": [72.9, 70.3, 69.2, 68.4, 69.0, 69.2, 69.4, 69.6, 69.5, 68.6, 65.6, 65.6, 65.5, 66.0, 66.2, 66.2, 66.2, 66.0, 65.8, 65.1, 64.9, 64.4, 64.3, 63.8, 63.5, 62.7, 62.6, 62.6, 62.5, 61.8, 61.6], "p600": [20.6, 20.5, 20.7, 20.6, 20.8, 21.4, 21.6, 21.3, 21.3, 20.8, 19.5, 19.4, 19.2, 19.0, 18.6, 18.4, 18.2, 17.9, 17.7, 17.2, 17.0, 16.7, 16.6, 16.4, 16.2, 15.8, 15.7, 15.6, 15.5, 15.2, 15.0], "rvpr": [0.038, 0.035, 0.04, 0.042, 0.043, 0.042, 0.041, 0.041, 0.042, 0.042, 0.043, 0.043, 0.043, 0.043, 0.043, 0.044, 0.044, 0.045, 0.046, 0.046, 0.046, 0.047, 0.047, 0.048, 0.05, 0.051, 0.053, 0.054, 0.055, 0.056, 0.057]}, "pbm": {"nru_cum": [1713, 3450, 5174, 7509, 10250, 13025, 15860, 18787, 22052, 24894, 27691, 30524, 33635, 36981, 40312, 44114, 47438, 50680, 54006, 57243, 61038, 65245, 69424, 72857, 75683, 79720, 83282, 87838, 92800, 97785, 101644], "d1": [null, null, 17.0, 14.8, 15.1, 15.2, 15.3, 15.6, 15.4, 15.5, 15.3, 15.3, 15.3, 15.3, 15.4, 15.3, 15.3, 15.1, 15.1, 15.1, 15.1, 15.0, 14.9, 14.8, 14.7, 14.6, 14.6, 14.5, 14.4, 14.2, 14.0], "us_d1": [null, null, 21.4, 23.4, 22.9, 22.6, 21.0, 22.4, 22.3, 21.5, 21.3, 20.8, 20.7, 20.9, 21.0, 20.6, 20.7, 20.7, 20.7, 20.5, 20.6, 20.5, 20.5, 20.6, 20.4, 20.4, 20.0, 18.9, 17.9, 17.2, 16.2], "ru_d1": [null, null, 40.0, 38.1, 40.2, 42.1, 44.1, 44.3, 44.5, 44.4, 44.4, 45.3, 45.8, 46.3, 46.6, 46.5, 46.5, 46.2, 46.5, 46.7, 46.9, 47.2, 47.3, 47.4, 47.3, 47.3, 47.4, 47.5, 47.8, 47.9, 47.9], "touch": [81.8, 82.6, 81.2, 80.3, 80.5, 80.4, 80.0, 79.9, 79.5, 78.8, 78.6, 78.2, 78.0, 77.9, 77.8, 77.6, 77.2, 76.9, 76.5, 76.3, 76.1, 75.9, 75.7, 75.4, 75.2, 74.5, 73.9, 72.7, 71.5, 70.7, 70.1], "nru_rounds": [10.6, 10.3, 10.6, 11.3, 11.5, 10.5, 9.9, 9.6, 9.4, 9.1, 8.8, 8.5, 8.3, 8.1, 8.0, 8.0, 7.9, 7.8, 7.7, 7.5, 7.4, 7.4, 7.3, 7.3, 7.2, 7.1, 7.0, 6.8, 6.7, 6.6, 6.5], "ru_rounds": [24.0, 22.5, 21.8, 22.8, 23.5, 21.3, 20.5, 20.1, 20.3, 20.1, 19.6, 19.2, 18.8, 18.8, 18.9, 19.0, 19.1, 18.9, 18.7, 18.5, 18.5, 18.7, 18.8, 18.8, 18.7, 18.5, 18.4, 18.4, 18.5, 18.6, 18.6], "p60": [81.6, 81.4, 80.0, 79.3, 79.8, 80.0, 80.0, 80.0, 79.7, 79.6, 79.5, 79.4, 79.2, 79.1, 79.1, 78.9, 78.7, 78.6, 78.4, 78.2, 78.0, 77.8, 77.7, 77.5, 77.3, 76.7, 76.1, 75.1, 74.0, 73.2, 72.7], "p600": [26.8, 25.9, 27.1, 28.8, 29.9, 30.2, 30.1, 30.3, 30.3, 30.3, 30.4, 30.3, 30.3, 30.1, 29.8, 29.6, 29.4, 29.4, 29.3, 29.2, 28.9, 28.7, 28.5, 28.4, 28.2, 27.8, 27.4, 26.8, 26.1, 25.6, 25.3], "rvpr": [0.025, 0.033, 0.033, 0.04, 0.038, 0.041, 0.046, 0.054, 0.053, 0.057, 0.058, 0.058, 0.059, 0.059, 0.058, 0.058, 0.058, 0.059, 0.06, 0.061, 0.061, 0.061, 0.06, 0.061, 0.062, 0.062, 0.063, 0.064, 0.064, 0.064, 0.065]}}, "meta": [{"key": "nru_cum", "label": "유입 누적(신규)", "fmt": "count", "dec": 0}, {"key": "d1", "label": "D1 리텐션", "fmt": "pct", "dec": 1}, {"key": "us_d1", "label": "US D1 리텐션", "fmt": "pct", "dec": 1}, {"key": "ru_d1", "label": "복귀 재복귀율 D1", "fmt": "pct", "dec": 1}, {"key": "touch", "label": "첫터치 도달", "fmt": "pct", "dec": 1}, {"key": "nru_rounds", "label": "NRU 판수/인", "fmt": "num", "dec": 1}, {"key": "ru_rounds", "label": "RU 판수/인", "fmt": "num", "dec": 1}, {"key": "p60", "label": "60초+ 세션", "fmt": "pct", "dec": 1}, {"key": "p600", "label": "600초+ 몰입", "fmt": "pct", "dec": 1}, {"key": "rvpr", "label": "판당 RV(참고)", "fmt": "num", "dec": 3}], "colors": {"sol": "#d94f6a", "cozy": "#2CB87A", "pbm": "#E8832A"}, "names": {"sol": "솔리테어", "cozy": "코지", "pbm": "퍼블마"}, "partial": 2, "maxlen": 31};
+const order = ["sol","cozy","pbm"];
+function fmt(v,m){ if(v==null) return '—'; if(m.fmt=='count') return v.toLocaleString(); if(m.fmt=='pct') return v+'%'; return v.toFixed(m.dec); }
+function dsFor(key){
+  return order.map(code=>{
+    const arr = P.series[code][key] || [];
+    const isSol = code=='sol';
+    return {label:P.names[code],data:arr,borderColor:P.colors[code],backgroundColor:P.colors[code],
+      borderWidth:isSol?3:1.8,borderDash:isSol?[]:[5,4],tension:.25,spanGaps:false,
+      pointRadius:isSol?arr.map((v,i)=>v==null?0:(i===P.partial?6:3.5)):0,
+      pointBackgroundColor:isSol?arr.map((v,i)=>i===P.partial?'#fff':P.colors[code]):P.colors[code],
+      pointBorderColor:P.colors[code],pointBorderWidth:2,
+      segment:isSol?{borderDash:c=>c.p1DataIndex===P.partial?[6,5]:undefined,
+        borderColor:c=>c.p1DataIndex===P.partial?'#f0a6b6':P.colors[code]}:undefined};
+  });
+}
+let active = P.meta[1]; // 기본 D1 리텐션
+const labels=[...Array(P.maxlen).keys()].map(i=>'D'+i);
+const chart=new Chart(document.getElementById('c'),{type:'line',
+  data:{labels,datasets:dsFor(active.key)},
+  options:{responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'bottom',labels:{boxWidth:14,font:{size:12},usePointStyle:true}},
+      tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.parsed.y,active)}}},
+    scales:{y:{beginAtZero:true,title:{display:true,text:active.label}},
+      x:{title:{display:true,text:'런칭 후 경과일 (D0=런칭일)'}}}}
+});
+const box=document.getElementById('mbtns');
+P.meta.forEach(m=>{const b=document.createElement('button');b.className='mbtn'+(m.key===active.key?' on':'');
+  b.textContent=m.label;b.onclick=()=>{active=m;
+    document.querySelectorAll('.mbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    chart.data.datasets=dsFor(m.key);chart.options.scales.y.title.text=m.label;chart.update();};
+  box.appendChild(b);});
+</script></body></html>
