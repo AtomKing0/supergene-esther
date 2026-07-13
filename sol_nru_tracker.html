@@ -20,7 +20,7 @@
   .foot{color:#98a2b0;font-size:11px;margin-top:14px}
 </style></head><body><div class="wrap">
 <h1>솔리테어 시티 저니 — Organic NRU 트래커</h1>
-<div class="sub">런칭일 D0 = 2026-07-11 · 벤치마크(팀 시트) 대비 · 갱신 2026-07-13 13:19</div>
+<div class="sub">런칭일 D0 = 2026-07-11 · 벤치마크(팀 시트) 대비 · 갱신 2026-07-13 13:25:58</div>
 <div class="cards">
   <div class="card"><div class="k">솔리테어 평균 (완료일)</div><div class="v sol">644</div></div>
   <div class="card"><div class="k">Snap&amp;Guess 평균</div><div class="v">540</div></div>
@@ -47,17 +47,25 @@
       <td class="num sub">0</td><td class="num sub">5</td>
       <td class="num sub">1,689</td><td class="num sub">1,633</td>
       <td class="num vs"></td></tr></tbody></table>
-<div class="foot">정의: 1000_LOGIN_COMPLETE 당일 첫 로그인(logincount_total=1), is_dev 제외 · 전량 오가닉(유료 CP entrypoint 없음) · 진행중=당일 미마감 · 소스: game-log-359704.raw.solitaire_city_journey</div>
+<div class="foot">정의: 1000_LOGIN_COMPLETE 당일 첫 로그인(logincount_total=1), is_dev 제외 · 전량 오가닉(유료 CP entrypoint 없음) · <b>진행중=당일 미마감(그래프: 점선·빈 점)</b> · 소스: game-log-359704.raw.solitaire_city_journey</div>
 </div>
 <script>
-const DS = [{"label": "Snap&Guess (평균 540)", "data": [394, 606, 699, 803, 680, 689, 638, 582, 573, 584, 531, 568, 705, 629, 578, 504, 546, 466, 544, 529, 456, 463, 469, 479, 384, 406, 404, 355, 358, 429, 514, 733, 276, 46], "color": "#9aa4b2", "dashed": true}, {"label": "Mahjong World Tour (평균 1,801)", "data": [496, 1526, 1689, 1777, 2229, 2028, 1969, 2010, 2123, 2228, 2103, 2062, 1922, 1958, 1845, 1895, 2070, 1822, 1798, 1785, 1826, 1715, 1795, 1771, 1700, 1685, 1675, 1685, 1565, 1746, 1579, 570], "color": "#e8b04b", "dashed": true}, {"label": "Puzzle Block Master (평균 2,200)", "data": [537, 1610, 1633, 1398, 1707, 2190, 2246, 2141, 2275, 2412, 1976, 1913, 1879, 2100, 2343, 2433, 2581, 2217, 2146, 2194, 2172, 2645, 2986, 2901, 2386, 2207, 2286, 2114, 3044, 3377, 3329, 2283, 1686, 1384], "color": "#4a9d5b", "dashed": true}, {"label": "솔리테어 시티 저니 (평균 644)", "data": [506, 781, 175], "color": "#d94f6a", "dashed": false}];
+const DS = [{"label": "Snap&Guess (평균 540)", "data": [394, 606, 699, 803, 680, 689, 638, 582, 573, 584, 531, 568, 705, 629, 578, 504, 546, 466, 544, 529, 456, 463, 469, 479, 384, 406, 404, 355, 358, 429, 514, 733, 276, 46], "color": "#9aa4b2", "dashed": true}, {"label": "Mahjong World Tour (평균 1,801)", "data": [496, 1526, 1689, 1777, 2229, 2028, 1969, 2010, 2123, 2228, 2103, 2062, 1922, 1958, 1845, 1895, 2070, 1822, 1798, 1785, 1826, 1715, 1795, 1771, 1700, 1685, 1675, 1685, 1565, 1746, 1579, 570], "color": "#e8b04b", "dashed": true}, {"label": "Puzzle Block Master (평균 2,200)", "data": [537, 1610, 1633, 1398, 1707, 2190, 2246, 2141, 2275, 2412, 1976, 1913, 1879, 2100, 2343, 2433, 2581, 2217, 2146, 2194, 2172, 2645, 2986, 2901, 2386, 2207, 2286, 2114, 3044, 3377, 3329, 2283, 1686, 1384], "color": "#4a9d5b", "dashed": true}, {"label": "솔리테어 시티 저니 (평균 644)", "data": [506, 781, 175], "color": "#d94f6a", "dashed": false, "isSol": true}];
+const PIDX = 2;   // 진행중(미마감) 날짜 인덱스, 없으면 -1
 const maxLen = Math.max(...DS.map(d=>d.data.length));
 new Chart(document.getElementById('c'), {
   type:'line',
   data:{labels:[...Array(maxLen).keys()].map(i=>'D'+i),
-    datasets:DS.map(d=>({label:d.label,data:d.data,borderColor:d.color,
-      backgroundColor:d.color,borderWidth:d.dashed?1.5:3,borderDash:d.dashed?[5,4]:[],
-      pointRadius:d.dashed?0:3,tension:.25,spanGaps:false}))},
+    datasets:DS.map(d=>{
+      const base={label:d.label,data:d.data,borderColor:d.color,backgroundColor:d.color,tension:.25,spanGaps:false};
+      if(d.dashed) return {...base,borderWidth:1.5,borderDash:[5,4],pointRadius:0};
+      // 솔리테어 실선: 진행중 날짜로 이어지는 구간은 점선, 그 점은 속 빈 점으로
+      return {...base,borderWidth:3,pointBorderColor:d.color,pointBorderWidth:2,
+        pointRadius:d.data.map((v,i)=> v==null?0:(i===PIDX?6:3.5)),
+        pointBackgroundColor:d.data.map((v,i)=> i===PIDX?'#ffffff':d.color),
+        segment:{borderDash:c=> c.p1DataIndex===PIDX?[6,5]:undefined,
+                  borderColor:c=> c.p1DataIndex===PIDX?'#f0a6b6':d.color}};
+    })},
   options:{responsive:true,interaction:{mode:'index',intersect:false},
     plugins:{legend:{position:'bottom',labels:{boxWidth:14,font:{size:11}}}},
     scales:{y:{beginAtZero:true,title:{display:true,text:'Organic NRU'}},
