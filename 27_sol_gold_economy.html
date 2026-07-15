@@ -1,0 +1,99 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<title>솔리테어 재화 경제 진단 — 골드 보유 분포·흐름</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Noto Sans KR',sans-serif;background:#F4F6FA;color:#1A1D2E;font-size:14px;padding:28px}
+.wrap{max-width:1080px;margin:0 auto}h1{font-size:22px;font-weight:900;margin-bottom:4px}
+.sub{font-size:12px;color:#7A7F94;margin-bottom:20px}
+.card{background:#fff;border:1px solid #E2E6EF;border-radius:12px;padding:18px 22px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.card.pri{border:2.5px solid #DC2626;box-shadow:0 6px 20px rgba(220,38,38,0.16);background:linear-gradient(180deg,#FEF4F4 0%,#fff 64px)}
+.pri-badge{display:inline-block;font-size:11px;font-weight:800;color:#fff;background:#DC2626;border-radius:6px;padding:2px 9px;margin-right:8px;vertical-align:middle}
+.card h2{font-size:15px;font-weight:800;color:#3A4056;margin-bottom:4px}.card .d{font-size:11px;color:#9AA0B8;margin-bottom:12px}
+.hl{display:flex;gap:12px;margin-bottom:16px}
+.hbox{flex:1;background:#fff;border:2px solid;border-radius:12px;padding:14px 16px}
+.hbox .t{font-size:11px;font-weight:700;color:#7A7F94}.hbox .v{font-size:23px;font-weight:900;margin:4px 0}.hbox .s{font-size:11px;color:#4A5068;line-height:1.5}
+.cv{position:relative;height:260px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:#9AA0B8;font-weight:700;padding:6px 10px;border-bottom:1px solid #E2E6EF;font-size:11px}
+td{padding:7px 10px;border-bottom:1px solid #F0F2F7}
+.concl{background:#EEF3FF;border:1px solid #BEE3F8;border-radius:10px;padding:14px 18px;font-size:13px;line-height:1.8}
+b.r{color:#DC2626}b.g{color:#059669}b.o{color:#C2410C}
+.faucet{color:#0369A1;font-weight:700}.sink{color:#B45309;font-weight:700}</style></head><body><div class="wrap">
+<h1>솔리테어 시티 저니 — 재화 경제 진단</h1>
+<p class="sub">Facebook Instant Games · BigQuery 실측 solitaire_city_journey 2026-07-10~07-15 · 유저별 최신 잔액(세션 시작 스냅샷) · is_dev 제외 · 작성 2026-07-15</p>
+
+<div class="hl">
+<div class="hbox" style="border-color:#FCA5A5"><div class="t">골드 보유 중앙값</div><div class="v" style="color:#DC2626">2,000</div><div class="s">전체 78%가 <b class="r">시작 골드 2,000에서 안 움직임</b> · 실플레이(≥5판)도 49%가 2,000 고정</div></div>
+<div class="hbox" style="border-color:#FCD34D"><div class="t">골드 순증 (5일)</div><div class="v" style="color:#D97706">+459M</div><div class="s">발행 734M vs 소비 275M = <b class="o">배수구 부족</b>. 단 60%는 아래 로그인 버그발</div></div>
+<div class="hbox" style="border-color:#F87171"><div class="t">로그인 골드 버그</div><div class="v" style="color:#DC2626">29계정</div><div class="s"><b class="r">로그인당 수백만 골드</b>(before=0→최대 1,244만). 로그인 발행의 90%(277M) 차지 — P0</div></div>
+<div class="hbox" style="border-color:#C4B5FD"><div class="t">티켓 = 死재화</div><div class="v" style="color:#7C3AED">99.4%</div><div class="s">티켓 <b>99.4%가 0 보유</b>(최대 3) · 해머도 80% 0 보유 — 보유형 재화로 기능 안 함</div></div>
+</div>
+
+<div class="card pri"><h2><span class="pri-badge">P0 · 버그</span>로그인 골드 폭발 — 29개 계정</h2>
+<div class="d">9400_GOLD_TRANSACTION_LOG · type=earn · api=player/login</div>
+<table><tr><th>구분</th><th>값</th><th>비고</th></tr>
+<tr><td>로그인 골드 총 발행</td><td><b>307.9M</b></td><td>5일 · 4,628건 · 2,709명</td></tr>
+<tr style="background:#FEF2F2"><td><b class="r">1M+ 받은 계정</b></td><td><b class="r">29명 → 277.0M (90.0%)</b></td><td>로그인 발행의 대부분이 소수 계정발</td></tr>
+<tr><td>나머지 정상 유저</td><td>2,680명 → 30.9M</td><td>중앙값 2,000 · 평균 11.5k(정상 범위)</td></tr>
+<tr><td>버그 패턴</td><td colspan="2"><b>before=0 → after 수백만</b>, 로그인마다 금액 증가(8.8M→10.4M→11.5M→12.1M→<b class="r">12.4M</b> compounding). 최대 1회 <b>12,447,265</b></td></tr>
+</table>
+<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:12px 16px;margin-top:12px;font-size:12.5px;line-height:1.7">
+<b class="o">판정</b> — 설계 누수 아님. 소수 계정의 <b>오버플로/누적 계산 오류 의심</b>(잔액 0에서 매 로그인 폭증·compounding, client_version 367). 앞서 관측된 <b>900만+ 골드 보유·평균 인플레·고래 꼬리의 정체가 전부 이 계정들.</b> → 클라/서버 로그인 골드 지급 로직 점검 + 해당 계정 잔액 정정 필요. 이 버그가 "골드 인플레 위기"의 약 60%를 만듦.</div></div>
+
+<div class="card"><h2>① 골드 보유 분포 — 전체 vs 실플레이(≥5판)</h2>
+<div class="d">유저별 최신 gold_balance · 시작 골드 = 2,000</div>
+<div class="cv"><canvas id="c1"></canvas></div>
+<div style="margin-top:10px;font-size:12.5px;color:#4A5068;line-height:1.7">
+전체 유저(n=3,155)는 <b class="r">78%가 정확히 2,000</b>. 신규·CP 유입(61%) 노이즈를 걷어내려 <b>실플레이(≥5판, n=1,234)</b>만 봐도 <b class="r">49%가 여전히 2,000 고정</b>·14.7%는 그 아래로 소진. 건강한 순환 구간(2k~50k) 30%, 50k+ 고래 6.5%. 골드가 대다수에겐 <b>움직이지 않는 재화</b>.</div></div>
+
+<div class="card"><h2>② 플레이 깊이별 골드 — 중앙값이 안 움직인다</h2>
+<div class="d">클리어 판수 구간별 최신 골드 (median vs mean 괴리 = 소수 폭식의 증거)</div>
+<table><tr><th>클리어 판수</th><th>유저</th><th>골드 중앙값</th><th>골드 평균</th><th>p90</th></tr>
+<tr><td>0판</td><td>1,236</td><td>2,000</td><td>2,000</td><td>2,000</td></tr>
+<tr><td>1~4판</td><td>687</td><td>2,000</td><td>2,155</td><td>2,000</td></tr>
+<tr><td>5~19판</td><td>702</td><td><b>2,000</b></td><td>3,153</td><td>5,849</td></tr>
+<tr><td>20~49판</td><td>341</td><td><b>2,000</b></td><td>9,615</td><td>20,291</td></tr>
+<tr style="background:#FEF2F2"><td>50~99판</td><td>108</td><td><b class="r">2,000</b></td><td>43,530</td><td>166,505</td></tr>
+<tr><td>100판+</td><td>83</td><td>121,525</td><td><b>514,784</b></td><td>1,000,634</td></tr></table>
+<div style="background:#EEF3FF;border:1px solid #BEE3F8;border-radius:10px;padding:12px 16px;margin-top:12px;font-size:12.5px;line-height:1.7">
+<b>핵심 소견</b> — 중앙값이 <b class="r">50~99판까지 계속 2,000</b>, 100판+에서야 움직임. 반면 평균만 폭증(2,000→43,530→514,784). 즉 <b>어느 플레이 구간이든 "대부분 2,000 고정 + 소수 폭식"</b>. 골드가 코어 플레이로 안정적으로 벌리지도·쓰이지도 않음.</div></div>
+
+<div class="card"><h2>③ 골드 흐름 — 수도꼭지(발행) vs 배수구(소비)</h2>
+<div class="d">9400_GOLD_TRANSACTION_LOG · api별 · 5일 합계 · <span class="faucet">파랑=발행</span> / <span class="sink">주황=소비</span></div>
+<table><tr><th>구분</th><th>경로 (api)</th><th>골드</th><th>유저</th><th>성격</th></tr>
+<tr><td class="faucet">🚰 발행</td><td>player/login</td><td>307.9M</td><td>2,709</td><td><b class="r">90% 버그(29계정)</b> · 정상분 31M</td></tr>
+<tr><td class="faucet">🚰 발행</td><td>play/game-end</td><td>271.9M</td><td>1,915</td><td>판 클리어 보상(코어)</td></tr>
+<tr><td class="faucet">🚰 발행</td><td>player/get-data · deck-unlock · RV광고</td><td>81M·35M·23M</td><td>813·435·174</td><td><b class="o">매칭 배수구 없음</b></td></tr>
+<tr style="background:#FFFBEB"><td class="sink">🕳️ 소비</td><td>play/game-start (입장료)</td><td>238.0M</td><td>1,614</td><td>game-end와 상쇄(코어 중립)</td></tr>
+<tr style="background:#FFFBEB"><td class="sink">🕳️ 소비</td><td>player/buy-item</td><td>34.2M</td><td>764</td><td>유일한 실질 재량 sink</td></tr>
+<tr style="background:#FFFBEB"><td class="sink">🕳️ 소비</td><td>meta-city/upgrade-decoration</td><td><b class="r">2.6M</b></td><td>704</td><td>메타 sink 사실상 미작동</td></tr>
+</table>
+<div style="background:#EEF3FF;border:1px solid #BEE3F8;border-radius:10px;padding:12px 16px;margin-top:12px;font-size:12.5px;line-height:1.7">
+발행 <b>734M</b> vs 소비 <b>275M</b> = 순증 <b class="r">+459M</b>. 로그인 버그(277M) 제외해도 순증 <b>+182M(~1.66:1)</b>. <b>코어 루프는 중립</b>(game-end 272M ≈ game-start 238M)이라 그냥 플레이하는 유저는 2,000 근처. 진짜 잉여는 <b>부수 수도꼭지(get-data·deck-unlock·RV, 매칭 sink 없음)</b>와 <b>메타 sink 부재(deco 2.6M)</b>에서 옴.</div></div>
+
+<div class="card"><h2>④ 해머·티켓 — 보유형 재화로 기능 안 함</h2>
+<table><tr><th>재화</th><th>유저</th><th>평균</th><th>중앙값</th><th>p90</th><th>p99</th><th>최대</th><th>0 보유</th></tr>
+<tr><td>해머</td><td>3,154</td><td>2.1</td><td>0</td><td>5</td><td>41</td><td>62</td><td>80%</td></tr>
+<tr><td>티켓</td><td>3,155</td><td>0.0</td><td>0</td><td>0</td><td>0</td><td>3</td><td><b class="r">99.4%</b></td></tr></table>
+<div style="margin-top:10px;font-size:12.5px;color:#4A5068;line-height:1.7">
+티켓은 <b>사실상 死재화</b>(99.4% 0 보유·최대 3) — 지급이 거의 없거나 즉시 소비. 해머도 80%가 0, 소량 보유(p90 5)의 빠른 소비재. 둘 다 "쌓아두는 재화"로 안 쓰임.</div></div>
+
+<div class="card"><h2>진단 · 처방</h2><div class="concl">
+<b>총평</b> — 골드가 두 세그먼트 모두에서 경제로 기능 안 함: <b class="r">하단(78%가 2,000 고정 = 무의미)</b> + <b class="r">상단(백만골드 = 무가치)</b>. 중간층(순환) 얇음.<br>
+<b>1. P0 로그인 골드 버그</b> — 29계정이 로그인당 수백만(before=0·compounding), 로그인 발행의 90%·전체 인플레의 60%. 지급 로직 점검 + 계정 잔액 정정. <b>가장 급함</b>.<br>
+<b>2. 코어 루프 골드 중립</b> — game-end(+272M)≈game-start(−238M) 상쇄라 median 유저는 2,000에서 안 움직임 = 골드가 코어 경험을 못 움직임. 코어 보상/코스트로서 골드 역할 재설계 검토.<br>
+<b>3. 배수구 신설(하수구)</b> — 부수 수도꼭지(get-data 81M·deck-unlock 35M·RV 23M)는 매칭 sink 없이 발행. 메타(도시/데코) 골드 코스트는 2.6M뿐. <b>메타에 의미있는 골드 sink 부여</b> or 소비처 신설로 잉여(버그 제외 순증 182M/5일) 흡수.<br>
+<b>4. 티켓·해머 재점검</b> — 티켓 99.4% 미보유는 재화 설계 자체 재검토 대상(지급/용도 불명).<br>
+<span style="color:#7A7F94;font-size:11.5px">※ 주의: 게임 D5·신규/CP 유입 61%로 "2,000 고정"엔 신규 노이즈 일부 포함. 코호트 성숙 후 재측정 권장.</span></div></div>
+
+<script>
+new Chart(document.getElementById('c1'),{type:'bar',
+ data:{labels:['<2k(소진)','=2k(시작)','2k~5k','5k~10k','10k~50k','50k~200k','200k+'],
+  datasets:[
+   {label:'전체 (n=3,155)',data:[5.9,78.0,4.8,4.2,4.5,1.2,1.4],backgroundColor:'#93C5FD'},
+   {label:'실플레이 ≥5판 (n=1,234)',data:[14.7,49.2,7.2,10.7,11.7,3.0,3.5],backgroundColor:'#DC2626CC'}]},
+ options:{responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{position:'top'}},
+  scales:{y:{title:{display:true,text:'유저 비중 %'},ticks:{callback:v=>v+'%'}}}}});
+</script>
+</div></body></html>
