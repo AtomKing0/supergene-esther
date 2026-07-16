@@ -67,6 +67,14 @@
   .eform .efl{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#7a8a9a;margin-bottom:3px;}
   .eform .efl .cnt{color:#93a3b5;font-weight:800;}
   .eform .efv{font-size:13px;color:#13314f;background:#fff;border:1px solid #e2e9f1;border-radius:7px;padding:6px 10px;font-weight:600;line-height:1.5;}
+  .planner{margin-top:10px;}
+  .planner th,.planner td{text-align:center;padding:9px 8px;}
+  .planner td.lbl{text-align:left;font-weight:700;color:#1b3049;}
+  .planner input[type=date]{font-family:inherit;font-size:12.5px;padding:5px 8px;border:1px solid #cdd8e4;border-radius:7px;color:#13314f;background:#fff;}
+  .planner .start{font-weight:800;color:#1c9e63;font-size:13px;white-space:nowrap;}
+  .planner .end{font-weight:800;color:#c0392b;font-size:13px;white-space:nowrap;}
+  .planner .typ{font-size:11px;font-weight:700;}
+  .planner .typ.rot{color:#2f6fc2;} .planner .typ.always{color:#1c9e63;}
   @media(max-width:720px){.grid2{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -412,7 +420,42 @@
     </div>
   </div>
 
+  <div class="sect">이벤트 진행일 플래너</div>
+  <div class="card">
+    <div class="desc"><b>배너 제작 완료일</b>을 입력하면 리뷰 <b>2일</b>을 반영해 <b>이벤트 시작일·종료일</b>이 자동 계산됩니다. <span style="color:#5e6e80">(시작일 = 완료일 + 리뷰 2일 · 종료일 = 시작일 + 기간, N일 포함)</span></div>
+    <table class="planner">
+      <tr>
+        <th class="lbl">이벤트</th><th>유형</th><th>기간</th><th>배너 완료일 입력</th><th>이벤트 시작일</th><th>이벤트 종료일</th>
+      </tr>
+      <tr data-dur="3"><td class="lbl">1. Midnight Collection</td><td><span class="typ rot">3일 로테이션</span></td><td>3일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td></tr>
+      <tr data-dur="3"><td class="lbl">2. Sunset Collection</td><td><span class="typ rot">3일 로테이션</span></td><td>3일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td></tr>
+      <tr data-dur="3"><td class="lbl">3. Golden Stamp</td><td><span class="typ rot">3일 로테이션</span></td><td>3일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td></tr>
+      <tr data-dur="3"><td class="lbl">4. City Race</td><td><span class="typ rot">3일 로테이션(주말)</span></td><td>3일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td></tr>
+      <tr data-dur="7"><td class="lbl">5. 주간 리더보드</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td></tr>
+      <tr data-dur="7"><td class="lbl">6. Album Puzzle</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td></tr>
+      <tr data-dur="7"><td class="lbl">7. 7 Days of Gifts (출석)</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td></tr>
+    </table>
+    <div class="note">리뷰 신청 후 통과까지 <b>2일</b> 가정. <b>월 3개 인게임 이벤트 제한 + 신규만 통과</b> → 3일 이벤트 4종은 로테이션 편성, 상시 3종(출석·리더보드·콜렉션)은 첫 진행 구간 기준.</div>
+  </div>
+
   <div class="foot">PST 인게임 이벤트 신청을 위한 배너 제작 요청서 · 페이로드 규칙 <code style="background:#eef2f6;color:#4a5d72">ingame_event_*</code> · 배너 각 2종(1920×1080 / 1080×1920) · FB Event Info 문구 포함</div>
+
+  <script>
+  document.querySelectorAll('.planner tr[data-dur]').forEach(function(row){
+    var inp=row.querySelector('input[type=date]');
+    var dur=parseInt(row.getAttribute('data-dur'),10);
+    var sEl=row.querySelector('.start'), eEl=row.querySelector('.end');
+    var wd=['일','월','화','수','목','금','토'];
+    function fmt(d){var y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),dd=('0'+d.getDate()).slice(-2);return y+'-'+m+'-'+dd+' ('+wd[d.getDay()]+')';}
+    inp.addEventListener('change',function(){
+      if(!inp.value){sEl.textContent='—';eEl.textContent='—';return;}
+      var done=new Date(inp.value+'T00:00:00');
+      var start=new Date(done); start.setDate(start.getDate()+2);
+      var end=new Date(start); end.setDate(end.getDate()+dur-1);
+      sEl.textContent=fmt(start); eEl.textContent=fmt(end);
+    });
+  });
+  </script>
 
 </div>
 </body>
