@@ -437,7 +437,7 @@
       <tr data-dur="7"><td class="lbl">6. Album Puzzle</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td></tr>
       <tr data-dur="7"><td class="lbl">7. 7 Days of Gifts (출석)</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td></tr>
     </table>
-    <div class="note"><b>노출 구간 겹침 자동 방지</b> — 여러 이벤트 완료일을 넣으면 <b>노출 날짜가 겹치지 않게</b> 순차 편성됩니다. 충돌 시 <b>가장 빨리 시작 가능한 이벤트 우선</b>, 나머지는 앞 이벤트 종료 다음날 이후 <b>가장 빠른 빈 구간</b>으로 자동 이동(<span class="pmark">겹침조정</span> 표시). 요일 매핑 <b>1=월 … 5=금 · 0=일</b>, 3일 이벤트는 밀려도 <b>고정 시작요일 유지</b>. <b>완료일 = KST 입력 · 시작/종료일 = UTC 출력</b>(이벤트는 0:00 UTC 시작). 참고: <b>월 3개 제한 + 신규만 통과</b>.</div>
+    <div class="note"><b>노출 구간 겹침 자동 방지</b> — 여러 이벤트 완료일을 넣으면 <b>노출 날짜가 겹치지 않게</b> 편성됩니다. 우선순위 = <b>3일 이벤트 먼저, 7일 이벤트는 뒤로</b>. 각 이벤트는 <b>가장 빠른 빈 구간</b>에 배치되고, 충돌 시 다음 빈 구간으로 이동(<span class="pmark">겹침조정</span> 표시). 요일 매핑 <b>1=월 … 5=금 · 0=일</b>, 3일 이벤트는 밀려도 <b>고정 시작요일 유지</b>. <b>완료일 = KST 입력 · 시작/종료일 = UTC 출력</b>(이벤트는 0:00 UTC 시작). 참고: <b>월 3개 제한 + 신규만 통과</b>.</div>
   </div>
 
   <div class="foot">PST 인게임 이벤트 신청을 위한 배너 제작 요청서 · 페이로드 규칙 <code style="background:#eef2f6;color:#4a5d72">ingame_event_*</code> · 배너 각 2종(1920×1080 / 1080×1920) · FB Event Info 문구 포함</div>
@@ -465,21 +465,29 @@
       });
       // 초기화
       items.forEach(function(it){ it.sEl.textContent='—'; it.eEl.textContent='—'; it.row.classList.remove('pushed'); });
-      // 2) 입력된 이벤트만, '빠른 시작 가능일' 순으로 정렬(가장 빨리 노출 가능한 이벤트 우선)
+      // 2) 우선순위 정렬 — 3일 이벤트 먼저, 그다음 7일. 같은 그룹은 빠른 시작 가능일 순
       var entered=items.filter(function(it){return it.earliest;})
-                       .sort(function(a,b){return a.earliest-b.earliest;});
-      // 3) 겹치지 않게 순차 편성 — 앞 이벤트 종료 다음날부터 시작 가능
-      var cursor=null;
+                       .sort(function(a,b){return (a.dur-b.dur)||(a.earliest-b.earliest);});
+      // 3) 겹치지 않게 편성 — 각 이벤트를 '가장 빠른 빈 구간'에 배치(빈 구간 채우기)
+      var assigned=[];
       entered.forEach(function(it){
         var start=new Date(it.earliest);
-        if(cursor && start.getTime()<cursor.getTime()) start=new Date(cursor);
-        if(it.dow!==null){ while(start.getDay()!==it.dow) start.setDate(start.getDate()+1); } // 밀린 뒤에도 고정요일 유지
+        while(true){
+          var end=new Date(start); end.setDate(end.getDate()+it.dur-1);
+          var conflict=null;
+          for(var i=0;i<assigned.length;i++){
+            if(start.getTime()<=assigned[i].e.getTime() && assigned[i].s.getTime()<=end.getTime()){ conflict=assigned[i]; break; }
+          }
+          if(!conflict) break;
+          start=new Date(conflict.e); start.setDate(start.getDate()+1);        // 충돌 이벤트 종료 다음날로
+          if(it.dow!==null){ while(start.getDay()!==it.dow) start.setDate(start.getDate()+1); } // 고정요일 재스냅
+        }
         var end=new Date(start); end.setDate(end.getDate()+it.dur-1);
         var pushed=start.getTime()>it.earliest.getTime();
         it.sEl.innerHTML=fmt(start)+(pushed?' <span class="pmark">겹침조정</span>':'');
         it.eEl.textContent=fmt(end);
         if(pushed) it.row.classList.add('pushed');
-        cursor=new Date(end); cursor.setDate(cursor.getDate()+1);  // 다음 이벤트는 종료 다음날부터
+        assigned.push({s:new Date(start),e:new Date(end)});
       });
     }
     rows.forEach(function(row){ row.querySelector('input[type=date]').addEventListener('change',recompute); });
