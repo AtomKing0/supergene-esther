@@ -34,6 +34,10 @@
   .pill.d3{background:#eaf1fb;color:#2f6fc2;}
   .pill.d7{background:#fff3e0;color:#c47d1a;}
   .pill.new{background:#f3eafe;color:#7b46c9;}
+  .pill.hold{background:#f0f0f2;color:#8a8f98;border:1px solid #d9dce1;}
+  .held{opacity:.42;filter:grayscale(.85);}
+  tr.held td{opacity:.5;filter:grayscale(.85);}
+  .held input,.held .confirm{pointer-events:none;}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;}
   .banner{border:1px solid #e2e9f1;border-radius:12px;padding:14px 16px;background:#fafcff;}
   .banner .bt{font-size:12.5px;font-weight:800;color:#2f6fc2;letter-spacing:.2px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
@@ -135,7 +139,7 @@
         <th class="lbl">payload (social value)</th><th>기간</th><th>반복</th>
       </tr>
       <tr><td>1</td><td class="lbl">Midnight Collection · 검은 카드 수집</td><td class="lbl">black_card_milestone</td><td class="lbl"><code>ingame_event_black_card</code></td><td><span class="pill d3">3일</span></td><td>매주</td></tr>
-      <tr><td>2</td><td class="lbl">Sunset Collection · 빨간 카드 수집</td><td class="lbl">red_card_milestone</td><td class="lbl"><code>ingame_event_red_card</code></td><td><span class="pill d3">3일</span></td><td>매주</td></tr>
+      <tr class="held"><td>2</td><td class="lbl">Sunset Collection · 빨간 카드 수집 <span class="pill hold">보류</span></td><td class="lbl">red_card_milestone</td><td class="lbl"><code>ingame_event_red_card</code></td><td><span class="pill d3">3일</span></td><td>매주</td></tr>
       <tr><td>3</td><td class="lbl">Golden Stamp · 승리 포인트(First Try 3배)</td><td class="lbl">winning_milestone</td><td class="lbl"><code>ingame_event_winning</code></td><td><span class="pill d3">3일</span></td><td>매주</td></tr>
       <tr><td>4</td><td class="lbl">City Race · 주말 클리어 레이스</td><td class="lbl">clear_ranking</td><td class="lbl"><code>ingame_event_city_race</code></td><td><span class="pill d3">3일</span></td><td>매주(주말)</td></tr>
       <tr><td>5</td><td class="lbl">주간 리더보드 · Weekly Leaderboard</td><td class="lbl">weekly_ranking</td><td class="lbl"><code>ingame_event_weekly_leaderboard</code></td><td><span class="pill d7">7일</span></td><td>매주 리셋</td></tr>
@@ -197,8 +201,8 @@
   </div>
 
   <!-- 2. Sunset -->
-  <div class="card">
-    <h2>2. Sunset Collection <span class="pill d3">3일</span></h2>
+  <div class="card held">
+    <h2>2. Sunset Collection <span class="pill d3">3일</span> <span class="pill hold">보류</span></h2>
     <div class="desc">보드에서 <b>빨간 카드(하트/다이아)</b>를 수집 → 15스텝 마일스톤 보상. 석양 무드.</div>
     <div class="meta">
       <span class="kv">payload <b>ingame_event_red_card</b></span>
@@ -457,7 +461,7 @@
         <th class="lbl">이벤트</th><th>노출 요일</th><th>기간</th><th>배너 완료일 입력<br><span style="font-weight:700;color:#c47d1a;font-size:10px">KST</span></th><th>이벤트 시작일<br><span style="font-weight:700;color:#2f6fc2;font-size:10px">UTC</span></th><th>이벤트 종료일<br><span style="font-weight:700;color:#2f6fc2;font-size:10px">UTC</span></th><th>확정</th>
       </tr>
       <tr data-dur="3" data-dow="1"><td class="lbl">1. Midnight Collection</td><td><span class="typ rot">월~수</span></td><td>3일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
-      <tr data-dur="3" data-dow="4"><td class="lbl">2. Sunset Collection</td><td><span class="typ rot">목~토</span></td><td>3일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
+      <tr class="held" data-dur="3" data-dow="4" data-hold="1"><td class="lbl">2. Sunset Collection <span class="pill hold">보류</span></td><td><span class="typ rot">목~토</span></td><td>3일</td><td><input type="date" disabled></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm" disabled> 확정</label></td></tr>
       <tr data-dur="3" data-dow="2"><td class="lbl">3. Golden Stamp</td><td><span class="typ rot">화~목</span></td><td>3일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
       <tr data-dur="3" data-dow="5"><td class="lbl">4. City Race</td><td><span class="typ rot">금~일(주말)</span></td><td>3일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
       <tr data-dur="7"><td class="lbl">5. 주간 리더보드</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
@@ -482,7 +486,7 @@
   (function(){
     var wd=['일','월','화','수','목','금','토'];
     function fmt(d){var y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),dd=('0'+d.getDate()).slice(-2);return y+'-'+m+'-'+dd+' ('+wd[d.getDay()]+')';}
-    var rows=Array.prototype.slice.call(document.querySelectorAll('.planner tr[data-dur]'));
+    var rows=Array.prototype.slice.call(document.querySelectorAll('.planner tr[data-dur]')).filter(function(r){return r.getAttribute('data-hold')!=='1';});
     var COLORS=['#3b3f7a','#ef7a3d','#e0a91b','#7b46c9','#2f6fc2','#4f9d69','#17a2b8'];
     function recompute(){
       // 1) 각 행의 '가장 빠른 시작 가능일'(완료+리뷰2일, 3일이벤트는 고정요일 스냅) 계산
