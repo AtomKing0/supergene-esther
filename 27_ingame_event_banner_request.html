@@ -84,6 +84,11 @@
   .planner select.prio{font-family:inherit;font-size:12.5px;font-weight:800;padding:5px 7px;border:1px solid #cdd8e4;border-radius:7px;color:#2f6fc2;background:#f5f9ff;cursor:pointer;}
   .planner select.prio:disabled{color:#aab3bf;background:#f2f3f5;cursor:default;}
   .planner select.prio.pinned{color:#fff;background:#2f6fc2;border-color:#2f6fc2;box-shadow:0 0 0 2px #cfe1f8;}
+  .planner .lockbtn{margin-left:5px;font-size:12.5px;line-height:1;padding:4px 6px;border:1px solid #cdd8e4;border-radius:7px;background:#fff;cursor:pointer;vertical-align:middle;}
+  .planner .lockbtn.on{border-color:#2f6fc2;background:#eaf1fb;}
+  .planner tr.fixedrow td{background:#f5f9ff;}
+  .planner tr.fixedrow td.lbl{color:#1c4f8a;}
+  .planner .fxb{font-size:10px;font-weight:800;color:#2f6fc2;background:#eaf1fb;border-radius:9px;padding:1px 6px;margin-left:5px;white-space:nowrap;}
   .gantt{overflow-x:auto;margin-top:8px;padding-bottom:4px;}
   .gantt table{border-collapse:collapse;font-size:11px;}
   .gantt th,.gantt td{border:1px solid #edf1f6;text-align:center;padding:0;}
@@ -471,7 +476,7 @@
       <tr data-dur="7"><td class="lbl">6. Album Puzzle</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
       <tr data-dur="7"><td class="lbl">7. 7 Days of Gifts (출석)</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
     </table>
-    <div class="note"><b>노출 구간 겹침 자동 방지</b> — 여러 이벤트 완료일을 넣으면 <b>노출 날짜가 겹치지 않게</b> 편성됩니다. 우선순위 = <b>한 이벤트만 직접 고정</b>(선택 시 <span style="color:#2f6fc2;font-weight:800">파랗게</span> 표시) → <b>나머지는 가장 촘촘하게(빈틈 최소) 자동 추천</b> 배치. 숫자는 중복되지 않게 자동 정렬됩니다. 각 이벤트는 <b>가장 빠른 빈 구간</b>에 배치되고, 충돌 시 다음 빈 구간으로 이동(<span class="pmark">겹침조정</span> 표시). 요일 매핑 <b>1=월 … 5=금 · 0=일</b>, 3일 이벤트는 밀려도 <b>고정 시작요일 유지</b>. <b>완료일 = KST 입력 · 시작/종료일 = UTC 출력</b>(이벤트는 0:00 UTC 시작). 참고: <b>월 3개 제한 + 신규만 통과</b>.</div>
+    <div class="note"><b>노출 구간 겹침 자동 방지</b> — 여러 이벤트 완료일을 넣으면 <b>노출 날짜가 겹치지 않게</b> 편성됩니다. 우선순위 = <b>원하는 이벤트를 직접 지정</b>(복수 가능 · 선택 시 <span style="color:#2f6fc2;font-weight:800">파랗게</span> 표시) → <b>나머지는 가장 촘촘하게(빈틈 최소) 자동 추천</b> 배치. 숫자는 중복되지 않게 자동 정렬됩니다. <b>🔓 잠금 버튼</b>을 누르면 그 이벤트는 <b>시작일(UTC)을 직접 고정</b>(이동 불가)하고 나머지는 이 블록을 <b>피해서</b> 편성됩니다. <span style="color:#1c4f8a;font-weight:700">미드나잇 콜렉션은 7/27(월)~29(수) 3일 고정 기본값</span>. 각 이벤트는 <b>가장 빠른 빈 구간</b>에 배치되고, 충돌 시 다음 빈 구간으로 이동(<span class="pmark">겹침조정</span> 표시). 요일 매핑 <b>1=월 … 5=금 · 0=일</b>, 3일 이벤트는 밀려도 <b>고정 시작요일 유지</b>. <b>완료일 = KST 입력 · 시작/종료일 = UTC 출력</b>(이벤트는 0:00 UTC 시작). 참고: <b>월 3개 제한 + 신규만 통과</b>.</div>
     <div class="pbtns">
       <button class="btn save" id="btnSave">💾 확정·저장</button>
       <button class="btn reset" id="btnReset">초기화</button>
@@ -491,44 +496,69 @@
     function fmt(d){var y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),dd=('0'+d.getDate()).slice(-2);return y+'-'+m+'-'+dd+' ('+wd[d.getDay()]+')';}
     var allRows=Array.prototype.slice.call(document.querySelectorAll('.planner tr[data-dur]'));
     var rows=allRows.filter(function(r){return r.getAttribute('data-hold')!=='1';});
-    // ── 우선순위 셀 주입(모든 행 — 열 정렬 유지, 보류행은 비활성) ──
+    var COLORS=['#3b3f7a','#ef7a3d','#e0a91b','#7b46c9','#2f6fc2','#4f9d69','#17a2b8'];
+    // ── 상태 ──
+    var fixedSet={};                    // idx→true : 시작일 직접 고정(이동불가). 나머지는 이 블록을 피해 편성
+    var pins={};                        // idx→prio : 사용자가 직접 지정한 우선순위(복수 가능·중복 자동해제)
+    var DEFAULT_FIXED={0:'2026-07-27'}; // 미드나잇 콜렉션: 7/27부터 3일 고정(월~수)
+    // ── 우선순위/잠금 셀 주입 ──
     allRows.forEach(function(row){
       var td=document.createElement('td'); td.className='prio-cell';
       if(row.getAttribute('data-hold')==='1'){ td.innerHTML='<span style="color:#aab3bf">—</span>'; }
       else {
         var sel=document.createElement('select'); sel.className='prio';
-        for(var i=1;i<=rows.length;i++){ var o=document.createElement('option'); o.value=i; o.textContent=i; sel.appendChild(o); }
-        td.appendChild(sel);
+        var btn=document.createElement('button'); btn.type='button'; btn.className='lockbtn'; btn.title='시작일 직접 고정 On/Off'; btn.textContent='🔓';
+        td.appendChild(sel); td.appendChild(btn);
       }
       row.insertBefore(td, row.children[3]);   // 기간(2) 다음
     });
-    rows.forEach(function(row,i){ row.querySelector('.prio').value=i+1; });   // 기본값 = 표 순서
-    var COLORS=['#3b3f7a','#ef7a3d','#e0a91b','#7b46c9','#2f6fc2','#4f9d69','#17a2b8'];
-    // ── 우선순위 상태: 사용자가 '직접 고정'한 행은 1개. 나머지는 자동 추천(가장 촘촘히) ──
-    var pinIdx=null, pinVal=null;
+    function movableIdx(){ var a=[]; for(var i=0;i<rows.length;i++){ if(!fixedSet[i]) a.push(i); } return a; }
     function getPrio(i){ return parseInt(rows[i].querySelector('.prio').value,10)||99; }
-    function markPin(){ rows.forEach(function(row,i){ var s=row.querySelector('.prio'); if(i===pinIdx){s.classList.add('pinned');} else {s.classList.remove('pinned');} }); }
-    // 각 행 → 스케줄 아이템(가장 빠른 시작 가능일 = 완료+리뷰2일, 3일이벤트는 고정요일 스냅)
+    function rebuildOptions(){
+      var M=movableIdx().length;
+      movableIdx().forEach(function(i){
+        var sel=rows[i].querySelector('.prio'), cur=parseInt(sel.value,10);
+        sel.innerHTML='';
+        for(var p=1;p<=M;p++){ var o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o); }
+        if(cur>=1&&cur<=M) sel.value=cur;
+      });
+    }
+    function updateMode(i){
+      var row=rows[i], sel=row.querySelector('.prio'), btn=row.querySelector('.lockbtn'),
+          inp=row.querySelector('input[type=date]'), lbl=row.querySelector('.lbl'), badge=lbl.querySelector('.fxb');
+      if(fixedSet[i]){
+        row.classList.add('fixedrow'); sel.style.display='none'; btn.textContent='🔒'; btn.classList.add('on'); inp.title='시작일(UTC) 직접 입력';
+        if(!badge){ badge=document.createElement('span'); badge.className='fxb'; lbl.appendChild(badge); }
+        badge.textContent=' 🔒 시작 고정';
+      } else {
+        row.classList.remove('fixedrow'); sel.style.display=''; btn.textContent='🔓'; btn.classList.remove('on'); inp.title='배너 완료일(KST)';
+        if(badge) badge.remove();
+      }
+    }
+    function markPins(){ movableIdx().forEach(function(i){ var s=rows[i].querySelector('.prio'); if(pins[i]!=null){s.classList.add('pinned');} else {s.classList.remove('pinned');} }); }
+    // 각 행 → 스케줄 아이템. 고정행=시작일 그대로 / 일반행=완료+리뷰2일·고정요일 스냅
     function buildItems(){
       return rows.map(function(row,idx){
         var inp=row.querySelector('input[type=date]');
         var dur=parseInt(row.getAttribute('data-dur'),10);
-        var da=row.getAttribute('data-dow');
-        var dow=(da===null)?null:parseInt(da,10);
-        var earliest=null;
-        if(inp.value){ earliest=new Date(inp.value+'T00:00:00'); earliest.setDate(earliest.getDate()+2);
-          if(dow!==null){ while(earliest.getDay()!==dow) earliest.setDate(earliest.getDate()+1); } }
-        return {row:row,idx:idx,dur:dur,dow:dow,earliest:earliest,color:COLORS[idx],
+        var da=row.getAttribute('data-dow'), dow=(da===null)?null:parseInt(da,10);
+        var fixed=!!fixedSet[idx], earliest=null;
+        if(inp.value){
+          earliest=new Date(inp.value+'T00:00:00');
+          if(!fixed){ earliest.setDate(earliest.getDate()+2); if(dow!==null){ while(earliest.getDay()!==dow) earliest.setDate(earliest.getDate()+1); } }
+        }
+        return {row:row,idx:idx,dur:dur,dow:dow,fixed:fixed,earliest:earliest,color:COLORS[idx],
                 confirmed:row.querySelector('.confirm').checked,
-                name:row.querySelector('.lbl').textContent.replace(/^\d+\.\s*/,''),
+                name:row.querySelector('.lbl').textContent.replace(/^\d+\.\s*/,'').replace(/\s*🔒.*$/,''),
                 sEl:row.querySelector('.start'),eEl:row.querySelector('.end'),cs:null,ce:null};
       });
     }
-    // 주어진 우선순위 순서(order=행인덱스 배열)대로 겹치지 않게 편성 → 배치결과 + 촘촘함 지표
+    // 편성: 고정 이벤트 먼저 블록으로 점유 → 이동 이벤트를 order대로 빈틈에 배치
     function place(items,order){
       var byIdx={}; items.forEach(function(it){ byIdx[it.idx]=it; });
-      var seq=order.map(function(i){return byIdx[i];}).filter(function(it){return it && it.earliest;});
       var assigned=[];
+      items.forEach(function(it){ if(it.fixed && it.earliest){ var s=new Date(it.earliest),e=new Date(s); e.setDate(e.getDate()+it.dur-1); assigned.push({it:it,s:s,e:e,pushed:false,fixed:true}); } });
+      var seq=order.map(function(i){return byIdx[i];}).filter(function(it){return it && it.earliest && !it.fixed;});
       seq.forEach(function(it){
         var start=new Date(it.earliest);
         while(true){
@@ -554,36 +584,35 @@
     }
     function permute(arr,cb){ var a=arr.slice(); (function gen(n){ if(n<=1){cb(a.slice());return;} for(var i=0;i<n;i++){ gen(n-1); var j=(n%2?0:i),t=a[n-1];a[n-1]=a[j];a[j]=t; } })(a.length); }
     function lt(x,y){ for(var i=0;i<x.length;i++){ if(x[i]<y[i])return true; if(x[i]>y[i])return false; } return false; }
-    // 추천 재배치 — 고정행(pin)은 그대로 두고, 나머지를 '가장 촘촘한'(빈틈 최소) 순서로 채움
+    // 추천 재배치 — 고정일정(fixed)은 블록·직접핀(pins)은 유지, 나머지 이동행을 '가장 촘촘히'
     function applyRecommendation(){
-      var N=rows.length, items=buildItems();
-      var others=[],freeSlots=[];
-      for(var i=0;i<N;i++){ if(i!==pinIdx) others.push(i); }
-      for(var p=1;p<=N;p++){ if(p!==pinVal) freeSlots.push(p); }
+      var items=buildItems(), mv=movableIdx(), M=mv.length;
+      var pinIdxList=[], taken=[];
+      mv.forEach(function(i){ var v=pins[i]; if(v>=1&&v<=M&&taken.indexOf(v)<0){ pinIdxList.push(i); taken.push(v); } else { delete pins[i]; } });
+      var free=[]; for(var p=1;p<=M;p++){ if(taken.indexOf(p)<0) free.push(p); }
+      var others=mv.filter(function(i){ return pinIdxList.indexOf(i)<0; });
       var best=null;
       permute(others,function(perm){
-        var prio={}; if(pinIdx!=null) prio[pinIdx]=pinVal;
-        perm.forEach(function(idx,k){ prio[idx]=freeSlots[k]; });
-        var order=[]; for(var i=0;i<N;i++) order.push(i);
-        order.sort(function(a,b){ return prio[a]-prio[b]; });
+        var prio={}; pinIdxList.forEach(function(i){ prio[i]=pins[i]; });
+        perm.forEach(function(idx,k){ prio[idx]=free[k]; });
+        var order=mv.slice().sort(function(a,b){ return prio[a]-prio[b]; });
         var res=place(items,order);
-        var dev=0; for(var i=0;i<N;i++){ dev+=Math.abs(prio[i]-(i+1)); }   // 무차별 시 표 순서에 가깝게
+        var dev=0; mv.forEach(function(i,k){ dev+=Math.abs(prio[i]-(k+1)); });
         var score=[res.gap,res.minStart,dev];
         if(!best || lt(score,best.score)){ best={prio:prio,score:score}; }
       });
-      if(best){ rows.forEach(function(row,i){ row.querySelector('.prio').value=best.prio[i]; }); }
-      markPin();
+      if(best){ mv.forEach(function(i){ rows[i].querySelector('.prio').value=best.prio[i]; }); }
+      markPins();
     }
     function recompute(){
       var items=buildItems();
       items.forEach(function(it){ it.sEl.textContent='—'; it.eEl.textContent='—'; it.row.classList.remove('pushed'); });
-      var order=[]; for(var i=0;i<rows.length;i++) order.push(i);
-      order.sort(function(a,b){ return getPrio(a)-getPrio(b); });
+      var order=movableIdx().sort(function(a,b){ return getPrio(a)-getPrio(b); });
       var res=place(items,order);
       res.assigned.forEach(function(a){ var it=a.it;
-        it.sEl.innerHTML=fmt(a.s)+(a.pushed?' <span class="pmark">겹침조정</span>':'');
+        it.sEl.innerHTML=fmt(a.s)+(a.fixed?' <span class="pmark" style="color:#2f6fc2;background:#eaf1fb">고정</span>':(a.pushed?' <span class="pmark">겹침조정</span>':''));
         it.eEl.textContent=fmt(a.e);
-        if(a.pushed) it.row.classList.add('pushed');
+        if(a.pushed && !a.fixed) it.row.classList.add('pushed');
         it.cs=a.s; it.ce=a.e;
       });
       renderCal(items);
@@ -621,12 +650,19 @@
     var SB_KEY='sb_publishable_xBec1mH6Vdlm08vNtlYmbA_EMgH8Ui9';
     var SB_H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
     var ROW_ID='pst';
-    function collect(){ return rows.map(function(row,i){return {d:row.querySelector('input[type=date]').value,c:row.querySelector('.confirm').checked,p:row.querySelector('.prio').value,pin:(i===pinIdx)};}); }
+    function collect(){ return rows.map(function(row,i){return {d:row.querySelector('input[type=date]').value,c:row.querySelector('.confirm').checked,p:row.querySelector('.prio').value,pin:(pins[i]!=null),fx:!!fixedSet[i]};}); }
     function applyData(data){
       if(!data) return;
-      pinIdx=null; pinVal=null;
-      data.forEach(function(v,i){ if(rows[i]){ rows[i].querySelector('input[type=date]').value=v.d||''; rows[i].querySelector('.confirm').checked=!!v.c; if(v.p) rows[i].querySelector('.prio').value=v.p; if(v.pin){ pinIdx=i; pinVal=parseInt(v.p,10); } } });
-      markPin();
+      pins={};
+      data.forEach(function(v,i){ if(rows[i]){
+        rows[i].querySelector('input[type=date]').value=v.d||'';
+        rows[i].querySelector('.confirm').checked=!!v.c;
+        if('fx' in v){ if(v.fx){fixedSet[i]=true;} else {delete fixedSet[i];} }
+        if(v.pin && v.p) pins[i]=parseInt(v.p,10);
+      } });
+      Object.keys(DEFAULT_FIXED).forEach(function(k){ if(fixedSet[k] && !rows[k].querySelector('input[type=date]').value){ rows[k].querySelector('input[type=date]').value=DEFAULT_FIXED[k]; } });
+      rows.forEach(function(r,i){ updateMode(i); });
+      rebuildOptions(); markPins();
     }
     function msg(t){ var m=document.getElementById('savedMsg'); m.textContent=t; m.classList.add('show'); setTimeout(function(){m.classList.remove('show');},2400); }
     function save(){
@@ -645,24 +681,39 @@
        .then(function(arr){
          if(arr && arr.length && arr[0].data){ applyData(arr[0].data); }
          else { try{ var raw=localStorage.getItem(KEY); if(raw) applyData(JSON.parse(raw)); }catch(e){} }
-         recompute();
+         applyRecommendation(); recompute();
        })
-       .catch(function(){ try{ var raw=localStorage.getItem(KEY); if(raw) applyData(JSON.parse(raw)); }catch(e){} recompute(); });
+       .catch(function(){ try{ var raw=localStorage.getItem(KEY); if(raw) applyData(JSON.parse(raw)); }catch(e){} applyRecommendation(); recompute(); });
     }
     rows.forEach(function(row,i){
       row.querySelector('input[type=date]').addEventListener('change',function(){ applyRecommendation(); recompute(); });
       row.querySelector('.confirm').addEventListener('change',recompute);
-      row.querySelector('.prio').addEventListener('change',function(){ pinIdx=i; pinVal=parseInt(row.querySelector('.prio').value,10); applyRecommendation(); recompute(); });
+      row.querySelector('.prio').addEventListener('change',function(){
+        var v=parseInt(this.value,10);
+        Object.keys(pins).forEach(function(k){ if(+k!==i && pins[k]===v) delete pins[k]; });   // 같은 순위 쓰던 핀 해제(중복 방지)
+        pins[i]=v; applyRecommendation(); recompute();
+      });
+      row.querySelector('.lockbtn').addEventListener('click',function(){
+        if(fixedSet[i]){ delete fixedSet[i]; }
+        else { fixedSet[i]=true; delete pins[i]; var inp=row.querySelector('input[type=date]'); if(!inp.value && DEFAULT_FIXED[i]) inp.value=DEFAULT_FIXED[i]; }
+        updateMode(i); rebuildOptions(); applyRecommendation(); recompute();
+      });
     });
     document.getElementById('btnSave').addEventListener('click',function(){ recompute(); save(); });
     document.getElementById('btnReset').addEventListener('click',function(){
-      if(!confirm('입력한 완료일·확정·우선순위를 모두 초기화할까요? (저장 누르면 공유본도 비워집니다)')) return;
-      pinIdx=null; pinVal=null;
-      rows.forEach(function(row,i){ row.querySelector('input[type=date]').value=''; row.querySelector('.confirm').checked=false; row.querySelector('.prio').value=i+1; });
+      if(!confirm('입력한 완료일·확정·우선순위·고정을 모두 초기화할까요? (미드나잇 7/27 고정은 기본값으로 복귀 · 저장 누르면 공유본도 비워집니다)')) return;
+      pins={}; fixedSet={};
+      rows.forEach(function(row){ row.querySelector('input[type=date]').value=''; row.querySelector('.confirm').checked=false; });
+      Object.keys(DEFAULT_FIXED).forEach(function(k){ fixedSet[k]=true; rows[k].querySelector('input[type=date]').value=DEFAULT_FIXED[k]; });
+      rows.forEach(function(r,i){ updateMode(i); });
+      rebuildOptions();
       try{ localStorage.removeItem(KEY); }catch(e){}
-      markPin(); recompute();
+      applyRecommendation(); recompute();
     });
-    recompute(); load();   // 즉시 렌더 후 공유본 불러와 갱신
+    // ── 초기값: 미드나잇 7/27 고정 세팅 후 추천 배치 ──
+    Object.keys(DEFAULT_FIXED).forEach(function(k){ fixedSet[k]=true; rows[k].querySelector('input[type=date]').value=DEFAULT_FIXED[k]; });
+    rows.forEach(function(r,i){ updateMode(i); });
+    rebuildOptions(); applyRecommendation(); recompute(); load();   // 즉시 렌더 후 공유본 불러와 갱신
   })();
   </script>
 
