@@ -463,7 +463,7 @@
 
   <div class="sect">이벤트 진행일 플래너</div>
   <div class="card">
-    <div class="desc"><b>배너 제작 완료일(KST)</b>을 입력하면 리뷰 <b>2일</b> 후, 스케줄 고정 요일에 맞춰 <b>이벤트 시작일·종료일(UTC)</b>이 자동 계산됩니다. <span style="color:#5e6e80">(완료일 KST + 리뷰 2일 → 해당 날짜 0:00 UTC(=09:00 KST)부터 노출 가능 · 종료 = 마지막 노출일, end_day 0:00 UTC = 전날 23:59:59 UTC. 예: 월~목 스케줄 → 월·화·수 3일, 종료일 = 수)</span></div>
+    <div class="desc"><b>배너 제작 완료일(KST)</b>을 입력하면 <b>+1일</b>이 이벤트 시작일이 됩니다(스케줄 고정 요일이 있으면 그 요일로 스냅). <span style="color:#5e6e80">(완료일 + 1일 → 해당 날짜 0:00 UTC(=09:00 KST)부터 노출 · 종료 = 마지막 노출일, end_day 0:00 UTC = 전날 23:59:59 UTC. 예: 월~목 스케줄 → 월·화·수 3일, 종료일 = 수)</span> <b>🔒 시작 고정</b> 이벤트는 완료일과 무관하게 입력한 <b>시작일(UTC)</b>로 고정 — 예: <span style="color:#1c4f8a;font-weight:700">미드나잇은 완료가 지난주였어도 시작은 7/27로 고정</span>.</div>
     <table class="planner">
       <tr>
         <th class="lbl">이벤트</th><th>노출 요일</th><th>기간</th><th>우선순위</th><th>배너 완료일 입력<br><span style="font-weight:700;color:#c47d1a;font-size:10px">KST</span></th><th>이벤트 시작일<br><span style="font-weight:700;color:#2f6fc2;font-size:10px">UTC</span></th><th>이벤트 종료일<br><span style="font-weight:700;color:#2f6fc2;font-size:10px">UTC</span></th><th>확정</th>
@@ -536,7 +536,7 @@
       }
     }
     function markPins(){ movableIdx().forEach(function(i){ var s=rows[i].querySelector('.prio'); if(pins[i]!=null){s.classList.add('pinned');} else {s.classList.remove('pinned');} }); }
-    // 각 행 → 스케줄 아이템. 고정행=시작일 그대로 / 일반행=완료+리뷰2일·고정요일 스냅
+    // 각 행 → 스케줄 아이템. 고정행=시작일 그대로 / 일반행=완료+1일·고정요일 스냅
     function buildItems(){
       return rows.map(function(row,idx){
         var inp=row.querySelector('input[type=date]');
@@ -545,7 +545,7 @@
         var fixed=!!fixedSet[idx], earliest=null;
         if(inp.value){
           earliest=new Date(inp.value+'T00:00:00');
-          if(!fixed){ earliest.setDate(earliest.getDate()+2); if(dow!==null){ while(earliest.getDay()!==dow) earliest.setDate(earliest.getDate()+1); } }
+          if(!fixed){ earliest.setDate(earliest.getDate()+1); if(dow!==null){ while(earliest.getDay()!==dow) earliest.setDate(earliest.getDate()+1); } }
         }
         return {row:row,idx:idx,dur:dur,dow:dow,fixed:fixed,earliest:earliest,color:COLORS[idx],
                 confirmed:row.querySelector('.confirm').checked,
