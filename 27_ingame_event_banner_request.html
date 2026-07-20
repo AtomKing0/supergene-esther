@@ -81,6 +81,8 @@
   .planner .typ.rot{color:#2f6fc2;} .planner .typ.always{color:#1c9e63;}
   .planner .pmark{display:inline-block;font-size:9.5px;font-weight:800;color:#c47d1a;background:#fff3e0;border-radius:10px;padding:1px 6px;margin-left:5px;vertical-align:middle;}
   .planner tr.pushed td{background:#fffaf0;}
+  .planner select.prio{font-family:inherit;font-size:12.5px;font-weight:800;padding:5px 7px;border:1px solid #cdd8e4;border-radius:7px;color:#2f6fc2;background:#f5f9ff;cursor:pointer;}
+  .planner select.prio:disabled{color:#aab3bf;background:#f2f3f5;cursor:default;}
   .gantt{overflow-x:auto;margin-top:8px;padding-bottom:4px;}
   .gantt table{border-collapse:collapse;font-size:11px;}
   .gantt th,.gantt td{border:1px solid #edf1f6;text-align:center;padding:0;}
@@ -458,7 +460,7 @@
     <div class="desc"><b>배너 제작 완료일(KST)</b>을 입력하면 리뷰 <b>2일</b> 후, 스케줄 고정 요일에 맞춰 <b>이벤트 시작일·종료일(UTC)</b>이 자동 계산됩니다. <span style="color:#5e6e80">(완료일 KST + 리뷰 2일 → 해당 날짜 0:00 UTC(=09:00 KST)부터 노출 가능 · 종료 = 마지막 노출일, end_day 0:00 UTC = 전날 23:59:59 UTC. 예: 월~목 스케줄 → 월·화·수 3일, 종료일 = 수)</span></div>
     <table class="planner">
       <tr>
-        <th class="lbl">이벤트</th><th>노출 요일</th><th>기간</th><th>배너 완료일 입력<br><span style="font-weight:700;color:#c47d1a;font-size:10px">KST</span></th><th>이벤트 시작일<br><span style="font-weight:700;color:#2f6fc2;font-size:10px">UTC</span></th><th>이벤트 종료일<br><span style="font-weight:700;color:#2f6fc2;font-size:10px">UTC</span></th><th>확정</th>
+        <th class="lbl">이벤트</th><th>노출 요일</th><th>기간</th><th>우선순위</th><th>배너 완료일 입력<br><span style="font-weight:700;color:#c47d1a;font-size:10px">KST</span></th><th>이벤트 시작일<br><span style="font-weight:700;color:#2f6fc2;font-size:10px">UTC</span></th><th>이벤트 종료일<br><span style="font-weight:700;color:#2f6fc2;font-size:10px">UTC</span></th><th>확정</th>
       </tr>
       <tr data-dur="3" data-dow="1"><td class="lbl">1. Midnight Collection</td><td><span class="typ rot">월~수</span></td><td>3일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
       <tr class="held" data-dur="3" data-dow="4" data-hold="1"><td class="lbl">2. Sunset Collection <span class="pill hold">보류</span></td><td><span class="typ rot">목~토</span></td><td>3일</td><td><input type="date" disabled></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm" disabled> 확정</label></td></tr>
@@ -468,7 +470,7 @@
       <tr data-dur="7"><td class="lbl">6. Album Puzzle</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
       <tr data-dur="7"><td class="lbl">7. 7 Days of Gifts (출석)</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
     </table>
-    <div class="note"><b>노출 구간 겹침 자동 방지</b> — 여러 이벤트 완료일을 넣으면 <b>노출 날짜가 겹치지 않게</b> 편성됩니다. 우선순위 = <b>3일 이벤트 먼저, 7일 이벤트는 뒤로</b>. 각 이벤트는 <b>가장 빠른 빈 구간</b>에 배치되고, 충돌 시 다음 빈 구간으로 이동(<span class="pmark">겹침조정</span> 표시). 요일 매핑 <b>1=월 … 5=금 · 0=일</b>, 3일 이벤트는 밀려도 <b>고정 시작요일 유지</b>. <b>완료일 = KST 입력 · 시작/종료일 = UTC 출력</b>(이벤트는 0:00 UTC 시작). 참고: <b>월 3개 제한 + 신규만 통과</b>.</div>
+    <div class="note"><b>노출 구간 겹침 자동 방지</b> — 여러 이벤트 완료일을 넣으면 <b>노출 날짜가 겹치지 않게</b> 편성됩니다. 우선순위 = <b>우선순위 열에서 직접 지정</b>(숫자 작을수록 먼저 배치 · 동순위는 완료일 빠른 순). 각 이벤트는 <b>가장 빠른 빈 구간</b>에 배치되고, 충돌 시 다음 빈 구간으로 이동(<span class="pmark">겹침조정</span> 표시). 요일 매핑 <b>1=월 … 5=금 · 0=일</b>, 3일 이벤트는 밀려도 <b>고정 시작요일 유지</b>. <b>완료일 = KST 입력 · 시작/종료일 = UTC 출력</b>(이벤트는 0:00 UTC 시작). 참고: <b>월 3개 제한 + 신규만 통과</b>.</div>
     <div class="pbtns">
       <button class="btn save" id="btnSave">💾 확정·저장</button>
       <button class="btn reset" id="btnReset">초기화</button>
@@ -486,7 +488,20 @@
   (function(){
     var wd=['일','월','화','수','목','금','토'];
     function fmt(d){var y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),dd=('0'+d.getDate()).slice(-2);return y+'-'+m+'-'+dd+' ('+wd[d.getDay()]+')';}
-    var rows=Array.prototype.slice.call(document.querySelectorAll('.planner tr[data-dur]')).filter(function(r){return r.getAttribute('data-hold')!=='1';});
+    var allRows=Array.prototype.slice.call(document.querySelectorAll('.planner tr[data-dur]'));
+    var rows=allRows.filter(function(r){return r.getAttribute('data-hold')!=='1';});
+    // ── 우선순위 셀 주입(모든 행 — 열 정렬 유지, 보류행은 비활성) ──
+    allRows.forEach(function(row){
+      var td=document.createElement('td'); td.className='prio-cell';
+      if(row.getAttribute('data-hold')==='1'){ td.innerHTML='<span style="color:#aab3bf">—</span>'; }
+      else {
+        var sel=document.createElement('select'); sel.className='prio';
+        for(var i=1;i<=rows.length;i++){ var o=document.createElement('option'); o.value=i; o.textContent=i; sel.appendChild(o); }
+        td.appendChild(sel);
+      }
+      row.insertBefore(td, row.children[3]);   // 기간(2) 다음
+    });
+    rows.forEach(function(row,i){ row.querySelector('.prio').value=i+1; });   // 기본값 = 표 순서
     var COLORS=['#3b3f7a','#ef7a3d','#e0a91b','#7b46c9','#2f6fc2','#4f9d69','#17a2b8'];
     function recompute(){
       // 1) 각 행의 '가장 빠른 시작 가능일'(완료+리뷰2일, 3일이벤트는 고정요일 스냅) 계산
@@ -502,15 +517,16 @@
           if(dow!==null){ while(earliest.getDay()!==dow) earliest.setDate(earliest.getDate()+1); }
         }
         return {row:row,dur:dur,dow:dow,earliest:earliest,color:COLORS[idx],
+                prio:parseInt(row.querySelector('.prio').value,10)||99,
                 confirmed:row.querySelector('.confirm').checked,
                 name:row.querySelector('.lbl').textContent.replace(/^\d+\.\s*/,''),
                 sEl:row.querySelector('.start'),eEl:row.querySelector('.end'),cs:null,ce:null};
       });
       // 초기화
       items.forEach(function(it){ it.sEl.textContent='—'; it.eEl.textContent='—'; it.row.classList.remove('pushed'); });
-      // 2) 우선순위 정렬 — 3일 이벤트 먼저, 그다음 7일. 같은 그룹은 빠른 시작 가능일 순
+      // 2) 우선순위 정렬 — 사용자가 지정한 우선순위(숫자 작을수록 먼저). 동순위는 빠른 시작 가능일 순
       var entered=items.filter(function(it){return it.earliest;})
-                       .sort(function(a,b){return (a.dur-b.dur)||(a.earliest-b.earliest);});
+                       .sort(function(a,b){return (a.prio-b.prio)||(a.earliest-b.earliest);});
       // 3) 겹치지 않게 편성 — 각 이벤트를 '가장 빠른 빈 구간'에 배치(빈 구간 채우기)
       var assigned=[];
       entered.forEach(function(it){
@@ -568,10 +584,10 @@
     var SB_KEY='sb_publishable_xBec1mH6Vdlm08vNtlYmbA_EMgH8Ui9';
     var SB_H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
     var ROW_ID='pst';
-    function collect(){ return rows.map(function(row){return {d:row.querySelector('input[type=date]').value,c:row.querySelector('.confirm').checked};}); }
+    function collect(){ return rows.map(function(row){return {d:row.querySelector('input[type=date]').value,c:row.querySelector('.confirm').checked,p:row.querySelector('.prio').value};}); }
     function applyData(data){
       if(!data) return;
-      data.forEach(function(v,i){ if(rows[i]){ rows[i].querySelector('input[type=date]').value=v.d||''; rows[i].querySelector('.confirm').checked=!!v.c; } });
+      data.forEach(function(v,i){ if(rows[i]){ rows[i].querySelector('input[type=date]').value=v.d||''; rows[i].querySelector('.confirm').checked=!!v.c; if(v.p) rows[i].querySelector('.prio').value=v.p; } });
     }
     function msg(t){ var m=document.getElementById('savedMsg'); m.textContent=t; m.classList.add('show'); setTimeout(function(){m.classList.remove('show');},2400); }
     function save(){
@@ -597,11 +613,12 @@
     rows.forEach(function(row){
       row.querySelector('input[type=date]').addEventListener('change',recompute);
       row.querySelector('.confirm').addEventListener('change',recompute);
+      row.querySelector('.prio').addEventListener('change',recompute);
     });
     document.getElementById('btnSave').addEventListener('click',function(){ recompute(); save(); });
     document.getElementById('btnReset').addEventListener('click',function(){
       if(!confirm('입력한 완료일·확정을 모두 초기화할까요? (저장 누르면 공유본도 비워집니다)')) return;
-      rows.forEach(function(row){ row.querySelector('input[type=date]').value=''; row.querySelector('.confirm').checked=false; });
+      rows.forEach(function(row,i){ row.querySelector('input[type=date]').value=''; row.querySelector('.confirm').checked=false; row.querySelector('.prio').value=i+1; });
       try{ localStorage.removeItem(KEY); }catch(e){}
       recompute();
     });
