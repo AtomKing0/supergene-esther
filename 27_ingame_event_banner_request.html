@@ -660,7 +660,11 @@
         if('fx' in v){ if(v.fx){fixedSet[i]=true;} else {delete fixedSet[i];} }
         if(v.pin && v.p) pins[i]=parseInt(v.p,10);
       } });
-      Object.keys(DEFAULT_FIXED).forEach(function(k){ if(fixedSet[k] && !rows[k].querySelector('input[type=date]').value){ rows[k].querySelector('input[type=date]').value=DEFAULT_FIXED[k]; } });
+      Object.keys(DEFAULT_FIXED).forEach(function(k){
+        var v=data[k]||{};
+        // 기본 고정행: 신포맷(fx) 저장본이 아니면(옛 완료일 데이터) 또는 값이 비면 시작일을 기본값으로 강제
+        if(fixedSet[k] && (!('fx' in v) || !rows[k].querySelector('input[type=date]').value)){ rows[k].querySelector('input[type=date]').value=DEFAULT_FIXED[k]; }
+      });
       rows.forEach(function(r,i){ updateMode(i); });
       rebuildOptions(); markPins();
     }
