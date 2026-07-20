@@ -83,6 +83,7 @@
   .planner tr.pushed td{background:#fffaf0;}
   .planner select.prio{font-family:inherit;font-size:12.5px;font-weight:800;padding:5px 7px;border:1px solid #cdd8e4;border-radius:7px;color:#2f6fc2;background:#f5f9ff;cursor:pointer;}
   .planner select.prio:disabled{color:#aab3bf;background:#f2f3f5;cursor:default;}
+  .planner select.prio.pinned{color:#fff;background:#2f6fc2;border-color:#2f6fc2;box-shadow:0 0 0 2px #cfe1f8;}
   .gantt{overflow-x:auto;margin-top:8px;padding-bottom:4px;}
   .gantt table{border-collapse:collapse;font-size:11px;}
   .gantt th,.gantt td{border:1px solid #edf1f6;text-align:center;padding:0;}
@@ -470,7 +471,7 @@
       <tr data-dur="7"><td class="lbl">6. Album Puzzle</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
       <tr data-dur="7"><td class="lbl">7. 7 Days of Gifts (출석)</td><td><span class="typ always">상시</span></td><td>7일</td><td><input type="date"></td><td class="start">—</td><td class="end">—</td><td><label class="cf"><input type="checkbox" class="confirm"> 확정</label></td></tr>
     </table>
-    <div class="note"><b>노출 구간 겹침 자동 방지</b> — 여러 이벤트 완료일을 넣으면 <b>노출 날짜가 겹치지 않게</b> 편성됩니다. 우선순위 = <b>우선순위 열에서 직접 지정</b>(숫자 작을수록 먼저 배치 · 동순위는 완료일 빠른 순). 각 이벤트는 <b>가장 빠른 빈 구간</b>에 배치되고, 충돌 시 다음 빈 구간으로 이동(<span class="pmark">겹침조정</span> 표시). 요일 매핑 <b>1=월 … 5=금 · 0=일</b>, 3일 이벤트는 밀려도 <b>고정 시작요일 유지</b>. <b>완료일 = KST 입력 · 시작/종료일 = UTC 출력</b>(이벤트는 0:00 UTC 시작). 참고: <b>월 3개 제한 + 신규만 통과</b>.</div>
+    <div class="note"><b>노출 구간 겹침 자동 방지</b> — 여러 이벤트 완료일을 넣으면 <b>노출 날짜가 겹치지 않게</b> 편성됩니다. 우선순위 = <b>한 이벤트만 직접 고정</b>(선택 시 <span style="color:#2f6fc2;font-weight:800">파랗게</span> 표시) → <b>나머지는 가장 촘촘하게(빈틈 최소) 자동 추천</b> 배치. 숫자는 중복되지 않게 자동 정렬됩니다. 각 이벤트는 <b>가장 빠른 빈 구간</b>에 배치되고, 충돌 시 다음 빈 구간으로 이동(<span class="pmark">겹침조정</span> 표시). 요일 매핑 <b>1=월 … 5=금 · 0=일</b>, 3일 이벤트는 밀려도 <b>고정 시작요일 유지</b>. <b>완료일 = KST 입력 · 시작/종료일 = UTC 출력</b>(이벤트는 0:00 UTC 시작). 참고: <b>월 3개 제한 + 신규만 통과</b>.</div>
     <div class="pbtns">
       <button class="btn save" id="btnSave">💾 확정·저장</button>
       <button class="btn reset" id="btnReset">초기화</button>
@@ -503,51 +504,87 @@
     });
     rows.forEach(function(row,i){ row.querySelector('.prio').value=i+1; });   // 기본값 = 표 순서
     var COLORS=['#3b3f7a','#ef7a3d','#e0a91b','#7b46c9','#2f6fc2','#4f9d69','#17a2b8'];
-    function recompute(){
-      // 1) 각 행의 '가장 빠른 시작 가능일'(완료+리뷰2일, 3일이벤트는 고정요일 스냅) 계산
-      var items=rows.map(function(row,idx){
+    // ── 우선순위 상태: 사용자가 '직접 고정'한 행은 1개. 나머지는 자동 추천(가장 촘촘히) ──
+    var pinIdx=null, pinVal=null;
+    function getPrio(i){ return parseInt(rows[i].querySelector('.prio').value,10)||99; }
+    function markPin(){ rows.forEach(function(row,i){ var s=row.querySelector('.prio'); if(i===pinIdx){s.classList.add('pinned');} else {s.classList.remove('pinned');} }); }
+    // 각 행 → 스케줄 아이템(가장 빠른 시작 가능일 = 완료+리뷰2일, 3일이벤트는 고정요일 스냅)
+    function buildItems(){
+      return rows.map(function(row,idx){
         var inp=row.querySelector('input[type=date]');
         var dur=parseInt(row.getAttribute('data-dur'),10);
         var da=row.getAttribute('data-dow');
         var dow=(da===null)?null:parseInt(da,10);
         var earliest=null;
-        if(inp.value){
-          earliest=new Date(inp.value+'T00:00:00');
-          earliest.setDate(earliest.getDate()+2);                 // 리뷰 2일
-          if(dow!==null){ while(earliest.getDay()!==dow) earliest.setDate(earliest.getDate()+1); }
-        }
-        return {row:row,dur:dur,dow:dow,earliest:earliest,color:COLORS[idx],
-                prio:parseInt(row.querySelector('.prio').value,10)||99,
+        if(inp.value){ earliest=new Date(inp.value+'T00:00:00'); earliest.setDate(earliest.getDate()+2);
+          if(dow!==null){ while(earliest.getDay()!==dow) earliest.setDate(earliest.getDate()+1); } }
+        return {row:row,idx:idx,dur:dur,dow:dow,earliest:earliest,color:COLORS[idx],
                 confirmed:row.querySelector('.confirm').checked,
                 name:row.querySelector('.lbl').textContent.replace(/^\d+\.\s*/,''),
                 sEl:row.querySelector('.start'),eEl:row.querySelector('.end'),cs:null,ce:null};
       });
-      // 초기화
-      items.forEach(function(it){ it.sEl.textContent='—'; it.eEl.textContent='—'; it.row.classList.remove('pushed'); });
-      // 2) 우선순위 정렬 — 사용자가 지정한 우선순위(숫자 작을수록 먼저). 동순위는 빠른 시작 가능일 순
-      var entered=items.filter(function(it){return it.earliest;})
-                       .sort(function(a,b){return (a.prio-b.prio)||(a.earliest-b.earliest);});
-      // 3) 겹치지 않게 편성 — 각 이벤트를 '가장 빠른 빈 구간'에 배치(빈 구간 채우기)
+    }
+    // 주어진 우선순위 순서(order=행인덱스 배열)대로 겹치지 않게 편성 → 배치결과 + 촘촘함 지표
+    function place(items,order){
+      var byIdx={}; items.forEach(function(it){ byIdx[it.idx]=it; });
+      var seq=order.map(function(i){return byIdx[i];}).filter(function(it){return it && it.earliest;});
       var assigned=[];
-      entered.forEach(function(it){
+      seq.forEach(function(it){
         var start=new Date(it.earliest);
         while(true){
           var end=new Date(start); end.setDate(end.getDate()+it.dur-1);
           var conflict=null;
-          for(var i=0;i<assigned.length;i++){
-            if(start.getTime()<=assigned[i].e.getTime() && assigned[i].s.getTime()<=end.getTime()){ conflict=assigned[i]; break; }
-          }
+          for(var i=0;i<assigned.length;i++){ if(start.getTime()<=assigned[i].e.getTime() && assigned[i].s.getTime()<=end.getTime()){ conflict=assigned[i]; break; } }
           if(!conflict) break;
-          start=new Date(conflict.e); start.setDate(start.getDate()+1);        // 충돌 이벤트 종료 다음날로
-          if(it.dow!==null){ while(start.getDay()!==it.dow) start.setDate(start.getDate()+1); } // 고정요일 재스냅
+          start=new Date(conflict.e); start.setDate(start.getDate()+1);
+          if(it.dow!==null){ while(start.getDay()!==it.dow) start.setDate(start.getDate()+1); }
         }
         var end=new Date(start); end.setDate(end.getDate()+it.dur-1);
-        var pushed=start.getTime()>it.earliest.getTime();
-        it.sEl.innerHTML=fmt(start)+(pushed?' <span class="pmark">겹침조정</span>':'');
-        it.eEl.textContent=fmt(end);
-        if(pushed) it.row.classList.add('pushed');
-        it.cs=new Date(start); it.ce=new Date(end);
-        assigned.push({s:new Date(start),e:new Date(end)});
+        assigned.push({it:it,s:new Date(start),e:new Date(end),pushed:start.getTime()>it.earliest.getTime()});
+      });
+      var gap=0,minStart=Infinity;
+      if(assigned.length){
+        var minS=Math.min.apply(null,assigned.map(function(a){return a.s.getTime();}));
+        var maxE=Math.max.apply(null,assigned.map(function(a){return a.e.getTime();}));
+        var span=Math.round((maxE-minS)/86400000)+1;
+        var occ=assigned.reduce(function(s,a){return s+a.it.dur;},0);
+        gap=span-occ; minStart=minS;
+      }
+      return {assigned:assigned,gap:gap,minStart:minStart};
+    }
+    function permute(arr,cb){ var a=arr.slice(); (function gen(n){ if(n<=1){cb(a.slice());return;} for(var i=0;i<n;i++){ gen(n-1); var j=(n%2?0:i),t=a[n-1];a[n-1]=a[j];a[j]=t; } })(a.length); }
+    function lt(x,y){ for(var i=0;i<x.length;i++){ if(x[i]<y[i])return true; if(x[i]>y[i])return false; } return false; }
+    // 추천 재배치 — 고정행(pin)은 그대로 두고, 나머지를 '가장 촘촘한'(빈틈 최소) 순서로 채움
+    function applyRecommendation(){
+      var N=rows.length, items=buildItems();
+      var others=[],freeSlots=[];
+      for(var i=0;i<N;i++){ if(i!==pinIdx) others.push(i); }
+      for(var p=1;p<=N;p++){ if(p!==pinVal) freeSlots.push(p); }
+      var best=null;
+      permute(others,function(perm){
+        var prio={}; if(pinIdx!=null) prio[pinIdx]=pinVal;
+        perm.forEach(function(idx,k){ prio[idx]=freeSlots[k]; });
+        var order=[]; for(var i=0;i<N;i++) order.push(i);
+        order.sort(function(a,b){ return prio[a]-prio[b]; });
+        var res=place(items,order);
+        var dev=0; for(var i=0;i<N;i++){ dev+=Math.abs(prio[i]-(i+1)); }   // 무차별 시 표 순서에 가깝게
+        var score=[res.gap,res.minStart,dev];
+        if(!best || lt(score,best.score)){ best={prio:prio,score:score}; }
+      });
+      if(best){ rows.forEach(function(row,i){ row.querySelector('.prio').value=best.prio[i]; }); }
+      markPin();
+    }
+    function recompute(){
+      var items=buildItems();
+      items.forEach(function(it){ it.sEl.textContent='—'; it.eEl.textContent='—'; it.row.classList.remove('pushed'); });
+      var order=[]; for(var i=0;i<rows.length;i++) order.push(i);
+      order.sort(function(a,b){ return getPrio(a)-getPrio(b); });
+      var res=place(items,order);
+      res.assigned.forEach(function(a){ var it=a.it;
+        it.sEl.innerHTML=fmt(a.s)+(a.pushed?' <span class="pmark">겹침조정</span>':'');
+        it.eEl.textContent=fmt(a.e);
+        if(a.pushed) it.row.classList.add('pushed');
+        it.cs=a.s; it.ce=a.e;
       });
       renderCal(items);
     }
@@ -584,10 +621,12 @@
     var SB_KEY='sb_publishable_xBec1mH6Vdlm08vNtlYmbA_EMgH8Ui9';
     var SB_H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
     var ROW_ID='pst';
-    function collect(){ return rows.map(function(row){return {d:row.querySelector('input[type=date]').value,c:row.querySelector('.confirm').checked,p:row.querySelector('.prio').value};}); }
+    function collect(){ return rows.map(function(row,i){return {d:row.querySelector('input[type=date]').value,c:row.querySelector('.confirm').checked,p:row.querySelector('.prio').value,pin:(i===pinIdx)};}); }
     function applyData(data){
       if(!data) return;
-      data.forEach(function(v,i){ if(rows[i]){ rows[i].querySelector('input[type=date]').value=v.d||''; rows[i].querySelector('.confirm').checked=!!v.c; if(v.p) rows[i].querySelector('.prio').value=v.p; } });
+      pinIdx=null; pinVal=null;
+      data.forEach(function(v,i){ if(rows[i]){ rows[i].querySelector('input[type=date]').value=v.d||''; rows[i].querySelector('.confirm').checked=!!v.c; if(v.p) rows[i].querySelector('.prio').value=v.p; if(v.pin){ pinIdx=i; pinVal=parseInt(v.p,10); } } });
+      markPin();
     }
     function msg(t){ var m=document.getElementById('savedMsg'); m.textContent=t; m.classList.add('show'); setTimeout(function(){m.classList.remove('show');},2400); }
     function save(){
@@ -610,17 +649,18 @@
        })
        .catch(function(){ try{ var raw=localStorage.getItem(KEY); if(raw) applyData(JSON.parse(raw)); }catch(e){} recompute(); });
     }
-    rows.forEach(function(row){
-      row.querySelector('input[type=date]').addEventListener('change',recompute);
+    rows.forEach(function(row,i){
+      row.querySelector('input[type=date]').addEventListener('change',function(){ applyRecommendation(); recompute(); });
       row.querySelector('.confirm').addEventListener('change',recompute);
-      row.querySelector('.prio').addEventListener('change',recompute);
+      row.querySelector('.prio').addEventListener('change',function(){ pinIdx=i; pinVal=parseInt(row.querySelector('.prio').value,10); applyRecommendation(); recompute(); });
     });
     document.getElementById('btnSave').addEventListener('click',function(){ recompute(); save(); });
     document.getElementById('btnReset').addEventListener('click',function(){
-      if(!confirm('입력한 완료일·확정을 모두 초기화할까요? (저장 누르면 공유본도 비워집니다)')) return;
+      if(!confirm('입력한 완료일·확정·우선순위를 모두 초기화할까요? (저장 누르면 공유본도 비워집니다)')) return;
+      pinIdx=null; pinVal=null;
       rows.forEach(function(row,i){ row.querySelector('input[type=date]').value=''; row.querySelector('.confirm').checked=false; row.querySelector('.prio').value=i+1; });
       try{ localStorage.removeItem(KEY); }catch(e){}
-      recompute();
+      markPin(); recompute();
     });
     recompute(); load();   // 즉시 렌더 후 공유본 불러와 갱신
   })();
