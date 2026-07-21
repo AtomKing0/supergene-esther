@@ -3,20 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PST 리텐션 로드맵 — 레퍼런스 갭 & 액션플랜</title>
+<title>PST 리텐션 로드맵 — 세션·데일리·장기 3층 설계</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   body{font-family:'Pretendard','Apple SD Gothic Neo','Segoe UI',sans-serif;background:#eef2f7;color:#1d2733;line-height:1.62;padding:32px 16px;}
-  .wrap{max-width:1060px;margin:0 auto;}
+  .wrap{max-width:1080px;margin:0 auto;}
   h1{font-size:26px;font-weight:800;letter-spacing:-.6px;color:#10243d;}
-  .sub{color:#5e6e80;font-size:13.5px;margin:6px 0 22px;}
+  .sub{color:#5e6e80;font-size:13px;margin:6px 0 22px;}
+  .sub code{background:#eef2f6;color:#4a5d72;padding:2px 7px;border-radius:5px;font-size:11.5px;}
   .card{background:#fff;border-radius:16px;padding:22px 26px;margin-bottom:18px;box-shadow:0 4px 18px rgba(20,40,70,.06);border:1px solid #e6ecf3;}
   .card h2{font-size:18px;font-weight:800;color:#13314f;margin-bottom:8px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
-  .card h3{font-size:14.5px;font-weight:800;color:#2a3a4d;margin:14px 0 5px;}
+  .card h3{font-size:14.5px;font-weight:800;color:#2a3a4d;margin:16px 0 6px;}
   .desc{font-size:13.5px;color:#67788b;margin:2px 0 10px;}
   .tldr{background:linear-gradient(100deg,#4b2c8c,#6d28d9);color:#f2ecff;}
   .tldr h2{color:#fff;}
-  .tldr li{margin:7px 0 7px 4px;font-size:14px;list-style:none;padding-left:22px;position:relative;}
+  .tldr li{margin:8px 0 8px 4px;font-size:14px;list-style:none;padding-left:22px;position:relative;}
   .tldr li:before{content:"▸";position:absolute;left:0;color:#c4b5fd;font-weight:800;}
   .tldr b{color:#fff;}
   .sect{font-size:21px;font-weight:800;color:#10243d;letter-spacing:-.5px;margin:30px 0 4px;padding-top:8px;border-top:2px dashed #cfd9e6;}
@@ -24,6 +25,9 @@
   th,td{padding:9px 11px;text-align:left;border-bottom:1px solid #eef2f6;vertical-align:top;}
   th{background:#f5f8fb;color:#4a5d72;font-weight:700;font-size:12.5px;}
   td.c,th.c{text-align:center;}
+  td.r,th.r{text-align:right;}
+  .big{font-weight:800;color:#c0392b;} .good{font-weight:800;color:#1c9e63;}
+  .hl{background:#fff7ec;}
   code{background:#0f2740;color:#8fe3c0;padding:2px 7px;border-radius:6px;font-size:12px;font-weight:600;}
   .pill{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:6px;}
   .p1{background:#dcfce7;color:#166534;} .p2{background:#dbeafe;color:#1e40af;} .p3{background:#fef3c7;color:#92400e;} .px{background:#fee2e2;color:#b91c1c;}
@@ -32,107 +36,150 @@
   ul.clean li b{color:#1b3049;}
   .lever{border:1px solid #e2e9f1;border-radius:12px;padding:15px 17px;margin-top:12px;background:#fafcff;}
   .lever .lt{font-size:15px;font-weight:800;color:#3b2a6d;margin-bottom:3px;}
-  .lever .meta{display:flex;gap:8px;flex-wrap:wrap;margin:7px 0;}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin:7px 0;}
   .kv{font-size:11.5px;color:#52637a;background:#f4f2fb;border:1px solid #e6e0f4;border-radius:8px;padding:3px 9px;}
   .kv b{color:#4b2c8c;}
   .warn{font-size:13px;color:#7a3d00;background:#fff8ee;border:1px solid #ffd9a0;border-radius:10px;padding:12px 15px;margin-top:10px;}
   .warn b{color:#a05a10;}
   .flow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px;font-weight:700;color:#3b2a6d;margin-top:8px;}
-  .flow .step{background:#ede9fe;border:1px solid #c4b5fd;border-radius:20px;padding:5px 13px;}
+  .flow .step{background:#ede9fe;border:1px solid #c4b5fd;border-radius:20px;padding:5px 13px;text-align:center;}
+  .flow .step small{display:block;font-weight:600;color:#8a7bb5;font-size:10.5px;}
   .flow .arr{color:#a78bda;font-weight:800;}
+  .astobe{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;}
+  .astobe .b{border-radius:12px;padding:13px 15px;font-size:13px;}
+  .astobe .as{background:#fdf3f2;border:1px solid #f4c9c4;} .astobe .to{background:#eefaf2;border:1px solid #b7e6cc;}
+  .astobe .b h4{font-size:12.5px;font-weight:800;margin-bottom:6px;}
+  .astobe .as h4{color:#b23b30;} .astobe .to h4{color:#1c7a4d;}
+  .ask{background:#f4f8fc;border:1px solid #dbe7f2;border-radius:10px;padding:12px 15px;margin-top:10px;}
+  .ask .tag{display:inline-block;font-size:10px;font-weight:800;border-radius:5px;padding:1px 7px;margin-right:5px;}
+  .ask .t-dev{background:#e0edff;color:#1e50b0;} .ask .t-econ{background:#fff0d6;color:#a5701a;} .ask .t-art{background:#fde7f3;color:#a83277;}
+  .link{color:#6d28d9;font-weight:700;text-decoration:none;}
   .foot{font-size:11.5px;color:#9aa7b6;text-align:center;margin-top:16px;margin-bottom:20px;}
+  @media(max-width:760px){.astobe{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <h1>PST 리텐션 로드맵 — 레퍼런스 갭 & 액션플랜</h1>
-  <div class="sub">Solitaire City Journey (Tripeaks Solitaire) · FB Instant Games · 2026-07-21 · north-star = <b>NA/서구권 D1·D7·D14</b> · 콜드스타트(8/12까지 수익화 OFF)</div>
+  <h1>PST 리텐션 로드맵 — 세션·데일리·장기 3층 설계</h1>
+  <div class="sub">Solitaire City Journey (Tripeaks Solitaire) · FB Instant Games · 2026-07-21 · north-star = <b>NA/서구권 D1·D7·D14</b> · 콜드스타트(8/12까지 수익화 OFF) · 연동: <a class="link" href="pst_tuto_deco_spec.html">튜토·데코</a> · <a class="link" href="pst_postclear_flow_spec.html">결과후 플로우</a> · <a class="link" href="11_city_decoration_reform.html">도시 꾸미기 개편</a></div>
 
   <div class="card tldr">
-    <h2>요약</h2>
+    <h2>한눈에</h2>
     <ul>
-      <li>우리 게임은 <b>이미 시스템이 많음</b>(컬렉션 2·이벤트 2·토너·리더보드 2·데일리 3·도시 메타·친구선물·스트릭). 문제는 기능 부족이 아니라 <b>신규가 길을 못 찾음</b>(신규 89%가 도시1 데코 0/5).</li>
-      <li>∴ "더 넣기"보다 <b>깊이·시퀀싱</b>이 먼저. 아래 3층은 <b>카덴스가 안 겹치게</b>(판당/일·주/상시) 설계.</li>
-      <li><b>채우기 상자</b>(세션 훅) → <b>무료 시즌 패스</b>(데일리 앵커 + <b>기존 시스템 감독</b>) → <b>친구 경쟁·노티 윈백</b>(장기).</li>
-      <li><b class="px" style="background:transparent;color:#ffd4d4;padding:0">팀/클럽은 공수 커서 제외</b> — 그 장기 리텐션 빈칸을 <b>다주차 시즌 패스 + 기존 친구 인프라</b>로 대체.</li>
+      <li>우리 게임은 <b>이미 시스템이 많음</b>(컬렉션 2·이벤트 2·토너·리더보드 2·데일리 3·도시 메타·친구선물·스트릭). 문제는 기능 부족이 아니라 <b>신규가 메타 루프에 못 올라탐</b> — 신규 <b>89%가 도시1 데코 0개</b>, D1도 낮음.</li>
+      <li>이 게임의 심장 루프 = <b>레벨 플레이 → 해머 획득 → 도시 꾸미기 → 다시 플레이</b>. 진짜 게이트는 골드가 아니라 <b>해머</b>(첫 데코 3해머·신규 중앙값 0). 리텐션 로드맵은 <b>이 해머·데코 플라이휠을 돌리는 걸 최우선</b>으로 한다.</li>
+      <li><b>3층으로 카덴스를 분리</b>(판당 / 일·주 / 상시)해 보상 피로 없이 쌓는다: <b>① 진행 체스트(해머 지급)</b> → <b>② 무료 시즌 패스(데일리 앵커·시스템 감독)</b> → <b>③ 친구 경쟁·노티 윈백(장기)</b>.</li>
+      <li><b class="px" style="background:transparent;color:#ffd4d4;padding:0">팀/클럽은 공수 커서 제외</b> — 장기(D14) 빈칸은 다주차 시즌 패스 + 기존 친구 인프라로 대체.</li>
+      <li>온보딩 선행(<a class="link" style="color:#d9c9ff" href="pst_tuto_deco_spec.html">트랙1 튜토·트랙2 첫 데코</a>)이 입구를 열고, 이 로드맵이 그 위에 <b>지속 루프</b>를 얹는다.</li>
     </ul>
   </div>
 
-  <!-- 현황 -->
+  <!-- 현황 지도 -->
   <div class="card">
-    <h2>1. 현황 — 이미 가진 것 (feature-rich)</h2>
-    <div class="desc">이미지 맵(Figma) 기준. 솔리테어 장르의 경쟁형 소셜·컬렉션·데일리·메타빌딩은 이미 대부분 구비.</div>
-    <ul class="clean">
-      <li><b>컬렉션 2종</b> — 카드백 덱(collection_deck)·도시 앨범 퍼즐(collection_album)</li>
-      <li><b>이벤트 2종</b> — 마일스톤(색카드·골든스탬프)·랭크(레이스)</li>
-      <li><b>경쟁 소셜</b> — 토너먼트·리더보드(글로벌·친구)·친구 선물</li>
-      <li><b>데일리 3종</b> — 기프트(7일)·태스크·룰렛</li>
-      <li><b>도시 메타</b> — 데코 배치·도시 건설(meta_build_city)·스트릭(스타)</li>
-      <li><b>인게임</b> — 트라이픽스 보드·프리레벨 부스터</li>
-    </ul>
-  </div>
-
-  <!-- 갭 -->
-  <div class="card">
-    <h2>2. 레퍼런스 대비 갭 (리텐션 임팩트 순)</h2>
-    <div class="desc">레퍼런스 = Solitaire Grand Harvest · Solitaire TriPeaks Journey 등 장르 리더. 팀/클럽은 임팩트 최상이나 <b>공수 과다로 이번 스코프 제외</b>.</div>
+    <h2>1. 현황 지도 — 이 로드맵이 어디에 얹히나</h2>
+    <div class="desc">신규 시스템을 난발하지 않는다. <b>이미 있거나 기획 중인 것 위에</b> 지속 루프만 얹는다.</div>
     <table>
-      <tr><th class="c">#</th><th>갭</th><th>레퍼런스</th><th>왜 리텐션 레버</th><th class="c">채택</th></tr>
-      <tr><td class="c">1</td><td><b>팀/클럽(협동 소셜)</b></td><td>TriPeaks Journey Clubs</td><td>장르 D14~D30 최강 레버(소속감·의무감)</td><td class="c"><span class="pill px">제외(공수)</span></td></tr>
-      <tr><td class="c">2</td><td><b>시즌 패스/리워드 트랙</b></td><td>대부분 캐주얼 리더</td><td>매일 복귀 앵커 + 2~4주 누적 아크</td><td class="c"><span class="pill p2">채택</span></td></tr>
-      <tr><td class="c">3</td><td><b>진행 채우기 보물상자</b></td><td>Grand Harvest 트레저미터</td><td>세션 "한 판 더" 근접 목표</td><td class="c"><span class="pill p1">채택</span></td></tr>
-      <tr><td class="c">4</td><td>승리/로그인 스트릭 escalation</td><td>리더 공통</td><td>끊기 아까운 연속성 압박</td><td class="c"><span class="pill p3">보조</span></td></tr>
-      <tr><td class="c">5</td><td>캐릭터 내러티브(루나)</td><td>TriPeaks Journey 스토리</td><td>값싼 정서적 리텐션</td><td class="c"><span class="pill p3">보조</span></td></tr>
+      <tr><th>레이어</th><th>이미 있음 / 기획 중</th><th>이 로드맵이 더하는 것</th></tr>
+      <tr><td><b>입구</b>(D0~D1)</td><td>트랙1 튜토 단축(#375)·트랙2 첫 데코 유도(개발중)</td><td>—(선행 온보딩, 링크만)</td></tr>
+      <tr><td><b>결과→다음판</b></td><td>결과후 플로우 단축(입장료 폐지·다음판 직행·꾸미기 자동진입)</td><td>결과 화면에 <b>진행 체스트</b> 게이지 노출</td></tr>
+      <tr><td><b>메타 루프</b></td><td>도시 꾸미기 개편(해머 점진 배분·해머 FULL UI)</td><td><b>해머 공급 = 진행 체스트</b>가 담당(기획요청 "해머 획득처 강화" 구현)</td></tr>
+      <tr><td><b>데일리</b></td><td>데일리 기프트·태스크·룰렛(전부 당일 리셋)</td><td><b>무료 시즌 패스</b>(2주 아크가 없음)</td></tr>
+      <tr><td><b>장기·소셜</b></td><td>리더보드·토너·친구선물(경쟁형만)</td><td><b>친구 비동기 경쟁 + 노티 윈백</b></td></tr>
     </table>
   </div>
 
-  <div class="sect">3. 3층 리텐션 설계 — 카덴스 분리</div>
+  <!-- 문제/근거 -->
   <div class="card">
-    <div class="desc">보상 피로·상호 잠식을 피하려 <b>세션 / 일·주 / 상시</b> 세 층으로 카덴스를 나눔.</div>
+    <h2>2. 근거 — 왜 해머·데코 루프가 리텐션 레버인가</h2>
+    <div class="desc">신규를 데코 참여로 갈라 본 실측(정식 7/10~). 단, <b>2026-07-16 정정</b>(아래) 반드시 반영.</div>
+    <table>
+      <tr><th>신규 유저</th><th class="r">인원</th><th class="r">인당 판수</th><th class="r">D1 리텐션</th></tr>
+      <tr><td>데코 안 찍음</td><td class="r">2,751</td><td class="r">3.2판 (중앙값 0)</td><td class="r"><span class="big">6.0%</span></td></tr>
+      <tr class="hl"><td>데코 1개+ 찍음</td><td class="r">1,118</td><td class="r">42.0판 (중앙값 18)</td><td class="r"><span class="good">44.8%</span></td></tr>
+    </table>
+    <div class="warn"><b>⚠ 실측 정정(2026-07-16)</b> — "42판 vs 3.2판"은 <b>선택 편향</b>(많이 논 유저가 골드·해머 있어 데코함). 코지식 데코 유도를 판수 목적으로 실제 적용했으나 <b>판수는 유의미하게 안 늘었음</b>. ∴ <b>데코 = 판수 레버가 아니라 리텐션·메타 관여 레버</b>. 이 로드맵의 목적도 "판수↑"가 아니라 <b>메타 진입·D1/D7/D14</b>로 설정.</div>
+    <h3>💰 진짜 병목 = 해머 (골드 아님)</h3>
+    <table>
+      <tr><th>화폐</th><th class="r">신규 잔액(중앙·3판+)</th><th>첫 데코에 필요</th><th class="r">보유율</th></tr>
+      <tr><td>골드</td><td class="r">8,967</td><td>1단계 0 · 상위 450~600</td><td class="r"><span class="good">99~100% 충분</span></td></tr>
+      <tr class="hl"><td><b>해머</b></td><td class="r"><b>0</b></td><td>1단계 <b>3개</b></td><td class="r"><span class="big">3판+ 유저도 36%만</span></td></tr>
+    </table>
+    <div class="desc" style="margin-top:8px">골드는 오히려 남아돎(sink 부족). <b>89%가 데코 못 하는 건 동기가 아니라 해머가 없어서</b>일 수 있음. 닭-달걀(데코하려면 해머 → 해머는 플레이로 벌림 → 데코가 그 플레이 동기)을 깨려면 <b>해머 공급을 강화</b>해야 함 → 그게 P1 진행 체스트.</div>
+  </div>
+
+  <!-- 레퍼런스 갭 -->
+  <div class="card">
+    <h2>3. 레퍼런스 대비 갭 (팀 제외)</h2>
+    <div class="desc">레퍼런스 = Solitaire Grand Harvest · Solitaire TriPeaks Journey. 팀/클럽은 임팩트 최상이나 <b>공수 과다로 이번 스코프 제외</b>.</div>
+    <table>
+      <tr><th class="c">#</th><th>갭</th><th>레퍼런스</th><th class="c">채택</th></tr>
+      <tr><td class="c">1</td><td><b>다주차 진행 트랙(시즌 패스)</b></td><td>대부분 캐주얼 리더</td><td class="c"><span class="pill p2">채택</span></td></tr>
+      <tr><td class="c">2</td><td><b>진행 채우기 체스트</b></td><td>Grand Harvest 트레저미터</td><td class="c"><span class="pill p1">채택(해머로 재정합)</span></td></tr>
+      <tr><td class="c">3</td><td>팀/클럽(협동 소셜)</td><td>TriPeaks Journey Clubs</td><td class="c"><span class="pill px">제외(공수)</span></td></tr>
+      <tr><td class="c">4</td><td>승리/로그인 스트릭 escalation</td><td>리더 공통</td><td class="c"><span class="pill p3">보조</span></td></tr>
+      <tr><td class="c">5</td><td>캐릭터 내러티브(루나)</td><td>TriPeaks Journey 스토리</td><td class="c"><span class="pill p3">보조</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 3층 설계 -->
+  <div class="sect">4. 3층 리텐션 설계 — 카덴스 분리</div>
+  <div class="card">
+    <div class="desc">보상 피로·상호 잠식을 피하려 <b>세션 / 일·주 / 상시</b> 세 층으로 카덴스를 나눔. 세 층 모두 <b>해머·데코 플라이휠</b>로 수렴하게 설계.</div>
     <div class="flow">
       <span class="step">트랙2 첫 데코<br><small>1회성·온보딩</small></span><span class="arr">→</span>
-      <span class="step">채우기 상자<br><small>세션·판당</small></span><span class="arr">→</span>
-      <span class="step">무료 시즌 패스<br><small>일·주·2주 아크</small></span><span class="arr">→</span>
-      <span class="step">친구 경쟁·노티 윈백<br><small>상시·장기</small></span>
+      <span class="step">① 진행 체스트<br><small>세션·판당 · 해머 지급</small></span><span class="arr">→</span>
+      <span class="step">② 무료 시즌 패스<br><small>일·주 · 2주 아크</small></span><span class="arr">→</span>
+      <span class="step">③ 친구 경쟁·노티<br><small>상시·장기</small></span>
     </div>
     <table style="margin-top:14px">
-      <tr><th>레버</th><th>카덴스</th><th>역할</th><th>측정(NA 코호트)</th></tr>
-      <tr><td><b>트랙2 첫 데코</b></td><td>1회성(온보딩)</td><td>메타 루프 오픈</td><td>첫데코 배치율·D1</td></tr>
-      <tr><td><b>채우기 상자</b></td><td>세션 즉시(판당)</td><td>"한 판 더" 훅</td><td>세션 판수·세션타임·D1/D3</td></tr>
-      <tr><td><b>무료 시즌 패스</b></td><td>일·주(2주 아크)</td><td>복귀 앵커 + 시스템 감독</td><td>D7·D14·완주율</td></tr>
-      <tr><td><b>친구 경쟁·노티</b></td><td>상시</td><td>장기·재참여</td><td>D14·복귀율</td></tr>
+      <tr><th>레버</th><th>카덴스</th><th>역할</th><th>플라이휠 연결</th><th>측정(NA)</th></tr>
+      <tr><td><b>① 진행 체스트</b></td><td>세션(판당)</td><td>"한 판 더" 훅</td><td><b>해머 공급</b> → 데코 게이트 해소</td><td>세션 판수·D1/D3</td></tr>
+      <tr><td><b>② 무료 시즌 패스</b></td><td>일·주(2주)</td><td>복귀 앵커·시스템 감독</td><td>퀘스트가 <b>데코·해머·토너</b>로 유도</td><td>D7·D14·완주율</td></tr>
+      <tr><td><b>③ 친구·노티</b></td><td>상시</td><td>장기·재참여</td><td>복귀 시 진행 체스트·패스로 재유입</td><td>D14·복귀율</td></tr>
     </table>
   </div>
 
-  <div class="sect">4. 레버별 상세 스펙</div>
+  <div class="sect">5. 레버별 상세 스펙</div>
 
-  <!-- 채우기 상자 -->
+  <!-- P1 진행 체스트 -->
   <div class="card">
-    <h2><span class="pill p1">P1 · 먼저</span> 채우기 보물상자 (세션 훅 · 저공수)</h2>
+    <h2><span class="pill p1">P1 · 먼저</span> 진행 체스트 — 해머를 지급하는 세션 훅 (저공수)</h2>
+    <div class="desc"><b>재정합 주의</b> — 로비 해머 게이지(개편안 11)는 이미 "플레이→채우기" 존재. P1은 그와 <b>중복이 아니라</b>, 기획요청 "<b>해머 획득처 강화</b>"를 구현하는 <b>보상 체스트</b>: 승리 누적으로 <b>해머(+골드·부스터)</b>를 지급해 <b>데코 게이트(3해머)를 빠르게 넘게</b> 한다.</div>
+    <div class="astobe">
+      <div class="b as"><h4>AS-IS</h4>신규 해머 중앙값 <b>0</b> → 첫 데코(3해머) 못 넘음 → 89% 데코 0개 → 메타 루프 진입 실패</div>
+      <div class="b to"><h4>TO-BE</h4>승리마다 체스트 게이지↑ → 만땅 시 <b>해머 다발</b> 지급 → 첫 데코 즉시 가능 → 플라이휠 점화</div>
+    </div>
     <div class="lever">
-      <div class="lt">🎁 승리로 채우는 상자</div>
+      <div class="lt">🎁 동작</div>
       <div class="meta">
         <span class="kv">공수 <b>저(게이지 UI 1개)</b></span>
-        <span class="kv">보상 <b>기존 재활용</b></span>
-        <span class="kv">노출 <b>로비 상시 + 인게임 미니</b></span>
+        <span class="kv">보상 <b>해머 중심 + 골드·부스터</b></span>
+        <span class="kv">노출 <b>로비 + 결과화면</b></span>
       </div>
       <ul class="clean">
-        <li>판 <b>승리마다 게이지↑</b>, 만땅 시 상자 개봉(골드·데코해머·부스터).</li>
-        <li><b>First Try 2배</b> 가산 — 기존 Golden Stamp(<code>winning_milestone</code>) 로직 재활용.</li>
-        <li>상자 <b>브론즈→실버→골드 순환</b>(가변 보상 = 도파민 루프).</li>
-        <li>항상 화면에 <b>근접 목표</b>가 보이게 → "한 판 더" 유발.</li>
+        <li>판 <b>승리마다 게이지↑</b>, 만땅 시 체스트 개봉 → <b>해머 N개</b>(+골드·부스터). First Try는 <b>2배</b>(기존 <code>winning_milestone</code> 로직 재활용).</li>
+        <li>초반 체스트는 <b>해머 비중↑</b>(첫 데코 3해머를 1~2체스트로 넘게), 이후 골드·부스터 혼합(가변 보상).</li>
+        <li>결과후 플로우(다음판 직행)에 <b>게이지 인라인 노출</b> → "한 판 더" 근접 목표.</li>
       </ul>
-      <div class="warn"><b>왜 먼저?</b> 신규 시스템 신설 없이 게이지+상자만 얹으면 됨(저공수). 세션 판수·세션타임 즉효 → D1/D3에 가장 빠른 리텐션 승리.</div>
+      <div class="warn"><b>왜 먼저?</b> 신규 시스템 신설 없이 게이지+보상만 얹으면 됨(저공수). <b>해머 병목을 직접 뚫어</b> 89% 데코 정체를 완화 → D1/D3 즉효.</div>
+    </div>
+    <div class="ask">
+      <div><span class="tag t-econ">이코노미</span> 체스트 티어별 <b>해머 지급량</b> 밸런스(첫 데코 3해머·도시별 해머비용은 개편안 11 표 기준). 인플레 안 나게 상한.</div>
+      <div><span class="tag t-dev">클라</span> 게이지 상태(승리 카운트)·결과화면 인라인 노출·개봉 연출. <span class="tag t-art">아트</span> 체스트·해머 튀는 피드백.</div>
     </div>
   </div>
 
-  <!-- 시즌 패스 -->
+  <!-- P2 시즌 패스 -->
   <div class="card">
-    <h2><span class="pill p2">P2 · 메인</span> 무료 시즌 패스 (데일리 앵커 + 시스템 감독)</h2>
-    <div class="desc"><b>관점 전환</b> — 패스를 또 하나의 시스템이 아니라, <b>기존 시스템으로 유저를 몰아넣는 메타 레이어(감독)</b>로 설계. 시퀀싱 문제(신규가 길 못 찾음)와 데일리 복귀를 동시에 잡음.</div>
+    <h2><span class="pill p2">P2 · 메인</span> 무료 시즌 패스 — 데일리 앵커 + 시스템 감독</h2>
+    <div class="desc"><b>관점 전환</b> — 패스를 또 하나의 시스템이 아니라, <b>기존 시스템으로 유저를 몰아넣는 메타 레이어(감독)</b>로. 시퀀싱 문제(신규가 길 못 찾음)와 데일리 복귀를 동시에 잡음.</div>
+    <div class="astobe">
+      <div class="b as"><h4>AS-IS</h4>데일리 3종(기프트·태스크·룰렛) 전부 <b>당일 리셋</b> → 다주차 목표·복귀 앵커 없음. 신규가 뭘 먼저 할지 모름.</div>
+      <div class="b to"><h4>TO-BE</h4>2주 시즌 트랙 → 데일리/위클리 퀘가 <b>데코·해머·토너·이벤트로 유도</b> → 티어 보상 누적 → "완주" 목표로 매일 복귀.</div>
+    </div>
     <div class="lever">
-      <div class="lt">🎟 2주 시즌 · 무료 트랙</div>
+      <div class="lt">🎟 구성</div>
       <div class="meta">
         <span class="kv">기간 <b>2주 시즌</b></span>
         <span class="kv">트랙 <b>무료만(8/12까지)</b></span>
@@ -140,55 +187,99 @@
         <span class="kv">테마 <b>도시 연동</b></span>
       </div>
       <ul class="clean">
-        <li><b>데일리 퀘 3</b> + <b>위클리 퀘</b> → 패스XP → 30티어 무료 보상(골드·데코해머·부스터·데코).</li>
-        <li><b>★퀘스트를 기존 시스템 라우팅용으로 설계</b> — "도시 데코 1개 배치 / 토너 1회 참여 / 앨범 조각 3개 / 색카드 이벤트 참여"로 <b>골고루 유도</b>.</li>
-        <li>시즌 테마를 <b>특정 도시·컬렉션</b>과 묶어 서사 일관성.</li>
+        <li><b>데일리 퀘 3</b> + <b>위클리 퀘</b> → 패스XP → 30티어 무료 보상. <b>보상에 해머·데코해머·부스터·골드</b>(해머로 데코 루프 연료 공급).</li>
+        <li><b>★퀘스트 = 기존 시스템 라우팅</b> — "데코 1개 배치 / 도시 진척 / 토너 1회 / 앨범 조각 3개 / 색카드 이벤트 참여". 신규가 시스템을 골고루 만지게.</li>
+        <li>시즌 테마를 <b>특정 도시·컬렉션</b>과 묶어 서사 일관성(루나 서사 보조 레버와 연결).</li>
         <li><b>8/12 후</b> = 유료 Gold 트랙 얹어 수익화 전환(무료 트랙 구조 그대로 재사용).</li>
       </ul>
-      <div class="warn"><b>팀 대체 효과</b> — 팀/클럽이 맡았을 <b>장기(D14) 리텐션 빈칸을 다주차 아크가 상당 부분 대체</b>. 게다가 무료 트랙만으로 콜드스타트 수익화 OFF 원칙 준수.</div>
+      <div class="warn"><b>팀 대체 효과</b> — 팀/클럽이 맡았을 <b>장기(D14) 리텐션 빈칸을 다주차 아크가 상당 부분 대체</b>. 무료 트랙만이라 콜드스타트 수익화 OFF 원칙 준수.</div>
+    </div>
+    <div class="ask">
+      <div><span class="tag t-dev">클라</span> 패스 UI·퀘스트 진행·티어 수령. 퀘스트 트리거는 <b>기존 이벤트 로그 재활용</b>. <span class="tag t-econ">이코노미</span> 30티어 보상 밸런스(해머·골드 인플레 통제)·퀘 난이도.</div>
     </div>
   </div>
 
-  <!-- 팀 대체 -->
+  <!-- P3 친구·노티 -->
   <div class="card">
     <h2><span class="pill p2">P3 · 장기</span> 팀 대신 저공수 장기 리텐션 (기존 인프라 재활용)</h2>
-    <div class="desc">팀/클럽(고공수) 제외 → D14+ 빈칸을 <b>이미 가진 친구 인프라 + Meta 노티 채널</b>로 메꿈.</div>
+    <div class="desc">팀/클럽(고공수) 제외 → D14+ 빈칸을 <b>이미 가진 친구 인프라 + Meta 노티 채널(질 2위)</b>로 메꿈.</div>
     <div class="lever">
       <div class="lt">👥 친구 비동기 경쟁 심화</div>
+      <ul class="clean"><li>친구 리더보드·선물 이미 있음 → <b>"친구가 널 앞질렀어" · 주간 리셋 보상 · 선물 되갚기 스트릭</b>. 백엔드 신규 없음.</li></ul>
+      <div class="lt" style="margin-top:12px">🔔 노티 기반 윈백</div>
       <ul class="clean">
-        <li>친구 리더보드·선물 이미 있음 → <b>"친구가 널 앞질렀어" · 주간 리셋 보상 · 선물 되갚기 스트릭</b> 추가. 백엔드 신규 없음.</li>
-      </ul>
-      <div class="lt" style="margin-top:12px">🔔 노티 기반 윈백 (Meta 노티 = 질 2위 채널)</div>
-      <ul class="clean">
-        <li><b>"상자 만땅" · "스트릭 끊기기 직전" · "시즌 2일 남음" · D3+ 이탈자 복귀 보너스.</b></li>
-        <li>가장 <b>저공수 재참여 레버</b> — 발송은 Meta 통제라 문구·트리거만 설계.</li>
+        <li><b>"체스트 만땅" · "해머 다 찼어(꾸미러 와)" · "시즌 2일 남음" · "스트릭 끊기기 직전" · D3+ 이탈자 복귀 보너스.</b></li>
+        <li>발송은 Meta 통제 → <b>문구·트리거만 설계</b>. 가장 저공수 재참여 레버.</li>
       </ul>
     </div>
   </div>
 
-  <div class="sect">5. 실행 순서 · 타이밍 (스테이지 제약 반영)</div>
+  <!-- 보조 -->
   <div class="card">
-    <table>
-      <tr><th class="c">순서</th><th>레버</th><th>공수</th><th>타이밍</th><th>선행 조건</th></tr>
-      <tr><td class="c">0</td><td>트랙2 첫 데코</td><td>중</td><td>진행중(오늘 완료 예상)</td><td>—</td></tr>
-      <tr><td class="c">1</td><td><b>채우기 상자</b></td><td class="c">저</td><td>즉시 착수</td><td>게이지 UI·기존 보상 매핑</td></tr>
-      <tr><td class="c">2</td><td><b>무료 시즌 패스</b></td><td class="c">중</td><td>상자 후</td><td>퀘스트 설계(시스템 라우팅)·트랙 밸런스</td></tr>
-      <tr><td class="c">3</td><td>친구 경쟁·노티 윈백</td><td class="c">저</td><td>병행 가능</td><td>노티 문구·트리거</td></tr>
-    </table>
-    <div class="warn" style="margin-top:14px"><b>⚠ 측정 원칙</b> — 성패는 전부 <b>NA/서구권 코호트 D1·D7·D14</b>로(신흥국 유입에 안 묻히게). 24 이탈분석·20 대시보드 권역 토글 NA로 전후비교. CP 지오 정렬(7/20)·튜토 #375와 시기 겹치므로 <b>레버별로 분리 관측</b>.</div>
-  </div>
-
-  <div class="card">
-    <h2>⛔ 하지 말 것</h2>
+    <h2><span class="pill p3">보조</span> 스트릭 강화 · 루나 서사 (여력 시)</h2>
     <ul class="clean">
-      <li><b>팀/클럽 신설</b> — 공수 과다(백엔드·매칭·채팅). 이번 스코프 제외, 다주차 패스로 대체.</li>
-      <li><b>저LTV 지역 로컬라이징·대응 리소스</b> — 타겟 불가·저리텐션 노이즈.</li>
-      <li><b>보상 인플레</b> — 3층 카덴스(판당/일·주/상시) 지켜 상호 잠식·피로 방지.</li>
-      <li><b>8/12 전 유료 티어</b> — 콜드스타트 수익화 OFF 원칙(무료 트랙만).</li>
+      <li><b>승리/로그인 스트릭 escalation</b> — 끊기 아까운 연속성(스트릭 보험·프리즈). 기존 스트릭(스타) 위 강화.</li>
+      <li><b>루나(마스코트) 서사 비트</b> — 도시 완성마다 짧은 스토리. 값싼 정서적 리텐션. 시즌 패스 테마와 묶어 노출.</li>
     </ul>
   </div>
 
-  <div class="foot">PST 리텐션 로드맵 · 레퍼런스 갭 분석 & 액션플랜 · 2026-07-21 · 내부 기획 검토용 · 대시보드 20 액션 아이템 연동</div>
+  <!-- 밸런스시트 연동 -->
+  <div class="sect">6. 밸런스시트 · 데이터 연동</div>
+  <div class="card">
+    <ul class="clean">
+      <li><b>const 신규</b> — 진행 체스트(승리 카운트 임계·티어별 해머/골드 지급), 시즌 패스(시즌 기간·티어 수·퀘 정의·XP). <code>in_use</code> 플래그로 온오프.</li>
+      <li><b>보상 채널</b> — 체스트·패스 보상을 밸런스시트 보상 테이블에 편성(해머·골드·부스터 id·수량). 개편안 11의 <code>meta_decoration_list</code> 해머 비용표와 정합(첫 데코 3해머·도시별 합계).</li>
+      <li><b>퀘스트 트리거</b> — 데코 배치·도시 완성·토너 참여·이벤트 참여 = <b>기존 이벤트 로그 재활용</b>(신규 로깅 최소).</li>
+      <li><b>골드 sink 주의</b> — 골드는 남아돎(중앙 8,967). 체스트·패스가 골드만 더 주면 인플레 악화 → <b>해머·데코·부스터 중심</b>으로 지급.</li>
+    </ul>
+  </div>
+
+  <!-- 성공지표 -->
+  <div class="card">
+    <h2>7. ✅ 성공 지표 (전후 비교 · NA 코호트)</h2>
+    <div class="desc">전부 <b>NA/서구권 코호트</b>로 측정(신흥국 유입에 안 묻히게). 24 이탈분석·20 대시보드 권역 토글 NA. CP 지오정렬·튜토 #375와 시기 겹치면 <b>레버별 분리 관측</b>.</div>
+    <table>
+      <tr><th>레버</th><th>선행 지표</th><th>핵심 지표</th></tr>
+      <tr><td>① 진행 체스트</td><td>첫 데코 배치율(89%→↓), 해머 보유율, 세션 판수</td><td><b>D1·D3</b></td></tr>
+      <tr><td>② 시즌 패스</td><td>패스 참여율·퀘 완료율·완주율, 데코/토너 진입률</td><td><b>D7·D14</b></td></tr>
+      <tr><td>③ 친구·노티</td><td>노티 CTR(Meta측)·복귀 세션</td><td><b>D14·복귀율</b></td></tr>
+    </table>
+  </div>
+
+  <!-- 실행 순서 -->
+  <div class="card">
+    <h2>8. 실행 순서 · 타이밍</h2>
+    <table>
+      <tr><th class="c">순서</th><th>레버</th><th class="c">공수</th><th>타이밍</th><th>선행</th></tr>
+      <tr><td class="c">0</td><td>트랙1·2(튜토·첫 데코)</td><td class="c">-</td><td>진행중</td><td>입구 개방(선행)</td></tr>
+      <tr><td class="c">1</td><td><b>진행 체스트(해머)</b></td><td class="c">저</td><td>즉시 착수</td><td>해머 지급 밸런스</td></tr>
+      <tr><td class="c">2</td><td><b>무료 시즌 패스</b></td><td class="c">중</td><td>체스트 후</td><td>퀘 라우팅·트랙 밸런스</td></tr>
+      <tr><td class="c">3</td><td>친구 경쟁·노티</td><td class="c">저</td><td>병행 가능</td><td>노티 문구·트리거</td></tr>
+    </table>
+  </div>
+
+  <!-- 하지 말 것 -->
+  <div class="card">
+    <h2>⛔ 하지 말 것</h2>
+    <ul class="clean">
+      <li><b>팀/클럽 신설</b> — 공수 과다(백엔드·매칭·채팅). 다주차 패스로 대체.</li>
+      <li><b>판수 목표로 데코 밀어붙이기</b> — 7/16 실측상 데코는 판수 레버 아님(선택 편향). 목적 = 리텐션·메타 관여.</li>
+      <li><b>골드 위주 보상</b> — 골드 남아돎(인플레). 지급은 <b>해머·데코·부스터</b> 중심.</li>
+      <li><b>보상 카덴스 겹침</b> — 판당/일·주/상시 3층 유지(피로·잠식 방지).</li>
+      <li><b>8/12 전 유료 티어</b> · <b>저LTV 지역 로컬라이징</b> — 콜드스타트 원칙.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>🔗 연동 기획서</h2>
+    <ul class="clean">
+      <li><a class="link" href="pst_tuto_deco_spec.html">튜토 연출 단축 + 첫 데코 유도</a> — 입구 온보딩(트랙1·2). 이 로드맵의 선행.</li>
+      <li><a class="link" href="pst_postclear_flow_spec.html">결과 후 플로우 단축</a> — 다음판 직행·꾸미기 자동진입. 진행 체스트 게이지가 여기 얹힘.</li>
+      <li><a class="link" href="11_city_decoration_reform.html">도시 꾸미기 개편안</a> — 해머 점진 배분·해머 FULL UI. 진행 체스트의 해머 지급과 정합.</li>
+    </ul>
+  </div>
+
+  <div class="foot">PST 리텐션 로드맵 · 세션·데일리·장기 3층 설계 · 2026-07-21 · 내부 기획 검토용 · 대시보드 20 액션 아이템 연동</div>
 
 </div>
 </body>
