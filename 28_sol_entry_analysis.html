@@ -1,0 +1,297 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>솔리테어 FB 유입 엔트리·국가 심화 분석</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  body{font-family:-apple-system,'Apple SD Gothic Neo',sans-serif;margin:0;background:#f6f7f9;color:#1c2530}
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 22px 44px}
+  h1{font-size:22px;margin:0 0 4px}.sub{color:#6b7684;font-size:13px;margin-bottom:18px}
+  h2{font-size:15.5px;margin:32px 0 12px;color:#2b3440}h2 .t{font-size:11.5px;color:#98a2b0;font-weight:400;margin-left:8px}
+  .decision{background:#1f2d3d;color:#eef2f7;border-radius:12px;padding:18px 22px;margin:6px 0 8px}
+  .decision .main{font-size:15px;font-weight:700;margin-bottom:10px;line-height:1.55}
+  .decision ul{margin:0;padding-left:18px}.decision li{font-size:13px;line-height:1.7;margin-bottom:4px}
+  .decision li b{color:#8fd0ff}.decision .meta{color:#ff9d9d}.decision .self{color:#8ee7b0}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e6e9ee;border-radius:12px;overflow:hidden;font-size:12.5px}
+  th,td{padding:9px 11px;text-align:center;border-bottom:1px solid #eef1f4;border-right:1px solid #f2f4f7}
+  thead th{background:#fafbfc;color:#6b7684;font-weight:600;font-size:11.5px}
+  td.l{text-align:left}td.num{text-align:right;font-variant-numeric:tabular-nums}
+  tbody tr:hover td{background:#f9fbfd}
+  .tag{display:inline-block;font-size:9.5px;font-weight:700;border-radius:4px;padding:1px 6px;color:#fff;vertical-align:middle}
+  .tag.meta{background:#DC2626}.tag.self{background:#059669}
+  .chart{background:#fff;border:1px solid #e6e9ee;border-radius:12px;padding:18px;margin:8px 0}
+  .cols{display:flex;gap:16px;flex-wrap:wrap}.cols>div{flex:1;min-width:340px}
+  .bar{height:12px;border-radius:3px}
+  .note{background:#fff8ec;border:1px solid #f0e0bd;border-radius:10px;padding:12px 16px;font-size:12px;color:#7a6a3d;line-height:1.7;margin-top:10px}
+  .note.blue{background:#eef5fc;border-color:#cfe2f5;color:#33587c}
+  .foot{color:#98a2b0;font-size:11px;margin-top:22px;line-height:1.7}.foot b{color:#6b7684}
+  .kpi{display:flex;gap:12px;flex-wrap:wrap;margin:4px 0 8px}
+  .kpi>div{flex:1;min-width:150px;background:#fff;border:1px solid #e6e9ee;border-radius:10px;padding:12px 14px}
+  .kpi .v{font-size:22px;font-weight:800}.kpi .k{font-size:11px;color:#8a94a2;margin-top:2px}
+  .d1pill{display:inline-block;min-width:44px;padding:2px 7px;border-radius:11px;font-weight:800;font-size:12px;color:#fff}
+</style></head><body><div class="wrap">
+<h1>솔리테어 FB 유입 엔트리포인트·국가 심화 분석</h1>
+<div class="sub">솔리테어 시티 저니 · Facebook Instant Games · 정식 7/10~오늘 · BigQuery 실측 · 유입 분류=FBS 진입 지면 기준 · 갱신 2026-07-21 10:27</div>
+
+<div class="decision">
+  <div class="main">지표가 무너지는 게 아니라 <b>유입 구성이 통째로 바뀐 것</b>. 런칭 초기 고품질 <span class="meta">Meta 피처링</span> 파도가 식고, <span class="meta">Meta가 알고리즘으로 배포하는 '인게임 메뉴'</span>(D1 최저·<b>우리 컨트롤 밖</b>) 물량이 최근 유입의 과반을 차지하며 블렌디드 리텐션을 희석. 볼륨은 오히려 늘었음.</div>
+  <ul>
+    <li><b>블렌디드 D1</b> 전체 11.8% → 최근 7.9% 로 하락. 원인은 게임/코호트 품질 저하가 아니라 <b>믹스 이동</b>.</li>
+    <li><b class="meta">Meta 인게임메뉴</b>(FBS 상 in_game_menu 中 CROSS_ 없는 순수 Meta 배포) = 최근 유입의 <b>69.4%</b>·D1 최저. <b>우리가 켜거나 끌 수 없음</b> — Meta가 자체 알고리즘으로 솔리테어를 플랫폼 메뉴에 노출(7/19 크게 열림, 아래 일별 표).</li>
+    <li><b class="self">우리가 직접 컨트롤하는 채널은 건강</b> — <b>자체 크로스프로모(CROSS_ payload·D1 14%)</b>·Meta 디스커버리(web_games_hub 등)는 D1 상위. 게임 자체 문제 아님. 크로스프로모는 Meta 인게임메뉴와 별개(CROSS_ 마킹으로 식별·우리가 직접 운영).</li>
+    <li><b>레버 3</b> — ①지표를 세그로 분리 보고(블렌디드는 Meta 배포량에 좌우) ②Meta 인게임메뉴 저의도 유저 전환은 <b>로딩·FTUE·첫세션</b>이 유일 레버(#371 로딩·에셋 최적화 직결) ③<b class="self">자체 CP는 지오 누수부터 막기</b>(아래 🚨 진단) — 더 퍼즐·코인매치 CP에 T1 제한이 안 먹어 저품질지오 누수하던 걸 <b>7/20 16:00 수정 빌드 배포(더 퍼즐 v1965·코인매치 v3360)</b>로 조치. 소스 끄기가 아니라 <b>T1 제한 정렬</b>이 콜드스타트 품질 1순위 액션 → <b>패치 후 비T1 누수차단 + 남은 유저 리텐션(D1)으로 유지/끄기 판단</b>(아래 ⏱·🎯).</li>
+  </ul>
+</div>
+
+<div class="kpi" id="kpi"></div>
+
+<h2>세그먼트별 유입 품질·믹스 이동 <span class="t">FBS 진입 지면 기준 · 4 세그 · 컨트롤 주체 표기</span></h2>
+<div id="segtbl"></div>
+<div class="note">유입 분류(FBS): <b class="tag meta">Meta</b> = Facebook이 알고리즘으로 배포(우리 컨트롤 밖) · <b class="tag self">자체</b> = 우리가 직접 운영(크로스프로모·공유·봇). ★<b><code>payload.social=CROSS_*</code> = 자체 크로스프로모</b> — 지면(entry)이 뭐든 우리 것이며 <b>Meta 인게임메뉴에 포함되지 않음</b>. <b>Meta 인게임메뉴 = CROSS_ 없는 순수 in_game_menu</b>(Meta 알고리즘 추천). game_switch도 우리 스위처.</div>
+
+<h2>일별 신규(NRU) 유입 — 세그먼트 누적 <span class="t">Meta 인게임메뉴가 언제 켜졌는지</span></h2>
+<div class="chart"><canvas id="stack" height="115"></canvas></div>
+<div class="note blue">런칭기(정식 첫 3일)는 <b>100% Meta 디스커버리(피처링)</b>. 그 파도가 식으며(<span id="disc-drop"></span>) 그 자리를 <b class="meta" style="color:#DC2626">Meta 인게임메뉴</b>(순수 in_game_menu)와 <b class="self" style="color:#059669">자체 CP</b>가 채움 — 특히 7/19 Meta 인게임메뉴 급증(아래 일별 표). 블렌디드가 떨어지는 건 D1 최저 Meta 인게임메뉴 비중이 커진 산술 효과.</div>
+
+<h2>일별 유입 상세 — Meta가 언제 입구를 열었나 <span class="t">세그별 NRU · 순수 Meta 인게임메뉴 비중 · 당일 코호트 D1</span></h2>
+<div id="dailytbl"></div>
+<div class="note" id="gate-note"></div>
+
+<h2>세부 엔트리포인트별 D1 <span class="t">정식~어제 코호트 · 순수 진입 지면 단위 · CROSS_(자체 CP)는 아래 CP 표에서 별도</span></h2>
+<div id="entrytbl"></div>
+<div class="note">순수 진입 지면만 표시(CROSS_ 자체 CP 제외 — 아래 전용 표). <b>순수 <code>in_game_menu</code>(Meta 알고리즘 추천)가 최저의도(D1 최저)</b> — 7/19 급증한 그 지면. web_games_hub·facebook_web 같은 Meta 디스커버리는 상위권.</div>
+
+<h2>✅ CP 지오 누수 → 수정 빌드 반영 확인 <span class="t">7/20 더 퍼즐 v1965·코인매치 v3360(T1 제한) 배포 · 패치 전후 비T1 유입 + 후속 리텐션으로 유지/끄기 판단</span></h2>
+<div id="cpgeo-trend"></div>
+
+<h2>우리 CP(CROSS) 소스별 효율 <span class="t">CP 크리에이티브 대상 자사 게임별 · 정식~어제 코호트 · ※지오 누수 오염돼 있어 위 진단 먼저</span></h2>
+<div id="cptbl"></div>
+<div class="note"><b>⚠ 아래 소스별 D1은 지오 누수에 오염됨</b> — 더 퍼즐 D1 낮은 건 소스 결함이 아니라 비T1 79% 누수 탓(국가 통제하면 마종·코인매치와 동급). <b>T1 제한 정렬(위 진단) 후 같은 조건에서 재평가해야 진짜 소스 서열</b>. 지면: <code>switch</code>=우리 스위처 버튼 / <code>menu</code>=인게임 메뉴 슬롯(같은 소스도 switch가 D1 높음).</div>
+
+<div class="cols">
+  <div><h2>국가별 D1 <span class="t">코호트 n≥40</span></h2><div id="ctrytbl"></div></div>
+  <div><h2>국가 믹스 이동 <span class="t">초기 3일 → 최근 3일 · NRU 비중</span></h2><div id="ctrymix"></div></div>
+</div>
+<div class="note">국가는 붕괴 원인이 아님 — <b>US 비중은 오히려 상승</b>(평점 핵심 권역). 다만 저품질 지오(PH·IN·BD·ID 등)가 Meta 인게임메뉴 배포에 얹혀 하위 티어를 두껍게 하는 <b>엔트리×국가 상호작용</b>은 존재(아래 교차표).</div>
+
+<h2>국가 × 세그먼트 교차 <span class="t">각 셀 = NRU(믹스%) · D1 · 정식~어제 코호트 · Meta 인게임메뉴 홍수가 어느 국가에 집중되나</span></h2>
+<div id="cseg-tbl"></div>
+<div class="note" id="cseg-note"></div>
+
+<div class="foot">
+<b>정의</b> · NRU=당일 첫 로그인(logincount_total=1) · D1=신규 코호트 익일 로그인율 · 세그=<code>entrypoint_join.entry</code>(FBS 진입 지면) + <code>payload.social</code>(CROSS_*=우리 CP) 조합 분류 · 첫 로그인 지면으로 유저 귀속 · is_dev 제외.<br>
+<b>FBS</b> · in_game_menu = Meta 인게임 메뉴 배포(우리 컨트롤 밖) · web_games_hub·facebook_gaming_tab·feed·facebook_web·game_search·group·featured = Meta 디스커버리 · game_switch·CROSS payload = 자체 CP · shareable_link·admin_message·bot_cta·notification·story = 자체 공유·메시지. (Meta Gaming Insights 문서 기준)<br>
+<b>소스</b> · game-log-359704.raw.solitaire_city_journey · 정식 유입 시작 7/10.
+</div>
+</div>
+<script>
+const P={"dates": ["2026-07-10", "2026-07-11", "2026-07-12", "2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17", "2026-07-18", "2026-07-19", "2026-07-20", "2026-07-21"], "seg_series": {"meta_ingame": [0, 0, 0, 33, 115, 165, 101, 86, 191, 798, 1371, 582], "meta_discovery": [78, 506, 781, 280, 220, 146, 145, 152, 148, 135, 138, 55], "own_cp": [0, 0, 0, 219, 486, 446, 356, 417, 349, 380, 332, 78], "own_share": [0, 0, 0, 20, 51, 42, 41, 33, 28, 37, 37, 22]}, "segs": [{"key": "meta_ingame", "label": "Meta 인게임메뉴", "control": "meta", "color": "#DC2626", "n": 2860, "d1": 3.0, "d1_recent": 2.5, "early_mix": 0.0, "late_mix": 69.4, "early_avg": 0, "late_avg": 917}, {"key": "meta_discovery", "label": "Meta 디스커버리", "control": "meta", "color": "#2563EB", "n": 2729, "d1": 18.7, "d1_recent": 19.2, "early_mix": 100.0, "late_mix": 8.3, "early_avg": 455, "late_avg": 109}, {"key": "own_cp", "label": "자체 크로스프로모", "control": "self", "color": "#059669", "n": 2985, "d1": 14.2, "d1_recent": 12.2, "early_mix": 0.0, "late_mix": 19.9, "early_avg": 0, "late_avg": 263}, {"key": "own_share", "label": "자체 공유·메시지", "control": "self", "color": "#D97706", "n": 289, "d1": 9.0, "d1_recent": 8.9, "early_mix": 0.0, "late_mix": 2.4, "early_avg": 0, "late_avg": 32}], "seg_meta": {"meta_ingame": {"label": "Meta 인게임메뉴", "control": "meta", "color": "#DC2626"}, "meta_discovery": {"label": "Meta 디스커버리", "control": "meta", "color": "#2563EB"}, "own_cp": {"label": "자체 크로스프로모", "control": "self", "color": "#059669"}, "own_share": {"label": "자체 공유·메시지", "control": "self", "color": "#D97706"}}, "entries": [{"entry": "in_game_menu", "is_cross": false, "seg": "meta_ingame", "n": 2860, "d1": 3.0}, {"entry": "(featured/직접)", "is_cross": false, "seg": "meta_discovery", "n": 1532, "d1": 16.8}, {"entry": "web_games_hub", "is_cross": false, "seg": "meta_discovery", "n": 494, "d1": 33.8}, {"entry": "facebook_gaming_tab", "is_cross": false, "seg": "meta_discovery", "n": 317, "d1": 13.6}, {"entry": "feed", "is_cross": false, "seg": "meta_discovery", "n": 249, "d1": 6.8}, {"entry": "shareable_link", "is_cross": false, "seg": "own_share", "n": 174, "d1": 4.0}, {"entry": "notification", "is_cross": false, "seg": "own_share", "n": 62, "d1": 4.8}, {"entry": "facebook_web", "is_cross": false, "seg": "meta_discovery", "n": 44, "d1": 34.1}, {"entry": "other", "is_cross": false, "seg": "meta_discovery", "n": 43, "d1": 14.0}, {"entry": "admin_message", "is_cross": false, "seg": "own_share", "n": 42, "d1": 28.6}, {"entry": "game_switch", "is_cross": false, "seg": "own_cp", "n": 41, "d1": 19.5}, {"entry": "group", "is_cross": false, "seg": "meta_discovery", "n": 32, "d1": 6.2}], "country": [{"c": "US", "n": 1607, "d1": 17.8, "em": 9.7, "lm": 13.7}, {"c": "PH", "n": 938, "d1": 5.2, "em": 10.0, "lm": 13.7}, {"c": "IN", "n": 466, "d1": 3.6, "em": 5.3, "lm": 5.3}, {"c": "BR", "n": 435, "d1": 4.6, "em": 6.7, "lm": 8.6}, {"c": "FR", "n": 383, "d1": 25.8, "em": 3.5, "lm": 2.4}, {"c": "CA", "n": 339, "d1": 22.4, "em": 2.4, "lm": 2.4}, {"c": "VN", "n": 302, "d1": 6.3, "em": 7.3, "lm": 2.6}, {"c": "DE", "n": 264, "d1": 17.4, "em": 2.2, "lm": 1.8}, {"c": "ZA", "n": 253, "d1": 3.2, "em": 2.3, "lm": 4.4}, {"c": "GB", "n": 237, "d1": 19.0, "em": 1.6, "lm": 2.2}, {"c": "BD", "n": 203, "d1": 2.5, "em": 1.8, "lm": 2.8}, {"c": "TH", "n": 154, "d1": 4.5, "em": 3.1, "lm": 1.1}, {"c": "MX", "n": 150, "d1": 5.3, "em": 1.8, "lm": 2.2}, {"c": "PK", "n": 134, "d1": 8.2, "em": 0.7, "lm": 1.7}], "cp_sources": [{"source": "더 퍼즐", "n": 1131, "d1": 10.3, "switch_n": 87, "switch_d1": 21.8, "menu_n": 1044, "menu_d1": 9.4}, {"source": "코인 매치", "n": 911, "d1": 13.7, "switch_n": 129, "switch_d1": 26.4, "menu_n": 781, "menu_d1": 11.7}, {"source": "마종", "n": 511, "d1": 16.0, "switch_n": 172, "switch_d1": 19.8, "menu_n": 339, "menu_d1": 14.2}, {"source": "코지 타일즈", "n": 376, "d1": 23.9, "switch_n": 127, "switch_d1": 29.1, "menu_n": 249, "menu_d1": 21.3}], "daily": [{"date": "2026-07-10", "segs": {"meta_ingame": 0, "meta_discovery": 78, "own_cp": 0, "own_share": 0}, "total": 78, "meta_ingame_pct": 0.0, "d1": 21.8, "d1_pending": false}, {"date": "2026-07-11", "segs": {"meta_ingame": 0, "meta_discovery": 506, "own_cp": 0, "own_share": 0}, "total": 506, "meta_ingame_pct": 0.0, "d1": 16.8, "d1_pending": false}, {"date": "2026-07-12", "segs": {"meta_ingame": 0, "meta_discovery": 781, "own_cp": 0, "own_share": 0}, "total": 781, "meta_ingame_pct": 0.0, "d1": 14.2, "d1_pending": false}, {"date": "2026-07-13", "segs": {"meta_ingame": 33, "meta_discovery": 280, "own_cp": 219, "own_share": 20}, "total": 552, "meta_ingame_pct": 6.0, "d1": 23.4, "d1_pending": false}, {"date": "2026-07-14", "segs": {"meta_ingame": 115, "meta_discovery": 220, "own_cp": 486, "own_share": 51}, "total": 872, "meta_ingame_pct": 13.2, "d1": 17.3, "d1_pending": false}, {"date": "2026-07-15", "segs": {"meta_ingame": 165, "meta_discovery": 146, "own_cp": 446, "own_share": 42}, "total": 799, "meta_ingame_pct": 20.7, "d1": 14.4, "d1_pending": false}, {"date": "2026-07-16", "segs": {"meta_ingame": 101, "meta_discovery": 145, "own_cp": 356, "own_share": 41}, "total": 643, "meta_ingame_pct": 15.7, "d1": 11.4, "d1_pending": false}, {"date": "2026-07-17", "segs": {"meta_ingame": 86, "meta_discovery": 152, "own_cp": 417, "own_share": 33}, "total": 688, "meta_ingame_pct": 12.5, "d1": 16.0, "d1_pending": false}, {"date": "2026-07-18", "segs": {"meta_ingame": 191, "meta_discovery": 148, "own_cp": 349, "own_share": 28}, "total": 716, "meta_ingame_pct": 26.7, "d1": 10.2, "d1_pending": false}, {"date": "2026-07-19", "segs": {"meta_ingame": 798, "meta_discovery": 135, "own_cp": 380, "own_share": 37}, "total": 1350, "meta_ingame_pct": 59.1, "d1": 8.6, "d1_pending": false}, {"date": "2026-07-20", "segs": {"meta_ingame": 1371, "meta_discovery": 138, "own_cp": 332, "own_share": 37}, "total": 1878, "meta_ingame_pct": 73.0, "d1": 3.5, "d1_pending": true}, {"date": "2026-07-21", "segs": {"meta_ingame": 582, "meta_discovery": 55, "own_cp": 78, "own_share": 22}, "total": 737, "meta_ingame_pct": 79.0, "d1": 0.0, "d1_pending": true}], "country_seg": [{"c": "US", "total": 1607, "d1": 17.8, "segs": {"meta_ingame": {"n": 264, "mix": 16, "d1": 9.8}, "meta_discovery": {"n": 379, "mix": 24, "d1": 25.9}, "own_cp": {"n": 857, "mix": 53, "d1": 17.6}, "own_share": {"n": 107, "mix": 7, "d1": 10.3}}}, {"c": "PH", "total": 938, "d1": 5.2, "segs": {"meta_ingame": {"n": 509, "mix": 54, "d1": 2.2}, "meta_discovery": {"n": 170, "mix": 18, "d1": 4.7}, "own_cp": {"n": 248, "mix": 26, "d1": 11.3}, "own_share": {"n": 11, "mix": 1, "d1": 18.2}}}, {"c": "IN", "total": 466, "d1": 3.6, "segs": {"meta_ingame": {"n": 191, "mix": 41, "d1": 2.6}, "meta_discovery": {"n": 113, "mix": 24, "d1": 4.4}, "own_cp": {"n": 153, "mix": 33, "d1": 4.6}, "own_share": {"n": 9, "mix": 2, "d1": 0.0}}}, {"c": "BR", "total": 435, "d1": 4.6, "segs": {"meta_ingame": {"n": 265, "mix": 61, "d1": 1.1}, "meta_discovery": {"n": 132, "mix": 30, "d1": 12.1}, "own_cp": {"n": 31, "mix": 7, "d1": 3.2}, "own_share": {"n": 7, "mix": 2, "d1": 0.0}}}, {"c": "FR", "total": 383, "d1": 25.8, "segs": {"meta_ingame": {"n": 21, "mix": 5, "d1": 19.0}, "meta_discovery": {"n": 153, "mix": 40, "d1": 38.6}, "own_cp": {"n": 200, "mix": 52, "d1": 17.5}, "own_share": {"n": 9, "mix": 2, "d1": 11.1}}}, {"c": "CA", "total": 339, "d1": 22.4, "segs": {"meta_ingame": {"n": 34, "mix": 10, "d1": 11.8}, "meta_discovery": {"n": 107, "mix": 32, "d1": 28.0}, "own_cp": {"n": 181, "mix": 53, "d1": 22.1}, "own_share": {"n": 17, "mix": 5, "d1": 11.8}}}, {"c": "VN", "total": 302, "d1": 6.3, "segs": {"meta_ingame": {"n": 98, "mix": 32, "d1": 3.1}, "meta_discovery": {"n": 183, "mix": 61, "d1": 7.1}, "own_cp": {"n": 16, "mix": 5, "d1": 12.5}, "own_share": {"n": 5, "mix": 2, "d1": 20.0}}}, {"c": "DE", "total": 264, "d1": 17.4, "segs": {"meta_ingame": {"n": 10, "mix": 4, "d1": 10.0}, "meta_discovery": {"n": 81, "mix": 31, "d1": 25.9}, "own_cp": {"n": 169, "mix": 64, "d1": 13.6}, "own_share": {"n": 4, "mix": 2, "d1": 25.0}}}, {"c": "ZA", "total": 253, "d1": 3.2, "segs": {"meta_ingame": {"n": 158, "mix": 62, "d1": 0.6}, "meta_discovery": {"n": 48, "mix": 19, "d1": 8.3}, "own_cp": {"n": 33, "mix": 13, "d1": 6.1}, "own_share": {"n": 14, "mix": 6, "d1": 7.1}}}, {"c": "GB", "total": 237, "d1": 19.0, "segs": {"meta_ingame": {"n": 24, "mix": 10, "d1": 0.0}, "meta_discovery": {"n": 50, "mix": 21, "d1": 26.0}, "own_cp": {"n": 148, "mix": 62, "d1": 20.9}, "own_share": {"n": 15, "mix": 6, "d1": 6.7}}}, {"c": "BD", "total": 203, "d1": 2.5, "segs": {"meta_ingame": {"n": 80, "mix": 39, "d1": 1.2}, "meta_discovery": {"n": 42, "mix": 21, "d1": 2.4}, "own_cp": {"n": 75, "mix": 37, "d1": 4.0}, "own_share": {"n": 6, "mix": 3, "d1": 0.0}}}, {"c": "TH", "total": 154, "d1": 4.5, "segs": {"meta_ingame": {"n": 34, "mix": 22, "d1": 0.0}, "meta_discovery": {"n": 97, "mix": 63, "d1": 7.2}, "own_cp": {"n": 18, "mix": 12, "d1": 0.0}, "own_share": {"n": 5, "mix": 3, "d1": 0.0}}}], "cp_geo_leak": {"sources": [{"source": "더 퍼즐", "t1": 137, "nont1": 450, "tot": 587, "nont1_pct": 77, "status": "leak"}, {"source": "코인 매치", "t1": 275, "nont1": 226, "tot": 501, "nont1_pct": 45, "status": "leak"}, {"source": "마종", "t1": 254, "nont1": 12, "tot": 266, "nont1_pct": 5, "status": "ok"}, {"source": "코지 타일즈", "t1": 174, "nont1": 0, "tot": 174, "nont1_pct": 0, "status": "ok"}], "leak_countries": [{"c": "PH", "n": 127}, {"c": "IN", "n": 65}, {"c": "BD", "n": 40}, {"c": "PK", "n": 36}, {"c": "NP", "n": 22}, {"c": "AE", "n": 19}, {"c": "BR", "n": 18}, {"c": "ZA", "n": 18}, {"c": "EG", "n": 16}, {"c": "MY", "n": 15}], "t1_list": ["US", "CA", "GB", "FR", "DE", "AU"], "fix_builds": [{"source": "더 퍼즐", "build": "1965", "at": "2026-07-20 16:00", "date": "2026-07-20"}, {"source": "코인 매치", "build": "3360", "at": "2026-07-20 16:00", "date": "2026-07-20"}], "trend": {"더 퍼즐": [{"date": "2026-07-13", "nont1_pct": 80, "nont1": 66, "tot": 82}, {"date": "2026-07-14", "nont1_pct": 78, "nont1": 122, "tot": 157}, {"date": "2026-07-15", "nont1_pct": 77, "nont1": 126, "tot": 164}, {"date": "2026-07-16", "nont1_pct": 78, "nont1": 124, "tot": 160}, {"date": "2026-07-17", "nont1_pct": 82, "nont1": 143, "tot": 174}, {"date": "2026-07-18", "nont1_pct": 75, "nont1": 98, "tot": 130}, {"date": "2026-07-19", "nont1_pct": 84, "nont1": 127, "tot": 152}, {"date": "2026-07-20", "nont1_pct": 72, "nont1": 81, "tot": 112}, {"date": "2026-07-21", "nont1_pct": 5, "nont1": 1, "tot": 19}], "코인 매치": [{"date": "2026-07-13", "nont1_pct": 55, "nont1": 35, "tot": 64}, {"date": "2026-07-14", "nont1_pct": 55, "nont1": 74, "tot": 135}, {"date": "2026-07-15", "nont1_pct": 60, "nont1": 78, "tot": 130}, {"date": "2026-07-16", "nont1_pct": 52, "nont1": 53, "tot": 102}, {"date": "2026-07-17", "nont1_pct": 52, "nont1": 69, "tot": 133}, {"date": "2026-07-18", "nont1_pct": 49, "nont1": 59, "tot": 121}, {"date": "2026-07-19", "nont1_pct": 48, "nont1": 52, "tot": 108}, {"date": "2026-07-20", "nont1_pct": 37, "nont1": 44, "tot": 118}, {"date": "2026-07-21", "nont1_pct": 10, "nont1": 2, "tot": 21}]}, "fix_split": {"코인 매치": {"before": {"nont1": 42, "tot": 98, "pct": 43}, "after": {"nont1": 4, "tot": 41, "pct": 10}}, "더 퍼즐": {"after": {"nont1": 2, "tot": 28, "pct": 7}, "before": {"nont1": 80, "tot": 103, "pct": 78}}}, "fix_ret": {"더 퍼즐": {"after": {"n": 9, "ret": 3, "d1": 33.3}, "before": {"n": 883, "ret": 85, "d1": 9.6}}, "코인 매치": {"before": {"n": 692, "ret": 87, "d1": 12.6}, "after": {"n": 20, "ret": 4, "d1": 20.0}}}}, "blended_full": 11.8, "blended_recent": 7.9, "early_avg_total": 455, "late_avg_total": 1322, "meta_ingame_late": 69.4, "d0": "2026-07-10", "today": "2026-07-21"};
+const SM=P.seg_meta, KEYS=Object.keys(SM);
+const fmt=n=>n==null?'':Number(n).toLocaleString('en-US');
+const d1col=v=>v==null?'#c2c8d0':v>=18?'#059669':v>=12?'#2563EB':v>=7?'#D97706':'#DC2626';
+const mmdd=iso=>{const p=iso.split('-');return (+p[1])+'/'+(+p[2]);};
+
+// KPI
+document.getElementById('kpi').innerHTML=
+ '<div><div class="v">'+P.blended_full+'% <span style="font-size:13px;color:#DC2626">→ '+P.blended_recent+'%</span></div><div class="k">블렌디드 D1 (전체 → 최근 4일)</div></div>'+
+ '<div><div class="v" style="color:#DC2626">'+P.meta_ingame_late+'%</div><div class="k">최근 유입 중 Meta 인게임메뉴 비중 (컨트롤 밖)</div></div>'+
+ '<div><div class="v">'+fmt(P.early_avg_total)+' → '+fmt(P.late_avg_total)+'</div><div class="k">일평균 NRU (초기 → 최근) · 볼륨은 증가</div></div>';
+
+// 세그 테이블
+let sh='<table><thead><tr><th class="l">세그먼트</th><th>컨트롤</th><th>누적 신규</th><th>D1(전체)</th><th>D1(최근4일)</th><th>초기 믹스</th><th>최근 믹스</th></tr></thead><tbody>';
+for(const s of P.segs){
+ sh+='<tr><td class="l" style="font-weight:700;color:'+s.color+'">'+s.label+'</td>'+
+  '<td><span class="tag '+s.control+'">'+(s.control==='meta'?'Meta':'자체')+'</span></td>'+
+  '<td class="num">'+fmt(s.n)+'</td>'+
+  '<td><span class="d1pill" style="background:'+d1col(s.d1)+'">'+(s.d1==null?'-':s.d1+'%')+'</span></td>'+
+  '<td><span class="d1pill" style="background:'+d1col(s.d1_recent)+'">'+(s.d1_recent==null?'-':s.d1_recent+'%')+'</span></td>'+
+  '<td class="num">'+s.early_mix+'%</td>'+
+  '<td class="num" style="font-weight:700">'+s.late_mix+'% <small style="color:#98a2b0">'+fmt(s.late_avg)+'/일</small></td></tr>';
+}
+document.getElementById('segtbl').innerHTML=sh+'</tbody></table>';
+
+// disc-drop 텍스트
+const disc=P.segs.find(s=>s.key==='meta_discovery');
+document.getElementById('disc-drop').textContent='일평균 '+fmt(disc.early_avg)+'→'+fmt(disc.late_avg)+'명';
+
+// stacked bar chart
+new Chart(document.getElementById('stack'),{type:'bar',
+ data:{labels:P.dates.map(mmdd),datasets:KEYS.map(k=>({
+   label:SM[k].label,data:P.seg_series[k],backgroundColor:SM[k].color,stack:'s'}))},
+ options:{responsive:true,plugins:{legend:{position:'bottom',labels:{boxWidth:13,font:{size:11.5}}}},
+  scales:{x:{stacked:true,title:{display:true,text:'날짜'}},y:{stacked:true,beginAtZero:true,title:{display:true,text:'신규(NRU)'}}}}});
+
+// 일별 유입 상세 테이블 — Meta 인게임메뉴 급증일(입구 개방) 하이라이트
+(function(){const D=P.daily||[];
+ // 인게임메뉴가 전일 대비 2배+ & +150 이상 뛴 첫 날 = 입구 개방일
+ let gate=null, gapMax=0;
+ for(let i=1;i<D.length;i++){const p=D[i-1].segs.meta_ingame, c=D[i].segs.meta_ingame;
+   if(c>=p*2 && c-p>=150 && c-p>gapMax){gapMax=c-p;gate=D[i];}}
+ let h='<table><thead><tr><th class="l">날짜</th>'+
+   KEYS.map(k=>'<th style="color:'+SM[k].color+'">'+SM[k].label.replace('Meta ','').replace('자체 ','')+'</th>').join('')+
+   '<th>총 NRU</th><th>Meta메뉴 비중</th><th>당일 D1</th></tr></thead><tbody>';
+ for(const r of D){const isGate=gate&&r.date===gate.date;
+   h+='<tr'+(isGate?' style="background:#FEF2F2"':'')+'><td class="l" style="font-weight:700">'+mmdd(r.date)+
+     (isGate?' <span class="tag" style="background:#DC2626">🚪 Meta 입구 개방</span>':'')+'</td>'+
+     KEYS.map(k=>{const v=r.segs[k];const strong=(k==='meta_ingame'&&isGate)?' style="font-weight:800;color:#DC2626"':'';
+       return '<td class="num"'+strong+'>'+fmt(v)+'</td>';}).join('')+
+     '<td class="num" style="font-weight:700">'+fmt(r.total)+'</td>'+
+     '<td class="num" style="color:'+(r.meta_ingame_pct>=40?'#DC2626':'#6b7684')+';font-weight:'+(r.meta_ingame_pct>=40?'800':'400')+'">'+r.meta_ingame_pct+'%</td>'+
+     '<td>'+(r.d1==null?'<span style="color:#c2c8d0">-</span>':'<span class="d1pill" style="background:'+d1col(r.d1)+';opacity:'+(r.d1_pending?'.5':'1')+'">'+r.d1+'%'+(r.d1_pending?'*':'')+'</span>')+'</td></tr>';
+ }
+ document.getElementById('dailytbl').innerHTML=h+'</tbody></table>';
+ // 입구 개방 서술
+ if(gate){const gi=D.findIndex(x=>x.date===gate.date);const prev=D[gi-1];
+   document.getElementById('gate-note').innerHTML='<b style="color:#DC2626">🚪 '+mmdd(gate.date)+' Meta가 인게임메뉴 입구를 크게 열었음</b> — 순수 Meta(payload 없음) 인게임메뉴 NRU '+fmt(prev.segs.meta_ingame)+'→<b>'+fmt(gate.segs.meta_ingame)+'</b>('+(gate.segs.meta_ingame/Math.max(1,prev.segs.meta_ingame)).toFixed(1)+'배), 총 유입 '+fmt(prev.total)+'→'+fmt(gate.total)+'. 우리 CP 크리에이티브 노출분·자체 채널은 평탄 → 유입 급증은 <b>전적으로 Meta 자체 배포</b>(진입 지면이 Meta 소유). 우리 컨트롤 밖이라 물량은 Meta가 정함 · D1(*=익일 미완 잠정)은 저의도 유입으로 하락. 볼륨 자체는 무료 리치라 긍정적이나 <b>전환(로딩·FTUE)이 유일 레버</b>.';
+ } else { document.getElementById('gate-note').textContent='인게임메뉴 급증(입구 개방) 패턴 미검출 — 점진 증가.'; }
+})();
+
+// 엔트리 테이블
+let eh='<table><thead><tr><th class="l">엔트리포인트</th><th>세그먼트</th><th>코호트 n</th><th>D1</th><th style="width:36%"></th></tr></thead><tbody>';
+const mx=Math.max.apply(null,P.entries.map(e=>e.n));
+for(const e of P.entries){const ctl=SM[e.seg].control;
+ eh+='<tr><td class="l" style="font-weight:600">'+e.entry+(e.is_cross?' <small style="color:#059669;font-weight:700">+우리CP</small>':'')+'</td>'+
+  '<td><span class="tag '+ctl+'">'+SM[e.seg].label+'</span></td>'+
+  '<td class="num">'+fmt(e.n)+'</td>'+
+  '<td><span class="d1pill" style="background:'+d1col(e.d1)+'">'+e.d1+'%</span></td>'+
+  '<td style="padding:6px 10px"><div class="bar" style="background:'+SM[e.seg].color+';width:'+Math.round(e.n/mx*100)+'%"></div></td></tr>';
+}
+document.getElementById('entrytbl').innerHTML=eh+'</tbody></table>';
+
+// CP 지오 누수 → 수정빌드 반영 확인 (누수 5일 스냅샷 표는 지연·오해소지로 제거 · 패치 전후 + 리텐션으로 판단)
+(function(){const G=P.cp_geo_leak||{};
+ const FB=G.fix_builds||[], TR=G.trend||{}, FRET=G.fix_ret||{};
+ const fbmap={}; for(const f of FB){fbmap[f.source]=f;}
+ const watch=Object.keys(TR);
+ // 패치 시각 컷 전후 split
+ const FSP=G.fix_split||{};
+ if(Object.keys(FSP).length){
+   const col=p=>p>=40?'#DC2626':p>=15?'#D97706':'#059669';
+   let s='<div class="chart" style="margin-bottom:8px"><h2 style="margin:0 0 6px">⏱ 패치 시각 컷 전후 비T1 유입 <span class="t">배포 시각(log_time KST) 기준 갈라봄 · 後가 0으로 수렴하면 제한 반영 · 배포 직후는 표본 작음(구빌드 유저 잔존)</span></h2>';
+   s+='<table><thead><tr><th class="l">소스</th><th>패치 시각</th><th>구간</th><th>비T1</th><th>전체</th><th>비T1%</th><th style="width:24%"></th></tr></thead><tbody>';
+   for(const f of FB){const d=FSP[f.source]; if(!d)continue;
+     for(const ph of ['before','after']){const x=d[ph]; if(!x)continue;
+       const isA=ph==='after';
+       s+='<tr'+(isA?' style="background:#f4f6f9"':'')+'>'+
+         (ph==='before'?'<td class="l" rowspan="'+(d.after?2:1)+'" style="font-weight:700;vertical-align:middle">'+f.source+' <span class="t">v'+f.build+'</span></td><td rowspan="'+(d.after?2:1)+'" class="num" style="vertical-align:middle">'+f.at.slice(11)+'</td>':'')+
+         '<td class="l">'+(isA?'<b>패치後 ▶</b>':'패치前')+'</td>'+
+         '<td class="num">'+fmt(x.nont1)+'</td><td class="num">'+fmt(x.tot)+'</td>'+
+         '<td class="num" style="font-weight:800;color:'+col(x.pct)+'">'+x.pct+'%</td>'+
+         '<td style="padding:6px 10px"><div style="height:12px;border-radius:3px;background:linear-gradient(90deg,#059669 '+(100-x.pct)+'%,#DC2626 '+(100-x.pct)+'%)"></div></td></tr>';
+     }}
+   s+='</tbody></table>';
+   // ★패치 후 코호트 D1 리텐션 — 끄냐 유지냐의 실제 판단(누수차단 ≠ 리텐션). d1col 재사용.
+   if(Object.keys(FRET).length){
+     s+='<h2 style="margin:14px 0 6px;font-size:14px">🎯 패치 후 코호트 D1 리텐션 <span class="t">패치 前(5일 baseline) vs 後 · D1완료분만 · 남은 유저가 붙는지 = 유지/끄기 판단 근거 · <b style="color:#DC2626">※後 표본 적음, 며칠 누적 후 확정</b></span></h2>';
+     s+='<table><thead><tr><th class="l">소스</th><th>패치前 n</th><th>패치前 D1</th><th>패치後 n</th><th>패치後 D1</th><th>Δ</th><th>판단</th></tr></thead><tbody>';
+     for(const f of FB){const r=FRET[f.source]; if(!r)continue;
+       const b=r.before||{}, a=r.after||{};
+       const dd=(a.d1!=null&&b.d1!=null)?(a.d1-b.d1):null;
+       let jl,jc;
+       if(!a.n||a.n<30){jl='표본 더 필요(n='+(a.n||0)+')';jc='#6b7684';}
+       else if(a.d1>=13){jl='✅ 유지 — 리텐션 양호';jc='#059669';}
+       else if(dd!=null&&dd>=2){jl='◐ 유지·개선세';jc='#059669';}
+       else if(a.d1>=8){jl='◑ 유지·관찰';jc='#D97706';}
+       else{jl='⚠ 저조 — PROD·소스 점검';jc='#DC2626';}
+       s+='<tr><td class="l" style="font-weight:700">'+f.source+'</td>'+
+         '<td class="num">'+fmt(b.n||0)+'</td><td class="num" style="color:'+d1col(b.d1||0)+';font-weight:700">'+(b.d1!=null?b.d1+'%':'-')+'</td>'+
+         '<td class="num">'+fmt(a.n||0)+'</td><td class="num" style="color:'+d1col(a.d1||0)+';font-weight:800">'+(a.d1!=null?a.d1+'%':'-')+'</td>'+
+         '<td class="num" style="font-weight:700;color:'+(dd==null?'#9aa':dd>=0?'#059669':'#DC2626')+'">'+(dd==null?'-':(dd>=0?'+':'')+dd.toFixed(1)+'%p')+'</td>'+
+         '<td><span style="font-size:11px;font-weight:700;color:'+jc+'">'+jl+'</span></td></tr>';}
+     s+='</tbody></table>';
+   }
+   // 비T1 반응 판정(참고)
+   const verds=[];
+   for(const f of FB){const d=FSP[f.source]; if(!d||!d.after)continue;
+     const a=d.after, b=d.before||{pct:null}; let lab,cl;
+     if(a.tot<15){lab='표본부족(n='+a.tot+')';cl='#6b7684';}
+     else if(a.pct<15){lab='✅ 누수차단 확인(비T1 '+a.pct+'%)';cl='#059669';}
+     else if(b.pct!=null&&a.pct<b.pct-15){lab='◐ 하락 중(비T1 '+b.pct+'→'+a.pct+'%)';cl='#D97706';}
+     else{lab='❌ 미반응(비T1 여전 '+a.pct+'%)';cl='#DC2626';}
+     verds.push('<b style="color:'+cl+'">'+f.source+' '+lab+'</b>');}
+   s+='<div class="note" style="margin-top:8px"><b style="color:#DC2626">⚠ 현재 패치後 코호트 표본 적음</b> — 後 D1은 \'7/20 16시 이후 & D1 완료분\'만이라 아직 수십 명 수준(위 표 n 참고). 방향은 참고되나 <b>수치 확정은 며칠 더 누적 후</b>(매 정시 자동 갱신되며 n 커짐). '+
+     '<b>비T1 누수차단</b>(참고): '+verds.join(' · ')+
+     '. <b>끄냐/유지냐는 위 D1 리텐션으로 판단</b> — 누수(저품질 비T1)가 막혔어도 남는 T1 유저가 안 붙으면 소스 자체 문제. 패치 前 baseline은 누수 오염(저D1 비T1 포함)이라 낮게 나옴 → 後 D1이 前보다 오르거나 마종·코지대(13%+)면 유지, 계속 저조하면 소스 PROD 점검.</div></div>';
+   document.getElementById('cpgeo-trend').innerHTML=s;
+ }
+ if(watch.length){
+   const mmdd=d=>d.slice(5).replace('-','/');
+   let t='<div class="chart"><h2 style="margin:0 0 4px">🔧 수정 빌드 전후 비T1 유입 추이 <span class="t">감시 소스 일별 · 세로선=수정 빌드 배포일 · 빌드 전파되며 비T1→0 수렴 확인</span></h2>';
+   t+='<div style="font-size:11.5px;color:#7a6a3d;margin:2px 0 10px">개입(소스 빌드에 T1 제한 탑재): '+FB.map(f=>'<b>'+f.source+'</b> v'+f.build+' ('+f.at+')').join(' · ')+'</div>';
+   t+='<table><thead><tr><th class="l">소스</th>';
+   const alld=[...new Set([].concat(...watch.map(w=>TR[w].map(x=>x.date))))].sort();
+   for(const d of alld){t+='<th style="font-size:10px">'+mmdd(d)+'</th>';}
+   t+='</tr></thead><tbody>';
+   for(const w of watch){const byd={}; for(const x of TR[w]){byd[x.date]=x;} const fx=fbmap[w];
+     t+='<tr><td class="l" style="font-weight:700">'+w+(fx?' <span class="t">v'+fx.build+'</span>':'')+'</td>';
+     for(const d of alld){const x=byd[d]; const isfix=fx&&d===fx.date;
+       const cell=x?('<b style="color:'+(x.nont1_pct>=40?'#DC2626':x.nont1_pct>=15?'#D97706':'#059669')+'">'+x.nont1_pct+'%</b><br><span style="font-size:9px;color:#9aa">'+x.nont1+'/'+x.tot+'</span>'):'<span style="color:#ccc">·</span>';
+       t+='<td class="num"'+(isfix?' style="border-left:2px solid #1f2d3d;background:#f4f6f9"':'')+'>'+cell+'</td>';}
+     t+='</tr>';}
+   t+='</tbody></table><div class="note" style="margin-top:8px">세로 굵은선 = 해당 소스 수정 빌드(더퍼즐 v1965·코인매치 v3360) 배포일. <b>T1 제한은 소스 게임 빌드에 실려 유저가 신빌드로 갱신되며 점진 적용</b> → 날짜 컷(익일 뚝)이 아니라 <b>빌드 전파 곡선을 따라 비T1이 며칠에 걸쳐 0으로 수렴</b>해야 정상. 목표: <b style="color:#059669">비T1 유입 ≈ 0</b>(마종·코지처럼). 수렴 안 하고 계속 높으면 빌드에 제한 미탑재/설정 누락이니 재확인. ※솔리테어 유입 로그엔 소스 빌드번호가 없음(payload=social·referrer만) → 빌드별 정밀 판정은 더퍼즐·코인매치 자체 로그 필요, 솔측 관측치는 비T1 절대유입 수렴.</div></div>';
+   document.getElementById('cpgeo-trend').innerHTML+=t;
+ }
+})();
+
+// CP 소스별 효율
+(function(){const cps=P.cp_sources||[];
+ const tot=cps.reduce((a,b)=>a+b.n,0)||1, wd1=cps.reduce((a,b)=>a+(b.d1||0)*b.n,0)/tot;
+ let h='<table><thead><tr><th class="l">CP 소스(자사 게임)</th><th>누적 신규</th><th>D1</th>'+
+   '<th>switch 지면<br><small style="font-weight:400">우리 스위처</small></th><th>menu 지면<br><small style="font-weight:400">Meta 슬롯</small></th><th>판단</th></tr></thead><tbody>';
+ for(const x of cps){
+   const surf=(n,d)=>n?fmt(n)+' <small style="color:#98a2b0">D1 '+(d==null?'-':d+'%')+'</small>':'<span style="color:#c2c8d0">—</span>';
+   const kill = x.d1!=null && x.d1 < wd1*0.8 && x.n>=300;
+   const keep = x.d1!=null && x.d1 >= wd1*1.10;
+   const verdict = kill?'<span class="tag" style="background:#DC2626">끌 후보</span>'
+     : keep?'<span class="tag" style="background:#059669">유지·확대</span>'
+     : '<span class="tag" style="background:#94A3B8">유지</span>';
+   h+='<tr><td class="l" style="font-weight:700">'+x.source+'</td>'+
+    '<td class="num">'+fmt(x.n)+'</td>'+
+    '<td><span class="d1pill" style="background:'+d1col(x.d1)+'">'+(x.d1==null?'-':x.d1+'%')+'</span></td>'+
+    '<td class="num">'+surf(x.switch_n,x.switch_d1)+'</td>'+
+    '<td class="num">'+surf(x.menu_n,x.menu_d1)+'</td>'+
+    '<td>'+verdict+'</td></tr>';
+ }
+ h+='<tr style="background:#f6f8fa"><td class="l" style="font-weight:800">CP 전체(가중평균)</td><td class="num" style="font-weight:800">'+fmt(tot)+'</td>'+
+   '<td colspan="4" class="l" style="color:#6b7684">볼륨 가중 D1 <b>'+wd1.toFixed(1)+'%</b> — 이 선의 0.8배 미만 &amp; 볼륨 300+ = 끌 후보 · 1.1배 이상 = 유지·확대</td></tr>';
+ document.getElementById('cptbl').innerHTML=h+'</tbody></table>';})();
+
+// 국가 D1
+let ch='<table><thead><tr><th class="l">국가</th><th>코호트 n</th><th>D1</th></tr></thead><tbody>';
+for(const x of P.country){
+ ch+='<tr><td class="l" style="font-weight:700">'+x.c+'</td><td class="num">'+fmt(x.n)+'</td>'+
+  '<td><span class="d1pill" style="background:'+d1col(x.d1)+'">'+x.d1+'%</span></td></tr>';}
+document.getElementById('ctrytbl').innerHTML=ch+'</tbody></table>';
+
+// 국가 믹스
+let cm='<table><thead><tr><th class="l">국가</th><th>초기%</th><th>최근%</th><th>변화</th></tr></thead><tbody>';
+for(const x of [...P.country].sort((a,b)=>b.lm-a.lm)){const dz=(x.lm-x.em).toFixed(1);
+ cm+='<tr><td class="l" style="font-weight:700">'+x.c+'</td><td class="num">'+x.em+'%</td><td class="num">'+x.lm+'%</td>'+
+  '<td class="num" style="color:'+(dz>=0?'#059669':'#DC2626')+';font-weight:700">'+(dz>=0?'+':'')+dz+'pp</td></tr>';}
+document.getElementById('ctrymix').innerHTML=cm+'</tbody></table>';
+
+// 국가 × 세그먼트 교차표
+(function(){const CS=P.country_seg||[];if(!CS.length){return;}
+ let h='<table><thead><tr><th class="l">국가</th><th>총 NRU</th><th>블렌디드 D1</th>'+
+   KEYS.map(k=>'<th style="color:'+SM[k].color+'">'+SM[k].label.replace('Meta ','').replace('자체 ','')+'</th>').join('')+'</tr></thead><tbody>';
+ for(const cy of CS){
+   h+='<tr><td class="l" style="font-weight:700">'+cy.c+'</td>'+
+     '<td class="num" style="font-weight:700">'+fmt(cy.total)+'</td>'+
+     '<td><span class="d1pill" style="background:'+d1col(cy.d1)+'">'+cy.d1+'%</span></td>';
+   for(const k of KEYS){const s=cy.segs[k];
+     if(!s.n){h+='<td class="num" style="color:#d5d9e0">·</td>';continue;}
+     // 셀: NRU(믹스%) 위, D1 아래(색). Meta 인게임메뉴 지배(믹스≥40%)면 배경 강조
+     const hot=(k==='meta_ingame'&&s.mix>=40);
+     h+='<td class="num"'+(hot?' style="background:#FEF2F2"':'')+'>'+fmt(s.n)+' <small style="color:#98a2b0">'+s.mix+'%</small>'+
+       '<div style="margin-top:2px"><span style="font-weight:800;font-size:11px;color:'+d1col(s.d1)+'">D1 '+(s.d1==null?'-':s.d1+'%')+'</span></div></td>';
+   }
+   h+='</tr>';
+ }
+ document.getElementById('cseg-tbl').innerHTML=h+'</tbody></table>';
+ // 노트: Meta 인게임메뉴 믹스 상위 저품질 국가 자동 추출
+ const flood=CS.filter(c=>c.segs.meta_ingame.n>=40&&c.segs.meta_ingame.mix>=30)
+   .sort((a,b)=>b.segs.meta_ingame.n-a.segs.meta_ingame.n)
+   .map(c=>c.c+' '+c.segs.meta_ingame.n+'명(D1 '+(c.segs.meta_ingame.d1==null?'-':c.segs.meta_ingame.d1+'%')+')');
+ document.getElementById('cseg-note').innerHTML='<b style="color:#DC2626">Meta 인게임메뉴(게이트) 홍수는 저품질 지오에 집중</b> — '+(flood.join(' · ')||'해당 없음')+
+   '. 같은 Meta 인게임메뉴라도 국가별 D1 편차 큼(예: US vs PH). <b>US·FR·CA·DE</b>는 Meta 디스커버리(고품질)+자체 CP 위주라 건강. 즉 블렌디드 하락은 <b>Meta가 특정 저품질 지오로 물량을 민 결과</b>이지 게임 품질 저하 아님.';
+})();
+</script></body></html>
