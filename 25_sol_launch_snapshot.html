@@ -1,13 +1,37 @@
 <!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>솔리테어 런칭 동기간 비교</title>
 <style>*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Noto Sans KR',sans-serif;background:#EDF0F6;display:flex;flex-direction:column;align-items:center;gap:28px;padding:40px}
+body{font-family:'Noto Sans KR',sans-serif;background:#EDF0F6;display:flex;flex-direction:column;align-items:center;gap:28px;padding:0 40px 40px}
 .card{background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);width:1280px;overflow:hidden}
 .card iframe{width:100%;border:0;border-radius:16px;display:block}
+/* 상단 권역 필터 — 페이지 전체(3개 리포트) 공통 제어 */
+#region-bar{position:sticky;top:0;z-index:100;width:100%;display:flex;justify-content:center;align-items:center;
+  gap:10px;background:rgba(237,240,246,0.92);backdrop-filter:blur(6px);padding:16px 0 14px}
+#region-bar .lbl{font-size:13px;font-weight:800;color:#4A5068;margin-right:2px}
+#region-bar .rgseg{display:inline-flex;border:1.5px solid #CBD5E0;border-radius:22px;overflow:hidden;background:#fff}
+#region-bar .rgseg button{border:0;background:#fff;color:#5a6273;font-size:13.5px;font-weight:800;padding:8px 24px;cursor:pointer;font-family:inherit}
+#region-bar .rgseg button.on{background:#1c2530;color:#fff}
+#region-bar .hint{font-size:11px;color:#98a2b0;margin-left:6px}
 </style>
 <script>
+// 상단 필터 → 3개 iframe(bench/trend/extra)에 권역 postMessage 브로드캐스트.
+// 각 하위 페이지는 message 수신 시 setRegion 실행(임베드 시 자체 필터는 숨김).
+var curRegion = 'all';
+function broadcast(){
+  ['bench','trend','extra'].forEach(function(id){
+    var f=document.getElementById(id);
+    if(f&&f.contentWindow){try{f.contentWindow.postMessage({t:'region',r:curRegion},'*');}catch(e){}}
+  });
+}
+function setRegion(r){
+  curRegion=r;
+  document.querySelectorAll('#region-bar button').forEach(function(b){b.classList.toggle('on',b.dataset.rk===r);});
+  broadcast();
+}
 // iframe 높이 자동 맞춤 — 차트 비동기 렌더 + 버튼/토글 상호작용으로 높이가 바뀌므로
 // ResizeObserver로 콘텐츠 변화를 상시 감지해 재조정(내부 스크롤 완전 방지). setTimeout은 초기 보강.
 function fit(f,fb){
+  // 로드 직후 현재 선택 권역을 해당 iframe에 동기화(뒤늦게 로드된 프레임도 맞춤)
+  [60,300,800,1600].forEach(function(t){setTimeout(function(){try{f.contentWindow.postMessage({t:'region',r:curRegion},'*');}catch(e){}},t);});
   function H(){try{var h=f.contentWindow.document.documentElement.scrollHeight;if(h>50)f.style.height=h+'px';}catch(e){f.style.height=fb;}}
   H();[250,700,1500,3000].forEach(function(t){setTimeout(H,t);});
   try{var d=f.contentWindow.document;new ResizeObserver(H).observe(d.body);
@@ -15,6 +39,16 @@ function fit(f,fb){
 }
 </script>
 </head><body>
+<div id="region-bar">
+  <span class="lbl">권역</span>
+  <div class="rgseg">
+    <button data-rk="all" class="on" onclick="setRegion('all')">전체</button>
+    <button data-rk="na" onclick="setRegion('na')">NA</button>
+    <button data-rk="eu" onclick="setRegion('eu')">EU</button>
+    <button data-rk="asia" onclick="setRegion('asia')">ASIA</button>
+  </div>
+  <span class="hint">3개 리포트(벤치·추세·상세) 전체에 적용 · 벤치도 자기 런칭창 동일 권역</span>
+</div>
 <div class="card"><iframe id="bench" src="sol_bench.html" onload="fit(this,'840px')"></iframe></div>
 <div class="card"><iframe id="trend" src="sol_trend.html" onload="fit(this,'900px')"></iframe></div>
 <div class="card"><iframe id="extra" src="sol_extra.html" onload="fit(this,'2600px')"></iframe></div>
