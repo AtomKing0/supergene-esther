@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:#F4F6FA;color:#1A1D2E}
+.wrap{max-width:1080px;margin:0 auto;padding:22px 26px 48px}
+h1{font-size:20px;font-weight:900}.sub{font-size:12px;color:#9AA0B8;margin:4px 0 18px}
+.card{background:#fff;border:1px solid #E2E6EF;border-radius:14px;padding:20px 22px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,0.04)}
+.card h2{font-size:15px;font-weight:800;color:#3A4056;margin-bottom:4px}.card .d{font-size:11px;color:#9AA0B8;margin-bottom:12px}
+.hl{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.hbox{flex:1;min-width:150px;background:#fff;border:2px solid;border-radius:12px;padding:14px 16px}
+.hbox .t{font-size:11px;font-weight:700;color:#7A7F94}.hbox .v{font-size:24px;font-weight:900;margin:4px 0}.hbox .s{font-size:11px;color:#4A5068;line-height:1.5}
+.cv{position:relative;height:290px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:#9AA0B8;font-weight:700;padding:6px 10px;border-bottom:1px solid #E2E6EF;font-size:11px}
+td{padding:7px 10px;border-bottom:1px solid #F0F2F7}
+.bar{height:11px;border-radius:3px;display:inline-block;vertical-align:middle}
+.note{background:#EEF3FF;border:1px solid #BEE3F8;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:1.7;margin-bottom:16px}</style></head>
+<body><div class="wrap">
+<h1>솔리테어 유저풀 분석 · 전체 유저</h1>
+<p class="sub">Facebook Instant Games · 정식 7/10~07/22 · 복귀=로그인 기준 · 자동 갱신 2026-07-22 11:47</p>
+<div class="note"><b>전체 유저풀</b> — 신규+재방문 합산 관점. ★게임 런칭이 7/10이라 '생애 신규'는 거의 전원 → 의미 있는 축은 <b>세션 관점</b>(그날 첫방문=신규 vs 재방문). 신규 전용 이탈 퍼널은 <b>신규(NRU) 탭</b>.</div>
+<div class="hl">
+<div class="hbox" style="border-color:#93C5FD"><div class="t">기간 유니크 유저</div><div class="v" style="color:#2563EB">10,580</div><div class="s">7/10~ 로그인 유저 전체</div></div>
+<div class="hbox" style="border-color:#FCD34D"><div class="t">재방문(2회+)</div><div class="v" style="color:#D97706">25.2%</div><div class="s">2,666명 · 최소 1회 재로그인</div></div>
+<div class="hbox" style="border-color:#FCA5A5"><div class="t">1회 이탈</div><div class="v" style="color:#DC2626">74.8%</div><div class="s">7,914명 · 로그인 1회로 종료</div></div>
+</div>
+<div class="card"><h2>유저풀 구성 — 일별 신규 vs 재방문</h2>
+<div class="d">각 유저-일을 그날 최소 logincount로 분류(신규=첫날, 재방문=그 외). 누적 막대</div>
+<div class="cv"><canvas id="cComp"></canvas></div></div>
+<div class="card"><h2>세션 깊이 분포 <span style="font-size:11px;font-weight:600;color:#9AA0B8">· 전체 유저 풀 10,580명</span></h2>
+<div class="d">유저별 최대 로그인 횟수(logincount_total). 재방문 레버 = 오른쪽 꼬리를 두껍게</div>
+<table><tr><th>세션 수</th><th>유저</th><th>비중</th><th></th></tr><tbody id="sessTbl"></tbody></table></div>
+<div class="card"><h2>재방문 진입 채널 <span style="font-size:11px;font-weight:600;color:#9AA0B8">· logincount&gt;1 세션 · 대시보드 20 SEG 정합</span></h2>
+<div class="d">재방문 세션이 어느 채널에서 오나(SEG_CASE). 자체 채널(공유·CP)이 크면 재진입 레버 유효</div>
+<table><tr><th>채널 세그</th><th>재방문 세션</th><th>유니크 유저</th><th>비중</th><th></th></tr><tbody id="segTbl"></tbody></table></div>
+<div class="card"><h2>빌드별 로딩속도 — 신규(NRU) vs 재방문(RU) <span style="font-size:11px;font-weight:600;color:#9AA0B8">· 1010 data.time p50 · 서버 로그(표본 30+)</span></h2>
+<div class="d">재방문은 에셋 캐시로 대체로 빠름 — <b>신규가 느린 게 정상</b>이나 격차(Δ)가 크면 신규의 콜드 캐시·다운로드 병목. Δ&gt;0 = 신규가 느림. <b style="color:#2563EB">현재 빌드 #377</b> 강조</div>
+<table><tr><th>빌드</th><th>신규 p50</th><th>재방문 p50</th><th>Δ(신규-재방문)</th></tr><tbody id="ltTbl"></tbody></table></div>
+</div>
+<script>
+var D={"pool_key": "all", "pool_label": "전체 유저", "geo_key": "all", "END": "2026-07-22", "gen": "2026-07-22 11:47", "daily_comp": [{"d": "07-10", "dau": 78, "nru": 78, "ru": 0}, {"d": "07-11", "dau": 523, "nru": 506, "ru": 17}, {"d": "07-12", "dau": 876, "nru": 781, "ru": 95}, {"d": "07-13", "dau": 736, "nru": 552, "ru": 184}, {"d": "07-14", "dau": 1149, "nru": 872, "ru": 277}, {"d": "07-15", "dau": 1166, "nru": 799, "ru": 367}, {"d": "07-16", "dau": 1072, "nru": 643, "ru": 429}, {"d": "07-17", "dau": 1119, "nru": 688, "ru": 431}, {"d": "07-18", "dau": 1208, "nru": 716, "ru": 492}, {"d": "07-19", "dau": 1818, "nru": 1350, "ru": 468}, {"d": "07-20", "dau": 2452, "nru": 1878, "ru": 574}, {"d": "07-21", "dau": 1955, "nru": 1368, "ru": 587}, {"d": "07-22", "dau": 731, "nru": 347, "ru": 384}], "uniq": {"u": 10580, "ret_u": 2666, "once_u": 7914, "ret_pct": 25.2, "once_pct": 74.8}, "sess_dist": [{"b": "1회", "u": 7914, "pct": 74.8}, {"b": "2회", "u": 1232, "pct": 11.6}, {"b": "3회", "u": 427, "pct": 4.0}, {"b": "4~5회", "u": 399, "pct": 3.8}, {"b": "6~10회", "u": 362, "pct": 3.4}, {"b": "11회+", "u": 246, "pct": 2.3}], "sess_pool_n": 10580, "ret_seg": [{"seg": "meta_discovery", "label": "Meta 디스커버리", "color": "#2563EB", "s": 5570, "u": 1023, "pct": 54.0}, {"seg": "own_cp", "label": "자체 크로스프로모", "color": "#059669", "s": 3780, "u": 1140, "pct": 36.6}, {"seg": "meta_ingame", "label": "Meta 인게임메뉴", "color": "#DC2626", "s": 755, "u": 427, "pct": 7.3}, {"seg": "own_share", "label": "자체 공유·메시지", "color": "#D97706", "s": 213, "u": 76, "pct": 2.1}], "load_split": [{"cv": 377, "cur": true, "nru_n": 516, "nru_p50": 8.7, "ru_n": 936, "ru_p50": 9.4, "delta": -0.7}, {"cv": 375, "cur": false, "nru_n": 1414, "nru_p50": 11.1, "ru_n": 1158, "ru_p50": 10.5, "delta": 0.6}, {"cv": 374, "cur": false, "nru_n": 3796, "nru_p50": 9.9, "ru_n": 3999, "ru_p50": 9.4, "delta": 0.5}, {"cv": 373, "cur": false, "nru_n": 30, "nru_p50": 13.9, "ru_n": 34, "ru_p50": 10.8, "delta": 3.1}, {"cv": 371, "cur": false, "nru_n": 552, "nru_p50": 8.8, "ru_n": 924, "ru_p50": 8.7, "delta": 0.1}, {"cv": 367, "cur": false, "nru_n": 929, "nru_p50": 8.3, "ru_n": 1123, "ru_p50": 8.0, "delta": 0.3}, {"cv": 363, "cur": false, "nru_n": 770, "nru_p50": 7.8, "ru_n": 752, "ru_p50": 7.1, "delta": 0.7}, {"cv": 361, "cur": false, "nru_n": 116, "nru_p50": 8.3, "ru_n": 85, "ru_p50": 10.3, "delta": -2.0}, {"cv": 352, "cur": false, "nru_n": 1400, "nru_p50": 8.7, "ru_n": 851, "ru_p50": 6.8, "delta": 1.9}], "cur_build": 377};
+function fmt(n){return (n||0).toLocaleString();}
+new Chart(cComp,{type:'bar',data:{labels:D.daily_comp.map(x=>x.d),datasets:[
+  {label:'신규(NRU)',data:D.daily_comp.map(x=>x.nru),backgroundColor:'#34D399',stack:'s'},
+  {label:'재방문(RU)',data:D.daily_comp.map(x=>x.ru),backgroundColor:'#FBBF24',stack:'s'}]},
+  options:{maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{x:{stacked:true,ticks:{font:{size:9},maxRotation:40,minRotation:30}},y:{stacked:true,beginAtZero:true}}}});
+(function(){var h='';for(const x of D.sess_dist){
+  h+='<tr><td style="font-weight:700">'+x.b+'</td><td>'+fmt(x.u)+'</td><td>'+x.pct+'%</td>'+
+    '<td><span class="bar" style="width:'+Math.max(2,x.pct*2.2)+'px;background:#93C5FD"></span></td></tr>';}
+  document.getElementById('sessTbl').innerHTML=h||'<tr><td colspan=4 style="color:#9AA0B8">데이터 없음</td></tr>';})();
+(function(){var h='';for(const x of D.ret_seg){
+  h+='<tr><td style="font-weight:700"><span class="bar" style="width:9px;height:9px;border-radius:2px;background:'+x.color+';margin-right:6px"></span>'+x.label+'</td>'+
+    '<td>'+fmt(x.s)+'</td><td>'+fmt(x.u)+'</td><td>'+x.pct+'%</td>'+
+    '<td><span class="bar" style="width:'+Math.max(2,x.pct*2.2)+'px;background:'+x.color+'"></span></td></tr>';}
+  document.getElementById('segTbl').innerHTML=h||'<tr><td colspan=5 style="color:#9AA0B8">재방문 세션 없음</td></tr>';})();
+(function(){var h='';for(const x of D.load_split){
+  var dc=x.delta==null?'#9AA0B8':(x.delta>0?'#DC2626':'#059669');
+  var ds=x.delta==null?'—':(x.delta>0?'+':'')+x.delta+'초';
+  h+='<tr'+(x.cur?' style="background:#F5F9FF"':'')+'><td style="font-weight:'+(x.cur?800:700)+';color:'+(x.cur?'#2563EB':'#1A1D2E')+'">#'+x.cv+(x.cur?' ★':'')+'</td>'+
+    '<td>'+(x.nru_p50==null?'—':x.nru_p50+'초')+' <span style="color:#9AA0B8;font-size:11px">n'+fmt(x.nru_n)+'</span></td>'+
+    '<td>'+(x.ru_p50==null?'—':x.ru_p50+'초')+' <span style="color:#9AA0B8;font-size:11px">n'+fmt(x.ru_n)+'</span></td>'+
+    '<td style="font-weight:700;color:'+dc+'">'+ds+'</td></tr>';}
+  document.getElementById('ltTbl').innerHTML=h||'<tr><td colspan=4 style="color:#9AA0B8">데이터 없음</td></tr>';})();
+</script></body></html>
