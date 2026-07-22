@@ -18,16 +18,31 @@ iframe{width:100%;border:none;display:block;background:#F4F6FA}</style></head><b
 <h1>솔리테어 유저 이탈·유저풀 분석</h1>
 <div class="seg-wrap" id="poolWrap"><button class="seg" data-p="all" onclick="pickPool(this,'all')">전체 유저</button><button class="seg active" data-p="nru" onclick="pickPool(this,'nru')">신규(NRU)</button><button class="seg" data-p="ru" onclick="pickPool(this,'ru')">재방문(RU)</button></div>
 <div class="seg-wrap" id="geoWrap"><button class="seg active" data-k="all" onclick="pickGeo(this,'all')">전체</button><button class="seg" data-k="na" onclick="pickGeo(this,'na')">NA</button><button class="seg" data-k="eu" onclick="pickGeo(this,'eu')">EU</button><button class="seg" data-k="row" onclick="pickGeo(this,'row')">그 외 지역</button></div>
-<span class="note">유저풀 토글: 신규(NRU)=첫 세션 이탈 퍼널 · 재방문(RU)/전체=유저풀 구성·세션·재진입 · 지역 토글: NA=US·CA · EU=GB·FR·DE 등 · 자동 갱신 2026-07-22 11:47</span>
+<span class="note">유저풀 토글: 신규(NRU)=첫 세션 이탈 퍼널 · 재방문(RU)/전체=유저풀 구성·세션·재진입 · 지역 토글: NA=US·CA · EU=GB·FR·DE 등 · 자동 갱신 2026-07-22 11:59</span>
 </div>
+<div id="frameWrap" style="position:relative;width:100%">
 <iframe id="geoframe" src="24_sol_dropoff_funnel_all.html" scrolling="no"></iframe>
+</div>
 <script>
-var f=document.getElementById('geoframe'),GEO='all',POOL='nru';
-function fit(){try{f.style.height=(f.contentWindow.document.body.scrollHeight+40)+'px';}catch(e){}}
-f.addEventListener('load',fit);
-window.addEventListener('resize',fit);
-setInterval(fit,1500);  // 차트 렌더·폰트 로드 후 높이 재보정
-function load(){f.src='24_sol_dropoff_funnel_'+GEO+(POOL==='nru'?'':'_'+POOL)+'.html';}
+// 더블버퍼: 새 콘텐츠를 숨긴 iframe에 먼저 로드 → 완료 후 교체(흰 화면 깜빡임 제거).
+var wrap=document.getElementById('frameWrap'),cur=document.getElementById('geoframe'),GEO='all',POOL='nru';
+function fit(fr){try{wrap.style.height=(fr.contentWindow.document.body.scrollHeight+40)+'px';}catch(e){}}
+cur.addEventListener('load',function(){fit(cur);});
+window.addEventListener('resize',function(){fit(cur);});
+setInterval(function(){fit(cur);},1500);  // 차트 렌더·폰트 로드 후 높이 재보정
+function url(){return '24_sol_dropoff_funnel_'+GEO+(POOL==='nru'?'':'_'+POOL)+'.html';}
+function load(){
+  var nf=document.createElement('iframe');
+  nf.scrolling='no';
+  nf.style.position='absolute';nf.style.top='0';nf.style.left='0';nf.style.width='100%';nf.style.visibility='hidden';
+  nf.src=url();
+  nf.addEventListener('load',function(){
+    fit(nf);
+    if(cur&&cur.parentNode){cur.parentNode.removeChild(cur);}
+    nf.style.position='';nf.style.visibility='';nf.id='geoframe';cur=nf;
+  });
+  wrap.appendChild(nf);
+}
 function pickGeo(btn,k){GEO=k;
   document.querySelectorAll('#geoWrap .seg').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');load();}
