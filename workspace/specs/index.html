@@ -670,11 +670,9 @@ function saveOv(ov) {
 function saveOrder(o) {
   _order = o;
   localStorage.setItem('spec-order', JSON.stringify(o));
-  fetch('/api/sb/spec_order', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: 1, order_list: o, updated_at: new Date().toISOString() }),
-  }).catch(() => {});
+  const _op = { id: 1, order_list: o, updated_at: new Date().toISOString() };
+  if (_sb) _sb.from('spec_order').upsert(_op).then(({ error }) => { if (error) console.warn('spec_order upsert:', error.message); });
+  else fetch('/api/sb/spec_order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_op) }).catch(() => {});
 }
 function normalizeItem(item) {
   const tagVal = item.tag;
@@ -695,7 +693,8 @@ function applyOv(id, key, val) {
     const from = ov[id].status || (SPECS.find(s => s.id === id) || {}).status || null;
     if (from !== val) {
       // Supabase 상태 변경 이력
-      fetch('/api/sb/spec_status_log', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ spec_id: id, from_status: from, to_status: val }) }).catch(()=>{});
+      if (_sb) _sb.from('spec_status_log').insert({ spec_id: id, from_status: from, to_status: val }).then(({ error }) => { if (error) console.warn('spec_status_log insert:', error.message); });
+      else fetch('/api/sb/spec_status_log', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ spec_id: id, from_status: from, to_status: val }) }).catch(()=>{});
       // localStorage 이력 (호환)
       const logKey = id + '-log';
       let logs; try { logs = JSON.parse(localStorage.getItem(logKey) || '[]'); } catch(e) { logs = []; }
@@ -710,19 +709,17 @@ function applyOv(id, key, val) {
   localStorage.setItem('spec-ov', JSON.stringify(ov));
   // Supabase write-through (서버 프록시 경유)
   const r = ov[id];
-  fetch('/api/sb/spec_overrides', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      spec_id:    id,
-      tags:       r.tags       || [],
-      priority:   r.priority   || 'mid',
-      status:     r.status     || 'open',
-      due_date:   r.dueDate    || null,
-      related_to: r.relatedTo  || [],
-      updated_at: new Date().toISOString(),
-    }),
-  }).catch(() => {});
+  const _payload = {
+    spec_id:    id,
+    tags:       r.tags       || [],
+    priority:   r.priority   || 'mid',
+    status:     r.status     || 'open',
+    due_date:   r.dueDate    || null,
+    related_to: r.relatedTo  || [],
+    updated_at: new Date().toISOString(),
+  };
+  if (_sb) _sb.from('spec_overrides').upsert(_payload).then(({ error }) => { if (error) console.warn('spec_overrides upsert:', error.message); });
+  else fetch('/api/sb/spec_overrides', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_payload) }).catch(() => {});
 }
 
 function buildList() {
