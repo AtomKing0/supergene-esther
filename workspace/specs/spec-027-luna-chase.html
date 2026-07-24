@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="spec-created" content="2026. 7. 24.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPEC-027 · 루나의 추격 — 데일리 스프린트 발동 시퀀스</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--surface3:#2a2f45;
+  --border:#2e3347;--text:#e2e8f0;--text2:#94a3b8;--text-dim:#64748b;
+  --accent:#a78bfa;--accent-bg:rgba(167,139,250,.15);--accent-border:rgba(167,139,250,.35);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,.12);--purple-border:rgba(167,139,250,.3);
+  --teal:#2dd4bf;--teal-bg:rgba(45,212,191,.12);--teal-border:rgba(45,212,191,.3);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.12);--blue-border:rgba(96,165,250,.3);
+  --green:#4ade80;--green-bg:rgba(74,222,128,.12);--green-border:rgba(74,222,128,.25);
+  --yellow:#fbbf24;--yellow-bg:rgba(251,191,36,.12);--yellow-border:rgba(251,191,36,.3);
+  --red:#f87171;--red-bg:rgba(248,113,113,.12);--red-border:rgba(248,113,113,.25);
+  --orange:#fb923c;--orange-bg:rgba(251,146,60,.12);--orange-border:rgba(251,146,60,.3);
+  --gold:#f59e0b;--gold-bg:rgba(245,158,11,.12);--gold-border:rgba(245,158,11,.3);
+  --pink:#f472b6;--pink-bg:rgba(244,114,182,.12);--pink-border:rgba(244,114,182,.3);
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
+  --text-xs:12px;--text-sm:13px;--text-base:14px;--text-lg:15px;
+  --dur-base:.18s;
+}
+[data-theme=light]{
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--text:#0f172a;--text2:#475569;--text-dim:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:var(--text-lg);line-height:1.7;display:flex}
+.sidenav{position:fixed;left:0;top:0;height:100vh;width:210px;background:var(--surface);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;gap:4px;z-index:200;overflow-y:auto}
+.sidenav-logo{padding:0 20px 20px;font-size:var(--text-xs);font-weight:700;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:var(--text-sm);color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all var(--dur-base)}
+.nav-item:hover,.nav-item.active{color:var(--text);border-left-color:var(--accent);background:var(--accent-bg)}
+.nav-num{font-size:10px;font-weight:700;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.n1{background:var(--purple-bg);color:var(--purple)}
+.n2{background:var(--pink-bg);color:var(--pink)}
+.n3{background:var(--blue-bg);color:var(--blue)}
+.n4{background:var(--teal-bg);color:var(--teal)}
+.n5{background:var(--green-bg);color:var(--green)}
+.main{margin-left:210px;flex:1;padding:60px 56px 80px;max-width:940px}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-toggle:hover{transform:scale(1.1)}
+.back-btn{position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:var(--text-sm);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;text-decoration:none}
+.back-btn:hover{color:var(--text)}
+.spec-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:4px 12px;font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;margin-bottom:14px}
+h1{font-size:26px;font-weight:800;margin-bottom:8px;line-height:1.3}
+.subtitle{color:var(--text2);font-size:var(--text-base);margin-bottom:20px}
+a{color:var(--accent);text-decoration:none}
+.master-link{display:inline-flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--accent-border);border-radius:var(--radius-md);padding:10px 16px;font-size:var(--text-sm);font-weight:600;color:var(--accent);margin-bottom:32px}
+.master-link:hover{background:var(--accent-bg)}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:4px;margin-bottom:40px}
+.kpi-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+[data-theme=light] .kpi-card{background:rgba(0,0,0,0.03)}
+.kpi-card .kpi-val{font-size:16px;font-weight:800;color:var(--accent)}
+.kpi-card .kpi-label{font-size:12px;color:var(--text2);margin-top:4px}
+.section{margin-bottom:56px;padding-top:40px}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.section-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+.section-audience{display:inline-block;border-radius:4px;padding:3px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.s1 .section-num,.s1 .section-audience{background:var(--purple-bg);color:var(--purple)}
+.s2 .section-num,.s2 .section-audience{background:var(--pink-bg);color:var(--pink)}
+.s3 .section-num,.s3 .section-audience{background:var(--blue-bg);color:var(--blue)}
+.s4 .section-num,.s4 .section-audience{background:var(--teal-bg);color:var(--teal)}
+.s5 .section-num,.s5 .section-audience{background:var(--green-bg);color:var(--green)}
+h2{font-size:20px;font-weight:700;margin:28px 0 12px}
+h3{font-size:15px;font-weight:600;color:var(--text2);margin:20px 0 8px}
+p,li{color:var(--text2)}
+ul,ol{padding-left:20px;margin:8px 0}
+li{margin:4px 0}
+table{width:100%;border-collapse:collapse;margin:16px 0}
+th{background:var(--surface2);color:var(--text);font-size:13px;font-weight:600;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);vertical-align:top}
+tr:hover td{background:var(--surface2)}
+td:first-child{color:var(--text);font-weight:600}
+.bs-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;margin:16px 0}
+.bs-table td{padding:8px 12px;font-size:12px;font-family:monospace}
+.tab-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:2px 8px;font-size:11px;font-family:monospace;margin:12px 0 4px}
+.note{background:var(--surface2);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:var(--text2);margin:12px 0}
+.note strong{color:var(--text)}
+.callout{border-radius:var(--radius-md);padding:14px 18px;margin:16px 0;font-size:var(--text-base)}
+.callout-orange{background:var(--orange-bg);border-left:3px solid var(--orange)}
+.callout-blue{background:var(--blue-bg);border-left:3px solid var(--blue)}
+.callout-yellow{background:var(--yellow-bg);border-left:3px solid var(--yellow)}
+.callout-green{background:var(--green-bg);border-left:3px solid var(--green)}
+.callout-pink{background:var(--pink-bg);border-left:3px solid var(--pink)}
+.callout-purple{background:var(--purple-bg);border-left:3px solid var(--purple)}
+.callout strong{color:var(--text)}
+code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(--text-xs);font-family:monospace;color:var(--accent)}
+.prio-high{background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.prio-mid{background:var(--yellow-bg);color:var(--yellow);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.prio-low{background:var(--green-bg);color:var(--green);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+/* 발동 시퀀스 프레임 카드 */
+.seq-frame{display:flex;gap:20px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin:18px 0}
+.seq-frame img{width:46%;max-width:420px;border-radius:var(--radius-sm);border:1px solid var(--border);flex-shrink:0}
+.seq-frame-body{flex:1;min-width:0}
+.seq-tag{display:inline-block;font-family:monospace;font-size:11px;font-weight:700;background:var(--pink-bg);color:var(--pink);border:1px solid var(--pink-border);border-radius:4px;padding:2px 8px;margin-bottom:8px}
+.seq-frame-body h4{font-size:15px;font-weight:700;color:var(--text);margin:0 0 6px}
+.seq-frame-body p{font-size:13px;margin:6px 0}
+.seq-frame-body .ours{background:var(--purple-bg);border-left:3px solid var(--purple);border-radius:0 6px 6px 0;padding:8px 12px;margin-top:10px;font-size:12.5px}
+.seq-frame-body .ours strong{color:var(--accent)}
+.gif-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin:18px 0;text-align:center}
+.gif-wrap img{max-width:100%;max-height:360px;border-radius:var(--radius-sm);border:1px solid var(--border)}
+.gif-cap{font-size:12px;color:var(--text-dim);margin-top:10px}
+@media(max-width:760px){.seq-frame{flex-direction:column}.seq-frame img{width:100%}}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<nav class="sidenav">
+  <div class="sidenav-logo">SPEC-027</div>
+  <a class="nav-item" href="#s1"><span class="nav-num n1">1</span>기획 의도 &amp; 흐름</a>
+  <a class="nav-item" href="#s1-seq"><span class="nav-num n1">↳</span>발동 시퀀스 7단계</a>
+  <a class="nav-item" href="#s2"><span class="nav-num n2">2</span>발동 시퀀스 상세</a>
+  <a class="nav-item" href="#s2-map"><span class="nav-num n2">↳</span>루나 이식 대응표</a>
+  <a class="nav-item" href="#s2-states"><span class="nav-num n2">↳</span>APK 5상태 매핑</a>
+  <a class="nav-item" href="#s3"><span class="nav-num n3">3</span>개발 스펙</a>
+  <a class="nav-item" href="#s3-param"><span class="nav-num n3">↳</span>파라미터</a>
+  <a class="nav-item" href="#s3-state"><span class="nav-num n3">↳</span>상태 5종</a>
+  <a class="nav-item" href="#s3-log"><span class="nav-num n3">↳</span>계측 7xxx</a>
+  <a class="nav-item" href="#s3-data"><span class="nav-num n3">↳</span>데이터 테이블</a>
+  <a class="nav-item" href="#s4"><span class="nav-num n4">4</span>UI/UX 요점</a>
+  <a class="nav-item" href="#s5"><span class="nav-num n5">5</span>일정·공수·미결</a>
+</nav>
+
+<main class="main">
+<span class="spec-badge">콘텐츠 × 이벤트</span>
+<h1>루나의 추격 (Luna's Chase)</h1>
+<p class="subtitle">판수 증대 데일리 스프린트. 그림자 고양이가 열쇠를 훔쳐 도망 → 25분 안에 8판 완주해 되찾는 손실회피 훅. 원형 = Candy Crush Solitaire "Catch the Troll"(APK 언팩 + 실플레이 GIF 프레임별 검증).</p>
+
+<a class="master-link" href="../../pst_luna_journey_spec.html">📘 마스터 기획서 — pst_luna_journey_spec.html (12섹션 상세) · 참고: luna_chase_apk_findings.md</a>
+
+<div class="kpi-grid">
+  <div class="kpi-card"><div class="kpi-val">25분 · 8판</div><div class="kpi-label">스프린트 시간창 · 목표</div></div>
+  <div class="kpi-card"><div class="kpi-val">×5</div><div class="kpi-label">별·해머·골드 배수 (초안)</div></div>
+  <div class="kpi-card"><div class="kpi-val">1,500</div><div class="kpi-label">회당 골드 캡 (초안)</div></div>
+  <div class="kpi-card"><div class="kpi-val">판수 / 유저-일</div><div class="kpi-label">핵심 KPI</div></div>
+</div>
+
+<!-- ════════════════════════════════════ SECTION 1 ════════════════════════════════════ -->
+<div id="s1" class="section s1">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2>기획 의도 &amp; 콘텐츠 흐름</h2>
+    <span class="section-audience">제품 × 아트 공통</span>
+  </div>
+
+  <h3>왜 판수인가</h3>
+  <p>스프린트 목표 <strong>8판</strong>은 현재 NRU가 <strong>하루에 걸쳐</strong> 치는 판수와 같은 양임. 이를 <strong>25분 창</strong>에 압축하는 장치 = 성공 시 그날 판수가 사실상 2배 이상 뛰는 구조임. 실패해도 <strong>몰수 없음</strong>이라 다운사이드 없음. 이 스펙은 마스터 기획서(2층 구조)의 <strong>레이어2 스프린트</strong> 실행본이며, 특히 발동 시퀀스(체스트 발견→도난→도주→마킹→행잉태그)를 원본 프레임별로 확정함.</p>
+
+  <h3>2층 구조 요약</h3>
+  <table>
+    <thead><tr><th>구분</th><th>레이어1 · 여정 트랙</th><th>레이어2 · 루나의 추격 (본 스펙)</th></tr></thead>
+    <tbody>
+      <tr><td>지속</td><td>상시 (이벤트 2일 내내)</td><td>단발 창 (하루 1~2회, 회당 25분)</td></tr>
+      <tr><td>진행 통화</td><td>별 (판 클리어 1판 = 별 +1)</td><td>판수 카운터 (창 안 클리어 판수)</td></tr>
+      <tr><td>목표</td><td>별 누적 → 7랜드마크 마일스톤 (임계 2·4·6·9·12·15·18, 하트 3)</td><td>25분 안 8판 → 열쇠 → 루나 체스트</td></tr>
+      <tr><td>보상</td><td>마일스톤 해머 중심 · 그랜드=루나 데코</td><td>루나 체스트 (해머 8+골드 500+부스터) · 배수 ×5</td></tr>
+      <tr><td>실패</td><td>실패당 하트 −1 · 하트0 = 직전 마일스톤 별 리셋</td><td>몰수 없음 · 체스트(열쇠)만 미획득</td></tr>
+      <tr><td>KPI</td><td>완주율 · D1/D2 리텐션</td><td>판수/유저-일 폭발 · 세션 몰입</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-purple">
+    <strong>층간 연동(판수 폭발 핵심):</strong> 스프린트 창 안에 깬 판은 판수 카운터 +1 <em>과</em> 트랙 별에 동시 반영됨. 스프린트 판 별에는 ×5 배수가 적용되므로 <strong>한 판이 두 트랙을 동시에 밀어올림</strong> → "한 판 더" 동기 + 트랙 완주 가속을 한 번에 확보. (일반 판은 배수 없이 별 +1만)
+  </div>
+  <div class="callout callout-blue">
+    <strong>MVP 순서:</strong> 트랙 먼저(레이어1), 스프린트는 판당 소요 실측 후 <strong>fast-follow</strong>. 본 스펙(스프린트)은 2차 출시 대상. 단 별 이중 누적 훅은 1차에서 미리 심어둠.
+  </div>
+
+  <!-- ── 1-1 발동 시퀀스 7단계 ── -->
+  <h2 id="s1-seq">1-1 발동 시퀀스 — 7단계 (원본 프레임별 실측)</h2>
+  <p>원본 CCS "Catch the Troll"의 발동 흐름을 GIF·스크린샷 6장으로 프레임별 실측함. 각 단계는 <strong>원본 서술 → 우리 이식안</strong> 병기. 핵심 심리 = <strong>보상을 먼저 '내 것'으로 보여주고(소유 효과) → 뺏기고 → 되찾으러 뛰게(손실회피)</strong>.</p>
+
+  <div class="gif-wrap">
+    <img src="ref-027-catch-the-troll.gif" alt="Catch the Troll 발동 시퀀스 GIF (원본, 11초 161프레임)">
+    <div class="gif-cap">원본 발동 시퀀스 전체 흐름 (CCS "Catch the Troll" · 11초 · 161프레임) — 체스트 발견 → 열쇠 도난 → 로비 도주 → 플레이 버튼 마킹 → 프리레벨 행잉 태그</div>
+  </div>
+
+  <div class="seq-frame">
+    <img src="ref-027-flow-01.jpg" alt="flow-01 체스트 발견">
+    <div class="seq-frame-body">
+      <span class="seq-tag">flow-01 · ChestFound</span>
+      <h4>① 체스트 발견</h4>
+      <p>이벤트 시작 시 로비 풀스크린: "Congratulations! You found a Legendary Chest" + Chest rewards 패널에 <strong>코인 7,850 + 부스터 6종을 전부 미리 공개</strong> + "Tap to Collect".</p>
+      <p><strong>심리:</strong> 보상을 먼저 '내 것'으로 보여줌 = 소유 효과.</p>
+      <div class="ours"><strong>루나 이식:</strong> 로비 풀스크린 "루나 체스트를 발견했어요!" + 체스트 보상(해머 8·골드 500·부스터) 미리 공개. 원본 6종 대신 우리 v1 체스트 구성 노출.</div>
+    </div>
+  </div>
+
+  <div class="seq-frame">
+    <img src="ref-027-flow-02.jpg" alt="flow-02 열쇠 도난">
+    <div class="seq-frame-body">
+      <span class="seq-tag">flow-02 · Grab</span>
+      <h4>② 열쇠 도난 (Grab)</h4>
+      <p>화면 밖에서 <strong>핑크 젤리 촉수</strong>가 들어와 체스트의 황금 열쇠를 낚아챔. 핑크 스플래시 연출. (보상 패널은 계속 노출)</p>
+      <div class="ours"><strong>루나 이식:</strong> 화면 밖에서 <strong>그림자 손/그림자 덩굴</strong>이 들어와 황금 열쇠를 낚아챔. 스플래시는 핑크 대신 루나 세계관 컬러(보라/그림자)로 리스킨. APK 상태 = <code>Grab</code>.</div>
+    </div>
+  </div>
+
+  <div class="seq-frame">
+    <img src="ref-027-flow-03.jpg" alt="flow-03 스토리 팝업">
+    <div class="seq-frame-body">
+      <span class="seq-tag">flow-03 · ChestFound.Story</span>
+      <h4>③ 스토리 팝업</h4>
+      <p>트롤 아이콘 + "Oh no! Bubblegum Troll stole the chest key. Quick, we have to catch him!" + [Ok]. <strong>보상 패널은 계속 노출된 채</strong> = 잃을 것을 보며 읽음.</p>
+      <div class="ours"><strong>루나 이식:</strong> 그림자 고양이 아이콘 + "앗! 그림자 고양이가 열쇠를 훔쳤어요. 서둘러 잡아야 해요!" + [확인]. 보상 패널 계속 노출 유지(손실회피 강화).</div>
+    </div>
+  </div>
+
+  <div class="seq-frame">
+    <img src="ref-027-flow-04.jpg" alt="flow-04 로비 도주">
+    <div class="seq-frame-body">
+      <span class="seq-tag">flow-04 · Escape</span>
+      <h4>④ 로비 도주 (Escape)</h4>
+      <p>[Ok] 후 로비 복귀. 트롤이 열쇠를 들고 <strong>메타 맵을 가로질러 날아 도망</strong>, 핑크 젤리 자국을 남김. 도주 경로의 종착 = 플레이(레벨) 버튼.</p>
+      <div class="ours"><strong>루나 이식:</strong> 그림자 고양이가 열쇠를 물고 로비 메타 맵을 가로질러 도주, <strong>발자국/그림자 자국</strong>을 남김. 종착 = 플레이 버튼. APK 상태 = <code>Escape</code>.</div>
+    </div>
+  </div>
+
+  <div class="seq-frame">
+    <img src="ref-027-flow-05.jpg" alt="flow-05 플레이 버튼 마킹">
+    <div class="seq-frame-body">
+      <span class="seq-tag">flow-05 · Small 위젯</span>
+      <h4>⑤ 플레이 버튼 마킹</h4>
+      <p>트롤이 <strong>플레이 버튼(LEVEL)에 젤리를 묻히고</strong> 사라짐 → 이벤트 진행중 상시 표시가 플레이 버튼 자체에 생김. <strong>입장 동선에 직접 마킹 = 다음 행동 유도.</strong></p>
+      <div class="ours"><strong>루나 이식:</strong> 플레이 버튼에 <strong>그림자 고양이 발자국/그림자 마킹</strong> 상시 표시. 스프린트 진행 중 로비 진입점 역할. 원본 <code>Small</code> 위젯 상태에 대응.</div>
+    </div>
+  </div>
+
+  <div class="seq-frame">
+    <img src="ref-027-flow-06.jpg" alt="flow-06 프리레벨 밧줄 태그">
+    <div class="seq-frame-body">
+      <span class="seq-tag">flow-06 · PreLevelPlayWidget</span>
+      <h4>⑥ 프리레벨 밧줄 태그</h4>
+      <p>프리레벨 팝업 우측 밧줄에 <strong>체스트 + 남은시간(26m 15s) + 진행바 "Get the key after 8 levels"</strong> 행잉 태그.</p>
+      <p class="note" style="margin:8px 0"><strong>주의:</strong> 이 GIF 회차는 "x1 rewards" → 원본 배수는 회차별 변동(무지개 게이지). <strong>우리 v1은 고정 ×5</strong>(단순화·콜드스타트) — 차이 명기.</p>
+      <div class="ours"><strong>루나 이식:</strong> 프리레벨 팝업 우측 <strong>기존 진행 이벤트 밧줄 문법 재활용</strong> — 체스트 + 남은시간 + "8판 완주 시 열쇠 획득" 진행바. 배수는 회차 변동 없이 고정 ×5 표시.</div>
+    </div>
+  </div>
+
+  <div class="callout callout-green">
+    <strong>⑦ 보상 지급:</strong> 원본은 체스트 보상을 별도 팝업 없이 결과 화면에 묶어 지급. <strong>우리 제안(확정 반영):</strong> 결과 화면 보상 리스트에서 이벤트 보상을 "🐱 루나의 추격" 뱃지로 특별 표시 → 일반 판 보상과 구분 · 이벤트 기여 체감. (상세 §4)
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ SECTION 2 ════════════════════════════════════ -->
+<div id="s2" class="section s2">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <h2>발동 시퀀스 상세 &amp; 우리 이식 대응표</h2>
+    <span class="section-audience">아트 × 클라</span>
+  </div>
+
+  <h3 id="s2-map">원본 → 루나 이식 대응표</h3>
+  <table>
+    <thead><tr><th>단계</th><th>원본 (Catch the Troll)</th><th>루나 이식 (그림자 고양이)</th><th>재활용 여부</th></tr></thead>
+    <tbody>
+      <tr><td>① 발견</td><td>Legendary Chest 풀스크린 + 보상 6종 공개</td><td>루나 체스트 풀스크린 + v1 보상 공개</td><td>신규 연출</td></tr>
+      <tr><td>② 도난</td><td>핑크 젤리 촉수가 열쇠 낚아챔 + 스플래시</td><td>그림자 손/덩굴이 열쇠 낚아챔 (보라/그림자 스플래시)</td><td>리스킨</td></tr>
+      <tr><td>③ 스토리</td><td>트롤 아이콘 + 도난 대사 + [Ok]</td><td>그림자 고양이 아이콘 + 도난 대사 + [확인]</td><td>카피 리스킨</td></tr>
+      <tr><td>④ 도주</td><td>트롤이 맵 가로질러 날아 도망 + 젤리 자국</td><td>고양이가 도주 + 발자국/그림자 자국 → 플레이 버튼 종착</td><td>리스킨</td></tr>
+      <tr><td>⑤ 마킹</td><td>플레이 버튼에 젤리 묻힘 (상시 표시)</td><td>플레이 버튼에 발자국/그림자 마킹 (상시 표시)</td><td>리스킨</td></tr>
+      <tr><td>⑥ 행잉 태그</td><td>프리레벨 밧줄: 체스트+타이머+진행바</td><td>기존 진행이벤트 밧줄 문법 재활용 (배수 고정 ×5)</td><td>기존 UI 재활용</td></tr>
+      <tr><td>(연출 훅)</td><td>PreLevel.Message2Key "열쇠 후 획득"</td><td>5판째 "🔑 열쇠 획득!" 앵커 마이크로 축하 (보상 분리 없음)</td><td>신규(연출만)</td></tr>
+      <tr><td>⑦ 지급</td><td>결과 화면에 묶어 지급 (별도 팝업 없음)</td><td>결과 화면 + "🐱 루나의 추격" 뱃지 특별 표시</td><td>신규 제안</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow">
+    <strong>열쇠 = 데이터 1단 + UX 2단 (APK §2-2 확정안):</strong> 기능적으로는 <strong>8판 완주 = 열쇠 획득 = 체스트 오픈 단일 마일스톤</strong>. 보상 분리 없음. 대신 원본 2체크포인트 문법을 <strong>연출 훅으로만</strong> 차용 — 8판 중 <strong>5판째</strong>에 "🔑 열쇠 획득!" 마이크로 축하를 끼워 후반 3판을 끌고 가는 중간 앵커로 사용. 앵커 위치는 판당 소요 실측 후 조정.
+  </div>
+
+  <h3 id="s2-states">APK 5상태 → 아트/클라 매핑</h3>
+  <p>APK 언팩 결과 발동 관련 연출 프리팹은 5상태(+Small 위젯). 아트·클라 연출 대응:</p>
+  <table>
+    <thead><tr><th>상태</th><th>원본 프리팹</th><th>발동 시점</th><th>루나 대응 연출</th></tr></thead>
+    <tbody>
+      <tr><td>Grab</td><td><code>pre_CatchTheTroll_Grab</code> / <code>anim_CtT_TrollHand_Grab</code></td><td>열쇠 뺏기는 순간 (flow-02)</td><td>그림자 손이 열쇠 낚아챔 · 손실회피 진입</td></tr>
+      <tr><td>Escape</td><td><code>pre_CatchTheTroll_Escape</code> / <code>VFX_Troll_Escape_Splash</code></td><td>트롤 도주 (flow-04)</td><td>고양이 로비 도주 + 발자국 자국</td></tr>
+      <tr><td>Win</td><td><code>pre_CatchTheTroll_Win</code> / <code>VFX_Troll_Win</code></td><td>8판 완주 성공</td><td>체스트 오픈 성공 연출 (S13)</td></tr>
+      <tr><td>Lose</td><td><code>pre_CatchTheTroll_Lose</code> / <code>VFX_Troll_Lose</code></td><td>25분 시간초과 실패</td><td>고양이가 열쇠 갖고 사라짐 (몰수 없음 안내) (S14)</td></tr>
+      <tr><td>Small</td><td><code>pre_CatchTheTroll_Small</code></td><td>진행 중 상시 위젯/미니 상태</td><td>플레이 버튼 마킹 · 밧줄 태그 (flow-05·06)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-pink">
+    <strong>손실회피 UX 핵심:</strong> Grab(뺏김) → Escape(도망) 두 연출이 원본 리텐션 훅의 심장. 밧줄 글로우/이탈 만류 팝업에 이 두 연출을 얹으면 강함. Lose 상태에서 <strong>몰수 없음</strong>을 명확히 안내해 재도전 유도.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ SECTION 3 ════════════════════════════════════ -->
+<div id="s3" class="section s3">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <h2>개발 스펙</h2>
+    <span class="section-audience">개발팀</span>
+  </div>
+
+  <!-- 3-1 파라미터 -->
+  <h2 id="s3-param">3-1 밸런스 파라미터 (초안)</h2>
+  <p>모든 수치는 <strong>초안</strong>이며 판당 소요 실측 후 확정. SSOT = <code>PST_const.json</code> / <code>PST_event_sprint.json</code>.</p>
+  <table>
+    <thead><tr><th>파라미터</th><th>초안 값</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>스프린트 시간창</td><td>25분 (1,500초)</td><td>판당 평균 소요 실측 후 조정</td></tr>
+      <tr><td>완주 판수</td><td>8판</td><td>25분÷판당 ≈ 촘촘하되 달성가능</td></tr>
+      <tr><td>획득 배수</td><td>×5</td><td>범위 ×3~×8 · 콜드스타트 보수적. 회차 변동 없이 고정</td></tr>
+      <tr><td>회당 골드 캡</td><td>1,500 (골드만)</td><td>골드 인플레 방어. 골드에만 적용</td></tr>
+      <tr><td>발동 빈도</td><td>하루 1~2회 (12·20시 초안)</td><td>오전·저녁 슬롯</td></tr>
+      <tr><td>열쇠 앵커 판수</td><td>5판째</td><td>연출 전용 플래그 · 보상 분리 없음</td></tr>
+      <tr><td>루나 체스트 (v1 단일)</td><td>해머 8 + 골드 500 + 부스터 (wild_card 1·undo 1)</td><td>잭팟(Epic) 스키마만 예약 OFF (<code>in_use=0</code>)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-orange">
+    <strong>수치 출처 각주:</strong> 보상 수치는 전부 CCS 실플레이 영상 실측 앵커임 — Legendary(=루나 체스트) 🪙7,850골드+6종·×8배수·8판/26분. 원본 정밀값은 APK 미포함(<code>CatchTheTrollSettings.asset</code>은 Unity 에셋번들 바이너리+IL2CPP 난독화라 복원 불가). Epic Chest·티어확률·정확 6종 구성은 미확인. 상세 = 마스터 §8 각주 / <code>luna_chase_apk_findings.md §4</code>.
+  </div>
+
+  <!-- 3-2 상태 5종 -->
+  <h2 id="s3-state">3-2 연출 상태 5종 (상태 머신)</h2>
+  <table>
+    <thead><tr><th>상태</th><th>진입 조건</th><th>다음 상태</th></tr></thead>
+    <tbody>
+      <tr><td><code>Grab</code></td><td>스프린트 발동 · 체스트 발견 후 열쇠 도난 연출</td><td>연출 종료 → <code>Escape</code></td></tr>
+      <tr><td><code>Escape</code></td><td>스토리 [확인] 후 로비 복귀 · 도주 연출</td><td>플레이 버튼 마킹 → <code>Small</code>(진행중)</td></tr>
+      <tr><td><code>Small</code></td><td>스프린트 RUNNING · 위젯/밧줄 태그 상시 표시</td><td>8판 완주 → <code>Win</code> / 25분 만료 → <code>Lose</code></td></tr>
+      <tr><td><code>Win</code></td><td>시간창 내 8판 완주 (열쇠 획득)</td><td>체스트 오픈 → 지급 후 IDLE</td></tr>
+      <tr><td><code>Lose</code></td><td>25분 만료 미완주 (또는 이벤트 종료 강제만료)</td><td>몰수 없음 안내 → IDLE</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><strong>몰수 없음:</strong> 미완주 시 획득분(스프린트 별·골드·판수)은 유지됨 → 클라 로직. 체스트(열쇠)만 미획득.</div>
+
+  <!-- 3-3 계측 -->
+  <h2 id="s3-log">3-3 계측 이벤트 (7xxx 계열)</h2>
+  <p>기존 관례 = 4자리 코드 + <code>data</code> 필드(예 <code>2100_GAMEPLAY_START</code>). 스프린트 발동/완주/만료·체스트·앵커 각각 발화 시점 명시.</p>
+  <table>
+    <thead><tr><th>이벤트코드</th><th>발화 시점</th><th>data 필드 (핵심)</th></tr></thead>
+    <tbody>
+      <tr><td><code>7100_LUNA_SPRINT_TRIGGER</code></td><td>스프린트 창 발동 (NOTIFY)</td><td>sprint_id, slot_idx, trigger_type, window_sec(1500), target_clear(8)</td></tr>
+      <tr><td><code>7101_LUNA_SPRINT_ENTER</code></td><td>RUNNING 진입 (첫 판 시작)</td><td>sprint_id, remain_sec</td></tr>
+      <tr><td><code>7110_LUNA_SPRINT_CLEAR_STEP</code></td><td>창 내 1판 클리어 (카운트 증가)</td><td>sprint_id, clear_count(n/8), remain_sec, gold_paid, gold_capped(bool)</td></tr>
+      <tr><td><code>7115_LUNA_SPRINT_KEY_ANCHOR</code></td><td>열쇠 앵커 도달 (초안 5판째 "🔑 열쇠 획득!")</td><td>sprint_id, anchor_level(5), elapsed_sec, remain_sec</td></tr>
+      <tr><td><code>7120_LUNA_SPRINT_COMPLETE</code></td><td>8판 완주 → 열쇠 획득</td><td>sprint_id, elapsed_sec, key_granted(1)</td></tr>
+      <tr><td><code>7121_LUNA_SPRINT_EXPIRE</code></td><td>25분 만료 (또는 이벤트 종료 강제만료)</td><td>sprint_id, clear_count, reason(timeout/event_end), fail_type(lose/escape)</td></tr>
+      <tr><td><code>7130_LUNA_CHEST_OPEN</code></td><td>루나 체스트 오픈·지급</td><td>sprint_id, hammer, gold, booster_list[], gold_in_cap(bool)</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><strong>활용:</strong> <code>7100/7101</code>로 참여율, <code>7101→7120</code>로 완주율, <code>7110</code>의 gold_capped로 골드 캡 발동 빈도, <code>7115</code>의 elapsed_sec로 앵커 위치 실측 조정, <code>7121</code>의 fail_type으로 만료 실패를 timeout vs escape 분해. 트랙 계열(7000~7031·7200)은 마스터 §9 참조.</div>
+
+  <!-- 3-4 데이터 테이블 -->
+  <h2 id="s3-data">3-4 데이터 테이블 요약 (마스터 §8 링크)</h2>
+  <p>신규 3 · 수정 2. 전체 스키마·컬럼 정의는 <a href="../../pst_luna_journey_spec.html">마스터 §8</a> 참조. 스프린트 관련 핵심만 요약.</p>
+
+  <div class="tab-badge">PST_const.json (스프린트 관련 추가분)</div>
+  <div class="bs-block">
+    <table class="bs-table">
+      <thead><tr><th>key_number</th><th>const_name</th><th>const_value</th><th>단위</th></tr></thead>
+      <tbody>
+        <tr><td>10069</td><td>luna_sprint_window_sec</td><td>1500</td><td>초 (25분)</td></tr>
+        <tr><td>10070</td><td>luna_sprint_goal_clears</td><td>8</td><td>판</td></tr>
+        <tr><td>10071</td><td>luna_sprint_reward_multiplier</td><td>5</td><td>배</td></tr>
+        <tr><td>10072</td><td>luna_sprint_daily_trigger_max</td><td>2</td><td>회</td></tr>
+        <tr><td>10073</td><td>luna_sprint_key_anchor_level</td><td>5</td><td>판 (연출 전용)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tab-badge">PST_event_sprint.json (신규 · 1행)</div>
+  <div class="bs-block">
+    <table class="bs-table">
+      <thead><tr><th>필드</th><th>값</th><th>소유</th></tr></thead>
+      <tbody>
+        <tr><td>key_number / event_id</td><td>190001 / 160006</td><td>서버</td></tr>
+        <tr><td>window_sec / goal_clears</td><td>1500 / 8</td><td>서버</td></tr>
+        <tr><td>reward_multiplier</td><td>5</td><td>서버</td></tr>
+        <tr><td>gold_cap_per_sprint</td><td>1500</td><td>시트</td></tr>
+        <tr><td>daily_trigger_max / trigger_hours</td><td>2 / [12,20]</td><td>서버</td></tr>
+        <tr><td>key_anchor_level</td><td>5 (연출 전용 · SSOT=const 10073)</td><td>서버</td></tr>
+        <tr><td>complete_reward / chest_id</td><td>currency_key ×1 / 191000</td><td>서버</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tab-badge">PST_event_sprint_chest.json (신규 · normal 4행 + jackpot 1행 스키마)</div>
+  <div class="bs-block">
+    <table class="bs-table">
+      <thead><tr><th>chest_tier</th><th>slot</th><th>reward_item_key</th><th>amount</th><th>in_use</th></tr></thead>
+      <tbody>
+        <tr><td>normal</td><td>1</td><td>currency_hammer</td><td>8</td><td>true</td></tr>
+        <tr><td>normal</td><td>2</td><td>currency_gold</td><td>500</td><td>true</td></tr>
+        <tr><td>normal</td><td>3</td><td>booster_wild_card</td><td>1</td><td>true</td></tr>
+        <tr><td>normal</td><td>4</td><td>booster_undo</td><td>1</td><td>true</td></tr>
+        <tr><td>jackpot</td><td>1</td><td>currency_gold</td><td>0 (예약)</td><td>false</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-blue">
+    <strong>잭팟 예약 OFF:</strong> v1 = normal 단일 출시(원본 Legendary 대응). jackpot(원본 Epic)은 <code>chest_tier</code> enum·슬롯 존재만 증명하는 스키마 예시 1행(<code>in_use=0</code>). 데이터 붙는 시점에 코드수정 없이 ON(v1.x 후속 레버). 잭팟 발동은 확률뽑기 아닌 <strong>확정 조건</strong>(<code>streak_n_clears</code> / <code>weekend_special</code>) — 원본도 확정보상 구조.
+  </div>
+  <div class="note"><strong>연계:</strong> <code>currency_key</code>는 신규 아이템키 → <code>PST_item_list.json</code>에 40006 currency 행 추가 필요(클라 소유). 스케줄 = <code>PST_event_schedule.json</code> 160006(<code>luna_chase_sprint</code>, 2일창·발동시각은 sprint 테이블 소유).</div>
+</div>
+
+<!-- ════════════════════════════════════ SECTION 4 ════════════════════════════════════ -->
+<div id="s4" class="section s4">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <h2>UI/UX 요점 (S10~S14)</h2>
+    <span class="section-audience">클라</span>
+  </div>
+  <p>스프린트 레이어 신규 화면 5종 요약. 전체 명세 = <a href="../../pst_luna_journey_spec.html">마스터 §6 (S10~S14)</a>.</p>
+  <table>
+    <thead><tr><th>화면</th><th>내용</th><th>발동 시퀀스 대응</th></tr></thead>
+    <tbody>
+      <tr><td>S10 스프린트 발동 알림</td><td>체스트 발견 → 도난(Grab) → 스토리 → 도주(Escape) → 플레이 버튼 마킹 풀시퀀스</td><td>flow-01~05</td></tr>
+      <tr><td>S11 스프린트 프리레벨 패널</td><td>밧줄 행잉 태그: 체스트+남은시간+"8판 완주 시 열쇠" 진행바 (×5 고정)</td><td>flow-06</td></tr>
+      <tr><td>S12 인게임 스프린트 HUD</td><td>카운트다운 타이머 + 판수 카운터(n/8) + 추격 진행바. 5판째 "🔑 열쇠 획득!" 앵커 축하</td><td>연출 훅</td></tr>
+      <tr><td>S13 완주 체스트 오픈</td><td>Win 연출 → 루나 체스트 오픈 → 내용물 지급</td><td>Win</td></tr>
+      <tr><td>S14 스프린트 종료 (미완주)</td><td>Lose 연출 → 고양이가 열쇠 갖고 사라짐 · <strong>몰수 없음</strong> 안내 · 재도전 유도</td><td>Lose</td></tr>
+    </tbody>
+  </table>
+
+  <h3>★ 신규 제안 — 결과화면 "루나의 추격" 뱃지</h3>
+  <div class="callout callout-green">
+    <strong>제안(확정 반영):</strong> 원본은 체스트 보상을 별도 팝업 없이 결과 화면에 묶어 지급함. 우리는 결과 화면 보상 리스트에서 이벤트 기여 보상(스프린트 배수분·체스트)을 <strong>"🐱 루나의 추격" 뱃지</strong>로 특별 표시함. 목적 = 일반 판 보상과 시각적으로 구분 → 유저가 "이 판이 이벤트에 얼마나 기여했는지" 즉시 체감 → "한 판 더" 동기 강화. 뱃지는 배수(×5) 적용된 별/골드 항목 옆에 붙임.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ SECTION 5 ════════════════════════════════════ -->
+<div id="s5" class="section s5">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <h2>일정 · 공수 · 미결</h2>
+    <span class="section-audience">전체 공유</span>
+  </div>
+
+  <h3>공수 (S/M/L · 스프린트 관련)</h3>
+  <table>
+    <thead><tr><th>영역</th><th>항목</th><th>공수</th></tr></thead>
+    <tbody>
+      <tr><td>클라</td><td>스프린트 UI(카운트다운·판수 카운터·추격 진행바·체스트)</td><td><span class="prio-high">L</span></td></tr>
+      <tr><td>클라</td><td>별 이중 누적·배수·골드 캡 적용 로직</td><td><span class="prio-mid">M</span></td></tr>
+      <tr><td>서버</td><td>이벤트/스프린트 상태머신·스케줄러 (슬롯 배분·폴백·wall-clock 타이머 권위)</td><td><span class="prio-high">L</span></td></tr>
+      <tr><td>계측</td><td>7xxx 로그 파이프라인 (기존 코드+data 관례 확장)</td><td><span class="prio-low">S</span></td></tr>
+      <tr><td>기획</td><td>밸런스 파라미터·체스트 표 확정 (판당 소요 실측 선행)</td><td><span class="prio-mid">M</span></td></tr>
+      <tr><td>아트</td><td>추격 캐릭터(그림자 고양이)·발동 시퀀스 연출·루나 체스트</td><td><span class="prio-mid">M</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>출시 순서</h3>
+  <div class="callout callout-blue">
+    <strong>본 스펙(스프린트) = 2차 fast-follow.</strong> 리스크·공수가 스프린트(서버 스케줄러 L·클라 실시간 UI L)에 몰림. 트랙(레이어1) 1차 운영에서 판당 소요·클리어율을 확보한 뒤 스프린트 수치를 확정하면 골드 인플레 리스크↓. 단 별 이중 누적 훅은 1차에 미리 심음.
+  </div>
+
+  <h3>핵심 KPI</h3>
+  <table>
+    <thead><tr><th>KPI</th><th>정의</th><th>목표(초안)</th></tr></thead>
+    <tbody>
+      <tr><td>판수 / 유저-일</td><td>완료판 ÷ 유저-일 (FB 퍼널 대시보드 SSOT)</td><td>이벤트 주간 vs 직전 주간 +유의미 상승 (스프린트 창 기여 분해)</td></tr>
+      <tr><td>스프린트 참여율</td><td>슬롯 경험자(7101) ÷ 슬롯 노출자(7100)</td><td>초안 목표 설정 후 관측</td></tr>
+      <tr><td>스프린트 완주율</td><td>완주(7120) ÷ 진입(7101)</td><td>25분 8판 난이도 검증 (너무 낮으면 완화)</td></tr>
+      <tr><td>골드 캡 발동</td><td>gold_capped(7110) 빈도</td><td>골드 인플레 감시</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><strong>전후비교:</strong> 이벤트 주간(주말 2일) vs 직전 동일 요일 주말. NA 코호트 기준(콜드스타트 타깃). 판수를 스프린트발(7110) vs 비스프린트로 분해해 순증분 측정. 세그먼트 고정 비교(유입 믹스 이동 주의).</div>
+
+  <h3>미결 사항</h3>
+  <table>
+    <thead><tr><th>항목</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr><td>스프린트 25분·8판·배수 ×5·골드 캡 1,500</td><td>초안 — 판당 소요 실측 후 확정</td></tr>
+      <tr><td>열쇠 앵커 위치 (초안 5판째)</td><td>초안 — 7115 elapsed_sec 실측 후 조정</td></tr>
+      <tr><td>발동 시각 (초안 12·20시) · 하루 발동 횟수</td><td>초안 — 세션 시간대 데이터 확인 필요</td></tr>
+      <tr><td>잭팟(Epic) 티어 보상·발동 조건</td><td>스키마만 예약 OFF · v1.x 후속 레버</td></tr>
+      <tr><td>결과화면 "루나의 추격" 뱃지 디자인</td><td>제안 확정 · 아트 디테일 미정</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-green">
+    <strong>확정(APK 검증):</strong> 체스트 v1 단일(잭팟 스키마만 OFF) · 열쇠 데이터 1단+UX 2단(5판째 앵커) · 연출 5상태(Grab·Escape 손실회피) · 원형 = CCS "Catch the Troll" · 우리 버전 = 그림자 고양이 리스킨.
+  </div>
+</div>
+
+</main>
+
+<script>
+(function () {
+  var links    = document.querySelectorAll('.nav-item');
+  var sections = document.querySelectorAll('div.section[id]');
+  function activate() {
+    var scrollY = window.pageYOffset + 120;
+    sections.forEach(function (s) {
+      if (s.offsetTop <= scrollY && s.offsetTop + s.offsetHeight > scrollY) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = document.querySelector('.nav-item[href="#' + s.id + '"]');
+        if (a) a.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', activate);
+  activate();
+})();
+</script>
+</body>
+</html>
