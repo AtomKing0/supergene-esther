@@ -189,6 +189,19 @@ ul li strong,ol li strong { color:var(--text); }
 /* badge — 고유 색상 */
 .badge-pink{background:var(--pink-bg);color:var(--pink);border:1px solid rgba(232,121,249,.3)}
 .badge-gold{background:var(--gold-bg);color:var(--gold);border:1px solid rgba(251,191,36,.3)}
+
+/* 레퍼런스 갤러리 (리텐션 로드맵 rmcard 스타일 준용) */
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin:20px 0}
+.ref-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.ref-shot{background:#000;display:flex;align-items:center;justify-content:center}
+.ref-shot img{width:100%;height:150px;object-fit:cover;display:block;cursor:zoom-in;transition:transform .2s}
+.ref-shot img:hover{transform:scale(1.04)}
+.ref-body{padding:10px 12px}
+.ref-title{font-size:.82rem;font-weight:700;color:var(--text)}
+.ref-type{display:inline-block;font-size:.66rem;font-weight:700;padding:1px 8px;border-radius:10px;background:var(--gold-bg);color:var(--gold);margin:4px 0}
+.ref-desc{font-size:.74rem;color:var(--text2);line-height:1.5}
+.ref-wide{grid-column:1/-1}
+.ref-wide .ref-shot img{height:auto;max-height:380px;object-fit:contain;background:#000}
 </style>
 </head>
 <body>
@@ -197,17 +210,21 @@ ul li strong,ol li strong { color:var(--text); }
 <nav class="nav-sidebar">
   <div class="nav-title">SPEC-007</div>
   <a href="#s1">① 기획 의도 &amp; 흐름</a>
+  <a class="sub" href="#s1-ref">↳ 레퍼런스</a>
   <a class="sub" href="#s1-struct">↳ 구조 요약</a>
   <a class="sub" href="#s1-flow">↳ 플레이 흐름</a>
   <a class="sub" href="#s1-kpi">↳ 성공 지표</a>
   <a href="#s2">② 아트 가이드</a>
   <a class="sub" href="#s2-wf1">↳ 패스 메인</a>
-  <a class="sub" href="#s2-wf2">↳ 로비 진입점</a>
+  <a class="sub" href="#s2-wf2">↳ 로비 위젯 상태</a>
+  <a class="sub" href="#s2-wf3">↳ 결과·정산 화면</a>
   <a class="sub" href="#s2-reskin">↳ 시즌 리스킨</a>
   <a href="#s3">③ 개발 스펙</a>
   <a class="sub" href="#s3-bs">↳ 밸런스 시트</a>
   <a class="sub" href="#s3-tier">↳ 티어 보상표</a>
+  <a class="sub" href="#s3-bonus">↳ 완주 후 보너스 상자</a>
   <a class="sub" href="#s3-quest">↳ 퀘스트 풀</a>
+  <a class="sub" href="#s3-widget">↳ 위젯·팝업 로직</a>
   <a class="sub" href="#s3-logic">↳ 로직·상태</a>
   <a class="sub" href="#s3-edge">↳ 엣지 케이스</a>
 </nav>
@@ -215,17 +232,17 @@ ul li strong,ol li strong { color:var(--text); }
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-eyebrow">
-      <span class="spec-id-badge">SPEC-007 · Rev.2</span>
-      <span class="badge badge-green"  id="hero-tag"      style="cursor:pointer" title="태그 변경">💰 수익화</span>
-      <span class="badge badge-yellow" id="hero-priority" style="cursor:pointer" title="우선순위 변경">🟡 보통 우선순위</span>
-      <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">🔵 검토중</span>
+      <span class="spec-id-badge">SPEC-007 · Rev.3</span>
+      <span class="badge badge-green"  id="hero-tag"      style="cursor:pointer" title="태그 변경">✨ 기능</span>
+      <span class="badge badge-yellow" id="hero-priority" style="cursor:pointer" title="우선순위 변경">🔴 높은 우선순위</span>
+      <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">🟡 진행중</span>
       <span class="badge badge-green">2026. 4. 6.</span>
       <span class="badge badge-gold">💰 8/12 후 프리미엄</span>
       <span class="badge badge-purple">디렉터형 레버</span>
-      <span class="badge badge-pink">Rev.2 · 2026-07-24 전면 개정</span>
+      <span class="badge badge-pink">Rev.3 · 2026-07-24 (보너스 상자·로비 위젯·레퍼런스 첨부)</span>
     </div>
     <h1>🎟 루나 시즌 패스 — 무료 트랙 우선</h1>
-    <p class="hero-sub">14일 시즌 · 30티어 · 2트랙 사다리(Royal Pass 구조 클론). 콜드스타트 구간(~8/12)은 <strong>무료 트랙만 오픈</strong>하고 프리미엄 트랙은 자물쇠로 미리 노출. 데일리 3종(기프트·태스크·룰렛)이 전부 당일 리셋되는 현 구조에 <strong>다주차 복귀 앵커</strong>를 만든다. 시즌마다 도시 테마 리스킨(뉴욕→파리→…).</p>
+    <p class="hero-sub">14일 시즌 · 30티어 · 2트랙 사다리(Royal Pass 구조 클론). 콜드스타트 구간(~8/12)은 <strong>무료 트랙만 오픈</strong>하고 프리미엄 트랙은 자물쇠로 미리 노출. 최종 보상 = <strong>시즌 한정 카드덱</strong>(완주 트로피), 완주 후에는 시즌 종료까지 <strong>보너스 상자 반복 루프</strong>. 데일리 3종이 전부 당일 리셋되는 현 구조에 <strong>다주차 복귀 앵커</strong>를 만든다. 시즌마다 도시 테마 리스킨(뉴욕→파리→…).</p>
 
     <div class="kpi-grid">
       <div class="kpi-card">
@@ -247,10 +264,10 @@ ul li strong,ol li strong { color:var(--text); }
         <div class="kpi-trend trend-up">▲ 패스의 존재 이유</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">퀘 완료율</div>
-        <div class="kpi-value" style="color:var(--blue)">일 %</div>
-        <div class="kpi-sub">데일리 퀘 3종 완료율 (라우팅 검증)</div>
-        <div class="kpi-trend trend-neutral">— 시스템별 유도 효과 분해</div>
+        <div class="kpi-label">완주 후 잔존</div>
+        <div class="kpi-value" style="color:var(--gold)">상자</div>
+        <div class="kpi-sub">완주자의 보너스 상자 개봉 수 / 잔여일</div>
+        <div class="kpi-trend trend-neutral">— 코어 이탈 방지 검증</div>
       </div>
     </div>
   </div>
@@ -275,13 +292,73 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th></th><th>내용</th></tr></thead>
     <tbody>
       <tr><td>AS-IS</td><td>데일리 3종(기프트·태스크·룰렛) 전부 <strong>당일 리셋</strong> → 다주차 목표·복귀 앵커 없음. 오늘 안 오면 잃는 건 있어도, "이어서 쌓는 것"이 없음.</td></tr>
-      <tr><td>TO-BE</td><td><strong>14일 트랙</strong> → 데일리/위클리 퀘가 데코·도시·토너·앨범·이벤트로 유도 → 티어 보상 누적 → 완주 목표로 매일 복귀. D7·D14를 직접 겨냥.</td></tr>
+      <tr><td>TO-BE</td><td><strong>14일 트랙</strong> → 데일리/위클리 퀘가 데코·도시·토너·앨범·이벤트로 유도 → 티어 보상 누적 → 완주 목표로 매일 복귀 → 완주 후엔 보너스 상자로 시즌 끝까지 유지. D7·D14를 직접 겨냥.</td></tr>
     </tbody>
   </table>
   <p>패스는 새 콘텐츠가 아니라 <strong>디렉터형 레버</strong>다 — 기존 시스템(레벨·해머·데코·토너·앨범)으로 유저를 라우팅하는 진척 트랙. 진척은 플레이와 직결(승리 1판 = XP)이라 별도 그라인드가 없고, 보상은 해머 중심으로 데코 플라이휠(리텐션 로드맵 P1 진행 체스트와 동일 sink)에 연료를 공급한다.</p>
 
+  <h3 id="s1-ref">레퍼런스 (실 UI 캡처 · 클릭 확대 · 리텐션 로드맵 발췌)</h3>
+  <div class="ref-grid">
+    <div class="ref-card">
+      <div class="ref-shot"><img src="ref-007-royal-pass.jpg" alt="Royal Pass (Royal Match)"></div>
+      <div class="ref-body">
+        <div class="ref-title">Royal Pass (Royal Match)</div>
+        <span class="ref-type">★ 구조 1순위 · 2트랙 사다리</span>
+        <div class="ref-desc">무료/프리미엄 2줄 티어 사다리. 레벨(XP)로 진척, 티어마다 양쪽 보상, 잠금=프리미엄. 우리 패스 = 이 구조에서 프리미엄 줄만 나중(8/12 후).</div>
+      </div>
+    </div>
+    <div class="ref-card">
+      <div class="ref-shot"><img src="ref-007-ccs-season-pass.jpg" alt="Season Pass (CCS)"></div>
+      <div class="ref-body">
+        <div class="ref-title">Season Pass (Candy Crush Saga)</div>
+        <span class="ref-type">시즌제 기본형</span>
+        <div class="ref-desc">진행바+티어 보상 기본형. 레벨 승리로 포인트를 모아 티어 상승, 무료 전원 / 프리미엄 구매자. 종료 시 미수령 정산 팝업.</div>
+      </div>
+    </div>
+    <div class="ref-card">
+      <div class="ref-shot"><img src="ref-007-ccsol-season-pass.jpg" alt="Candy Crush Solitaire Season Pass"></div>
+      <div class="ref-body">
+        <div class="ref-title">Candy Crush Solitaire (2025)</div>
+        <span class="ref-type">장르 검증 · 신작 실장</span>
+        <div class="ref-desc">2025 신작 솔리테어에 동일 구조(무료+프리미엄 2트랙·티어별 포인트) 실장 확인 — 우리 방향이 장르 표준·최신 트렌드와 일치.</div>
+      </div>
+    </div>
+    <div class="ref-card">
+      <div class="ref-shot"><img src="ref-007-ccs-carebears.jpg" alt="Care Bears Season Pass"></div>
+      <div class="ref-body">
+        <div class="ref-title">Care Bears Season Pass (CCS)</div>
+        <span class="ref-type">시즌 리스킨</span>
+        <div class="ref-desc">같은 패스 UI, 테마만 교체(케어베어). 리스킨 운영의 실물 증거.</div>
+      </div>
+    </div>
+    <div class="ref-card">
+      <div class="ref-shot"><img src="ref-007-ccs-anniversary.jpg" alt="First Anniversary Season Pass"></div>
+      <div class="ref-body">
+        <div class="ref-title">First Anniversary Pass (CCS)</div>
+        <span class="ref-type">시즌 리스킨</span>
+        <div class="ref-desc">기념 시즌 테마. 구조 동일·아트만 교체.</div>
+      </div>
+    </div>
+    <div class="ref-card">
+      <div class="ref-shot"><img src="ref-007-ccs-lucky-shuffle.jpg" alt="Lucky Shuffle Season Pass"></div>
+      <div class="ref-body">
+        <div class="ref-title">Lucky Shuffle Pass (CCS)</div>
+        <span class="ref-type">시즌 리스킨</span>
+        <div class="ref-desc">또 다른 시즌 테마. 시즌마다 리스킨 = 저비용 반복. 우리도 도시별(뉴욕→파리…) 로테이션.</div>
+      </div>
+    </div>
+    <div class="ref-card ref-wide">
+      <div class="ref-shot"><img src="ref-007-royal-pass-flow.gif" alt="Royal Pass 진행 플로우 GIF"></div>
+      <div class="ref-body">
+        <div class="ref-title">🎞 Royal Pass 진행 플로우 (실제 GIF)</div>
+        <span class="ref-type">인터랙션 레퍼런스</span>
+        <div class="ref-desc">레벨 클리어 → 패스 XP 참 → 티어 보상 클레임 → 프리미엄 언락까지 진행 플로우. 우리 게이지·클레임·2트랙 애니메이션의 기준 레퍼런스.</div>
+      </div>
+    </div>
+  </div>
+
   <div class="callout callout-pink">
-    <p><strong>레퍼런스 3가지 (리텐션 로드맵 검증):</strong> ① <strong>2트랙 사다리</strong> = Royal Match Royal Pass — 무료/프리미엄 두 줄, 레벨(XP) 진척, 티어마다 양쪽 보상. 우리는 무료 줄만 오픈, 프리미엄 줄은 자물쇠 노출(8/12 후 판매). ② <strong>시즌 리스킨</strong> = Candy Crush 4종(케어베어·1주년·풀블룸·럭키셔플) — 같은 UI에 테마만 교체, 저비용 반복 운영 증거. 우리도 도시별(뉴욕→파리…) 리스킨. ③ <strong>진척 = 플레이</strong> — 레벨 클리어로 XP, 판수와 직결. 2025 신작 Candy Crush Solitaire에도 동일 구조 실장 확인(장르 표준).</p>
+    <p><strong>레퍼런스에서 뽑은 4가지:</strong> ① <strong>2트랙 사다리</strong>(Royal Pass) — 무료 줄만 오픈, 프리미엄 줄은 자물쇠 노출(8/12 후 판매). ② <strong>시즌 리스킨</strong>(CCS 4종 = 케어베어·1주년·풀블룸·럭키셔플) — 같은 UI에 테마만 교체, 저비용 반복 운영 증거. ③ <strong>진척 = 플레이</strong> — 레벨 승리로 XP, 판수와 직결·별도 그라인드 없음. ④ <strong>완주 후 반복 상자</strong> — 최종 티어 뒤에도 XP가 계속 쌓여 상자를 채우고 랜덤 보상을 주는 완주 후 루프(CCS 계열 패스 공통 패턴). 코어 유저가 완주하고 이탈하는 구멍을 막는다.</p>
   </div>
 
   <h3 id="s1-struct">구조 요약</h3>
@@ -289,26 +366,28 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>항목</th><th>결정</th><th>근거</th></tr></thead>
     <tbody>
       <tr><td>기간</td><td>14일 (2주 시즌)</td><td>D14 코호트 직접 타깃 · 도시 언락 주기와 정합</td></tr>
-      <tr><td>구조</td><td>2트랙(무료/프리미엄) × 30티어</td><td>Royal Pass 검증 구조 클론</td></tr>
+      <tr><td>구조</td><td>2트랙(무료/프리미엄) × 30티어 + 완주 후 보너스 상자 루프</td><td>Royal Pass 검증 구조 + CCS 완주 후 루프</td></tr>
       <tr><td>진척(XP)</td><td>승리 1판 = 1XP + 데일리 퀘 3종(각 5XP) + 위클리 퀘 2종(각 20XP)</td><td>판수 직결 + 퀘로 기존 시스템 라우팅</td></tr>
-      <tr><td>무료 트랙</td><td>즉시 오픈. 보상 = 해머 중심(37개) + 부스터·티켓·골드 소량</td><td>데코 플라이휠 연료 · 골드 인플레 회피</td></tr>
+      <tr><td>무료 트랙</td><td>즉시 오픈. 해머 중심(35개) + 부스터·티켓·골드 소량. <strong>최종(T30) = 시즌 한정 카드덱</strong></td><td>데코 플라이휠 연료 · 완주 트로피 = 코스메틱(경제 무부담)</td></tr>
+      <tr><td>완주 후</td><td>15XP마다 보너스 상자 1개 → 랜덤 보상. 시즌 종료까지 반복</td><td>완주자 이탈 방지 · 발행량 기대값으로 통제</td></tr>
       <tr><td>프리미엄 트랙</td><td>보상 노출 + 전체 잠금(🔒 8/12). 8/12 후 구매 게이트 오픈 · 소급 지급</td><td>콜드스타트 = 수익화 전 단계 · 무료 구조 재사용</td></tr>
       <tr><td>테마</td><td>시즌마다 도시 리스킨 (시즌 1 = 루나 · 뉴욕)</td><td>CCS 리스킨 운영 방식 · 도시 진행과 궁합</td></tr>
-      <tr><td>종료 정책</td><td>도달 티어의 미수령 무료 보상 <strong>자동 지급</strong> (권장안, §3 참조)</td><td>FB IG 이탈 방지 · 마찰 최소화</td></tr>
+      <tr><td>종료 정책</td><td>도달 티어의 미수령 무료 보상 <strong>자동 지급</strong> + 정산 팝업(CCS 방식)</td><td>FB IG 이탈 방지 · 마찰 최소화</td></tr>
     </tbody>
   </table>
 
   <div class="callout callout-yellow">
-    <p><strong>골드 sink 주의 (하지 말 것):</strong> 골드는 이미 남아돈다(78%가 2000골드 고정 구간). 패스 보상은 <strong>해머·데코·부스터 중심</strong>으로 편성하고 골드는 리듬용 소액(시즌 총 5,600G — 데일리 태스크 하루 수도꼭지 2,787G의 2일치 수준)만 배치했다. 팀/클럽 신설로 대체하지 않는다(공수 과다 — 패스가 그 역할).</p>
+    <p><strong>골드 sink 주의 (하지 말 것):</strong> 골드는 이미 남아돈다(78%가 2000골드 고정 구간). 패스 보상은 <strong>해머·부스터·코스메틱 중심</strong>으로 편성하고 골드는 리듬용 소액(시즌 총 4,100G — 데일리 태스크 하루 수도꼭지 2,787G의 1.5일치)만 배치했다. 팀/클럽 신설로 대체하지 않는다(공수 과다 — 패스가 그 역할).</p>
   </div>
 
   <h3 id="s1-flow">플레이어 경험 흐름</h3>
-  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>시즌 시작 — 로비 배너 + 인트로 팝업</strong><p>"루나 시즌 패스 · 뉴욕 시즌 ⏳14일" 노출. 30티어 보상 미리보기(잠금 포함)로 목표 심기. 프리미엄 줄은 자물쇠(🔒 8/12)로 보이기만.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>시즌 시작 — 로비 위젯 + 인트로 팝업</strong><p>"루나 시즌 패스 · 뉴욕 시즌 ⏳14일" 노출. 30티어 보상 미리보기(잠금 포함)로 목표 심기. 프리미엄 줄은 자물쇠(🔒 8/12)로 보이기만.</p></div></div>
   <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>플레이 = 진척</strong><p>레벨 승리 1판마다 XP +1. 결과 화면에 패스 게이지 인라인 노출("다음 레벨까지 3판") — 진행 체스트(P1) 게이지와 나란히.</p></div></div>
   <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>퀘스트 = 라우팅</strong><p>데일리 퀘 3종 + 위클리 퀘 2종이 데코 배치·도시 진척·토너·앨범·스트릭으로 유저를 보낸다. 완료 시 보너스 XP.</p></div></div>
-  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>티어 도달 → 클레임</strong><p>도달 칸에 글로우 + [받기] 배지. 미수령 누적 시 상단 "받을 보상 N" → 탭 한 번에 일괄 수령.</p></div></div>
-  <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>종료 임박 — 복귀 노티</strong><p>D-3·D-1 "시즌 N일 남음" 노티(로드맵 P3 노티 윈백과 문구 공유). 미완주 유저 복귀 트리거.</p></div></div>
-  <div class="flow-step"><div class="flow-dot">6</div><div class="flow-body"><strong>시즌 종료 → 리스킨 재시작</strong><p>도달분 미수령 보상 자동 지급 → 다음 시즌(다음 도시 테마)으로 리셋. 8/12 후에는 이 시점이 프리미엄 소급 구매의 마지막 압박 지점이 된다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>티어 도달 → 클레임</strong><p>도달 칸에 글로우 + [받기] 배지. 미수령 누적 시 로비 위젯에 빨간 배지 N → 패스 진입 → "받을 보상 N" 일괄 수령.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>티어 30 완주 → 시즌 한정 카드덱 + 보너스 상자 루프</strong><p>완주 트로피(카드덱) 수령 연출 후, 사다리 끝이 <strong>보너스 상자 게이지</strong>로 전환. 이후 15XP마다 상자 1개 → 랜덤 보상. 시즌 종료까지 반복 — 완주해도 매판이 상자를 채운다.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">6</div><div class="flow-body"><strong>종료 임박 — 복귀 노티</strong><p>D-3·D-1 "시즌 N일 남음 — 받을 보상 M개" 노티(로드맵 P3 노티 윈백과 문구 공유). 로비 위젯 타이머 빨간 강조.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">7</div><div class="flow-body"><strong>시즌 종료 → 정산 팝업 → 리스킨 재시작</strong><p>도달분 미수령 보상 자동 지급, 종료 후 첫 진입 시 정산 팝업(받은 내역 + 다음 시즌 예고). 다음 시즌 = 다음 도시 테마. 8/12 후에는 이 시점이 프리미엄 소급 구매의 마지막 압박 지점.</p></div></div>
 
   <h3 id="s1-kpi">성공 지표 — 전부 NA/서구권 코호트</h3>
   <p>신흥국 유입에 묻히지 않게 <strong>NA 코호트로만 측정</strong>(24 이탈분석·20 대시보드 권역 토글). CP 지오정렬·튜토 #375와 시기 겹치면 레버별 분리 관측.</p>
@@ -318,7 +397,8 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>참여율</td><td>시즌 중 패스 진입 or 퀘 1회 완료 / DAU</td><td>선행</td></tr>
       <tr><td>퀘 완료율</td><td>데일리 퀘 완료 수 / 발급 수 — 퀘 타입별 분해(라우팅 효과)</td><td>선행</td></tr>
       <tr><td>완주율</td><td>티어 30 도달 / 참여 유저</td><td>선행</td></tr>
-      <tr><td>D7 · D14</td><td>참여 vs 비참여 코호트 분리</td><td><strong>핵심</strong></tr>
+      <tr><td>완주 후 잔존</td><td>완주자의 잔여 기간 접속률·보너스 상자 개봉 수</td><td>선행 (코어 이탈 방지)</td></tr>
+      <tr><td>D7 · D14</td><td>참여 vs 비참여 코호트 분리</td><td><strong>핵심</strong></td></tr>
       <tr><td>(8/12 후) 프리미엄 전환율·소급 구매 비중</td><td>구매 / 참여 유저 · 시즌 중반 이후 구매 / 전체 구매</td><td>수익화 확장 시</td></tr>
     </tbody>
   </table>
@@ -336,10 +416,10 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
   </div>
 
-  <h3 id="s2-wf1">와이어프레임 1 — 패스 메인 (2트랙 사다리 · 상태 명시)</h3>
+  <h3 id="s2-wf1">와이어프레임 1 — 패스 메인 (2트랙 사다리 · 완주 후 상자 포함)</h3>
   <div class="wireframe">
-    <svg viewBox="0 0 660 420" width="100%" style="display:block;max-width:760px;margin:16px 0;">
-      <rect x="16" y="14" width="440" height="392" rx="12" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+    <svg viewBox="0 0 660 470" width="100%" style="display:block;max-width:760px;margin:16px 0;">
+      <rect x="16" y="14" width="440" height="442" rx="12" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
       <!-- 헤더 -->
       <text x="32" y="42" style="fill:var(--pink);font-size:13px;font-family:sans-serif;font-weight:800;">🎟 루나 시즌 패스 · 뉴욕 시즌</text>
       <text x="32" y="58" style="fill:var(--text2);font-size:9px;font-family:sans-serif;">⏳ 9일 남음</text>
@@ -354,34 +434,32 @@ ul li strong,ol li strong { color:var(--text); }
       <text x="277" y="102" text-anchor="middle" style="fill:var(--pink);font-size:9px;font-family:sans-serif;font-weight:800;">5</text>
       <!-- 무료 트랙 -->
       <text x="32" y="132" style="fill:var(--blue);font-size:9px;font-family:sans-serif;font-weight:800;">무료 트랙</text>
-      <!-- T4 수령완료 -->
       <rect x="32" y="140" width="74" height="58" rx="8" style="fill:var(--green-bg);stroke:var(--green);stroke-width:1.5"/>
       <text x="69" y="162" text-anchor="middle" style="fill:var(--green);font-size:9px;font-family:sans-serif;font-weight:700;">해머 ×1</text>
       <text x="69" y="186" text-anchor="middle" style="fill:var(--green);font-size:8px;font-family:sans-serif;">✓ 수령완료</text>
-      <!-- T5 받기 -->
       <rect x="114" y="136" width="78" height="64" rx="8" style="fill:var(--pink-bg);stroke:var(--pink);stroke-width:2.5"/>
       <text x="153" y="158" text-anchor="middle" style="fill:var(--pink);font-size:9px;font-family:sans-serif;font-weight:700;">해머 ×2</text>
       <text x="153" y="170" text-anchor="middle" style="fill:var(--pink);font-size:9px;font-family:sans-serif;font-weight:700;">골드 500</text>
       <text x="153" y="188" text-anchor="middle" style="fill:var(--pink);font-size:8px;font-family:sans-serif;font-weight:800;">● 받기</text>
-      <!-- T6 잠금 -->
       <rect x="200" y="140" width="74" height="58" rx="8" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
       <text x="237" y="162" text-anchor="middle" style="fill:var(--text-dim);font-size:9px;font-family:sans-serif;">언두 ×1</text>
       <text x="237" y="186" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">🔒 Lv.6</text>
-      <!-- T7 잠금 -->
       <rect x="282" y="140" width="74" height="58" rx="8" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
       <text x="319" y="162" text-anchor="middle" style="fill:var(--text-dim);font-size:9px;font-family:sans-serif;">해머 ×1</text>
       <text x="319" y="186" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">🔒 Lv.7</text>
-      <!-- T8 잠금 -->
-      <rect x="364" y="140" width="74" height="58" rx="8" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
-      <text x="401" y="162" text-anchor="middle" style="fill:var(--text-dim);font-size:9px;font-family:sans-serif;">골드 400</text>
-      <text x="401" y="186" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">🔒 Lv.8</text>
+      <!-- T30 최종 = 시즌 한정 카드덱 -->
+      <rect x="364" y="140" width="74" height="58" rx="8" style="fill:var(--purple-bg);stroke:var(--purple);stroke-width:1.5"/>
+      <text x="401" y="156" text-anchor="middle" style="fill:var(--purple);font-size:8px;font-family:sans-serif;font-weight:800;">…T30 최종</text>
+      <text x="401" y="170" text-anchor="middle" style="fill:var(--purple);font-size:8px;font-family:sans-serif;font-weight:700;">🃏 시즌 한정</text>
+      <text x="401" y="182" text-anchor="middle" style="fill:var(--purple);font-size:8px;font-family:sans-serif;font-weight:700;">카드덱+해머4</text>
+      <text x="401" y="194" text-anchor="middle" style="fill:var(--text-dim);font-size:7px;font-family:sans-serif;">미완주 시 실루엣</text>
       <!-- 프리미엄 트랙 -->
       <text x="32" y="230" style="fill:var(--gold);font-size:9px;font-family:sans-serif;font-weight:800;">프리미엄 트랙 (8/12 오픈)</text>
       <rect x="32" y="238" width="74" height="58" rx="8" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1;opacity:.45"/>
       <text x="69" y="260" text-anchor="middle" style="fill:var(--gold);font-size:9px;font-family:sans-serif;opacity:.7">해머 ×2</text>
       <text x="69" y="284" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;opacity:.7">🔒 8/12</text>
       <rect x="114" y="238" width="78" height="58" rx="8" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1;opacity:.45"/>
-      <text x="153" y="260" text-anchor="middle" style="fill:var(--gold);font-size:9px;font-family:sans-serif;opacity:.7">시즌 덱</text>
+      <text x="153" y="260" text-anchor="middle" style="fill:var(--gold);font-size:9px;font-family:sans-serif;opacity:.7">해머 ×4</text>
       <text x="153" y="284" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;opacity:.7">🔒 8/12</text>
       <rect x="200" y="238" width="74" height="58" rx="8" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1;opacity:.45"/>
       <text x="237" y="260" text-anchor="middle" style="fill:var(--gold);font-size:9px;font-family:sans-serif;opacity:.7">언두 ×2</text>
@@ -390,15 +468,23 @@ ul li strong,ol li strong { color:var(--text); }
       <text x="319" y="260" text-anchor="middle" style="fill:var(--gold);font-size:9px;font-family:sans-serif;opacity:.7">해머 ×2</text>
       <text x="319" y="284" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;opacity:.7">🔒 8/12</text>
       <rect x="364" y="238" width="74" height="58" rx="8" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1;opacity:.45"/>
-      <text x="401" y="260" text-anchor="middle" style="fill:var(--gold);font-size:9px;font-family:sans-serif;opacity:.7">골드 800</text>
+      <text x="401" y="256" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;opacity:.7">…T30 해머 ×8</text>
+      <text x="401" y="268" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;opacity:.7">티켓 ×3</text>
       <text x="401" y="284" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;opacity:.7">🔒 8/12</text>
+      <!-- 완주 후 보너스 상자 스트립 -->
+      <rect x="32" y="312" width="408" height="42" rx="8" style="fill:var(--yellow-bg);stroke:var(--yellow);stroke-width:1.5"/>
+      <text x="44" y="330" style="fill:var(--gold);font-size:9px;font-family:sans-serif;font-weight:800;">🎁 보너스 상자 (티어 30 완주 후 노출)</text>
+      <text x="44" y="345" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">15XP마다 상자 1개 → 랜덤 보상 · 시즌 끝까지 반복</text>
+      <rect x="300" y="322" width="110" height="12" rx="6" style="fill:var(--surface2)"/>
+      <rect x="300" y="322" width="66" height="12" rx="6" style="fill:var(--gold)"/>
+      <text x="355" y="348" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;">9 / 15 XP</text>
       <!-- 하단 퀘스트 -->
-      <rect x="32" y="316" width="408" height="76" rx="8" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
-      <text x="44" y="334" style="fill:var(--text2);font-size:9px;font-family:sans-serif;font-weight:700;">오늘의 퀘스트 (매일 0시 UTC 갱신)</text>
-      <text x="44" y="352" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">✓ 3판 승리하기 · +5XP</text>
-      <text x="44" y="368" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">□ 데코 1개 배치하기 · +5XP</text>
-      <text x="44" y="384" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">□ 토너먼트 참가하기 · +5XP</text>
-      <text x="290" y="352" style="fill:var(--purple);font-size:8px;font-family:sans-serif;">위클리 · 25판 승리 (18/25) · +20XP</text>
+      <rect x="32" y="366" width="408" height="76" rx="8" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
+      <text x="44" y="384" style="fill:var(--text2);font-size:9px;font-family:sans-serif;font-weight:700;">오늘의 퀘스트 (매일 0시 UTC 갱신)</text>
+      <text x="44" y="402" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">✓ 3판 승리하기 · +5XP</text>
+      <text x="44" y="418" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">□ 데코 1개 배치하기 · +5XP</text>
+      <text x="44" y="434" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">□ 토너먼트 참가하기 · +5XP</text>
+      <text x="290" y="402" style="fill:var(--purple);font-size:8px;font-family:sans-serif;">위클리 · 25판 승리 (18/25) · +20XP</text>
       <!-- 우측 주석 -->
       <line x1="440" y1="43" x2="480" y2="36" style="stroke:var(--pink);stroke-width:1;stroke-dasharray:4,3"/>
       <rect x="480" y="22" width="164" height="30" rx="4" style="fill:var(--pink-bg);stroke:var(--pink);stroke-width:1"/>
@@ -408,14 +494,18 @@ ul li strong,ol li strong { color:var(--text); }
       <rect x="480" y="78" width="164" height="30" rx="4" style="fill:var(--surface2);stroke:var(--border);stroke-width:1"/>
       <text x="562" y="91" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">게이지 위 현재 레벨 마커(원형)</text>
       <text x="562" y="102" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">"다음 레벨까지 N판" 카피 고정</text>
-      <line x1="440" y1="168" x2="480" y2="162" style="stroke:var(--blue);stroke-width:1;stroke-dasharray:4,3"/>
-      <rect x="480" y="148" width="164" height="30" rx="4" style="fill:var(--blue-bg);stroke:var(--blue);stroke-width:1"/>
-      <text x="562" y="161" text-anchor="middle" style="fill:var(--blue);font-size:8px;font-family:sans-serif;">각 칸 = 보상 텍스트(아이템+수량)</text>
-      <text x="562" y="172" text-anchor="middle" style="fill:var(--blue);font-size:8px;font-family:sans-serif;">+ 상태 배지. 미달 티어도 미리 노출</text>
+      <line x1="440" y1="169" x2="480" y2="162" style="stroke:var(--purple);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="480" y="148" width="164" height="30" rx="4" style="fill:var(--purple-bg);stroke:var(--purple);stroke-width:1"/>
+      <text x="562" y="161" text-anchor="middle" style="fill:var(--purple);font-size:8px;font-family:sans-serif;">최종 = 시즌 한정 카드덱(트로피)</text>
+      <text x="562" y="172" text-anchor="middle" style="fill:var(--purple);font-size:8px;font-family:sans-serif;">collection_deck 등록 · 영구 소장</text>
       <line x1="440" y1="266" x2="480" y2="260" style="stroke:var(--gold);stroke-width:1;stroke-dasharray:4,3"/>
       <rect x="480" y="246" width="164" height="30" rx="4" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:1"/>
       <text x="562" y="259" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;">프리미엄 줄 = 반투명 + 🔒 8/12</text>
       <text x="562" y="270" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;">보상은 보이되 구매 게이트 잠금</text>
+      <line x1="440" y1="333" x2="480" y2="328" style="stroke:var(--yellow);stroke-width:1;stroke-dasharray:4,3"/>
+      <rect x="480" y="314" width="164" height="30" rx="4" style="fill:var(--yellow-bg);stroke:var(--yellow);stroke-width:1"/>
+      <text x="562" y="327" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;">완주 전에는 이 스트립 미노출</text>
+      <text x="562" y="338" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;">완주 시 사다리 끝이 상자로 전환</text>
     </svg>
   </div>
 
@@ -427,46 +517,107 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td><span class="st st-ready">● 받기</span></td><td>레벨 도달 = 해당 티어 클레임 가능. 칸에 글로우 + [받기] 배지. 탭 시 지급 애니메이션 → '수령완료' 전환.</td></tr>
       <tr><td><span class="st st-claimed">✓ 수령완료</span></td><td>이미 받은 보상. 초록 틴트 + ✓. 재클릭 불가.</td></tr>
       <tr><td>일괄 수령</td><td>미수령 누적 시 상단 <strong>"받을 보상 N"</strong> 배지 → 탭하면 도달분 한 번에 클레임.</td></tr>
-      <tr><td><span class="st st-locked">🔒 Lv.N</span></td><td>미도달 티어. 회색 + 필요 레벨 표기. 보상 내용은 <strong>미리 노출</strong>(목표 견인).</td></tr>
+      <tr><td><span class="st st-locked">🔒 Lv.N</span></td><td>미도달 티어. 회색 + 필요 레벨 표기. 보상 내용은 <strong>미리 노출</strong>(목표 견인). 단 T30 카드덱은 실루엣.</td></tr>
       <tr><td><span class="st st-premium">🔒 8/12</span></td><td>콜드스타트 구간엔 프리미엄 줄 전체 잠금. 보상은 보이되 자물쇠. 8/12 후 구매 게이트 오픈.</td></tr>
+      <tr><td>🎁 보너스 상자</td><td>티어 30 완주 시 사다리 끝이 상자 게이지로 전환. 15XP마다 개봉 가능 → 탭하면 랜덤 보상 1개 연출. 미개봉 상자는 최대 3개까지 적립(초과분 XP는 대기), 시즌 종료 시 개봉 가능분 자동 개봉.</td></tr>
     </tbody>
   </table>
 
-  <h3 id="s2-wf2">와이어프레임 2 — 로비 진입점 + 결과 화면 인라인 게이지</h3>
+  <h3 id="s2-wf2">와이어프레임 2 — 로비 위젯(아이콘) 상태 5종</h3>
+  <p>노출 위치 = 로비 우측 이벤트 위젯 슬롯(기존 슬롯 재활용, CCS <span class="code">WidgetSeasonPass</span> 포지션 준용). 아이콘 = 시즌 로고(도시 테마) + 하단 라벨 + 우상단 배지 조합.</p>
+  <div class="wireframe">
+    <svg viewBox="0 0 660 190" width="100%" style="display:block;max-width:760px;margin:16px 0;">
+      <!-- 상태 A 기본 -->
+      <rect x="20" y="30" width="100" height="100" rx="14" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+      <text x="70" y="72" text-anchor="middle" style="font-size:26px;">🎟</text>
+      <rect x="30" y="100" width="80" height="18" rx="9" style="fill:var(--surface2)"/>
+      <text x="70" y="113" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">D-9</text>
+      <text x="70" y="152" text-anchor="middle" style="fill:var(--text2);font-size:9px;font-family:sans-serif;font-weight:700;">A 기본</text>
+      <text x="70" y="166" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">시즌 로고+잔여일</text>
+      <!-- 상태 B 수령 가능 -->
+      <rect x="150" y="30" width="100" height="100" rx="14" style="fill:var(--surface3);stroke:var(--pink);stroke-width:2"/>
+      <text x="200" y="72" text-anchor="middle" style="font-size:26px;">🎟</text>
+      <rect x="160" y="100" width="80" height="18" rx="9" style="fill:var(--surface2)"/>
+      <text x="200" y="113" text-anchor="middle" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">D-9</text>
+      <circle cx="242" cy="38" r="12" style="fill:var(--red)"/>
+      <text x="242" y="42" text-anchor="middle" style="fill:#fff;font-size:9px;font-family:sans-serif;font-weight:800;">2</text>
+      <text x="200" y="152" text-anchor="middle" style="fill:var(--pink);font-size:9px;font-family:sans-serif;font-weight:700;">B 수령 가능</text>
+      <text x="200" y="166" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">빨간 배지 N + 펄스</text>
+      <!-- 상태 C 완주(상자) -->
+      <rect x="280" y="30" width="100" height="100" rx="14" style="fill:var(--surface3);stroke:var(--gold);stroke-width:2"/>
+      <text x="330" y="72" text-anchor="middle" style="font-size:26px;">🎁</text>
+      <rect x="290" y="100" width="80" height="10" rx="5" style="fill:var(--surface2)"/>
+      <rect x="290" y="100" width="48" height="10" rx="5" style="fill:var(--gold)"/>
+      <text x="330" y="152" text-anchor="middle" style="fill:var(--gold);font-size:9px;font-family:sans-serif;font-weight:700;">C 완주 · 상자 진행</text>
+      <text x="330" y="166" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">아이콘 상자로 교체+게이지</text>
+      <!-- 상태 D 종료 임박 -->
+      <rect x="410" y="30" width="100" height="100" rx="14" style="fill:var(--surface3);stroke:var(--red);stroke-width:2"/>
+      <text x="460" y="72" text-anchor="middle" style="font-size:26px;">🎟</text>
+      <rect x="420" y="100" width="80" height="18" rx="9" style="fill:var(--red-bg)"/>
+      <text x="460" y="113" text-anchor="middle" style="fill:var(--red);font-size:8px;font-family:sans-serif;font-weight:800;">⏰ 16:42:10</text>
+      <text x="460" y="152" text-anchor="middle" style="fill:var(--red);font-size:9px;font-family:sans-serif;font-weight:700;">D 종료 임박 (≤24h)</text>
+      <text x="460" y="166" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">타이머 빨간 카운트다운</text>
+      <!-- 상태 E 새 시즌 -->
+      <rect x="540" y="30" width="100" height="100" rx="14" style="fill:var(--surface3);stroke:var(--teal);stroke-width:2"/>
+      <text x="590" y="72" text-anchor="middle" style="font-size:26px;">🎟</text>
+      <rect x="550" y="100" width="80" height="18" rx="9" style="fill:var(--teal-bg)"/>
+      <text x="590" y="113" text-anchor="middle" style="fill:var(--teal);font-size:8px;font-family:sans-serif;font-weight:800;">NEW</text>
+      <text x="590" y="152" text-anchor="middle" style="fill:var(--teal);font-size:9px;font-family:sans-serif;font-weight:700;">E 새 시즌</text>
+      <text x="590" y="166" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">시작 48h · NEW 리본</text>
+    </svg>
+  </div>
+  <table>
+    <thead><tr><th>상태</th><th>조건</th><th>표시</th><th>우선순위</th></tr></thead>
+    <tbody>
+      <tr><td>A 기본</td><td>시즌 활성 · 배지 없음</td><td>시즌 로고 + "D-N" 라벨</td><td>5 (기본)</td></tr>
+      <tr><td>B 수령 가능</td><td>미수령 티어 보상 ≥ 1</td><td>우상단 빨간 배지(개수) + 3초 주기 펄스</td><td><strong>1 (최우선)</strong></td></tr>
+      <tr><td>C 완주 · 상자</td><td>티어 30 완주</td><td>아이콘 🎟→🎁 교체 + 하단 상자 게이지. 개봉 가능 상자 있으면 B와 동일한 빨간 배지+흔들림</td><td>2</td></tr>
+      <tr><td>D 종료 임박</td><td>잔여 ≤ 24h</td><td>라벨이 빨간 HH:MM:SS 카운트다운으로 전환 (B·C 배지와 공존 가능)</td><td>3 (라벨만 교체)</td></tr>
+      <tr><td>E 새 시즌</td><td>시즌 시작 후 48h &amp; 미진입</td><td>NEW 리본. 진입하면 해제 + 인트로 팝업 1회</td><td>4</td></tr>
+    </tbody>
+  </table>
+  <p><strong>배지 규칙:</strong> 우상단 배지는 하나만 — 수령 가능(B/C) &gt; NEW(E). 라벨(하단)은 D-N ↔ 타이머(D) 교체. 시즌 비활성(전환 정산 중) 시 위젯 숨김.</p>
+
+  <h3 id="s2-wf3">와이어프레임 3 — 결과 화면 인라인 게이지 + 종료 정산 팝업</h3>
   <div class="wireframe">
     <svg viewBox="0 0 640 250" width="100%" style="display:block;max-width:720px;margin:16px 0;">
-      <!-- 로비 -->
-      <rect x="16" y="16" width="290" height="218" rx="12" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
-      <text x="32" y="40" style="fill:var(--text2);font-size:10px;font-family:sans-serif;font-weight:700;">로비</text>
-      <rect x="32" y="52" width="258" height="44" rx="8" style="fill:var(--pink-bg);stroke:var(--pink);stroke-width:1.5"/>
-      <text x="44" y="70" style="fill:var(--pink);font-size:10px;font-family:sans-serif;font-weight:800;">🎟 루나 시즌 패스 · 뉴욕</text>
-      <text x="44" y="86" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">⏳ 9일 남음 · 받을 보상 2</text>
-      <rect x="32" y="106" width="258" height="30" rx="8" style="fill:var(--surface2);stroke:var(--border)"/>
-      <text x="44" y="125" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">(기존 로비 배너·아이콘 슬롯 재활용)</text>
-      <text x="44" y="200" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">배지: 수령 가능 보상 수 빨간 도트</text>
       <!-- 결과 화면 -->
-      <rect x="330" y="16" width="290" height="218" rx="12" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
-      <text x="346" y="40" style="fill:var(--text2);font-size:10px;font-family:sans-serif;font-weight:700;">승리 결과 화면 (다음판 직행 플로우)</text>
-      <text x="346" y="72" style="fill:var(--green);font-size:11px;font-family:sans-serif;font-weight:800;">🏆 승리! +1 XP</text>
-      <text x="346" y="96" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">시즌 패스 Lv.5 · 다음 레벨까지 2판</text>
-      <rect x="346" y="104" width="258" height="10" rx="5" style="fill:var(--surface2)"/>
-      <rect x="346" y="104" width="180" height="10" rx="5" style="fill:var(--pink)"/>
-      <text x="346" y="138" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">(P1 진행 체스트 게이지와 나란히 인라인 노출)</text>
-      <rect x="346" y="150" width="258" height="10" rx="5" style="fill:var(--surface2)"/>
-      <rect x="346" y="150" width="120" height="10" rx="5" style="fill:var(--yellow)"/>
-      <text x="346" y="176" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">🎁 진행 체스트 게이지 (SPEC 별도)</text>
-      <rect x="346" y="192" width="120" height="28" rx="14" style="fill:var(--green)"/>
-      <text x="406" y="210" text-anchor="middle" style="fill:#1a1a1a;font-size:9px;font-family:sans-serif;font-weight:800;">다음 판 ▶</text>
+      <rect x="16" y="16" width="290" height="218" rx="12" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+      <text x="32" y="40" style="fill:var(--text2);font-size:10px;font-family:sans-serif;font-weight:700;">승리 결과 화면 (다음판 직행 플로우)</text>
+      <text x="32" y="72" style="fill:var(--green);font-size:11px;font-family:sans-serif;font-weight:800;">🏆 승리! +1 XP</text>
+      <text x="32" y="96" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">시즌 패스 Lv.5 · 다음 레벨까지 2판</text>
+      <rect x="32" y="104" width="258" height="10" rx="5" style="fill:var(--surface2)"/>
+      <rect x="32" y="104" width="180" height="10" rx="5" style="fill:var(--pink)"/>
+      <text x="32" y="138" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">(P1 진행 체스트 게이지와 나란히 인라인 노출)</text>
+      <rect x="32" y="150" width="258" height="10" rx="5" style="fill:var(--surface2)"/>
+      <rect x="32" y="150" width="120" height="10" rx="5" style="fill:var(--yellow)"/>
+      <text x="32" y="176" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">🎁 진행 체스트 게이지 (SPEC 별도)</text>
+      <rect x="32" y="192" width="120" height="28" rx="14" style="fill:var(--green)"/>
+      <text x="92" y="210" text-anchor="middle" style="fill:#1a1a1a;font-size:9px;font-family:sans-serif;font-weight:800;">다음 판 ▶</text>
+      <!-- 정산 팝업 -->
+      <rect x="330" y="16" width="290" height="218" rx="12" style="fill:var(--surface3);stroke:var(--pink);stroke-width:2"/>
+      <text x="346" y="40" style="fill:var(--pink);font-size:10px;font-family:sans-serif;font-weight:800;">시즌 종료 — 정산 팝업 (종료 후 첫 진입 1회)</text>
+      <text x="346" y="64" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">뉴욕 시즌 결과: Lv.24 도달</text>
+      <rect x="346" y="74" width="258" height="60" rx="8" style="fill:var(--surface2);stroke:var(--border)"/>
+      <text x="358" y="92" style="fill:var(--green);font-size:8px;font-family:sans-serif;">✓ 자동 지급된 보상: 해머 ×5 · 골드 800 · 부스터 ×2</text>
+      <text x="358" y="108" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">인박스로 지급 완료</text>
+      <text x="358" y="124" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">(완주 시: 보너스 상자 자동 개봉 내역 표시)</text>
+      <rect x="346" y="146" width="258" height="36" rx="8" style="fill:var(--teal-bg);stroke:var(--teal)"/>
+      <text x="358" y="162" style="fill:var(--teal);font-size:8px;font-family:sans-serif;font-weight:700;">NEXT: 파리 시즌 — 내일 시작!</text>
+      <text x="358" y="176" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">다음 시즌 카드덱 실루엣 미리보기</text>
+      <rect x="346" y="194" width="110" height="26" rx="13" style="fill:var(--pink)"/>
+      <text x="401" y="211" text-anchor="middle" style="fill:#1a1a1a;font-size:9px;font-family:sans-serif;font-weight:800;">확인</text>
     </svg>
   </div>
 
   <h3 id="s2-reskin">시즌 리스킨 가이드</h3>
   <ul>
-    <li><strong>교체 범위 = 테마 레이어만.</strong> 사다리 UI·게이지·칸 프레임은 공통 프리팹 고정, 배경 일러스트·헤더 로고·시즌명만 도시별 교체(CCS 리스킨 운영 방식). 시즌 1 = 루나 · 뉴욕(자유의 여신·타임스퀘어 모티프), 이후 도시 순서 = 메타 도시 순서(meta_city_list) 따름.</li>
-    <li><strong>재활용:</strong> Collections 나무 프레임 · 기존 보상 아이콘(해머·골드·부스터) · 진행바 컴포넌트. 신규 제작 최소화.</li>
+    <li><strong>교체 범위 = 테마 레이어만.</strong> 사다리 UI·게이지·칸 프레임은 공통 프리팹 고정, 배경 일러스트·헤더 로고·시즌명·위젯 아이콘만 도시별 교체(CCS 리스킨 운영 방식). 시즌 1 = 루나 · 뉴욕(자유의 여신·타임스퀘어 모티프), 이후 도시 순서 = 메타 도시 순서(meta_city_list) 따름.</li>
+    <li><strong>시즌 한정 카드덱 (시즌당 1종 · 핵심 신규 에셋):</strong> 도시 테마 카드백. 기존 collection_deck 포맷(카드백 1장 소재) 그대로 — 뉴욕 시즌 = 루나+뉴욕 스카이라인 카드백. 완주 전에는 T30 칸에서 실루엣+"?"로 노출(목표 견인), 다음 시즌 예고에도 실루엣 재사용.</li>
+    <li><strong>재활용:</strong> Collections 나무 프레임 · 기존 보상 아이콘(해머·골드·부스터) · 진행바 컴포넌트 · 보너스 상자는 P1 진행 체스트 소재 색변형.</li>
     <li><strong>트랙 컬러:</strong> 무료 = 파란 라벨(참여감·깔끔), 프리미엄 = 주황/골드 라벨(프리미엄감·자물쇠 반투명 45%). 무료 트랙이 초라해 보이면 안 됨 — 완주 동기의 주인공은 무료 줄.</li>
-    <li><strong>연출:</strong> 티어 클레임 = 짧은 개봉 연출(1초 내). 레벨업 = 게이지 오버플로우 → 마커 숫자 +1 팝. 일괄 수령 = 보상 아이콘 순차 플라이. (타이밍 수치는 개발 변수로 관리 — 아트 가이드에 수치 고정 금지)</li>
-    <li><strong>신규 에셋 리스트:</strong> ① 시즌 헤더 로고(도시별) ② 프리미엄 자물쇠 오버레이 ③ 시즌 한정 카드덱 1종(프리미엄 T5 보상, collection_deck 등록) ④ 루나 데코 '그랜드'(프리미엄 T30) ⑤ 로비 배너 소재(도시별).</li>
+    <li><strong>연출:</strong> 티어 클레임 = 짧은 개봉 연출(1초 내, Royal Pass flow GIF 참조). 레벨업 = 게이지 오버플로우 → 마커 숫자 +1 팝. 완주 = 카드덱 회전 공개 연출(1회성, 가장 화려하게). 보너스 상자 개봉 = 흔들림→터짐 숏 연출. (타이밍 수치는 개발 변수로 관리 — 아트 가이드에 수치 고정 금지)</li>
+    <li><strong>신규 에셋 리스트:</strong> ① 시즌 헤더 로고(도시별) ② 프리미엄 자물쇠 오버레이 ③ 시즌 한정 카드덱(도시별 1종) ④ 보너스 상자(체스트 색변형) ⑤ 로비 위젯 아이콘(도시별) ⑥ 정산 팝업 프레임. CCS 에셋 규모 참고: 패스 전체 ~120개(Base 60 + 시즌 리스킨 55) — 우리는 재활용 중심으로 그 이하 목표.</li>
   </ul>
 </section>
 
@@ -483,10 +634,10 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <div class="callout callout-red">
-    <p><strong>key_number 대역 정정 (Rev.2):</strong> 구버전이 제안한 50001~은 <span class="code">PST_unlock</span>(50001~50106)과 <strong>충돌</strong>한다. 시즌 패스 신규 테이블은 <strong>230001~ 대역</strong>(현재 최초의 완전 미사용 대역, 220001~220012 level_entry_tier 다음)을 사용한다.</p>
+    <p><strong>key_number 대역 정정 (Rev.2~):</strong> 구버전이 제안한 50001~은 <span class="code">PST_unlock</span>(50001~50106)과 <strong>충돌</strong>한다. 시즌 패스 신규 테이블은 <strong>230001~ 대역</strong>(현재 최초의 완전 미사용 대역, 220001~220012 level_entry_tier 다음)을 사용한다.</p>
   </div>
 
-  <h3 id="s3-bs">밸런스 시트 — 신규 탭 3개</h3>
+  <h3 id="s3-bs">밸런스 시트 — 신규 탭 4개</h3>
 
   <div class="sheet-block">
     <div class="sheet-block-title">탭 1: season_pass_const · key_number 230001~</div>
@@ -498,13 +649,17 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="sheet-row"><span class="sheet-row-var">season_weekly_quest_count</span><span class="sheet-row-default">= 2</span><span class="sheet-row-unit">count</span><span class="sheet-row-desc">주당 발급 위클리 퀘 수. 230006</span></div>
     <div class="sheet-row"><span class="sheet-row-var">season_weekly_quest_xp</span><span class="sheet-row-default">= 20</span><span class="sheet-row-unit">xp</span><span class="sheet-row-desc">위클리 퀘 1개 완료 XP. 230007</span></div>
     <div class="sheet-row"><span class="sheet-row-var">season_quest_reset_hour_utc</span><span class="sheet-row-default">= 0</span><span class="sheet-row-unit">hour(UTC)</span><span class="sheet-row-desc">퀘 갱신 기준 시각. 데일리 태스크 리셋과 동일 기준 사용. 230008</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">season_end_auto_claim</span><span class="sheet-row-default">= 1</span><span class="sheet-row-unit">bool</span><span class="sheet-row-desc">1 = 시즌 종료 시 도달 티어의 미수령 무료 보상 자동 지급(권장). 0 = 소멸. 230009</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">season_end_warning_day_1</span><span class="sheet-row-default">= 3</span><span class="sheet-row-unit">day</span><span class="sheet-row-desc">종료 D-3 노티. 230010</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">season_end_warning_day_2</span><span class="sheet-row-default">= 1</span><span class="sheet-row-unit">day</span><span class="sheet-row-desc">종료 D-1 노티. 230011</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">premium_enabled</span><span class="sheet-row-default">= 0</span><span class="sheet-row-unit">bool</span><span class="sheet-row-desc">프리미엄 구매 게이트. 런칭 0 고정 → 8/12 후 1 전환(in_use 온오프만으로 오픈). 230012</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">premium_retroactive_enabled</span><span class="sheet-row-default">= 1</span><span class="sheet-row-unit">bool</span><span class="sheet-row-desc">구매 시 기도달 티어 프리미엄 보상 소급 일괄 지급. 230013</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">premium_price_usd_cent</span><span class="sheet-row-default">= 499</span><span class="sheet-row-unit">USD cent</span><span class="sheet-row-desc">프리미엄 가격(예약값). 8/12 후 수익화 검토와 함께 확정 — IAP 미연동 상태라 지금은 placeholder. 230014</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">season_theme_base_city</span><span class="sheet-row-default">= new_york</span><span class="sheet-row-unit">key</span><span class="sheet-row-desc">시즌 1 테마 도시. 이후 meta_city_list 순서 로테이션. 230015</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">bonus_box_xp_cost</span><span class="sheet-row-default">= 15</span><span class="sheet-row-unit">xp</span><span class="sheet-row-desc">완주 후 보너스 상자 1개 채우는 XP. 230009</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">bonus_box_stack_max</span><span class="sheet-row-default">= 3</span><span class="sheet-row-unit">count</span><span class="sheet-row-desc">미개봉 상자 최대 적립 수. 초과분 XP는 대기(개봉 시 이어서 충전). 230010</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">season_end_auto_claim</span><span class="sheet-row-default">= 1</span><span class="sheet-row-unit">bool</span><span class="sheet-row-desc">1 = 시즌 종료 시 도달 티어의 미수령 무료 보상 + 개봉 가능 상자 자동 지급(권장). 0 = 소멸. 230011</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">season_end_warning_day_1</span><span class="sheet-row-default">= 3</span><span class="sheet-row-unit">day</span><span class="sheet-row-desc">종료 D-3 노티. 230012</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">season_end_warning_day_2</span><span class="sheet-row-default">= 1</span><span class="sheet-row-unit">day</span><span class="sheet-row-desc">종료 D-1 노티. 230013</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">widget_new_ribbon_hour</span><span class="sheet-row-default">= 48</span><span class="sheet-row-unit">hour</span><span class="sheet-row-desc">시즌 시작 후 NEW 리본 유지 시간(미진입 시). 230014</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">widget_timer_threshold_hour</span><span class="sheet-row-default">= 24</span><span class="sheet-row-unit">hour</span><span class="sheet-row-desc">위젯 라벨이 카운트다운으로 전환되는 잔여 시간. 230015</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">premium_enabled</span><span class="sheet-row-default">= 0</span><span class="sheet-row-unit">bool</span><span class="sheet-row-desc">프리미엄 구매 게이트. 런칭 0 고정 → 8/12 후 1 전환(in_use 온오프만으로 오픈). 230016</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">premium_retroactive_enabled</span><span class="sheet-row-default">= 1</span><span class="sheet-row-unit">bool</span><span class="sheet-row-desc">구매 시 기도달 티어 프리미엄 보상 소급 일괄 지급. 230017</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">premium_price_usd_cent</span><span class="sheet-row-default">= 499</span><span class="sheet-row-unit">USD cent</span><span class="sheet-row-desc">프리미엄 가격(예약값). 8/12 후 수익화 검토와 함께 확정 — IAP 미연동 상태라 지금은 placeholder. 230018</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">season_theme_base_city</span><span class="sheet-row-default">= new_york</span><span class="sheet-row-unit">key</span><span class="sheet-row-desc">시즌 1 테마 도시. 이후 meta_city_list 순서 로테이션. 230019</span></div>
   </div>
 
   <div class="sheet-block">
@@ -517,10 +672,15 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="sheet-row"><span class="sheet-row-desc">퀘 풀 정의는 아래 §퀘스트 풀. <span class="code">task_type</span>은 <span class="code">PST_daily_task</span>(120001~)의 기존 어휘를 재사용하고, 데코·도시용 2종만 신규 추가.</span></div>
   </div>
 
+  <div class="sheet-block">
+    <div class="sheet-block-title">탭 4: season_pass_bonus_box · key_number 233001~ &nbsp;·&nbsp; 컬럼: gacha_rate / reward_item_key / reward_amount / in_use</div>
+    <div class="sheet-row"><span class="sheet-row-desc">완주 후 상자 가챠 풀. 분모 10000 (<span class="code">streak_reward</span> gacha 방식 준용). 풀 정의는 §완주 후 보너스 상자.</span></div>
+  </div>
+
   <div class="callout callout-green">
     <p><strong>완주 가능성 검증 (240XP / 14일):</strong><br>
     · <strong>캐주얼</strong> (승리 4판/일 · 데일리 퀘 2/3 완료 · 위클리 4개 중 2개): (4 + 10)×14 + 40 = <strong>236 + α ≈ 완주선</strong> — 딱 맞게 설계. 데일리 퀘 3개를 다 하면 여유 완주(276XP).<br>
-    · <strong>코어</strong> (승리 10판/일 · 퀘 전부): (10 + 15)×14 + 80 = 430XP → <strong>약 9일차 완주</strong>. 이후는 P1 체스트·이벤트가 커버.<br>
+    · <strong>코어</strong> (승리 10판/일 · 퀘 전부): (10 + 15)×14 + 80 = 430XP → <strong>약 9일차 완주</strong> → 잔여 5일은 보너스 상자 루프(잉여 190XP ≈ 상자 12개).<br>
     · <strong>라이트</strong> (승리 2판/일 · 퀘 1개): (2+5)×14 + 40 = 138XP → 티어 17 부근. 중후반 보상(해머 밀집 구간)이 남아 다음 시즌 재도전 동기.<br>
     승리 판수 XP만으로는 완주 불가(승리만 17판/일 필요) — <strong>퀘 참여가 필수 경로</strong>가 되도록 의도한 설계다. 판수 벤치 변동 시 req_xp 계단만 조정.</p>
   </div>
@@ -534,7 +694,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>2</td><td>5 (10)</td><td>currency_gold 300</td><td>currency_gold 600</td></tr>
       <tr><td>3</td><td>5 (15)</td><td>booster_fireworks ×1</td><td>booster_fireworks ×2</td></tr>
       <tr><td>4</td><td>5 (20)</td><td>currency_hammer ×1</td><td>currency_hammer ×2</td></tr>
-      <tr><td><strong>5</strong></td><td>5 (25)</td><td><strong>currency_hammer ×2 + currency_gold 500</strong></td><td><strong>시즌 한정 카드덱 (collection_deck 신규 1종)</strong></td></tr>
+      <tr><td><strong>5</strong></td><td>5 (25)</td><td><strong>currency_hammer ×2 + currency_gold 500</strong></td><td><strong>currency_hammer ×4</strong></td></tr>
       <tr><td>6</td><td>5 (30)</td><td>booster_undo ×1</td><td>booster_undo ×2</td></tr>
       <tr><td>7</td><td>5 (35)</td><td>currency_hammer ×1</td><td>currency_hammer ×2</td></tr>
       <tr><td>8</td><td>5 (40)</td><td>currency_gold 400</td><td>currency_gold 800</td></tr>
@@ -559,23 +719,46 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>27</td><td>11 (207)</td><td>currency_hammer ×3</td><td>currency_hammer ×4</td></tr>
       <tr><td>28</td><td>11 (218)</td><td>currency_gold 1,000</td><td>currency_gold 2,000</td></tr>
       <tr><td>29</td><td>11 (229)</td><td>currency_ticket ×1</td><td>currency_ticket ×3</td></tr>
-      <tr><td><strong>30</strong></td><td>11 (240)</td><td><strong>currency_hammer ×6 + currency_gold 1,500</strong></td><td><strong>🏆 루나 데코 '그랜드' + currency_hammer ×8</strong></td></tr>
+      <tr><td><strong>30</strong></td><td>11 (240)</td><td><strong>🃏 시즌 한정 카드덱 (collection_deck 신규) + currency_hammer ×4</strong></td><td><strong>currency_hammer ×8 + currency_ticket ×3</strong></td></tr>
     </tbody>
   </table>
+  <div class="callout callout-pink">
+    <p><strong>최종 보상 = 시즌 한정 카드덱 (Rev.3 확정):</strong> 완주 트로피는 코스메틱(경제 무부담·영구 소장·다음 시즌 수집 동기). <span class="code">collection_deck</span>(100001~100030) 포맷에 시즌 덱을 신규 등록(100031~부터 시즌 순번). 완주 전에는 T30 칸에 실루엣 노출. <strong>루나 데코는 보상에서 제외</strong> — 데코는 해머로 유저가 직접 만드는 것(메타 루프 침범 금지).</p>
+  </div>
 
   <h3>보상 총량 · 해머 인플레 합산 관리</h3>
   <table>
     <thead><tr><th>재화</th><th>무료 트랙 총량</th><th>프리미엄 총량 (참고)</th><th>비고</th></tr></thead>
     <tbody>
-      <tr><td>해머</td><td><strong>37개</strong></td><td>53개</td><td>뉴욕 도시 총 수요 54개의 69% (전 도시 수요: 뉴욕 54 → 리우 235, meta_decoration_list 실측)</td></tr>
-      <tr><td>골드</td><td>5,600G</td><td>8,600G</td><td>데일리 태스크 하루 수도꼭지(2,787G)의 2일치 — 인플레 무시 가능 수준</td></tr>
+      <tr><td>해머</td><td><strong>35개</strong> (+상자 기대값 별도)</td><td>57개</td><td>뉴욕 도시 총 수요 54개의 65% (전 도시 수요: 뉴욕 54 → 리우 235, meta_decoration_list 실측)</td></tr>
+      <tr><td>골드</td><td>4,100G</td><td>7,100G</td><td>데일리 태스크 하루 수도꼭지(2,787G)의 1.5일치 — 인플레 무시 가능 수준</td></tr>
       <tr><td>부스터</td><td>fireworks 4 · undo 3 · wild 4 · 인피닛 2</td><td>상향 + 인피닛 2</td><td>event_milestone 3티어 간격 배치 패턴 준용</td></tr>
-      <tr><td>티켓</td><td>3장</td><td>7장</td><td>토너 재참여 유도</td></tr>
+      <tr><td>티켓</td><td>3장</td><td>10장</td><td>토너 재참여 유도</td></tr>
+      <tr><td>코스메틱</td><td>시즌 한정 카드덱 1종</td><td>—</td><td>완주 트로피 · collection_deck 등록</td></tr>
     </tbody>
   </table>
   <div class="callout callout-yellow">
-    <p><strong>해머 발행 합산 관리 (필수):</strong> 해머 source가 패스(시즌당 37) + P1 진행 체스트 + P4 루나 이벤트로 늘어난다. <strong>세 시스템의 시즌(2주)당 해머 발행 합계가 현행 도시 1개 수요(초반 도시 54~93)를 크게 넘지 않도록</strong> 밸런스 시트에서 합산 시트를 따로 두고 관리한다. 패스 = 상시 진척 백본, 이벤트 = 주말 스파이크 역할 분담. 후반 도시(카이로 205~리우 235)로 갈수록 수요가 커지므로 시즌별 상향 여지는 있음.</p>
+    <p><strong>해머 발행 합산 관리 (필수):</strong> 해머 source가 패스(시즌당 35 + 상자 기대값 ~4) + P1 진행 체스트 + P4 루나 이벤트로 늘어난다. <strong>세 시스템의 시즌(2주)당 해머 발행 합계가 현행 도시 1개 수요(초반 도시 54~93)를 크게 넘지 않도록</strong> 밸런스 시트에서 합산 시트를 따로 두고 관리한다. 패스 = 상시 진척 백본, 이벤트 = 주말 스파이크 역할 분담. 후반 도시(카이로 205~리우 235)로 갈수록 수요가 커지므로 시즌별 상향 여지는 있음.</p>
   </div>
+
+  <h3 id="s3-bonus">완주 후 보너스 상자 — 랜덤 보상 가챠 풀</h3>
+  <p>티어 30 완주 후에도 XP는 동일 규칙(승리+퀘)으로 계속 적립. <span class="sheet-var">bonus_box_xp_cost</span>(=15XP)마다 상자 1개 개봉 가능. 미개봉 <span class="sheet-var">bonus_box_stack_max</span>(=3개)까지 적립, 시즌 종료 시 개봉 가능분 자동 개봉 후 정산 팝업에 내역 표시.</p>
+  <table>
+    <thead><tr><th>key_number</th><th>gacha_rate (/10000)</th><th>보상</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>233001</td><td>3,500 (35%)</td><td>currency_hammer ×1</td><td>기대값의 중심 — 데코 연료</td></tr>
+      <tr><td>233002</td><td>3,000 (30%)</td><td>currency_gold 300</td><td>리듬용 소액</td></tr>
+      <tr><td>233003</td><td>1,500 (15%)</td><td>booster_fireworks ×1</td><td></td></tr>
+      <tr><td>233004</td><td>1,000 (10%)</td><td>booster_wild_card ×1</td><td></td></tr>
+      <tr><td>233005</td><td>700 (7%)</td><td>booster_undo ×1</td><td></td></tr>
+      <tr><td>233006</td><td>300 (3%)</td><td>currency_ticket ×1</td><td>잭팟 슬롯 — 개봉 기대감</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li><strong>기대값 (상자 1개):</strong> 해머 0.35 · 골드 90G · 부스터 0.32 · 티켓 0.03. 코어 완주자가 잔여 5일간 ~12상자를 열어도 해머 +4.2 · 골드 +1,080 — 인플레 안전.</li>
+    <li><strong>확률 표기:</strong> 분모 10000 규칙(레퍼런스 공통). 합계 = 10000 검증 필수. 가챠 로직은 <span class="code">streak_reward</span> 기존 추첨 루틴 재사용.</li>
+    <li><strong>CCS Bonus Bank와 구분:</strong> CCS의 '보너스 뱅크'는 프리미엄 미구매분을 보관했다 소급하는 프리미엄 퍼크 — 우리는 <span class="sheet-var">premium_retroactive_enabled</span> 소급이 그 역할을 대신한다. 이 보너스 상자는 <strong>무료 완주자용 반복 루프</strong>로 별개 시스템.</li>
+  </ul>
 
   <h3 id="s3-quest">퀘스트 풀 — 기존 시스템 라우팅</h3>
   <p>목적은 XP 팜이 아니라 <strong>라우팅</strong> — 데코·도시·토너·앨범·스트릭에 골고루 보내는 것. <span class="code">task_type</span>은 데일리 태스크 기존 어휘 재사용(트리거 로그도 재활용), 데코·도시 2종만 신규.</p>
@@ -600,16 +783,30 @@ ul li strong,ol li strong { color:var(--text); }
     <li><strong>기존 데일리 태스크와 관계:</strong> 별도 시스템으로 병행(태스크=골드 보상, 패스 퀘=XP). 같은 행동이 양쪽 동시에 카운트되는 건 허용 — 이중 지급이 아니라 이중 카운트이며, 행동 유도가 목적이라 의도된 겹침.</li>
   </ul>
 
+  <h3 id="s3-widget">로비 위젯 · 팝업 로직</h3>
+  <table>
+    <thead><tr><th>항목</th><th>규칙</th></tr></thead>
+    <tbody>
+      <tr><td>위젯 상태 판정</td><td>로비 진입·복귀 시 갱신: 미수령 보상 수(N) → B, 완주 여부 → C, 잔여 ≤ <span class="sheet-var">widget_timer_threshold_hour</span> → D 라벨, 시즌 시작 ≤ <span class="sheet-var">widget_new_ribbon_hour</span> &amp; 미진입 → E. 배지 우선순위: 수령가능 &gt; NEW. (§2 상태표 A~E 참조)</td></tr>
+      <tr><td>인트로 팝업</td><td>시즌 시작 후 첫 진입 시 1회 (시즌당 1회 플래그). 30티어 미리보기 + 최종 덱 실루엣.</td></tr>
+      <tr><td>정산 팝업</td><td>시즌 종료 후 첫 진입 시 1회: 도달 레벨 · 자동 지급 내역(티어 보상+자동 개봉 상자) · 다음 시즌 예고(덱 실루엣). CCS EndPopup 방식.</td></tr>
+      <tr><td>노티 연동</td><td>D-3·D-1 발송, 문구에 미수령 개수 삽입: "시즌 {0}일 남음 — 받을 보상 {1}개". P3 노티 윈백 문구 셋과 공유.</td></tr>
+      <tr><td>프리팹 구성 (CCS 준용)</td><td><span class="code">season_pass_popup</span>(메인) · <span class="code">intro</span> · <span class="code">info</span> · <span class="code">card_free</span> / <span class="code">card_premium</span> · <span class="code">bonus_box</span> · <span class="code">tier_progress_bar_part</span> · <span class="code">points_meter</span> · <span class="code">WidgetSeasonPass</span>(로비) · VFX BurstEffect(클레임). (후) <span class="code">purchase_premium</span>.</td></tr>
+    </tbody>
+  </table>
+
   <h3 id="s3-logic">트리거 · 상태 전이</h3>
   <table>
     <thead><tr><th>이벤트</th><th>처리</th></tr></thead>
     <tbody>
-      <tr><td>시즌 시작 (스케줄)</td><td>시즌 생성 · 전 유저 XP 0 초기화 · 테마 도시 설정 · 로비 배너 활성화 · 인트로 팝업 1회</td></tr>
-      <tr><td>레벨 승리</td><td>XP +<span class="sheet-var">season_xp_per_win</span> → 티어 도달 판정 → 결과 화면 게이지 갱신 (2100/승리 로그 재활용, 신규 서버 로직 최소화)</td></tr>
-      <tr><td>퀘 완료</td><td>퀘 XP 지급 → 티어 도달 판정. 판정·카운트는 기존 이벤트 로그 재활용</td></tr>
+      <tr><td>시즌 시작 (스케줄)</td><td>시즌 생성 · 전 유저 XP 0 초기화 · 테마 도시 설정 · 로비 위젯 활성화(NEW) · 인트로 팝업 1회</td></tr>
+      <tr><td>레벨 승리</td><td>XP +<span class="sheet-var">season_xp_per_win</span> → 티어 도달 판정(완주 후엔 상자 게이지 충전) → 결과 화면 게이지 갱신 (2100/승리 로그 재활용, 신규 서버 로직 최소화)</td></tr>
+      <tr><td>퀘 완료</td><td>퀘 XP 지급 → 동일 판정. 판정·카운트는 기존 이벤트 로그 재활용</td></tr>
       <tr><td>티어 클레임</td><td>도달 티어 보상 지급 · 중복 지급 방지 플래그(티어별 claimed bit)</td></tr>
-      <tr><td>시즌 종료 (스케줄)</td><td><span class="sheet-var">season_end_auto_claim</span>=1: 도달분 미수령 무료 보상 인박스 자동 지급 → XP·claimed 리셋 → 다음 시즌 테마 로드</td></tr>
-      <tr><td>종료 D-3 · D-1</td><td>노티 발송 ("시즌 N일 남음 — 받을 보상 M개") · P3 노티 윈백 문구 셋 공유</td></tr>
+      <tr><td>티어 30 완주</td><td>카드덱 지급(collection_deck 소유 플래그) + 완주 연출 → 상자 모드 전환(pass_state=BONUS)</td></tr>
+      <tr><td>상자 개봉</td><td>가챠 추첨(분모 10000) → 지급 → 스택 −1. 스택 = min(적립, <span class="sheet-var">bonus_box_stack_max</span>)</td></tr>
+      <tr><td>시즌 종료 (스케줄)</td><td><span class="sheet-var">season_end_auto_claim</span>=1: 도달분 미수령 무료 보상 + 개봉 가능 상자 자동 지급(인박스) → XP·claimed·상자 리셋 → 다음 시즌 테마 로드 → 다음 진입 시 정산 팝업</td></tr>
+      <tr><td>종료 D-3 · D-1</td><td>노티 발송 · 위젯 D 상태(≤24h 타이머)</td></tr>
       <tr><td>(8/12 후) 프리미엄 구매</td><td>영수증 검증 → premium 플래그 → 기도달 티어 프리미엄 보상 소급 일괄 지급 + 연출</td></tr>
     </tbody>
   </table>
@@ -617,17 +814,18 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>상태</th><th>진입 조건</th><th>전이</th></tr></thead>
     <tbody>
-      <tr><td>무료 참여</td><td>시즌 활성 (전 유저 자동)</td><td>→ 프리미엄 참여(8/12 후 구매) · → 시즌 종료</td></tr>
-      <tr><td>프리미엄 참여</td><td>premium_enabled=1 + 구매 검증</td><td>→ 시즌 종료 (시즌 단위 리셋, 재구매 필요)</td></tr>
-      <tr><td>시즌 종료</td><td>기간 만료</td><td>→ 자동 정산 → 다음 시즌 무료 참여</td></tr>
+      <tr><td>ACTIVE (무료 참여)</td><td>시즌 활성 (전 유저 자동)</td><td>→ BONUS(티어 30 완주) · → PREMIUM(8/12 후 구매) · → ENDED</td></tr>
+      <tr><td>PREMIUM (프리미엄 참여)</td><td>premium_enabled=1 + 구매 검증</td><td>→ BONUS(완주) · → ENDED (시즌 단위 리셋, 재구매 필요)</td></tr>
+      <tr><td>BONUS (완주 · 상자 루프)</td><td>티어 30 클레임 완료</td><td>→ ENDED</td></tr>
+      <tr><td>ENDED (정산)</td><td>기간 만료</td><td>→ 자동 정산 → 정산 팝업 1회 → 다음 시즌 ACTIVE</td></tr>
     </tbody>
   </table>
 
   <h3>서버 · 클라 부담 최소화 원칙</h3>
   <ul>
-    <li><strong>순수 싱글플레이 구조</strong> — 서버 신규 없이 XP 상태·티어 claimed 비트만 유저 데이터에 추가. CCS 역기획에서도 서버리스(영수증 검증만)로 확인된 구조. 콜드스타트 완벽 적합.</li>
-    <li><strong>재활용:</strong> 레벨 클리어→XP(승리 로그) · 티어 보상 지급(기존 보상 지급 루틴) · Collections 나무 프레임 · 보상 아이콘 · 진행바.</li>
-    <li><strong>신규:</strong> 시즌 XP 상태·레벨업 판정 · 2트랙 사다리 UI · 시즌 리셋/자동 정산 · (8/12 후) 프리미엄 결제 게이트.</li>
+    <li><strong>순수 싱글플레이 구조</strong> — 서버 신규 없이 XP 상태·티어 claimed 비트·상자 스택만 유저 데이터에 추가. CCS 역기획에서도 서버리스(영수증 검증만)로 확인된 구조. 콜드스타트 완벽 적합.</li>
+    <li><strong>재활용:</strong> 레벨 클리어→XP(승리 로그) · 티어 보상 지급(기존 보상 지급 루틴) · 가챠 추첨(streak_reward 루틴) · Collections 나무 프레임 · 보상 아이콘 · 진행바 · 위젯 슬롯.</li>
+    <li><strong>신규:</strong> 시즌 XP 상태·레벨업 판정 · 2트랙 사다리 UI · 보너스 상자 모드 · 시즌 리셋/자동 정산·정산 팝업 · 위젯 상태 머신 · (8/12 후) 프리미엄 결제 게이트.</li>
   </ul>
 
   <h3>스트링 키 (CCS 명명 준용)</h3>
@@ -638,6 +836,9 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>Meta.SeasonPass.InfoPopup.1</td><td>Win levels to earn Pass XP.</td><td>레벨을 승리하고 패스 XP를 모으세요.</td></tr>
       <tr><td>Meta.SeasonPass.ClaimAll</td><td>Claim All ({0})</td><td>받을 보상 {0} · 일괄수령</td></tr>
       <tr><td>Meta.SeasonPass.NextLevel</td><td>{0} wins to next level</td><td>다음 레벨까지 {0}판</td></tr>
+      <tr><td>Meta.SeasonPass.FinalReward</td><td>Season-exclusive card deck!</td><td>시즌 한정 카드 덱!</td></tr>
+      <tr><td>Meta.SeasonPass.BonusBox.Title</td><td>Bonus Box</td><td>보너스 상자</td></tr>
+      <tr><td>Meta.SeasonPass.BonusBox.Desc</td><td>Keep playing to fill the box!</td><td>계속 플레이해서 상자를 채우세요!</td></tr>
       <tr><td>Meta.SeasonPass.Tooltip.Locked.Title</td><td>Premium Only</td><td>프리미엄 전용</td></tr>
       <tr><td>Meta.SeasonPass.EndPopup.Title</td><td>Season Pass ended</td><td>시즌 패스 종료</td></tr>
       <tr><td>Meta.SeasonPass.EndWarning</td><td>{0} days left — {1} rewards waiting!</td><td>{0}일 남음 — 받을 보상 {1}개!</td></tr>
@@ -648,15 +849,18 @@ ul li strong,ol li strong { color:var(--text); }
   <ul>
     <li><strong>시즌 중 신규 유저 합류:</strong> 합류 시점부터 XP 0 시작. 남은 기간으로 완주 불가할 수 있음 — 정상(다음 시즌 완주 동기). 초반 5XP 계단 덕에 며칠만 해도 티어 5~10 보상(해머)은 도달 → 첫 데코 연료는 확보됨.</li>
     <li><strong>데코 미해금 유저:</strong> <span class="code">place_deco</span>·<span class="code">city_progress</span> 퀘 미발급, 다른 타입으로 대체 추첨.</li>
+    <li><strong>완주 직전~직후 XP 경계:</strong> 240XP 도달 판에서 잉여 XP는 상자 게이지로 이월(버리지 않음).</li>
+    <li><strong>상자 스택 초과:</strong> 미개봉 3개 상태에선 게이지 충전 정지·XP 대기 표시("상자를 열어주세요"). 개봉하면 대기 XP부터 이어서 충전 — 개봉 강제가 아니라 손실 없는 대기.</li>
     <li><strong>시즌 종료 직전 승리:</strong> 종료 판정은 서버 타임스탬프. 종료 시각 이전 승리는 XP 인정 → 자동 정산에 포함.</li>
     <li><strong>시간 조작:</strong> 퀘 갱신·시즌 종료 전부 서버 UTC 기준. 클라 로컬 시간 신뢰 금지.</li>
     <li><strong>일괄 수령 중 중단(앱 킬):</strong> 티어별 claimed 비트를 지급 성공 단위로 커밋 — 부분 지급 후 재실행 시 남은 것만 지급.</li>
-    <li><strong>버전 혼재:</strong> 패스 미탑재 구버전 유저도 승리 로그는 쌓임 — 업데이트 시점에 시즌 XP 소급 계산할지 여부는 하지 않음(현시즌 진행분만, 단순성 우선).</li>
+    <li><strong>카드덱 중복:</strong> 같은 시즌 덱은 1회만 지급(소유 플래그). 재수령 시도는 무시.</li>
+    <li><strong>버전 혼재:</strong> 패스 미탑재 구버전 유저도 승리 로그는 쌓임 — 업데이트 시점에 시즌 XP 소급 계산은 하지 않음(현시즌 진행분만, 단순성 우선).</li>
     <li><strong>(8/12 후) 환불:</strong> 스토어 webhook으로 premium 플래그 회수. 이미 지급된 소급 보상 회수는 하지 않음(음수 재화 방지) — 어뷰징 모니터만.</li>
   </ul>
 
   <div class="callout callout-blue">
-    <p><strong>오픈 이슈 (결정 대기):</strong> ① 시즌 길이 14일 vs 도시 언락 실제 주기 정합 재확인 ② 무료 트랙 해머 37개 — P1 진행 체스트 수치 확정 후 합산 재조정 ③ 프리미엄 가격·오픈 시점(8/12 후 수익화 검토와 함께, IAP 연동 선행 필요) ④ req_xp 계단은 라이브 판수 벤치(FB 퍼널 대시보드 SSOT) 확인 후 최종 튜닝.</p>
+    <p><strong>오픈 이슈 (결정 대기):</strong> ① 시즌 길이 14일 vs 도시 언락 실제 주기 정합 재확인 ② 무료 트랙 해머 35개 — P1 진행 체스트 수치 확정 후 합산 재조정 ③ 보너스 상자 가챠 풀 수치(기대값 해머 0.35/상자) 라이브 완주율 보고 튜닝 ④ 프리미엄 가격·오픈 시점(8/12 후 수익화 검토와 함께, IAP 연동 선행 필요) ⑤ req_xp 계단은 라이브 판수 벤치(FB 퍼널 대시보드 SSOT) 확인 후 최종 튜닝.</p>
   </div>
 </section>
 
@@ -698,7 +902,7 @@ ul li strong,ol li strong { color:var(--text); }
     status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
   };
   const DD_LABEL  = { tag: '태그', priority: '우선순위', status: '상태' };
-  const DEFAULTS  = { tag: 'monetize', priority: 'mid', status: 'open' };
+  const DEFAULTS  = { tag: 'feature', priority: 'high', status: 'wip' };
   let ddField = null;
 
   const dd = document.createElement('div');
@@ -779,6 +983,25 @@ ul li strong,ol li strong { color:var(--text); }
   document.addEventListener('click', function (e) {
     if (!e.target.closest('.nav-sidebar') && !e.target.closest('.nav-toggle'))
       document.querySelector('.nav-sidebar').classList.remove('open');
+  });
+})();
+</script>
+<script>
+// ── 레퍼런스 이미지 클릭 확대 ──
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.ref-shot img').forEach(function(img){
+      img.addEventListener('click', function(){
+        var ov = document.createElement('div');
+        ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+        var big = document.createElement('img');
+        big.src = img.src;
+        big.style.cssText = 'max-width:92vw;max-height:92vh;border-radius:8px';
+        ov.appendChild(big);
+        ov.addEventListener('click', function(){ ov.remove(); });
+        document.body.appendChild(ov);
+      });
+    });
   });
 })();
 </script>

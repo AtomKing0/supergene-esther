@@ -458,7 +458,7 @@ const SPECS = [
   },
   {
     id: 'spec-007', file: 'spec-007-season-pass.html',
-    title: '[리텐션-패스] 루나 시즌 패스 (무료 트랙 우선 · 8/12 프리미엄) — Rev.2',
+    title: '[리텐션-패스] 루나 시즌 패스 (무료 트랙 우선 · 완주 후 보너스 상자) — Rev.3',
     tags: ['feature', 'monetize'], priority: 'high', status: 'wip', date: '2026. 7. 24.', dueDate: null, relatedTo: [],
   },
   {
@@ -692,7 +692,7 @@ function applyOv(id, key, val) {
   if (key === 'status') {
     const from = ov[id].status || (SPECS.find(s => s.id === id) || {}).status || null;
     if (from !== val) {
-      // Supabase 상태 변경 이력
+      // Supabase 상태 변경 이력 (브라우저 직접 → 라이브 저장, 프록시 폴백)
       if (_sb) _sb.from('spec_status_log').insert({ spec_id: id, from_status: from, to_status: val }).then(({ error }) => { if (error) console.warn('spec_status_log insert:', error.message); });
       else fetch('/api/sb/spec_status_log', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ spec_id: id, from_status: from, to_status: val }) }).catch(()=>{});
       // localStorage 이력 (호환)
@@ -707,7 +707,7 @@ function applyOv(id, key, val) {
   ov[id][key] = val;
   _ov = ov;
   localStorage.setItem('spec-ov', JSON.stringify(ov));
-  // Supabase write-through (서버 프록시 경유)
+  // Supabase write-through: 브라우저 직접(anon, public write 정책) → 라이브에서도 저장. server.py 없을 때 프록시 폴백.
   const r = ov[id];
   const _payload = {
     spec_id:    id,
