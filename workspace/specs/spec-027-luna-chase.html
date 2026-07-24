@@ -303,7 +303,7 @@ code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(
 
   <!-- 3-1 파라미터 -->
   <h2 id="s3-param">3-1 밸런스 파라미터 (초안)</h2>
-  <p>모든 수치는 <strong>초안</strong>이며 판당 소요 실측 후 확정. SSOT = <code>PST_const.json</code> / <code>PST_event_sprint.json</code>.</p>
+  <p>모든 수치는 <strong>초안</strong>이며 판당 소요 실측 후 확정. SSOT = 라이브 시트([PST] 밸런스시트) 형식의 이벤트 전용 탭 <code>event_luna_sprint</code> (2026-07-24 확정).</p>
   <table>
     <thead><tr><th>파라미터</th><th>초안 값</th><th>비고</th></tr></thead>
     <tbody>
@@ -352,56 +352,77 @@ code{background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:var(
   <div class="note"><strong>활용:</strong> <code>7100/7101</code>로 참여율, <code>7101→7120</code>로 완주율, <code>7110</code>의 gold_capped로 골드 캡 발동 빈도, <code>7115</code>의 elapsed_sec로 앵커 위치 실측 조정, <code>7121</code>의 fail_type으로 만료 실패를 timeout vs escape 분해. 트랙 계열(7000~7031·7200)은 마스터 §9 참조.</div>
 
   <!-- 3-4 데이터 테이블 -->
-  <h2 id="s3-data">3-4 데이터 테이블 요약 (마스터 §8 링크)</h2>
-  <p>신규 3 · 수정 2. 전체 스키마·컬럼 정의는 <a href="../../pst_luna_journey_spec.html">마스터 §8</a> 참조. 스프린트 관련 핵심만 요약.</p>
+  <h2 id="s3-data">3-4 데이터 테이블 요약</h2>
+  <p><strong>SSOT = 라이브 시트([PST] 밸런스시트) 형식의 이벤트 전용 탭 (2026-07-24 확정).</strong> 공용 탭 등록 2건 + 전용 탭 3개 신설. 전체 스키마·컬럼 정의는 <a href="../../pst_luna_journey_spec.html">마스터 §8</a> 참조. 라이브 포맷 준수: 1행=한글 라벨 · 2행=영문 컬럼명 · <code>in_use</code>=TRUE/FALSE 문자열 · snake_case.</p>
 
-  <div class="tab-badge">PST_const.json (스프린트 관련 추가분)</div>
+  <table class="bs-table">
+    <thead><tr><th>구분</th><th>탭명</th><th>대역/키</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td>공용 등록</td><td><code>event_schedule</code></td><td>160005·160006</td><td>여정 트랙 + 추격 스프린트 2행 추가</td></tr>
+      <tr><td>공용 등록</td><td><code>string_code</code></td><td>T_ 카피 키</td><td>루나 화자 카피 키 추가(T_ 대문자 관례·Jackpot 쌍 예약)</td></tr>
+      <tr><td>전용 탭</td><td><code>event_luna_milestone</code></td><td>200101~200107</td><td>여정 트랙 7행 (별 임계·reward_type item|deco·step7=데코 그랜드)</td></tr>
+      <tr><td>전용 탭</td><td><code>event_luna_sprint</code></td><td>200201</td><td>스프린트 파라미터 1행 (컬럼식)</td></tr>
+      <tr><td>전용 탭</td><td><code>event_luna_chest</code></td><td>200301~200306</td><td>체스트 구성 (normal in_use=TRUE 5행 + jackpot 스키마 예시 FALSE 1행)</td></tr>
+    </tbody>
+  </table>
+  <div class="note">key 대역 = 20만 대역 신규 배정(라이브 실측 최대: event_schedule 160004·event_milestone 180045·const 10097과 무충돌). 탭별 백 단위(01/02/03)로 서브구분.</div>
+
+  <div class="tab-badge">공용 등록 ①: event_schedule (2행 추가 · 160005·160006)</div>
   <div class="bs-block">
     <table class="bs-table">
-      <thead><tr><th>key_number</th><th>const_name</th><th>const_value</th><th>단위</th></tr></thead>
+      <thead><tr><th>key_number</th><th>type</th><th>start_day</th><th>end_day</th><th>repeat</th><th>in_use</th><th>interval_week</th><th>description</th></tr></thead>
       <tbody>
-        <tr><td>10069</td><td>luna_sprint_window_sec</td><td>1500</td><td>초 (25분)</td></tr>
-        <tr><td>10070</td><td>luna_sprint_goal_clears</td><td>8</td><td>판</td></tr>
-        <tr><td>10071</td><td>luna_sprint_reward_multiplier</td><td>5</td><td>배</td></tr>
-        <tr><td>10072</td><td>luna_sprint_daily_trigger_max</td><td>2</td><td>회</td></tr>
-        <tr><td>10073</td><td>luna_sprint_key_anchor_level</td><td>5</td><td>판 (연출 전용)</td></tr>
+        <tr><td>160005</td><td>luna_journey_track</td><td>1</td><td>2</td><td>TRUE</td><td>TRUE</td><td>2</td><td>루나의 도시 여정: 별 수집 트랙 (2일창)</td></tr>
+        <tr><td>160006</td><td>luna_chase_sprint</td><td>6</td><td>0</td><td>TRUE</td><td>TRUE</td><td>2</td><td>루나 추격 스프린트: 주말 시간창 (발동 파라미터는 event_luna_sprint 소유)</td></tr>
       </tbody>
     </table>
   </div>
 
-  <div class="tab-badge">PST_event_sprint.json (신규 · 1행)</div>
+  <div class="tab-badge">전용 탭 ①: event_luna_milestone (200101~200107 · 7행)</div>
   <div class="bs-block">
     <table class="bs-table">
-      <thead><tr><th>필드</th><th>값</th><th>소유</th></tr></thead>
+      <thead><tr><th>key_number</th><th>event_id</th><th>step</th><th>goal_type</th><th>goal_amount</th><th>reward_type</th><th>reward_key</th><th>reward_amount</th><th>in_use</th></tr></thead>
       <tbody>
-        <tr><td>key_number / event_id</td><td>190001 / 160006</td><td>서버</td></tr>
-        <tr><td>window_sec / goal_clears</td><td>1500 / 8</td><td>서버</td></tr>
-        <tr><td>reward_multiplier</td><td>5</td><td>서버</td></tr>
-        <tr><td>gold_cap_per_sprint</td><td>1500</td><td>시트</td></tr>
-        <tr><td>daily_trigger_max / trigger_hours</td><td>2 / [12,20]</td><td>서버</td></tr>
-        <tr><td>key_anchor_level</td><td>5 (연출 전용 · SSOT=const 10073)</td><td>서버</td></tr>
-        <tr><td>complete_reward / chest_id</td><td>currency_key ×1 / 191000</td><td>서버</td></tr>
+        <tr><td>200101</td><td>160005</td><td>1</td><td>collect_star</td><td>2</td><td>item</td><td>currency_hammer</td><td>2</td><td>TRUE</td></tr>
+        <tr><td>200102</td><td>160005</td><td>2</td><td>collect_star</td><td>4</td><td>item</td><td>currency_gold</td><td>400</td><td>TRUE</td></tr>
+        <tr><td>200103</td><td>160005</td><td>3</td><td>collect_star</td><td>6</td><td>item</td><td>currency_hammer</td><td>3</td><td>TRUE</td></tr>
+        <tr><td>200104</td><td>160005</td><td>4</td><td>collect_star</td><td>9</td><td>item</td><td>booster_undo</td><td>2</td><td>TRUE</td></tr>
+        <tr><td>200105</td><td>160005</td><td>5</td><td>collect_star</td><td>12</td><td>item</td><td>currency_hammer</td><td>5</td><td>TRUE</td></tr>
+        <tr><td>200106</td><td>160005</td><td>6</td><td>collect_star</td><td>15</td><td>item</td><td>currency_gold</td><td>800</td><td>TRUE</td></tr>
+        <tr><td>200107</td><td>160005</td><td>7</td><td>collect_star</td><td>18</td><td>deco</td><td>deco_luna_observatory</td><td>1</td><td>TRUE</td></tr>
       </tbody>
     </table>
   </div>
+  <div class="note"><strong>goal_type = collect_star</strong>: 라이브 실측 2종(collect_color·earn_point)에 없는 신규 타입 → <strong>[서버 개발필요: 누적 별 카운트 소스 처리]</strong>. step7 그랜드 = <strong>루나 전망대 데코(deco_luna_observatory, 가칭)</strong> 1개 지급 → <strong>[클라 처리 1건 필요]</strong>: 라이브 meta_decoration_list는 해머 업그레이드 구조라 이벤트 완주 시 deco unlock 로직 신규 필요.</div>
 
-  <div class="tab-badge">PST_event_sprint_chest.json (신규 · normal 4행 + jackpot 1행 스키마)</div>
+  <div class="tab-badge">전용 탭 ②: event_luna_sprint (200201 · 1행·컬럼식)</div>
   <div class="bs-block">
     <table class="bs-table">
-      <thead><tr><th>chest_tier</th><th>slot</th><th>reward_item_key</th><th>amount</th><th>in_use</th></tr></thead>
+      <thead><tr><th>key_number</th><th>event_id</th><th>window_sec</th><th>target_levels</th><th>key_anchor_level</th><th>reward_multiplier</th><th>gold_cap</th><th>daily_trigger_count</th><th>heart_max</th><th>heart_regen_sec</th><th>chest_tier</th><th>in_use</th></tr></thead>
       <tbody>
-        <tr><td>normal</td><td>1</td><td>currency_hammer</td><td>8</td><td>true</td></tr>
-        <tr><td>normal</td><td>2</td><td>currency_gold</td><td>500</td><td>true</td></tr>
-        <tr><td>normal</td><td>3</td><td>booster_wild_card</td><td>1</td><td>true</td></tr>
-        <tr><td>normal</td><td>4</td><td>booster_undo</td><td>1</td><td>true</td></tr>
-        <tr><td>jackpot</td><td>1</td><td>currency_gold</td><td>0 (예약)</td><td>false</td></tr>
+        <tr><td>200201</td><td>160006</td><td>1500</td><td>8</td><td>5</td><td>5</td><td>1500</td><td>2</td><td>3</td><td>1800</td><td>normal</td><td>TRUE</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">key_anchor_level(5)=연출 전용 플래그(보상 분리 없음). chest_tier=완주 시 오픈할 체스트 티어(v1=normal). 하트0 시 직전 step 별 임계로 리셋=클라 게임루프 소유. 전 파라미터 초안 표기.</div>
+
+  <div class="tab-badge">전용 탭 ③: event_luna_chest (200301~200306 · normal 5행 TRUE + jackpot 1행 FALSE)</div>
+  <div class="bs-block">
+    <table class="bs-table">
+      <thead><tr><th>key_number</th><th>chest_tier</th><th>slot</th><th>reward_key</th><th>reward_amount</th><th>in_use</th></tr></thead>
+      <tbody>
+        <tr><td>200301</td><td>normal</td><td>1</td><td>currency_hammer</td><td>8</td><td>TRUE</td></tr>
+        <tr><td>200302</td><td>normal</td><td>2</td><td>currency_gold</td><td>500</td><td>TRUE</td></tr>
+        <tr><td>200303</td><td>normal</td><td>3</td><td>booster_wild_card</td><td>1</td><td>TRUE</td></tr>
+        <tr><td>200304</td><td>normal</td><td>4</td><td>booster_undo</td><td>1</td><td>TRUE</td></tr>
+        <tr><td>200305</td><td>normal</td><td>5</td><td>currency_gold</td><td>300</td><td>TRUE</td></tr>
+        <tr><td>200306</td><td>jackpot</td><td>1</td><td>currency_gold</td><td>0</td><td>FALSE</td></tr>
       </tbody>
     </table>
   </div>
   <div class="callout callout-blue">
-    <strong>잭팟 예약 OFF:</strong> v1 = normal 단일 출시(원본 Legendary 대응). jackpot(원본 Epic)은 <code>chest_tier</code> enum·슬롯 존재만 증명하는 스키마 예시 1행(<code>in_use=0</code>). 데이터 붙는 시점에 코드수정 없이 ON(v1.x 후속 레버). 잭팟 발동은 확률뽑기 아닌 <strong>확정 조건</strong>(<code>streak_n_clears</code> / <code>weekend_special</code>) — 원본도 확정보상 구조.
+    <strong>잭팟 예약 OFF:</strong> v1 = normal 단일 출시. jackpot(200306)은 <code>chest_tier</code> enum 존재 증명용 스키마 예시(reward_amount=0·in_use=FALSE). 잭팟 확정 조건 트리거 시 행 채우고 in_use=TRUE만 하면 코드수정 없이 ON(v1.x 레버). reward_key 전부 라이브 item_list 실존 키만 사용 → 신규 아이템 등록 불필요. 신규 currency(열쇠)=연출 상징(실아이템 아님).
   </div>
-  <div class="note"><strong>연계:</strong> <code>currency_key</code>는 신규 아이템키 → <code>PST_item_list.json</code>에 40006 currency 행 추가 필요(클라 소유). 스케줄 = <code>PST_event_schedule.json</code> 160006(<code>luna_chase_sprint</code>, 2일창·발동시각은 sprint 테이블 소유).</div>
 </div>
 
 <!-- ════════════════════════════════════ SECTION 4 ════════════════════════════════════ -->
