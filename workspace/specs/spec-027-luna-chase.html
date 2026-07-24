@@ -234,6 +234,7 @@ ul li strong,ol li strong { color:var(--text); }
   <a href="#s3-state">↳ 상태 5종</a>
   <a href="#s3-log">↳ 계측 7xxx</a>
   <a href="#s3-data">↳ 데이터 테이블</a>
+  <a href="#s3-client">↳ 실클라 매핑</a>
   <a href="#s4">④ UI/UX 요점</a>
   <a href="#s5">⑤ 일정·공수·미결</a>
 </nav>
@@ -547,6 +548,76 @@ ul li strong,ol li strong { color:var(--text); }
     <strong>Jackpot 2티어 활성 <span class="badge badge-green" style="font-size:10px">시트 반영</span>:</strong> Normal = 해머×3+와일드/undo×2+골드500. Jackpot = 해머×6+도시데코 조각×1+골드1,000 — Jackpot 해금 = 저니 6마일스톤 완주(in_use TRUE). reward_key 전부 라이브 item_list 실존 키만 사용 → 신규 아이템 등록 불필요(deco_fragment_city는 기존 메타 키). 신규 currency(열쇠)=연출 상징(실아이템 아님).
   </div>
 
+  <!-- ══════════════ 3-X 실클라 매핑 ══════════════ -->
+  <h2 id="s3-client">3-X 실클라 매핑 <span class="badge badge-purple" style="font-size:10px">클라 실측</span></h2>
+  <p>대상 레포: <code>~/solitaire-tripeaks-client</code> (Cocos Creator). 실측 파일 경로·클래스명 기준. 추측 없음.</p>
+
+  <!-- 재사용·신규 총괄표 -->
+  <h3>3-X-1 재사용 7 / 신규 5 총괄표</h3>
+  <table>
+    <thead><tr><th>구분</th><th>파일 / 클래스</th><th>용도</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="7" style="color:var(--green);font-weight:700">재사용</td><td><code>PopupBase.ts</code></td><td>팝업 베이스 — 루나 체스트·발동 안내 팝업 모두 이 위에 올라감</td></tr>
+      <tr><td><code>EventItem.ts</code></td><td>이벤트 진행 UI 컴포넌트 — 트랙·밧줄 패널 공유</td></tr>
+      <tr><td><code>LobbyEventButton</code> (in <code>LobbyMainUIVIew.ts</code>)</td><td>로비 밧줄 아이콘 — 현재 4슬롯 하드코딩. 루나 슬롯 추가 시 5번째 대응 필요</td></tr>
+      <tr><td><code>PopupGameEntry.ts</code> 확장</td><td>프리레벨 <code>eventItems[]</code> 5번째 항목으로 루나 행잉 태그 추가</td></tr>
+      <tr><td><code>PopupCompleteLevel.ts</code> 확장</td><td><code>eventRewardItems[]</code>에 "루나의 추격" 뱃지 항목 삽입 (결과화면 뱃지)</td></tr>
+      <tr><td><code>reward_box_open_cat.anim</code> + <code>GatheringItemSequence</code></td><td>체스트 오픈 연출 재활용 (루나 체스트 Win 상태)</td></tr>
+      <tr><td><code>ViewBase.setLocked()</code> / <code>ViewManager.lockPopupInput</code></td><td>연출 재생 중 입력 잠금 (Grab·Escape 상태 강제 시청)</td></tr>
+      <tr><td rowspan="5" style="color:var(--yellow);font-weight:700">신규</td><td><code>lunaChaseButton</code> 글로우·뱃지 에셋</td><td>로비 플레이 버튼 마킹 아이콘 (발자국/달빛·상시 표시)</td></tr>
+      <tr><td>루나 도주 연출 (Tween · 로비 캐릭터 이동)</td><td>기존 로비 캐릭터 이동 없음 → 신규 Tween 시퀀스로 구현</td></tr>
+      <tr><td>루나 말풍선 컴포넌트</td><td>스토리 팝업(③ 도주 서사)용 말풍선 신규</td></tr>
+      <tr><td><code>LunaChaseTimerWidget.ts</code></td><td>인게임 HUD 카운트다운 타이머 + 판수 카운터(n/8) + 추격 진행바</td></tr>
+      <tr><td><code>PopupEventLunaChase.ts</code></td><td>발동 안내·트랙 통합 팝업 (PopupBase 상속)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 명명·구조 확정 표 -->
+  <h3>3-X-2 명명·구조 확정 표</h3>
+  <table>
+    <thead><tr><th>항목</th><th>확정 값</th><th>클라 실측 근거</th></tr></thead>
+    <tbody>
+      <tr><td>이벤트 type</td><td><code>luna_chase</code></td><td><code>ProtocolTypes.ts</code> <code>EventSchedule.type</code> 확장 · <code>EventKeyNumber.LUNA_CHASE</code> 신규 등록</td></tr>
+      <tr><td>content_id</td><td><code>content_event_luna_chase</code></td><td>클라 관례 <code>content_event_*</code> 실측 — <code>Unlock.ts</code> <code>isUnlockedByContentId</code> 참조. 클라 코드 신규 등록 불필요(데이터 참조만)</td></tr>
+      <tr><td>진행 저장 구조</td><td>서버 <code>TPlayer.event_infos</code> 내 <code>LunaChaseInfo</code></td><td>필드: <code>slot_id · timer_start_ts · rounds_cleared · journey_milestone · cooldown_until</code></td></tr>
+      <tr><td>신규 API</td><td><code>/api/event/luna-chase/claim-chest</code></td><td>기존 <code>/api/event/*</code> 관례 준수 · 멱등 <code>txn_id</code> 포함 — 등록 경로: <code>submodule/apps/api/src/router/api-event.ts</code></td></tr>
+      <tr><td>시간 권위</td><td>서버 <code>startAt/endAt</code> 계산 후 전달</td><td>클라 <code>DataManager.getTime()</code> (<code>serverTimeGapMs</code> 보정) 관례 그대로</td></tr>
+      <tr><td>in_use 킬스위치</td><td>서버 기구현 — 빌드 불필요</td><td><code>submodule/libs/protocol/src/balance-sheet/event-schedule.ts</code> 실측 확인</td></tr>
+      <tr><td>배수 미채택 근거</td><td><code>PopupGameEntry.multipleValue</code> (x1/x2/x4 선택형 베팅 실재)</td><td>베팅 시스템과 분리 확정 — 루나 체스트는 배수 UI 미사용</td></tr>
+      <tr><td>A/B 인프라</td><td>없음 → v1 제외</td><td>시트 <code>onboarding_target_levels</code> 분기만 예약 (Later 범위)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 로그 코드 확정 표 -->
+  <h3>3-X-3 로그 코드 확정 표 <span class="badge badge-purple" style="font-size:10px">클라 실측</span></h3>
+  <p>71xx 빈 대역 실측(7180만 사용 중) — 7101~7108 신규 배정. 등록 방법: <code>BaseLogManager</code> <code>LogType</code> enum + <code>SolitaireTripeaksLogManager</code> <code>registLogEvent</code> 2줄. payload는 string 값만(숫자 문자열 직렬화).</p>
+  <table>
+    <thead><tr><th>로그 코드</th><th>이벤트명</th><th>발화 시점</th><th>BQ 별칭 (troll_* 매핑)</th></tr></thead>
+    <tbody>
+      <tr><td><code>7101_LUNA_CHASE_SLOT_OPEN</code></td><td>슬롯 열림 (NOTIFY)</td><td>슬롯 활성화 시점</td><td><code>troll_activate</code> (구 <code>troll_join</code>에서 개칭)</td></tr>
+      <tr><td><code>7102_ACTIVATE</code></td><td>스프린트 발동 (RUNNING 진입)</td><td>로비 자동 발동 시퀀스 완료 후 첫 판 진입</td><td>—</td></tr>
+      <tr><td><code>7103_ROUND_CLEAR</code></td><td>창 내 1판 클리어</td><td>판 완료 시 카운트 +1</td><td>—</td></tr>
+      <tr><td><code>7104_KEY_GET</code></td><td>열쇠 앵커 도달 (연출 전용)</td><td>5판째 "열쇠 획득!" 마이크로 축하</td><td>—</td></tr>
+      <tr><td><code>7105_CHEST_OPEN</code></td><td>루나 체스트 오픈·지급</td><td>8판 완주 → Win 연출 → 지급</td><td><code>chest_opened</code></td></tr>
+      <tr><td><code>7106_FAIL</code></td><td>스프린트 만료 (미완주)</td><td>25분 만료 또는 이벤트 종료 강제만료</td><td><code>troll_cycle_fail</code></td></tr>
+      <tr><td><code>7107_HAMMER_GRANT</code></td><td>해머 지급</td><td>체스트 오픈 내 해머 지급 시</td><td><code>hammer_granted</code></td></tr>
+      <tr><td><code>7108_DECO_GATE_UNLOCK</code></td><td>Jackpot 데코 게이트 해금</td><td>저니 6마일스톤 완주 → Jackpot 활성 전환</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 공수 재산정 요약 -->
+  <h3>3-X-4 공수 재산정 (클라 실측 기반 보강)</h3>
+  <div class="callout callout-purple">
+    <strong>기존 공수 표 보강 (대체 아님) — 클라 실측 세분화:</strong>
+    <ul style="margin-top:10px">
+      <li><strong>클라 S×5:</strong> <code>ProtocolTypes.ts</code> EventSchedule.type 확장 · <code>DataManager</code> luna_chase 분기 · 프리레벨 5번째 슬롯(<code>PopupGameEntry</code>) · <code>LunaChaseTimerWidget.ts</code> (HUD 타이머) · <code>PopupCompleteLevel</code>+<code>PopupEventLunaChase</code> 확장 2종</li>
+      <li><strong>클라 M×2:</strong> <code>PopupEventLunaChase.ts</code> 신규 팝업 · 루나 도주 Tween 연출 (로비 캐릭터 이동 기존 없음)</li>
+      <li><strong>서버 M×2:</strong> <code>/api/event/luna-chase/claim-chest</code> 신규 엔드포인트 · 슬롯 상태머신·쿨다운 로직</li>
+      <li><strong>서버 S×1:</strong> balance-sheet <code>event_luna_sprint</code> 탭 로드 처리</li>
+      <li><strong>A/B M (v1 제외 제안):</strong> <code>onboarding_target_levels</code> 분기 Later 범위 — MVP에서 제외 권고</li>
+    </ul>
+  </div>
+
   <h2>3-5 시트 정정 제안 목록 (시트 E → 에스더 되반영 요청)</h2>
   <div class="callout callout-yellow">
     <strong>아래 항목은 이 스펙 개정 내용을 시트 E에 반영해야 하는 정정 제안임.</strong>
@@ -572,13 +643,13 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
   <p>스프린트 레이어 신규 화면 5종 요약. 전체 명세 = <a href="../../pst_luna_journey_spec.html">마스터 §6 (S10~S14)</a>.</p>
   <table>
-    <thead><tr><th>화면</th><th>내용</th><th>발동 시퀀스 대응</th></tr></thead>
+    <thead><tr><th>화면</th><th>내용</th><th>발동 시퀀스 대응</th><th>클라 실체 <span class="badge badge-purple" style="font-size:10px">클라 실측</span></th></tr></thead>
     <tbody>
-      <tr><td>S10 스프린트 발동 알림</td><td>체스트 발견 → 열쇠 강탈(Grab) → 스토리 → 도주(Escape) → 플레이 버튼 마킹 풀시퀀스. 자동 발동 · 입력 잠금 최초 1회 필수 시청</td><td>flow-01~05</td></tr>
-      <tr><td>S11 스프린트 프리레벨 패널</td><td>밧줄 행잉 태그: 체스트+남은시간+"8판 완주 시 열쇠" 진행바. 우리 보상 표기(Normal/Jackpot 체스트 내용). 배수 배지 미표시</td><td>flow-06</td></tr>
-      <tr><td>S12 인게임 스프린트 HUD</td><td>카운트다운 타이머 + 판수 카운터(n/8) + 추격 진행바. 5판째 "🔑 열쇠 획득!" 앵커 축하</td><td>연출 훅</td></tr>
-      <tr><td>S13 완주 체스트 오픈</td><td>포획 성공(Win) 연출 → 루나 체스트 오픈 → 내용물 지급 (원본→우리: 7,850골드+6종 → Normal 해머×3+와일드/undo×2+골드500 / Jackpot 해머×6+데코조각+골드1,000)</td><td>포획 성공(Win)</td></tr>
-      <tr><td>S14 스프린트 종료 (미완주)</td><td>시간 초과(Lose) 연출 → 루나가 열쇠 갖고 사라짐 · "시간 종료… 루나가 달아났어요. 다음 기회에 꼭 잡아요" · <strong>몰수 없음</strong> 안내 · 재도전 유도</td><td>시간 초과(Lose)</td></tr>
+      <tr><td>S10 스프린트 발동 알림</td><td>체스트 발견 → 열쇠 강탈(Grab) → 스토리 → 도주(Escape) → 플레이 버튼 마킹 풀시퀀스. 자동 발동 · 입력 잠금 최초 1회 필수 시청</td><td>flow-01~05</td><td>신규 <code>PopupEventLunaChase.ts</code> (PopupBase 상속) · 루나 도주 Tween 연출 신규 · <code>ViewManager.lockPopupInput</code> 재사용</td></tr>
+      <tr><td>S11 스프린트 프리레벨 패널</td><td>밧줄 행잉 태그: 체스트+남은시간+"8판 완주 시 열쇠" 진행바. 우리 보상 표기(Normal/Jackpot 체스트 내용). 배수 배지 미표시</td><td>flow-06</td><td><code>PopupGameEntry.ts</code> <code>eventItems[]</code> 5번째 항목으로 확장 (재사용) · <code>EventItem.ts</code> 재사용</td></tr>
+      <tr><td>S12 인게임 스프린트 HUD</td><td>카운트다운 타이머 + 판수 카운터(n/8) + 추격 진행바. 5판째 "열쇠 획득!" 앵커 축하</td><td>연출 훅</td><td>신규 <code>LunaChaseTimerWidget.ts</code> · <code>DataManager.getTime()</code>(<code>serverTimeGapMs</code>) 재사용</td></tr>
+      <tr><td>S13 완주 체스트 오픈</td><td>포획 성공(Win) 연출 → 루나 체스트 오픈 → 내용물 지급 (원본→우리: 7,850골드+6종 → Normal 해머×3+와일드/undo×2+골드500 / Jackpot 해머×6+데코조각+골드1,000)</td><td>포획 성공(Win)</td><td><code>reward_box_open_cat.anim</code> + <code>GatheringItemSequence</code> 재사용 · <code>PopupCompleteLevel.ts</code> <code>eventRewardItems[]</code> 확장</td></tr>
+      <tr><td>S14 스프린트 종료 (미완주)</td><td>시간 초과(Lose) 연출 → 루나가 열쇠 갖고 사라짐 · "시간 종료… 루나가 달아났어요. 다음 기회에 꼭 잡아요" · <strong>몰수 없음</strong> 안내 · 재도전 유도</td><td>시간 초과(Lose)</td><td><code>PopupEventLunaChase.ts</code> Lose 상태 분기 · <code>PopupBase.ts</code> 재사용 · 루나 말풍선 컴포넌트 신규</td></tr>
     </tbody>
   </table>
 
@@ -636,6 +707,17 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
   <div class="note"><strong>전후비교:</strong> 이벤트 주간(주말 2일) vs 직전 동일 요일 주말. NA 코호트 기준(콜드스타트 타깃). 판수를 스프린트발(troll_cycle_clear) vs 비스프린트로 분해해 순증분 측정. 세그먼트 고정 비교(유입 믹스 이동 주의).</div>
+
+  <h3>오픈이슈 확정 제안 (2026-07-25 · 검토 후 승인 시 확정) <span class="badge badge-purple" style="font-size:10px">제안</span></h3>
+  <table>
+    <thead><tr><th>이슈</th><th>제안</th><th>근거</th></tr></thead>
+    <tbody>
+    <tr><td><strong>Jackpot 게이팅</strong></td><td><strong>저니 6완주 해금 유지</strong></td><td>콜드스타트 첫 노출 단순화 · 반복 참여 루프 · 트랙에 잠금 미리보기 기설계</td></tr>
+    <tr><td><strong>OnFire 겹침</strong></td><td>추격 슬롯 = <strong>OnFire 미활성 요일만(주 4일·일 2슬롯)</strong></td><td>★모순 발견: 요일 격리와 데일리 2슬롯은 양립 불가 → 주 4일 오픈으로 원천 차단. event_schedule start/end_day로 표현·서버 로직 불필요</td></tr>
+    <tr><td><strong>저니 보상 수치</strong></td><td>해머 <strong>M2·M4·M6만 2씩(총 6)</strong>, 나머지=부스터·골드 소량</td><td>★가드 위반 발견: 초안(해머 18/6마일)은 성공 사이클당 실질 6해머=일 12로 상한(6/일) 초과 → 총 6이면 정합</td></tr>
+    <tr><td>8판/25분 과부하</td><td>보류 — BQ 실측 대기</td><td>판 사이클 p50(연속 2100 간격)×8 vs 25분 검증. gcloud 재인증 필요</td></tr>
+    </tbody>
+  </table>
 
   <h3>오픈이슈 <span class="badge badge-green" style="font-size:10px">시트 반영</span></h3>
   <table>
