@@ -3,7 +3,7 @@
 <head>
 <script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
 <meta charset="UTF-8">
-<meta name="spec-created" content="2026. 7. 24.">
+<meta name="spec-created" content="2026. 4. 6.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -232,14 +232,14 @@ ul li strong,ol li strong { color:var(--text); }
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-eyebrow">
-      <span class="spec-id-badge">SPEC-007 · Rev.3</span>
+      <span class="spec-id-badge">SPEC-007 · Rev.4</span>
       <span class="badge badge-green"  id="hero-tag"      style="cursor:pointer" title="태그 변경">✨ 기능</span>
       <span class="badge badge-yellow" id="hero-priority" style="cursor:pointer" title="우선순위 변경">🔴 높은 우선순위</span>
       <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">🟡 진행중</span>
-      <span class="badge badge-green">2026. 7. 24.</span>
+      <span class="badge badge-green">2026. 4. 6.</span>
       <span class="badge badge-gold">💰 8/12 후 프리미엄</span>
       <span class="badge badge-purple">디렉터형 레버</span>
-      <span class="badge badge-pink">Rev.3 · 2026-07-24 (보너스 상자·로비 위젯·레퍼런스 첨부)</span>
+      <span class="badge badge-pink">Rev.4 · 2026-07-24 (실클라 구현 매핑 · 상자 레벨밴드 가중)</span>
     </div>
     <h1>🎟 루나 시즌 패스 — 무료 트랙 우선</h1>
     <p class="hero-sub">14일 시즌 · 30티어 · 2트랙 사다리(Royal Pass 구조 클론). 콜드스타트 구간(~8/12)은 <strong>무료 트랙만 오픈</strong>하고 프리미엄 트랙은 자물쇠로 미리 노출. 최종 보상 = <strong>시즌 한정 카드덱</strong>(완주 트로피), 완주 후에는 시즌 종료까지 <strong>보너스 상자 반복 루프</strong>. 데일리 3종이 전부 당일 리셋되는 현 구조에 <strong>다주차 복귀 앵커</strong>를 만든다. 시즌마다 도시 테마 리스킨(뉴욕→파리→…).</p>
@@ -673,8 +673,12 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <div class="sheet-block">
-    <div class="sheet-block-title">탭 4: season_pass_bonus_box · key_number 233001~ &nbsp;·&nbsp; 컬럼: gacha_rate / reward_item_key / reward_amount / in_use</div>
-    <div class="sheet-row"><span class="sheet-row-desc">완주 후 상자 가챠 풀. 분모 10000 (<span class="code">streak_reward</span> gacha 방식 준용). 풀 정의는 §완주 후 보너스 상자.</span></div>
+    <div class="sheet-block-title">탭 4: season_pass_bonus_box · key_number 233001~ &nbsp;·&nbsp; 컬럼: level_band / gacha_rate / reward_item_key / reward_type / reward_amount / in_use</div>
+    <div class="sheet-row"><span class="sheet-row-desc">완주 후 상자 가챠 풀. 분모 10000 (<span class="code">streak_reward</span> gacha 방식 준용). <strong>레벨 밴드별 가중치 차등</strong> + <span class="code">reward_type=tier_scaled</span>(레벨 티어 비례 동적 수량 — 기존 <span class="code">tier_combo_reward</span> 루틴 재활용). 풀 정의는 §완주 후 보너스 상자.</span></div>
+  </div>
+
+  <div class="callout callout-purple">
+    <p><strong>신규 탭 등록 방법 (실제 파이프라인):</strong> 시트 → 서버 JSON 생성 → CDN(<span class="code">…/solitaire_tripeaks/data/</span>) 업로드 → 클라 <span class="code">BaseNetworkManager.GAME_DATA_ENTRIES</span> 배열에 <span class="code">season_pass_const/tier/quest/bonus_box</span> 4개 엔트리 추가 + <span class="code">DataManager.update*()</span> 주입 함수 작성. 스키마는 <span class="code">submodule/libs/protocol/src/balance-sheet/</span>에 <span class="code">season-pass-*.ts</span> 추가(event-schedule.ts·event-milestone.ts 패턴). 배포 후 반영은 <span class="code">balanceSheetHash</span> 핫리로드로 자동 — 클라 빌드 없이 수치 조정 가능.</p>
   </div>
 
   <div class="callout callout-green">
@@ -723,7 +727,7 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
   <div class="callout callout-pink">
-    <p><strong>최종 보상 = 시즌 한정 카드덱 (Rev.3 확정):</strong> 완주 트로피는 코스메틱(경제 무부담·영구 소장·다음 시즌 수집 동기). <span class="code">collection_deck</span>(100001~100030) 포맷에 시즌 덱을 신규 등록(100031~부터 시즌 순번). 완주 전에는 T30 칸에 실루엣 노출. <strong>루나 데코는 보상에서 제외</strong> — 데코는 해머로 유저가 직접 만드는 것(메타 루프 침범 금지).</p>
+    <p><strong>최종 보상 = 시즌 한정 카드덱 (Rev.3 확정):</strong> 완주 트로피는 코스메틱(경제 무부담·영구 소장·다음 시즌 수집 동기). <span class="code">collection_deck</span>(100001~100030) 포맷에 시즌 덱을 신규 등록(100031~부터 시즌 순번, name_key <span class="code">card_back_07</span>~). 언락 조건은 기존 <span class="code">condition_type: event_milestone_complete</span> 그대로 사용(ref_key = 시즌 event_id) — 클라 언락 로직 신규 개발 없음. 완주 전에는 T30 칸에 실루엣 노출. <strong>루나 데코는 보상에서 제외</strong> — 데코는 해머로 유저가 직접 만드는 것(메타 루프 침범 금지).</p>
   </div>
 
   <h3>보상 총량 · 해머 인플레 합산 관리</h3>
@@ -738,25 +742,24 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
   <div class="callout callout-yellow">
-    <p><strong>해머 발행 합산 관리 (필수):</strong> 해머 source가 패스(시즌당 35 + 상자 기대값 ~4) + P1 진행 체스트 + P4 루나 이벤트로 늘어난다. <strong>세 시스템의 시즌(2주)당 해머 발행 합계가 현행 도시 1개 수요(초반 도시 54~93)를 크게 넘지 않도록</strong> 밸런스 시트에서 합산 시트를 따로 두고 관리한다. 패스 = 상시 진척 백본, 이벤트 = 주말 스파이크 역할 분담. 후반 도시(카이로 205~리우 235)로 갈수록 수요가 커지므로 시즌별 상향 여지는 있음.</p>
+    <p><strong>해머 발행 합산 관리 (필수):</strong> 해머 source가 패스(시즌당 35 + 상자 기대값 0.30~0.55/상자·레벨 밴드별) + P1 진행 체스트 + P4 루나 이벤트로 늘어난다. <strong>세 시스템의 시즌(2주)당 해머 발행 합계가 현행 도시 1개 수요(초반 도시 54~93)를 크게 넘지 않도록</strong> 밸런스 시트에서 합산 시트를 따로 두고 관리한다. 패스 = 상시 진척 백본, 이벤트 = 주말 스파이크 역할 분담. 후반 도시(카이로 205~리우 235)로 갈수록 수요가 커지므로 시즌별 상향 여지는 있음.</p>
   </div>
 
-  <h3 id="s3-bonus">완주 후 보너스 상자 — 랜덤 보상 가챠 풀</h3>
+  <h3 id="s3-bonus">완주 후 보너스 상자 — 레벨 밴드별 가중 가챠 풀</h3>
   <p>티어 30 완주 후에도 XP는 동일 규칙(승리+퀘)으로 계속 적립. <span class="sheet-var">bonus_box_xp_cost</span>(=15XP)마다 상자 1개 개봉 가능. 미개봉 <span class="sheet-var">bonus_box_stack_max</span>(=3개)까지 적립, 시즌 종료 시 개봉 가능분 자동 개봉 후 정산 팝업에 내역 표시.</p>
+  <p><strong>보상은 고정 풀이 아니라 유저 레벨 밴드에 따라 가중치·수량이 유동적으로 바뀐다.</strong> 근거: ① 도시 해머 수요가 후반으로 갈수록 급증(뉴욕 54 → 리우 235) — 후반 유저일수록 해머 가중↑ ② 골드 가치는 입장비와 함께 변동 — 고정액 대신 레벨 티어 비례 스케일. 구현은 기존 <span class="code">streak_reward</span>의 <span class="code">reward_type: tier_combo_reward</span>(티어 비례 동적 수량) 패턴을 그대로 준용 — 신규 로직 없음.</p>
   <table>
-    <thead><tr><th>key_number</th><th>gacha_rate (/10000)</th><th>보상</th><th>비고</th></tr></thead>
+    <thead><tr><th>level_band</th><th>구간 (level_entry_tier 매핑)</th><th>해머 ×1</th><th>해머 ×2</th><th>골드 (tier_scaled)</th><th>fireworks</th><th>wild_card</th><th>undo</th><th>티켓 ×1</th></tr></thead>
     <tbody>
-      <tr><td>233001</td><td>3,500 (35%)</td><td>currency_hammer ×1</td><td>기대값의 중심 — 데코 연료</td></tr>
-      <tr><td>233002</td><td>3,000 (30%)</td><td>currency_gold 300</td><td>리듬용 소액</td></tr>
-      <tr><td>233003</td><td>1,500 (15%)</td><td>booster_fireworks ×1</td><td></td></tr>
-      <tr><td>233004</td><td>1,000 (10%)</td><td>booster_wild_card ×1</td><td></td></tr>
-      <tr><td>233005</td><td>700 (7%)</td><td>booster_undo ×1</td><td></td></tr>
-      <tr><td>233006</td><td>300 (3%)</td><td>currency_ticket ×1</td><td>잭팟 슬롯 — 개봉 기대감</td></tr>
+      <tr><td>A 초반</td><td>~레벨 40 (입장비 1,000~1,400)</td><td>3,000 (30%)</td><td>—</td><td>3,500 (35%)</td><td>1,500</td><td>1,000</td><td>700</td><td>300</td></tr>
+      <tr><td>B 중반</td><td>레벨 41~150 (입장비 ~2,500)</td><td>4,000 (40%)</td><td>—</td><td>2,500 (25%)</td><td>1,500</td><td>1,000</td><td>700</td><td>300</td></tr>
+      <tr><td>C 후반</td><td>레벨 151+ (입장비 ~5,000 cap)</td><td>3,500 (35%)</td><td>1,000 (10%)</td><td>2,000 (20%)</td><td>1,500</td><td>1,000</td><td>700</td><td>300</td></tr>
     </tbody>
   </table>
   <ul>
-    <li><strong>기대값 (상자 1개):</strong> 해머 0.35 · 골드 90G · 부스터 0.32 · 티켓 0.03. 코어 완주자가 잔여 5일간 ~12상자를 열어도 해머 +4.2 · 골드 +1,080 — 인플레 안전.</li>
-    <li><strong>확률 표기:</strong> 분모 10000 규칙(레퍼런스 공통). 합계 = 10000 검증 필수. 가챠 로직은 <span class="code">streak_reward</span> 기존 추첨 루틴 재사용.</li>
+    <li><strong>골드 tier_scaled:</strong> 고정액이 아니라 <span class="code">reward_amount = 현재 level_entry_tier 입장비 × 0.3</span> (초반 ~300G → 후반 ~1,500G). 기존 <span class="code">tier_combo_reward</span> 계산 루틴 재사용, 계수(0.3)만 시트 변수.</li>
+    <li><strong>해머 기대값 (상자 1개):</strong> A 0.30 → B 0.40 → C 0.55개. 후반 유저(도시 수요 205~235)에게 자연 증량되면서도 코어 완주자 12상자 기준 최대 +6.6개 — 인플레 안전. 밴드 경계는 <span class="code">level_entry_tier</span>(220001~) 구간을 3묶음으로 참조(신규 테이블 아님).</li>
+    <li><strong>확률 표기:</strong> 분모 10000 규칙(레퍼런스 공통). 밴드별 합계 = 10000 검증 필수. 추첨은 <span class="code">StreakRewardData.getRandomArrayStreak(SeedRandom)</span> 가중 추첨 루틴 재사용(연속 중복 방지 로직 포함).</li>
     <li><strong>CCS Bonus Bank와 구분:</strong> CCS의 '보너스 뱅크'는 프리미엄 미구매분을 보관했다 소급하는 프리미엄 퍼크 — 우리는 <span class="sheet-var">premium_retroactive_enabled</span> 소급이 그 역할을 대신한다. 이 보너스 상자는 <strong>무료 완주자용 반복 루프</strong>로 별개 시스템.</li>
   </ul>
 
@@ -765,33 +768,34 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>cadence</th><th>task_type</th><th>목표(안)</th><th>XP</th><th>유도 대상 · 트리거</th></tr></thead>
     <tbody>
-      <tr><td>데일리</td><td>win_level</td><td>3판 승리</td><td>5</td><td>코어 플레이 (기존 로그)</td></tr>
-      <tr><td>데일리</td><td>play_level</td><td>5판 플레이</td><td>5</td><td>판수 (기존 로그)</td></tr>
-      <tr><td>데일리</td><td><strong>place_deco (신규)</strong></td><td>데코 1개 배치/업그레이드</td><td>5</td><td>메타 루프 — 8100계열 데코 로그 재활용</td></tr>
-      <tr><td>데일리</td><td>tournament</td><td>토너먼트 1회 참가</td><td>5</td><td>토너 (기존 join 로그)</td></tr>
-      <tr><td>데일리</td><td>get_streak</td><td>3연승</td><td>5</td><td>스트릭 시스템</td></tr>
-      <tr><td>데일리</td><td>collect_star</td><td>스타 6개 수집</td><td>5</td><td>스트릭 스타</td></tr>
-      <tr><td>데일리</td><td>use_booster</td><td>부스터 1회 사용</td><td>5</td><td>부스터 소비(sink)</td></tr>
+      <tr><td>데일리</td><td>win_level</td><td>3판 승리</td><td>5</td><td>game-end <span class="code">isClear</span> (데일리 태스크와 동일 카운터)</td></tr>
+      <tr><td>데일리</td><td>play_level</td><td>5판 플레이</td><td>5</td><td>game-end 호출 수</td></tr>
+      <tr><td>데일리</td><td><strong>place_deco (신규 task_type)</strong></td><td>데코 1개 배치/업그레이드</td><td>5</td><td><span class="code">POST /api/meta-city/upgrade-decoration</span> 성공 시 (로그 8102_CITY_DECO_UPGRADE_SUCCESS)</td></tr>
+      <tr><td>데일리</td><td>tournament (in_use 부활)</td><td>토너먼트 1회 참가</td><td>5</td><td>기존 <span class="code">updateMissions({taskType:'tournament', conditionDetail:'join'})</span> 그대로 (로그 5441)</td></tr>
+      <tr><td>데일리</td><td>get_streak</td><td>3연승</td><td>5</td><td>데일리 태스크 기존 카운터 (로그 2211_STREAK_METER_FILL)</td></tr>
+      <tr><td>데일리</td><td>collect_star</td><td>스타 6개 수집</td><td>5</td><td>기존 카운터 (로그 2212_STREAK_STAR_EARN)</td></tr>
+      <tr><td>데일리</td><td>use_booster</td><td>부스터 1회 사용</td><td>5</td><td>기존 카운터 (로그 2160/2170/2180 ITEM_*_TRY)</td></tr>
       <tr><td>위클리</td><td>win_level</td><td>25판 승리</td><td>20</td><td>주간 판수 백본</td></tr>
-      <tr><td>위클리</td><td><strong>city_progress (신규)</strong></td><td>데코 3회 배치 or 도시 마일스톤 1개</td><td>20</td><td>도시 진척 — 3500 도시 로그 재활용</td></tr>
+      <tr><td>위클리</td><td><strong>city_progress (신규 task_type)</strong></td><td>데코 3회 배치 or 도시 1개 완성</td><td>20</td><td>upgrade-decoration 누적 / <span class="code">MetaCityInfo.isCompleted</span> (로그 8104_CITY_COMPLETE)</td></tr>
       <tr><td>위클리</td><td>tournament</td><td>토너 3회 참가</td><td>20</td><td>주간 토너 습관</td></tr>
-      <tr><td>위클리</td><td>match_card / clear_card</td><td>카드 600장 제거 등</td><td>20</td><td>인게임 (기존 로그)</td></tr>
+      <tr><td>위클리</td><td>match_card / clear_card</td><td>카드 600장 제거 등</td><td>20</td><td>데일리 태스크 기존 카운터 재사용</td></tr>
     </tbody>
   </table>
   <ul>
-    <li><strong>발급 규칙:</strong> 데일리 = 풀에서 3종 추첨(같은 날 중복 타입 금지, <span class="code">place_deco</span>는 데코 미해금 유저에게 미발급). 위클리 = 2종 추첨, 시즌 시작일·+7일에 갱신.</li>
-    <li><strong>기존 데일리 태스크와 관계:</strong> 별도 시스템으로 병행(태스크=골드 보상, 패스 퀘=XP). 같은 행동이 양쪽 동시에 카운트되는 건 허용 — 이중 지급이 아니라 이중 카운트이며, 행동 유도가 목적이라 의도된 겹침.</li>
+    <li><strong>발급 규칙:</strong> 데일리 = 풀에서 3종 추첨(같은 날 중복 타입 금지, <span class="code">place_deco</span>는 데코 미해금 유저에게 미발급). 위클리 = 2종 추첨, 시즌 시작일·+7일에 갱신. 리셋 판정은 데일리 태스크와 동일하게 서버 <span class="code">resetDailyTaskIfNeeded()</span>(getDiffDays) 패턴 재사용.</li>
+    <li><strong>기존 데일리 태스크와 관계:</strong> 별도 시스템으로 병행(태스크=골드 보상, 패스 퀘=XP). 같은 행동이 양쪽 동시에 카운트되는 건 허용 — 이중 지급이 아니라 이중 카운트이며, 행동 유도가 목적이라 의도된 겹침. task_type 어휘·카운터를 공유하므로 서버는 진행 증분을 두 테이블에 동시 반영만 하면 됨.</li>
   </ul>
 
   <h3 id="s3-widget">로비 위젯 · 팝업 로직</h3>
   <table>
     <thead><tr><th>항목</th><th>규칙</th></tr></thead>
     <tbody>
-      <tr><td>위젯 상태 판정</td><td>로비 진입·복귀 시 갱신: 미수령 보상 수(N) → B, 완주 여부 → C, 잔여 ≤ <span class="sheet-var">widget_timer_threshold_hour</span> → D 라벨, 시즌 시작 ≤ <span class="sheet-var">widget_new_ribbon_hour</span> &amp; 미진입 → E. 배지 우선순위: 수령가능 &gt; NEW. (§2 상태표 A~E 참조)</td></tr>
-      <tr><td>인트로 팝업</td><td>시즌 시작 후 첫 진입 시 1회 (시즌당 1회 플래그). 30티어 미리보기 + 최종 덱 실루엣.</td></tr>
-      <tr><td>정산 팝업</td><td>시즌 종료 후 첫 진입 시 1회: 도달 레벨 · 자동 지급 내역(티어 보상+자동 개봉 상자) · 다음 시즌 예고(덱 실루엣). CCS EndPopup 방식.</td></tr>
-      <tr><td>노티 연동</td><td>D-3·D-1 발송, 문구에 미수령 개수 삽입: "시즌 {0}일 남음 — 받을 보상 {1}개". P3 노티 윈백 문구 셋과 공유.</td></tr>
-      <tr><td>프리팹 구성 (CCS 준용)</td><td><span class="code">season_pass_popup</span>(메인) · <span class="code">intro</span> · <span class="code">info</span> · <span class="code">card_free</span> / <span class="code">card_premium</span> · <span class="code">bonus_box</span> · <span class="code">tier_progress_bar_part</span> · <span class="code">points_meter</span> · <span class="code">WidgetSeasonPass</span>(로비) · VFX BurstEffect(클레임). (후) <span class="code">purchase_premium</span>.</td></tr>
+      <tr><td>위젯 구현</td><td><span class="code">LobbyMainUIView</span>에 <span class="code">@property(LobbyEventButton) seasonPassButton</span> 추가 — <span class="code">LobbyButtonWithRemainTime</span> 상속이라 타이머(0.25초 갱신) 내장. 배지 = <span class="code">Reddot</span> 컴포넌트 + <span class="code">RedDotType.SEASON_PASS</span> enum 추가 (DAILY_TASK·DECORATION 등과 동일 패턴).</td></tr>
+      <tr><td>위젯 상태 판정</td><td>로비 진입·복귀 시 갱신: 미수령 보상 수(N) → B, 완주 여부 → C, 잔여 ≤ <span class="sheet-var">widget_timer_threshold_hour</span> → D 라벨(<span class="code">CCstring.getTimeString()</span> HH:MM:SS), 그 외 라벨은 <span class="code">Utils.setRemainTimeDaysHoursMins()</span>("N일 남음"). 시즌 시작 ≤ <span class="sheet-var">widget_new_ribbon_hour</span> &amp; 미진입 → E. 배지 우선순위: 수령가능 &gt; NEW. (§2 상태표 A~E 참조)</td></tr>
+      <tr><td>인트로 팝업</td><td>시즌 시작 후 첫 진입 시 1회. 플래그는 서버 저장: <span class="code">SeasonPassData.seenIntroSeasonStartDate</span> — 현재 시즌 startDate와 비교(로컬 저장 X, 기기 간 동기화). 30티어 미리보기 + 최종 덱 실루엣.</td></tr>
+      <tr><td>정산 팝업</td><td>시즌 종료 후 첫 진입 시 1회: 도달 레벨 · 자동 지급 내역(티어 보상+자동 개봉 상자 — <span class="code">TMail</span>로 발송된 것) · 다음 시즌 예고(덱 실루엣). CCS EndPopup 방식. 노출 타이밍은 <span class="code">SessionFlowManager</span> 팝업 큐 사용.</td></tr>
+      <tr><td>노티 연동</td><td>D-3·D-1 발송, 문구에 미수령 개수 삽입: "시즌 {0}일 남음 — 받을 보상 {1}개". 발송은 기존 봇 구독(<span class="code">trySubscribeBotAsync</span> opt-in) 채널 + 서버 <span class="code">toSafeFireAt()</span> 슬롯(08/18시 스냅). P3 노티 윈백 문구 셋과 공유.</td></tr>
+      <tr><td>신규 프리팹 (CCS 명명 준용)</td><td><span class="code">PopupSeasonPass</span>(메인 — PopupEventCardMilestone 변형) · <span class="code">PopupSeasonPassItem</span>(티어 칸 2트랙) · <span class="code">SeasonPassBonusBox</span> · 인트로/정산은 기존 <span class="code">PopupBase</span> 파생. 로비는 기존 <span class="code">LobbyEventButton</span> 재사용이라 별도 위젯 프리팹 불필요. VFX = 기존 클레임 이펙트 재사용. (후) <span class="code">purchase_premium</span> 패널.</td></tr>
     </tbody>
   </table>
 
@@ -799,15 +803,15 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>이벤트</th><th>처리</th></tr></thead>
     <tbody>
-      <tr><td>시즌 시작 (스케줄)</td><td>시즌 생성 · 전 유저 XP 0 초기화 · 테마 도시 설정 · 로비 위젯 활성화(NEW) · 인트로 팝업 1회</td></tr>
-      <tr><td>레벨 승리</td><td>XP +<span class="sheet-var">season_xp_per_win</span> → 티어 도달 판정(완주 후엔 상자 게이지 충전) → 결과 화면 게이지 갱신 (2100/승리 로그 재활용, 신규 서버 로직 최소화)</td></tr>
-      <tr><td>퀘 완료</td><td>퀘 XP 지급 → 동일 판정. 판정·카운트는 기존 이벤트 로그 재활용</td></tr>
-      <tr><td>티어 클레임</td><td>도달 티어 보상 지급 · 중복 지급 방지 플래그(티어별 claimed bit)</td></tr>
-      <tr><td>티어 30 완주</td><td>카드덱 지급(collection_deck 소유 플래그) + 완주 연출 → 상자 모드 전환(pass_state=BONUS)</td></tr>
-      <tr><td>상자 개봉</td><td>가챠 추첨(분모 10000) → 지급 → 스택 −1. 스택 = min(적립, <span class="sheet-var">bonus_box_stack_max</span>)</td></tr>
-      <tr><td>시즌 종료 (스케줄)</td><td><span class="sheet-var">season_end_auto_claim</span>=1: 도달분 미수령 무료 보상 + 개봉 가능 상자 자동 지급(인박스) → XP·claimed·상자 리셋 → 다음 시즌 테마 로드 → 다음 진입 시 정산 팝업</td></tr>
-      <tr><td>종료 D-3 · D-1</td><td>노티 발송 · 위젯 D 상태(≤24h 타이머)</td></tr>
-      <tr><td>(8/12 후) 프리미엄 구매</td><td>영수증 검증 → premium 플래그 → 기도달 티어 프리미엄 보상 소급 일괄 지급 + 연출</td></tr>
+      <tr><td>시즌 시작</td><td>스케줄 신규 잡 없음 — 기존 <span class="code">getEventScheduleInfo()</span>가 유저 요청 시점에 사이클 판정(레이지 초기화, 기존 이벤트와 동일). <span class="code">event_infos</span>에 SeasonPassData 생성(XP 0) · 위젯 NEW · 인트로 팝업</td></tr>
+      <tr><td>레벨 승리</td><td><span class="code">POST /api/play/game-end</span> 서버 핸들러에서 XP +<span class="sheet-var">season_xp_per_win</span> → 응답 <span class="code">eventInfos</span> → <span class="code">DataManager.updateEventInfos()</span> → 결과 화면(<span class="code">PopupCompleteLevel</span>·<span class="code">SessionFlowManager.runPostGameFlow</span>) 게이지 갱신</td></tr>
+      <tr><td>퀘 완료</td><td>서버가 태스크 카운터 증분 시 시즌 퀘에도 동시 반영 → 퀘 XP 지급 → 동일 판정 (로그 5452)</td></tr>
+      <tr><td>티어 클레임</td><td>신규 API <span class="code">POST /api/season-pass/claim-reward</span>(daily-task claim 패턴) → <span class="code">itemInfos</span> → <span class="code">updateItems()</span> · <span class="code">claimedTiers[]</span>로 중복 방지 (로그 5451)</td></tr>
+      <tr><td>티어 30 완주</td><td>카드덱 지급 — <span class="code">collection_deck</span> <span class="code">condition_type: event_milestone_complete</span> 경로로 언락 + <span class="code">claimDeck()</span> · 완주 연출 → 상자 모드 전환 (로그 5453)</td></tr>
+      <tr><td>상자 개봉</td><td>신규 API <span class="code">POST /api/season-pass/open-bonus-box</span> — 서버 추첨(레벨 밴드 가중, 분모 10000) → 지급 → 스택 −1. 스택 = min(적립, <span class="sheet-var">bonus_box_stack_max</span>) (로그 5454)</td></tr>
+      <tr><td>시즌 종료</td><td><span class="code">refreshWeeklyEvents()</span> 확장: 비활성 감지 시 <span class="sheet-var">season_end_auto_claim</span>=1이면 미수령 무료 보상+개봉 가능 상자를 <span class="code">TMail</span>(MailCategory.SEASON_PASS)로 발송 → SeasonPassData delete → 다음 진입 시 정산 팝업 (로그 5455)</td></tr>
+      <tr><td>종료 D-3 · D-1</td><td>봇 노티 발송(<span class="code">toSafeFireAt</span> 슬롯) · 위젯 D 상태(≤24h 타이머)</td></tr>
+      <tr><td>(8/12 후) 프리미엄 구매</td><td>기존 IAP 플로우(<span class="code">purchaseAsync</span> → <span class="code">/api/shop/iap-success</span>) → isPremium 플래그 → 기도달 티어 소급 일괄 지급 + 연출. 환불은 <span class="code">/api/shop/iap-refund</span> 기존 경로</td></tr>
     </tbody>
   </table>
 
@@ -821,12 +825,42 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
 
-  <h3>서버 · 클라 부담 최소화 원칙</h3>
-  <ul>
-    <li><strong>순수 싱글플레이 구조</strong> — 서버 신규 없이 XP 상태·티어 claimed 비트·상자 스택만 유저 데이터에 추가. CCS 역기획에서도 서버리스(영수증 검증만)로 확인된 구조. 콜드스타트 완벽 적합.</li>
-    <li><strong>재활용:</strong> 레벨 클리어→XP(승리 로그) · 티어 보상 지급(기존 보상 지급 루틴) · 가챠 추첨(streak_reward 루틴) · Collections 나무 프레임 · 보상 아이콘 · 진행바 · 위젯 슬롯.</li>
-    <li><strong>신규:</strong> 시즌 XP 상태·레벨업 판정 · 2트랙 사다리 UI · 보너스 상자 모드 · 시즌 리셋/자동 정산·정산 팝업 · 위젯 상태 머신 · (8/12 후) 프리미엄 결제 게이트.</li>
-  </ul>
+  <h3>실제 클라/서버 구현 매핑 (solitaire-tripeaks-client 검토 · Rev.4)</h3>
+  <p>클라 = Cocos Creator 2.4 (TS) + 서버 = <span class="code">submodule/apps/api</span> (실존). 구버전 기획의 "서버리스" 전제는 <strong>정정</strong> — 기존 이벤트들처럼 서버 <span class="code">TPlayer.event_infos</span>(JSON 컬럼) 패턴에 시즌 패스 상태를 추가하는 구조가 정답. 아래 표의 기존 심볼을 그대로 재활용하면 신규 코드가 최소화된다.</p>
+  <table>
+    <thead><tr><th>기획 요소</th><th>재활용할 실제 구현</th><th>신규 작업</th></tr></thead>
+    <tbody>
+      <tr><td>시즌 사이클 (14일 반복)</td><td><span class="code">event_schedule</span> 스키마(base_date·interval_week) + <span class="code">balance-sheet-helper.ts</span>의 <span class="code">calculateEventStartDate/EndDate</span>·<span class="code">getEventScheduleInfo()</span></td><td>type에 <span class="code">season_pass</span> 추가 (interval_week=2)</td></tr>
+      <tr><td>시즌 상태 저장</td><td><span class="code">TPlayer.event_infos</span>의 <span class="code">EventMilestoneData</span> 패턴 {startDate·startAt·endAt·rewardedKeyNumbers·goals}</td><td><span class="code">SeasonPassData</span> {xp, claimedTiers[], boxStack, boxXp, (후)isPremium} 추가</td></tr>
+      <tr><td>시즌 종료 정산</td><td><span class="code">db-function.ts</span> <span class="code">refreshWeeklyEvents()</span> — 비활성 감지→delete→정산. 랭킹 이벤트가 이미 <span class="code">TMail</span>(MailCategory.EVENT_RANKING)로 보상 메일 발송 중</td><td>미수령 자동 지급을 동일하게 <span class="code">TMail</span>로 발송 + <span class="code">MailCategory.SEASON_PASS</span> 추가</td></tr>
+      <tr><td>XP 적립 (승리)</td><td><span class="code">POST /api/play/game-end</span> 응답에서 <span class="code">DataManager.updateEventInfos()</span> 갱신 흐름 그대로</td><td>game-end 서버 핸들러에 시즌 XP +1 추가</td></tr>
+      <tr><td>퀘 진행 카운트</td><td>데일리 태스크 인프라: <span class="code">updateMissions([{taskType, conditionDetail, incrementProgress}])</span> + <span class="code">/api/daily-task/*</span> 리셋·클레임 패턴</td><td>season_pass_quest용 카운터 분기</td></tr>
+      <tr><td>사다리 UI</td><td><span class="code">PopupEventCardMilestone</span> + <span class="code">PopupEventCardMilestoneItem</span>(티어 칸 Prev/Current/Next 상태) + <span class="code">ProgressUI</span>(다단계 마커) + <span class="code">ItemScrollView</span>(현재 티어 자동 스크롤)</td><td>2트랙(무료/프리미엄 2행) 레이아웃 변형</td></tr>
+      <tr><td>로비 위젯</td><td><span class="code">LobbyEventButton</span>(<span class="code">LobbyButtonWithRemainTime</span> 상속 — 타이머 내장) + <span class="code">Reddot</span> 컴포넌트</td><td><span class="code">LobbyMainUIView</span>에 @property 버튼 1개 + <span class="code">RedDotType.SEASON_PASS</span> enum 추가</td></tr>
+      <tr><td>보상 지급</td><td><span class="code">DataManager.updateItems(itemInfos)</span> 공용 루틴 — 9400~9403 트랜잭션 로그 자동</td><td>없음</td></tr>
+      <tr><td>상자 가챠</td><td><span class="code">StreakRewardData.getRandomArrayStreak(SeedRandom)</span> 가중 추첨 + <span class="code">tier_combo_reward</span> 동적 수량</td><td>bonus_box 풀 연결</td></tr>
+      <tr><td>시즌 한정 카드덱</td><td><span class="code">collection_deck</span>의 <span class="code">condition_type: event_milestone_complete</span>가 이미 존재 + <span class="code">DataManager.claimDeck()</span>·<span class="code">ClaimedDeckIds</span> 저장</td><td>시즌 덱 row 추가(100031~)·ref_key=시즌 event_id</td></tr>
+      <tr><td>타이머 표시</td><td><span class="code">CCstring.getTimeString()</span>(HH:MM:SS) · <span class="code">Utils.setRemainTimeDaysHoursMins()</span>("N일 남음") · <span class="code">TimerLabel</span></td><td>없음</td></tr>
+      <tr><td>인트로 팝업 1회</td><td>기존 패턴: 서버 응답 플래그(<span class="code">endedTutorialGuideKeyNumbers</span> 방식)</td><td>시즌별 <span class="code">seenIntroSeasonStartDate</span> 필드</td></tr>
+      <tr><td>팝업 오픈</td><td><span class="code">ViewCreator.showPopup*()</span> + <span class="code">LobbyMainUIView.openPopup()</span> 큐 + 승리 후 노출은 <span class="code">SessionFlowManager.runPostGameFlow()</span></td><td>showPopupSeasonPass 추가</td></tr>
+      <tr><td>(8/12 후) 프리미엄 결제</td><td>IAP 이미 활성: <span class="code">FB.payments.purchaseAsync</span> → <span class="code">POST /api/shop/iap-success</span> · 환불 <span class="code">iap-refund</span> · product.json</td><td>패스 상품 row + premium 플래그 연결</td></tr>
+    </tbody>
+  </table>
+
+  <h3>로그 코드 배정 (신규 · 5450~ 빈 대역)</h3>
+  <p><span class="code">BaseLogManager.ts</span>의 <span class="code">LogType</span> enum + <span class="code">SolitaireTripeaksLogManager.initLogManager()</span>에 <span class="code">registLogEvent()</span> 1줄씩 추가. 이벤트 팝업 대역(5400~5443) 다음 빈 구간 사용.</p>
+  <table>
+    <thead><tr><th>코드</th><th>이벤트</th><th>시점</th></tr></thead>
+    <tbody>
+      <tr><td>5450_SEASON_PASS_POPUP</td><td>패스 메인 오픈</td><td>data: 현재 티어·XP·잔여일</td></tr>
+      <tr><td>5451_SEASON_PASS_TIER_CLAIM</td><td>티어 보상 수령</td><td>data: tier·일괄 여부·보상</td></tr>
+      <tr><td>5452_SEASON_PASS_QUEST_COMPLETE</td><td>퀘 완료</td><td>data: task_type·cadence</td></tr>
+      <tr><td>5453_SEASON_PASS_COMPLETE</td><td>티어 30 완주 (덱 지급)</td><td>data: 소요일</td></tr>
+      <tr><td>5454_SEASON_PASS_BONUS_BOX_OPEN</td><td>보너스 상자 개봉</td><td>data: level_band·보상</td></tr>
+      <tr><td>5455_SEASON_PASS_END_POPUP</td><td>정산 팝업 노출</td><td>data: 최종 티어·자동지급 수</td></tr>
+      <tr><td>5456_SEASON_PASS_CLOSE</td><td>패스 메인 닫기</td><td></td></tr>
+    </tbody>
+  </table>
 
   <h3>스트링 키 (CCS 명명 준용)</h3>
   <table>
@@ -860,7 +894,7 @@ ul li strong,ol li strong { color:var(--text); }
   </ul>
 
   <div class="callout callout-blue">
-    <p><strong>오픈 이슈 (결정 대기):</strong> ① 시즌 길이 14일 vs 도시 언락 실제 주기 정합 재확인 ② 무료 트랙 해머 35개 — P1 진행 체스트 수치 확정 후 합산 재조정 ③ 보너스 상자 가챠 풀 수치(기대값 해머 0.35/상자) 라이브 완주율 보고 튜닝 ④ 프리미엄 가격·오픈 시점(8/12 후 수익화 검토와 함께, IAP 연동 선행 필요) ⑤ req_xp 계단은 라이브 판수 벤치(FB 퍼널 대시보드 SSOT) 확인 후 최종 튜닝.</p>
+    <p><strong>오픈 이슈 (결정 대기):</strong> ① 시즌 길이 14일 vs 도시 언락 실제 주기 정합 재확인 ② 무료 트랙 해머 35개 — P1 진행 체스트 수치 확정 후 합산 재조정 ③ 보너스 상자 레벨 밴드 경계(현재 level_entry_tier 3묶음 안) + 골드 tier_scaled 계수(0.3) 라이브 완주율 보고 튜닝 ④ event_schedule <span class="code">type</span> enum 확장(season_pass) 시 기존 <span class="code">refreshWeeklyEvents()</span> 하위호환 검증 — 서버 담당 확인 필요 ⑤ 프리미엄 가격·오픈 시점(8/12 후 수익화 검토와 함께 — IAP 플로우는 이미 활성이라 상품 등록만) ⑥ req_xp 계단은 라이브 판수 벤치(FB 퍼널 대시보드 SSOT) 확인 후 최종 튜닝.</p>
   </div>
 </section>
 
