@@ -549,7 +549,65 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <!-- ══════════════ 3-X 실클라 매핑 ══════════════ -->
-  <h2 id="s3-client">3-X 실클라 매핑 <span class="badge badge-purple" style="font-size:10px">클라 실측</span></h2>
+  <div class="bs-block" id="sheet-preview" style="border:2px solid var(--green)">
+<h3 style="font-size:16px">🧾 라이브 시트(1oLb) 반영 예정분 — 개발자 검토용 미리보기 <span class="badge badge-green" style="font-size:10px">검토 요청</span></h3>
+<p><b>아래 행을 그대로 라이브 시트에 붙여넣을 예정임.</b> 개발 검토 후 이상 없으면 반영. 안전장치: 공용 탭(event_schedule)은 <b>in_use=FALSE 선등록</b>(개발 완료 시 TRUE 전환 = 킬스위치 겸용·기구현). unlock·tutorial_guide는 참조 콘텐츠(content_event_luna_chase)가 클라에 아직 없어 등록돼도 무동작. 전용 탭 2개는 서버 로더 미등록 상태라 무해.</p>
+
+<h3>① event_schedule +2행 (공용 · in_use=FALSE 선등록)</h3>
+<table class="bs-table">
+<tr><th>key_number</th><th>type</th><th>start_day</th><th>end_day</th><th>start_time</th><th>end_time</th><th>repeat</th><th>in_use</th><th>base_date</th><th>interval_week</th><th></th><th>description</th></tr>
+<tr><td>160005</td><td>luna_chase_sprint_lunch</td><td>1</td><td>4</td><td>12:00</td><td>12:25</td><td>TRUE</td><td><b>FALSE</b></td><td>2026-08-01</td><td>1</td><td></td><td>루나 추격 점심 슬롯 · 월~목(OnFire류 요일 격리) · 12:00 자동 발동·창 25분 · 파라미터=event_luna_sprint 200201</td></tr>
+<tr><td>160006</td><td>luna_chase_sprint_evening</td><td>1</td><td>4</td><td>19:00</td><td>19:25</td><td>TRUE</td><td><b>FALSE</b></td><td>2026-08-01</td><td>1</td><td></td><td>루나 추격 저녁 슬롯 · 월~목 · 19:00 자동 발동·창 25분</td></tr>
+</table>
+<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ interval_week=1(매주 반복). 저니 트랙은 스케줄 행 없음(cross-slot 시즌메타).</div>
+<h3>② unlock +1행 (공용)</h3>
+<table class="bs-table">
+<tr><th>key_number</th><th>content_id</th><th>condition_type</th><th>condition_val</th><th>pre_unlock_visibility</th><th></th><th>description</th></tr>
+<tr><td>50031</td><td>content_event_luna_chase</td><td>level_clear</td><td>10</td><td>FALSE</td><td></td><td>Lv10 클리어 시 루나 추격 해금. 튜토=tutorial_guide 230034</td></tr>
+</table>
+
+<h3>③ tutorial_guide +1행 (공용)</h3>
+<table class="bs-table">
+<tr><th>key_number</th><th>unlock_key</th><th>content_id</th><th>show_tutorial</th><th>guide_type</th><th>play_scene</th><th>trigger_type</th><th>trigger_value</th><th>string_code_key</th><th>is_forced</th></tr>
+<tr><td>230034</td><td>50031</td><td>content_event_luna_chase</td><td>TRUE</td><td>popup</td><td>event_luna_chase</td><td>first_enter</td><td>1</td><td>T_LUNA_CHASE_INFO_TITLE</td><td>TRUE</td></tr>
+</table>
+
+<h3>④ string_code +9키 (공용 · 한국어 기준값, 타 언어 번역 후속)</h3>
+<table class="bs-table">
+<tr><th>Key</th><th>kr</th></tr>
+<tr><td>T_LUNA_CHASE_INFO_TITLE</td><td>루나가 도망쳤다!</td></tr>
+<tr><td>T_LUNA_CHASE_INFO_TEXT</td><td>루나가 열쇠를 물고 달아났어요. 25분 안에 8판을 클리어하고 추격하라!</td></tr>
+<tr><td>T_LUNA_CHASE_TIMER_HUD</td><td>남은 시간 {mm}:{ss} · {n}/8</td></tr>
+<tr><td>T_LUNA_CHASE_KEY_GET</td><td>열쇠 획득! ({n}/8)</td></tr>
+<tr><td>T_LUNA_CHASE_CHEST_NORMAL</td><td>루나를 따라잡았어요! 체스트가 열려요.</td></tr>
+<tr><td>T_LUNA_CHASE_CHEST_JACKPOT</td><td>루나의 비밀 보물! Jackpot 체스트가 열려요.</td></tr>
+<tr><td>T_LUNA_CHASE_FAIL_FLEE</td><td>시간 종료… 루나가 달아났다. 다음 기회를 노리자.</td></tr>
+<tr><td>T_LUNA_CHASE_OFFLINE</td><td>연결이 필요해요…</td></tr>
+<tr><td>T_LUNA_JOURNEY_GRAND_UNLOCK</td><td>루나 전망대를 완성했어요! 도시에 새 풍경이 생겼어요.</td></tr>
+</table>
+
+<h3>⑤ event_luna_milestone 신규 탭 (6행 · 확정 보상 7/25)</h3>
+<table class="bs-table">
+<tr><th>key_number</th><th>event_id</th><th>step</th><th>goal_type</th><th>goal_amount</th><th>reward_type</th><th>reward_key</th><th>reward_amount</th><th>unlock_effect</th><th>in_use</th><th>description</th></tr>
+<tr><td>200101</td><td>0</td><td>1</td><td>complete_sprint_cycle</td><td>1</td><td>item</td><td>booster_wild_card</td><td>1</td><td></td><td>TRUE</td><td>Luna Journey · 사이클 1회</td></tr>
+<tr><td>200102</td><td>0</td><td>2</td><td>complete_sprint_cycle</td><td>2</td><td>item</td><td>currency_hammer</td><td>2</td><td></td><td>TRUE</td><td>사이클 2회</td></tr>
+<tr><td>200103</td><td>0</td><td>3</td><td>complete_sprint_cycle</td><td>3</td><td>item</td><td>currency_gold</td><td>300</td><td></td><td>TRUE</td><td>사이클 3회</td></tr>
+<tr><td>200104</td><td>0</td><td>4</td><td>complete_sprint_cycle</td><td>4</td><td>item</td><td>currency_hammer</td><td>2</td><td></td><td>TRUE</td><td>사이클 4회</td></tr>
+<tr><td>200105</td><td>0</td><td>5</td><td>complete_sprint_cycle</td><td>5</td><td>item</td><td>booster_undo</td><td>2</td><td></td><td>TRUE</td><td>사이클 5회</td></tr>
+<tr><td>200106</td><td>0</td><td>6</td><td>complete_sprint_cycle</td><td>6</td><td>item</td><td>currency_hammer</td><td>2</td><td>unlock_jackpot_chest</td><td>TRUE</td><td>사이클 6회 · Jackpot 해금</td></tr>
+</table>
+<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ event_id=0 = 슬롯 비귀속(시즌메타). goal_type=complete_sprint_cycle은 서버 신규 타입(개발 필요). 해머 총 6 = 일 상한(6) 정합.</div>
+<h3>⑥ event_luna_sprint 신규 탭 (튜닝 코어 1행)</h3>
+<table class="bs-table" style="font-size:11px">
+<tr><th>key_number</th><th>event_id</th><th>duration_sec</th><th>total_rounds</th><th>onboarding_target_levels</th><th>jackpot_min_rounds</th><th>cooldown_sec</th><th>slots_per_day</th><th>key_per_round</th><th>keys_for_chest</th><th>key_anchor_level</th><th>grace_after_window</th><th>jackpot_unlock</th><th>gold_cap_guard</th><th>normal_hammer</th><th>normal_hint</th><th>normal_undo</th><th>normal_gold</th><th>jackpot_hammer</th><th>jackpot_deco_piece</th><th>jackpot_gold</th><th>in_use</th></tr>
+<tr><td>200201</td><td>0</td><td>1500</td><td>8</td><td>5</td><td>8</td><td>43200</td><td>2</td><td>1</td><td>8</td><td>5</td><td>TRUE</td><td>journey_complete</td><td>TRUE</td><td>3</td><td>2</td><td>2</td><td>500</td><td>6</td><td>1</td><td>1000</td><td>TRUE</td></tr>
+</table>
+<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ event_id=0 = 두 슬롯(160005·160006) 공통 파라미터. normal_hint는 라이브 item_list에 힌트 부스터 부재 → booster_wild_card로 지급 매핑(클라 각주). 배수·하트 컬럼 없음(에스더 확정).</div>
+
+<div class="callout callout-orange"><b>개발 확인 요청 3가지</b> — ① goal_type=complete_sprint_cycle 서버 처리 방식 ② event_id=0(비귀속) 관례 수용 여부 ③ tutorial_guide play_scene=event_luna_chase 씬 명명. 이상 없으면 위 행 그대로 시트 반영.</div>
+</div>
+
+<h2 id="s3-client">3-X 실클라 매핑 <span class="badge badge-purple" style="font-size:10px">클라 실측</span></h2>
   <p>대상 레포: <code>~/solitaire-tripeaks-client</code> (Cocos Creator). 실측 파일 경로·클래스명 기준. 추측 없음.</p>
 
   <!-- 재사용·신규 총괄표 -->
