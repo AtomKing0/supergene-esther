@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="spec-created" content="2026. 7. 26.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-028 · 이벤트 부스트 팩</title>
+<style>
+/* ══════════════ PST SPEC 정본 셸(A 표준) ══════════════ */
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #a78bfa;
+  --accent2: #c4b5fd;
+  --green: #34d399;   --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;     --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;    --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;  --purple-bg: rgba(167,139,250,0.12);
+  --teal: #2dd4bf;    --teal-bg: rgba(45,212,191,0.12);
+  --orange: #fb923c;  --orange-bg: rgba(251,146,60,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #1e1a35 45%, #1a1d27 100%);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #7c3aed; --accent2: #6d28d9;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626;   --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb;  --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --teal: #0d9488;  --teal-bg: rgba(13,148,136,0.1);
+  --orange: #ea580c; --orange-bg: rgba(234,88,12,0.1);
+  --hero-bg: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 45%, #e0e7ff 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+.nav-toggle { display:none; }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200; }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+.nav-sidebar a.sub { padding-left:36px;font-size:0.76rem;color:var(--text-dim); }
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;margin-left:260px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.1) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-purple { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+.badge-teal   { background:var(--teal-bg);color:var(--teal);border:1px solid rgba(45,212,191,0.3); }
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+.kpi-trend { font-size:0.72rem;font-weight:700;margin-top:6px; }
+.trend-up   { color:var(--green); }
+.trend-neutral { color:var(--text2); }
+.container { max-width:1100px;margin:0 0 0 260px;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-num-3 { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--blue-bg);color:var(--blue); }
+.aud-dev { background:var(--green-bg);color:var(--green); }
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+code,.code { background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:0.82rem;font-family:monospace;color:var(--accent); }
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-purple { background:var(--purple-bg);border-left:3px solid var(--purple); }
+.callout-green  { background:var(--green-bg);border-left:3px solid var(--green); }
+.callout-red    { background:var(--red-bg);border-left:3px solid var(--red); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.86rem; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var     { font-family:monospace;color:var(--blue);font-weight:600;min-width:300px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:72px; }
+.sheet-row-unit    { font-size:0.75rem;color:var(--text2);min-width:100px; }
+.sheet-row-desc    { color:var(--text2);font-size:0.82rem;flex:1; }
+.flow-step { display:flex;gap:14px;margin-bottom:14px;align-items:flex-start; }
+.flow-dot  { width:28px;height:28px;border-radius:50%;background:var(--purple-bg);border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--purple);flex-shrink:0;margin-top:2px; }
+.flow-body { flex:1; }
+.flow-body strong { color:var(--text);font-size:0.9rem; }
+.flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+.wireframe { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:20px 0; }
+@media (max-width:860px) {
+  .nav-toggle { display:flex;position:fixed;top:16px;left:16px;z-index:400;width:40px;height:40px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:18px;cursor:pointer;align-items:center;justify-content:center; }
+  .nav-sidebar { transform:translateX(-100%);transition:transform 0.25s; }
+  .nav-sidebar.open { transform:translateX(0); }
+  .hero,.container { margin-left:0; }
+  .hero { padding:64px 20px 36px; }
+  .container { padding:0 18px; }
+}
+/* 고유 */
+:root { --gold:#fbbf24; --gold-bg:rgba(251,191,36,.12); }
+.callout-gold{background:var(--gold-bg);border-left:3px solid var(--gold)}
+.badge-gold{background:var(--gold-bg);color:var(--gold);border:1px solid rgba(251,191,36,.3)}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">☰</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-028</div>
+  <a href="#s1">① 기획 의도 &amp; 흐름</a>
+  <a class="sub" href="#s1-eval">↳ CCS 오퍼 평가</a>
+  <a class="sub" href="#s1-flow">↳ 구매 흐름</a>
+  <a class="sub" href="#s1-kpi">↳ 성공 지표</a>
+  <a href="#s2">② 아트 가이드</a>
+  <a class="sub" href="#s2-wf1">↳ 오퍼 노출 3면</a>
+  <a href="#s3">③ 개발 스펙</a>
+  <a class="sub" href="#s3-bs">↳ 밸런스 시트</a>
+  <a class="sub" href="#s3-logic">↳ 로직·트리거</a>
+  <a class="sub" href="#s3-edge">↳ 엣지 케이스</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-028</span>
+      <span class="badge badge-green"  id="hero-tag"      style="cursor:pointer" title="태그 변경">💰 수익화</span>
+      <span class="badge badge-yellow" id="hero-priority" style="cursor:pointer" title="우선순위 변경">🔴 높은 우선순위</span>
+      <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">🟡 진행중</span>
+      <span class="badge badge-green">2026. 7. 26.</span>
+      <span class="badge badge-gold">$1.99 · 이벤트당 1회</span>
+      <span class="badge badge-purple">신규 아트 0</span>
+      <span class="badge badge-teal">관련: SPEC-007 시즌 패스</span>
+    </div>
+    <h1>🎁 이벤트 부스트 팩 — 주말 이벤트 연동 IAP</h1>
+    <p class="hero-sub">주말 3일 마일스톤 이벤트(Midnight·Sunset·Golden Stamp·City Race)가 활성일 때만 등장하는 <strong>$1.99 단발 오퍼</strong>. 부스터 번들 즉시 지급 + <strong>해당 이벤트 마일스톤 보상 ×2</strong>(기수령분 차액 소급 — 언제 사도 손해 없음). 공통 프레임에 이벤트 키비주얼을 자동 삽입해 <strong>이벤트가 늘어도 아트 재작업 0</strong>. 원형 = CCS 1Plus 오퍼(가치강조) + HardLevel 오퍼(문맥 트리거) 하이브리드.</p>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">노출→구매 전환율</div>
+        <div class="kpi-value" style="color:var(--gold)">+%</div>
+        <div class="kpi-sub">5457 IMPRESSION → 5458 PURCHASE</div>
+        <div class="kpi-trend trend-up">▲ 이벤트 회차별 비교</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">구매자 이벤트 완주율</div>
+        <div class="kpi-value" style="color:var(--green)">+%</div>
+        <div class="kpi-sub">구매 vs 비구매 마일스톤 15단 도달</div>
+        <div class="kpi-trend trend-up">▲ 판수 견인 검증</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">주말 판수</div>
+        <div class="kpi-value" style="color:var(--blue)">비교</div>
+        <div class="kpi-sub">구매 코호트 유저-일당 판수</div>
+        <div class="kpi-trend trend-neutral">— SPEC-007 패스 XP와 상호 보완</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">ARPDAU 기여</div>
+        <div class="kpi-value" style="color:var(--purple)">$</div>
+        <div class="kpi-sub">주말 오퍼 매출 / 주말 DAU</div>
+        <div class="kpi-trend trend-neutral">— RV 의존 구조 보완</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1 -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">①</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도 &amp; 흐름</div>
+      <span class="section-audience aud-all">개발 + 아트 공통</span>
+    </div>
+  </div>
+
+  <h3>왜 만드는가</h3>
+  <table>
+    <thead><tr><th>문제</th><th>부스트 팩의 답</th></tr></thead>
+    <tbody>
+      <tr><td>① 시즌 패스(SPEC-007)는 14일 호흡 · 주말 스파이크 구간에 IAP 접점이 없음</td><td>주말 3일 이벤트마다 반복되는 <strong>$1.99 충동 구매</strong> 접점 — 패스($4.99 계획 구매)와 가격대·기간 분리</td></tr>
+      <tr><td>② 오퍼마다 새 디자인을 만들면 운영 부담</td><td><strong>신규 아트 0</strong> — 공통 프레임 1종(최초 1회) + 활성 이벤트의 기존 키비주얼 자동 삽입 + 스트링 교체만</td></tr>
+      <tr><td>③ 수익화가 RV 단일 의존</td><td>이벤트 몰입 문맥에서만 등장하는 저마찰 IAP — 리텐션 지표(티어 평가) 무해</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s1-eval">CCS 오퍼 6종 평가 (CCS_Events 시트 역기획 실측)</h3>
+  <table>
+    <thead><tr><th>원형</th><th>구조</th><th>판정</th><th>이유</th></tr></thead>
+    <tbody>
+      <tr><td>1Plus12Offer</td><td>톱 보상 1개 구매 시 N개 '무료' 증정 (BOGO 가치강조)</td><td><strong>✅ 프레이밍 채택</strong></td><td>"$1.99에 이후 이벤트 보상 전부 2배 = 무료로 얹어줌" — 가치강조 화법이 우리 구성과 정확히 일치</td></tr>
+      <tr><td>HardLevelOffer</td><td>게임플레이 문맥(막힘) 트리거 오퍼</td><td><strong>✅ 트리거 채택</strong></td><td>상시 노출이 아니라 "이벤트 진행 중" 문맥에만 등장 — 관련성 높고 마찰 최소. 아트 최경량</td></tr>
+      <tr><td>SMLOffer</td><td>동일 구성 S/M/L 3단 가격 사다리</td><td>⏸ 후속</td><td>이식성 최고지만 단일 SKU로 시작 — 구매 데이터 쌓인 뒤 M/L 상위 티어</td></tr>
+      <tr><td>GenericOffers</td><td>할인율/배수 프레이밍 + 시즌 스킨슬롯 프레임워크</td><td>⏸ 후속</td><td>상점 표준 컨테이너로 재활용 — 골드팩 카탈로그 갖춰진 뒤</td></tr>
+      <tr><td>BuyThemAllOffer</td><td>번들-오브-번들 일괄할인 업셀</td><td>❌ 시기상조</td><td>다중 SKU 카탈로그 전제 — 현재 SKU 2개(패스·부스트 팩)뿐</td></tr>
+      <tr><td>BazaarOffer</td><td>시즌 테마 풀스크린 노점 오퍼</td><td>❌ 반대 방향</td><td>무거운 시즌 아트 의존 — "디자인 부담 없는 오퍼" 목적과 정반대</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s1-flow">구매 흐름</h3>
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>주말 이벤트 시작 → 오퍼 자동 활성</strong><p>event_schedule의 milestone형 이벤트 감지 시 오퍼 ON. 이벤트별 개별 세팅 불필요.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>노출 3면 (저마찰)</strong><p>① 이벤트 팝업 내 CTA 배너 ② 이벤트 위젯 $ 미니 뱃지 ③ 마일스톤 클레임 직후 인라인 1회("방금 보상, 2배였다면 골드 +400"). 풀스크린 강제 팝업 금지.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>구매 → 즉시 번들 + ×2 퍼크 + 차액 소급</strong><p>부스터·해머 즉시 지급, 이벤트 남은 기간 마일스톤 보상 ×2, 이미 받은 마일스톤은 차액 일괄 지급(황금빛 연출). "언제 사도 손해 없음."</p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>이벤트 종료 → 퍼크 소멸</strong><p>다음 주말 이벤트에 새 오퍼로 반복(이벤트당 1회 구매 제한 리셋).</p></div></div>
+
+  <div class="callout callout-gold">
+    <p><strong>SPEC-007 시즌 패스와 간섭 차단 규칙:</strong> 부스트 팩은 <strong>이벤트 보상만</strong> 증폭 — 패스 XP·티어 보상·보너스 상자에는 일절 무관. 가격대($1.99/$4.99)·기간(3일/14일) 분리. 이벤트에서 판수가 늘면 패스 XP도 자연히 차므로 상호 보완(부스트 팩 → 주말 판수↑ → 패스 진척↑ → 프리미엄 전환 동기↑).</p>
+  </div>
+
+  <h3 id="s1-kpi">성공 지표 — NA/서구권 코호트</h3>
+  <table>
+    <thead><tr><th>지표</th><th>측정</th></tr></thead>
+    <tbody>
+      <tr><td>노출→구매 전환율</td><td>5458 / 5457 · 노출면(팝업 배너/위젯/인라인)별 분해</td></tr>
+      <tr><td>소급 프레이밍 효과</td><td>구매 시점 분포(이벤트 D1/D2/D3) — 후반 구매 비중이 크면 소급 화법 작동</td></tr>
+      <tr><td>구매자 행동 변화</td><td>구매 vs 비구매 이벤트 완주율·주말 유저-일당 판수</td></tr>
+      <tr><td>패스 시너지</td><td>부스트 팩 구매자의 패스 프리미엄 전환율</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SECTION 2 -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">②</div>
+    <div class="section-meta">
+      <div class="section-title">아트 가이드</div>
+      <span class="section-audience aud-art">아트팀 전용</span>
+    </div>
+  </div>
+
+  <div class="callout callout-green">
+    <p><strong>발주 = 공통 오퍼 프레임 1종 (최초 1회) 끝.</strong> 프레임 안의 키비주얼 슬롯에 활성 이벤트의 기존 배너 소재(pst_event_banners 7종 제작분)가 자동 삽입된다. 이벤트가 늘어도 아트 재작업 없음. 규격: 이벤트 팝업 내 가로 배너 1종 + 구매 확인 시트 프레임 1종(둘 다 골드 톤·기존 SpecialOffer 팝업 골격 재사용).</p>
+  </div>
+
+  <h3 id="s2-wf1">와이어프레임 — 오퍼 노출 3면</h3>
+  <div class="wireframe">
+    <svg viewBox="0 0 660 300" width="100%" style="display:block;max-width:760px;margin:16px 0;">
+      <!-- 좌: 이벤트 팝업 내 CTA 배너 -->
+      <rect x="16" y="16" width="300" height="268" rx="12" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+      <text x="32" y="40" style="fill:var(--text2);font-size:10px;font-family:sans-serif;font-weight:700;">이벤트 팝업 (예: Golden Stamp)</text>
+      <rect x="32" y="52" width="268" height="70" rx="8" style="fill:var(--surface2);stroke:var(--border)"/>
+      <text x="44" y="80" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">(기존 마일스톤 진행바·티어 보상 영역)</text>
+      <text x="44" y="98" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">진행 320 / 500</text>
+      <!-- CTA 배너 -->
+      <rect x="32" y="134" width="268" height="64" rx="8" style="fill:var(--gold-bg);stroke:var(--gold);stroke-width:2"/>
+      <rect x="40" y="142" width="48" height="48" rx="6" style="fill:var(--surface2);stroke:var(--border)"/>
+      <text x="64" y="170" text-anchor="middle" style="font-size:16px;">🌟</text>
+      <text x="96" y="156" style="fill:var(--gold);font-size:9px;font-family:sans-serif;font-weight:800;">부스트 팩 $1.99</text>
+      <text x="96" y="170" style="fill:var(--text2);font-size:8px;font-family:sans-serif;">남은 보상 전부 ×2 + 부스터 6종</text>
+      <text x="96" y="184" style="fill:var(--gold);font-size:8px;font-family:sans-serif;font-weight:700;">이미 받은 보상도 차액 지급!</text>
+      <text x="44" y="216" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">키비주얼 슬롯(좌측 🌟) = 활성 이벤트</text>
+      <text x="44" y="230" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">배너 소재 자동 삽입 — 아트 재작업 0</text>
+      <!-- 중: 위젯 뱃지 -->
+      <rect x="340" y="16" width="140" height="268" rx="12" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+      <text x="356" y="40" style="fill:var(--text2);font-size:10px;font-family:sans-serif;font-weight:700;">이벤트 위젯</text>
+      <rect x="366" y="60" width="88" height="88" rx="12" style="fill:var(--surface2);stroke:var(--border);stroke-width:1.5"/>
+      <text x="410" y="102" text-anchor="middle" style="font-size:22px;">🌟</text>
+      <circle cx="446" cy="68" r="11" style="fill:var(--gold)"/>
+      <text x="446" y="72" text-anchor="middle" style="fill:#1a1a1a;font-size:8px;font-family:sans-serif;font-weight:800;">$</text>
+      <text x="410" y="170" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">기존 이벤트 위젯에</text>
+      <text x="410" y="184" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">$ 미니 뱃지만 추가</text>
+      <text x="410" y="198" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">(구매 후 뱃지 제거)</text>
+      <!-- 우: 클레임 인라인 -->
+      <rect x="504" y="16" width="140" height="268" rx="12" style="fill:var(--surface3);stroke:var(--border);stroke-width:1.5"/>
+      <text x="520" y="40" style="fill:var(--text2);font-size:10px;font-family:sans-serif;font-weight:700;">클레임 직후 1회</text>
+      <rect x="516" y="60" width="116" height="70" rx="8" style="fill:var(--surface2);stroke:var(--border)"/>
+      <text x="574" y="84" text-anchor="middle" style="fill:var(--green);font-size:9px;font-family:sans-serif;font-weight:700;">골드 +400 획득!</text>
+      <text x="574" y="102" text-anchor="middle" style="fill:var(--gold);font-size:8px;font-family:sans-serif;">2배였다면 +800</text>
+      <rect x="530" y="108" width="88" height="16" rx="8" style="fill:var(--gold)"/>
+      <text x="574" y="120" text-anchor="middle" style="fill:#1a1a1a;font-size:7px;font-family:sans-serif;font-weight:800;">부스트 $1.99</text>
+      <text x="574" y="160" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">마일스톤 수령 직후</text>
+      <text x="574" y="174" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">인라인 1회만</text>
+      <text x="574" y="188" text-anchor="middle" style="fill:var(--text-dim);font-size:8px;font-family:sans-serif;">(풀스크린 금지)</text>
+    </svg>
+  </div>
+  <ul>
+    <li><strong>톤:</strong> 골드 계열(구매 요소 공통 컬러). 기존 <span class="code">PopupSpecialOffer</span> 골격 재사용 — 프레임·버튼 신규 스타일 최소.</li>
+    <li><strong>구매 연출:</strong> 차액 소급 지급 시 마일스톤 트랙을 따라 황금빛이 훑고 지나가며 수령분 칸에 +차액 팝 — 소급 가치를 시각화(핵심 만족 포인트).</li>
+  </ul>
+</section>
+
+<!-- SECTION 3 -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">③</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀 전용</span>
+    </div>
+  </div>
+
+  <h3 id="s3-bs">밸런스 시트 · 상품</h3>
+  <div class="sheet-block">
+    <div class="sheet-block-title">신규 탭: event_boost_offer · key_number 234001~ (시즌 패스 233xxx 다음 대역)</div>
+    <div class="sheet-row"><span class="sheet-row-var">target_event_type</span><span class="sheet-row-default">= milestone_all</span><span class="sheet-row-unit">enum</span><span class="sheet-row-desc">연동 대상. milestone_all = black/red/winning + city_race 자동. 234001</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">price_product_key</span><span class="sheet-row-default">= 190010</span><span class="sheet-row-unit">key</span><span class="sheet-row-desc">product 탭 190010 <span class="code">event_boost_pack</span> ($1.99). 234002</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">reward_multiplier</span><span class="sheet-row-default">= 20000</span><span class="sheet-row-unit">ratio(/10000)</span><span class="sheet-row-desc">마일스톤 보상 배수 ×2.0. 234003</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">retroactive_enabled</span><span class="sheet-row-default">= 1</span><span class="sheet-row-unit">bool</span><span class="sheet-row-desc">기수령 마일스톤 차액 일괄 소급. 234004</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">purchase_limit_per_event</span><span class="sheet-row-default">= 1</span><span class="sheet-row-unit">count</span><span class="sheet-row-desc">이벤트(사이클)당 구매 제한. 234005</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">bundle_*</span><span class="sheet-row-default">6행</span><span class="sheet-row-unit">rows</span><span class="sheet-row-desc">즉시 지급: fireworks×2 · wild_card×2 · undo×2 · hammer×3(<strong>band_scaled</strong> — SPEC-007 밴드 배율 동일 적용). 234010~234015</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">inline_prompt_limit</span><span class="sheet-row-default">= 1</span><span class="sheet-row-unit">count</span><span class="sheet-row-desc">클레임 직후 인라인 노출 이벤트당 최대 횟수. 234006</span></div>
+  </div>
+
+  <h3>가치·경제 검증</h3>
+  <table>
+    <thead><tr><th>항목</th><th>수치</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td>×2 증분 가치 (winning_milestone 완주 실측)</td><td>골드 +7,600 · 티켓 +5 · 부스터·인피닛 다수</td><td>$1.99 체감가 상회 — 1Plus "무료 증정" 화법 성립</td></tr>
+      <tr><td>골드 인플레</td><td>완주자 한정 +7,600G = 데일리 태스크 수도꼭지 2,787G의 2.7일치</td><td>구매자 소수·완주 조건부라 무시 가능. 원본 테이블 기준(추가 tier_scaled 없음)</td></tr>
+      <tr><td>해머 인플레</td><td>마일스톤 이벤트 보상엔 해머 없음(실측 — 골드·부스터·티켓 중심). 즉시분 ×3ⓑ만</td><td>SPEC-007 해머 예산표 '이벤트 몫(15%)'에서 차감 — 여유 충분</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s3-logic">로직 · 트리거 (실클라 매핑)</h3>
+  <table>
+    <thead><tr><th>이벤트</th><th>처리</th></tr></thead>
+    <tbody>
+      <tr><td>오퍼 활성 판정</td><td><span class="code">getActiveEvents()</span>에 milestone형 활성 이벤트 존재 → 오퍼 ON. 신규 스케줄 잡 없음(레이지)</td></tr>
+      <tr><td>구매</td><td>기존 IAP 플로우(<span class="code">purchaseAsync</span> → <span class="code">POST /api/shop/iap-success</span>, product 190010) → 유저 event_infos의 해당 이벤트 데이터에 <span class="code">boostPurchased: true</span> + 즉시 번들 <span class="code">updateItems()</span></td></tr>
+      <tr><td>차액 소급</td><td>구매 시점 <span class="code">rewardedKeyNumbers</span> 조회 → (배수−1)×원보상 일괄 지급 — SPEC-007 프리미엄 소급 로직과 동일 패턴</td></tr>
+      <tr><td>이후 마일스톤 지급</td><td>기존 마일스톤 지급 루틴에 배수 분기 1개: <span class="code">boostPurchased ? amount × reward_multiplier : amount</span></td></tr>
+      <tr><td>이벤트 종료</td><td><span class="code">refreshWeeklyEvents()</span>가 이벤트 데이터 delete 시 boostPurchased도 함께 소멸 — 별도 처리 불필요</td></tr>
+      <tr><td>노출 제어</td><td><span class="code">SpecialOfferManager.DismissTimestamps</span> 패턴 재사용(인라인 1회 제한·닫기 기억)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>로그 (5457~ · SPEC-007 5450~5456 대역 이어서)</h3>
+  <table>
+    <thead><tr><th>코드</th><th>이벤트</th><th>data</th></tr></thead>
+    <tbody>
+      <tr><td>5457_EVENT_OFFER_IMPRESSION</td><td>오퍼 노출</td><td>surface(popup_banner/widget/inline) · event_id</td></tr>
+      <tr><td>5458_EVENT_OFFER_PURCHASE</td><td>구매 성공</td><td>event_id · 이벤트 경과일 · 소급 차액량</td></tr>
+      <tr><td>5459_EVENT_OFFER_DOUBLE_PAYOUT</td><td>×2 지급 발생</td><td>milestone step · 증분량</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="s3-edge">엣지 케이스</h3>
+  <ul>
+    <li><strong>이벤트 2개 동시 활성:</strong> 오퍼는 이벤트별 독립 SKU 아님 — 구매 시 <strong>활성 이벤트 전부에 ×2 적용</strong>(가치 상향이지만 동시 활성은 편성상 회피가 원칙, 이벤트 플래너 겹침 방지 규칙 참조). purchase_limit는 사이클 기준.</li>
+    <li><strong>종료 직전 구매:</strong> 남은 기간이 짧아도 차액 소급이 있어 손해 없음 — 환불 이슈 낮음. 단 종료 후에는 오퍼 자동 OFF(구매 불가).</li>
+    <li><strong>환불:</strong> 기존 iap-refund 경로로 boostPurchased 회수. 이미 지급된 증분 회수는 하지 않음(음수 재화 방지) — 어뷰징 모니터만.</li>
+    <li><strong>구버전 클라:</strong> boostPurchased 필드 무시 — 배수 미적용으로 원보상만 지급(손해 없음), 업데이트 유도.</li>
+    <li><strong>미참여 이벤트 구매 시도:</strong> 이벤트 데이터 없으면(참여 전) 구매 시 참여 상태 먼저 생성 — 기존 이벤트 레이지 초기화와 동일.</li>
+  </ul>
+
+  <div class="callout callout-blue">
+    <p><strong>오픈 이슈:</strong> ① 동시 활성 이벤트 편성 규칙 최종 확인(플래너 겹침 방지와 정합) ② 인라인 프롬프트 카피("2배였다면 +N") 현지화 톤 ③ 후속 SML 상위 티어($4.99 M: 배수 ×3 or 기간 연장) — 첫 2~3회차 전환율 보고 결정.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+// ── 메타 배지 드롭다운 (index.html과 localStorage 공유) ──────────────
+(function () {
+  const SPEC_ID = 'spec-028';
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',    cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',  cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',    cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',   cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',  cls: 'badge-yellow' },
+    social:  { label: '👥 소셜',    cls: 'badge-teal'   },
+    monetize:{ label: '💰 수익화',  cls: 'badge-green'  },
+    iap:     { label: '🛒 IAP',     cls: 'badge-yellow' },
+    test:    { label: '🧪 테스트',  cls: 'badge-blue'   },
+    etc:     { label: '📌 기타',    cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL  = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS  = { tag: 'monetize', priority: 'high', status: 'wip' };
+  let ddField = null;
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+  function applyBadge(el, info) {
+    if (!el) return;
+    el.className = 'badge ' + info.cls;
+    el.textContent = info.label;
+    el.style.cursor = 'pointer';
+  }
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o =>
+        `<div class="dd-itm${o.val === cur ? ' active' : ''}" data-val="${o.val}">${o.label}</div>`
+      ).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    const fieldMap = { 'hero-tag': 'tag', 'hero-priority': 'priority', 'hero-status': 'status' };
+    Object.keys(fieldMap).forEach(elId => {
+      const el = document.getElementById(elId);
+      if (el) el.addEventListener('click', e => openDropdown(e, fieldMap[elId]));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none';
+      ddField = null;
+      updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
+  // ── 사이드바 네비 스크롤스파이 ──
+  var links    = document.querySelectorAll('.nav-sidebar a');
+  var sections = document.querySelectorAll('section[id]');
+  function activate() {
+    var scrollY = window.pageYOffset + 120;
+    sections.forEach(function (s) {
+      if (s.offsetTop <= scrollY && s.offsetTop + s.offsetHeight > scrollY) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = document.querySelector('.nav-sidebar a[href="#' + s.id + '"]');
+        if (a) a.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', activate);
+  activate();
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.nav-sidebar') && !e.target.closest('.nav-toggle'))
+      document.querySelector('.nav-sidebar').classList.remove('open');
+  });
+})();
+</script>
+<script src="memo.js"></script>
+<script src="changelog.js"></script>
+</body>
+</html>
