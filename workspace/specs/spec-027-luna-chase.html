@@ -212,7 +212,7 @@ ul li strong,ol li strong { color:var(--text); }
 .seq-step p{font-size:13px;margin:6px 0}
 .seq-step .ours strong{color:var(--accent)}
 .seq-step .ours{background:var(--purple-bg);border-left:3px solid var(--purple);border-radius:0 6px 6px 0;padding:8px 12px;margin:10px 0 14px;font-size:12.5px}
-.seq-imgs{display:grid;grid-template-columns:1fr 1.35fr;gap:14px;align-items:start}
+.seq-imgs{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
 .seq-imgs.single{grid-template-columns:minmax(0,520px)}
 .seq-imgs figure{margin:0;min-width:0}
 .seq-imgs img{width:100%;border-radius:var(--radius-sm);cursor:zoom-in;display:block}
@@ -224,7 +224,10 @@ ul li strong,ol li strong { color:var(--text); }
 .gif-wrap img{cursor:zoom-in}
 #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;align-items:center;justify-content:center;cursor:zoom-out}
 #lightbox.on{display:flex}
-#lightbox img{max-width:96vw;max-height:96vh;border-radius:8px}
+#lightbox-row{display:flex;gap:16px;align-items:center;justify-content:center;max-width:97vw}
+#lightbox-row figure{margin:0;min-width:0;flex:1 1 0}
+#lightbox-row img{width:100%;max-height:88vh;object-fit:contain;border-radius:8px}
+#lightbox-row figcaption{color:#cfd3e4;font-size:13px;text-align:center;margin-top:8px}
 
 </style>
 </head>
@@ -844,14 +847,24 @@ ul li strong,ol li strong { color:var(--text); }
 </script>
 <script src="memo.js"></script>
 
-<div id="lightbox" onclick="this.classList.remove('on')"><img id="lightbox-img" src="" alt=""></div>
+<div id="lightbox" onclick="this.classList.remove('on')"><div id="lightbox-row"></div></div>
 <script>
 document.addEventListener('click',function(e){
   var t=e.target;
-  if(t.tagName==='IMG' && (t.classList.contains('zoomable')||t.closest('.gif-wrap'))){
-    document.getElementById('lightbox-img').src=t.src;
-    document.getElementById('lightbox').classList.add('on');
-  }
+  if(t.tagName!=='IMG') return;
+  var inSeq=t.closest('.seq-imgs'), inGif=t.closest('.gif-wrap');
+  if(!inSeq && !inGif) return;
+  var row=document.getElementById('lightbox-row'); row.innerHTML='';
+  var imgs = inSeq ? inSeq.querySelectorAll('img') : [t];
+  imgs.forEach(function(im){
+    var wrap=document.createElement('figure');
+    var big=document.createElement('img'); big.src=im.src;
+    var cap=document.createElement('figcaption');
+    var role=im.closest('figure')&&im.closest('figure').querySelector('.imgrole');
+    cap.textContent=role?role.textContent:'';
+    wrap.appendChild(big); wrap.appendChild(cap); row.appendChild(wrap);
+  });
+  document.getElementById('lightbox').classList.add('on');
 });
 document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('lightbox').classList.remove('on');});
 </script>
