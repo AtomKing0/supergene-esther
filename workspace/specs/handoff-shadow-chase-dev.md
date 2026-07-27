@@ -23,7 +23,7 @@
 
 - [ ] 프리레벨 행잉 태그(보라·5번째 자리): 체스트+타이머+n/8 게이지(끝에 열쇠 골 마커)+그림자 냥이 실루엣(귀 끝+열쇠 든 발만)
 - [ ] 플레이 버튼 🐾마킹(보라 오라+별빛 발자국) 상시 표시
-- [ ] 인게임 HUD: `ShadowChaseTimerWidget` 신규 — MM:SS + n/8
+- [ ] ★인게임 HUD·타이머 위젯 **없음** — 인게임 중 이벤트 표시 일절 없음. 타이머·n/8 인지는 매판 사이 프리레벨 행잉 태그에서만
 - [ ] 로비 이벤트 아이콘·레드닷 **만들지 않음**
 - [ ] 인포 팝업(신규 1종): 프리레벨 행잉 태그·결과 화면 행잉 상자에 **ⓘ 버튼** → 탭 시 이벤트 안내 팝업(서사·목표·체스트 보상 미리보기·남은 시간). 보상 수치는 event_shadow_chest 시트 연동(하드코딩 금지)
 
@@ -42,6 +42,7 @@
 
 ## 6. 데이터·코드 등록 (클라/서버)
 
+- [ ] 신규 클래스: `PopupEventShadowChase`(PopupBase 문법 — 발동 연출 재생 + ⓘ 인포 팝업 겸용) · 🐾자국 스프라이트/Tween(GRAB·ESCAPE 연출용, 캐릭터 본체 미등장) · 기존 프리레벨 진행이벤트 행잉 태그 확장(체스트+타이머+n/8 게이지+실루엣). 인게임 HUD 위젯 신규 없음
 - [ ] `ProtocolTypes.ts`: EventSchedule.type에 `shadow_chase` 추가 · `ShadowChaseInfo` 타입 신설(timer_start_ts·rounds_cleared·cooldown_until·cycle_result)
 - [ ] 진행 저장: 서버 `TPlayer.event_infos`에 ShadowChaseInfo
 - [ ] 신규 시트 탭 로드: `event_shadow_sprint`(5변수)·`event_shadow_chest`(Normal 6행) — 번들 JSON+balance-sheet 로더 등록
