@@ -278,15 +278,15 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="badge badge-green">2026. 7. 24.</span>
     </div>
     <h1>루나의 추격 (Luna's Chase)</h1>
-    <p class="hero-sub">판수 증대 데일리 스프린트. 그림자 냥이가 열쇠를 물고 달아났어요! 유저가 25분 안에 8판을 완주해 따라잡는 손실회피 훅. 루나가 안내·응원 담당. 슬롯 오픈 시 밧줄 아이콘 glow+레드닷(P4·강제 팝업 없음) → 유저 탭으로 발동. 원형 = Candy Crush Solitaire "Catch the Troll".</p>
+    <p class="hero-sub">판수 증대 데일리 스프린트. 그림자 냥이가 열쇠를 물고 달아났어요! 유저가 25분 안에 8판을 완주해 따라잡는 손실회피 훅. 루나가 안내·응원 담당. 로비 복귀 후 우선 팝업(P1~P3) 소화 → 발동 연출 자동 재생(P4 큐 마지막·슬롯당 1회, 상한 초과 시 레드닷 폴백). 원형 = Candy Crush Solitaire "Catch the Troll".</p>
 
-    <p class="hero-sub" style="font-size:0.86rem"><strong>핵심 수치</strong> — 25분/8판 · 주 4일(월~목) 일 2슬롯(12:00·19:00) · 쿨다운 12h(cooldown_sec) · 언락 Lv10 클리어 · 레드닷 탭 발동(P4) · 배수(×N) 없음(티어 차이 = 체스트 보상 내용만).</p>
+    <p class="hero-sub" style="font-size:0.86rem"><strong>핵심 수치</strong> — 25분/8판 · 주 4일(월~목) 일 2슬롯(12:00·19:00) · 쿨다운 12h(cooldown_sec) · 언락 Lv10 클리어 · 팝업 큐 자동 발동(상한 폴백=레드닷) · 배수(×N) 없음(티어 차이 = 체스트 보상 내용만).</p>
 
     <a class="master-link" href="../../pst_luna_journey_spec.html">📘 상세 이력·근거 = ../../pst_luna_journey_spec.html (마스터 기획서 12섹션)</a>
 
     <div class="kpi-grid">
       <div class="kpi-card"><div class="kpi-value">25분 · 8판</div><div class="kpi-label">스프린트 시간창 · 목표</div></div>
-      <div class="kpi-card"><div class="kpi-value">레드닷 발동</div><div class="kpi-label">슬롯 오픈 + 로비 진입 시 자동 시작</div></div>
+      <div class="kpi-card"><div class="kpi-value">큐 자동 발동</div><div class="kpi-label">팝업 소화 후 + 로비 진입 시 자동 시작</div></div>
       <div class="kpi-card"><div class="kpi-value">500 / 1,000</div><div class="kpi-label">회당 골드 캡 Normal/Jackpot · 일 2,000 하드캡</div></div>
       <div class="kpi-card"><div class="kpi-value">판수 / 유저-일</div><div class="kpi-label">핵심 KPI</div></div>
     </div>
@@ -309,16 +309,19 @@ ul li strong,ol li strong { color:var(--text); }
   <p style="font-size:12px;color:var(--text2)">판수·시간·쿨다운 등은 전부 <code>event_luna_sprint</code> 시트 변수 — 아래 수치는 <strong>예시값</strong>이며 변수명 병기.</p>
   <pre class="mermaid">
 flowchart TD
-  A["<b>슬롯 오픈</b><br/><small>start_day 1~4 (월~목) · start_time 12:00 / 19:00<br/>판정 주체(클라/서버) 미정 — 개발 확인 ④</small>"] --> A2["<b>판 종료 → 로비 복귀</b><br/><small>우선순위 팝업 먼저 소화: 보상 정산·마일스톤·출석 등 (P1~P3)</small>"]
-  A2 --> B["<b>밧줄 아이콘 glow + 레드닷</b><br/><small>P4 · 강제 팝업 없음</small>"]
-  B -- "유저가 아이콘 탭 = 발동" --> C["<b>발동 시퀀스 연출 + 타이머 시작</b><br/><small>발견 → 열쇠 강탈 → 도주 (입력 잠금)<br/>duration_sec=1500 (예: 25분)</small>"]
-  C --> D["<b>플레이 반복</b><br/><small>HUD 타이머 · n / total_rounds 카운터 · 버튼 🐾마킹</small>"]
+  A["<b>슬롯 오픈</b><br/><small>start_day 1~4 (월~목) · start_time 12:00 / 19:00<br/>판정 주체(클라/서버) 미정 — 개발 확인 ④</small>"] --> P["<b>판 종료 → 로비 복귀</b><br/><small>우선순위 팝업 먼저 소화: 보상 정산·마일스톤·출석 등 (P1~P3)</small>"]
+  P --> Q{"<b>진입당 모달 상한 여유?</b><br/><small>P4 · 세션 상한 규칙</small>"}
+  Q -- "여유 있음 (기본)" --> C["<b>발동 시퀀스 연출 자동 재생 + 타이머 시작</b><br/><small>발견 → 열쇠 강탈 → 도주 → 버튼 🐾마킹 (입력 잠금·슬롯당 1회)<br/>duration_sec=1500 (예: 25분)</small>"]
+  Q -- "상한 초과 (폴백)" --> R["<b>밧줄 아이콘 레드닷 강등</b><br/><small>강제 노출 없음 · 다음 진입 재평가</small>"]
+  R -- "유저가 아이콘 탭" --> C
+  C --> ST["<b>진행 중 상태 표시</b><br/><small>프리레벨 행잉 태그(체스트·타이머·n/8·실루엣) · 플레이 버튼 🐾마킹 · 인게임 HUD</small>"]
+  ST --> D["<b>플레이 반복</b><br/><small>HUD 타이머 · n / total_rounds 카운터</small>"]
   D -- "key_anchor_level=5 (예: 5판째)" --> D2(["<b>중간 앵커 연출</b><br/><small>곧 따라잡아요! — 후반 견인용 격려 1.5초 · 보상 없음</small>"])
   D2 --> D
   D --> E{"<b>타이머 내 완주?</b><br/><small>total_rounds=8 (예: 8판)</small>"}
   E -- "✅ 성공 = 열쇠 획득" --> F["<b>체스트 오픈 (P2)</b><br/><small>결과 화면 묶음 지급 + 🐱뱃지 · 6슬롯 보상</small>"]
   F --> G["<b>슬롯 종료</b><br/><small>다음 슬롯 대기</small>"]
-  E -- "⛔ 시간 초과 / 미참여" --> H["<b>실루엣이 열쇠 갖고 사라짐</b><br/><small>몰수 없음 — 인게임 획득 유지 · 체스트만 다음 기회</small>"]
+  E -- "⛔ 시간 초과" --> H["<b>실루엣이 열쇠 갖고 사라짐</b><br/><small>몰수 없음 — 인게임 획득 유지 · 체스트만 다음 기회</small>"]
   H --> I["<b>쿨다운</b><br/><small>cooldown_sec=43200 (예: 12h)</small>"]
   G --> J(["<b>↺ 다음 슬롯 반복</b><br/><small>성공 사이클은 저니 트랙(2차) 누적 → 6회 완주 시 Jackpot 해금</small>"])
   I --> J
@@ -327,7 +330,7 @@ flowchart TD
   classDef bad fill:#fdecec,stroke:#e06666,color:#6e1f1f;
   classDef auto fill:#efe9fc,stroke:#8b6ae0,color:#3a2b6e;
   classDef hook fill:#fff4d9,stroke:#d9a520,color:#6e5410;
-  class F,G good; class H,I bad; class B,C auto; class D2,E hook;
+  class F,G good; class H,I bad; class C,ST auto; class D2,E,Q hook; class R default;
   </pre>
 
   <h3>노출 시기 — 로비 팝업 시퀀서 정합</h3>
@@ -335,8 +338,8 @@ flowchart TD
     <thead><tr><th>시점</th><th>노출</th><th>티어·모드</th></tr></thead>
     <tbody>
     <tr><td>레벨10 클리어 직후 로비</td><td>언락 인트로 팝업 1회 (tutorial_guide 230034)</td><td><strong>P1 force</strong> · content당 1회</td></tr>
-    <tr><td>슬롯 오픈 중 로비 복귀 · <strong>우선순위 팝업(P1~P3 보상 정산·출석 등) 소화 후</strong></td><td>밧줄 아이콘 <strong>glow+레드닷</strong> — 강제 팝업 없음. <strong>유저의 최초 인식 시점</strong></td><td><strong>P4 reddot</strong> (event_window_open·1일 1회 평가)</td></tr>
-    <tr><td>유저가 아이콘 탭</td><td>발동 시퀀스 연출 + 타이머 시작</td><td>유저 액션 (7102 로그 발화)</td></tr>
+    <tr><td>슬롯 오픈 중 로비 복귀 · <strong>우선 팝업(P1~P3) 소화 후</strong></td><td><strong>발동 시퀀스 연출 자동 재생 + 타이머 시작</strong> — 유저의 최초 인식(슬롯당 1회·P4 큐 마지막 순번)</td><td><strong>P4 reddot</strong> (event_window_open·1일 1회 평가)</td></tr>
+    <tr><td>모달 상한 초과 시(폴백)</td><td>밧줄 아이콘 <strong>레드닷 강등</strong> → 유저 탭 시 발동 시퀀스 재생(7102 발화)</td><td><strong>P4 reddot</strong> 폴백 · 다음 진입 재평가</td></tr>
     <tr><td>8판 완주</td><td>체스트 결과 — 결과 화면 묶음 지급 + 🐱뱃지</td><td><strong>P2 force</strong> (troll_chest_result)</td></tr>
     <tr><td>언락 인트로 + 슬롯 오픈 동시</td><td>P1 먼저 → P4는 레드닷 유지 (같은 진입 2모달 금지)</td><td>엣지 규칙</td></tr>
     <tr><td>NRU(레벨&lt;10 or D&lt;3)</td><td>진입당 임의 모달 상한 1 — 본 이벤트는 레드닷이라 영향 없음</td><td>콜드스타트 상한</td></tr>
@@ -517,7 +520,7 @@ flowchart TD
       <tr><td>티어 차이</td><td>체스트 보상 내용만 (Normal vs Jackpot)</td><td>배수(×N) 미사용 — 선택형 베팅 시스템과 분리</td></tr>
       <tr><td>회당 골드 캡</td><td>500 (Normal) / 1,000 (Jackpot) · 일 2,000 하드캡</td><td>골드 인플레 방어. 골드에만 적용</td></tr>
       <tr><td>발동 빈도</td><td>주 4일(월~목) · 일 2슬롯(점심 12:00·저녁 19:00) · 슬롯 쿨다운 12h</td><td>슬롯 자동 만료 — 미참여 시 소멸 후 다음 슬롯 대기</td></tr>
-      <tr><td>활성화 방식</td><td>슬롯 오픈=밧줄 glow+레드닷(P4·강제 팝업 없음) → 유저 탭 → 발동 시퀀스 재생 → 종료 시점부터 타이머(duration_sec=1500·예 25분)</td><td>[참가] 버튼 없음. InfoPopup = [Ok]뿐</td></tr>
+      <tr><td>활성화 방식</td><td>로비 복귀·우선 팝업 소화 후 <b>발동 시퀀스 자동 재생</b>(P4 큐 마지막·슬롯당 1회·상한 초과 시 레드닷 폴백) → 연출 종료 시점부터 타이머(duration_sec=1500·예 25분)</td><td>[참가] 버튼 없음. InfoPopup = [Ok]뿐</td></tr>
       <tr><td>열쇠 앵커 판수</td><td>5판째</td><td>연출 전용 플래그 · 보상 분리 없음</td></tr>
       <tr><td>언락 조건</td><td>레벨 10 클리어 (unlock 50031 · condition_type=level_clear)</td><td>미달 유저에게 이벤트 노출 없음. tutorial_guide 230034 연동</td></tr>
       <tr><td>Normal 체스트</td><td>해머×3 + 와일드/undo×2 + 골드 500</td><td>v1 기본 활성</td></tr>
@@ -533,7 +536,7 @@ flowchart TD
   <table>
     <thead><tr><th>상태 (한글)</th><th>상태 (영문)</th><th>진입 조건</th><th>다음 상태</th></tr></thead>
     <tbody>
-      <tr><td><strong>열쇠 강탈</strong></td><td><code>Grab</code></td><td>밧줄 레드닷 탭 시 발동 · 체스트 발견 후 그림자 냥이 열쇠 강탈 연출(앞발+발톱) · 입력 잠금</td><td>연출 종료 → 도주(Escape)</td></tr>
+      <tr><td><strong>열쇠 강탈</strong></td><td><code>Grab</code></td><td>팝업 큐 자동 발동(폴백=레드닷 탭) · 체스트 발견 후 그림자 냥이 열쇠 강탈 연출(앞발+발톱) · 입력 잠금</td><td>연출 종료 → 도주(Escape)</td></tr>
       <tr><td><strong>도주</strong></td><td><code>Escape</code></td><td>스토리 [확인] 후 로비 복귀 · 그림자 냥이 도주 연출(자국 트레일) · 입력 잠금 · 시퀀스 종료 시점부터 25분 타이머 시작</td><td>플레이 버튼 마킹 → 미니 위젯(Small) 진행중</td></tr>
       <tr><td><strong>미니 위젯</strong></td><td><code>Small</code></td><td>스프린트 RUNNING · 위젯/밧줄 태그 상시 표시</td><td>8판 완주 → 포획 성공(Win) / 25분 만료 → 시간 초과(Lose)</td></tr>
       <tr><td><strong>포획 성공</strong></td><td><code>Win</code></td><td>시간창 내 8판 완주 (열쇠 획득)</td><td>체스트 오픈 → 지급 후 IDLE</td></tr>
@@ -722,7 +725,7 @@ flowchart TD
   <table>
     <thead><tr><th>화면</th><th>내용</th><th>발동 시퀀스 대응</th><th>클라 실체</th></tr></thead>
     <tbody>
-      <tr><td>S10 스프린트 발동 알림</td><td>체스트 발견 → 열쇠 강탈 → 루나 안내 → 그림자 냥이 도주 → 플레이 버튼 마킹 풀시퀀스. 레드닷 탭 시 재생 · 입력 잠금 최초 1회 필수 시청</td><td>flow-01~05</td><td>신규 <code>PopupEventLunaChase.ts</code> (PopupBase 상속) · 그림자 냥이 도주 Tween 연출 신규(발자국 자국 스프라이트) · <code>ViewManager.lockPopupInput</code> 재사용</td></tr>
+      <tr><td>S10 스프린트 발동 알림</td><td>체스트 발견 → 열쇠 강탈 → 루나 안내 → 그림자 냥이 도주 → 플레이 버튼 마킹 풀시퀀스. 팝업 큐 자동 재생(폴백=레드닷 탭) · 입력 잠금 최초 1회 필수 시청</td><td>flow-01~05</td><td>신규 <code>PopupEventLunaChase.ts</code> (PopupBase 상속) · 그림자 냥이 도주 Tween 연출 신규(발자국 자국 스프라이트) · <code>ViewManager.lockPopupInput</code> 재사용</td></tr>
       <tr><td>S11 스프린트 프리레벨 패널</td><td>밧줄 행잉 태그: 체스트+남은시간+"8판 완주 시 열쇠" 진행바. 우리 보상 표기(Normal/Jackpot 체스트 내용). 배수 배지 미표시</td><td>flow-06</td><td><code>PopupGameEntry.ts</code> <code>eventItems[]</code> 5번째 항목으로 확장 (재사용) · <code>EventItem.ts</code> 재사용</td></tr>
       <tr><td>S12 인게임 스프린트 HUD</td><td>카운트다운 타이머 + 판수 카운터(n/8) + 추격 진행바. 5판째 "곧 따라잡아요!" 앵커 격려</td><td>연출 훅</td><td>신규 <code>LunaChaseTimerWidget.ts</code> · <code>DataManager.getTime()</code>(<code>serverTimeGapMs</code>) 재사용</td></tr>
       <tr><td>S13 완주 체스트 오픈</td><td>포획 성공(Win) 연출 → 루나 체스트 오픈 → 내용물 지급 (Normal 6슬롯: 골드500·해머×3·와일드·undo×2·폭죽·티켓 / Jackpot 6슬롯: 골드1,000·해머×6·데코조각·와일드×2·undo×2·폭죽×2)</td><td>포획 성공(Win)</td><td><code>reward_box_open_cat.anim</code> + <code>GatheringItemSequence</code> 재사용 · <code>PopupCompleteLevel.ts</code> <code>eventRewardItems[]</code> 확장</td></tr>
@@ -750,9 +753,9 @@ flowchart TD
   <table>
     <thead><tr><th>영역</th><th>항목</th><th>공수</th></tr></thead>
     <tbody>
-      <tr><td>클라</td><td>스프린트 UI(카운트다운·판수 카운터·추격 진행바·체스트) + 레드닷 발동 트리거 + 연출 입력 잠금</td><td><span class="prio-high">L</span></td></tr>
+      <tr><td>클라</td><td>스프린트 UI(카운트다운·판수 카운터·추격 진행바·체스트) + 발동 트리거(큐 자동+레드닷 폴백) + 연출 입력 잠금</td><td><span class="prio-high">L</span></td></tr>
       <tr><td>클라</td><td>골드 캡 적용 로직 (배수 로직 불필요)</td><td><span class="prio-low">S</span></td></tr>
-      <tr><td>서버</td><td>이벤트/스프린트 상태머신·스케줄러 (슬롯 배분·폴백·wall-clock 타이머 권위 · 발동 트리거=유저 탭)</td><td><span class="prio-high">L</span></td></tr>
+      <tr><td>서버</td><td>이벤트/스프린트 상태머신·스케줄러 (슬롯 배분·폴백·wall-clock 타이머 권위 · 발동 트리거=큐/폴백)</td><td><span class="prio-high">L</span></td></tr>
       <tr><td>계측</td><td>7xxx 로그 파이프라인 (기존 코드+data 관례 확장 · troll_activate 개칭 반영)</td><td><span class="prio-low">S</span></td></tr>
       <tr><td>기획</td><td>밸런스 파라미터·체스트 표 확정 (판당 소요 실측 선행)</td><td><span class="prio-mid">M</span></td></tr>
       <tr><td>아트</td><td>발동 시퀀스 연출 4종(자국·스프라이트 중심 경량) · 루나 체스트 · 연출 리소스 재량 축소 가능</td><td><span class="prio-mid">M</span></td></tr>
