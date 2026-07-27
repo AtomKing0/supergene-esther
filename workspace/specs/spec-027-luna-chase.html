@@ -312,7 +312,7 @@ flowchart TD
   A["<b>슬롯 오픈</b><br/><small>start_day 1~4 (월~목) · start_time 12:00 / 19:00<br/>판정 주체(클라/서버) 미정 — 개발 확인 ④</small>"] --> P["<b>판 종료 → 로비 복귀</b><br/><small>우선순위 팝업 먼저 소화: 보상 정산·마일스톤·출석 등 (P1~P3)</small>"]
   P --> Q{"<b>진입당 모달 상한 여유?</b><br/><small>P4 · 세션 상한 규칙</small>"}
   Q -- "여유 있음 (기본)" --> C["<b>발동 시퀀스 연출 자동 재생 + 타이머 시작</b><br/><small>발견 → 열쇠 강탈 → 도주 → 버튼 🐾마킹 (입력 잠금·슬롯당 1회)<br/>duration_sec=1500 (예: 25분)</small>"]
-  Q -- "상한 초과 (폴백)" --> R["<b>밧줄 아이콘 레드닷 강등</b><br/><small>강제 노출 없음 · 다음 진입 재평가</small>"]
+  Q -- "상한 초과 (폴백)" --> R["<b>로비 이벤트 아이콘 레드닷 강등</b><br/><small>로비 아이콘 스택 5번째 슬롯 · 다음 진입 재평가</small>"]
   R -- "유저가 아이콘 탭" --> C
   C --> ST["<b>진행 중 상태 표시</b><br/><small>프리레벨 행잉 태그(체스트·타이머·n/8·실루엣) · 플레이 버튼 🐾마킹 · 인게임 HUD</small>"]
   ST --> D["<b>플레이 반복</b><br/><small>HUD 타이머 · n / total_rounds 카운터</small>"]
@@ -339,13 +339,14 @@ flowchart TD
     <tbody>
     <tr><td>레벨10 클리어 직후 로비</td><td>언락 인트로 팝업 1회 (tutorial_guide 230034)</td><td><strong>P1 force</strong> · content당 1회</td></tr>
     <tr><td>슬롯 오픈 중 로비 복귀 · <strong>우선 팝업(P1~P3) 소화 후</strong></td><td><strong>발동 시퀀스 연출 자동 재생 + 타이머 시작</strong> — 유저의 최초 인식(슬롯당 1회·P4 큐 마지막 순번)</td><td><strong>P4 reddot</strong> (event_window_open·1일 1회 평가)</td></tr>
-    <tr><td>모달 상한 초과 시(폴백)</td><td>밧줄 아이콘 <strong>레드닷 강등</strong> → 유저 탭 시 발동 시퀀스 재생(7102 발화)</td><td><strong>P4 reddot</strong> 폴백 · 다음 진입 재평가</td></tr>
+    <tr><td>모달 상한 초과 시(폴백)</td><td><strong>로비 이벤트 아이콘</strong>(스택 5번째 슬롯) 레드닷 강등 → 유저 탭 시 발동 시퀀스 재생(7102 발화)</td><td><strong>P4 reddot</strong> 폴백 · 다음 진입 재평가</td></tr>
     <tr><td>8판 완주</td><td>체스트 결과 — 결과 화면 묶음 지급 + 🐱뱃지</td><td><strong>P2 force</strong> (troll_chest_result)</td></tr>
     <tr><td>언락 인트로 + 슬롯 오픈 동시</td><td>P1 먼저 → P4는 레드닷 유지 (같은 진입 2모달 금지)</td><td>엣지 규칙</td></tr>
     <tr><td>NRU(레벨&lt;10 or D&lt;3)</td><td>진입당 임의 모달 상한 1 — 본 이벤트는 레드닷이라 영향 없음</td><td>콜드스타트 상한</td></tr>
     </tbody>
   </table>
-  <div class="callout callout-blue">📥 로비 팝업 우선순위·큐·억제 전체 규칙 = <a href="handoff-lobby-popup-seq.md" download><strong>로비 팝업 시퀀서 핸드오프 (MD 다운로드)</strong></a> — P0~P6 티어·세션 상한·AS-IS 코드 매핑·마이그레이션 7단계 포함.</div>
+  <div class="note"><strong>용어 정리</strong> — <strong>로비 이벤트 아이콘</strong> = 로비 좌/우측 이벤트 버튼 스택(클라 <code>LobbyEventButton</code> 4슬롯)의 신규 5번째 슬롯. 레드닷·glow는 여기. / <strong>프리레벨 행잉 태그</strong> = 레벨 시작 팝업 우측 밧줄의 보라 태그(타이머·n/8·실루엣) — 진행 상태 표시 전용. <br><strong>모달 상한(session_discretionary_cap)</strong> = 로비 1회 진입당 자동으로 뜨는 재량성 팝업(P3~P6) 개수 제한(NRU=1). 예: 같은 진입에 출석 팝업(P3)이 떴으면 루나 발동 연출(P4)은 자동 재생되지 않고 로비 아이콘 레드닷으로 강등 → 다음 진입 때 재평가. P0~P2(시스템·언락 인트로·보상 정산)는 상한과 무관하게 항상 표시.</div>
+<div class="callout callout-blue">📥 로비 팝업 우선순위·큐·억제 전체 규칙 = <a href="handoff-lobby-popup-seq.md" download><strong>로비 팝업 시퀀서 핸드오프 (MD 다운로드)</strong></a> — P0~P6 티어·세션 상한·AS-IS 코드 매핑·마이그레이션 7단계 포함.</div>
 
   <h3>정의</h3>
   <p>스프린트 목표 <strong>8판</strong>은 NRU가 하루에 걸쳐 치는 판수와 같은 양임. 이를 <strong>25분 창</strong>에 압축해 그날 판수를 2배 이상 끌어올리는 구조임. 실패해도 <strong>몰수 없음</strong>이라 다운사이드 없음. 발동 시퀀스(체스트 발견→열쇠 강탈→도주→마킹→행잉태그)는 원본 CCS "Catch the Troll"을 간소화 이식함.</p>
