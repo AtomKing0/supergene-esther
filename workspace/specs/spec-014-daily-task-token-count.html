@@ -138,6 +138,26 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
 .mock-milestone { font-size:0.7rem;color:var(--text-dim);text-align:center; }
 .mock-milestone.passed { color:var(--yellow);font-weight:700; }
 .highlight-box { border:2px dashed var(--yellow);border-radius:8px;padding:4px 8px;background:rgba(251,191,36,0.06); }
+/* ── 가독성 컴포넌트 (spec-027 패턴 이식) ── */
+.nav-sidebar a.sub { padding-left:36px;font-size:0.76rem;color:var(--text-dim); }
+.note { background:var(--surface2);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:0.85rem;color:var(--text2);margin:14px 0; }
+.note strong { color:var(--text); }
+.imgrole { display:inline-block;font-size:0.68rem;font-weight:800;border-radius:5px;padding:2px 9px;margin-bottom:6px; }
+.role-ref { background:var(--surface3);color:var(--text2); }
+.role-ours { background:var(--purple-bg);color:var(--accent); }
+.seq-imgs { display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;margin:18px 0; }
+.seq-imgs figure { margin:0;min-width:0; }
+.seq-imgs img { width:100%;border-radius:8px;border:1px solid var(--border);cursor:zoom-in;display:block; }
+.gif-wrap { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin:18px 0;text-align:center; }
+.gif-wrap img { max-width:100%;border-radius:8px;border:1px solid var(--border);cursor:zoom-in; }
+.gif-cap { font-size:0.78rem;color:var(--text-dim);margin-top:10px; }
+@media (max-width:760px){ .seq-imgs{ grid-template-columns:1fr; } }
+#lightbox { display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;align-items:center;justify-content:center;cursor:zoom-out; }
+#lightbox.on { display:flex; }
+#lightbox-row { display:flex;gap:16px;align-items:center;justify-content:center;max-width:97vw; }
+#lightbox-row figure { margin:0;min-width:0;flex:1 1 0; }
+#lightbox-row img { width:100%;max-height:88vh;object-fit:contain;border-radius:8px; }
+#lightbox-row figcaption { color:#cfd3e4;font-size:0.8rem;text-align:center;margin-top:8px; }
 </style>
 </head>
 <body>
@@ -146,8 +166,12 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
 <nav class="nav-sidebar">
   <div class="nav-title">SPEC-014</div>
   <a href="#s1">① 기획 의도</a>
+  <a class="sub" href="#s1-ref">↳ 레퍼런스 · before/after</a>
   <a href="#s2">② 아트 가이드</a>
   <a href="#s3">③ 개발 스펙</a>
+  <a class="sub" href="#s3-data">↳ 데이터 소스</a>
+  <a class="sub" href="#s3-logic">↳ 표시 로직</a>
+  <a class="sub" href="#s3-edge">↳ 엣지 케이스</a>
 </nav>
 
 <div class="hero">
@@ -209,37 +233,17 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
     <p><strong>권장 형식:</strong> <code>♣ 35 / 60</code> (현재 누적 / 다음 마일스톤) — 현재 위치와 목표를 동시에 전달해 "앞으로 25개만 더" 목표감 생성. (대안: <code>♣ 35</code> 단순형 · <code>♣ 25 남음</code> 긴박형)</p>
   </div>
 
-  <h3>레퍼런스</h3>
-  <p><strong>타 게임 · 누적량 표시 패턴:</strong> 상단 진행 트랙 좌측에 <strong>현재 누적치를 큰 숫자 pill(295)</strong>로 고정 표시하고, 트랙을 따라 마일스톤 임계값(100·250·560·810·1040)과 보상 아이콘을 배치 — 누적량과 다음 목표까지의 거리를 한눈에 전달.</p>
-  <div style="text-align:center;margin:20px 0;">
-    <img src="ref-014-restaurant-goals.png" alt="레퍼런스 — 누적 마일스톤 트랙" style="max-width:460px;width:100%;border-radius:12px;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.4);">
+  <h3 id="s1-ref">레퍼런스 · before / after</h3>
+  <div class="gif-wrap">
+    <span class="imgrole role-ref">📎 레퍼런스 (타 게임) — 누적 마일스톤 트랙</span>
+    <img src="ref-014-restaurant-goals.png" alt="레퍼런스 — 누적 마일스톤 트랙" class="zoomable" loading="lazy" style="max-width:440px">
+    <div class="gif-cap">상단 트랙 좌측에 현재 누적치 pill(295) + 임계값 마커로 누적량·다음 목표를 한눈에 전달.</div>
   </div>
-  <p style="margin-top:24px"><strong>현재 우리 UI (before):</strong> 토큰 수가 진행 바 길이로만 표현되고 수치가 없음.</p>
-  <div style="text-align:center;margin:20px 0;">
-    <img src="ref-014-daily-tasks.png" alt="Daily Tasks 현재 UI" style="max-width:100%;border-radius:12px;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.4);">
+  <div class="seq-imgs">
+    <figure><span class="imgrole role-ours">우리 게임 — 현재 (before)</span><img src="ref-014-daily-tasks.png" alt="현재 UI (before)" class="zoomable" loading="lazy"></figure>
+    <figure><span class="imgrole role-ours">✅ 우리 게임 — 적용 예시 (after)</span><img src="spec-014-after-mockup.png" alt="적용 예시 (after)" class="zoomable" loading="lazy"></figure>
   </div>
-  <p style="margin-top:24px"><strong>적용 예시 (after):</strong> 좌측 ♣ 카드 <strong>아래에 현재 누적 수치 pill</strong>(예: 63) 추가. 진행 바·마일스톤 마커는 기존 그대로.</p>
-  <div style="text-align:center;margin:20px 0;">
-    <img src="spec-014-after-mockup.png" alt="적용 예시 — ♣ 카드 아래 누적 수치 pill 추가" style="max-width:100%;border-radius:12px;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.4);">
-  </div>
-
-  <h3>와이어프레임</h3>
-  <div class="mock-popup">
-    <div class="mock-title">Daily Tasks</div>
-    <div class="mock-progress-area">
-      <div class="mock-progress-top">
-        <span class="highlight-box mock-token-badge">♣ 35 / 60</span>
-        <span style="font-size:0.72rem;color:var(--text-dim)">← 추가 표시 영역</span>
-      </div>
-      <div class="mock-bar"><div class="mock-bar-fill"></div></div>
-      <div class="mock-milestones">
-        <span class="mock-milestone passed">✓ 30</span>
-        <span class="mock-milestone">60</span>
-        <span class="mock-milestone">100</span>
-      </div>
-    </div>
-    <p style="text-align:center;font-size:0.78rem;color:var(--text-dim);margin:0">태스크 카드 영역 (생략)</p>
-  </div>
+  <div class="note"><strong>변경 포인트:</strong> 좌측 ♣ 카드 <strong>아래에 현재 누적 수치 pill</strong>(예: 63)만 추가. 진행 바·30/60/100 마커·보상 아이콘은 기존 그대로 — 최소 변경. (이미지 클릭 시 확대)</div>
 
 </section>
 
@@ -282,7 +286,7 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
     </div>
   </div>
 
-  <h3>데이터 소스</h3>
+  <h3 id="s3-data">데이터 소스</h3>
   <div class="callout callout-yellow">
     <p><strong>신규 시트 변수 없음 — 전부 클라 런타임 계산값.</strong> <code>daily_task_token_count</code>·<code>next_milestone_threshold</code>는 밸런스 시트에 존재하지 않으며(실데이터 확인), 개발이 기존 값으로 계산해 넣는 파생값이다.</p>
   </div>
@@ -294,7 +298,7 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
     </tbody>
   </table>
 
-  <h3>표시 로직</h3>
+  <h3 id="s3-logic">표시 로직</h3>
   <ul>
     <li>마일스톤 배열 <code>[30, 60, 100]</code>에서 <code>daily_task_token_count</code>보다 큰 첫 번째 값 = <code>next_milestone</code></li>
     <li>모든 마일스톤 달성 시: <code>next_milestone</code> = null → 숫자만 표시</li>
@@ -305,7 +309,7 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
     <p><strong>신규 서버 작업 없음.</strong> 이미 진행 바 렌더링에 사용 중인 토큰 카운트 값을 UI 텍스트로 추가 출력하는 것이므로 클라이언트 UI 수정만 필요.</p>
   </div>
 
-  <h3>엣지 케이스</h3>
+  <h3 id="s3-edge">엣지 케이스</h3>
   <table>
     <thead><tr><th>상황</th><th>처리</th></tr></thead>
     <tbody>
@@ -380,6 +384,27 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
     navLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href')==='#'+cur));
   });
 })();
+</script>
+<div id="lightbox" onclick="this.classList.remove('on')"><div id="lightbox-row"></div></div>
+<script>
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(t.tagName!=='IMG') return;
+  var inSeq=t.closest('.seq-imgs'), inGif=t.closest('.gif-wrap');
+  if(!inSeq && !inGif) return;
+  var row=document.getElementById('lightbox-row'); row.innerHTML='';
+  var imgs = inSeq ? inSeq.querySelectorAll('img') : [t];
+  imgs.forEach(function(im){
+    var wrap=document.createElement('figure');
+    var big=document.createElement('img'); big.src=im.src;
+    var cap=document.createElement('figcaption');
+    var role=im.closest('figure')&&im.closest('figure').querySelector('.imgrole');
+    cap.textContent=role?role.textContent:'';
+    wrap.appendChild(big); wrap.appendChild(cap); row.appendChild(wrap);
+  });
+  document.getElementById('lightbox').classList.add('on');
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('lightbox').classList.remove('on');});
 </script>
 </body>
 </html>
