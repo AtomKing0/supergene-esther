@@ -205,22 +205,16 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
   <h3>제안</h3>
   <p>진행 바 좌측 토큰 아이콘 우측에 <strong>현재 누적 토큰 수 / 다음 마일스톤 목표</strong> 형태로 숫자를 표시한다.</p>
 
-  <h4>표시 형식 (안)</h4>
-  <table>
-    <thead><tr><th>형식</th><th>예시</th><th>비고</th></tr></thead>
-    <tbody>
-      <tr><td>현재량만</td><td>♣ 35</td><td>단순, 공간 효율적</td></tr>
-      <tr><td>현재 / 다음마일스톤</td><td>♣ 35 / 60</td><td>목표 인지 명확, 권장안</td></tr>
-      <tr><td>잔여량</td><td>♣ 25 남음</td><td>긴박감 강조, 텍스트 길이 가변</td></tr>
-    </tbody>
-  </table>
-
   <div class="callout callout-purple">
-    <p><strong>권장:</strong> <code>♣ 35 / 60</code> 형식. 현재 위치와 목표를 동시에 전달하여 "앞으로 25개만 더"라는 목표감 생성.</p>
+    <p><strong>권장 형식:</strong> <code>♣ 35 / 60</code> (현재 누적 / 다음 마일스톤) — 현재 위치와 목표를 동시에 전달해 "앞으로 25개만 더" 목표감 생성. (대안: <code>♣ 35</code> 단순형 · <code>♣ 25 남음</code> 긴박형)</p>
   </div>
 
-  <h3>레퍼런스 스크린샷</h3>
-  <p>현재 Daily Tasks UI — 토큰 수가 진행 바에만 표현되고 수치가 없음.</p>
+  <h3>레퍼런스</h3>
+  <p><strong>타 게임 · 누적량 표시 패턴:</strong> 상단 진행 트랙 좌측에 <strong>현재 누적치를 큰 숫자 pill(295)</strong>로 고정 표시하고, 트랙을 따라 마일스톤 임계값(100·250·560·810·1040)과 보상 아이콘을 배치 — 누적량과 다음 목표까지의 거리를 한눈에 전달.</p>
+  <div style="text-align:center;margin:20px 0;">
+    <img src="ref-014-restaurant-goals.png" alt="레퍼런스 — 누적 마일스톤 트랙" style="max-width:460px;width:100%;border-radius:12px;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.4);">
+  </div>
+  <p style="margin-top:24px"><strong>현재 우리 UI (before):</strong> 토큰 수가 진행 바 길이로만 표현되고 수치가 없음.</p>
   <div style="text-align:center;margin:20px 0;">
     <img src="ref-014-daily-tasks.png" alt="Daily Tasks 현재 UI" style="max-width:100%;border-radius:12px;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.4);">
   </div>
@@ -243,12 +237,6 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
     <p style="text-align:center;font-size:0.78rem;color:var(--text-dim);margin:0">태스크 카드 영역 (생략)</p>
   </div>
 
-  <h3>마일스톤 100 돌파 시</h3>
-  <p>100 이후 구간이 있을 경우 다음 마일스톤 값을 표시하거나, 최대 달성 후에는 <strong>총 누적량만 표시</strong>한다.</p>
-  <ul>
-    <li>마일스톤 이후 추가 구간이 있을 때: <code>♣ 110 / 150</code></li>
-    <li>최종 마일스톤 완료 후: <code>♣ 120</code> (목표 없이 누적량만)</li>
-  </ul>
 </section>
 
 <!-- ════════════════════════════════════
@@ -276,6 +264,20 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
       <tr><td>애니메이션</td><td>토큰 획득 시 숫자 카운트업 (+N) 연출 (선택 사항)</td></tr>
     </tbody>
   </table>
+
+  <h3>예시 이미지 생성 프롬프트 (우리 게임 이미지 기반 · after 목업)</h3>
+  <p>첨부 <code>ref-014-daily-tasks.png</code>(현재 UI)를 입력으로, 위 레퍼런스와 같은 누적량 표시를 입힌 <strong>after 예시</strong>를 만들 때 사용(이미지 편집 모델).</p>
+  <div class="sheet-block">
+    <div class="sheet-block-title">프롬프트 (복사용)</div>
+    <p style="font-family:monospace;font-size:0.8rem;white-space:pre-wrap;color:var(--text2);margin:0;line-height:1.65">첨부한 Solitaire TriPeaks "Daily Tasks" 팝업 스크린샷(이미지 1)을 기반으로, 상단 진행 바 영역만 리디자인해 토큰 누적량을 명시적으로 표시하라. 원본의 아트 스타일·색감·프레임·나머지 레이아웃은 그대로 유지(동일 팝업 안).
+
+1. 진행 바 좌측 토큰(♣) 아이콘 옆에 현재 누적 토큰 수를 큰 숫자 pill로 표시: "♣ 35 / 60" (현재 누적 / 다음 마일스톤).
+2. 진행 바를 마일스톤(30·60·100) 구간으로 분절하고 각 임계값 위에 보상 아이콘을 작게 배치 — 이미지 2(Restaurant Goals)의 누적 마일스톤 트랙 구성을 참고.
+3. 이미 지난 마일스톤(30)엔 체크 표시, 채워진 구간은 초록색.
+
+출력: 모바일 세로 UI, 원본과 동일한 팝업 프레임 안, 고해상도, 텍스트 또렷하게.
+(이미지 1 = ref-014-daily-tasks.png · 이미지 2 = ref-014-restaurant-goals.png)</p>
+  </div>
 </section>
 
 <!-- ════════════════════════════════════
@@ -291,19 +293,16 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
   </div>
 
   <h3>데이터 소스</h3>
-  <div class="sheet-block">
-    <div class="sheet-block-title">참조 변수</div>
-    <div class="sheet-row">
-      <span class="sheet-row-var">daily_task_token_count</span>
-      <span class="sheet-row-unit">int</span>
-      <span class="sheet-row-desc">플레이어의 현재 누적 데일리 태스크 토큰 보유량. 기존에 진행 바 계산에 사용 중인 값 그대로 활용.</span>
-    </div>
-    <div class="sheet-row">
-      <span class="sheet-row-var">next_milestone_threshold</span>
-      <span class="sheet-row-unit">int</span>
-      <span class="sheet-row-desc">다음 미달성 마일스톤 값 (30 / 60 / 100 순). 현재 토큰량 기준으로 동적 계산.</span>
-    </div>
+  <div class="callout callout-yellow">
+    <p><strong>신규 시트 변수 없음 — 전부 클라 런타임 계산값.</strong> <code>daily_task_token_count</code>·<code>next_milestone_threshold</code>는 밸런스 시트에 존재하지 않으며(실데이터 확인), 개발이 기존 값으로 계산해 넣는 파생값이다.</p>
   </div>
+  <table>
+    <thead><tr><th>값</th><th>출처</th></tr></thead>
+    <tbody>
+      <tr><td>현재 누적 토큰</td><td>완료 태스크의 <span class="sheet-var">daily_task.milestone_point</span> (시트 실값 · key 12xxxx · 20/30/50) 합 — <strong>이미 진행 바 계산에 쓰는 값</strong></td></tr>
+      <tr><td>다음 마일스톤 임계</td><td>마일스톤 보상 티어에서 현재 누적보다 큰 첫 값 — 기존 진행 바 로직이 이미 보유(신규 세팅 불필요)</td></tr>
+    </tbody>
+  </table>
 
   <h3>표시 로직</h3>
   <ul>
