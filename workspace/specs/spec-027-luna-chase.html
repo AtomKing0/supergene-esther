@@ -309,7 +309,8 @@ ul li strong,ol li strong { color:var(--text); }
   <p style="font-size:12px;color:var(--text2)">판수·시간·쿨다운 등은 전부 <code>event_luna_sprint</code> 시트 변수 — 아래 수치는 <strong>예시값</strong>이며 변수명 병기.</p>
   <pre class="mermaid">
 flowchart TD
-  A["<b>슬롯 오픈 (서버)</b><br/><small>start_day 1~4 (월~목) · start_time 12:00 / 19:00</small>"] --> B["<b>밧줄 아이콘 glow + 레드닷</b><br/><small>P4 · 강제 팝업 없음</small>"]
+  A["<b>슬롯 오픈</b><br/><small>start_day 1~4 (월~목) · start_time 12:00 / 19:00<br/>판정 주체(클라/서버) 미정 — 개발 확인 ④</small>"] --> A2["<b>판 종료 → 로비 복귀</b><br/><small>우선순위 팝업 먼저 소화: 보상 정산·마일스톤·출석 등 (P1~P3)</small>"]
+  A2 --> B["<b>밧줄 아이콘 glow + 레드닷</b><br/><small>P4 · 강제 팝업 없음</small>"]
   B -- "유저가 아이콘 탭 = 발동" --> C["<b>발동 시퀀스 연출 + 타이머 시작</b><br/><small>발견 → 열쇠 강탈 → 도주 (입력 잠금)<br/>duration_sec=1500 (예: 25분)</small>"]
   C --> D["<b>플레이 반복</b><br/><small>HUD 타이머 · n / total_rounds 카운터 · 버튼 🐾마킹</small>"]
   D -- "key_anchor_level=5 (예: 5판째)" --> D2(["<b>중간 앵커 연출</b><br/><small>곧 따라잡아요! — 후반 견인용 격려 1.5초 · 보상 없음</small>"])
@@ -334,7 +335,7 @@ flowchart TD
     <thead><tr><th>시점</th><th>노출</th><th>티어·모드</th></tr></thead>
     <tbody>
     <tr><td>레벨10 클리어 직후 로비</td><td>언락 인트로 팝업 1회 (tutorial_guide 230034)</td><td><strong>P1 force</strong> · content당 1회</td></tr>
-    <tr><td>슬롯 오픈 중 로비 진입</td><td>밧줄 아이콘 <strong>glow+레드닷</strong> — 강제 팝업 없음</td><td><strong>P4 reddot</strong> (event_window_open·1일 1회 평가)</td></tr>
+    <tr><td>슬롯 오픈 중 로비 복귀 · <strong>우선순위 팝업(P1~P3 보상 정산·출석 등) 소화 후</strong></td><td>밧줄 아이콘 <strong>glow+레드닷</strong> — 강제 팝업 없음. <strong>유저의 최초 인식 시점</strong></td><td><strong>P4 reddot</strong> (event_window_open·1일 1회 평가)</td></tr>
     <tr><td>유저가 아이콘 탭</td><td>발동 시퀀스 연출 + 타이머 시작</td><td>유저 액션 (7102 로그 발화)</td></tr>
     <tr><td>8판 완주</td><td>체스트 결과 — 결과 화면 묶음 지급 + 🐱뱃지</td><td><strong>P2 force</strong> (troll_chest_result)</td></tr>
     <tr><td>언락 인트로 + 슬롯 오픈 동시</td><td>P1 먼저 → P4는 레드닷 유지 (같은 진입 2모달 금지)</td><td>엣지 규칙</td></tr>
@@ -636,7 +637,7 @@ flowchart TD
 </table>
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트 보상은 event_luna_chest 탭(⑤) 소관 — 튜닝 코어는 스프린트 파라미터만. event_id=0 = 두 슬롯 공통.</div>
 
-<div class="callout callout-orange"><b>개발 확인 요청 3가지</b> — ① goal_type=complete_sprint_cycle 서버 처리 방식 ② event_id=0(비귀속) 관례 수용 여부 ③ tutorial_guide play_scene=event_luna_chase 씬 명명. 이상 없으면 위 행 그대로 시트 반영.</div>
+<div class="callout callout-orange"><b>개발 확인 요청 4가지</b> — ① goal_type=complete_sprint_cycle 서버 처리 방식 ② event_id=0(비귀속) 관례 수용 여부 ③ tutorial_guide play_scene=event_luna_chase 씬 명명. 이상 없으면 위 행 그대로 시트 반영. ④ 슬롯 오픈 판정 주체 — 서버 스케줄 push vs 클라 시각 판정(서버 시간 기준) 중 택.</div>
 </div>
 
 <h2 id="s3-client">3-5 실클라 매핑</h2>
