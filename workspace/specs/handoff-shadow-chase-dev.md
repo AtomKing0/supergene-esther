@@ -10,7 +10,7 @@
 - [ ] 사이클당 1회: 발동 연출은 사이클 시작 시 1회만. 타이머 시작 = 연출 종료 시점
 - [ ] 사이클 종료(성공/실패 무관) → `cooldown_sec`(43200) 재트리거 대기. cooldown_until 서버 저장
 - [ ] 타이머 권위 = 서버 시간(wall-clock). 재접속 시 remaining 재계산·복원. 기간 종료를 넘겨도 진행 중 유저는 개인 타이머까지 완주 인정(`grace_after_window`)
-- [ ] ★개발 확인 ④: 기간·쿨다운 판정 주체 — 서버 스케줄 push vs 클라 시각 판정(서버 시간 기준) 중 택
+- [ ] ★개발 확인 ③: 기간·쿨다운 판정 주체 — 서버 스케줄 push vs 클라 시각 판정(서버 시간 기준) 중 택
 
 ## 2. 연출·입력 (클라)
 
@@ -46,11 +46,10 @@
 - [ ] `ProtocolTypes.ts`: EventSchedule.type에 `shadow_chase` 추가 · `ShadowChaseInfo` 타입 신설(timer_start_ts·rounds_cleared·cooldown_until·cycle_result)
 - [ ] 진행 저장: 서버 `TPlayer.event_infos`에 ShadowChaseInfo
 - [ ] 신규 시트 탭 로드: `event_shadow_sprint`(5변수)·`event_shadow_chest`(Normal 6행) — 번들 JSON+balance-sheet 로더 등록
-- [ ] unlock 50031(`content_event_shadow_chase`·level_clear·10) + tutorial_guide 230034(unlock_key=50031·진행 중 defer) — 클라 코드 등록 불필요(데이터 참조)
+- [ ] unlock 50031(`content_event_shadow_chase`·level_clear·10) — 별도 튜토리얼 없음(tutorial_guide 미등록). 클라 코드 등록 불필요(데이터 참조)
 - [ ] string_code `T_SHADOW_CHASE_*` 8키 등록
 - [ ] ★개발 확인 ①: goal_type=`complete_sprint_cycle` 서버 처리(2차 저니용 — v1 훅만)
 - [ ] ★개발 확인 ②: milestone/sprint의 event_id=0(비귀속) 관례 수용 여부
-- [ ] ★개발 확인 ③: tutorial_guide play_scene=`event_shadow_chase` 씬 명명
 
 ## 7. 로그 등록 (클라)
 
