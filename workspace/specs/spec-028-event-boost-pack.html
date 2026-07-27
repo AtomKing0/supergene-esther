@@ -142,6 +142,7 @@ ul li strong,ol li strong { color:var(--text); }
 :root { --gold:#fbbf24; --gold-bg:rgba(251,191,36,.12); }
 .callout-gold{background:var(--gold-bg);border-left:3px solid var(--gold)}
 .badge-gold{background:var(--gold-bg);color:var(--gold);border:1px solid rgba(251,191,36,.3)}
+a{color:var(--blue);text-decoration:none} a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -150,10 +151,12 @@ ul li strong,ol li strong { color:var(--text); }
 <nav class="nav-sidebar">
   <div class="nav-title">SPEC-028</div>
   <a href="#s1">① 기획 의도 &amp; 흐름</a>
-  <a class="sub" href="#s1-eval">↳ CCS 오퍼 평가</a>
+  <a class="sub" href="#s1-events">↳ 연동 대상 이벤트</a>
+  <a class="sub" href="#s1-eval">↳ 원형 근거</a>
   <a class="sub" href="#s1-flow">↳ 구매 흐름</a>
   <a class="sub" href="#s1-kpi">↳ 성공 지표</a>
   <a href="#s2">② 아트 가이드</a>
+  <a class="sub" href="#s2-ref">↳ UI/UX 레퍼런스</a>
   <a class="sub" href="#s2-wf1">↳ 오퍼 노출 3면</a>
   <a href="#s3">③ 개발 스펙</a>
   <a class="sub" href="#s3-bs">↳ 밸런스 시트</a>
@@ -174,7 +177,7 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="badge badge-teal">관련: SPEC-007 시즌 패스</span>
     </div>
     <h1>🎁 이벤트 부스트 팩 — 주말 이벤트 연동 IAP</h1>
-    <p class="hero-sub">주말 3일 마일스톤 이벤트(Midnight·Sunset·Golden Stamp·City Race)가 활성일 때만 등장하는 <strong>$1.99 단발 오퍼</strong>. 부스터 번들 즉시 지급 + <strong>해당 이벤트 마일스톤 보상 ×2</strong>(기수령분 차액 소급 — 언제 사도 손해 없음). 공통 프레임에 이벤트 키비주얼을 자동 삽입해 <strong>이벤트가 늘어도 아트 재작업 0</strong>. 원형 = CCS 1Plus 오퍼(가치강조) + HardLevel 오퍼(문맥 트리거) 하이브리드.</p>
+    <p class="hero-sub">주말 마일스톤 이벤트(블랙카드·레드카드·위닝)가 활성일 때만 등장하는 <strong>$1.99 단발 오퍼</strong>. 부스터 번들 즉시 지급 + <strong>해당 이벤트 마일스톤 보상 ×2</strong>(기수령분 차액 소급 — 언제 사도 손해 없음). 공통 프레임에 이벤트 키비주얼을 자동 삽입해 <strong>이벤트가 늘어도 아트 재작업 0</strong>. 원형 = CCS 1Plus 오퍼(가치강조) + HardLevel 오퍼(문맥 트리거) 하이브리드.</p>
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">노출→구매 전환율</div>
@@ -226,16 +229,25 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
 
-  <h3 id="s1-eval">CCS 오퍼 6종 평가 (CCS_Events 시트 역기획 실측)</h3>
+  <h3 id="s1-events">연동 대상 이벤트 (현존 · event_schedule 실측)</h3>
+  <p>신규 이벤트를 만들지 않는다. 이미 <strong>주간 반복</strong> 운영 중인 마일스톤 이벤트에 배수 레이어만 얹는다. 오퍼는 <span class="code">getActiveEvents()</span>에 아래 milestone형이 하나라도 활성이면 자동 ON.</p>
   <table>
-    <thead><tr><th>원형</th><th>구조</th><th>판정</th><th>이유</th></tr></thead>
+    <thead><tr><th>이벤트</th><th>key</th><th>요일(주간)</th><th>목표</th><th>마일스톤 보상 (×2 대상)</th></tr></thead>
     <tbody>
-      <tr><td>1Plus12Offer</td><td>톱 보상 1개 구매 시 N개 '무료' 증정 (BOGO 가치강조)</td><td><strong>✅ 프레이밍 채택</strong></td><td>"$1.99에 이후 이벤트 보상 전부 2배 = 무료로 얹어줌" — 가치강조 화법이 우리 구성과 정확히 일치</td></tr>
-      <tr><td>HardLevelOffer</td><td>게임플레이 문맥(막힘) 트리거 오퍼</td><td><strong>✅ 트리거 채택</strong></td><td>상시 노출이 아니라 "이벤트 진행 중" 문맥에만 등장 — 관련성 높고 마찰 최소. 아트 최경량</td></tr>
-      <tr><td>SMLOffer</td><td>동일 구성 S/M/L 3단 가격 사다리</td><td>⏸ 후속</td><td>이식성 최고지만 단일 SKU로 시작 — 구매 데이터 쌓인 뒤 M/L 상위 티어</td></tr>
-      <tr><td>GenericOffers</td><td>할인율/배수 프레이밍 + 시즌 스킨슬롯 프레임워크</td><td>⏸ 후속</td><td>상점 표준 컨테이너로 재활용 — 골드팩 카탈로그 갖춰진 뒤</td></tr>
-      <tr><td>BuyThemAllOffer</td><td>번들-오브-번들 일괄할인 업셀</td><td>❌ 시기상조</td><td>다중 SKU 카탈로그 전제 — 현재 SKU 2개(패스·부스트 팩)뿐</td></tr>
-      <tr><td>BazaarOffer</td><td>시즌 테마 풀스크린 노점 오퍼</td><td>❌ 반대 방향</td><td>무거운 시즌 아트 의존 — "디자인 부담 없는 오퍼" 목적과 정반대</td></tr>
+      <tr><td>블랙카드 마일스톤</td><td>160001</td><td>1–3일차</td><td>검정 카드 수집 (30→520+)</td><td>골드·undo 8단 (180001~)</td></tr>
+      <tr><td>레드카드 마일스톤</td><td>160002</td><td>4–6일차</td><td>빨강 카드 수집</td><td>골드·부스터 다단</td></tr>
+      <tr><td>위닝 마일스톤</td><td>160003</td><td>2–4일차</td><td>판 클리어 누적</td><td>골드·티켓·부스터 다단</td></tr>
+      <tr><td>클리어 랭킹</td><td>160004</td><td>5일차~</td><td>랭킹 경쟁</td><td><strong>제외</strong> — 마일스톤형 아님(ranking type)</td></tr>
+    </tbody>
+  </table>
+  <p>연동 지점: <span class="code">event_milestone.reward_amount</span> 지급 루틴에 배수 분기 1개. 신규 milestone type이 추가돼도 <span class="code">target_event_type = milestone_all</span>이 자동 포함 — 개별 세팅·아트 불필요.</p>
+
+  <h3 id="s1-eval">원형 근거 (CCS 채택분)</h3>
+  <table>
+    <thead><tr><th>원형</th><th>채택</th><th>적용</th></tr></thead>
+    <tbody>
+      <tr><td>1Plus12Offer</td><td>프레이밍</td><td>"$1.99에 남은·기수령 보상 전부 2배" — BOGO식 가치강조 화법</td></tr>
+      <tr><td>HardLevelOffer</td><td>트리거</td><td>상시 노출 아님 — 이벤트 진행 문맥에만 등장(관련성↑·마찰·아트 최소)</td></tr>
     </tbody>
   </table>
 
@@ -274,6 +286,21 @@ ul li strong,ol li strong { color:var(--text); }
   <div class="callout callout-green">
     <p><strong>발주 = 공통 오퍼 프레임 1종 (최초 1회) 끝.</strong> 프레임 안의 키비주얼 슬롯에 활성 이벤트의 기존 배너 소재(pst_event_banners 7종 제작분)가 자동 삽입된다. 이벤트가 늘어도 아트 재작업 없음. 규격: 이벤트 팝업 내 가로 배너 1종 + 구매 확인 시트 프레임 1종(둘 다 골드 톤·기존 SpecialOffer 팝업 골격 재사용).</p>
   </div>
+
+  <h3 id="s2-ref">UI/UX 레퍼런스 (프레임 제작 참고)</h3>
+  <p>공통 오퍼 프레임 1종 제작 시 참고할 외부 샘플. 우리 요건(골드톤·가치강조 배지·소급 연출·저마찰 인라인)에 매핑.</p>
+  <table>
+    <thead><tr><th>레퍼런스</th><th>무엇</th><th>가져올 요소</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://gameuidatabase.com/index.php?plat=1&amp;scrn=175" target="_blank">Game UI Database — Season Pass &amp; Events</a></td><td>실게임 이벤트/패스 오퍼 스크린 큐레이션</td><td>이벤트 팝업 내 오퍼 배너 배치·CTA 위계</td></tr>
+      <tr><td><a href="https://dribbble.com/tags/special-offer-ui" target="_blank">Dribbble — Special Offer UI</a> · <a href="https://dribbble.com/tags/limited_time_offer" target="_blank">Limited Time Offer</a></td><td>한정 오퍼 팝업/배너 디자인 모음</td><td>가치강조("+무료"·×2) 타이포·가격 뱃지 스타일</td></tr>
+      <tr><td><a href="https://dribbble.com/tags/game_popup_ui" target="_blank">Dribbble — Game Popup UI</a></td><td>게임 팝업 프레임</td><td>골드톤 프레임·구매 확인 시트 골격</td></tr>
+      <tr><td><a href="https://www.artstation.com/artwork/nYErD9" target="_blank">ArtStation — Mobile Game Popup Window</a></td><td>모바일 게임 팝업/스테이지 종료 UI</td><td>키비주얼 슬롯 + 보상 리스트 레이아웃</td></tr>
+      <tr><td><a href="https://www.pinterest.com/ideas/special-offer-ui-design/952896602943/" target="_blank">Pinterest — Special Offer UI</a></td><td>오퍼 UI 아이디어 보드</td><td>배지·리본·가격 강조 배리에이션</td></tr>
+      <tr><td><a href="https://candy-crush-solitaire.fandom.com/wiki/Shop" target="_blank">CCS Shop (원형)</a></td><td>Candy Crush Solitaire 상점·오퍼 티어($1.99/$6.99/$11.99·3x Best Value)</td><td>가격 사다리·"Best Value" 배지(후속 상위 티어용)</td></tr>
+    </tbody>
+  </table>
+  <p>가치강조·저마찰 오퍼 화법 참고: <a href="https://www.gamerefinery.com/best-practice-and-strategies-for-targeted-iap-offers-in-mobile-games/" target="_blank">GameRefinery — Targeted IAP Offers</a>.</p>
 
   <h3 id="s2-wf1">와이어프레임 — 오퍼 노출 3면</h3>
   <div class="wireframe">
@@ -335,7 +362,7 @@ ul li strong,ol li strong { color:var(--text); }
   <h3 id="s3-bs">밸런스 시트 · 상품</h3>
   <div class="sheet-block">
     <div class="sheet-block-title">신규 탭: event_boost_offer · key_number 234001~ (시즌 패스 233xxx 다음 대역)</div>
-    <div class="sheet-row"><span class="sheet-row-var">target_event_type</span><span class="sheet-row-default">= milestone_all</span><span class="sheet-row-unit">enum</span><span class="sheet-row-desc">연동 대상. milestone_all = black/red/winning + city_race 자동. 234001</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">target_event_type</span><span class="sheet-row-default">= milestone_all</span><span class="sheet-row-unit">enum</span><span class="sheet-row-desc">연동 대상. milestone_all = black_card(160001)·red_card(160002)·winning(160003) 자동. clear_ranking(160004)=랭킹형 제외. 234001</span></div>
     <div class="sheet-row"><span class="sheet-row-var">price_product_key</span><span class="sheet-row-default">= 190010</span><span class="sheet-row-unit">key</span><span class="sheet-row-desc">product 탭 190010 <span class="code">event_boost_pack</span> ($1.99). 234002</span></div>
     <div class="sheet-row"><span class="sheet-row-var">reward_multiplier</span><span class="sheet-row-default">= 20000</span><span class="sheet-row-unit">ratio(/10000)</span><span class="sheet-row-desc">마일스톤 보상 배수 ×2.0. 234003</span></div>
     <div class="sheet-row"><span class="sheet-row-var">retroactive_enabled</span><span class="sheet-row-default">= 1</span><span class="sheet-row-unit">bool</span><span class="sheet-row-desc">기수령 마일스톤 차액 일괄 소급. 234004</span></div>
