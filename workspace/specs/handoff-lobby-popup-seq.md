@@ -27,14 +27,14 @@
 - P0 즉시 독점 / P1·P2 필수 전달(상한 무관) / **P3~P6 = 로비 진입당 임의 모달 상한**(`session_discretionary_cap`: NRU 1·일반 1~2). 동일 티어 FIFO. 초과분은 레드닷/뱃지 강등(소멸 아님·다음 진입 재평가).
 - 억제: 보상 연출 중=큐 보존(연출 후 flush) / 로딩 중=완료 후 평가 / 모달 열림=닫힐 때까지 defer / 인게임=P0만 예외 / 판 복귀(SPEC-016)=연출 종료 후 우선순위 flush.
 
-## 3. 이벤트 연동 (루나의 추격 노출 시기 ★)
+## 3. 이벤트 연동 (그림자 냥이 추격전 노출 시기 ★)
 
 | 시점 | 노출 | 티어·모드 |
 |---|---|---|
 | 레벨10 클리어 직후 로비 | 언락 인트로 팝업 1회 (tutorial_guide 230034) | **P1 force** (content당 1회) |
 | 슬롯 오픈(월~목 12:00/19:00) 중 로비 진입 | 밧줄 아이콘 **glow+레드닷** — 강제 팝업 없음 | **P4 reddot** (event_window_open·1일 1회 평가) |
-| 유저가 밧줄 아이콘 탭 | 발동 시퀀스 연출(발견→강탈→도주·입력 잠금) + 25분 타이머 시작 | 유저 액션 (troll_activate 로그) |
-| 8판 완주 | 체스트 결과 — 결과 화면 묶음 지급 + 🐱뱃지 | **P2 force** (troll_chest_result·never) |
+| 유저가 밧줄 아이콘 탭 | 발동 시퀀스 연출(발견→강탈→도주·입력 잠금) + 25분 타이머 시작 | 유저 액션 (shadow_activate 로그) |
+| 8판 완주 | 체스트 결과 — 결과 화면 묶음 지급 + 🐱뱃지 | **P2 force** (shadow_chest_result·never) |
 | 동시 엣지: 언락 인트로+슬롯 오픈 같은 진입 | P1 먼저 → P4는 레드닷 유지 (같은 진입 2모달 금지) | — |
 
 - 타 이벤트 공통 원칙: 강제 팝업은 P1(언락 1회)·P2(정산)만, 나머지 전부 레드닷 유도.
@@ -54,7 +54,7 @@
 | content_unlock_intro | P1 | content | force | false | show_tutorial 연동 |
 | season_settle | P2 | never | force | false | 시즌 정산 |
 | idle_gold_ready | P2 | session | force | false | 오프라인 골드 |
-| troll_chest_result | P2 | never | force | false | **루나의 추격 체스트 결과** |
+| shadow_chest_result | P2 | never | force | false | **그림자 냥이 추격전 체스트 결과** |
 | daily_login | P3 | day | queue | false | 데일리 |
 | event_milestone | P4 | session | reddot | false | SPEC-016·콜드스타트 reddot |
 | event_window_open | P4 | day | reddot | false | **이벤트 창 오픈(밧줄 레드닷)** |
