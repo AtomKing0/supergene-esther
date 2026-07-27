@@ -316,8 +316,6 @@ flowchart TD
   R -- "유저가 아이콘 탭" --> C
   C --> ST["<b>진행 중 상태 표시</b><br/><small>프리레벨 행잉 태그(체스트·타이머·n/8·실루엣) · 플레이 버튼 🐾마킹 · 인게임 HUD</small>"]
   ST --> D["<b>플레이 반복</b><br/><small>HUD 타이머 · n / total_rounds 카운터</small>"]
-  D -- "key_anchor_level=5 (예: 5판째)" --> D2(["<b>중간 앵커 연출</b><br/><small>곧 따라잡아요! — 후반 견인용 격려 1.5초 · 보상 없음</small>"])
-  D2 --> D
   D --> E{"<b>타이머 내 완주?</b><br/><small>total_rounds=8 (예: 8판)</small>"}
   E -- "✅ 성공 = 열쇠 획득" --> F["<b>체스트 보상 — 결과 화면 통합 표시</b><br/><small>별도 오픈 연출 없음 · 8판째 클리어 판의 결과 화면에 합산<br/>체스트 기여 항목에 🐾마킹 · 6슬롯</small>"]
   F --> G["<b>슬롯 종료</b><br/><small>다음 슬롯 대기</small>"]
@@ -330,7 +328,7 @@ flowchart TD
   classDef bad fill:#fdecec,stroke:#e06666,color:#6e1f1f;
   classDef auto fill:#efe9fc,stroke:#8b6ae0,color:#3a2b6e;
   classDef hook fill:#fff4d9,stroke:#d9a520,color:#6e5410;
-  class F,G good; class H,I bad; class C,ST auto; class D2,E,Q hook; class R default;
+  class F,G good; class H,I bad; class C,ST auto; class E,Q hook; class R default;
   </pre>
 
   <h3>노출 시기 — 로비 팝업 시퀀서 정합</h3>
@@ -482,14 +480,12 @@ flowchart TD
       <tr><td>④ 도주</td><td>🐾발바닥 자국 트레일이 로비를 가로질러 점점이 찍히며 열쇠 아이콘 이동 → 플레이 버튼 종착 (캐릭터 이동 애니 없음)</td><td>자국 스프라이트 + Tween</td></tr>
       <tr><td>⑤ 마킹</td><td>플레이 버튼에 🐾발바닥 자국 1개 (진행 중 상시 표시)</td><td>버튼 오버레이</td></tr>
       <tr><td>⑥ 행잉 태그</td><td>프리레벨 밧줄에 체스트+남은시간+진행바(n/8) · 체스트 보상 표기</td><td>기존 진행이벤트 밧줄 재활용</td></tr>
-      <tr><td>(연출 훅)</td><td>5판째 클리어 시 "곧 따라잡아요!" 중간 앵커 격려 — 보상·열쇠 없음(열쇠는 8판 완주에서만), 후반 3판 견인</td><td>배너 1.5초</td></tr>
       <tr><td>⑦ 지급</td><td>체스트 보상을 결과 화면에 묶어 지급 + "🐱 루나의 추격" 이벤트 보상 뱃지 표시</td><td>결과 화면 보상 리스트 확장</td></tr>
     </tbody>
   </table>
 
   <div class="callout callout-yellow">
-    <strong>열쇠 = 8판 완주에서만:</strong> <strong>8판 완주 = 열쇠 획득 = 체스트 오픈</strong> 단일 시점. 8판 중 <strong>5판째</strong>에 "곧 따라잡득!" 마이크로 축하를 연출 훅으로만 끼워 후반 3판을 끌고 가는 중간 앵커로 사용. 앵커 위치는 판당 소요 실측 후 조정.
-  </div>
+    <strong>열쇠 = 8판 완주에서만:</strong> <strong>8판 완주 = 열쇠 획득 = 체스트 보상(결과 화면 통합)</strong> 단일 시점. 중간 앵커 연출은 제작하지 않음 — 진척감은 행잉 태그 게이지(n/8)·HUD 카운터가 상시 제공.</div>
 
   <h3 id="s2-states">연출 상태 명세 (5상태)</h3>
   <p>클라 연출 상태 enum(제안: <code>LunaChaseFx</code>)과 아트 대응. 전 상태 🐾자국 표현 기준(캐릭터 본체 미등장).</p>
@@ -565,13 +561,12 @@ flowchart TD
       <tr><td><code>7100_LUNA_SPRINT_TRIGGER</code></td><td>스프린트 창 발동 (NOTIFY)</td><td>sprint_id, slot_idx, trigger_type, window_sec(1500), target_clear(8)</td></tr>
       <tr><td><code>7101_LUNA_SPRINT_ENTER</code></td><td>RUNNING 진입 (첫 판 시작)</td><td>sprint_id, remain_sec</td></tr>
       <tr><td><code>7110_LUNA_SPRINT_CLEAR_STEP</code></td><td>창 내 1판 클리어 (카운트 증가)</td><td>sprint_id, clear_count(n/8), remain_sec, gold_paid, gold_capped(bool)</td></tr>
-      <tr><td><code>7115_LUNA_SPRINT_KEY_ANCHOR</code></td><td>중간 앵커 도달 (초안 5판째 격려 연출·열쇠 아님)</td><td>sprint_id, anchor_level(5), elapsed_sec, remain_sec</td></tr>
       <tr><td><code>7120_LUNA_SPRINT_COMPLETE</code></td><td>8판 완주 → 열쇠 획득</td><td>sprint_id, elapsed_sec, key_granted(1)</td></tr>
       <tr><td><code>7121_LUNA_SPRINT_EXPIRE</code></td><td>25분 만료 (또는 이벤트 종료 강제만료)</td><td>sprint_id, clear_count, reason(timeout/event_end), fail_type(lose/escape)</td></tr>
       <tr><td><code>7130_LUNA_CHEST_OPEN</code></td><td>루나 체스트 오픈·지급</td><td>sprint_id, hammer, gold, booster_list[], gold_in_cap(bool)</td></tr>
     </tbody>
   </table>
-  <div class="note"><strong>활용:</strong> <code>7100/7101</code>로 참여율, <code>7101→7120</code>로 완주율(성공률 30% 검증), <code>7110</code>의 gold_capped로 골드 캡 발동 빈도, <code>7115</code>의 elapsed_sec로 앵커 위치 조정, <code>7121</code>의 fail_type으로 만료 실패를 timeout vs escape 분해. 창 내 완료판 상승폭·데코 진입률·D1/D3도 추적. 트랙 계열(7000~7031·7200)은 마스터 §9 참조.</div>
+  <div class="note"><strong>활용:</strong> <code>7100/7101</code>로 참여율, <code>7101→7120</code>로 완주율(성공률 30% 검증), <code>7110</code>의 gold_capped로 골드 캡 발동 빈도, <code>7121</code>의 fail_type으로 만료 실패를 timeout vs escape 분해. 창 내 완료판 상승폭·데코 진입률·D1/D3도 추적. 트랙 계열(7000~7031·7200)은 마스터 §9 참조.</div>
 
   <!-- 3-4 데이터 테이블 -->
   <h2 id="s3-data">3-4 데이터 테이블 구성</h2>
@@ -619,7 +614,6 @@ flowchart TD
 <tr><td>T_LUNA_CHASE_INFO_TITLE</td><td>그림자 냥이를 잡아라!</td></tr>
 <tr><td>T_LUNA_CHASE_INFO_TEXT</td><td>그림자 냥이가 체스트 열쇠를 물고 달아났어요! 25분 안에 8판을 클리어하고 따라잡아요.</td></tr>
 <tr><td>T_LUNA_CHASE_TIMER_HUD</td><td>남은 시간 {mm}:{ss} · {n}/8</td></tr>
-<tr><td>T_LUNA_CHASE_ANCHOR</td><td>곧 따라잡아요! ({n}/8)</td></tr>
 <tr><td>T_LUNA_CHASE_CHEST_NORMAL</td><td>따라잡았어요! 루나 체스트가 열려요.</td></tr>
 <tr><td>T_LUNA_CHASE_CHEST_JACKPOT</td><td>그림자 냥이의 비밀 보물! Jackpot 체스트가 열려요.</td></tr>
 <tr><td>T_LUNA_CHASE_FAIL_FLEE</td><td>시간 종료… 그림자 냥이가 사라졌어요. 다음 기회에 꼭 잡아요.</td></tr>
@@ -646,8 +640,8 @@ flowchart TD
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트는 마일스톤이 아님 — 8판 완주(열쇠 획득) 시 <b>결과 화면에 묶어 일괄 지급</b>(+"🐱 루나의 추격" 뱃지). 티어당 6슬롯 = 오픈 연출에서 체스트가 꽉 차 보이는 구성. reward_key는 전부 라이브 item_list 실존 키(데코 조각만 클라 처리). Jackpot 행은 v1 OFF(해금 콘텐츠 도입 시 TRUE). 저니 트랙 마일스톤 탭(event_luna_milestone)은 v1 반영분 아님 — 2차(저니 레이어) 등록 시 별도 반영.</div>
 <h3>⑥ event_luna_sprint 신규 탭 (튜닝 코어 1행)</h3>
 <table class="bs-table">
-<tr><th>key_number</th><th>event_id</th><th>duration_sec</th><th>total_rounds</th><th>onboarding_target_levels</th><th>cooldown_sec</th><th>slots_per_day</th><th>key_anchor_level</th><th>grace_after_window</th><th>jackpot_unlock</th><th>gold_cap_daily</th><th>in_use</th></tr>
-<tr><td>200201</td><td>0</td><td>1500</td><td>8</td><td>5</td><td>43200</td><td>2</td><td>5</td><td>TRUE</td><td>journey_complete</td><td>2000</td><td>TRUE</td></tr>
+<tr><th>key_number</th><th>event_id</th><th>duration_sec</th><th>total_rounds</th><th>onboarding_target_levels</th><th>cooldown_sec</th><th>slots_per_day</th><th>grace_after_window</th><th>jackpot_unlock</th><th>gold_cap_daily</th><th>in_use</th></tr>
+<tr><td>200201</td><td>0</td><td>1500</td><td>8</td><td>5</td><td>43200</td><td>2</td><td>TRUE</td><td>journey_complete</td><td>2000</td><td>TRUE</td></tr>
 </table>
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트 보상은 event_luna_chest 탭(⑤) 소관 — 튜닝 코어는 스프린트 파라미터만. event_id=0 = 두 슬롯 공통.</div>
 
@@ -702,7 +696,6 @@ flowchart TD
       <tr><td><code>7101_LUNA_CHASE_SLOT_OPEN</code></td><td>슬롯 열림 (NOTIFY)</td><td>슬롯 활성화 시점</td></tr>
       <tr><td><code>7102_ACTIVATE</code></td><td>스프린트 발동 (RUNNING 진입)</td><td>로비 자동 발동 시퀀스 완료 후 첫 판 진입</td></tr>
       <tr><td><code>7103_ROUND_CLEAR</code></td><td>창 내 1판 클리어</td><td>판 완료 시 카운트 +1</td></tr>
-      <tr><td><code>7104_ANCHOR</code></td><td>중간 앵커 도달 (연출 전용)</td><td>5판째 "곧 따라잡아요!" 격려</td></tr>
       <tr><td><code>7105_CHEST_OPEN</code></td><td>루나 체스트 오픈·지급</td><td>8판 완주 → Win 연출 → 지급</td></tr>
       <tr><td><code>7106_FAIL</code></td><td>스프린트 만료 (미완주)</td><td>25분 만료 또는 이벤트 종료 강제만료</td></tr>
       <tr><td><code>7107_HAMMER_GRANT</code></td><td>해머 지급</td><td>체스트 오픈 내 해머 지급 시</td></tr>
@@ -738,7 +731,7 @@ flowchart TD
     <tbody>
       <tr><td>S10 스프린트 발동 알림</td><td>체스트 발견 → 열쇠 강탈 → 루나 안내 → 그림자 냥이 도주 → 플레이 버튼 마킹 풀시퀀스. 팝업 큐 자동 재생(폴백=레드닷 탭) · 입력 잠금 최초 1회 필수 시청</td><td>flow-01~05</td><td>신규 <code>PopupEventLunaChase.ts</code> (PopupBase 상속) · 그림자 냥이 도주 Tween 연출 신규(발자국 자국 스프라이트) · <code>ViewManager.lockPopupInput</code> 재사용</td></tr>
       <tr><td>S11 스프린트 프리레벨 패널</td><td>밧줄 행잉 태그: 체스트+남은시간+"8판 완주 시 열쇠" 진행바. 우리 보상 표기(Normal/Jackpot 체스트 내용). 배수 배지 미표시</td><td>flow-06</td><td><code>PopupGameEntry.ts</code> <code>eventItems[]</code> 5번째 항목으로 확장 (재사용) · <code>EventItem.ts</code> 재사용</td></tr>
-      <tr><td>S12 인게임 스프린트 HUD</td><td>카운트다운 타이머 + 판수 카운터(n/8) + 추격 진행바. 5판째 "곧 따라잡아요!" 앵커 격려</td><td>연출 훅</td><td>신규 <code>LunaChaseTimerWidget.ts</code> · <code>DataManager.getTime()</code>(<code>serverTimeGapMs</code>) 재사용</td></tr>
+      <tr><td>S12 인게임 스프린트 HUD</td><td>카운트다운 타이머 + 판수 카운터(n/8) + 추격 진행바</td><td>연출 훅</td><td>신규 <code>LunaChaseTimerWidget.ts</code> · <code>DataManager.getTime()</code>(<code>serverTimeGapMs</code>) 재사용</td></tr>
       <tr><td>S13 완주 체스트 오픈</td><td>포획 성공(Win) 연출 → 루나 체스트 오픈 → 내용물 지급 (Normal 6슬롯: 골드500·해머×3·와일드·undo×2·폭죽·티켓 / Jackpot 6슬롯: 골드1,000·해머×6·데코조각·와일드×2·undo×2·폭죽×2)</td><td>포획 성공(Win)</td><td><code>reward_box_open_cat.anim</code> + <code>GatheringItemSequence</code> 재사용 · <code>PopupCompleteLevel.ts</code> <code>eventRewardItems[]</code> 확장</td></tr>
       <tr><td>S14 스프린트 종료 (미완주)</td><td>시간 초과(Lose) 연출 → 그림자 냥이 자국이 화면 밖으로 사라지며 열쇠 페이드아웃 · "시간 종료… 그림자 냥이가 사라졌어요. 다음 기회에 꼭 잡아요" · <strong>몰수 없음</strong> 안내 · 재도전 유도. 루나는 안내 말풍선으로 등장</td><td>시간 초과(Lose)</td><td><code>PopupEventLunaChase.ts</code> Lose 상태 분기 · <code>PopupBase.ts</code> 재사용 · 루나 말풍선 컴포넌트 신규</td></tr>
     </tbody>
