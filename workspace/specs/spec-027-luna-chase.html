@@ -229,6 +229,23 @@ ul li strong,ol li strong { color:var(--text); }
 #lightbox-row img{width:100%;max-height:88vh;object-fit:contain;border-radius:8px}
 #lightbox-row figcaption{color:#cfd3e4;font-size:13px;text-align:center;margin-top:8px}
 
+
+.uflow{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin:14px 0}
+.uf-row{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.uf-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12.5px;font-weight:700;color:var(--text);text-align:center;flex:1;min-width:120px;display:flex;flex-direction:column;justify-content:center}
+.uf-box small{font-weight:500;color:var(--text2);font-size:11px;margin-top:3px;line-height:1.45}
+.uf-arr{align-self:center;color:var(--text2);font-size:13px;font-weight:700;white-space:nowrap}
+.uf-auto{border-color:var(--purple);background:var(--purple-bg)}
+.uf-hook{border-color:var(--yellow)}
+.uf-good{border-color:var(--green);background:var(--green-bg)}
+.uf-bad{border-color:var(--red);background:var(--red-bg)}
+.uf-sys{opacity:.9}
+.uf-branch{gap:14px}
+.uf-path{display:flex;align-items:stretch;gap:8px;flex:1;min-width:300px;flex-wrap:wrap}
+.uf-win .uf-arr:first-child{color:var(--green)}
+.uf-lose .uf-arr:first-child{color:var(--red)}
+.uf-loop{text-align:center;font-size:12px;color:var(--accent);font-weight:700;border-top:1px dashed var(--border);padding-top:10px}
+
 </style>
 </head>
 <body>
@@ -288,6 +305,34 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
   </div>
 
+  <h3>유저 이벤트 플로우 (순환)</h3>
+  <div class="uflow">
+    <div class="uf-row">
+      <div class="uf-box uf-sys">슬롯 오픈<br><small>월~목 · 12:00 / 19:00</small></div>
+      <div class="uf-arr">→</div>
+      <div class="uf-box uf-auto">로비 진입 시 자동 발동<br><small>발견 → 열쇠 강탈 → 도주 연출<br>(입력 잠금 · 타이머 시작)</small></div>
+      <div class="uf-arr">→</div>
+      <div class="uf-box">플레이 반복<br><small>HUD 타이머 · n/8 카운터<br>밧줄 태그 · 버튼 🐾마킹</small></div>
+      <div class="uf-arr">→</div>
+      <div class="uf-box uf-hook">5판째<br><small>"🔑 열쇠 획득!" 앵커</small></div>
+    </div>
+    <div class="uf-row uf-branch">
+      <div class="uf-path uf-win">
+        <div class="uf-arr">↳ 25분 내 8판 성공</div>
+        <div class="uf-box uf-good">체스트 오픈<br><small>결과 화면 묶음 지급 + 🐱뱃지<br>6슬롯 보상</small></div>
+        <div class="uf-arr">→</div>
+        <div class="uf-box uf-sys">슬롯 종료<br><small>다음 슬롯 재발동 대기</small></div>
+      </div>
+      <div class="uf-path uf-lose">
+        <div class="uf-arr">↳ 시간 초과 / 미참여</div>
+        <div class="uf-box uf-bad">실루엣이 열쇠 갖고 사라짐<br><small>몰수 없음 — 인게임 획득 유지<br>체스트만 다음 기회로</small></div>
+        <div class="uf-arr">→</div>
+        <div class="uf-box uf-sys">쿨다운 12h<br><small>다음 슬롯 대기</small></div>
+      </div>
+    </div>
+    <div class="uf-loop">↺ 다음 슬롯이 열리면 처음부터 반복 · 성공 사이클은 저니 트랙(2차)에 누적 → 6회 완주 시 Jackpot 해금</div>
+  </div>
+
   <h3>정의</h3>
   <p>스프린트 목표 <strong>8판</strong>은 NRU가 하루에 걸쳐 치는 판수와 같은 양임. 이를 <strong>25분 창</strong>에 압축해 그날 판수를 2배 이상 끌어올리는 구조임. 실패해도 <strong>몰수 없음</strong>이라 다운사이드 없음. 발동 시퀀스(체스트 발견→열쇠 강탈→도주→마킹→행잉태그)는 원본 CCS "Catch the Troll"을 간소화 이식함.</p>
 
@@ -317,7 +362,7 @@ ul li strong,ol li strong { color:var(--text); }
 
   <div class="callout callout-orange" style="border:2px solid var(--orange);margin:20px 0;">
     <strong>🐾 아트 필독 — 레퍼런스 시퀀스 간소화 이식</strong>
-    <p style="margin-top:8px">레퍼런스 시퀀스는 <strong>간소화하여 진행함</strong>. 완전 재현 아님. 필수 뼈대 = ①발견 ②열쇠 강탈 ③도주 ④밧줄 태그 4개뿐. 스플래시·파티클·도주 경로 등 세부 연출은 아트 재량으로 대폭 축소 가능.</p>
+    <p style="margin-top:8px">레퍼런스 시퀀스는 <strong>간소화하여 진행함</strong>. 완전 재현 아님. 핵심 연출 4종(①발견 ②열쇠 강탈 ③도주 ④밧줄 태그)으로 구성하되, 각 연출은 자국·스프라이트 중심의 <strong>경량 연출</strong>이라 컷별 부담은 크지 않음. 스플래시·파티클·도주 경로 등 세부 연출은 아트 재량으로 대폭 축소 가능.</p>
     <p style="margin-top:8px">그림자 냥이가 열쇠를 훔쳐 달아나는 <strong>캐릭터 풀 애니메이션은 제작하지 않음. 단순화하여 진행함.</strong> 캐릭터 본체 끝까지 미등장 — <strong>고양이 발톱 자국·발바닥 자국</strong>으로 표현 — ①강탈=화면 밖에서 앞발이 슥 들어와 열쇠 채감+발톱 긁힘 이펙트 ②도주=발바닥 자국 트레일이 로비를 가로질러 점점이 찍히며 열쇠 아이콘 이동 ③마킹=플레이 버튼 발바닥 자국 1개 ④실패=자국이 화면 밖으로 사라지며 열쇠 페이드아웃.</p>
   </div>
 
@@ -699,7 +744,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>서버</td><td>이벤트/스프린트 상태머신·스케줄러 (슬롯 배분·폴백·wall-clock 타이머 권위 · 자동 발동 트리거)</td><td><span class="prio-high">L</span></td></tr>
       <tr><td>계측</td><td>7xxx 로그 파이프라인 (기존 코드+data 관례 확장 · troll_activate 개칭 반영)</td><td><span class="prio-low">S</span></td></tr>
       <tr><td>기획</td><td>밸런스 파라미터·체스트 표 확정 (판당 소요 실측 선행)</td><td><span class="prio-mid">M</span></td></tr>
-      <tr><td>아트</td><td>루나 발동 시퀀스 연출(필수 뼈대 4개) · 루나 체스트 · 연출 리소스 재량 축소 가능</td><td><span class="prio-mid">M</span></td></tr>
+      <tr><td>아트</td><td>발동 시퀀스 연출 4종(자국·스프라이트 중심 경량) · 루나 체스트 · 연출 리소스 재량 축소 가능</td><td><span class="prio-mid">M</span></td></tr>
     </tbody>
   </table>
 
