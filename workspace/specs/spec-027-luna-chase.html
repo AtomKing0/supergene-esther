@@ -319,9 +319,9 @@ flowchart TD
   D -- "key_anchor_level=5 (예: 5판째)" --> D2(["<b>중간 앵커 연출</b><br/><small>곧 따라잡아요! — 후반 견인용 격려 1.5초 · 보상 없음</small>"])
   D2 --> D
   D --> E{"<b>타이머 내 완주?</b><br/><small>total_rounds=8 (예: 8판)</small>"}
-  E -- "✅ 성공 = 열쇠 획득" --> F["<b>체스트 오픈 (P2)</b><br/><small>결과 화면 묶음 지급 + 🐱뱃지 · 6슬롯 보상</small>"]
+  E -- "✅ 성공 = 열쇠 획득" --> F["<b>체스트 보상 — 결과 화면 통합 표시</b><br/><small>별도 오픈 연출 없음 · 8판째 클리어 판의 결과 화면에 합산<br/>체스트 기여 항목에 🐾마킹 · 6슬롯</small>"]
   F --> G["<b>슬롯 종료</b><br/><small>다음 슬롯 대기</small>"]
-  E -- "⛔ 시간 초과" --> H["<b>실루엣이 열쇠 갖고 사라짐</b><br/><small>몰수 없음 — 인게임 획득 유지 · 체스트만 다음 기회</small>"]
+  E -- "⛔ 시간 초과" --> H["<b>실패 — 별도 연출 없음</b><br/><small>행잉 태그·로비 아이콘·버튼 마킹 비노출 처리<br/>몰수 없음 · 체스트만 다음 기회</small>"]
   H --> I["<b>쿨다운</b><br/><small>cooldown_sec=43200 (예: 12h)</small>"]
   G --> J(["<b>↺ 다음 슬롯 반복</b><br/><small>성공 사이클은 저니 트랙(2차) 누적 → 6회 완주 시 Jackpot 해금</small>"])
   I --> J
@@ -340,7 +340,7 @@ flowchart TD
     <tr><td>레벨10 클리어 직후 로비</td><td>언락 인트로 팝업 1회 (tutorial_guide 230034)</td><td><strong>P1 force</strong> · content당 1회</td></tr>
     <tr><td>슬롯 오픈 중 로비 복귀 · <strong>우선 팝업(P1~P3) 소화 후</strong></td><td><strong>발동 시퀀스 연출 자동 재생 + 타이머 시작</strong> — 유저의 최초 인식(슬롯당 1회·P4 큐 마지막 순번)</td><td><strong>P4 reddot</strong> (event_window_open·1일 1회 평가)</td></tr>
     <tr><td>모달 상한 초과 시(폴백)</td><td><strong>로비 이벤트 아이콘</strong>(스택 5번째 슬롯) 레드닷 강등 → 유저 탭 시 발동 시퀀스 재생(7102 발화)</td><td><strong>P4 reddot</strong> 폴백 · 다음 진입 재평가</td></tr>
-    <tr><td>8판 완주</td><td>체스트 결과 — 결과 화면 묶음 지급 + 🐱뱃지</td><td><strong>P2 force</strong> (troll_chest_result)</td></tr>
+    <tr><td>8판 완주</td><td>체스트 보상을 <strong>8판째 결과 화면에 합산 표시</strong>(별도 팝업·풀스크린 연출 없음) · 체스트 기여 항목 🐾마킹</td><td>결과 화면 통합(신규 모달 없음)</td></tr>
     <tr><td>언락 인트로 + 슬롯 오픈 동시</td><td>P1 먼저 → P4는 레드닷 유지 (같은 진입 2모달 금지)</td><td>엣지 규칙</td></tr>
     <tr><td>NRU(레벨&lt;10 or D&lt;3)</td><td>진입당 임의 모달 상한 1 — 본 이벤트는 레드닷이라 영향 없음</td><td>콜드스타트 상한</td></tr>
     </tbody>
@@ -488,8 +488,8 @@ flowchart TD
     <tbody>
       <tr><td><strong>열쇠 강탈</strong></td><td><code>GRAB</code></td><td>발동 시퀀스 ② (flow-02 참고)</td><td>앞발+발톱 긁힘 이펙트로 열쇠 채감</td></tr>
       <tr><td><strong>도주</strong></td><td><code>ESCAPE</code></td><td>발동 시퀀스 ④ (flow-04 참고) · 시간 초과 시 재사용</td><td>발바닥 자국 트레일 + 열쇠 아이콘 이동</td></tr>
-      <tr><td><strong>포획 성공</strong></td><td><code>WIN</code></td><td>8판 완주</td><td>체스트 오픈 연출 (S13)</td></tr>
-      <tr><td><strong>시간 초과</strong></td><td><code>LOSE</code></td><td>25분 만료</td><td>자국이 화면 밖으로 사라지며 열쇠 페이드아웃 · "시간 종료… 그림자 냥이가 사라졌어요. 다음 기회에 꼭 잡아요" · 몰수 없음 안내</td></tr>
+      <tr><td><strong>포획 성공</strong></td><td><code>WIN</code></td><td>8판 완주</td><td>별도 연출 없음 — 결과 화면에 체스트 보상 합산+🐾마킹, 태그·마킹 정리</td></tr>
+      <tr><td><strong>시간 초과</strong></td><td><code>LOSE</code></td><td>타이머 만료</td><td>별도 연출 없음 — 행잉 태그·로비 아이콘·버튼 마킹 비노출 처리(몰수 없음)</td></tr>
       <tr><td><strong>미니 위젯</strong></td><td><code>IDLE_WIDGET</code></td><td>진행 중 상시</td><td>플레이 버튼 🐾마킹 · 밧줄 태그 (flow-05·06 참고)</td></tr>
     </tbody>
   </table>
