@@ -315,7 +315,7 @@ flowchart TD
   ST --> D["<b>플레이 반복</b><br/><small>HUD 타이머 · n / total_rounds 카운터</small>"]
   D --> E{"<b>타이머 내 완주?</b><br/><small>total_rounds=8 (예: 8판)</small>"}
   E -- "✅ 성공 = 열쇠 획득" --> F["<b>체스트 보상 — 결과 화면 통합 표시</b><br/><small>별도 오픈 연출 없음 · 8판째 클리어 판의 결과 화면에 합산<br/>체스트 기여 항목에 🐾마킹 · 6슬롯</small>"]
-  F --> G["<b>슬롯 종료</b><br/><small>다음 슬롯 대기</small>"]
+  F --> G["<b>슬롯 종료</b><br/><small>해당 슬롯 도전 기회 소진(성공 시 재도전 없음)<br/>다음 슬롯(당일 저녁 또는 익일 점심) 대기</small>"]
   E -- "⛔ 시간 초과" --> H["<b>실패 — 별도 연출 없음</b><br/><small>행잉 태그·로비 아이콘·버튼 마킹 비노출 처리<br/>몰수 없음 · 체스트만 다음 기회</small>"]
   H --> I["<b>쿨다운</b><br/><small>cooldown_sec=43200 (예: 12h)</small>"]
   G --> J(["<b>↺ 다음 슬롯 반복</b><br/><small>성공 사이클은 저니 트랙(2차) 누적 → 6회 완주 시 Jackpot 해금</small>"])
@@ -338,7 +338,7 @@ flowchart TD
     <tr><td>언락 인트로 + 슬롯 오픈 동시</td><td>언락 인트로 먼저 → 발동 연출은 다음 로비 진입 시(같은 진입 2모달 금지)</td><td>엣지 규칙</td></tr>
     </tbody>
   </table>
-  <div class="note"><strong>진입점 정리</strong> — 본 이벤트는 <strong>로비 이벤트 아이콘·레드닷을 만들지 않음</strong>. 인지·진입 3종뿐: ① 발동 연출(팝업 소화 후 자동 재생·슬롯당 1회) ② 프리레벨 행잉 태그(타이머·n/8·실루엣 — 진행 상태) ③ 플레이 버튼 🐾마킹(입장 동선 유도). 로비 팝업 순서·개수 제한의 시스템 설계는 별도 문서(아래 핸드오프) 소관 — 본 스펙은 "기존 팝업 다 뜬 뒤 마지막 순번"만 전제함.</div>
+  <div class="note"><strong>진입점 정리</strong> — 본 이벤트는 <strong>로비 이벤트 아이콘·레드닷을 만들지 않음</strong>. 인지·진입 3종뿐: ① 발동 연출(팝업 소화 후 자동 재생·슬롯당 1회) ② 프리레벨 행잉 태그(타이머·n/8·실루엣 — 진행 상태) ③ 플레이 버튼 🐾마킹(입장 동선 유도). 로비 팝업 순서·개수 제한의 시스템 설계는 별도 문서(아래 핸드오프) 소관 — 본 스펙은 "기존 팝업 다 뜬 뒤 마지막 순번"만 전제함. <br><strong>슬롯 종료</strong> = 해당 슬롯(점심/저녁)의 도전 기회 소진 — 성공하면 그 슬롯에선 재도전 없음, 실패하면 쿨다운 후 다음 슬롯. 슬롯당 스프린트 1회.</div>
 <div class="callout callout-blue">📥 로비 팝업 우선순위·큐·억제 전체 규칙 = <a href="handoff-lobby-popup-seq.md" download><strong>로비 팝업 시퀀서 핸드오프 (MD 다운로드)</strong></a> — P0~P6 티어·세션 상한·AS-IS 코드 매핑·마이그레이션 7단계 포함.</div>
 
   <h3>정의</h3>
@@ -520,12 +520,9 @@ flowchart TD
     <tbody>
       <tr><td><code>duration_sec</code></td><td>int</td><td>초</td><td>1500</td><td>스프린트 시간창 (예: 25분) · 판당 소요 실측 후 조정</td></tr>
       <tr><td><code>total_rounds</code></td><td>int</td><td>판</td><td>8</td><td>완주 목표 판수 (= 열쇠·체스트 조건)</td></tr>
-      <tr><td><code>onboarding_target_levels</code></td><td>int</td><td>판</td><td>5</td><td>첫 참여 완화 A/B용 (Later · MVP는 미사용)</td></tr>
       <tr><td><code>cooldown_sec</code></td><td>int</td><td>초</td><td>43200</td><td>슬롯 소진 후 쿨다운 (예: 12h)</td></tr>
       <tr><td><code>slots_per_day</code></td><td>int</td><td>회</td><td>2</td><td>일 슬롯 수 (점심·저녁)</td></tr>
       <tr><td><code>grace_after_window</code></td><td>bool</td><td>—</td><td>TRUE</td><td>슬롯 종료 시 진행 중 유저는 개인 타이머 종료까지 완주 인정</td></tr>
-      <tr><td><code>jackpot_unlock</code></td><td>enum</td><td>—</td><td>journey_complete</td><td>Jackpot 해금 조건 (저니 6사이클 완주 · Later)</td></tr>
-      <tr><td><code>gold_cap_daily</code></td><td>int</td><td>골드</td><td>2000</td><td>이벤트발 골드 일 하드캡</td></tr>
       <tr><td><code>in_use</code></td><td>bool</td><td>—</td><td>FALSE→TRUE</td><td>킬스위치 겸용 (선등록 FALSE·라이브 시 TRUE)</td></tr>
     </tbody>
   </table>
@@ -630,7 +627,7 @@ flowchart TD
 <tr><td>T_LUNA_JOURNEY_GRAND_UNLOCK</td><td>루나 전망대를 완성했어요! 도시에 새 풍경이 생겼어요.</td></tr>
 </table>
 
-<h3>⑤ event_shadow_chest 신규 탭 (슬롯형 · Normal 6슬롯 + Jackpot 6슬롯)</h3>
+<h3>⑤ event_shadow_chest 신규 탭 (슬롯형 · Normal 6슬롯 — v1)</h3>
 <table class="bs-table">
 <tr><th>key_number</th><th>chest_tier</th><th>slot</th><th>reward_type</th><th>reward_key</th><th>reward_amount</th><th>in_use</th><th>description</th></tr>
 <tr><td>200301</td><td>normal</td><td>1</td><td>item</td><td>currency_gold</td><td>500</td><td>TRUE</td><td>루나 체스트 · 골드</td></tr>
@@ -639,18 +636,12 @@ flowchart TD
 <tr><td>200304</td><td>normal</td><td>4</td><td>item</td><td>booster_undo</td><td>2</td><td>TRUE</td><td>되돌리기</td></tr>
 <tr><td>200305</td><td>normal</td><td>5</td><td>item</td><td>booster_fireworks</td><td>1</td><td>TRUE</td><td>폭죽</td></tr>
 <tr><td>200306</td><td>normal</td><td>6</td><td>item</td><td>currency_ticket</td><td>1</td><td>TRUE</td><td>티켓</td></tr>
-<tr><td>200307</td><td>jackpot</td><td>1</td><td>item</td><td>currency_gold</td><td>1000</td><td>FALSE</td><td>Jackpot 체스트 · 골드</td></tr>
-<tr><td>200308</td><td>jackpot</td><td>2</td><td>item</td><td>currency_hammer</td><td>6</td><td>FALSE</td><td>해머</td></tr>
-<tr><td>200309</td><td>jackpot</td><td>3</td><td>deco</td><td>luna_deco_piece</td><td>1</td><td>FALSE</td><td>도시 데코 조각 (클라 unlock 처리)</td></tr>
-<tr><td>200310</td><td>jackpot</td><td>4</td><td>item</td><td>booster_wild_card</td><td>2</td><td>FALSE</td><td>와일드 카드</td></tr>
-<tr><td>200311</td><td>jackpot</td><td>5</td><td>item</td><td>booster_undo</td><td>2</td><td>FALSE</td><td>되돌리기</td></tr>
-<tr><td>200312</td><td>jackpot</td><td>6</td><td>item</td><td>booster_fireworks</td><td>2</td><td>FALSE</td><td>폭죽</td></tr>
 </table>
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트는 마일스톤이 아님 — 8판 완주(열쇠 획득) 시 <b>결과 화면에 묶어 일괄 지급</b>(+"🐱 그림자 냥이 추격전" 뱃지). 티어당 6슬롯 = 오픈 연출에서 체스트가 꽉 차 보이는 구성. reward_key는 전부 라이브 item_list 실존 키(데코 조각만 클라 처리). Jackpot 행은 v1 OFF(해금 콘텐츠 도입 시 TRUE). 저니 트랙 마일스톤 탭(event_shadow_milestone)은 v1 반영분 아님 — 2차(저니 레이어) 등록 시 별도 반영.</div>
 <h3>⑥ event_shadow_sprint 신규 탭 (튜닝 코어 1행)</h3>
 <table class="bs-table">
-<tr><th>key_number</th><th>event_id</th><th>duration_sec</th><th>total_rounds</th><th>onboarding_target_levels</th><th>cooldown_sec</th><th>slots_per_day</th><th>grace_after_window</th><th>jackpot_unlock</th><th>gold_cap_daily</th><th>in_use</th></tr>
-<tr><td>200201</td><td>0</td><td>1500</td><td>8</td><td>5</td><td>43200</td><td>2</td><td>TRUE</td><td>journey_complete</td><td>2000</td><td>TRUE</td></tr>
+<tr><th>key_number</th><th>event_id</th><th>duration_sec</th><th>total_rounds</th><th>cooldown_sec</th><th>slots_per_day</th><th>grace_after_window</th><th>in_use</th></tr>
+<tr><td>200201</td><td>0</td><td>1500</td><td>8</td><td>43200</td><td>2</td><td>TRUE</td><td>FALSE</td></tr>
 </table>
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트 보상은 event_shadow_chest 탭(⑤) 소관 — 튜닝 코어는 스프린트 파라미터만. event_id=0 = 두 슬롯 공통.</div>
 
@@ -792,6 +783,32 @@ flowchart TD
   </table>
   <div class="note"><strong>전후비교:</strong> 이벤트 주간(주말 2일) vs 직전 동일 요일 주말. NA 코호트 기준(콜드스타트 타깃). 판수를 스프린트발(shadow_cycle_clear) vs 비스프린트로 분해해 순증분 측정. 세그먼트 고정 비교(유입 믹스 이동 주의).</div>
 </section>
+<section id="appendix">
+  <div class="section-header">
+    <div class="section-num section-num-5">부록</div>
+    <div class="section-meta">
+      <div class="section-title">고도화 예약 스펙 (v1 미사용 — 본문과 분리)</div>
+      <span class="section-audience aud-all">참고용</span>
+    </div>
+  </div>
+  <p>아래는 <strong>v1에 포함되지 않는</strong> 확장 예약분. 본문 표에는 등장하지 않음 — 도입 시점에 시트 컬럼/행 추가로 활성.</p>
+  <h3>A. Jackpot 티어</h3>
+  <table class="bs-table">
+    <thead><tr><th>변수명</th><th>타입</th><th>예시값</th><th>설명</th></tr></thead>
+    <tbody>
+    <tr><td><code>jackpot_unlock</code></td><td>enum</td><td>journey_complete</td><td>해금 조건 유형</td></tr>
+    <tr><td><code>jackpot_unlock_value</code></td><td>int</td><td>6</td><td>조건 값 (저니 사이클 6회 완주)</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12.5px">event_shadow_chest jackpot 6행(200307~200312 · in_use=FALSE 예약): 골드 1,000 · 해머×6 · 데코 조각×1(클라 처리) · 와일드×2 · undo×2 · 폭죽×2</p>
+  <h3>B. 저니 트랙 (2차 레이어)</h3>
+  <p style="font-size:12.5px"><code>event_shadow_milestone</code> 6행(200101~200106) · goal_type=<code>complete_sprint_cycle</code>(서버 신규 타입) · 사이클 1~6회 누적 보상(와일드1·해머2·골드300·해머2·undo2·해머2+Jackpot 해금) · event_id=0(슬롯 비귀속 시즌메타)</p>
+  <h3>C. 온보딩 완화 A/B</h3>
+  <p style="font-size:12.5px">변수명 제안 <code>ab_first_sprint_target_rounds</code>(int·예 5) — 첫 참여 유저만 목표 판수 완화. A/B 인프라 부재로 v1 제외. 근거 실측: 25분 내 자연 달성 8판+ 19.4% vs 5판+ 27.8% vs 4판+ 32.8%</p>
+  <h3>D. 골드 일 하드캡</h3>
+  <p style="font-size:12.5px"><code>gold_cap_daily</code>(int·예 2000) — v1은 불필요: 일 2슬롯 × Normal 골드 500 = 구조적 상한 1,000/일. 슬롯 수·체스트 구성 확장 시에만 도입 검토</p>
+</section>
+
 
 </div>
 
