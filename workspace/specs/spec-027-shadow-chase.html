@@ -188,6 +188,10 @@ ul li strong,ol li strong { color:var(--text); }
 .bs-table th,.bs-table td{white-space:nowrap}
 .bs-table td{padding:8px 12px;font-size:12px;font-family:monospace}
 .bs-table td:last-child,.bs-table th:last-child{white-space:normal;min-width:200px}
+/* ── 라벨 열(단계·상태) 줄바꿈 방지 ── */
+.tbl-keycol th:first-child,.tbl-keycol td:first-child{white-space:nowrap;width:1%}
+.tbl-keycol2 th:nth-child(2),.tbl-keycol2 td:nth-child(2){white-space:nowrap;width:1%}
+@media(max-width:620px){.tbl-keycol th:first-child,.tbl-keycol td:first-child,.tbl-keycol2 th:nth-child(2),.tbl-keycol2 td:nth-child(2){white-space:normal;width:auto}}
 .tab-badge{display:inline-block;background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:2px 8px;font-size:11px;font-family:monospace;margin:12px 0 4px}
 .note{background:var(--surface2);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:var(--text2);margin:12px 0}
 .note strong{color:var(--text)}
@@ -661,7 +665,7 @@ flowchart TD
   </div>
 
   <h3 id="s2-map">발동 시퀀스 연출·플로우 명세</h3>
-  <table>
+  <table class="tbl-keycol">
     <thead><tr><th>단계</th><th>연출</th><th>구현</th></tr></thead>
     <tbody>
       <tr><td>① 발견</td><td>루나 체스트 풀스크린 등장 + 체스트 보상 전체 미리 공개 (Normal 6슬롯(골드·해머·와일드카드·되돌리기·파이어웍스·무료 입장 티켓) / Jackpot 6슬롯(+데코 조각 — 부록·v1 OFF). 수량은 event_shadow_chest 시트</td><td>신규 연출</td></tr>
@@ -681,7 +685,7 @@ flowchart TD
 
   <h3 id="s2-states">연출 상태 명세 (5상태)</h3>
   <p>클라 연출 상태 enum(제안: <code>ShadowChaseFx</code>)과 아트 대응. 전 상태 🐾자국 표현 기준(캐릭터 본체 미등장).</p>
-  <table>
+  <table class="tbl-keycol tbl-keycol2">
     <thead><tr><th>상태</th><th>클라 상태값</th><th>발동 시점</th><th>연출</th></tr></thead>
     <tbody>
       <tr><td><strong>열쇠 강탈</strong></td><td><code>GRAB</code></td><td>발동 시퀀스 ② (flow-02 참고)</td><td>앞발+발톱 긁힘 이펙트로 열쇠 채감</td></tr>
@@ -786,7 +790,7 @@ flowchart TD
   <!-- 3-2 상태 5종 -->
   <h2 id="s3-state">3-2 연출 상태 5종 (상태 머신)</h2>
   
-  <table>
+  <table class="tbl-keycol tbl-keycol2">
     <thead><tr><th>상태</th><th>클라 상태값</th><th>진입 조건</th><th>다음 상태</th></tr></thead>
     <tbody>
       <tr><td><strong>열쇠 강탈</strong></td><td><code>GRAB</code></td><td>팝업 소화 후 자동 발동 · 체스트 발견 후 그림자 냥이 열쇠 강탈 연출(앞발+발톱) · 입력 잠금</td><td>연출 종료 → 도주(Escape)</td></tr>
@@ -833,7 +837,7 @@ flowchart TD
   <!-- 3-4 데이터 테이블 -->
   <h2 id="s3-data">3-4 데이터 테이블 구성</h2>
   <p>SSOT = 라이브 시트([PST] 밸런스시트)의 이벤트 전용 탭. 공용 탭 등록 3건(event_schedule·unlock·string_code) + 전용 탭 2개 신설.  라이브 포맷 준수: 1행=한글 라벨 · 2행=영문 컬럼명 · <code>in_use</code>=TRUE/FALSE 문자열 · snake_case. 실 데이터 행은 아래 라이브 시트 반영 예정분 미리보기 참조.</p>
-  <table class="bs-table">
+  <table class="tbl-keycol bs-table">
     <thead><tr><th>구분</th><th>탭명</th><th>대역/키</th><th>내용</th></tr></thead>
     <tbody>
       <tr><td>공용 등록</td><td><code>event_schedule</code></td><td>160005·160006</td><td>추격전 기간 창 1행 (월 00:00~목 23:59·유저 접속 기준 사이클)</td></tr>
@@ -915,7 +919,7 @@ flowchart TD
   </div>
 
   <h3>공수 (S/M/L · 스프린트 관련)</h3>
-  <table>
+  <table class="tbl-keycol">
     <thead><tr><th>영역</th><th>항목</th><th>공수</th></tr></thead>
     <tbody>
       <tr><td>클라</td><td>프리레벨 행잉 태그(타이머·n/8 게이지·실루엣) + 플레이 버튼 🐾마킹 + 발동 트리거(팝업 체인 마지막·<strong>세션 상한 시 이월</strong>) + 연출 입력 잠금(6초 이내) (인게임 HUD·타이머 위젯 없음)</td><td><span class="prio-high">L</span></td></tr>
