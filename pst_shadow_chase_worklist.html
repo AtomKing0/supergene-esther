@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>그림자 냥이 추격전 — 등록 작업 진척 체크리스트</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--bd:#e3e7ee;--tx:#1f2633;--tx2:#7a8598;--ac:#2f7fd1;--ok:#1c9e63;--wa:#d97706;--bad:#c0392b;--pu:#7c3aed}
+*{box-sizing:border-box}
+body{font-family:-apple-system,'Apple SD Gothic Neo','Segoe UI',sans-serif;background:var(--bg);color:var(--tx);margin:0;padding:30px 16px 80px;font-size:14.5px;line-height:1.65}
+.wrap{max-width:1020px;margin:0 auto}
+h1{font-size:24px;margin:0 0 4px}
+.sub{color:var(--tx2);font-size:13px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:20px 24px;margin:16px 0;box-shadow:0 1px 3px rgba(20,30,60,.04)}
+h2{font-size:17px;margin:0 0 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h2 .ph{font-size:11.5px;font-weight:900;color:#fff;background:var(--ac);border-radius:20px;padding:2px 11px;flex:none}
+h2 .cnt{font-size:12px;font-weight:700;color:var(--tx2);margin-left:auto}
+h3{font-size:14px;margin:16px 0 6px;color:#2f5d9e}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+th{background:#f2f5fa;text-align:left;padding:8px 11px;border-bottom:2px solid #dde4ee;font-size:12px;color:#4a5568}
+td{padding:8px 11px;border-bottom:1px solid #eef1f6;vertical-align:top}
+code{background:#f0f3f8;border-radius:4px;padding:1px 5px;font-size:12px;font-family:ui-monospace,Menlo,monospace}
+.note{background:#f6f9ff;border-left:3px solid var(--ac);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12.5px;margin:10px 0;color:#3a4657}
+.warn{background:#fff7f5;border-left:3px solid var(--bad)}
+.dim{color:var(--tx2)}
+/* ── 체크리스트 ── */
+ul.tasks{list-style:none;margin:6px 0 0;padding:0}
+ul.tasks li{display:flex;gap:11px;align-items:flex-start;padding:9px 11px;border:1px solid var(--bd);border-radius:10px;margin:6px 0;background:#fbfcfe;transition:.15s}
+ul.tasks li:hover{border-color:#cfd8e6}
+ul.tasks li.done{background:#f2faf5;border-color:#bfe6cf}
+ul.tasks li.done .t{text-decoration:line-through;color:var(--tx2)}
+ul.tasks input{margin:3px 0 0;width:17px;height:17px;flex:none;cursor:pointer;accent-color:var(--ok)}
+ul.tasks .body{flex:1;min-width:0}
+ul.tasks .t{font-weight:700;font-size:13.5px}
+ul.tasks .d{font-size:12.5px;color:var(--tx2);margin-top:2px}
+.who{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 7px;margin-left:7px;vertical-align:middle}
+.w-plan{background:#ede9fe;color:#6d28d9}.w-dev{background:#e0f2fe;color:#0369a1}.w-art{background:#ffedd5;color:#c2410c}.w-qa{background:#dcfce7;color:#15803d}
+.blocked{background:#fef3c7;color:#92400e}
+/* ── 진행률 ── */
+.bar{height:9px;background:#e8edf4;border-radius:6px;overflow:hidden;margin:8px 0 2px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#2f7fd1,#1c9e63);width:0;transition:width .3s}
+.hero{position:sticky;top:0;z-index:10;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px 22px;margin-bottom:18px;box-shadow:0 2px 10px rgba(20,30,60,.06)}
+.hero .big{font-size:30px;font-weight:900;line-height:1}
+.hero .row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.hero .meta{font-size:12px;color:var(--tx2)}
+button{font:inherit;border:1px solid var(--bd);background:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;color:var(--tx2)}
+button:hover{border-color:var(--ac);color:var(--ac)}
+.foot{font-size:11.5px;color:#9aa7b6;text-align:center;margin-top:20px}
+@media(max-width:640px){td,th{padding:7px 8px;font-size:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>그림자 냥이 추격전 — 등록 작업 진척</h1>
+<div class="sub">SPEC-027 확정분을 <b>라이브 시트 · 로그정의서</b>에 올리는 작업. 체크 상태는 이 브라우저에 자동 저장됨.</div>
+
+<div class="hero">
+  <div class="row">
+    <div><div class="big" id="pct">0%</div><div class="meta" id="cnt">0 / 0</div></div>
+    <div style="flex:1;min-width:200px">
+      <div class="bar"><i id="barAll"></i></div>
+      <div class="meta" id="phaseSum"></div>
+    </div>
+    <button onclick="resetAll()">전체 초기화</button>
+  </div>
+</div>
+
+<!-- ══════════ A ══════════ -->
+<div class="card">
+<h2><span class="ph">A</span> 문자열 정의 — 화면별 필요 문구 확정 <span class="cnt" id="cA"></span></h2>
+<div class="note"><b>원칙</b> — 화면에 <b>글자로 보이는 것은 전부</b> string_code로 관리함(타이틀·서브·버튼·헤더·에러 포함). <b>기존 키가 있으면 신규 만들지 말고 재사용</b>할 것. 아래 A-0 표가 재사용 후보임.</div>
+
+<h3>A-0. 재사용 가능한 기존 키 (라이브 시트 실측 · 신규 생성 금지)</h3>
+<table>
+<tr><th>용도</th><th>기존 키</th><th>en</th><th>kr</th></tr>
+<tr><td>체스트 [받기] 버튼</td><td><code>T_CLAIM</code></td><td>Claim</td><td>받기</td></tr>
+<tr><td>스토리 팝업 [확인]</td><td><code>T_OK</code></td><td>OK</td><td>확인</td></tr>
+<tr><td>보상 목록 헤더</td><td><code>T_COMPLETE_LEVEL_REWARD</code></td><td>Rewards:</td><td>보상:</td></tr>
+<tr><td>타이머 표기 (분:초)</td><td><code>T_COUNTDOWN_5</code></td><td>{0}m {1}s</td><td>{0}분 {1}초</td></tr>
+<tr><td>광고 시청 라벨</td><td><code>T_WATCH_AD</code></td><td>Watch Ad</td><td>광고 시청</td></tr>
+<tr><td>탭하여 닫기</td><td><code>T_TAP_TO_CLOSE</code></td><td>Tap to Close</td><td>탭하여 닫기</td></tr>
+<tr><td>탭하여 건너뛰기</td><td><code>T_TAP_TO_SKIP</code></td><td>Tap to Skip</td><td>탭하여 건너뛰기</td></tr>
+</table>
+
+<h3>A-1~A-7. 화면별 문자열 확정</h3>
+<ul class="tasks" data-phase="A">
+  <li data-id="a1"><input type="checkbox"><div class="body"><div class="t">① 발동 연출(풀스크린) 문구 확정<span class="who w-plan">기획</span></div><div class="d">타이틀 · 서브카피 · [OK] 버튼(<code>T_OK</code> 재사용) — 현재 스펙에 <b>타이틀/서브 키가 없음 → 신규 2키 필요</b></div></div></li>
+  <li data-id="a2"><input type="checkbox"><div class="body"><div class="t">③ 스토리 팝업 문구 확정<span class="who w-plan">기획</span></div><div class="d">"그림자 냥이가 열쇠를 물고 도망쳤어요! 같이 잡아요!" + [확인] — <code>T_SHADOW_CHASE_INFO_TEXT</code> 재사용 여부 판단</div></div></li>
+  <li data-id="a3"><input type="checkbox"><div class="body"><div class="t">⑥ 프리레벨 행잉 태그 문구 확정<span class="who w-plan">기획</span></div><div class="d">남은시간(<code>T_COUNTDOWN_5</code>) · n/8 게이지 · <code>T_SHADOW_CHASE_TAG_GOAL</code>("8판 완주 시 열쇠 획득")</div></div></li>
+  <li data-id="a4"><input type="checkbox"><div class="body"><div class="t">⑦ 체스트 팝업 문구 확정 — <b>3컷 전부</b><span class="who w-plan">기획</span></div><div class="d">컷① 타이틀·서브 · <b>[Open] 버튼</b>(기존 단독 키 없음 → 신규) · 컷③ 서브("열렸어요") · 보상 헤더 · [받기](<code>T_CLAIM</code>)</div></div></li>
+  <li data-id="a5"><input type="checkbox"><div class="body"><div class="t">⑧ 타이머 말풍선 문구 확정<span class="who w-plan">기획</span></div><div class="d"><code>T_SHADOW_CHASE_AD_EXTEND</code> = "+5분" · 연장 성공/실패 피드백 문구 필요 여부 판단</div></div></li>
+  <li data-id="a6"><input type="checkbox"><div class="body"><div class="t">ⓘ 인포 팝업 문구 확정<span class="who w-plan">기획</span></div><div class="d"><code>T_SHADOW_CHASE_INFO_TITLE</code> · <code>_INFO_TEXT</code> · 보상 미리보기 헤더 · 남은시간 · [X]</div></div></li>
+  <li data-id="a7"><input type="checkbox"><div class="body"><div class="t">공통·에러 문구 확정<span class="who w-plan">기획</span></div><div class="d"><code>T_SHADOW_CHASE_OFFLINE</code> · 수령 실패 재시도 안내(기존 에러 키 재사용 가능한지 확인)</div></div></li>
+  <li data-id="a8"><input type="checkbox"><div class="body"><div class="t">최종 키 목록 확정 — 신규 N개 / 재사용 M개<span class="who w-plan">기획</span></div><div class="d">A-1~A-7 종합. 기획서 §3-4 ③ string_code 표를 이 목록으로 갱신</div></div></li>
+</ul>
+<div class="note warn"><b>미사용 키 정리</b> — <code>T_SHADOW_CHASE_FAIL_FLEE</code>(실패 알림 미채택) · <code>T_SHADOW_CHASE_CHEST_NO_MULTIPLY</code>(지급 분리로 불필요)는 <b>등록하지 않음</b>. 등록해두고 안 쓰면 다음 사람이 또 헷갈림.</div>
+</div>
+
+<!-- ══════════ B ══════════ -->
+<div class="card">
+<h2><span class="ph">B</span> 번역 — 10개 언어 <span class="cnt" id="cB"></span></h2>
+<div class="note">라이브 <code>string_code</code> 컬럼 순서 = <code>Key · en · ar · es · pt · id · ru · fr · th · jp · kr</code> — <b>en이 첫 컬럼</b>이고 kr이 마지막임. 10개 언어를 모두 채워야 등록 완료임.</div>
+<ul class="tasks" data-phase="B">
+  <li data-id="b1"><input type="checkbox"><div class="body"><div class="t">kr 원문 확정<span class="who w-plan">기획</span></div><div class="d">A 단계 산출물. 한자 사용 금지 · 기존 게임 말투와 통일</div></div></li>
+  <li data-id="b2"><input type="checkbox"><div class="body"><div class="t">en 작성<span class="who w-plan">기획</span></div><div class="d">첫 컬럼이자 사실상 기준 언어. FB Event Info 문구와 표현 통일</div></div></li>
+  <li data-id="b3"><input type="checkbox"><div class="body"><div class="t">나머지 8개 언어 번역<span class="who w-plan">기획</span></div><div class="d">ar · es · pt · id · ru · fr · th · jp</div></div></li>
+  <li data-id="b4"><input type="checkbox"><div class="body"><div class="t">특수문자·플레이스홀더 검증<span class="who w-plan">기획</span></div><div class="d"><code>{0}</code> 자리표시자 개수·순서 일치 · 개행(<code>\n</code>) 처리 · 아랍어 RTL 확인</div></div></li>
+</ul>
+</div>
+
+<!-- ══════════ C ══════════ -->
+<div class="card">
+<h2><span class="ph">C</span> 라이브 밸런스시트 등록 <span class="cnt" id="cC"></span></h2>
+<div class="note"><b>안전장치</b> — 전 행 <code>in_use=FALSE</code>로 선등록함. 개발 완료 후 TRUE 전환이 곧 킬스위치임. 키 충돌·대역 소유는 <b>검증 완료</b>(기획서 §3-4 참조).</div>
+<ul class="tasks" data-phase="C">
+  <li data-id="c1"><input type="checkbox"><div class="body"><div class="t"><code>event_schedule</code> +1행 — <b>160005</b><span class="who w-plan">기획</span></div><div class="d"><code>shadow_chase</code> · start_day=1 · <b>end_day=5</b> · 0:00 / <b>0:00</b> · repeat=TRUE · interval_week=1 · base_date · <b>in_use=FALSE</b><br><span class="dim">라이브 관례 = 종료일 자정 기준 → 목요일 끝까지는 end_day 4가 아니라 <b>5</b></span></div></div></li>
+  <li data-id="c2"><input type="checkbox"><div class="body"><div class="t"><code>unlock</code> +1행 — <b>50031</b><span class="who w-plan">기획</span></div><div class="d"><code>content_event_shadow_chase</code> · <code>level_clear</code> · 10 · pre_unlock_visibility=FALSE</div></div></li>
+  <li data-id="c3"><input type="checkbox"><div class="body"><div class="t"><code>string_code</code> 신규 키 등록<span class="who w-plan">기획</span></div><div class="d">B 단계 완료분을 10개 언어 전부 채워 등록</div></div></li>
+  <li data-id="c4"><input type="checkbox"><div class="body"><div class="t"><code>event_shadow_sprint</code> 신규 탭 생성 — <b>240001</b><span class="who w-plan">기획</span></div><div class="d">8변수: duration_sec=<b>900</b> · total_rounds=8 · cooldown_sec=43200 · grace_after_window=TRUE · ad_extend_threshold_sec=300 · ad_extend_sec=300 · ad_extend_max_per_cycle=1 · in_use=FALSE<br><span class="dim">라이브 포맷 준수: 1행=한글 라벨 · 2행=영문 컬럼명</span></div></div></li>
+  <li data-id="c5"><input type="checkbox"><div class="body"><div class="t"><code>event_shadow_chest</code> 신규 탭 생성 — <b>250001~250006</b><span class="who w-plan">기획</span></div><div class="d">Normal 6슬롯 — 골드 500 · 해머 3 · 와일드카드 1 · 되돌리기 2 · 파이어웍스 1 · 티켓 1<br><span class="dim">reward_key 6종 전부 라이브 item_list 실존 확인 완료 · Jackpot 250007~250012는 v1 미등록</span></div></div></li>
+  <li data-id="c6"><input type="checkbox"><div class="body"><div class="t">등록 후 키 충돌 재확인<span class="who w-plan">기획</span></div><div class="d">등록 시점 기준으로 160005 · 50031 · 240001 · 250001~006 중복 없는지 최종 확인</div></div></li>
+</ul>
+</div>
+
+<!-- ══════════ D ══════════ -->
+<div class="card">
+<h2><span class="ph">D</span> 로그정의서 기입 — <code>[PST] 로그정의서</code> <span class="cnt" id="cD"></span></h2>
+<div class="note"><b>대역</b> = <code>5xxx-1 이벤트 관련</code> 섹션(블랙5400 · 레드5410 · 위닝5420 · 클리어랭킹5430) <b>다음 빈 블록 5440번대</b>. 시트 컬럼 = <code>적용 · 확정 · Event · 기록시점 · Data 요약 · Sample Data · isapplied · 호출 지점</code></div>
+<ul class="tasks" data-phase="D">
+  <li data-id="d1"><input type="checkbox"><div class="body"><div class="t">섹션 행 추가 — <code>5xxx-1</code> 하위에 이벤트명 구분<span class="who w-plan">기획</span></div><div class="d">기존 5430 블록 아래에 그림자 냥이 추격전 구분 행 삽입</div></div></li>
+  <li data-id="d2"><input type="checkbox"><div class="body"><div class="t"><code>5440_EVENT_SHADOW_CHASE_SLOT_OPEN</code><span class="who w-plan">기획</span></div><div class="d">발동 조건 충족(NOTIFY) · 이월 시 재발화 금지 — <code>cycle_id·trigger_type·window_sec·target_clear·deferred·fire_side</code></div></div></li>
+  <li data-id="d3"><input type="checkbox"><div class="body"><div class="t"><code>5441_EVENT_SHADOW_CHASE_ACTIVATE</code><span class="who w-plan">기획</span></div><div class="d">발동 연출 재생·타이머 시작 — <code>cycle_id·remain_sec·fx_completed·fx_watch_sec·deferred_count</code></div></div></li>
+  <li data-id="d4"><input type="checkbox"><div class="body"><div class="t"><code>5442_EVENT_SHADOW_CHASE_ROUND_CLEAR</code><span class="who w-plan">기획</span></div><div class="d">사이클 중 판 클리어 — <code>cycle_id·round_idx(1~total_rounds)·clear_count·elapsed_sec·level_id·round_sec</code> <b>1~8 하드코딩 금지</b></div></div></li>
+  <li data-id="d5"><input type="checkbox"><div class="body"><div class="t"><code>5443_EVENT_SHADOW_CHASE_CHEST_OPEN</code><span class="who w-plan">기획</span></div><div class="d"><b>로비 체스트 오픈 팝업 [받기] = 실지급 시점</b> — <code>cycle_id·elapsed_sec·txn_id·chest_tier·reward_keys[]·extended</code></div></div></li>
+  <li data-id="d6"><input type="checkbox"><div class="body"><div class="t"><code>5444_EVENT_SHADOW_CHASE_FAIL</code><span class="who w-plan">기획</span></div><div class="d">타이머 만료·강제 만료 — <code>cycle_id·rounds_cleared·reason(timeout/event_end)·extended</code></div></div></li>
+  <li data-id="d7"><input type="checkbox"><div class="body"><div class="t"><code>5445_EVENT_SHADOW_CHASE_HAMMER_GRANT</code><span class="who w-plan">기획</span></div><div class="d">해머 지급 — <code>cycle_id·<b>amount</b>·balance_after</code> (잔액만으로는 발행량 역산 불가)</div></div></li>
+  <li data-id="d8"><input type="checkbox"><div class="body"><div class="t"><code>5446_EVENT_SHADOW_CHASE_DECO_GATE_UNLOCK</code><span class="who w-plan">기획</span></div><div class="d">해머로 데코 게이트 해제 — <code>cycle_id·gate_id</code></div></div></li>
+  <li data-id="d9"><input type="checkbox"><div class="body"><div class="t"><code>5447_EVENT_SHADOW_CHASE_AD_EXTEND</code><span class="who w-plan">기획</span></div><div class="d">타이머 말풍선 노출/시청/결과 — <code>cycle_id·step·remain_sec_before·extend_sec·result</code> <span class="dim">(연장 기능 드롭 시 미등록)</span></div></div></li>
+  <li data-id="d10"><input type="checkbox"><div class="body"><div class="t"><code>5448_EVENT_SHADOW_CHASE_KEY_GET</code><span class="who w-plan">기획</span></div><div class="d">8판 완주·열쇠 획득(<b>지급 아님</b>) — <code>cycle_id·elapsed_sec·extended</code></div></div></li>
+  <li data-id="d11"><input type="checkbox"><div class="body"><div class="t">RV 분해용 조인 설계 메모 기입<span class="who w-plan">기획</span></div><div class="d"><code>4210_RV_FINISH</code>(지면=<code>coalesce(data.type,data.position)</code>) × <code>5442</code> 사이클 귀속 판 조인 — <b>사후 소급 불가</b></div></div></li>
+  <li data-id="d12"><input type="checkbox"><div class="body"><div class="t">개발 회신 후 <code>적용</code>/<code>isapplied</code> 플래그 갱신<span class="who w-dev">개발</span></div><div class="d">구현 완료 시점에 TRUE 전환</div></div></li>
+</ul>
+</div>
+
+<!-- ══════════ E ══════════ -->
+<div class="card">
+<h2><span class="ph">E</span> 전달 · 검수 <span class="cnt" id="cE"></span></h2>
+<ul class="tasks" data-phase="E">
+  <li data-id="e1"><input type="checkbox"><div class="body"><div class="t">기획서 §3-4 시트 미리보기와 실제 등록분 일치 확인<span class="who w-plan">기획</span></div><div class="d">문서에 적힌 행과 시트에 올린 행이 글자 단위로 같은지</div></div></li>
+  <li data-id="e2"><input type="checkbox"><div class="body"><div class="t">기획서 string_code 표를 최종 키 목록으로 갱신<span class="who w-plan">기획</span></div><div class="d">A-8 산출물 반영 · 재사용 키도 표에 명시</div></div></li>
+  <li data-id="e3"><input type="checkbox"><div class="body"><div class="t">개발 확인 4건 회신 수령<span class="who w-dev">개발</span></div><div class="d">① complete_sprint_cycle ② event_id=0 관례 ③ 기간·쿨다운 판정 주체 ④ <b>요일 판정 타임존</b></div></div></li>
+  <li data-id="e4"><input type="checkbox"><div class="body"><div class="t">핸드오프 3종 전달<span class="who w-dev">개발</span><span class="who w-qa">QA</span></div><div class="d">개발 체크리스트 · QA 테스트 케이스 · 로비 팝업 시퀀서</div></div></li>
+  <li data-id="e5"><input type="checkbox"><div class="body"><div class="t">컷 3 목업(개방) 완성·기획서 첨부<span class="who w-art">아트</span></div><div class="d">자물쇠 파손 → 체스트 오픈 → 보상 6슬롯 공개 → [Claim]</div></div></li>
+  <li data-id="e6"><input type="checkbox"><div class="body"><div class="t">FB 인게임 이벤트 신청<span class="who w-plan">기획</span></div><div class="d">Event Info 문구 + 배너 2종(가로 1920×1080 · 세로 1080×1920)</div></div></li>
+</ul>
+</div>
+
+<div class="foot">
+SPEC-027 그림자 냥이 추격전 · 체크 상태는 <code>localStorage</code>에 저장(브라우저별)<br>
+관련: spec-027-shadow-chase.html · handoff-shadow-chase-dev.md · handoff-shadow-chase-qa.md · handoff-lobby-popup-seq.md
+</div>
+
+</div>
+<script>
+var KEY='scj-worklist-v1';
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
+function save(s){localStorage.setItem(KEY,JSON.stringify(s))}
+var state=load();
+var items=[].slice.call(document.querySelectorAll('ul.tasks li'));
+items.forEach(function(li){
+  var id=li.dataset.id, cb=li.querySelector('input');
+  cb.checked=!!state[id]; li.classList.toggle('done',cb.checked);
+  cb.addEventListener('change',function(){
+    state[id]=cb.checked; save(state); li.classList.toggle('done',cb.checked); render();
+  });
+});
+function render(){
+  var done=items.filter(function(l){return l.querySelector('input').checked}).length;
+  var tot=items.length, p=tot?Math.round(done/tot*100):0;
+  document.getElementById('pct').textContent=p+'%';
+  document.getElementById('cnt').textContent=done+' / '+tot+' 완료';
+  document.getElementById('barAll').style.width=p+'%';
+  var sum=[];
+  ['A','B','C','D','E'].forEach(function(ph){
+    var ls=items.filter(function(l){return l.closest('ul.tasks').dataset.phase===ph});
+    var d=ls.filter(function(l){return l.querySelector('input').checked}).length;
+    var el=document.getElementById('c'+ph);
+    if(el) el.textContent=d+' / '+ls.length;
+    sum.push(ph+' '+d+'/'+ls.length);
+  });
+  document.getElementById('phaseSum').textContent=sum.join('  ·  ');
+}
+function resetAll(){
+  if(!confirm('모든 체크를 해제할까요?')) return;
+  state={}; save(state);
+  items.forEach(function(li){li.querySelector('input').checked=false;li.classList.remove('done')});
+  render();
+}
+render();
+</script>
+</body>
+</html>
