@@ -203,6 +203,7 @@ ul li strong,ol li strong { color:var(--text); }
 .tbl-scroll .bs-table td,.tbl-scroll .bs-table th{padding-left:14px;padding-right:14px}
 /* ── 표 셀 안 뱃지 (줄바꿈 유발 방지) ── */
 .cellbadge{display:inline-block;margin-left:6px;vertical-align:middle;white-space:nowrap}
+.dimcol{background:repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(140,150,170,.13) 4px,rgba(140,150,170,.13) 8px);color:var(--text2);font-size:11px;text-align:center}
 /* ── 부록: v1 미사용 → 딤 처리 ── */
 #appendix{opacity:.62;filter:saturate(.45)}
 #appendix:hover,#appendix:focus-within{opacity:1;filter:none;transition:opacity .25s ease,filter .25s ease}
@@ -941,7 +942,7 @@ flowchart TD
       <tr><td><code>event_shadow_milestone</code>(2차)</td><td><strong>260001~260006</strong></td><td>✅ 260xxx 대역 <strong>전체 미사용</strong> — 2차 예약</td></tr>
       <tr><td><code>string_code</code></td><td><code>T_SHADOW_CHASE_*</code></td><td>✅ 동일 접두사 키 <strong>0건</strong> (총 384키 중)</td></tr>
       <tr><td><code>reward_key</code> 6종</td><td>currency_gold · currency_hammer · currency_ticket · booster_wild_card · booster_undo · booster_fireworks</td><td>✅ <strong>전부 <code>item_list</code> 실존</strong>(40001·40002·40003·40013·40012·40010) — 신규 아이템 등록 불필요</td></tr>
-      <tr><td><code>tool</code> 대역 인덱스</td><td>240001 · 250001 · 260001</td><td>✅ <strong>미배정 예약 슬롯이었음</strong>(시트명 공란) → 본 스펙 탭명으로 <strong>등록 완료</strong></td></tr>
+      <tr><td><code>tool</code> 대역 인덱스</td><td>240001 · 250001</td><td>✅ <strong>시트명이 비어 있던 예약 슬롯</strong> → <code>event_shadow_sprint</code>·<code>event_shadow_chest</code>로 <strong>등록 완료</strong> · 전 행 하이퍼링크 연결<br><small>2차 <code>event_shadow_milestone</code>(260001)은 <strong>탭 생성 시점에 등록</strong> — 존재하지 않는 탭을 인덱스에 미리 넣지 않음</small></td></tr>
       <tr><td>로그 코드</td><td>5440~5448</td><td>✅ 로그정의서 291개 코드와 무충돌 · 시즌패스(spec-007) 5450~5459와도 무충돌</td></tr>
     </tbody>
   </table>
@@ -1000,21 +1001,26 @@ flowchart TD
 
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ <b>등록하지 않음</b> — <code>T_SHADOW_CHASE_FAIL_FLEE</code>(실패 알림 미채택) · <code>T_SHADOW_CHASE_CHEST_NO_MULTIPLY</code>(지급이 별도 팝업이라 배수 혼란 없음) · <code>T_SHADOW_CHASE_CHEST_JACKPOT</code>(Jackpot v1 OFF · 2차 등록) · <code>T_SHADOW_CHASE_TAG_TIMER</code>(<code>T_COUNTDOWN_5</code>로 대체). <b>등록해두고 안 쓰면 다음 사람이 또 헷갈림.</b></div>
 
+<div class="callout callout-red"><strong>⚠ 시트 파서 규칙 — <code>description</code> 앞에 빈 열 1개 필수</strong><br>
+추출기는 <strong>행·열 모두 빈 내용을 만나면 그 지점에서 생성을 멈춤</strong>. 따라서 <strong>추출 대상 컬럼을 앞쪽에 붙여 배치하고, 그 뒤에 빈 열을 하나 두고 <code>description</code></strong>을 적어야 설명이 데이터로 딸려 들어가지 않음.<br>
+라이브 관례도 동일 — <code>event_schedule</code>는 <strong>K(빈) → L(description)</strong>, <code>unlock</code>은 <strong>F(빈) → G(description)</strong>, <code>item_list</code>는 <strong>K(빈) → L·M</strong>.<br>
+본 스펙의 신규 탭도 같은 규칙 적용: <code>event_shadow_sprint</code> = <strong>A~J 데이터 · K 빈 열 · L description</strong> / <code>event_shadow_chest</code> = <strong>A~G 데이터 · H 빈 열 · I description</strong>.</div>
+
 <h3>④ event_shadow_chest 신규 탭 (슬롯형 · Normal 6슬롯 — v1)</h3>
 <div class="tbl-scroll"><table class="bs-table">
-<tr><th>key_number</th><th>chest_tier</th><th>slot</th><th>reward_type</th><th>reward_key</th><th>reward_amount</th><th>in_use</th><th>description</th></tr>
-<tr><td>250001</td><td>normal</td><td>1</td><td>item</td><td>currency_gold</td><td>500</td><td>TRUE</td><td>루나 체스트 · 골드</td></tr>
-<tr><td>250002</td><td>normal</td><td>2</td><td>item</td><td>currency_hammer</td><td>3</td><td>TRUE</td><td>해머</td></tr>
-<tr><td>250003</td><td>normal</td><td>3</td><td>item</td><td>booster_wild_card</td><td>1</td><td>TRUE</td><td>와일드카드</td></tr>
-<tr><td>250004</td><td>normal</td><td>4</td><td>item</td><td>booster_undo</td><td>2</td><td>TRUE</td><td>되돌리기</td></tr>
-<tr><td>250005</td><td>normal</td><td>5</td><td>item</td><td>booster_fireworks</td><td>1</td><td>TRUE</td><td>파이어웍스</td></tr>
-<tr><td>250006</td><td>normal</td><td>6</td><td>item</td><td>currency_ticket</td><td>1</td><td>TRUE</td><td>무료 입장 티켓</td></tr>
+<tr><th>key_number</th><th>chest_tier</th><th>slot</th><th>reward_type</th><th>reward_key</th><th>reward_amount</th><th>in_use</th><th class="dimcol">(빈 열)</th><th>description</th></tr>
+<tr><td>250001</td><td>normal</td><td>1</td><td>item</td><td>currency_gold</td><td>500</td><td>TRUE</td><td class="dimcol"></td><td>루나 체스트 · 골드</td></tr>
+<tr><td>250002</td><td>normal</td><td>2</td><td>item</td><td>currency_hammer</td><td>3</td><td>TRUE</td><td class="dimcol"></td><td>해머</td></tr>
+<tr><td>250003</td><td>normal</td><td>3</td><td>item</td><td>booster_wild_card</td><td>1</td><td>TRUE</td><td class="dimcol"></td><td>와일드카드</td></tr>
+<tr><td>250004</td><td>normal</td><td>4</td><td>item</td><td>booster_undo</td><td>2</td><td>TRUE</td><td class="dimcol"></td><td>되돌리기</td></tr>
+<tr><td>250005</td><td>normal</td><td>5</td><td>item</td><td>booster_fireworks</td><td>1</td><td>TRUE</td><td class="dimcol"></td><td>파이어웍스</td></tr>
+<tr><td>250006</td><td>normal</td><td>6</td><td>item</td><td>currency_ticket</td><td>1</td><td>TRUE</td><td class="dimcol"></td><td>무료 입장 티켓</td></tr>
 </table></div>
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트는 마일스톤이 아님 — 8판 완주로 <b>열쇠를 획득</b>하고, <b>로비 체스트 오픈 팝업에서 6슬롯 일괄 지급</b>(+"🐱 그림자 냥이 추격전" 뱃지). 티어당 6슬롯 = 오픈 연출에서 체스트가 꽉 차 보이는 구성. reward_key는 전부 라이브 item_list 실존 키(데코 조각만 클라 처리). Jackpot 행은 v1 OFF(해금 콘텐츠 도입 시 TRUE). 저니 트랙 마일스톤 탭(event_shadow_milestone)은 v1 반영분 아님 — 2차(저니 레이어) 등록 시 별도 반영.</div>
 <h3>⑤ event_shadow_sprint 신규 탭 (튜닝 코어 1행)</h3>
 <div class="tbl-scroll"><table class="bs-table">
-<tr><th>key_number</th><th>event_id</th><th>duration_sec</th><th>total_rounds</th><th>cooldown_sec</th><th>grace_after_window</th><th>ad_extend_threshold_sec</th><th>ad_extend_sec</th><th>ad_extend_max_per_cycle</th><th>in_use</th></tr>
-<tr><td>240001</td><td>0</td><td>900</td><td>8</td><td>43200</td><td>TRUE</td><td>300</td><td>300</td><td>1</td><td>FALSE</td></tr>
+<tr><th>key_number</th><th>event_id</th><th>duration_sec</th><th>total_rounds</th><th>cooldown_sec</th><th>grace_after_window</th><th>ad_extend_threshold_sec</th><th>ad_extend_sec</th><th>ad_extend_max_per_cycle</th><th>in_use</th><th class="dimcol">(빈 열)</th><th>description</th></tr>
+<tr><td>240001</td><td>0</td><td>900</td><td>8</td><td>43200</td><td>TRUE</td><td>300</td><td>300</td><td>1</td><td>FALSE</td><td class="dimcol"></td><td>그림자 냥이 추격전 스프린트 파라미터 (15분/8판)</td></tr>
 </table></div>
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트 보상은 event_shadow_chest 탭(④) 소관 — 튜닝 코어는 스프린트 파라미터만. event_id=0 = 스케줄 행(160005)과 분리된 공통 파라미터. <b>ad_extend_* 3컬럼은 타이머 말풍선 [+{0}분]용 신규</b> — <code>ad_extend_max_per_cycle=0</code>이면 기능 OFF(개별 킬스위치 겸 <b>v1 드롭 시 처리 수단</b>). <b>레벨 구간 차등이 필요해지면 이 탭을 <code>level_min</code>/<code>level_max</code> 컬럼을 가진 다행 구조로 확장</b>(v1은 1행 고정).</div>
 

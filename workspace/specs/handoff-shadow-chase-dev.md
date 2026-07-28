@@ -147,6 +147,7 @@
 - [ ] `ProtocolTypes.ts`: `EventSchedule.type`에 `shadow_chase` 추가 · `ShadowChaseInfo` 타입 신설(`timer_start_ts`·`rounds_cleared`·`cooldown_until`·`cycle_result`·`deferred_pending`·`ad_extend_used`·**`key_pending`**)
 - [ ] 진행 저장: 서버 `TPlayer.event_infos`에 `ShadowChaseInfo`
 - [ ] 신규 시트 탭 로드: `event_shadow_sprint`(**8변수** — 기존 5 + `ad_extend_threshold_sec`·`ad_extend_sec`·`ad_extend_max_per_cycle`) · `event_shadow_chest`(Normal 6행) — 번들 JSON + balance-sheet 로더 등록
+- [ ] ★**시트 파서 규칙** — 추출기는 **행·열 모두 빈 내용을 만나면 생성을 멈춤**. 따라서 신규 탭은 **추출 컬럼을 앞에 붙이고 → 빈 열 1개 → `description`** 순서로 배치돼 있음. `event_shadow_sprint` = A~J 데이터·**K 빈 열**·L description / `event_shadow_chest` = A~G 데이터·**H 빈 열**·I description. 로더가 빈 열 이후를 읽지 않도록 할 것
 - [ ] `event_shadow_sprint`는 v1 1행 고정이나, **레벨 구간 차등이 필요해지면 `level_min`/`level_max` 컬럼을 가진 다행 구조로 확장**될 수 있음 — 로더를 단일 행 전제로 하드코딩하지 말 것
 - [ ] `unlock` 50031(`content_event_shadow_chase`·`level_clear`·10·**`show_tutorial=FALSE`**) — 별도 튜토리얼·언락 인트로 없음(`tutorial_guide` 미등록). 클라 코드 등록 불필요(데이터 참조)
 - [ ] string_code `T_SHADOW_CHASE_*` **8키** 등록 (`T_SHADOW_CHASE_FAIL_FLEE`·`T_SHADOW_CHASE_CHEST_NO_MULTIPLY` 미사용)
