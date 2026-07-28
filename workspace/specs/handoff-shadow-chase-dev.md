@@ -5,7 +5,7 @@
 
 > **7-28 변경 요약**
 > ① 팝업 세션 상한 시 발동 연출 **이월**(유실 금지) — 신규 필수 규칙
-> ② 결과 화면 **RV ×2 유지**(끄지 않음) + 하단 체스트 블록만 추가
+> ② **보상 수령 = 로비 체스트 오픈 팝업**(결과 화면 무변경 — 열쇠 획득 표시만)
 > ③ **타이머 말풍선 [+5 min]** 연장 추가 — **드롭 가능 항목**
 > ④ 실패 처리는 **비노출 전환만**(토스트 없음·`T_SHADOW_CHASE_FAIL_FLEE` 삭제)
 > ⑤ 로그 필드 보강 + `5447` 신설
@@ -87,21 +87,32 @@
 
 ---
 
-## 4. 성공 처리 — 완주 판 결과 화면 (클라/서버)
+## 4. 성공 처리 — 열쇠 획득 → 로비 체스트 오픈 (클라/서버)
 
-> ★**7-28 변경** — 기존안(RV ×2를 끄고 [받기] 단일)에서 **영역 분리 방식으로 전환**. 판당 RV가 본 이벤트의 핵심 근거인 만큼 일반 판 보상의 RV ×2는 유지함. **기존 결과 화면을 수정하지 않고 블록만 얹는** 구조라 공수도 줄어듦.
+> ★**7-28 변경** — 보상 지급을 **인게임 결과 화면에서 로비 체스트 오픈 팝업으로 이관**. 8판째에는 **열쇠만 획득**하고, 로비에서 그 열쇠로 체스트를 여는 것이 지급 시점임. **결과 화면은 손대지 않음.**
 
-- [ ] **신규 팝업·모달 없음** — 지급 연출은 결과 화면 안 3컷으로 처리(**연출 자체는 신규 제작분**). 완주 판의 결과 화면 **하단에 신규 체스트 블록** 추가
-- [ ] ★**상단 = 기존 판 보상 블록** — RV ×2 버튼 **기존 그대로 유지·로직 무변경**(끄지 말 것)
-- [ ] ★**하단 = 신규 체스트 블록** — 🐾마킹 + **[받기] 단일** + 고정 문구 `T_SHADOW_CHASE_CHEST_NO_MULTIPLY`("이벤트 보상은 배수가 적용되지 않아요")
-- [ ] 체스트 지급분은 **RV 배수 미적용** — 배수 대상은 상단 판 보상만
-- [ ] 지급 품목/수량은 `event_shadow_chest` 시트(6슬롯: 골드 · 해머 · 와일드카드 · 되돌리기 · 파이어웍스 · 무료 입장 티켓)
-- [ ] 3컷 연출: 행잉 태그 만충 글로우 → 체스트 팝 + 🐾파티클이 보상 아이콘으로 → 태그 소멸 · 체스트 블록 🐾뱃지 (spec ⑦ 참고)
+### 4-A. 8판 완주 — 열쇠 획득 (지급 아님)
+
+- [ ] 결과 화면의 행잉 태그 게이지 **8/8 만충 · 글로우 → 🔑 열쇠 획득** 표시
+- [ ] ★**보상 지급 없음** · ★**결과 화면(`PopupCompleteLevel`) 무변경** — 판 보상 · **RV ×2** · 홈 버튼 전부 기존 그대로. 추가되는 것은 기존 행잉 태그 컴포넌트의 **상태 변화**뿐
+- [ ] 이 시점에 **사이클 종료** 처리 → `cooldown_until` 세팅(쿨다운 시작). 수령 지연이 다음 사이클을 막지 않아야 함
+- [ ] `5448_EVENT_SHADOW_CHASE_KEY_GET` 발화
+
+### 4-A-2. 로비 체스트 오픈 팝업 (신규 1종)
+
+- [ ] 열쇠 보유 상태로 **로비 복귀 시 자동 노출** — 보상 정산 계열이라 **팝업 체인 상위**(발동 연출보다 먼저)
+- [ ] 연출 순서: **잠긴 루나 체스트 + 되찾은 황금 열쇠** → **열쇠가 자물쇠에 꽂히고 돌아감** → 자물쇠 해제·🐾파티클 → **체스트 오픈 · 보상 6슬롯 공개** → **[받기]**
+- [ ] 보상 품목·수량은 `event_shadow_chest` 시트 연동(**하드코딩 금지**)
 - [ ] 지급: 서버 커밋(**멱등 `txn_id`**) — `/api/event/shadow-chase/claim-chest` 신규 (기존 `/api/event/*` 관례)
-- [ ] claim 실패(네트워크) → 보상 **미소멸**. 재시도 가능해야 하며, 재진입 시 미수령 상태가 복원돼야 함
-- [ ] 수령 후 자연 로비 복귀 · 사이클 종료 처리 → 쿨다운 시작
+- [ ] `5443_EVENT_SHADOW_CHASE_CHEST_OPEN` = **[받기] 실지급 시점**에 발화
+- [ ] 수령 후 팝업 닫힘 → 로비 복귀
 
----
+### 4-A-3. 미수령 열쇠 처리 (필수)
+
+- [ ] 열쇠 획득과 수령은 **분리된 시점**임 — 획득 후 앱 종료·강종·**이벤트 기간 종료**에도 **열쇠는 소멸하지 않음**
+- [ ] 미수령 상태면 **다음 로비 복귀 시 팝업 재노출**
+- [ ] 미수령 체스트가 **2개 이상 쌓이면 순차로 1개씩** 처리
+- [ ] claim 실패(네트워크) → 보상 **미소멸** · 재시도 가능 · 재진입 시 미수령 상태 복원
 
 ## 4-B. 타이머 연장 — 타이머 말풍선 [+5 min] (클라/서버) · ★**드롭 가능 항목**
 
@@ -115,7 +126,7 @@
 - [ ] RV 논필(no-fill)·시청 중단 → **연장 미적용 · 횟수 미차감**(재시도 가능)
 - [ ] 시청 중 강종 → **중복 연장 금지**. 서버가 사이클당 1회를 최종 판정
 - [ ] `ad_extend_max_per_cycle=0`이면 기능 OFF (개별 킬스위치)
-- [ ] `5447_EVENT_SHADOW_CHASE_AD_EXTEND` 로깅(노출/시청/결과) · `5443`·`5444`에 `extended(bool)` 기록
+- [ ] `5447_EVENT_SHADOW_CHASE_AD_EXTEND` 로깅(노출/시청/결과) · `5448`·`5444`에 `extended(bool)` 기록
 
 ---
 
@@ -130,13 +141,13 @@
 
 ## 6. 데이터·코드 등록 (클라/서버)
 
-- [ ] 신규 클래스: `PopupEventShadowChase`(PopupBase 문법 — 발동 연출 재생 + ⓘ 인포 팝업 겸용) · 🐾자국 스프라이트/Tween(`GRAB`·`ESCAPE` 연출용, 캐릭터 본체 미등장) · 기존 프리레벨 진행이벤트 행잉 태그 확장(체스트 + 타이머 + n/8 게이지 + 실루엣). **인게임 HUD 위젯 신규 없음**
-- [ ] `ProtocolTypes.ts`: `EventSchedule.type`에 `shadow_chase` 추가 · `ShadowChaseInfo` 타입 신설(`timer_start_ts`·`rounds_cleared`·`cooldown_until`·`cycle_result`·`deferred_pending`·`ad_extend_used`)
+- [ ] 신규 클래스: `PopupEventShadowChase`(발동 연출 + ⓘ 인포 겸용) · **`PopupEventShadowChest`(로비 체스트 오픈 — 신규)** · 🐾자국 스프라이트/Tween(`GRAB`·`ESCAPE` 연출용, 캐릭터 본체 미등장) · 기존 프리레벨 진행이벤트 행잉 태그 확장(체스트 + 타이머 + n/8 게이지 + 실루엣). **인게임 HUD 위젯 신규 없음**
+- [ ] `ProtocolTypes.ts`: `EventSchedule.type`에 `shadow_chase` 추가 · `ShadowChaseInfo` 타입 신설(`timer_start_ts`·`rounds_cleared`·`cooldown_until`·`cycle_result`·`deferred_pending`·`ad_extend_used`·**`key_pending`**)
 - [ ] 진행 저장: 서버 `TPlayer.event_infos`에 `ShadowChaseInfo`
 - [ ] 신규 시트 탭 로드: `event_shadow_sprint`(**8변수** — 기존 5 + `ad_extend_threshold_sec`·`ad_extend_sec`·`ad_extend_max_per_cycle`) · `event_shadow_chest`(Normal 6행) — 번들 JSON + balance-sheet 로더 등록
 - [ ] `event_shadow_sprint`는 v1 1행 고정이나, **레벨 구간 차등이 필요해지면 `level_min`/`level_max` 컬럼을 가진 다행 구조로 확장**될 수 있음 — 로더를 단일 행 전제로 하드코딩하지 말 것
 - [ ] `unlock` 50031(`content_event_shadow_chase`·`level_clear`·10) — 별도 튜토리얼 없음(`tutorial_guide` 미등록). 클라 코드 등록 불필요(데이터 참조)
-- [ ] string_code `T_SHADOW_CHASE_*` **9키** 등록 (`T_SHADOW_CHASE_FAIL_FLEE`는 **삭제** — 실패 알림 미채택)
+- [ ] string_code `T_SHADOW_CHASE_*` **8키** 등록 (`T_SHADOW_CHASE_FAIL_FLEE`·`T_SHADOW_CHASE_CHEST_NO_MULTIPLY` 미사용)
 - [ ] `reward_key`는 전부 **라이브 `item_list` 실존 키**만 사용 → 신규 아이템 등록 불필요. 열쇠는 연출 상징이며 **실아이템 아님**
 - [ ] ★개발 확인 ①: `goal_type=complete_sprint_cycle` 서버 처리(2차 저니용 — v1 훅만)
 - [ ] ★개발 확인 ②: milestone/sprint의 `event_id=0`(비귀속) 관례 수용 여부
@@ -160,10 +171,11 @@
 | 5440_EVENT_SHADOW_CHASE_SLOT_OPEN | 발동 조건 충족(NOTIFY) · **이월 시 재발화 금지** | `cycle_id`·`trigger_type`·`window_sec`·`target_clear`·**`deferred(bool)`**·**`fire_side(server/client)`** |
 | 5441_EVENT_SHADOW_CHASE_ACTIVATE | 발동 연출 재생(사이클 시작·타이머 시작) | `cycle_id`·`remain_sec`·**`fx_completed(bool)`**·**`fx_watch_sec`**·**`deferred_count`** |
 | 5442_EVENT_SHADOW_CHASE_ROUND_CLEAR | 사이클 중 판 클리어(카운트 증가) | `cycle_id`·**`round_idx(1~total_rounds)`**·`clear_count`·`elapsed_sec`·**`level_id`**·**`round_sec`** |
-| 5443_EVENT_SHADOW_CHASE_CHEST_OPEN | 완주·체스트 지급 | `cycle_id`·`elapsed_sec`·`txn_id`·**`chest_tier(normal/jackpot)`**·**`reward_keys[]`**·**`extended(bool)`** |
+| 5443_EVENT_SHADOW_CHASE_CHEST_OPEN | **로비 체스트 오픈 팝업 [받기]** — 실지급 시점 | `cycle_id`·`elapsed_sec`·`txn_id`·**`chest_tier(normal/jackpot)`**·**`reward_keys[]`**·**`extended(bool)`** |
 | 5444_EVENT_SHADOW_CHASE_FAIL | 타이머 만료(또는 강제 만료) | `cycle_id`·`rounds_cleared`·`reason(timeout/event_end)`·**`extended(bool)`** |
 | 5445_EVENT_SHADOW_CHASE_HAMMER_GRANT | 해머 지급 | `cycle_id`·**`amount`**·`balance_after` |
 | 5446_EVENT_SHADOW_CHASE_DECO_GATE_UNLOCK | 해머로 데코 게이트 해제 | `cycle_id`·`gate_id` |
+| **5448_EVENT_SHADOW_CHASE_KEY_GET** | **신규** — 8판 완주·열쇠 획득(지급 아님) | `cycle_id`·`elapsed_sec`·`extended(bool)` |
 | **5447_EVENT_SHADOW_CHASE_AD_EXTEND** | **신규**(연장 채택 시) — 말풍선 노출/시청/결과 | `cycle_id`·`step(impression/watch_start/complete)`·`remain_sec_before`·`extend_sec`·`result(success/abort/no_fill)` |
 
 `round_idx`는 **`1~8` 하드코딩 금지** — `total_rounds`가 시트 변수임.

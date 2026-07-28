@@ -363,7 +363,8 @@ flowchart TD
   C --> ST["<b>진행 중 상태 표시</b><br/><small>프리레벨 행잉 태그(체스트·타이머·n/8 게이지+열쇠 골 마커·실루엣 귀+발) · 플레이 버튼 🐾마킹 두 가지뿐(인게임 표시 없음)</small>"]
   ST --> D["<b>플레이 반복</b><br/><small>타이머·n/8 인지는 매판 사이 프리레벨 행잉 태그에서</small>"]
   D --> E{"<b>타이머 내 완주?</b><br/><small>total_rounds=8 (예: 8판)</small>"}
-  E -- "✅ 성공 = 열쇠 획득" --> F["<b>체스트 보상 — 결과 화면 체스트 블록</b><br/><small>신규 팝업 없음 · 지급 연출은 결과 화면 안 3컷<br/>8판째 결과 화면 하단에 체스트 블록 [받기]<br/>일반 판 보상 RV ×2는 기존 그대로 유지</small>"]
+  E -- "✅ 성공" --> K["<b>🔑 열쇠 획득</b><br/><small>결과 화면 행잉 태그 8/8 만충 · 열쇠 획득 표시<br/>보상 지급 없음 · 결과 화면 무변경(RV ×2 유지)</small>"]
+  K --> F["<b>로비 체스트 오픈 팝업</b><br/><small>열쇠가 자물쇠에 꽂힘 → 체스트 오픈 → 보상 6슬롯 → [받기]<br/>미수령 시 다음 로비 복귀에 재노출(열쇠 소멸 없음)</small>"]
   E -- "⛔ 잔여 5분 이하 · 미완주" --> RV(["<b>RV 타이머 +5분 연장 (드롭 가능)</b><br/><small>타이머 옆 말풍선 [+5 min] · ad_extend_sec=300<br/>사이클당 1회 · 미시청 시 그대로 만료</small>"])
   RV --> D
   E -- "⛔ 시간 초과" --> H["<b>실패 — 신규 연출·알림 없음</b><br/><small>행잉 태그·버튼 마킹 비노출 전환만 · 몰수 없음<br/>체스트만 다음 기회</small>"]
@@ -375,7 +376,7 @@ flowchart TD
   classDef bad fill:#fdecec,stroke:#e06666,color:#6e1f1f;
   classDef auto fill:#efe9fc,stroke:#8b6ae0,color:#3a2b6e;
   classDef hook fill:#fff4d9,stroke:#d9a520,color:#6e5410;
-  class F good; class H bad; class C,ST auto; class E,Q,SC,RV hook; class CD,P2,DEF default;
+  class F,K good; class H bad; class C,ST auto; class E,Q,SC,RV hook; class CD,P2,DEF default;
   </pre>
 
   <h3>노출 시기 — 로비 팝업 시퀀서 정합</h3>
@@ -384,7 +385,8 @@ flowchart TD
     <tbody>
     <tr><td>레벨10 클리어</td><td>이벤트 해금(unlock 50031) — 별도 튜토리얼 없음. 첫 발동 연출과 인포 팝업(ⓘ)이 안내 역할</td><td>해금 조건</td></tr>
     <tr><td>기간 내 · 쿨다운 경과 · 미진행 · 로비 복귀 시 <strong>우선 팝업 소화 후</strong></td><td><strong>발동 시퀀스 연출 자동 재생 + 타이머 시작</strong> — 유저의 최초 인식(사이클당 1회·기존 팝업 체인 마지막 순번)</td><td>기존 팝업 체인 마지막 순번</td></tr>
-    <tr><td>8판 완주</td><td>체스트 보상을 <strong>8판째 결과 화면 하단 체스트 블록</strong>에 표시(신규 팝업 없음 · 지급 연출은 결과 화면 내 3컷) · 기여 항목 🐾마킹 · <strong>일반 판 보상 RV ×2는 기존 그대로 유지</strong></td><td>결과 화면 블록 추가(신규 모달 없음)</td></tr>
+    <tr><td>8판 완주</td><td><strong>🔑 열쇠 획득 표시만</strong> — 행잉 태그 8/8 만충·글로우. <strong>보상 지급 없음 · 결과 화면 무변경</strong>(RV ×2 유지)</td><td>기존 행잉 태그 상태 변화</td></tr>
+    <tr><td>열쇠 보유 상태로 로비 복귀</td><td><strong>체스트 오픈 팝업 자동 노출</strong> — 열쇠 꽂힘 → 오픈 → 보상 6슬롯 → [받기]</td><td><strong>신규 팝업 1종 · 보상 정산 계열(체인 상위)</strong></td></tr>
     <tr><td>잔여 5분 이하 · 미완주</td><td><strong>행잉 태그 타이머 옆에 말풍선 [+5 min] 노출</strong>(TV 아이콘) — 시청 완료 시 <code>ad_extend_sec</code>만큼 타이머 연장(사이클당 1회)</td><td>행잉 태그 내 말풍선(신규 모달 없음) · <strong>드롭 가능</strong></td></tr>
     <tr><td>타이머 만료(실패)</td><td><strong>노출 없음</strong> — 행잉 태그·플레이 버튼 마킹 비노출 전환만. 별도 알림·토스트 없음</td><td>비노출 전환(팝업 체인 무관)</td></tr>
     <tr><td>언락 인트로와 발동 조건 동시 충족</td><td>언락 인트로 먼저 → 발동 연출은 다음 로비 복귀 시(같은 진입 2모달 금지)</td><td>엣지 규칙</td></tr>
@@ -599,31 +601,37 @@ flowchart TD
   </div>
 
   <div class="seq-step">
-    <span class="seq-tag">⑦ · 지급 (결과 화면 체스트 블록)</span>
-    <h4>⑦ 체스트 보상 — 8판째 결과 화면 하단 블록 (3컷 연출)</h4>
-    <p><strong>신규 팝업·모달은 만들지 않음</strong> — 지급 연출은 <strong>기존 결과 화면 안에서 3컷으로 처리</strong>함. (연출 자체는 신규 제작분임 — 아래 3컷이 아트 작업 대상)</p>
-    <span class="flow-label">🎬 3컷 연출 — 진행 순서</span>
+    <span class="seq-tag">⑦ · 열쇠 획득 → 로비 체스트 오픈</span>
+    <h4>⑦ 보상 수령 — 열쇠를 들고 로비로 돌아가 체스트를 연다</h4>
+    <p>보상은 <strong>인게임 결과 화면에서 지급하지 않음</strong>. 8판째에는 <strong>열쇠만 획득</strong>하고, <strong>로비로 돌아가 그 열쇠로 체스트를 여는 것</strong>이 지급 시점임. 뺏긴 열쇠를 되찾아 <strong>직접 자물쇠에 꽂는</strong> 행동으로 마무리해야 ②강탈 → ④도주 → ⑦회수의 서사가 닫힘.</p>
+
+    <span class="flow-label">🎬 진행 순서</span>
     <ul class="flowlist">
-      <li><span class="n">1</span>행잉 태그 게이지 <strong>8/8 만충</strong> · 글로우</li>
-      <li><span class="n">2</span>태그의 체스트가 <strong>팝 하고 열림</strong> → 🐾파티클이 보상 아이콘으로 날아감<br><small>골드 · 해머 · 와일드카드 · 되돌리기 · 파이어웍스 · 무료 입장 티켓 (수량 = <code>event_shadow_chest</code> 시트)</small></li>
-      <li><span class="n">3</span>태그 <strong>소멸</strong> · 체스트 블록에 🐾마킹 완착</li>
+      <li><span class="n">1</span><strong>8판째 클리어</strong> — 결과 화면의 행잉 태그 게이지가 <strong>8/8 만충 · 글로우</strong> → <strong>🔑 열쇠 획득</strong> 표시<br><small>여기서는 <strong>보상을 지급하지 않음</strong>. 결과 화면 자체는 <strong>기존 그대로</strong>(판 보상·RV ×2 무변경)</small></li>
+      <li><span class="n">2</span><strong>로비 복귀</strong> → <strong>체스트 오픈 팝업 자동 노출</strong><br><small>보상 정산 계열이라 팝업 체인 <strong>상위 순번</strong>(발동 연출보다 먼저)</small></li>
+      <li><span class="n">3</span>팝업에 <strong>잠긴 루나 체스트</strong> + 유저가 되찾은 <strong>황금 열쇠</strong>가 함께 등장</li>
+      <li><span class="n">4</span><strong>열쇠가 자물쇠에 꽂히고 돌아감</strong> → 자물쇠 해제 · 🐾파티클</li>
+      <li><span class="n">5</span>체스트가 열리며 <strong>보상 6슬롯 공개</strong><br><small>골드 · 해머 · 와일드카드 · 되돌리기 · 파이어웍스 · 무료 입장 티켓 (수량 = <code>event_shadow_chest</code> 시트)</small></li>
+      <li><span class="n">6</span><strong>[받기]</strong> → 서버 커밋 · 인벤 반영 · 팝업 닫힘 → 로비 복귀</li>
     </ul>
-    <p style="font-size:13px;color:var(--text2)">→ <strong>태그가 보상으로 변환되며 사라지는 인과</strong>를 시각화하는 것이 이 연출의 목적임.</p>
-    <div class="callout callout-red"><strong>⚠ 화면 구성 — 영역 분리</strong><br>
-  <strong>상단 = 기존 판 보상 블록</strong> — RV ×2 버튼을 <strong>그대로 유지</strong>하며 로직도 손대지 않음.<br>
-  <strong>하단 = 신규 체스트 블록</strong> — 🐾마킹 · <strong>[받기] 단일</strong> · 고정 문구 "이벤트 보상은 배수가 적용되지 않아요".<br>
-  체스트 지급분은 <strong>RV 배수 미적용</strong>이며, 배수 대상은 상단 판 보상만임. 기존 화면을 수정하지 않고 <strong>블록만 얹는</strong> 구조임.</div>
+
+    <div class="callout callout-red"><strong>⚠ 결과 화면은 손대지 않음</strong><br>
+    지급을 로비 팝업으로 분리했으므로 <strong>결과 화면(<code>PopupCompleteLevel</code>)은 무변경</strong>임 — 판 보상 · <strong>RV ×2</strong> · 홈 버튼 전부 기존 그대로. 결과 화면에서 추가되는 것은 <strong>행잉 태그 만충 → 열쇠 획득 표시</strong>뿐이며, 이는 기존 행잉 태그 컴포넌트의 상태 변화로 처리함.</div>
+
+    <div class="callout callout-yellow"><strong>🔑 열쇠는 미수령 상태로 보존됨</strong><br>
+    열쇠 획득(8판 완주)과 체스트 수령은 <strong>분리된 시점</strong>임. 획득 후 수령 전에 앱을 종료하거나 <strong>이벤트 기간이 끝나도 열쇠는 소멸하지 않음</strong> — 다음 로비 복귀 시 체스트 오픈 팝업이 다시 뜸. <strong>사이클은 완주 시점에 종료</strong>되고 쿨다운도 그때부터 시작하므로, 수령이 늦어도 다음 사이클 진행에는 영향이 없음. 미수령 체스트가 2개 이상 쌓이면 <strong>순차로 1개씩</strong> 처리함.</div>
+
     <div class="ours"><strong>루나 이식</strong>
       <ul class="flowlist">
-        <li><span class="k">구현 위치</span>결과 화면(<code>PopupCompleteLevel</code>)에 <strong>하단 블록 추가</strong></li>
-        <li><span class="k">무변경</span>기존 보상 리스트 · RV ×2 로직</li>
-        <li><span class="k">신규 제작</span>태그 소멸 Tween + 🐾파티클 + 체스트 블록 뱃지 오버레이</li>
-        <li><span class="k">실패 시</span>이 연출 없이 태그 비노출 전환</li>
+        <li><span class="k">신규 팝업</span><code>PopupEventShadowChest</code> 1종 (PopupBase 문법) — 로비 전용</li>
+        <li><span class="k">신규 연출</span>열쇠 꽂힘 Tween + 자물쇠 해제 + 체스트 오픈 + 🐾파티클 + 보상 아이콘 등장</li>
+        <li><span class="k">결과 화면</span><strong>무변경</strong> — 행잉 태그 만충·열쇠 획득 표시만(기존 컴포넌트 상태 변화)</li>
+        <li><span class="k">데이터</span>보상 품목·수량은 <code>event_shadow_chest</code> 시트 연동(하드코딩 금지)</li>
+        <li><span class="k">지급</span>서버 커밋(멱등 <code>txn_id</code>) — <code>/api/event/shadow-chase/claim-chest</code></li>
+        <li><span class="k">계측</span>열쇠 획득 = <code>5448</code> · 체스트 수령 = <code>5443</code></li>
       </ul>
     </div>
-    <div class="seq-imgs single">
-      <figure class="oursfig"><span class="imgrole role-ours">✅ 우리 게임 목업 — 3컷 시퀀스</span><img src="ref-027-ours-07-result.jpg" alt="ref-027-ours-07-result" class="zoomable" loading="lazy"></figure>
-    </div>
+    <div class="callout callout-yellow"><strong>🎨 목업 필요</strong> — 로비 체스트 오픈 팝업(잠긴 체스트 + 열쇠 → 오픈 → 보상 6슬롯 → [받기]). 베이스 이미지 = <code>base/ref-027-base-lobby-chest.jpg</code></div>
   </div>
 
   <div class="seq-step">
@@ -660,7 +668,7 @@ flowchart TD
   <div class="seq-step">
     <span class="seq-tag">ⓘ · 인포 팝업 (재확인 수단)</span>
     <h4>인포 팝업 — 이벤트 안내 (ⓘ 버튼)</h4>
-    <p><strong>진입</strong> — 프리레벨 행잉 태그 · 결과 화면 행잉 상자의 <strong>ⓘ 버튼</strong> 탭 시 표시. 발동 연출(최초 1회 시청) 이후 규칙을 다시 확인하는 수단임.</p>
+    <p><strong>진입</strong> — 프리레벨 행잉 태그 · 체스트 오픈 팝업의 <strong>ⓘ 버튼</strong> 탭 시 표시. 발동 연출(최초 1회 시청) 이후 규칙을 다시 확인하는 수단임.</p>
     <span class="flow-label">🎬 팝업 구성 순서</span>
     <ul class="flowlist">
       <li><span class="n">1</span>서사 — 실루엣 + 열쇠</li>
@@ -701,13 +709,14 @@ flowchart TD
       <tr><td>④ 도주</td><td>🐾발바닥 자국 트레일이 로비를 가로질러 점점이 찍히며 열쇠 아이콘 이동 → 플레이 버튼 종착 (캐릭터 이동 애니 없음)</td><td>자국 스프라이트 + Tween</td></tr>
       <tr><td>⑤ 마킹</td><td>플레이 버튼에 🐾발바닥 자국 1개 (진행 중 상시 표시)</td><td>버튼 오버레이</td></tr>
       <tr><td>⑥ 행잉 태그</td><td>프리레벨 밧줄에 체스트+남은시간+진행바(n/8) · 체스트 보상 표기</td><td>기존 진행이벤트 밧줄 재활용</td></tr>
-      <tr><td>⑦ 지급</td><td>결과 화면 <strong>하단 체스트 블록</strong>에 지급 + "🐱 그림자 냥이 추격전" 뱃지 · 상단 판 보상(RV ×2)은 무변경</td><td>결과 화면 하단 블록 추가</td></tr>
+      <tr><td>⑦ 열쇠 획득</td><td>결과 화면 행잉 태그 <strong>8/8 만충 · 글로우 · 🔑 열쇠 획득</strong> — 지급 없음</td><td>기존 행잉 태그 상태 변화</td></tr>
+      <tr><td>⑦-B 체스트 오픈</td><td>로비 팝업 — <strong>열쇠 꽂힘 → 자물쇠 해제 → 체스트 오픈 → 보상 6슬롯</strong> + "🐱 그림자 냥이 추격전" 뱃지</td><td><strong>신규 팝업 + 오픈 연출</strong></td></tr>
       <tr><td>⑧ 타이머 연장</td><td>잔여 5분 이하·미완주 시 타이머 옆 <strong>말풍선 [+5 min]</strong>(TV 아이콘·크림 바탕) — 연출 제작분 없음(타이머 숫자 갱신)</td><td>행잉 태그 조건부 말풍선 + 기존 RV 지면</td></tr>
     </tbody>
   </table>
 
   <div class="callout callout-yellow">
-    <strong>열쇠 = 8판 완주에서만:</strong> <strong>8판 완주 = 열쇠 획득 = 체스트 보상(결과 화면 하단 블록)</strong> 단일 시점. 인게임 HUD 표시 없음.</div>
+    <strong>열쇠 = 8판 완주에서만:</strong> <strong>8판 완주 = 열쇠 획득</strong>, <strong>로비 체스트 오픈 = 보상 지급</strong> — 두 시점이 분리됨. 인게임 HUD 표시 없음.</div>
   <div class="callout callout-red"><strong>⚠ 강제 시청 길이 상한 (아트·클라)</strong> — 원본 CCS 시퀀스는 11초·161프레임이나, <strong>우리 발동 연출은 6초 이내</strong>를 목표로 함(강탈~도주~마킹 합산·최초 1회 건너뛰기 불가 구간 기준). 발동 지점이 로비 팝업 체인 <strong>마지막</strong> 순번이라 앞 팝업 소화 직후에 얹히는 구조이며, 이 시점에 긴 강제 시청을 넣으면 이탈 리스크가 큼. 6초를 넘길 경우 <strong>필수 시청은 ②강탈까지만, ④도주부터 탭 스킵 허용</strong>으로 완화할 것.</div>
 
   <h3 id="s2-states">연출 상태 명세 (5상태)</h3>
@@ -717,7 +726,7 @@ flowchart TD
     <tbody>
       <tr><td><strong>열쇠 강탈</strong></td><td><code>GRAB</code></td><td>발동 시퀀스 ② (flow-02 참고)</td><td>앞발+발톱 긁힘 이펙트로 열쇠 채감</td></tr>
       <tr><td><strong>도주</strong></td><td><code>ESCAPE</code></td><td>발동 시퀀스 ④ (flow-04 참고) · 시간 초과 시 재사용</td><td>발바닥 자국 트레일 + 열쇠 아이콘 이동</td></tr>
-      <tr><td><strong>포획 성공</strong></td><td><code>WIN</code></td><td>8판 완주</td><td><strong>신규 팝업 없음</strong> — 결과 화면 안에서 3컷 연출(태그 만충 → 체스트 오픈·파티클 → 태그 소멸·🐾마킹)</td></tr>
+      <tr><td><strong>포획 성공</strong></td><td><code>WIN</code></td><td>8판 완주</td><td>결과 화면 태그 <strong>8/8 만충 · 🔑 열쇠 획득</strong> → 로비 복귀 시 <strong>체스트 오픈 팝업</strong>에서 지급</td></tr>
       <tr><td><strong>시간 초과</strong></td><td><code>LOSE</code></td><td>타이머 만료</td><td><strong>신규 연출·알림 없음</strong> — 행잉 태그·로비 아이콘·버튼 마킹 비노출 처리(몰수 없음)</td></tr>
       <tr><td><strong>진행 중</strong></td><td><code>RUNNING</code></td><td>진행 중 상시</td><td>플레이 버튼 🐾마킹 · 프리레벨 행잉 태그 (flow-05·06 참고) — 인게임 HUD 없음 · <strong>잔여 5분 이하 시 타이머 말풍선 [+5 min] 노출</strong></td></tr>
     </tbody>
@@ -744,7 +753,7 @@ flowchart TD
   <div class="callout callout-green" id="dev-checklist">
     <strong>🛠 개발 처리 체크리스트 (한곳 정리)</strong> — 문서 곳곳의 개발 액션을 8개 영역으로 모음:
     ① 발동·사이클(기간/쿨다운 판정·팝업 체인 마지막 순번·<strong>세션 상한 소진 시 다음 로비 복귀로 이월</strong>·서버 타이머) ② 연출·입력(잠금·스킵·자국만·<strong>강제 시청 6초 이내</strong>)
-    ③ 상태 표시(프리레벨 행잉 태그·플레이 버튼 🐾마킹 두 가지뿐 — 인게임 HUD·로비 아이콘 없음) + <strong>잔여 5분 이하 타이머 말풍선 [+5 min]</strong>(드롭 가능) ④ <strong>성공=결과 화면 하단 체스트 블록 [받기] · 상단 판 보상 RV ×2는 무변경</strong>
+    ③ 상태 표시(프리레벨 행잉 태그·플레이 버튼 🐾마킹 두 가지뿐 — 인게임 HUD·로비 아이콘 없음) + <strong>잔여 5분 이하 타이머 말풍선 [+5 min]</strong>(드롭 가능) ④ <strong>성공=열쇠 획득(결과 화면 무변경) → 로비 체스트 오픈 팝업에서 지급</strong>
     ⑤ <strong>실패=비노출 전환만</strong>(별도 알림 없음) ⑥ 데이터·코드 등록(ProtocolTypes·시트 로드·unlock·확인 4건) ⑦ 로그 5440~5447(5xxx-1 이벤트 대역) ⑧ 킬스위치·운영. <strong>QA 케이스는 별도 문서</strong>.
   </div>
 
@@ -853,7 +862,7 @@ flowchart TD
       <tr><td><strong>열쇠 강탈</strong></td><td><code>GRAB</code></td><td>팝업 소화 후 자동 발동 · 체스트 발견 후 그림자 냥이 열쇠 강탈 연출(앞발+발톱) · 입력 잠금</td><td>연출 종료 → 도주(Escape)</td></tr>
       <tr><td><strong>도주</strong></td><td><code>ESCAPE</code></td><td>스토리 [확인] 후 로비 복귀 · 그림자 냥이 도주 연출(자국 트레일) · 입력 잠금 · 시퀀스 종료 시점부터 15분 타이머 시작</td><td>플레이 버튼 마킹 → 진행 중(RUNNING)</td></tr>
       <tr><td><strong>진행 중</strong></td><td><code>RUNNING</code></td><td>스프린트 진행 중 · 플레이 버튼 🐾마킹·프리레벨 행잉 태그 상시 표시(인게임 HUD 없음) · <strong>잔여 <code>ad_extend_threshold_sec</code> 이하 시 타이머 말풍선 [+5 min] 노출(사이클당 1회)</strong></td><td>완주 → 포획 성공(Win) / 만료 → 시간 초과(Lose) · <strong>연장 시 RUNNING 유지</strong></td></tr>
-      <tr><td><strong>포획 성공</strong></td><td><code>WIN</code></td><td>시간창 내 total_rounds 완주 (열쇠 획득)</td><td><strong>신규 팝업 없음</strong> — 결과 화면 안 3컷 연출 → <strong>하단 체스트 블록</strong>+🐾마킹(상단 판 보상·RV ×2 무변경) → 태그·마킹 정리 → IDLE</td></tr>
+      <tr><td><strong>포획 성공</strong></td><td><code>WIN</code></td><td>시간창 내 total_rounds 완주 (<strong>열쇠 획득</strong>)</td><td>결과 화면 태그 만충·열쇠 획득 표시 → <strong>사이클 종료·쿨다운 시작</strong> → IDLE<br><small>체스트 수령은 별도 큐 — 로비 복귀 시 오픈 팝업</small></td></tr>
       <tr><td><strong>시간 초과</strong></td><td><code>LOSE</code></td><td>타이머 만료 미완주 (또는 기간 강제만료)</td><td><strong>신규 연출·알림 없음</strong> — 행잉 태그·버튼 마킹 비노출 전환(몰수 없음) → IDLE</td></tr>
     </tbody>
   </table>
@@ -862,17 +871,18 @@ flowchart TD
 
   <!-- 3-3 계측 -->
   <h2 id="s3-log">3-3 계측 이벤트 (5440~5447 · 5xxx-1 이벤트 대역)</h2>
-  <p>기존 관례 = 4자리 코드 + <code>data</code> 필드(예 <code>2100_GAMEPLAY_START</code>). 클라 <code>BaseLogManager</code> LogType enum + <code>registLogEvent</code>. <strong>대역 = <code>5xxx-1 이벤트 관련</code></strong> — 로그정의서상 블랙카드(5400)·레드카드(5410)·위닝(5420)·클리어랭킹(5430) 다음 빈 블록인 <strong>5440번대</strong>를 배정함. <code>5448·5449</code>는 저니 2차용 예비.</p>
+  <p>기존 관례 = 4자리 코드 + <code>data</code> 필드(예 <code>2100_GAMEPLAY_START</code>). 클라 <code>BaseLogManager</code> LogType enum + <code>registLogEvent</code>. <strong>대역 = <code>5xxx-1 이벤트 관련</code></strong> — 로그정의서상 블랙카드(5400)·레드카드(5410)·위닝(5420)·클리어랭킹(5430) 다음 빈 블록인 <strong>5440번대</strong>를 배정함. <code>5449</code>는 저니 2차용 예비.</p>
   <table>
     <thead><tr><th>이벤트코드</th><th>발화 시점</th><th>data 필드 (핵심)</th></tr></thead>
     <tbody>
       <tr><td><code>5440_EVENT_SHADOW_CHASE_SLOT_OPEN</code></td><td>발동 조건 충족 (NOTIFY)<br><small>이월 시 <strong>재발화하지 않음</strong>(중복 계상 방지)</small></td><td>cycle_id, trigger_type, window_sec(<code>duration_sec</code>), target_clear(<code>total_rounds</code>), <strong>deferred(bool)</strong>, <strong>fire_side(server/client)</strong></td></tr>
       <tr><td><code>5441_EVENT_SHADOW_CHASE_ACTIVATE</code></td><td>발동 연출 재생 (사이클 시작·타이머 시작)</td><td>cycle_id, remain_sec, <strong>fx_completed(bool)</strong>, <strong>fx_watch_sec</strong>, <strong>deferred_count</strong></td></tr>
       <tr><td><code>5442_EVENT_SHADOW_CHASE_ROUND_CLEAR</code></td><td>사이클 중 판 클리어 (카운트 증가)</td><td>cycle_id, <strong>round_idx(1~<code>total_rounds</code>)</strong>, clear_count(n/<code>total_rounds</code>), elapsed_sec, <strong>level_id</strong>, <strong>round_sec</strong></td></tr>
-      <tr><td><code>5443_EVENT_SHADOW_CHASE_CHEST_OPEN</code></td><td>완주·체스트 지급</td><td>cycle_id, elapsed_sec, txn_id, <strong>chest_tier(normal/jackpot)</strong>, <strong>reward_keys[]</strong>, <strong>extended(bool)</strong></td></tr>
+      <tr><td><code>5443_EVENT_SHADOW_CHASE_CHEST_OPEN</code></td><td><strong>로비 체스트 오픈 팝업에서 [받기]</strong> — 실지급 시점</td><td>cycle_id, elapsed_sec, txn_id, <strong>chest_tier(normal/jackpot)</strong>, <strong>reward_keys[]</strong>, <strong>extended(bool)</strong></td></tr>
       <tr><td><code>5444_EVENT_SHADOW_CHASE_FAIL</code></td><td>타이머 만료 (또는 이벤트 종료 강제만료)</td><td>cycle_id, rounds_cleared, reason(timeout/event_end), <strong>extended(bool)</strong></td></tr>
       <tr><td><code>5445_EVENT_SHADOW_CHASE_HAMMER_GRANT</code></td><td>해머 지급</td><td>cycle_id, <strong>amount</strong>, balance_after</td></tr>
       <tr><td><code>5446_EVENT_SHADOW_CHASE_DECO_GATE_UNLOCK</code></td><td>해머로 데코 게이트 해제</td><td>cycle_id, gate_id</td></tr>
+      <tr><td><code>5448_EVENT_SHADOW_CHASE_KEY_GET</code></td><td><strong>신규</strong> — 8판 완주·열쇠 획득(지급 아님)</td><td>cycle_id, elapsed_sec, extended(bool)</td></tr>
       <tr><td><code>5447_EVENT_SHADOW_CHASE_AD_EXTEND</code></td><td><strong>신규</strong> — 타이머 말풍선 [+5 min] 노출·시청·연장</td><td>cycle_id, step(impression/watch_start/complete), remain_sec_before, extend_sec, result(success/abort/no_fill)</td></tr>
     </tbody>
   </table>
@@ -885,7 +895,7 @@ flowchart TD
       <li><code>5440.deferred / fire_side</code> — 참여율(<code>5441÷5440</code>)의 <strong>분모 정의</strong>가 판정 주체(개발 확인 ③)에 따라 달라짐. 이월분이 분모를 부풀리지 않도록 플래그로 분리.</li>
     </ul>
   </div>
-  <div class="note"><strong>활용:</strong> <code>5440/5441</code>로 참여율(<code>deferred</code> 제외), <code>5441→5443</code>로 완주율(사전 추정 ~40% 검증), <code>5444</code>의 reason으로 만료 실패를 timeout vs event_end 분해, <code>5445/5446</code>로 해머 획득·소진(데코 게이트) 추적, <code>5447</code>로 연장 전환율·구제율(<code>extended=TRUE</code>인 <code>5443</code> 비중). 창 내 완료판 상승폭·D1/D3도 추적. 트랙 계열(2차)은 마스터 §9 참조.</div>
+  <div class="note"><strong>활용:</strong> <code>5440/5441</code>로 참여율(<code>deferred</code> 제외), <code>5441→5448</code>로 완주율(사전 추정 ~40% 검증), <code>5448→5443</code>로 <strong>체스트 수령율</strong>, <code>5444</code>의 reason으로 만료 실패를 timeout vs event_end 분해, <code>5445/5446</code>로 해머 획득·소진(데코 게이트) 추적, <code>5447</code>로 연장 전환율·구제율(<code>extended=TRUE</code>인 <code>5443</code> 비중). 창 내 완료판 상승폭·D1/D3도 추적. 트랙 계열(2차)은 마스터 §9 참조.</div>
   <div class="callout callout-purple"><strong>🔗 RV 분해 — 4210 조인 (필수 설계)</strong><br>
   본 이벤트의 1순위 근거가 <strong>판당 RV 0.1354(코지 4.1배)</strong>인데, 15분 8판으로 압축하면 유저는 <strong>다음 판으로 빨리 가려고 RV를 스킵</strong>할 유인이 커짐. 판수가 늘어도 판당 RV 시청률이 깎이면 순증분이 상쇄되므로, "판수 늘렸다"까지만 말하고 <strong>"그래서 RV가 늘었다"는 말할 수 없게 됨</strong>.<br>
   → <code>4210_RV_FINISH</code>(지면 = <code>coalesce(data.type, data.position)</code>)를 <code>5442</code>의 <strong>사이클 귀속 판</strong>과 조인해, <strong>스프린트 창 안 판 vs 밖 판의 판당 RV 노출·시청률을 분해</strong>할 것. 이 설계는 <strong>사후 소급이 불가능</strong>하므로 v1 계측에 반드시 포함. RV 에러/논필 구간(현행 23~29%)도 같이 봐야 시청률 하락의 원인을 스킵 vs 논필로 가를 수 있음.</div>
@@ -897,7 +907,7 @@ flowchart TD
     <thead><tr><th>구분</th><th>탭명</th><th>대역/키</th><th>내용</th></tr></thead>
     <tbody>
       <tr><td>공용 등록</td><td><code>event_schedule</code></td><td>160005·160006</td><td>추격전 기간 창 1행 (월 0:00~금 0:00 = 월~목 4일·유저 접속 기준 사이클)</td></tr>
-      <tr><td>공용 등록</td><td><code>string_code</code></td><td>T_SHADOW_CHASE_* 9키</td><td>이벤트 카피 (T_ 대문자 관례)</td></tr>
+      <tr><td>공용 등록</td><td><code>string_code</code></td><td>T_SHADOW_CHASE_* 8키</td><td>이벤트 카피 (T_ 대문자 관례)</td></tr>
       <tr><td>공용 등록</td><td><code>unlock</code></td><td>50031</td><td>레벨 10 클리어 언락 (condition_type=level_clear)</td></tr>
       <tr><td>전용 탭(2차)</td><td><code>event_shadow_milestone</code></td><td>260001~260006</td><td>저니 트랙 6마일스톤 — v1 시트 반영분 아님(저니 레이어 2차 등록)</td></tr>
       <tr><td>전용 탭</td><td><code>event_shadow_sprint</code></td><td>240001</td><td>스프린트 파라미터 1행 (컬럼식) — 체스트 보상 컬럼 통합(normal_*·jackpot_*). multiplier·heart 컬럼 없음</td></tr>
@@ -939,7 +949,7 @@ flowchart TD
 <tr><td>50031</td><td>content_event_shadow_chase</td><td>level_clear</td><td>10</td><td>FALSE</td><td></td><td>Lv10 클리어 시 그림자 냥이 추격전 해금 — 별도 튜토 없음</td></tr>
 </table></div>
 
-<h3>③ string_code +9키 (공용 · 한국어 기준값, 타 언어 번역 후속)</h3>
+<h3>③ string_code +8키 (공용 · 한국어 기준값, 타 언어 번역 후속)</h3>
 <div class="tbl-scroll"><table class="bs-table">
 <tr><th>Key</th><th>kr</th></tr>
 <tr><td>T_SHADOW_CHASE_INFO_TITLE</td><td>그림자 냥이를 잡아라!</td></tr>
@@ -949,10 +959,9 @@ flowchart TD
 <tr><td>T_SHADOW_CHASE_CHEST_NORMAL</td><td>따라잡았어요! 루나 체스트가 열려요.</td></tr>
 <tr><td>T_SHADOW_CHASE_CHEST_JACKPOT</td><td>그림자 냥이의 비밀 보물! Jackpot 체스트가 열려요.</td></tr>
 <tr><td>T_SHADOW_CHASE_AD_EXTEND</td><td>+5분</td></tr>
-<tr><td>T_SHADOW_CHASE_CHEST_NO_MULTIPLY</td><td>이벤트 보상은 배수가 적용되지 않아요.</td></tr>
 <tr><td>T_SHADOW_CHASE_OFFLINE</td><td>연결이 필요해요…</td></tr>
 </table></div>
-<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ <b>총 9키</b> — <code>T_SHADOW_CHASE_AD_EXTEND</code>(⑧ 타이머 말풍선) · <code>T_SHADOW_CHASE_CHEST_NO_MULTIPLY</code>(결과 화면 하단 체스트 블록 고정 문구) 추가. <b><code>T_SHADOW_CHASE_FAIL_FLEE</code>는 삭제</b> — 실패에 알림을 붙이지 않기로 확정해 노출 지점이 없어짐(등록해두고 미사용하면 재혼선).</div>
+<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ <b>총 8키</b> — <code>T_SHADOW_CHASE_AD_EXTEND</code>(⑧ 타이머 말풍선) 추가. <b><code>T_SHADOW_CHASE_FAIL_FLEE</code>·<code>T_SHADOW_CHASE_CHEST_NO_MULTIPLY</code>는 미사용</b> — 실패 알림 미채택, 지급이 별도 팝업으로 분리돼 배수 혼란 자체가 없어짐.</div>
 
 <h3>④ event_shadow_chest 신규 탭 (슬롯형 · Normal 6슬롯 — v1)</h3>
 <div class="tbl-scroll"><table class="bs-table">
@@ -964,7 +973,7 @@ flowchart TD
 <tr><td>250005</td><td>normal</td><td>5</td><td>item</td><td>booster_fireworks</td><td>1</td><td>TRUE</td><td>파이어웍스</td></tr>
 <tr><td>250006</td><td>normal</td><td>6</td><td>item</td><td>currency_ticket</td><td>1</td><td>TRUE</td><td>무료 입장 티켓</td></tr>
 </table></div>
-<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트는 마일스톤이 아님 — 8판 완주(열쇠 획득) 시 <b>결과 화면에 묶어 일괄 지급</b>(+"🐱 그림자 냥이 추격전" 뱃지). 티어당 6슬롯 = 오픈 연출에서 체스트가 꽉 차 보이는 구성. reward_key는 전부 라이브 item_list 실존 키(데코 조각만 클라 처리). Jackpot 행은 v1 OFF(해금 콘텐츠 도입 시 TRUE). 저니 트랙 마일스톤 탭(event_shadow_milestone)은 v1 반영분 아님 — 2차(저니 레이어) 등록 시 별도 반영.</div>
+<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트는 마일스톤이 아님 — 8판 완주로 <b>열쇠를 획득</b>하고, <b>로비 체스트 오픈 팝업에서 6슬롯 일괄 지급</b>(+"🐱 그림자 냥이 추격전" 뱃지). 티어당 6슬롯 = 오픈 연출에서 체스트가 꽉 차 보이는 구성. reward_key는 전부 라이브 item_list 실존 키(데코 조각만 클라 처리). Jackpot 행은 v1 OFF(해금 콘텐츠 도입 시 TRUE). 저니 트랙 마일스톤 탭(event_shadow_milestone)은 v1 반영분 아님 — 2차(저니 레이어) 등록 시 별도 반영.</div>
 <h3>⑤ event_shadow_sprint 신규 탭 (튜닝 코어 1행)</h3>
 <div class="tbl-scroll"><table class="bs-table">
 <tr><th>key_number</th><th>event_id</th><th>duration_sec</th><th>total_rounds</th><th>cooldown_sec</th><th>grace_after_window</th><th>ad_extend_threshold_sec</th><th>ad_extend_sec</th><th>ad_extend_max_per_cycle</th><th>in_use</th></tr>
@@ -996,7 +1005,7 @@ flowchart TD
     <thead><tr><th>영역</th><th>항목</th><th>공수</th></tr></thead>
     <tbody>
       <tr><td>클라</td><td>프리레벨 행잉 태그(타이머·n/8 게이지·실루엣) + 플레이 버튼 🐾마킹 + 발동 트리거(팝업 체인 마지막·<strong>세션 상한 시 이월</strong>) + 연출 입력 잠금(6초 이내) (인게임 HUD·타이머 위젯 없음)</td><td><span class="prio-high">L</span></td></tr>
-      <tr><td>클라</td><td>결과 화면(PopupCompleteLevel) <strong>하단 체스트 블록 추가</strong> — 6슬롯·🐾뱃지·[받기] 단일. <strong>기존 판 보상·RV ×2 로직은 무변경</strong></td><td><span class="prio-low">S</span></td></tr>
+      <tr><td>클라</td><td><strong>로비 체스트 오픈 팝업 신규</strong>(<code>PopupEventShadowChest</code>) — 열쇠 꽂힘·오픈 연출·보상 6슬롯·[받기] · 미수령 큐 처리. <strong>결과 화면은 무변경</strong>(열쇠 획득 표시만)</td><td><span class="prio-mid">M</span></td></tr>
       <tr><td>클라</td><td><strong>타이머 말풍선 [+5 min]</strong> — 행잉 태그 조건부 말풍선 + 기존 RV 지면 연동 + 연장 반영 (신규 모달 없음) · <strong>견적 크면 v1 드롭 가능</strong></td><td><span class="prio-low">S</span></td></tr>
       <tr><td>서버</td><td>이벤트/스프린트 상태머신·기간/쿨다운 판정 (wall-clock 타이머 권위 · 발동 트리거=큐/폴백 · <strong>이월 보류 상태</strong> · <strong>연장 1회 검증</strong> · claim-chest 멱등)</td><td><span class="prio-high">L</span></td></tr>
       <tr><td>계측</td><td>로그 파이프라인 (기존 코드+data 관례 확장 · <strong>5440~5447</strong> · 5xxx-1 이벤트 대역) + <strong>4210 조인 기반 RV 분해 쿼리</strong></td><td><span class="prio-mid">M</span></td></tr>
@@ -1030,11 +1039,11 @@ flowchart TD
       <tr><td><strong>판당 RV (스프린트 안 vs 밖)</strong></td><td><strong><code>4210_RV_FINISH</code> ÷ 완료판</strong>을 <code>5442</code> 사이클 귀속 여부로 분해 (지면 = <code>coalesce(data.type, data.position)</code>)</td><td><strong>스프린트 안 판당 RV가 밖보다 열위가 아닐 것</strong> — 열위면 판수 증가분이 상쇄됨(핵심 검증)</td></tr>
       <tr><td><strong>판수 카니발라이제이션</strong></td><td>① 사이클 종료 후 <strong>당일 잔여 시간대 판수</strong> ② 참여 유저의 <strong>D+1 판수</strong> (참여 vs 비참여)</td><td><strong>비열위</strong> — 몰아친 만큼 이후가 줄면 순증이 아님</td></tr>
       <tr><td>스프린트 참여율</td><td>사이클 시작(5441) ÷ 발동 조건 충족(5440, <code>deferred</code> 제외)</td><td>초안 목표 설정 후 관측 · 분모 정의는 개발 확인 ③과 함께 확정</td></tr>
-      <tr><td>스프린트 완주율</td><td>완주(5443) ÷ 진입(5441) — <strong>실측 기반 예상 ~40%</strong> 검증</td><td>15분 8판 난이도 검증 (실측이 크게 벗어나면 시트 조정) · <strong>D+2 튜닝 게이트 판단 근거</strong></td></tr>
+      <tr><td>스프린트 완주율</td><td>완주(5448) ÷ 진입(5441) — <strong>실측 기반 예상 ~40%</strong> 검증</td><td>15분 8판 난이도 검증 (실측이 크게 벗어나면 시트 조정) · <strong>D+2 튜닝 게이트 판단 근거</strong></td></tr>
       <tr><td><strong>연출 이탈률</strong></td><td>발동 연출 미완주 = <code>5441.fx_completed=FALSE</code> 비율</td><td>강제 시청 6초 상한의 타당성 검증 — 높으면 스킵 허용 앞당김</td></tr>
       <tr><td><strong>타이머 연장 전환·구제율</strong></td><td>연장 시청(<code>5447</code>) ÷ 노출 · <code>extended=TRUE</code>인 <code>5443</code> 비중 <em>(연장 기능 채택 시에만)</em></td><td>RV 증분 · 연장이 실제 완주로 이어지는지</td></tr>
       <tr><td>해머 획득·소진</td><td>해머 지급(<code>5445.amount</code>)·데코 게이트 해제(5446) 빈도</td><td>해머 발행량·소진 경로 추적 (구조적 상한 6/일 대비 실측)</td></tr>
-      <tr><td>데코 진입률</td><td>체스트 오픈(<code>5443</code>) 중 <code>chest_tier=jackpot</code>이며 deco_fragment_city 지급 비율</td><td>저니 완주 후 Jackpot 전환 추적(2차)</td></tr>
+      <tr><td>데코 진입률</td><td>체스트 수령(<code>5443</code>) 중 <code>chest_tier=jackpot</code>이며 deco_fragment_city 지급 비율</td><td>저니 완주 후 Jackpot 전환 추적(2차)</td></tr>
       <tr><td>D1/D3</td><td>이벤트 노출 코호트 리텐션 — <strong>가드레일</strong></td><td>이벤트 주간 vs 직전 비교 · <strong>비열위 확인용</strong>(상승 목표 아님)</td></tr>
     </tbody>
   </table>

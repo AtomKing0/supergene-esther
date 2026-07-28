@@ -39,7 +39,8 @@
 | 레벨10 클리어 직후 로비 | 언락 인트로 1회 (unlock 50031 · tutorial_guide 미등록 — 별도 튜토 없음) | **P1 force** (content당 1회) |
 | 기간 내·쿨다운 경과·미진행 상태로 로비 복귀 | **발동 시퀀스 연출 자동 재생 + 타이머 시작** (발견→강탈→도주→버튼 마킹·입력 잠금·강제 시청 6초 이내) | **P4 force · 체인 최후미** (`shadow_activate`·사이클당 1회) |
 | 진행 중 | 프리레벨 행잉 태그 + 플레이 버튼 🐾마킹 (**모달 아님** — 팝업 체인 미점유) | 비모달 상시 표시 |
-| 완주 | 체스트 결과 — **결과 화면 하단 체스트 블록**([받기] 단일·상단 판 보상 RV ×2 유지) | **P2** (`shadow_chest_result`·never) |
+| 완주(열쇠 획득) | 결과 화면은 **열쇠 획득 표시만**(지급 없음·화면 무변경) | 팝업 체인 무관 |
+| 열쇠 보유 상태로 로비 복귀 | **체스트 오픈 팝업** — 열쇠 꽂힘 → 오픈 → 보상 6슬롯 → [받기] · **미수령 시 재노출 · 2개 이상은 순차** | **P2 force** (`shadow_chest_result`·never) — **발동 연출(P4)보다 상위** |
 | 타이머 만료(실패) | **노출 없음** — 행잉 태그·플레이 버튼 마킹 비노출 전환만 | 팝업 체인 무관(큐 진입 없음) |
 | 동시 엣지: 언락 인트로 + 발동 조건 | P1 언락 인트로 먼저 → **발동 연출은 다음 로비 복귀로 이월** (같은 진입 2모달 금지) | — |
 | ★**세션 상한 소진** | **발동 연출을 잘라내지 말고 다음 로비 복귀로 이월** | **이월 필수 — 아래 참조** |
@@ -70,7 +71,7 @@
 | content_unlock_intro | P1 | content | force | false | show_tutorial 연동 |
 | season_settle | P2 | never | force | false | 시즌 정산 |
 | idle_gold_ready | P2 | session | force | false | 오프라인 골드 |
-| shadow_chest_result | P2 | never | force | false | **그림자 냥이 추격전 체스트 결과** |
+| shadow_chest_result | P2 | never | force | false | **그림자 냥이 추격전 — 로비 체스트 오픈(열쇠 사용·미수령분 순차)** |
 | daily_login | P3 | day | queue | false | 데일리 |
 | event_milestone | P4 | session | reddot | false | SPEC-016·콜드스타트 reddot |
 | shadow_activate | P4 | cycle | force | false | **그림자 냥이 추격전 발동 연출** — 체인 최후미·레드닷 강등 불가·**상한 초과 시 이월** |
