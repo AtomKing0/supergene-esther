@@ -323,7 +323,7 @@ pre.mermaid[data-mmd="error"]::after{content:none}
       <span class="badge badge-green">2026. 7. 28.</span>
     </div>
     <h1>그림자 냥이 추격전 (Shadow Cat Chase)</h1>
-    <p class="hero-sub">판수 증대 데일리 스프린트. 그림자 냥이가 열쇠를 물고 달아났어요! 유저가 25분 안에 8판을 완주해 따라잡는 손실회피 훅. 그림자 냥이는 본체 미등장(🐾자국·실루엣 귀+발만), 루나가 길잡이 담당. 로비 복귀 후 우선 팝업(보상 정산·출석 등) 소화 → 발동 연출 자동 재생(사이클당 1회). 원형 = Candy Crush Solitaire "Catch the Troll".</p>
+    <p class="hero-sub">판수 증대 데일리 스프린트. 그림자 냥이가 열쇠를 물고 달아났어요! 유저가 15분 안에 8판을 완주해 따라잡는 손실회피 훅. 그림자 냥이는 본체 미등장(🐾자국·실루엣 귀+발만), 루나가 길잡이 담당. 로비 복귀 후 우선 팝업(보상 정산·출석 등) 소화 → 발동 연출 자동 재생(사이클당 1회). 원형 = Candy Crush Solitaire "Catch the Troll".</p>
 
     <p class="hero-sub" style="font-size:0.86rem"><strong>기대 모니터링 KPI</strong> — 서구권 RU 완료판/유저-일 리프트(참여 vs 비참여) · <strong>판당 RV(스프린트 안 vs 밖)</strong> · 사이클 성공률(체스트 오픈 ÷ 발동) · 해머→데코 전환(72h 내 배치) · D1/D3 가드레일(비열위). 판수·시간·쿨다운 등 수치는 전부 시트 변수(§3-1).</p>
     <p class="hero-sub" style="font-size:0.82rem;opacity:.85">※ <strong>판수 리프트가 D1로 이어진다는 인과는 미검증</strong>임 — D1/D3은 성과가 아니라 <strong>가드레일</strong>로만 봄. 성과 판정은 <strong>판수 · 판당 RV</strong> 두 축. 창 안 판수만 보면 순증 착시가 나므로 <strong>사이클 후 잔여 시간대·D+1 판수</strong>를 함께 확인함(§4).</p>
@@ -356,7 +356,7 @@ flowchart TD
   A["<b>이벤트 기간</b><br/><small>월 0:00 ~ 금 0:00 (= 월~목 4일) · 매주 반복 (event_schedule 1행)<br/>판정 주체(클라/서버) 미정 — 개발 확인 ③</small>"] --> P["<b>판 종료 → 로비 복귀</b><br/><small>우선순위 팝업 먼저 소화: 보상 정산·마일스톤·출석 등</small>"]
   P --> Q{"<b>발동 조건?</b><br/><small>기간 내 · 쿨다운 경과 · 미진행 중</small>"}
   Q -- "충족" --> SC{"<b>팝업 세션 상한 여유?</b><br/><small>앞 팝업 소화로 상한 소진 여부</small>"}
-  SC -- "여유 있음" --> C["<b>발동 시퀀스 연출 자동 재생 + 타이머 시작</b><br/><small>발견 → 열쇠 강탈 → 도주 → 버튼 🐾마킹 (입력 잠금·사이클당 1회)<br/>duration_sec=1500 (예: 25분)</small>"]
+  SC -- "여유 있음" --> C["<b>발동 시퀀스 연출 자동 재생 + 타이머 시작</b><br/><small>발견 → 열쇠 강탈 → 도주 → 버튼 🐾마킹 (입력 잠금·사이클당 1회)<br/>duration_sec=900 (예: 15분)</small>"]
   SC -- "상한 소진" --> DEF(["<b>다음 로비 복귀로 이월</b><br/><small>사이클 유실 아님 · 쿨다운 타이머 미시작 · 큐에 보류</small>"])
   DEF --> P
   Q -- "미충족" --> P2(["<b>비노출</b><br/><small>쿨다운 중이거나 기간 밖 — 다음 로비 복귀 시 재평가</small>"])
@@ -412,16 +412,16 @@ flowchart TD
 <div class="callout callout-blue">📥 로비 팝업 우선순위·큐·억제 전체 규칙 = <strong>로비 팝업 시퀀서 핸드오프</strong>(P0~P6 티어·세션 상한·AS-IS 코드 매핑·마이그레이션 7단계) — 다운로드는 <a href="#handoff-hub"><strong>③ 개발 스펙 · 핸드오프 문서 모음</strong></a>에서 한번에.</div>
 
   <h3>정의</h3>
-  <p>스프린트 목표 <strong>8판</strong>은 NRU가 하루에 걸쳐 치는 판수와 같은 양임. 이를 <strong>25분 창</strong>에 압축해 그날 판수를 2배 이상 끌어올리는 구조임. 실패해도 <strong>몰수 없음</strong>이라 다운사이드 없음. 발동 시퀀스(체스트 발견→열쇠 강탈→도주→마킹→행잉태그)는 원본 CCS "Catch the Troll"을 간소화 이식함.</p>
+  <p>스프린트 목표 <strong>8판</strong>은 NRU가 하루에 걸쳐 치는 판수와 같은 양임(<strong>BQ 실측 8.5판</strong> — §3-1 근거). 이를 <strong>15분 창</strong>에 압축해 그날 판수를 2배 이상 끌어올리는 구조임. 실패해도 <strong>몰수 없음</strong>이라 다운사이드 없음. 발동 시퀀스(체스트 발견→열쇠 강탈→도주→마킹→행잉태그)는 원본 CCS "Catch the Troll"을 간소화 이식함.</p>
 
   <h3>이벤트 규칙</h3>
   <p>2층 구조. <strong>레이어1 여정 트랙</strong>(시즌 상시·cross-slot 누적) + <strong>레이어2 그림자 냥이 추격전</strong>(본 스펙 · 단발 창).</p>
   <table>
     <thead><tr><th>구분</th><th>레이어1 · 여정 트랙</th><th>레이어2 · 그림자 냥이 추격전 (본 스펙)</th></tr></thead>
     <tbody>
-      <tr><td>지속</td><td>시즌 상시 (cross-slot 누적)</td><td>유저별 사이클 (기간 월~목 · 쿨다운 12h · 회당 25분)</td></tr>
+      <tr><td>지속</td><td>시즌 상시 (cross-slot 누적)</td><td>유저별 사이클 (기간 월~목 · 쿨다운 12h · 회당 15분)</td></tr>
       <tr><td>진행 통화</td><td>스프린트 사이클 (성공 1회 = 진척 +1)</td><td>판수 카운터 (창 안 클리어 판수)</td></tr>
-      <tr><td>목표</td><td>6마일스톤 · 스프린트 사이클 누적</td><td>25분 안 8판 → 열쇠 → 루나 체스트</td></tr>
+      <tr><td>목표</td><td>6마일스톤 · 스프린트 사이클 누적</td><td>15분 안 8판 → 열쇠 → 루나 체스트</td></tr>
       <tr><td>보상</td><td>M2·M4·M6 해머 2씩(총 6)+와일드·골드300·undo2 · 6완주 → Jackpot 해금</td><td>Normal 6슬롯(골드·해머·와일드카드·되돌리기·파이어웍스·무료 입장 티켓) / Jackpot 6슬롯(+데코 조각 — 부록·v1 OFF). 수량은 event_shadow_chest 시트</td></tr>
       <tr><td>실패</td><td>체스트만 무보상 · 사이클 종료 · 12h 쿨다운</td><td>몰수 없음 · 체스트(열쇠)만 미획득</td></tr>
       <tr><td>KPI</td><td>완주율 · D1/D2 리텐션</td><td>판수/유저-일 · 세션 몰입</td></tr>
@@ -431,12 +431,12 @@ flowchart TD
     <strong>층간 연동:</strong> 스프린트 창 안에 깬 판은 판수 카운터 +1 <em>과</em> 트랙 사이클 진척에 동시 반영됨. 티어 차이 = 체스트 보상 내용만(Normal / Jackpot). 배수(×N)는 미사용 — 선택형 베팅 시스템과 분리. <strong>Jackpot은 저니 6마일스톤 완주로 해금.</strong>
   </div>
   <div class="callout callout-blue">
-    <strong>MVP(v1) 범위:</strong> 스프린트 1레이어(25분/8판/Normal 6슬롯 체스트·프리레벨 행잉 태그·기본 VFX). Later(부록) = 저니 2레이어·Jackpot·온보딩 완화 A/B·VFX 풀세트.
+    <strong>MVP(v1) 범위:</strong> 스프린트 1레이어(15분/8판/Normal 6슬롯 체스트·프리레벨 행잉 태그·기본 VFX). Later(부록) = 저니 2레이어·Jackpot·온보딩 완화 A/B·VFX 풀세트.
   </div>
 
   <!-- ── 1-1 발동 시퀀스 8단계 ── -->
   <h2 id="s1-seq">1-1 발동 시퀀스 — 8단계</h2>
-  <p>원본 CCS "Catch the Troll" 발동 흐름을 GIF·스크린샷 6장으로 프레임별 참고함. 각 단계는 <strong>원본 서술 → 루나 이식안</strong> 병기. 핵심 심리 = 보상을 먼저 '내 것'으로 보여주고(소유 효과) → 뺏기고 → 되찾으러 뛰게(손실회피). 기간 내·쿨다운 경과·로비 복귀 시 자동 발동, 시퀀스 종료 시점부터 25분 타이머 시작.</p>
+  <p>원본 CCS "Catch the Troll" 발동 흐름을 GIF·스크린샷 6장으로 프레임별 참고함. 각 단계는 <strong>원본 서술 → 루나 이식안</strong> 병기. 핵심 심리 = 보상을 먼저 '내 것'으로 보여주고(소유 효과) → 뺏기고 → 되찾으러 뛰게(손실회피). 기간 내·쿨다운 경과·로비 복귀 시 자동 발동, 시퀀스 종료 시점부터 15분 타이머 시작.</p>
 
   <div class="callout callout-orange" style="border:2px solid var(--orange);margin:20px 0;">
     <strong>🐾 아트 필독 — 레퍼런스 시퀀스 간소화 이식</strong>
@@ -463,7 +463,7 @@ flowchart TD
     <div class="ours"><strong>루나 이식</strong>
       <ul class="flowlist">
         <li><span class="k">화면</span>로비 <strong>풀스크린</strong></li>
-        <li><span class="k">카피</span>"그림자 냥이가 열쇠를 물고 도망쳤어요! 25분 안에 8판을 깨고 따라잡아요"</li>
+        <li><span class="k">카피</span>"그림자 냥이가 열쇠를 물고 도망쳤어요! 15분 안에 8판을 깨고 따라잡아요"</li>
         <li><span class="k">보상 공개</span>Normal 6슬롯 = 골드 · 해머 · 와일드카드 · 되돌리기 · 파이어웍스 · 무료 입장 티켓<br><small>Jackpot 6슬롯(+데코 조각)은 부록 · v1 OFF · 수량은 <code>event_shadow_chest</code> 시트</small></li>
         <li><span class="k">루나</span>안내·응원 역할로 등장</li>
         <li><span class="k">입력 잠금</span>풀스크린 터치 가드 — 최초 1회 필수 시청 후 [Ok] 노출 · 재노출부터 탭 스킵 허용</li>
@@ -776,8 +776,8 @@ flowchart TD
   <table class="bs-table">
     <thead><tr><th>변수명</th><th>타입</th><th>단위</th><th>예시값</th><th>설명</th></tr></thead>
     <tbody>
-      <tr><td><code>duration_sec</code></td><td>int</td><td>초</td><td>1500</td><td>스프린트 시간창 (예: 25분) · 판당 소요 실측 후 조정 — <strong>레벨 구간별 분산 확인 필수(아래 주의)</strong></td></tr>
-      <tr><td><code>total_rounds</code></td><td>int</td><td>판</td><td>8</td><td>완주 목표 판수 (= 열쇠·체스트 조건)</td></tr>
+      <tr><td><code>duration_sec</code></td><td>int</td><td>초</td><td>900</td><td>스프린트 시간창 (15분) · <strong>BQ 실측 기반 초기값</strong>(아래 근거) — 레벨 구간별 분산 확인 필수</td></tr>
+      <tr><td><code>total_rounds</code></td><td>int</td><td>판</td><td>8</td><td>완주 목표 판수 (= 열쇠·체스트 조건) · <strong>근거 = NRU 하루 완료판 실측 8.5판</strong></td></tr>
       <tr><td><code>cooldown_sec</code></td><td>int</td><td>초</td><td>43200</td><td>사이클 종료(성공/실패) 후 재트리거 대기 — 예 12h = 일 최대 2사이클 자연 상한</td></tr>
       <tr><td><code>grace_after_window</code></td><td>bool</td><td>—</td><td>TRUE</td><td>기간 종료 시각을 넘겨도 진행 중 유저는 개인 타이머 종료까지 완주 인정 (<strong>의도된 설계</strong> — 아래 방어 문구)</td></tr>
       <tr><td><code>ad_extend_threshold_sec</code></td><td>int</td><td>초</td><td>300</td><td><strong>신규</strong> — 잔여 시간이 이 값 이하일 때 타이머 말풍선 [+5 min] 노출</td></tr>
@@ -786,11 +786,41 @@ flowchart TD
       <tr><td><code>in_use</code></td><td>bool</td><td>—</td><td>FALSE→TRUE</td><td>킬스위치 겸용 (선등록 FALSE·라이브 시 TRUE)</td></tr>
     </tbody>
   </table>
+  <div class="callout callout-green"><strong>📊 <code>total_rounds</code>·<code>duration_sec</code> 초기값 근거 — BQ 실측 (2026-07-28 조회)</strong>
+  <p style="margin:8px 0 0">측정 = 서구권 12개국(US·CA·GB·AU·DE·FR·NL·SE·NO·DK·NZ·IE) · <strong>2026-07-13~26</strong> · <code>2300_GAMEPLAY_FINISH</code> <code>result=clear</code> 기준 · dev 제외.</p>
+
+  <p style="margin:12px 0 4px"><strong>① 왜 8판인가</strong> — NRU가 <em>하루에 걸쳐</em> 치는 완료판과 같은 양</p>
+  <table class="tbl-keycol">
+    <thead><tr><th>세그먼트</th><th>유저-일</th><th>평균 완료판</th></tr></thead>
+    <tbody>
+      <tr><td><strong>NRU</strong>(가입일)</td><td>4,618</td><td><strong>8.5판</strong></td></tr>
+      <tr><td>RU(재방문일)</td><td>4,998</td><td>10.0판</td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin:14px 0 4px"><strong>② 왜 25분이 아니라 15분인가</strong> — 8판을 실제로 치는 데 걸리는 시간</p>
+  <p style="margin:0 0 8px">유저-일 안에서 <strong>연속 8판 클리어에 걸린 최소 소요</strong> 분포 — p25 <strong>5.8분</strong> · <strong>p50 7.6분</strong> · p75 11.6분. <strong>기존 25분은 중앙값의 3배 여유</strong>라 시간 압박이 사실상 없었음(= "추격전" 서사가 성립하지 않음).</p>
+
+  <p style="margin:14px 0 4px"><strong>③ 조합별 예상 성공률</strong> — 전체 유저-일(클리어 1판 이상 · n=5,863) 대비 "이미 그렇게 치고 있는 비중"</p>
+  <table class="tbl-keycol">
+    <thead><tr><th>목표판수</th><th>15분</th><th>20분</th><th>25분</th></tr></thead>
+    <tbody>
+      <tr><td><strong>8판</strong></td><td><strong>40.1%</strong> ← 채택</td><td>42.8%</td><td>43.8% <span style="color:var(--text2)">(기존안)</span></td></tr>
+      <tr><td>10판</td><td>27.7%</td><td>32.2%</td><td>34.1%</td></tr>
+      <tr><td>12판</td><td>17.7%</td><td>24.0%</td><td>27.0%</td></tr>
+      <tr><td>15판</td><td>7.4%</td><td>15.6%</td><td>19.3%</td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin:12px 0 0"><strong>판단</strong> — <strong>바인딩 제약은 시간이 아니라 판수</strong>임. 25분→15분으로 시간을 <strong>40% 깎아도 성공률은 43.8→40.1%(−3.7%p)</strong>에 그치는 반면, 8판→12판은 <strong>−16.8%p</strong>로 급락함. 따라서 <strong>서사 근거가 있는 8판은 유지하고, 근거 없이 헐거웠던 시간창만 15분으로 조임</strong> — 성공률은 거의 그대로 두면서 <strong>체감 긴장만 확보</strong>하는 조정임.</p>
+  <p style="margin:10px 0 0;font-size:12.5px;color:var(--text2)">※ <strong>이 수치는 상한임</strong> — "그날 아무 때나 연속 8판"의 최소 소요라, 실제 이벤트는 <strong>발동 시점부터</strong> 재므로 발동 직후 착수하지 않는 유저만큼 실제 성공률은 낮아짐. 반대로 이벤트 동기가 붙어 더 몰아칠 여지도 있어 양방향임 → <strong>D+2 튜닝 게이트(§4)의 사전 기준선</strong>으로 사용.</p>
+  </div>
+
   <div class="callout callout-red"><strong>⚠ <code>duration_sec</code> 단일 전역값 — 고레벨 유저 구조적 불리</strong><br>
-  난이도 티어(Normal / Hard / Super Hard)에 따라 판당 소요가 달라지는데 25분은 전 유저 공통임. 고레벨일수록 실패만 반복하는 구조가 되며, 하필 본 이벤트의 타깃이 <strong>헤비 구간(20판+)</strong> = 고레벨 비중이 높은 층임.<br>
-  <strong>v1 조치</strong> — 차등은 넣지 않되, <strong>판당 소요 실측을 레벨 구간별로 쪼개서</strong> 볼 것(전체 평균만 보면 안 됨). 25분이 어느 구간까지 커버되는지 확인하고, <strong>구간 간 분산이 크면</strong> <code>event_shadow_sprint</code>를 1행 고정이 아니라 <strong>레벨 구간 키(<code>level_min</code>/<code>level_max</code>)를 받는 다행 구조</strong>로 미리 열어둘 것 — 나중에 뜯으면 서버 상태머신까지 영향이라 비쌈.</div>
+  난이도 티어(Normal / Hard / Super Hard)에 따라 판당 소요가 달라지는데 15분은 전 유저 공통임. 고레벨일수록 실패만 반복하는 구조가 되며, 하필 본 이벤트의 타깃이 <strong>헤비 구간(20판+)</strong> = 고레벨 비중이 높은 층임.<br>
+  <strong>v1 조치</strong> — 차등은 넣지 않되, <strong>판당 소요 실측을 레벨 구간별로 쪼개서</strong> 볼 것(전체 평균만 보면 안 됨). 15분이 어느 구간까지 커버되는지 확인하고, <strong>구간 간 분산이 크면</strong> <code>event_shadow_sprint</code>를 1행 고정이 아니라 <strong>레벨 구간 키(<code>level_min</code>/<code>level_max</code>)를 받는 다행 구조</strong>로 미리 열어둘 것 — 나중에 뜯으면 서버 상태머신까지 영향이라 비쌈.</div>
   <div class="callout callout-yellow"><strong>✅ <code>grace_after_window=TRUE</code> — 의도된 설계 (방어 문구)</strong><br>
-  기간 종료 직전(금 0:00 직전)에 발동된 유저는 개인 타이머가 <strong>금요일 0:24까지</strong> 이어짐. 이는 버그가 아니라 의도임 — 기간 경계에서 발동된 유저의 사이클을 중간에 끊으면 <strong>이미 투입한 판수를 몰수하는 셈</strong>이 되어 "몰수 없음" 원칙과 정면으로 충돌함. 최대 초과 노출은 <code>duration_sec</code> + 연장 1회 = <strong>최장 30분</strong>으로 한정되며, 이 구간에는 <strong>신규 발동이 일어나지 않음</strong>(진행 중 사이클의 완주만 인정). 따라서 OnFire류 <strong>요일 격리 원칙과 실질 충돌 없음</strong> — 금요일 이벤트와 겹치는 것은 잔여 30분 내 완주 처리뿐임. <code>5444</code>의 <code>reason=event_end</code>는 이 유예까지 지난 강제 만료에만 사용.</div>
+  기간 종료 직전(금 0:00 직전)에 발동된 유저는 개인 타이머가 <strong>금요일 0:20까지</strong> 이어짐. 이는 버그가 아니라 의도임 — 기간 경계에서 발동된 유저의 사이클을 중간에 끊으면 <strong>이미 투입한 판수를 몰수하는 셈</strong>이 되어 "몰수 없음" 원칙과 정면으로 충돌함. 최대 초과 노출은 <code>duration_sec</code> + 연장 1회 = <strong>최장 20분</strong>으로 한정되며, 이 구간에는 <strong>신규 발동이 일어나지 않음</strong>(진행 중 사이클의 완주만 인정). 따라서 OnFire류 <strong>요일 격리 원칙과 실질 충돌 없음</strong> — 금요일 이벤트와 겹치는 것은 잔여 30분 내 완주 처리뿐임. <code>5444</code>의 <code>reason=event_end</code>는 이 유예까지 지난 강제 만료에만 사용.</div>
   <h3>공용 탭 관련 변수</h3>
   <table class="bs-table">
     <thead><tr><th>탭</th><th>변수명</th><th>타입</th><th>예시값</th><th>설명</th></tr></thead>
@@ -806,9 +836,9 @@ flowchart TD
       <tr><td><code>reward_type / reward_key / reward_amount</code></td><td>enum / string / int</td><td>item / currency_hammer / 3</td><td>reward_key = 라이브 item_list 실존 키(deco 조각만 클라 처리)</td></tr>
     </tbody>
   </table>
-  <div class="note"><strong>정책(시트 변수 아님)</strong> — 발동 = 로비 복귀·우선 팝업 소화 후 자동 재생(사이클당 1회·[참가] 없음·<strong>세션 상한 소진 시 이월</strong>) · 해머 상한 6/일(3×일 2사이클·성공률 30% 가정 실효 ~1.8/유저-일) · OnFire류 요일 격리 · 상시 이벤트 해머 주간상한 ×1.3 공유. · <strong>목표 판수는 v1 고정(8판)</strong> — 단 <code>total_rounds</code>가 시트 변수라 요일·기간별 차등 세팅은 코드 없이 가능(운영 레버·예: 특정일 6판 해피데이). 랜덤 레인지는 부록 E.</div>
-  <div class="callout callout-red"><strong>⚠ 발행량이 "성공률 30% 가정" 하나에 통째로 얹혀 있음</strong><br>
-  해머 실효 ~1.8/유저-일, 골드 실효 ~300/유저-일이 전부 <strong>성공률 30% 가정</strong> 위에 계산된 값임. 구조적 상한은 <strong>해머 6/일 · 골드 1,000/일</strong>(일 2사이클 × Normal 구성)이며, 실측이 60%로 나오면 <strong>발행량이 가정의 2배</strong>가 됨. 시트 변수라 되돌릴 수는 있어도 <strong>이미 뿌려진 재화는 회수 불가</strong>임.<br>
+  <div class="note"><strong>정책(시트 변수 아님)</strong> — 발동 = 로비 복귀·우선 팝업 소화 후 자동 재생(사이클당 1회·[참가] 없음·<strong>세션 상한 소진 시 이월</strong>) · 해머 상한 6/일(3×일 2사이클·<strong>실측 기반 성공률 ~40%</strong> 적용 시 실효 ~2.4/유저-일) · OnFire류 요일 격리 · 상시 이벤트 해머 주간상한 ×1.3 공유. · <strong>목표 판수는 v1 고정(8판)</strong> — 단 <code>total_rounds</code>가 시트 변수라 요일·기간별 차등 세팅은 코드 없이 가능(운영 레버·예: 특정일 6판 해피데이). 랜덤 레인지는 부록 E.</div>
+  <div class="callout callout-red"><strong>⚠ 발행량 추정 — 실측 성공률로 재산정 필요</strong><br>
+  기존 문서의 해머 실효 ~1.8/유저-일, 골드 실효 ~300/유저-일은 <strong>성공률 30% 가정</strong> 위의 값이었으나, <strong>BQ 실측 기반 예상 성공률은 ~40%</strong>(8판/15분)임 — 즉 <strong>실발행은 기존 추정의 약 1.3배</strong>로 봐야 함(해머 ~2.4/유저-일 · 골드 ~400/유저-일). 구조적 상한은 <strong>해머 6/일 · 골드 1,000/일</strong>(일 2사이클 × Normal 구성)이며, 실측이 60%로 나오면 <strong>발행량이 가정의 2배</strong>가 됨. 시트 변수라 되돌릴 수는 있어도 <strong>이미 뿌려진 재화는 회수 불가</strong>임.<br>
   → <strong>튜닝 게이트를 일정에 못박음(§4)</strong>: <code>in_use=TRUE</code> 후 <strong>D+2에 <code>5441→5443</code> 완주율을 확인</strong>하고 <code>duration_sec</code>/<code>total_rounds</code>를 조정할 것. 실측 없이 첫 주를 통째로 넘기지 않음.</div>
 
   <!-- 3-2 상태 5종 -->
@@ -818,7 +848,7 @@ flowchart TD
     <thead><tr><th>상태</th><th>클라 상태값</th><th>진입 조건</th><th>다음 상태</th></tr></thead>
     <tbody>
       <tr><td><strong>열쇠 강탈</strong></td><td><code>GRAB</code></td><td>팝업 소화 후 자동 발동 · 체스트 발견 후 그림자 냥이 열쇠 강탈 연출(앞발+발톱) · 입력 잠금</td><td>연출 종료 → 도주(Escape)</td></tr>
-      <tr><td><strong>도주</strong></td><td><code>ESCAPE</code></td><td>스토리 [확인] 후 로비 복귀 · 그림자 냥이 도주 연출(자국 트레일) · 입력 잠금 · 시퀀스 종료 시점부터 25분 타이머 시작</td><td>플레이 버튼 마킹 → 진행 중(RUNNING)</td></tr>
+      <tr><td><strong>도주</strong></td><td><code>ESCAPE</code></td><td>스토리 [확인] 후 로비 복귀 · 그림자 냥이 도주 연출(자국 트레일) · 입력 잠금 · 시퀀스 종료 시점부터 15분 타이머 시작</td><td>플레이 버튼 마킹 → 진행 중(RUNNING)</td></tr>
       <tr><td><strong>진행 중</strong></td><td><code>RUNNING</code></td><td>스프린트 진행 중 · 플레이 버튼 🐾마킹·프리레벨 행잉 태그 상시 표시(인게임 HUD 없음) · <strong>잔여 <code>ad_extend_threshold_sec</code> 이하 시 타이머 말풍선 [+5 min] 노출(사이클당 1회)</strong></td><td>완주 → 포획 성공(Win) / 만료 → 시간 초과(Lose) · <strong>연장 시 RUNNING 유지</strong></td></tr>
       <tr><td><strong>포획 성공</strong></td><td><code>WIN</code></td><td>시간창 내 total_rounds 완주 (열쇠 획득)</td><td><strong>신규 팝업 없음</strong> — 결과 화면 안 3컷 연출 → <strong>하단 체스트 블록</strong>+🐾마킹(상단 판 보상·RV ×2 무변경) → 태그·마킹 정리 → IDLE</td></tr>
       <tr><td><strong>시간 초과</strong></td><td><code>LOSE</code></td><td>타이머 만료 미완주 (또는 기간 강제만료)</td><td><strong>신규 연출·알림 없음</strong> — 행잉 태그·버튼 마킹 비노출 전환(몰수 없음) → IDLE</td></tr>
@@ -852,9 +882,9 @@ flowchart TD
       <li><code>5440.deferred / fire_side</code> — 참여율(<code>5441÷5440</code>)의 <strong>분모 정의</strong>가 판정 주체(개발 확인 ③)에 따라 달라짐. 이월분이 분모를 부풀리지 않도록 플래그로 분리.</li>
     </ul>
   </div>
-  <div class="note"><strong>활용:</strong> <code>5440/5441</code>로 참여율(<code>deferred</code> 제외), <code>5441→5443</code>로 완주율(성공률 30% 검증), <code>5444</code>의 reason으로 만료 실패를 timeout vs event_end 분해, <code>5445/5446</code>로 해머 획득·소진(데코 게이트) 추적, <code>5447</code>로 연장 전환율·구제율(<code>extended=TRUE</code>인 <code>5443</code> 비중). 창 내 완료판 상승폭·D1/D3도 추적. 트랙 계열(2차)은 마스터 §9 참조.</div>
+  <div class="note"><strong>활용:</strong> <code>5440/5441</code>로 참여율(<code>deferred</code> 제외), <code>5441→5443</code>로 완주율(사전 추정 ~40% 검증), <code>5444</code>의 reason으로 만료 실패를 timeout vs event_end 분해, <code>5445/5446</code>로 해머 획득·소진(데코 게이트) 추적, <code>5447</code>로 연장 전환율·구제율(<code>extended=TRUE</code>인 <code>5443</code> 비중). 창 내 완료판 상승폭·D1/D3도 추적. 트랙 계열(2차)은 마스터 §9 참조.</div>
   <div class="callout callout-purple"><strong>🔗 RV 분해 — 4210 조인 (필수 설계)</strong><br>
-  본 이벤트의 1순위 근거가 <strong>판당 RV 0.1354(코지 4.1배)</strong>인데, 25분 8판으로 압축하면 유저는 <strong>다음 판으로 빨리 가려고 RV를 스킵</strong>할 유인이 커짐. 판수가 늘어도 판당 RV 시청률이 깎이면 순증분이 상쇄되므로, "판수 늘렸다"까지만 말하고 <strong>"그래서 RV가 늘었다"는 말할 수 없게 됨</strong>.<br>
+  본 이벤트의 1순위 근거가 <strong>판당 RV 0.1354(코지 4.1배)</strong>인데, 15분 8판으로 압축하면 유저는 <strong>다음 판으로 빨리 가려고 RV를 스킵</strong>할 유인이 커짐. 판수가 늘어도 판당 RV 시청률이 깎이면 순증분이 상쇄되므로, "판수 늘렸다"까지만 말하고 <strong>"그래서 RV가 늘었다"는 말할 수 없게 됨</strong>.<br>
   → <code>4210_RV_FINISH</code>(지면 = <code>coalesce(data.type, data.position)</code>)를 <code>5442</code>의 <strong>사이클 귀속 판</strong>과 조인해, <strong>스프린트 창 안 판 vs 밖 판의 판당 RV 노출·시청률을 분해</strong>할 것. 이 설계는 <strong>사후 소급이 불가능</strong>하므로 v1 계측에 반드시 포함. RV 에러/논필 구간(현행 23~29%)도 같이 봐야 시청률 하락의 원인을 스킵 vs 논필로 가를 수 있음.</div>
 
   <!-- 3-4 데이터 테이블 -->
@@ -910,7 +940,7 @@ flowchart TD
 <div class="tbl-scroll"><table class="bs-table">
 <tr><th>Key</th><th>kr</th></tr>
 <tr><td>T_SHADOW_CHASE_INFO_TITLE</td><td>그림자 냥이를 잡아라!</td></tr>
-<tr><td>T_SHADOW_CHASE_INFO_TEXT</td><td>그림자 냥이가 체스트 열쇠를 물고 달아났어요! 25분 안에 8판을 클리어하고 따라잡아요.</td></tr>
+<tr><td>T_SHADOW_CHASE_INFO_TEXT</td><td>그림자 냥이가 체스트 열쇠를 물고 달아났어요! 15분 안에 8판을 클리어하고 따라잡아요.</td></tr>
 <tr><td>T_SHADOW_CHASE_TAG_TIMER</td><td>남은 시간 {mm}:{ss} · {n}/8</td></tr>
 <tr><td>T_SHADOW_CHASE_TAG_GOAL</td><td>8판 완주 시 열쇠 획득</td></tr>
 <tr><td>T_SHADOW_CHASE_CHEST_NORMAL</td><td>따라잡았어요! 루나 체스트가 열려요.</td></tr>
@@ -935,7 +965,7 @@ flowchart TD
 <h3>⑤ event_shadow_sprint 신규 탭 (튜닝 코어 1행)</h3>
 <div class="tbl-scroll"><table class="bs-table">
 <tr><th>key_number</th><th>event_id</th><th>duration_sec</th><th>total_rounds</th><th>cooldown_sec</th><th>grace_after_window</th><th>ad_extend_threshold_sec</th><th>ad_extend_sec</th><th>ad_extend_max_per_cycle</th><th>in_use</th></tr>
-<tr><td>240001</td><td>0</td><td>1500</td><td>8</td><td>43200</td><td>TRUE</td><td>300</td><td>300</td><td>1</td><td>FALSE</td></tr>
+<tr><td>240001</td><td>0</td><td>900</td><td>8</td><td>43200</td><td>TRUE</td><td>300</td><td>300</td><td>1</td><td>FALSE</td></tr>
 </table></div>
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트 보상은 event_shadow_chest 탭(④) 소관 — 튜닝 코어는 스프린트 파라미터만. event_id=0 = 스케줄 행(160005)과 분리된 공통 파라미터. <b>ad_extend_* 3컬럼은 타이머 말풍선 [+5 min]용 신규</b> — <code>ad_extend_max_per_cycle=0</code>이면 기능 OFF(개별 킬스위치 겸 <b>v1 드롭 시 처리 수단</b>). <b>레벨 구간 차등이 필요해지면 이 탭을 <code>level_min</code>/<code>level_max</code> 컬럼을 가진 다행 구조로 확장</b>(v1은 1행 고정).</div>
 
@@ -983,11 +1013,11 @@ flowchart TD
     <tbody>
       <tr><td><strong>배포 전</strong></td><td>판당 소요 실측 — <strong>전체 평균이 아니라 레벨 구간별</strong>(Normal/Hard/Super Hard) 분포</td><td><code>duration_sec</code> 초기값 확정 · 구간 분산이 크면 시트를 다행 구조로 확장</td></tr>
       <tr><td><code>in_use=TRUE</code>&nbsp;<strong>D+0</strong></td><td>발동·이월·타이머 정상 동작 · <code>5440/5441</code> 발화 · 이월 케이스 재현</td><td>이상 시 <code>in_use=FALSE</code> 즉시 킬</td></tr>
-      <tr><td><strong>D+2</strong><span class="cellbadge prio-high">필수 게이트</span></td><td><strong>완주율(<code>5441→5443</code>)</strong> 확인. 가정 30% 대비 실측 · 해머/골드 실발행량 동시 확인</td><td>완주율이 <strong>가정보다 크게 높으면</strong> <code>total_rounds</code>↑ 또는 <code>duration_sec</code>↓ / <strong>크게 낮으면</strong> 반대로 완화. <strong>첫 주를 실측 없이 넘기지 않음</strong></td></tr>
+      <tr><td><strong>D+2</strong><span class="cellbadge prio-high">필수 게이트</span></td><td><strong>완주율(<code>5441→5443</code>)</strong> 확인. <strong>사전 추정 ~40%</strong> 대비 실측 · 해머/골드 실발행량 동시 확인</td><td>완주율이 <strong>가정보다 크게 높으면</strong> <code>total_rounds</code>↑ 또는 <code>duration_sec</code>↓ / <strong>크게 낮으면</strong> 반대로 완화. <strong>첫 주를 실측 없이 넘기지 않음</strong></td></tr>
       <tr><td><strong>D+4</strong>&nbsp;(기간 종료)</td><td>판수 순증분 · <strong>사이클 후 잔여 시간대·D+1 판수</strong>(카니발라이제이션) · <strong>스프린트 안/밖 판당 RV</strong> · D1/D3 가드레일</td><td>다음 주 회차 파라미터 확정 · 지표 악화 시 회차 중단</td></tr>
     </tbody>
   </table>
-  <div class="note"><strong>게이트를 두는 이유</strong> — 발행량이 성공률 30% <em>가정</em> 위에 계산돼 있고, 이미 지급된 재화는 회수가 불가능함. 시트 변수라 언제든 되돌릴 수 있다는 점이 <strong>사후 확인을 미룰 이유가 되지는 않음</strong>.</div>
+  <div class="note"><strong>게이트를 두는 이유</strong> — 사전 추정치는 "발동 즉시 착수" 가정의 <em>상한</em>이고, 이미 지급된 재화는 회수가 불가능함. 시트 변수라 언제든 되돌릴 수 있다는 점이 <strong>사후 확인을 미룰 이유가 되지는 않음</strong>.</div>
 
   <h3>핵심 KPI</h3>
   <table>
@@ -997,7 +1027,7 @@ flowchart TD
       <tr><td><strong>판당 RV (스프린트 안 vs 밖)</strong></td><td><strong><code>4210_RV_FINISH</code> ÷ 완료판</strong>을 <code>5442</code> 사이클 귀속 여부로 분해 (지면 = <code>coalesce(data.type, data.position)</code>)</td><td><strong>스프린트 안 판당 RV가 밖보다 열위가 아닐 것</strong> — 열위면 판수 증가분이 상쇄됨(핵심 검증)</td></tr>
       <tr><td><strong>판수 카니발라이제이션</strong></td><td>① 사이클 종료 후 <strong>당일 잔여 시간대 판수</strong> ② 참여 유저의 <strong>D+1 판수</strong> (참여 vs 비참여)</td><td><strong>비열위</strong> — 몰아친 만큼 이후가 줄면 순증이 아님</td></tr>
       <tr><td>스프린트 참여율</td><td>사이클 시작(5441) ÷ 발동 조건 충족(5440, <code>deferred</code> 제외)</td><td>초안 목표 설정 후 관측 · 분모 정의는 개발 확인 ③과 함께 확정</td></tr>
-      <tr><td>스프린트 완주율</td><td>완주(5443) ÷ 진입(5441) — 성공률 30% 검증 목표</td><td>25분 8판 난이도 검증 (너무 낮으면 완화) · <strong>D+2 튜닝 게이트 판단 근거</strong></td></tr>
+      <tr><td>스프린트 완주율</td><td>완주(5443) ÷ 진입(5441) — <strong>실측 기반 예상 ~40%</strong> 검증</td><td>15분 8판 난이도 검증 (실측이 크게 벗어나면 시트 조정) · <strong>D+2 튜닝 게이트 판단 근거</strong></td></tr>
       <tr><td><strong>연출 이탈률</strong></td><td>발동 연출 미완주 = <code>5441.fx_completed=FALSE</code> 비율</td><td>강제 시청 6초 상한의 타당성 검증 — 높으면 스킵 허용 앞당김</td></tr>
       <tr><td><strong>타이머 연장 전환·구제율</strong></td><td>연장 시청(<code>5447</code>) ÷ 노출 · <code>extended=TRUE</code>인 <code>5443</code> 비중 <em>(연장 기능 채택 시에만)</em></td><td>RV 증분 · 연장이 실제 완주로 이어지는지</td></tr>
       <tr><td>해머 획득·소진</td><td>해머 지급(<code>5445.amount</code>)·데코 게이트 해제(5446) 빈도</td><td>해머 발행량·소진 경로 추적 (구조적 상한 6/일 대비 실측)</td></tr>
@@ -1008,7 +1038,7 @@ flowchart TD
   <div class="note"><strong>전후비교:</strong> <strong>이벤트 기간(월~목 4일) vs 직전 주 동일 요일(월~목)</strong>. NA 코호트 기준(콜드스타트 타깃). 판수를 스프린트발(<code>5442</code> 사이클 귀속 판) vs 비스프린트로 분해해 순증분 측정. 세그먼트 고정 비교(유입 믹스 이동 주의).</div>
   <div class="callout callout-purple"><strong>📐 지표 해석 주의 (사전 합의 사항)</strong>
     <ul style="margin:8px 0 0 18px;padding:0">
-      <li><strong>창 안 판수만 보면 순증 착시</strong> — 25분에 몰아친 유저가 그날 이후·다음 날 덜 들어오면 총량은 그대로임. 반드시 <strong>사이클 후 잔여 시간대 + D+1 판수</strong>까지 묶어서 판단.</li>
+      <li><strong>창 안 판수만 보면 순증 착시</strong> — 15분에 몰아친 유저가 그날 이후·다음 날 덜 들어오면 총량은 그대로임. 반드시 <strong>사이클 후 잔여 시간대 + D+1 판수</strong>까지 묶어서 판단.</li>
       <li><strong>판수 → D1 인과는 미검증</strong> — 정착 D1(솔 18.9 vs 코지 24.2)이 열위인 원인이 판수라는 근거는 없음. 따라서 <strong>D1/D3은 성과 지표가 아니라 가드레일</strong>로만 사용하며, 본 이벤트의 성과는 <strong>판수·판당 RV</strong>로 판정함.</li>
       <li><strong>판당 RV 우위는 전제이지 결과가 아님</strong> — 0.1354(코지 4.1배)는 이벤트 <em>이전</em>의 값임. 스프린트 중 스킵 유인이 커지면 이 전제 자체가 흔들리므로, 위 "판당 RV(안 vs 밖)"가 확인되기 전에는 RV 증분을 성과로 주장하지 않음.</li>
     </ul>
@@ -1031,13 +1061,13 @@ flowchart TD
   <div class="fblabel"><span>Short description · 최대 50자</span><span>36/50</span></div>
   <div class="fbfield">Catch the shadow cat, win the chest!</div>
   <div class="fblabel"><span>Long description · 최대 120자</span><span>110/120</span></div>
-  <div class="fbfield">The shadow cat ran off with the chest key! Clear 8 levels in 25 minutes to catch it and open the legendary chest.</div>
+  <div class="fbfield">The shadow cat ran off with the chest key! Clear 8 levels in 15 minutes to catch it and open the legendary chest.</div>
 
   <h3>배너 구성 <span class="art-chip">ART</span></h3>
   <table>
     <thead><tr><th>가로형 <span class="seq-tag">1920×1080</span></th><th>세로형 <span class="seq-tag">1080×1920</span></th></tr></thead>
     <tbody><tr>
-      <td><strong>좌</strong> — 그림자 냥이 실루엣(보라·귀+열쇠 든 발)이 황금 열쇠를 들고 도망치는 실루엣 + 🐾발자국 트레일<br><strong>우</strong> — 루나 체스트(발바닥 엠블럼) + 체스트 보상 6종 아이콘 = <strong>골드·해머·와일드카드·되돌리기·파이어웍스·무료 입장 티켓 (수량 = event_shadow_chest 시트)</strong><br><strong>상단</strong> — 타이틀 + 타이머 필(25:00)</td>
+      <td><strong>좌</strong> — 그림자 냥이 실루엣(보라·귀+열쇠 든 발)이 황금 열쇠를 들고 도망치는 실루엣 + 🐾발자국 트레일<br><strong>우</strong> — 루나 체스트(발바닥 엠블럼) + 체스트 보상 6종 아이콘 = <strong>골드·해머·와일드카드·되돌리기·파이어웍스·무료 입장 티켓 (수량 = event_shadow_chest 시트)</strong><br><strong>상단</strong> — 타이틀 + 타이머 필(15:00)</td>
       <td><strong>상단</strong> — 타이틀 + 실루엣+열쇠<br><strong>중단</strong> — 체스트 + 보상 아이콘(<strong>골드·해머·와일드카드·되돌리기·파이어웍스·무료 입장 티켓 (수량 = event_shadow_chest 시트)</strong>)<br><strong>하단</strong> — 🐾발자국 트레일 + 황금 열쇠</td>
     </tr></tbody>
   </table>
