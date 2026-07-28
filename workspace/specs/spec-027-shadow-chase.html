@@ -276,6 +276,7 @@ ul li strong,ol li strong { color:var(--text); }
   <a href="#s2-map">↳ 루나 이식 대응표</a>
   <a href="#s2-states">↳ 연출 5상태 매핑</a>
   <a href="#s3">③ 개발 스펙</a>
+  <a href="#handoff-hub">↳ 📥 핸드오프 문서 모음</a>
   <a href="#s3-param">↳ 파라미터</a>
   <a href="#s3-state">↳ 상태 5종</a>
   <a href="#s3-log">↳ 계측 7xxx</a>
@@ -337,7 +338,7 @@ flowchart TD
   E -- "✅ 성공 = 열쇠 획득" --> F["<b>체스트 보상 — 결과 화면 체스트 블록</b><br/><small>신규 팝업 없음 · 지급 연출은 결과 화면 안 3컷<br/>8판째 결과 화면 하단에 체스트 블록 [받기]<br/>일반 판 보상 RV ×2는 기존 그대로 유지</small>"]
   E -- "⛔ 잔여 5분 이하 · 미완주" --> RV(["<b>RV 타이머 +5분 연장 (드롭 가능)</b><br/><small>타이머 옆 말풍선 [+5 min] · ad_extend_sec=300<br/>사이클당 1회 · 미시청 시 그대로 만료</small>"])
   RV --> D
-  E -- "⛔ 시간 초과" --> H["<b>실패 — 신규 연출 없음 · 인지 토스트 1회</b><br/><small>행잉 태그·버튼 마킹 비노출 · 몰수 없음<br/>다음 로비 복귀 시 T_SHADOW_CHASE_FAIL_FLEE 토스트 1회</small>"]
+  E -- "⛔ 시간 초과" --> H["<b>실패 — 신규 연출·알림 없음</b><br/><small>행잉 태그·버튼 마킹 비노출 전환만 · 몰수 없음<br/>체스트만 다음 기회</small>"]
   F --> CD["<b>사이클 종료 → 쿨다운</b><br/><small>cooldown_sec=43200 (예: 12h) 경과 후 재트리거 대기</small>"]
   H --> CD
   CD --> J(["<b>↺ 기간 내 반복 · 주간 반복</b><br/><small>기간 내·쿨다운 경과·미진행이면 다음 로비 복귀 시 재발동</small>"])
@@ -357,7 +358,7 @@ flowchart TD
     <tr><td>기간 내 · 쿨다운 경과 · 미진행 · 로비 복귀 시 <strong>우선 팝업 소화 후</strong></td><td><strong>발동 시퀀스 연출 자동 재생 + 타이머 시작</strong> — 유저의 최초 인식(사이클당 1회·기존 팝업 체인 마지막 순번)</td><td>기존 팝업 체인 마지막 순번</td></tr>
     <tr><td>8판 완주</td><td>체스트 보상을 <strong>8판째 결과 화면 하단 체스트 블록</strong>에 표시(신규 팝업 없음 · 지급 연출은 결과 화면 내 3컷) · 기여 항목 🐾마킹 · <strong>일반 판 보상 RV ×2는 기존 그대로 유지</strong></td><td>결과 화면 블록 추가(신규 모달 없음)</td></tr>
     <tr><td>잔여 5분 이하 · 미완주</td><td><strong>행잉 태그 타이머 옆에 말풍선 [+5 min] 노출</strong>(TV 아이콘) — 시청 완료 시 <code>ad_extend_sec</code>만큼 타이머 연장(사이클당 1회)</td><td>행잉 태그 내 말풍선(신규 모달 없음) · <strong>드롭 가능</strong></td></tr>
-    <tr><td>타이머 만료(실패)</td><td><strong>다음 로비 복귀 시 토스트 1회</strong> — <code>T_SHADOW_CHASE_FAIL_FLEE</code>("시간 종료… 다음 기회에 꼭 잡아요") · 몰수 없음 명시</td><td>토스트(모달 아님·팝업 체인 미점유)</td></tr>
+    <tr><td>타이머 만료(실패)</td><td><strong>노출 없음</strong> — 행잉 태그·플레이 버튼 마킹 비노출 전환만. 별도 알림·토스트 없음</td><td>비노출 전환(팝업 체인 무관)</td></tr>
     <tr><td>언락 인트로와 발동 조건 동시 충족</td><td>언락 인트로 먼저 → 발동 연출은 다음 로비 복귀 시(같은 진입 2모달 금지)</td><td>엣지 규칙</td></tr>
     <tr><td><strong>팝업 세션 상한 소진</strong></td><td><strong>발동 연출을 다음 로비 복귀로 이월</strong> — 큐에 보류 상태로 유지. 사이클 유실 아님·쿨다운 타이머 미시작·<code>7101</code>은 재발화하지 않음(중복 계상 방지)</td><td>엣지 규칙 — 개발 필수</td></tr>
     </tbody>
@@ -380,7 +381,7 @@ flowchart TD
     <tr><td><strong>9</strong></td><td><strong>그림자 냥이 추격전 발동 연출</strong> — 위 팝업 전부 소화 후 재생(사이클당 1회) · <strong>세션 상한 소진 시 잘라내지 말고 다음 로비 복귀로 이월</strong></td></tr>
     </tbody>
   </table>
-<div class="callout callout-blue">📥 로비 팝업 우선순위·큐·억제 전체 규칙 = <a href="handoff-lobby-popup-seq.md" download><strong>로비 팝업 시퀀서 핸드오프 (MD 다운로드)</strong></a> — P0~P6 티어·세션 상한·AS-IS 코드 매핑·마이그레이션 7단계 포함. <strong>실패 토스트는 모달이 아니므로 이 체인을 점유하지 않음</strong>(로비 진입 직후 비차단 노출).</div>
+<div class="callout callout-blue">📥 로비 팝업 우선순위·큐·억제 전체 규칙 = <strong>로비 팝업 시퀀서 핸드오프</strong>(P0~P6 티어·세션 상한·AS-IS 코드 매핑·마이그레이션 7단계) — 다운로드는 <a href="#handoff-hub"><strong>③ 개발 스펙 · 핸드오프 문서 모음</strong></a>에서 한번에.</div>
 
   <h3>정의</h3>
   <p>스프린트 목표 <strong>8판</strong>은 NRU가 하루에 걸쳐 치는 판수와 같은 양임. 이를 <strong>25분 창</strong>에 압축해 그날 판수를 2배 이상 끌어올리는 구조임. 실패해도 <strong>몰수 없음</strong>이라 다운사이드 없음. 발동 시퀀스(체스트 발견→열쇠 강탈→도주→마킹→행잉태그)는 원본 CCS "Catch the Troll"을 간소화 이식함.</p>
@@ -624,26 +625,6 @@ flowchart TD
     <p style="font-size:11.5px;color:var(--text2);margin:6px 0 0">※ 목업의 "+5 min"은 영문 표기 예시임 — 한국어 빌드 문구는 <code>T_SHADOW_CHASE_AD_EXTEND</code> = "+5분".</p>
   </div>
 
-  <div class="seq-step">
-    <span class="seq-tag">⛔ · 실패 인지 (토스트)</span>
-    <h4>실패 — 다음 로비 복귀 시 토스트 1회</h4>
-    <p>실패에는 <strong>신규 연출·팝업을 만들지 않음</strong>(기존 방침 유지). 다만 태그·마킹이 조용히 사라지기만 하면 유저가 "실패했다"는 사실 자체를 인지하지 못해 <strong>재도전 동기가 발생하지 않음</strong>.</p>
-    <span class="flow-label">🎬 진행 순서</span>
-    <ul class="flowlist">
-      <li><span class="n">1</span>타이머 만료 → 행잉 태그 · 플레이 버튼 🐾마킹 <strong>비노출 전환</strong></li>
-      <li><span class="n">2</span>다음 로비 복귀 시 <strong>비차단 토스트 1회</strong></li>
-      <li><span class="n">3</span>문구 <code>T_SHADOW_CHASE_FAIL_FLEE</code><br><small>"시간 종료… 그림자 냥이가 사라졌어요. 얻은 보상은 그대로예요. 다음 기회에 꼭 잡아요."</small></li>
-      <li><span class="n">4</span>표시 후 자동 소멸 · 탭 시 즉시 닫힘</li>
-    </ul>
-    <div class="note">토스트는 <strong>모달이 아니므로 로비 팝업 체인 순번을 점유하지 않음</strong>(세션 상한 계산에서도 제외). 표시 후 자동 소멸·탭 시 즉시 닫힘. <strong>몰수 없음</strong>이 문구로 전달돼야 재도전 유도가 성립함.</div>
-    <div class="ours"><strong>루나 이식</strong>
-      <ul class="flowlist">
-        <li><span class="k">UI</span>기존 토스트 컴포넌트 재활용 — <strong>신규 UI 없음</strong></li>
-        <li><span class="k">빈도</span>사이클당 1회 (중복 방지 플래그)</li>
-        <li><span class="k">팝업 체인</span>모달이 아니므로 순번 미점유 · 세션 상한 계산 제외</li>
-      </ul>
-    </div>
-  </div>
 
   <div class="seq-step">
     <span class="seq-tag">ⓘ · 인포 팝업 (재확인 수단)</span>
@@ -691,7 +672,6 @@ flowchart TD
       <tr><td>⑥ 행잉 태그</td><td>프리레벨 밧줄에 체스트+남은시간+진행바(n/8) · 체스트 보상 표기</td><td>기존 진행이벤트 밧줄 재활용</td></tr>
       <tr><td>⑦ 지급</td><td>결과 화면 <strong>하단 체스트 블록</strong>에 지급 + "🐱 그림자 냥이 추격전" 뱃지 · 상단 판 보상(RV ×2)은 무변경</td><td>결과 화면 하단 블록 추가</td></tr>
       <tr><td>⑧ 타이머 연장</td><td>잔여 5분 이하·미완주 시 타이머 옆 <strong>말풍선 [+5 min]</strong>(TV 아이콘·크림 바탕) — 연출 제작분 없음(타이머 숫자 갱신)</td><td>행잉 태그 조건부 말풍선 + 기존 RV 지면</td></tr>
-      <tr><td>⛔ 실패 인지</td><td>다음 로비 복귀 시 <strong>토스트 1회</strong>(T_SHADOW_CHASE_FAIL_FLEE) — 모달 아님·신규 연출 없음</td><td>기존 토스트 재활용</td></tr>
     </tbody>
   </table>
 
@@ -707,15 +687,15 @@ flowchart TD
       <tr><td><strong>열쇠 강탈</strong></td><td><code>GRAB</code></td><td>발동 시퀀스 ② (flow-02 참고)</td><td>앞발+발톱 긁힘 이펙트로 열쇠 채감</td></tr>
       <tr><td><strong>도주</strong></td><td><code>ESCAPE</code></td><td>발동 시퀀스 ④ (flow-04 참고) · 시간 초과 시 재사용</td><td>발바닥 자국 트레일 + 열쇠 아이콘 이동</td></tr>
       <tr><td><strong>포획 성공</strong></td><td><code>WIN</code></td><td>8판 완주</td><td><strong>신규 팝업 없음</strong> — 결과 화면 안에서 3컷 연출(태그 만충 → 체스트 오픈·파티클 → 태그 소멸·🐾마킹)</td></tr>
-      <tr><td><strong>시간 초과</strong></td><td><code>LOSE</code></td><td>타이머 만료</td><td><strong>신규 연출 없음</strong> — 행잉 태그·로비 아이콘·버튼 마킹 비노출 처리(몰수 없음) · <strong>다음 로비 복귀 시 실패 토스트 1회</strong></td></tr>
+      <tr><td><strong>시간 초과</strong></td><td><code>LOSE</code></td><td>타이머 만료</td><td><strong>신규 연출·알림 없음</strong> — 행잉 태그·로비 아이콘·버튼 마킹 비노출 처리(몰수 없음)</td></tr>
       <tr><td><strong>진행 중</strong></td><td><code>RUNNING</code></td><td>진행 중 상시</td><td>플레이 버튼 🐾마킹 · 프리레벨 행잉 태그 (flow-05·06 참고) — 인게임 HUD 없음 · <strong>잔여 5분 이하 시 타이머 말풍선 [+5 min] 노출</strong></td></tr>
     </tbody>
   </table>
-  <div class="note"><strong>상태 추가 없음</strong> — 타이머 연장(⑧)·실패 토스트(⛔)는 별도 상태가 아니라 각각 <code>RUNNING</code>의 조건부 UI, <code>LOSE</code> 전이 직후의 1회성 노출임. enum은 5종 유지.</div>
+  <div class="note"><strong>상태 추가 없음</strong> — 타이머 연장(⑧)은 별도 상태가 아니라 <code>RUNNING</code>의 조건부 UI임. enum은 5종 유지.</div>
   <div class="note"><strong>이벤트 컬러 아이덴티티:</strong> 보라 오라 + 별빛 🐾발자국 = "그림자 냥이 이벤트" 공통 시각 언어. 플레이 버튼(활성 상태)·프리레벨 행잉 태그 글로우에 동일 적용 — 기존 골드 톤 이벤트 태그와 한눈에 구분됨. 행잉 태그에는 "8판 완주 시 열쇠 획득" 문구와 게이지 끝 열쇠 골 마커 필수.</div>
 <div class="note"><strong>연출 재생 중 입력 잠금:</strong> 열쇠 강탈·도주 연출 재생 중 풀스크린 터치 가드 활성. 최초 1회 필수 시청(건너뛰기 불가). 재노출부터 탭 스킵 허용.</div>
   <div class="callout callout-pink">
-    <strong>손실회피 UX:</strong> 열쇠 강탈→도주 연출이 재도전 동기의 핵심. 동일 모티프(🐾자국·열쇠)를 <strong>밧줄 글로우·타이머 말풍선·실패 토스트</strong> 세 지점에 일관 적용. 시간 초과 시 <strong>몰수 없음</strong>을 토스트 문구로 명확히 전달해 재도전 유도. <em>(v1에 이탈 만류 팝업은 없음 — 이탈 저지는 행잉 태그 상시 노출로만 담당)</em>
+    <strong>손실회피 UX:</strong> 열쇠 강탈→도주 연출이 재도전 동기의 핵심. 동일 모티프(🐾자국·열쇠)를 <strong>밧줄 글로우·타이머 말풍선</strong> 두 지점에 일관 적용. <strong>실패에는 알림을 붙이지 않음</strong> — 재도전 동기는 쿨다운 후 <strong>다음 발동 연출이 자동으로 다시 뜨는 것</strong>이 담당함(체스트를 다시 보여주고 다시 뺏김). <em>(v1에 이탈 만류 팝업·실패 토스트 없음 — 이탈 저지는 행잉 태그 상시 노출로만 담당)</em>
   </div>
 </section>
 
@@ -734,8 +714,33 @@ flowchart TD
     <strong>🛠 개발 처리 체크리스트 (한곳 정리)</strong> — 문서 곳곳의 개발 액션을 8개 영역으로 모음:
     ① 발동·사이클(기간/쿨다운 판정·팝업 체인 마지막 순번·<strong>세션 상한 소진 시 다음 로비 복귀로 이월</strong>·서버 타이머) ② 연출·입력(잠금·스킵·자국만·<strong>강제 시청 6초 이내</strong>)
     ③ 상태 표시(프리레벨 행잉 태그·플레이 버튼 🐾마킹 두 가지뿐 — 인게임 HUD·로비 아이콘 없음) + <strong>잔여 5분 이하 타이머 말풍선 [+5 min]</strong>(드롭 가능) ④ <strong>성공=결과 화면 하단 체스트 블록 [받기] · 상단 판 보상 RV ×2는 무변경</strong>
-    ⑤ 실패=비노출 전환 + <strong>다음 로비 복귀 시 토스트 1회</strong> ⑥ 데이터·코드 등록(ProtocolTypes·시트 로드·unlock·확인 3건) ⑦ 로그 7101~7109(7104 미사용) ⑧ QA 핵심.
-    <br>📥 <a href="handoff-shadow-chase-dev.md" download><strong>개발 체크리스트 핸드오프 (MD 다운로드)</strong></a> — 개발자 전달용 체크박스 문서.
+    ⑤ <strong>실패=비노출 전환만</strong>(별도 알림 없음) ⑥ 데이터·코드 등록(ProtocolTypes·시트 로드·unlock·확인 4건) ⑦ 로그 7101~7109(7104 미사용) ⑧ 킬스위치·운영. <strong>QA 케이스는 별도 문서</strong>.
+  </div>
+
+  <div class="callout callout-purple" id="handoff-hub">
+    <strong>📥 핸드오프 문서 모음 (개발·QA 전달용 · MD 다운로드)</strong>
+    <p style="margin:10px 0 0">아래 3종이 개발/QA에 그대로 넘어가는 문서임. 본 기획서가 원본(SSOT)이며, 세 문서는 여기서 각 담당이 볼 부분만 추출한 것임 — <strong>내용이 어긋나면 본 기획서가 우선</strong>.</p>
+    <table style="margin-top:12px">
+      <thead><tr><th>문서</th><th>대상</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><a href="handoff-shadow-chase-dev.md" download><strong>📄 개발 체크리스트</strong></a><br><code>handoff-shadow-chase-dev.md</code></td>
+          <td>클라 · 서버</td>
+          <td>발동·사이클(이월 규칙 포함) · <strong>판수 카운트 규칙</strong> · 연출·입력 잠금 · 진행 중 표시 · 성공/실패 처리 · 타이머 연장(드롭 가능) · 데이터·코드 등록 · <strong>킬스위치·운영</strong> · 로그 7101~7109 · <strong>개발 확인 4건</strong></td>
+        </tr>
+        <tr>
+          <td><a href="handoff-shadow-chase-qa.md" download><strong>🧪 QA 테스트 케이스</strong></a><br><code>handoff-shadow-chase-qa.md</code></td>
+          <td>QA</td>
+          <td>14개 영역 · 우선순위(🔴필수/🟡중요/⚪확인) 표기 · 해금·발동·팝업 체인·연출·판수 카운트·결과 화면·실패·연장·타이머 권위·기간 경계·킬스위치·로그·<strong>회귀</strong>·릴리즈 게이트</td>
+        </tr>
+        <tr>
+          <td><a href="handoff-lobby-popup-seq.md" download><strong>🪟 로비 팝업 시퀀서</strong></a><br><code>handoff-lobby-popup-seq.md</code></td>
+          <td>클라 (공통 인프라)</td>
+          <td>P0~P6 우선순위 티어 · 큐/억제 모델 · 세션 상한 · <strong>발동 연출 이월 규칙</strong> · AS-IS 코드 매핑 · <code>lobby_popup</code> 시트 스키마 · 마이그레이션 7단계 · 엣지케이스</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin:10px 0 0;font-size:12.5px;color:var(--text2)">※ QA용으로 시트 값(<code>duration_sec</code>·<code>total_rounds</code>·<code>cooldown_sec</code>)을 줄여 회전시킨 뒤 <strong>원복</strong>하는 절차가 QA 문서에 포함돼 있음.</p>
   </div>
   <h2 id="s3-param">3-1 밸런스 파라미터</h2>
   <p>SSOT = 라이브 시트([PST] 밸런스시트) 형식의 이벤트 전용 탭. 값은 전부 <strong>예시값(초안)</strong> — 시트에서 빌드 없이 튜닝. </p>
@@ -788,10 +793,10 @@ flowchart TD
       <tr><td><strong>도주</strong></td><td><code>ESCAPE</code></td><td>스토리 [확인] 후 로비 복귀 · 그림자 냥이 도주 연출(자국 트레일) · 입력 잠금 · 시퀀스 종료 시점부터 25분 타이머 시작</td><td>플레이 버튼 마킹 → 진행 중(RUNNING)</td></tr>
       <tr><td><strong>진행 중</strong></td><td><code>RUNNING</code></td><td>스프린트 진행 중 · 플레이 버튼 🐾마킹·프리레벨 행잉 태그 상시 표시(인게임 HUD 없음) · <strong>잔여 <code>ad_extend_threshold_sec</code> 이하 시 타이머 말풍선 [+5 min] 노출(사이클당 1회)</strong></td><td>완주 → 포획 성공(Win) / 만료 → 시간 초과(Lose) · <strong>연장 시 RUNNING 유지</strong></td></tr>
       <tr><td><strong>포획 성공</strong></td><td><code>WIN</code></td><td>시간창 내 total_rounds 완주 (열쇠 획득)</td><td><strong>신규 팝업 없음</strong> — 결과 화면 안 3컷 연출 → <strong>하단 체스트 블록</strong>+🐾마킹(상단 판 보상·RV ×2 무변경) → 태그·마킹 정리 → IDLE</td></tr>
-      <tr><td><strong>시간 초과</strong></td><td><code>LOSE</code></td><td>타이머 만료 미완주 (또는 기간 강제만료)</td><td><strong>신규 연출 없음</strong> — 행잉 태그·버튼 마킹 비노출 전환(몰수 없음) → <strong>다음 로비 복귀 시 실패 토스트 1회</strong> → IDLE</td></tr>
+      <tr><td><strong>시간 초과</strong></td><td><code>LOSE</code></td><td>타이머 만료 미완주 (또는 기간 강제만료)</td><td><strong>신규 연출·알림 없음</strong> — 행잉 태그·버튼 마킹 비노출 전환(몰수 없음) → IDLE</td></tr>
     </tbody>
   </table>
-  <div class="note"><strong>몰수 없음:</strong> 미완주 시 인게임 획득분(골드·판수)은 유지됨 → 클라 로직. 체스트(열쇠)만 미획득. <strong>실패를 유저가 인지하지 못하면 재도전 동기가 발생하지 않으므로</strong>, 태그가 조용히 사라지는 것으로 끝내지 말고 토스트 1회로 "몰수 없음 + 다음 기회"를 반드시 전달할 것.</div>
+  <div class="note"><strong>몰수 없음:</strong> 미완주 시 인게임 획득분(골드·판수)은 유지됨 → 클라 로직. 체스트(열쇠)만 미획득. <strong>실패에 별도 알림을 붙이지 않는 이유</strong> — 로비 진입 직후 부정 메시지를 얹는 비용 대비 값어치가 낮고(콜드스타트 팝업 피로), 재도전 유인은 쿨다운 후 <strong>다음 발동 연출 자동 재생</strong>이 이미 담당함. 조용히 사라지는 편이 "다운사이드 없는 이벤트"라는 인상과도 일관됨.</div>
   <div class="note"><strong>이월 상태(<code>DEFERRED</code>) 취급:</strong> 발동 조건은 충족했으나 팝업 세션 상한으로 연출을 재생하지 못한 경우, 상태 enum을 늘리지 않고 <strong>IDLE + 보류 플래그</strong>로 유지함(연출 재생 = <code>GRAB</code> 진입). 보류 중에는 <code>cooldown_sec</code> 타이머를 시작하지 않으며, 기간을 벗어나면 보류분 폐기.</div>
 
   <!-- 3-3 계측 -->
@@ -832,7 +837,7 @@ flowchart TD
     <thead><tr><th>구분</th><th>탭명</th><th>대역/키</th><th>내용</th></tr></thead>
     <tbody>
       <tr><td>공용 등록</td><td><code>event_schedule</code></td><td>160005·160006</td><td>추격전 기간 창 1행 (월 00:00~목 23:59·유저 접속 기준 사이클)</td></tr>
-      <tr><td>공용 등록</td><td><code>string_code</code></td><td>T_SHADOW_CHASE_* 10키</td><td>이벤트 카피 (T_ 대문자 관례)</td></tr>
+      <tr><td>공용 등록</td><td><code>string_code</code></td><td>T_SHADOW_CHASE_* 9키</td><td>이벤트 카피 (T_ 대문자 관례)</td></tr>
       <tr><td>공용 등록</td><td><code>unlock</code></td><td>50031</td><td>레벨 10 클리어 언락 (condition_type=level_clear)</td></tr>
       <tr><td>전용 탭(2차)</td><td><code>event_shadow_milestone</code></td><td>200101~200106</td><td>저니 트랙 6마일스톤 — v1 시트 반영분 아님(저니 레이어 2차 등록)</td></tr>
       <tr><td>전용 탭</td><td><code>event_shadow_sprint</code></td><td>200201</td><td>스프린트 파라미터 1행 (컬럼식) — 체스트 보상 컬럼 통합(normal_*·jackpot_*). multiplier·heart 컬럼 없음</td></tr>
@@ -857,7 +862,7 @@ flowchart TD
 <tr><td>50031</td><td>content_event_shadow_chase</td><td>level_clear</td><td>10</td><td>FALSE</td><td></td><td>Lv10 클리어 시 그림자 냥이 추격전 해금 — 별도 튜토 없음</td></tr>
 </table>
 
-<h3>③ string_code +10키 (공용 · 한국어 기준값, 타 언어 번역 후속)</h3>
+<h3>③ string_code +9키 (공용 · 한국어 기준값, 타 언어 번역 후속)</h3>
 <table class="bs-table">
 <tr><th>Key</th><th>kr</th></tr>
 <tr><td>T_SHADOW_CHASE_INFO_TITLE</td><td>그림자 냥이를 잡아라!</td></tr>
@@ -866,12 +871,11 @@ flowchart TD
 <tr><td>T_SHADOW_CHASE_TAG_GOAL</td><td>8판 완주 시 열쇠 획득</td></tr>
 <tr><td>T_SHADOW_CHASE_CHEST_NORMAL</td><td>따라잡았어요! 루나 체스트가 열려요.</td></tr>
 <tr><td>T_SHADOW_CHASE_CHEST_JACKPOT</td><td>그림자 냥이의 비밀 보물! Jackpot 체스트가 열려요.</td></tr>
-<tr><td>T_SHADOW_CHASE_FAIL_FLEE</td><td>시간 종료… 그림자 냥이가 사라졌어요. 얻은 보상은 그대로예요. 다음 기회에 꼭 잡아요.</td></tr>
 <tr><td>T_SHADOW_CHASE_AD_EXTEND</td><td>+5분</td></tr>
 <tr><td>T_SHADOW_CHASE_CHEST_NO_MULTIPLY</td><td>이벤트 보상은 배수가 적용되지 않아요.</td></tr>
 <tr><td>T_SHADOW_CHASE_OFFLINE</td><td>연결이 필요해요…</td></tr>
 </table>
-<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ <b>+2키(총 10키)</b> — <code>T_SHADOW_CHASE_AD_EXTEND</code>(⑧ 타이머 연장 버튼) · <code>T_SHADOW_CHASE_CHEST_NO_MULTIPLY</code>(결과 화면 하단 체스트 블록 고정 문구). <code>T_SHADOW_CHASE_FAIL_FLEE</code>는 <b>실패 토스트에서 실제 사용됨</b> — "몰수 없음"이 문구로 전달돼야 재도전 유도가 성립하므로 해당 절을 추가함.</div>
+<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ <b>총 9키</b> — <code>T_SHADOW_CHASE_AD_EXTEND</code>(⑧ 타이머 말풍선) · <code>T_SHADOW_CHASE_CHEST_NO_MULTIPLY</code>(결과 화면 하단 체스트 블록 고정 문구) 추가. <b><code>T_SHADOW_CHASE_FAIL_FLEE</code>는 삭제</b> — 실패에 알림을 붙이지 않기로 확정해 노출 지점이 없어짐(등록해두고 미사용하면 재혼선).</div>
 
 <h3>④ event_shadow_chest 신규 탭 (슬롯형 · Normal 6슬롯 — v1)</h3>
 <table class="bs-table">
@@ -891,7 +895,7 @@ flowchart TD
 </table>
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트 보상은 event_shadow_chest 탭(④) 소관 — 튜닝 코어는 스프린트 파라미터만. event_id=0 = 스케줄 행(160005)과 분리된 공통 파라미터. <b>ad_extend_* 3컬럼은 타이머 말풍선 [+5 min]용 신규</b> — <code>ad_extend_max_per_cycle=0</code>이면 기능 OFF(개별 킬스위치 겸 <b>v1 드롭 시 처리 수단</b>). <b>레벨 구간 차등이 필요해지면 이 탭을 <code>level_min</code>/<code>level_max</code> 컬럼을 가진 다행 구조로 확장</b>(v1은 1행 고정).</div>
 
-<div class="callout callout-orange"><b>개발 확인 요청 3가지</b> — ① goal_type=complete_sprint_cycle 서버 처리 방식(2차 저니용 — v1 훅만) ② milestone/sprint의 event_id=0(비귀속) 관례 수용 여부 ③ 기간·쿨다운 판정 주체 — 서버 스케줄 push vs 클라 시각 판정(서버 시간 기준) 중 택. <b>③의 결론에 따라 <code>7101</code>의 발화 주체(<code>fire_side</code>)와 참여율 분모 정의가 함께 확정됨</b> — 따로 정하지 말고 한 번에 결론낼 것.</div>
+<div class="callout callout-orange"><b>개발 확인 요청 4가지</b> — ① <code>goal_type=complete_sprint_cycle</code> 서버 처리 방식(2차 저니용 — v1 훅만) ② milestone/sprint의 <code>event_id=0</code>(비귀속) 관례 수용 여부 ③ 기간·쿨다운 <b>판정 주체</b> — 서버 스케줄 push vs 클라 시각 판정(서버 시간 기준) 중 택 ④ <b>요일 판정 타임존</b> — 월~목 경계를 서버 UTC / 서버 로컬 / 유저 로컬 중 무엇으로 자르는지. 서구권 타깃이라 기준에 따라 지역별 창이 어긋남.<br><b>③·④는 함께 결론낼 것</b> — ③의 결론에 따라 <code>7101</code>의 발화 주체(<code>fire_side</code>)와 참여율 분모 정의도 같이 확정됨.</div>
 <div class="callout callout-green"><b>✅ 확정된 항목 (질문 아님 · 개발 반영 필수)</b> — <b>팝업 세션 상한 소진 시 발동 연출은 잘라내지 말고 다음 로비 복귀로 이월</b>. 연출 재생이 곧 타이머 시작이라, 상한에 걸려 큐에서 잘리면 <code>7102</code> 미발화 + 사이클 통째 유실로 이어짐. 이월 중 쿨다운 미시작 · <code>7101</code> 재발화 없음 · 기간 이탈 시 보류분 폐기.</div>
 </div>
 
@@ -917,7 +921,6 @@ flowchart TD
       <tr><td>클라</td><td>프리레벨 행잉 태그(타이머·n/8 게이지·실루엣) + 플레이 버튼 🐾마킹 + 발동 트리거(팝업 체인 마지막·<strong>세션 상한 시 이월</strong>) + 연출 입력 잠금(6초 이내) (인게임 HUD·타이머 위젯 없음)</td><td><span class="prio-high">L</span></td></tr>
       <tr><td>클라</td><td>결과 화면(PopupCompleteLevel) <strong>하단 체스트 블록 추가</strong> — 6슬롯·🐾뱃지·[받기] 단일. <strong>기존 판 보상·RV ×2 로직은 무변경</strong>(기존안 대비 공수 감소)</td><td><span class="prio-low">S</span></td></tr>
       <tr><td>클라</td><td><strong>타이머 말풍선 [+5 min]</strong> — 행잉 태그 조건부 말풍선 + 기존 RV 지면 연동 + 연장 반영 (신규 모달 없음) · <strong>견적 크면 v1 드롭 가능</strong></td><td><span class="prio-low">S</span></td></tr>
-      <tr><td>클라</td><td><strong>실패 토스트 1회</strong> — 기존 토스트 컴포넌트 재활용·중복 방지 플래그 (신규 UI 없음)</td><td><span class="prio-low">S</span></td></tr>
       <tr><td>서버</td><td>이벤트/스프린트 상태머신·기간/쿨다운 판정 (wall-clock 타이머 권위 · 발동 트리거=큐/폴백 · <strong>이월 보류 상태</strong> · <strong>연장 1회 검증</strong> · claim-chest 멱등)</td><td><span class="prio-high">L</span></td></tr>
       <tr><td>계측</td><td>7xxx 로그 파이프라인 (기존 코드+data 관례 확장 · <strong>7101~7109</strong>, 7104 미사용) + <strong>4210 조인 기반 RV 분해 쿼리</strong></td><td><span class="prio-mid">M</span></td></tr>
       <tr><td>기획</td><td>밸런스 파라미터·체스트 표 확정 (<strong>판당 소요 실측 — 레벨 구간별 분산까지</strong> 선행) + <strong>D+2 튜닝 게이트 운영</strong></td><td><span class="prio-mid">M</span></td></tr>
