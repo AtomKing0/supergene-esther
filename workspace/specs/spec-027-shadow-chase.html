@@ -3,6 +3,8 @@
 <head>
 <script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 <meta name="spec-created" content="2026. 7. 24.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -277,6 +279,13 @@ ul li strong,ol li strong { color:var(--text); }
 .uf-loop{text-align:center;font-size:12px;color:var(--accent);font-weight:700;border-top:1px dashed var(--border);padding-top:10px}
 
 
+/* ── mermaid 지연 로딩 플레이스홀더 ── */
+pre.mermaid{position:relative;min-height:380px;margin:20px 0;border:1px dashed var(--border);border-radius:var(--radius);background:var(--surface2);font-size:0;color:transparent;overflow:hidden}
+pre.mermaid::after{content:"플로우차트 불러오는 중…";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text2);letter-spacing:.02em}
+pre.mermaid[data-mmd="done"]{min-height:0;border:0;background:none;font-size:inherit;color:inherit;overflow:visible}
+pre.mermaid[data-mmd="done"]::after{content:none}
+pre.mermaid[data-mmd="error"]{min-height:0;font-size:12px;color:var(--text2);white-space:pre-wrap;padding:14px;overflow:auto}
+pre.mermaid[data-mmd="error"]::after{content:none}
 .art-chip{display:inline-block;background:#ff8a3d;color:#2a1200;font-size:11px;font-weight:900;border-radius:6px;padding:3px 10px;margin-left:10px;letter-spacing:.05em;box-shadow:0 0 0 2px rgba(255,138,61,.25)}
 .fbfield{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin:6px 0;font-size:14px;color:var(--text)}
 .fblabel{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text2);margin-top:10px}
@@ -1216,7 +1225,31 @@ document.addEventListener('click',function(e){
 });
 document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('lightbox').classList.remove('on');});
 </script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-<script>mermaid.initialize({startOnLoad:true,theme:'base',themeVariables:{fontSize:'14px',edgeLabelBackground:'#ffffff',lineColor:'#8a93a8'},flowchart:{curve:'basis',htmlLabels:true}});</script>
+<script type="module">
+/* mermaid 지연 로딩 — UMD(gzip ~993KB) 대신 ESM 코어(gzip ~78KB)를 뷰포트 진입 시에만 동적 import */
+(function(){
+  var els = Array.prototype.slice.call(document.querySelectorAll('pre.mermaid'));
+  if(!els.length) return;
+  var booted = false;
+  async function boot(){
+    if(booted) return; booted = true;
+    try{
+      var mermaid = (await import('https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs')).default;
+      mermaid.initialize({startOnLoad:false,theme:'base',themeVariables:{fontSize:'14px',edgeLabelBackground:'#ffffff',lineColor:'#8a93a8'},flowchart:{curve:'basis',htmlLabels:true}});
+      await mermaid.run({nodes:els});
+      els.forEach(function(el){ el.setAttribute('data-mmd','done'); });
+    }catch(e){
+      /* CDN 실패 시 원문(mermaid 소스)을 그대로 노출 — 정보 손실 없음 */
+      els.forEach(function(el){ el.setAttribute('data-mmd','error'); });
+    }
+  }
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      for(var i=0;i<entries.length;i++){ if(entries[i].isIntersecting){ io.disconnect(); boot(); break; } }
+    },{rootMargin:'800px 0px'});
+    els.forEach(function(el){ io.observe(el); });
+  } else { boot(); }
+})();
+</script>
 </body>
 </html>
