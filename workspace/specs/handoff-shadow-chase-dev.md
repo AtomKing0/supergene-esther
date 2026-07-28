@@ -8,7 +8,7 @@
 > ② 결과 화면 **RV ×2 유지**(끄지 않음) + 하단 체스트 블록만 추가
 > ③ **타이머 말풍선 [+5 min]** 연장 추가 — **드롭 가능 항목**
 > ④ 실패 처리는 **비노출 전환만**(토스트 없음·`T_SHADOW_CHASE_FAIL_FLEE` 삭제)
-> ⑤ 로그 필드 보강 + `7109` 신설
+> ⑤ 로그 필드 보강 + `5447` 신설
 > ⑥ 발동 연출 **강제 시청 6초 상한**
 
 ---
@@ -24,7 +24,7 @@
 | 목표 판수 | 8판 | `event_shadow_sprint.total_rounds` |
 | 쿨다운 | 43200초(12h) = 일 최대 2사이클 | `event_shadow_sprint.cooldown_sec` |
 | 해금 | Lv10 클리어 | `unlock` 50031 |
-| 보상 | Normal 체스트 6슬롯 | `event_shadow_chest` 200301~200306 |
+| 보상 | Normal 체스트 6슬롯 | `event_shadow_chest` 250001~250006 |
 
 **진입점은 3개뿐** — ① 발동 연출(자동) ② 프리레벨 행잉 태그 ③ 플레이 버튼 🐾마킹.
 **인게임 중 이벤트 표시는 일절 없음.**
@@ -37,8 +37,8 @@
 - [ ] 발동 조건 평가(로비 복귀 시): **기간 내 AND 쿨다운 경과 AND 미진행 중 AND 언락 완료** → 충족 시 발동 시퀀스 연출 자동 재생
 - [ ] 발동 순번: **기존 로비 팝업 체인(`runWinFlow`) 마지막 순번**에 추가 — 보상 정산·출석 등 우선 팝업 소화 후
 - [ ] 사이클당 1회: 발동 연출은 사이클 시작 시 1회만. **타이머 시작 = 연출 종료 시점**
-- [ ] ★**세션 상한 소진 시 이월(필수)** — 발동 연출이 팝업 체인 마지막 순번이라 앞 팝업이 세션 상한을 소진하면 큐에서 잘릴 수 있음. **잘라내지 말고 다음 로비 복귀로 이월**할 것. 연출 재생 = 타이머 시작이므로 스킵되면 `7102` 미발화 + **사이클 통째 유실**
-- [ ] 이월 중: `cooldown_sec` 타이머 **미시작** · `7101` **재발화 없음**(중복 계상 방지) · 이벤트 기간 이탈 시 보류분 폐기
+- [ ] ★**세션 상한 소진 시 이월(필수)** — 발동 연출이 팝업 체인 마지막 순번이라 앞 팝업이 세션 상한을 소진하면 큐에서 잘릴 수 있음. **잘라내지 말고 다음 로비 복귀로 이월**할 것. 연출 재생 = 타이머 시작이므로 스킵되면 `5441` 미발화 + **사이클 통째 유실**
+- [ ] 이월 중: `cooldown_sec` 타이머 **미시작** · `5440` **재발화 없음**(중복 계상 방지) · 이벤트 기간 이탈 시 보류분 폐기
 - [ ] 이월 상태는 enum 추가 없이 **IDLE + 보류 플래그**로 유지 (연출 재생 = `GRAB` 진입)
 - [ ] 언락 인트로와 발동 조건이 같은 진입에 겹치면 → **언락 인트로 먼저, 발동 연출은 이월**(같은 진입 2모달 금지)
 - [ ] 사이클 종료(성공/실패 무관) → `cooldown_sec`(43200) 재트리거 대기. `cooldown_until` 서버 저장. **기준점 = 사이클 종료 시각**(발동 시각 아님)
@@ -62,7 +62,7 @@
 - [ ] 발동 시퀀스(발견 → 열쇠 강탈 → 도주 → 버튼 🐾마킹) 재생 중 **풀스크린 입력 잠금** — `ViewBase.setLocked()`/`lockPopupInput` 재활용
 - [ ] 스킵 정책: 최초 1회 필수 시청 · 재노출(다음 사이클)부터 탭 스킵 허용
 - [ ] ★**강제 시청 6초 이내**(강탈~도주~마킹 합산 기준) — 원본 CCS는 11초/161프레임이나 우리는 로비 팝업 9개 소화 직후에 얹히는 자리라 이탈 리스크가 큼. 6초 초과 시 **필수 시청은 ②강탈까지만, ④도주부터 탭 스킵 허용**으로 완화
-- [ ] `7102`에 `fx_completed`·`fx_watch_sec` 기록 — 연출 중 이탈 측정용(재생 시작만으로는 측정 불가)
+- [ ] `5441`에 `fx_completed`·`fx_watch_sec` 기록 — 연출 중 이탈 측정용(재생 시작만으로는 측정 불가)
 - [ ] 캐릭터 본체 미등장 — 🐾자국 스프라이트+Tween만 (도주 = 발자국 트레일 + 열쇠 아이콘 이동)
 - [ ] 중간 앵커 연출 **없음** (제작 안 함)
 - [ ] 연출 재생 중 강종 → 재진입 시 **연출 미완료 상태로 취급, 타이머 미시작**. 다음 로비 복귀에서 다시 재생
@@ -99,7 +99,7 @@
 ## 4-B. 타이머 연장 — 타이머 말풍선 [+5 min] (클라/서버) · ★**드롭 가능 항목**
 
 > ★**구현이 복잡하면 v1에서 빼도 됨** — 스프린트 성립에 필수가 아니며, 빠져도 이벤트는 그대로 동작함(잔여 시간 만료 = 실패, 기존 흐름 유지). 서버 타이머 연장 검증·RV 지면 연동·중복 방지가 예상보다 붙으면 **v1 제외하고 2차로 미뤄도 무방**. **판단은 개발 견적 기준으로 개발팀에 위임함.**
-> 빼는 경우 처리 = `ad_extend_max_per_cycle=0`으로 시트 OFF(코드 롤백 불필요) · 말풍선 미노출 · `7109` 미발화 · `extended`는 항상 FALSE.
+> 빼는 경우 처리 = `ad_extend_max_per_cycle=0`으로 시트 OFF(코드 롤백 불필요) · 말풍선 미노출 · `5447` 미발화 · `extended`는 항상 FALSE.
 
 - [ ] 잔여 시간 ≤ `ad_extend_threshold_sec`(300) AND 미완주 → **행잉 태그의 타이머 옆에 말풍선 [+5분]** 노출 (꼬리가 타이머를 지시 · 크림 바탕 + 금 테두리 + 틸 TV 아이콘 · 신규 모달 없음)
 - [ ] 시청 완료 시 `ad_extend_sec`(300)만큼 개인 타이머 연장 · **사이클당 `ad_extend_max_per_cycle`(1)회** — **서버 검증 필수**
@@ -108,7 +108,7 @@
 - [ ] RV 논필(no-fill)·시청 중단 → **연장 미적용 · 횟수 미차감**(재시도 가능)
 - [ ] 시청 중 강종 → **중복 연장 금지**. 서버가 사이클당 1회를 최종 판정
 - [ ] `ad_extend_max_per_cycle=0`이면 기능 OFF (개별 킬스위치)
-- [ ] `7109_SHADOW_CHASE_AD_EXTEND` 로깅(노출/시청/결과) · `7105`·`7106`에 `extended(bool)` 기록
+- [ ] `5447_EVENT_SHADOW_CHASE_AD_EXTEND` 로깅(노출/시청/결과) · `5443`·`5444`에 `extended(bool)` 기록
 
 ---
 
@@ -137,7 +137,7 @@
 ### 6-B. 킬스위치·운영 (필수)
 
 - [ ] `in_use=FALSE` 전환 시 **신규 발동 즉시 중단**
-- [ ] ★**진행 중 사이클 처리 방침을 코드로 명시할 것** — 권장 = **진행 중 사이클은 완주까지 인정**(중도 몰수 금지, "몰수 없음" 원칙 유지). 즉시 전원 중단이 필요하면 별도 강제 종료 경로로 분리하고 `7106.reason=event_end` 기록
+- [ ] ★**진행 중 사이클 처리 방침을 코드로 명시할 것** — 권장 = **진행 중 사이클은 완주까지 인정**(중도 몰수 금지, "몰수 없음" 원칙 유지). 즉시 전원 중단이 필요하면 별도 강제 종료 경로로 분리하고 `5444.reason=event_end` 기록
 - [ ] 시트 값 변경은 **다음 사이클부터 적용** — 진행 중 사이클의 `duration_sec`/`total_rounds`를 중간에 바꾸지 말 것(진행 중 유저 조건이 바뀜)
 - [ ] 오프라인·서버 통신 실패 시: 사이클 시작/판수 반영/체스트 수령은 **서버 확정 후 UI 갱신**. 통신 불가 상태에서는 `T_SHADOW_CHASE_OFFLINE`("연결이 필요해요…") 표시 후 재시도 유도 — **로컬 임의 진행 금지**
 - [ ] 다중 기기·동시 접속 → 서버 상태가 단일 진실. 후행 기기는 서버 값으로 덮어씀
@@ -150,30 +150,29 @@
 
 | 코드 | 발화 시점 | data 필드 |
 |---|---|---|
-| 7101_SHADOW_CHASE_SLOT_OPEN | 발동 조건 충족(NOTIFY) · **이월 시 재발화 금지** | `cycle_id`·`trigger_type`·`window_sec`·`target_clear`·**`deferred(bool)`**·**`fire_side(server/client)`** |
-| 7102_SHADOW_CHASE_ACTIVATE | 발동 연출 재생(사이클 시작·타이머 시작) | `cycle_id`·`remain_sec`·**`fx_completed(bool)`**·**`fx_watch_sec`**·**`deferred_count`** |
-| 7103_SHADOW_CHASE_ROUND_CLEAR | 사이클 중 판 클리어(카운트 증가) | `cycle_id`·**`round_idx(1~total_rounds)`**·`clear_count`·`elapsed_sec`·**`level_id`**·**`round_sec`** |
-| 7104 | (미사용 — 앵커 제거) | — |
-| 7105_SHADOW_CHASE_CHEST_OPEN | 완주·체스트 지급 | `cycle_id`·`elapsed_sec`·`txn_id`·**`chest_tier(normal/jackpot)`**·**`reward_keys[]`**·**`extended(bool)`** |
-| 7106_SHADOW_CHASE_FAIL | 타이머 만료(또는 강제 만료) | `cycle_id`·`rounds_cleared`·`reason(timeout/event_end)`·**`extended(bool)`** |
-| 7107_SHADOW_CHASE_HAMMER_GRANT | 해머 지급 | `cycle_id`·**`amount`**·`balance_after` |
-| 7108_SHADOW_CHASE_DECO_GATE_UNLOCK | 해머로 데코 게이트 해제 | `cycle_id`·`gate_id` |
-| **7109_SHADOW_CHASE_AD_EXTEND** | **신규**(연장 채택 시) — 말풍선 노출/시청/결과 | `cycle_id`·`step(impression/watch_start/complete)`·`remain_sec_before`·`extend_sec`·`result(success/abort/no_fill)` |
+| 5440_EVENT_SHADOW_CHASE_SLOT_OPEN | 발동 조건 충족(NOTIFY) · **이월 시 재발화 금지** | `cycle_id`·`trigger_type`·`window_sec`·`target_clear`·**`deferred(bool)`**·**`fire_side(server/client)`** |
+| 5441_EVENT_SHADOW_CHASE_ACTIVATE | 발동 연출 재생(사이클 시작·타이머 시작) | `cycle_id`·`remain_sec`·**`fx_completed(bool)`**·**`fx_watch_sec`**·**`deferred_count`** |
+| 5442_EVENT_SHADOW_CHASE_ROUND_CLEAR | 사이클 중 판 클리어(카운트 증가) | `cycle_id`·**`round_idx(1~total_rounds)`**·`clear_count`·`elapsed_sec`·**`level_id`**·**`round_sec`** |
+| 5443_EVENT_SHADOW_CHASE_CHEST_OPEN | 완주·체스트 지급 | `cycle_id`·`elapsed_sec`·`txn_id`·**`chest_tier(normal/jackpot)`**·**`reward_keys[]`**·**`extended(bool)`** |
+| 5444_EVENT_SHADOW_CHASE_FAIL | 타이머 만료(또는 강제 만료) | `cycle_id`·`rounds_cleared`·`reason(timeout/event_end)`·**`extended(bool)`** |
+| 5445_EVENT_SHADOW_CHASE_HAMMER_GRANT | 해머 지급 | `cycle_id`·**`amount`**·`balance_after` |
+| 5446_EVENT_SHADOW_CHASE_DECO_GATE_UNLOCK | 해머로 데코 게이트 해제 | `cycle_id`·`gate_id` |
+| **5447_EVENT_SHADOW_CHASE_AD_EXTEND** | **신규**(연장 채택 시) — 말풍선 노출/시청/결과 | `cycle_id`·`step(impression/watch_start/complete)`·`remain_sec_before`·`extend_sec`·`result(success/abort/no_fill)` |
 
 `round_idx`는 **`1~8` 하드코딩 금지** — `total_rounds`가 시트 변수임.
 
 ### ★ 로그 필드 보강 이유 (전부 KPI 산출 필수 · 사후 소급 불가)
 
-- `7105.chest_tier` — 없으면 Normal/Jackpot 구분 불가 → "데코 진입률" 산출 불능
-- `7107.amount` — `balance_after`만으로는 다른 경로 획득분과 섞여 발행량 역산 불가
-- `7103.round_idx` — `total_rounds`가 시트 변수(6판 해피데이 운영 레버)인데 `1~8` 고정이면 차등 세팅 시 스키마 파손
-- `7103.level_id`/`round_sec` — **레벨 구간별 판당 소요 실측**에 직결
-- `7102.fx_completed` — 강제 시청 구간 이탈 측정
-- `7101.deferred`/`fire_side` — 참여율(`7102÷7101`) 분모 정의. 이월분이 분모를 부풀리지 않게 분리
+- `5443.chest_tier` — 없으면 Normal/Jackpot 구분 불가 → "데코 진입률" 산출 불능
+- `5445.amount` — `balance_after`만으로는 다른 경로 획득분과 섞여 발행량 역산 불가
+- `5442.round_idx` — `total_rounds`가 시트 변수(6판 해피데이 운영 레버)인데 `1~8` 고정이면 차등 세팅 시 스키마 파손
+- `5442.level_id`/`round_sec` — **레벨 구간별 판당 소요 실측**에 직결
+- `5441.fx_completed` — 강제 시청 구간 이탈 측정
+- `5440.deferred`/`fire_side` — 참여율(`5441÷5440`) 분모 정의. 이월분이 분모를 부풀리지 않게 분리
 
 ### ★ RV 분해 (계측 설계 · v1 필수)
 
-- [ ] `4210_RV_FINISH`(지면 = `coalesce(data.type, data.position)`)를 `7103`의 **사이클 귀속 판**과 조인 → **스프린트 창 안 판 vs 밖 판의 판당 RV 노출·시청률 분해**
+- [ ] `4210_RV_FINISH`(지면 = `coalesce(data.type, data.position)`)를 `5442`의 **사이클 귀속 판**과 조인 → **스프린트 창 안 판 vs 밖 판의 판당 RV 노출·시청률 분해**
 - [ ] 이유: 25분 8판 압축은 유저가 **다음 판으로 빨리 가려고 RV를 스킵**할 유인을 키움. 판수가 늘어도 판당 RV가 깎이면 순증분이 상쇄됨. **사후 소급 불가**하므로 v1 계측에 반드시 포함
 
 ---
