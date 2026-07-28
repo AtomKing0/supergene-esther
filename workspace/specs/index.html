@@ -612,6 +612,21 @@ let _sb = null;
 try { _sb = window.supabase ? window.supabase.createClient(SB_URL, SB_ANON) : null; }
 catch(e) { console.warn('Supabase init failed:', e); }
 
+// ── 편집 암호 게이트 (쓰기는 DB 함수에서 암호 검증) ──
+function getEditKey() {
+  let k = localStorage.getItem('spec-edit-key');
+  if (!k) { k = (window.prompt('편집 암호를 입력하세요 (변경 저장에 필요):') || '').trim(); if (k) localStorage.setItem('spec-edit-key', k); }
+  return k;
+}
+function _editErr(error, where) {
+  if (!error) return;
+  console.warn(where + ':', error.message);
+  if (/unauthorized/i.test(error.message || '')) {
+    localStorage.removeItem('spec-edit-key');
+    alert('편집 암호가 올바르지 않아 변경이 저장되지 않았습니다. 다시 시도하면 암호를 재입력합니다.');
+  }
+}
+
 // ── 인메모리 캐시 (Supabase 로드 전 localStorage fallback) ──
 function _readLS(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
@@ -676,7 +691,7 @@ function saveOrder(o) {
   _order = o;
   localStorage.setItem('spec-order', JSON.stringify(o));
   const _op = { id: 1, order_list: o, updated_at: new Date().toISOString() };
-  if (_sb) _sb.from('spec_order').upsert(_op).then(({ error }) => { if (error) console.warn('spec_order upsert:', error.message); });
+  if (_sb) _sb.rpc('spec_order_upsert', { p_key: getEditKey(), p_order: o }).then(({ error }) => { _editErr(error, 'spec_order'); });
   else fetch('/api/sb/spec_order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_op) }).catch(() => {});
 }
 function normalizeItem(item) {
@@ -698,7 +713,7 @@ function applyOv(id, key, val) {
     const from = ov[id].status || (SPECS.find(s => s.id === id) || {}).status || null;
     if (from !== val) {
       // Supabase 상태 변경 이력 (브라우저 직접 → 라이브 저장, 프록시 폴백)
-      if (_sb) _sb.from('spec_status_log').insert({ spec_id: id, from_status: from, to_status: val }).then(({ error }) => { if (error) console.warn('spec_status_log insert:', error.message); });
+      if (_sb) _sb.rpc('spec_log_insert', { p_key: getEditKey(), p_spec_id: id, p_from: from, p_to: val }).then(({ error }) => { _editErr(error, 'spec_status_log'); });
       else fetch('/api/sb/spec_status_log', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ spec_id: id, from_status: from, to_status: val }) }).catch(()=>{});
       // localStorage 이력 (호환)
       const logKey = id + '-log';
@@ -723,7 +738,7 @@ function applyOv(id, key, val) {
     related_to: r.relatedTo  || [],
     updated_at: new Date().toISOString(),
   };
-  if (_sb) _sb.from('spec_overrides').upsert(_payload).then(({ error }) => { if (error) console.warn('spec_overrides upsert:', error.message); });
+  if (_sb) _sb.rpc('spec_ov_upsert', { p_key: getEditKey(), p_spec_id: id, p_tags: r.tags||[], p_priority: r.priority||'mid', p_status: r.status||'open', p_due_date: r.dueDate||null, p_related_to: r.relatedTo||[] }).then(({ error }) => { _editErr(error, 'spec_overrides'); });
   else fetch('/api/sb/spec_overrides', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_payload) }).catch(() => {});
 }
 
