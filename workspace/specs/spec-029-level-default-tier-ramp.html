@@ -154,13 +154,13 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="badge badge-green">2026. 7. 28.</span>
     </div>
     <h1>레벨 기반 기본 난이도 승급<br><span>Default Tier Ramp</span></h1>
-    <p class="hero-sub">레벨 10 이후 기본 난이도가 Normal로 고정돼 있어 진행할수록 판이 무거워지는 감각이 없음. 기본 티어를 레벨 구간에 따라 승급시켜 중후반 난이도 곡선을 복원함.</p>
+    <p class="hero-sub">티어 믹스가 레벨과 무관하게 전 구간 동일해서 진행할수록 판이 무거워지는 감각이 없음. 이미 믹스를 결정하고 있는 <span class="sheet-var">dynamic_level</span> 카운터 2개에 레벨 조건만 붙여 중후반 난이도 곡선을 복원함. 신규 테이블·가중치 추첨 없음.</p>
     <div class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-label">기존 유저 판 길이 p50</div>
-        <div class="kpi-value" style="color:var(--accent)">50s</div>
-        <div class="kpi-sub">현행 · 고레벨 구간 목표 60s</div>
-        <div class="kpi-trend trend-up">▲ +20%</div>
+        <div class="kpi-label">변경 대상</div>
+        <div class="kpi-value" style="color:var(--accent)">2개</div>
+        <div class="kpi-sub">hard_guarantee · super_hard_guarantee</div>
+        <div class="kpi-trend trend-up">신규 테이블 0</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">신규 → 기존 판 길이 램프</div>
@@ -171,7 +171,7 @@ ul li strong,ol li strong { color:var(--text); }
       <div class="kpi-card">
         <div class="kpi-label">Normal 티어 판 비중</div>
         <div class="kpi-value" style="color:var(--blue)">80.9%</div>
-        <div class="kpi-sub">튜토리얼 제외 기준 · 목표 45~55%</div>
+        <div class="kpi-sub">튜토 제외 · 최상위 밴드 목표 43%</div>
         <div class="kpi-trend trend-down">▼ 믹스 상향</div>
       </div>
       <div class="kpi-card">
@@ -200,8 +200,22 @@ ul li strong,ol li strong { color:var(--text); }
 
   <h3>배경</h3>
   <p>난이도 티어를 올리면 판 길이가 정직하게 따라 올라감. 실측 기준 <strong>Tutorial 28초 · Normal 47초 · Hard 66초 · Super Hard 94초</strong>임. 난이도 램프 자체는 이미 정상 작동함.</p>
-  <p>문제는 티어가 배정되는 비중임. 튜토리얼을 제외한 판의 <strong>80.9%가 Normal</strong>에 몰려 있음. 원인은 <span class="sheet-var">PST_dynamic_level</span>의 레벨 조건이 레벨 10에서 끝나고, 그 이후로는 <strong>default가 영구히 Normal</strong>로 고정되기 때문임.</p>
+  <p>문제는 티어가 배정되는 비중임. 튜토리얼을 제외한 판의 <strong>80.9%가 Normal</strong>에 몰려 있음. 원인은 <span class="sheet-var">PST_dynamic_level</span>의 레벨 조건이 레벨 10에서 끝나고, 그 이후로는 <strong>레벨이 티어 배정에 전혀 개입하지 않기</strong> 때문임. 레벨 11 유저와 레벨 2,000 유저가 완전히 같은 믹스를 받고 있음.</p>
   <p>그 결과 신규 유저와 기존 유저의 판 길이 차이가 <strong>1.25배</strong>에 그침. 같은 방식으로 측정한 타 3종은 3.4~3.6배임. 진행할수록 판이 무거워지는 감각이 사실상 없는 상태임.</p>
+
+  <h3>현행 믹스는 이미 카운터 2개가 결정하고 있음</h3>
+  <p>라이브 시트를 열어보면 <span class="sheet-var">default</span>는 사실상 아무 일도 하지 않음. Hard·Super Hard가 나오는 경로는 <strong>주기 보장 카운터 두 개</strong>뿐이고, 그 두 숫자가 믹스를 그대로 결정함.</p>
+  <table>
+    <thead><tr><th>규칙</th><th>라이브 param_1</th><th>산식</th><th>이론 비중</th><th>실측 비중</th></tr></thead>
+    <tbody>
+      <tr><td>hard_guarantee</td><td>6</td><td>1 ÷ (6+1)</td><td>14.3%</td><td>12.4%</td></tr>
+      <tr><td>super_hard_guarantee</td><td>15</td><td>1 ÷ (15+1)</td><td>6.3%</td><td>5.6%</td></tr>
+      <tr><td>hard_cooldown</td><td>1</td><td>상한 1 ÷ (1+1)</td><td>상한 50%</td><td>미도달</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <p><strong>이론값과 실측이 거의 정확히 일치함.</strong> 티어 믹스는 확률 구조가 아니라 카운터 주기로 이미 완전히 통제되고 있다는 뜻임. 따라서 믹스를 올리는 데 필요한 것은 <strong>가중치 테이블이 아니라 이 숫자를 낮추는 것</strong>임. <span class="sheet-var">hard_cooldown</span>은 1이라 상한 50%로 아무것도 묶고 있지 않음 — 손댈 필요 없음.</p>
+  </div>
 
   <h3>실측 근거 (2026-07-20~26 · FB Instant Games)</h3>
   <table>
@@ -219,45 +233,45 @@ ul li strong,ol li strong { color:var(--text); }
 
   <h3>확정 사항</h3>
   <ol>
-    <li><strong>기본 티어를 레벨 구간별 가중 추첨으로 전환함.</strong> 고정값 Normal 대신, 레벨 밴드마다 Normal·Hard·Super Hard 가중치를 두고 추첨함.</li>
-    <li><strong>레벨 밴드는 <span class="sheet-var">PST_level_entry_tier</span>와 동일하게 정렬함.</strong> 입장료·보상 구간과 난이도 구간이 어긋나지 않게 함.</li>
-    <li><strong>레벨 24 이하는 현행과 완전히 동일하게 동작함.</strong> 콘텐츠 해금이 끝나는 레벨 20 전후까지는 난이도를 건드리지 않음.</li>
-    <li><strong>Normal 티어 자체의 난이도는 손대지 않음.</strong> 완료율 98.7%로 가장 안정적인 구간이고 볼륨이 커서 리스크가 큼. 티어 내부가 아니라 티어 배정만 바꿈.</li>
-    <li><strong>기존 우선순위 규칙 1~7은 전부 유지함.</strong> 연패 구제·쿨다운·연승 보정·주기 보장은 그대로 두고, 어디에도 걸리지 않았을 때의 default만 교체함.</li>
-    <li><strong>Super Hard 비중은 최대 15%를 넘기지 않음.</strong> 중도 종료율이 최대 28%로 유일한 과부하 구간이라 확대 대상이 아님.</li>
+    <li><strong>신규 테이블을 만들지 않음.</strong> <span class="sheet-var">PST_dynamic_level</span>에 <span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span> 두 컬럼만 추가하고, 기존 규칙 행을 레벨 구간별로 복제함.</li>
+    <li><strong>가중치·추첨을 도입하지 않음.</strong> 이미 믹스를 결정하고 있는 <span class="sheet-var">hard_guarantee</span>·<span class="sheet-var">super_hard_guarantee</span>의 param_1만 레벨별로 다르게 둠. 난수가 개입하지 않아 결과가 결정론적이고 QA·검증이 쉬움.</li>
+    <li><strong>레벨 24 이하는 현행과 완전히 동일함.</strong> 콘텐츠 해금이 끝나는 레벨 20 전후까지는 난이도를 건드리지 않음.</li>
+    <li><strong>나머지 규칙은 전부 손대지 않음.</strong> <span class="sheet-var">fail_spiral</span>·<span class="sheet-var">fail_streak</span>·<span class="sheet-var">hard_cooldown</span>·<span class="sheet-var">default</span>는 현행 값 그대로 전 레벨 공통임.</li>
+    <li><strong>Normal 티어 자체의 난이도는 손대지 않음.</strong> 완료율 98.7%로 가장 안정적인 구간이고 볼륨이 커서 리스크가 큼. 티어 내부가 아니라 티어 배정 주기만 바꿈.</li>
+    <li><strong>Super Hard 비중은 최대 10%를 넘기지 않음.</strong> 중도 종료율이 최대 28%로 유일한 과부하 구간이라 확대 대상이 아님.</li>
   </ol>
 
-  <h3>기본 티어 가중치 (분모 10000)</h3>
+  <h3>레벨 구간별 카운터 값</h3>
+  <p>바꾸는 숫자는 <strong>행당 2개</strong>임. 비중은 <span class="sheet-var">1 ÷ (param_1 + 1)</span>로 바로 읽힘.</p>
   <table>
-    <thead><tr><th>레벨</th><th>Normal</th><th>Hard</th><th>Super Hard</th><th>Hard 쿨다운</th><th>예상 판 길이</th></tr></thead>
+    <thead><tr><th>레벨</th><th>hard_guarantee</th><th>super_hard_guarantee</th><th>Hard</th><th>Super Hard</th><th>Normal</th><th>예상 판 길이 p50</th></tr></thead>
     <tbody>
-      <tr><td>1 ~ 24</td><td>10000</td><td>0</td><td>0</td><td>5판</td><td>47초 (현행)</td></tr>
-      <tr><td>25 ~ 49</td><td>9000</td><td>1000</td><td>0</td><td>5판</td><td>49초</td></tr>
-      <tr><td>50 ~ 99</td><td>8000</td><td>2000</td><td>0</td><td>4판</td><td>51초</td></tr>
-      <tr><td>100 ~ 199</td><td>7000</td><td>3000</td><td>0</td><td>3판</td><td>53초</td></tr>
-      <tr><td>200 ~ 349</td><td>6000</td><td>3500</td><td>500</td><td>2판</td><td>56초</td></tr>
-      <tr><td>350 ~ 549</td><td>5500</td><td>3800</td><td>700</td><td>2판</td><td>57초</td></tr>
-      <tr><td>550 ~ 799</td><td>5000</td><td>4000</td><td>1000</td><td>1판</td><td>59초</td></tr>
-      <tr><td>800 ~ 1099</td><td>4500</td><td>4200</td><td>1300</td><td>1판</td><td>61초</td></tr>
-      <tr><td>1100 ~ 1449</td><td>4200</td><td>4300</td><td>1500</td><td>1판</td><td>62초</td></tr>
-      <tr><td>1450 이상</td><td>4000</td><td>4500</td><td>1500</td><td>1판</td><td>63초</td></tr>
+      <tr><td>1 ~ 24</td><td>6 (현행)</td><td>15 (현행)</td><td>14.3%</td><td>5.4%</td><td>80.4%</td><td>51초 (현행)</td></tr>
+      <tr><td>25 ~ 99</td><td>5</td><td>15</td><td>16.7%</td><td>5.2%</td><td>78.1%</td><td>53초</td></tr>
+      <tr><td>100 ~ 349</td><td>4</td><td>12</td><td>20.0%</td><td>6.2%</td><td>73.8%</td><td>54초</td></tr>
+      <tr><td>350 ~ 799</td><td>3</td><td>9</td><td>25.0%</td><td>7.5%</td><td>67.5%</td><td>55초</td></tr>
+      <tr><td>800 ~ 1449</td><td>2</td><td>7</td><td>33.3%</td><td>8.3%</td><td>58.4%</td><td>57초</td></tr>
+      <tr><td>1450 이상</td><td>1</td><td>6</td><td>50.0%</td><td>7.1%</td><td>42.9%</td><td>60초</td></tr>
     </tbody>
   </table>
-  <div class="callout callout-yellow">
-    <p><strong>Hard 쿨다운을 같이 내려야 가중치가 실제로 먹음.</strong> 현행 <span class="sheet-var">hard_cooldown</span>은 5판이라 Hard 이상이 나올 수 있는 실효 상한이 1/6, 즉 16.7%로 묶임. 가중치를 아무리 올려도 쿨다운이 눌러버림. 실효 상한은 <strong>1 ÷ (1 + 쿨다운)</strong>이라 밴드별로 쿨다운을 함께 낮춤.</p>
+  <div class="callout callout-blue">
+    <p><strong>판 길이는 Normal 47초 · Hard 66초 · Super Hard 94초 실측에 비중을 가중해 산출함.</strong> <span class="sheet-var">hard_cooldown</span>은 라이브 값 1로 전 밴드 동일하게 유지함. 최상위 밴드의 <span class="sheet-var">hard_guarantee 1</span>에서도 Hard 이상 비중이 쿨다운 상한 50%를 넘지 않아 충돌하지 않음.</p>
   </div>
 
   <h3>기대 결과</h3>
   <table>
     <thead><tr><th>지표</th><th>현행</th><th>목표</th></tr></thead>
     <tbody>
-      <tr><td>고레벨 구간 판 길이 p50</td><td>47초</td><td>60초 내외</td></tr>
+      <tr><td>최상위 밴드 판 길이 p50</td><td>51초</td><td>60초 내외</td></tr>
       <tr><td>신규 → 기존 판 길이 램프</td><td>1.25배</td><td>1.5~1.6배</td></tr>
-      <tr><td>유저-일당 인게임 시간</td><td>818초</td><td>950~1,050초</td></tr>
-      <tr><td>Normal 티어 비중 (튜토 제외)</td><td>80.9%</td><td>45~55%</td></tr>
+      <tr><td>유저-일당 인게임 시간</td><td>818초</td><td>900~1,000초</td></tr>
+      <tr><td>Normal 티어 비중 (최상위 밴드)</td><td>80.4%</td><td>43% 내외</td></tr>
       <tr><td>판 완료율 (튜토 제외)</td><td>98.0%</td><td>유지</td></tr>
     </tbody>
   </table>
+  <div class="callout callout-yellow">
+    <p><strong>전체 평균 Normal 비중은 목표로 잡지 않음.</strong> 레벨 분포가 아직 로그에 없어 밴드 가중 평균을 계산할 수 없음. 판정은 <strong>밴드별로 분리해서</strong> 함.</p>
+  </div>
   <div class="callout callout-purple">
     <p><strong>목표는 판을 길게 만드는 것이 아니라 레벨에 따라 무거워지게 만드는 것임.</strong> 성과 판정은 판 길이 단독이 아니라 D7·D14 리텐션과 세션 수로 함.</p>
   </div>
@@ -265,7 +279,8 @@ ul li strong,ol li strong { color:var(--text); }
   <h3>범위 밖</h3>
   <ul>
     <li><strong>튜토리얼 티어 이탈</strong> — 판 미완료의 86.9%가 튜토리얼 티어에서 발생하지만 난이도가 아니라 FTUE 문제임. 별도 트랙에서 다룸.</li>
-    <li><strong>Super Hard 구제장치</strong> — <span class="sheet-var">help_card_rate 0</span>·<span class="sheet-var">pity_trigger_count 99</span>로 구제 수단이 없고 중도 종료율이 최대 28%임. 별도 스펙으로 분리함.</li>
+    <li><strong>Super Hard 구제장치</strong> — <span class="sheet-var">deck_help_rate 625</span>·<span class="sheet-var">field_help_rate 375</span>·<span class="sheet-var">pity_trigger_count 99</span>로 구제가 사실상 없고 중도 종료율이 최대 28%임. 별도 스펙으로 분리함.</li>
+    <li><strong>비활성 규칙 정리</strong> — <span class="sheet-var">win_streak</span> 행은 param_1 99 · in_use FALSE로 꺼져 있음. 이번 스펙에서 되살리지 않음.</li>
   </ul>
 </section>
 
@@ -281,53 +296,70 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
   </div>
 
-  <h3>현행 로직</h3>
-  <p><span class="sheet-var">PST_dynamic_level</span>을 priority 오름차순으로 평가해 첫 매칭 티어를 사용함. 어디에도 안 걸리면 priority 99의 default가 적용되고, 그 값이 <strong>Normal 고정</strong>임.</p>
+  <h3>현행 로직 (라이브 시트 기준 · 2026-07-28 확인)</h3>
+  <p><span class="sheet-var">PST_dynamic_level</span>을 priority 오름차순으로 평가해 첫 매칭 티어를 사용함. 아래가 라이브 실제 값임.</p>
   <table>
-    <thead><tr><th>priority</th><th>condition_type</th><th>param_1</th><th>결과 티어</th><th>변경 여부</th></tr></thead>
+    <thead><tr><th>key</th><th>priority</th><th>condition_type</th><th>param_1</th><th>param_2</th><th>티어</th><th>in_use</th><th>변경</th></tr></thead>
     <tbody>
-      <tr><td>1</td><td>user_level_range</td><td>1~8</td><td>Tutorial</td><td>유지</td></tr>
-      <tr><td>2</td><td>user_level_specific</td><td>9~10</td><td>Normal</td><td>유지</td></tr>
-      <tr><td>3</td><td>fail_streak</td><td>2</td><td>Normal</td><td>유지</td></tr>
-      <tr><td>4</td><td>hard_cooldown</td><td>5</td><td>Normal</td><td><strong>레벨 밴드별 값으로 교체</strong></td></tr>
-      <tr><td>5</td><td>win_streak</td><td>7</td><td>Super Hard</td><td>유지</td></tr>
-      <tr><td>6</td><td>super_hard_guarantee</td><td>30</td><td>Super Hard</td><td>유지</td></tr>
-      <tr><td>7</td><td>hard_guarantee</td><td>15</td><td>Hard</td><td>유지</td></tr>
-      <tr><td>99</td><td>default</td><td>—</td><td>Normal</td><td><strong>가중 추첨으로 교체</strong></td></tr>
+      <tr><td>30001</td><td>1</td><td>user_level_range</td><td>1</td><td>8</td><td>Tutorial</td><td>TRUE</td><td>유지</td></tr>
+      <tr><td>30002</td><td>2</td><td>user_level_specific</td><td>9</td><td>10</td><td>Normal</td><td>TRUE</td><td>유지</td></tr>
+      <tr><td>30009</td><td>3</td><td>fail_spiral</td><td>5</td><td>5</td><td>Normal</td><td>TRUE</td><td>유지</td></tr>
+      <tr><td>30003</td><td>4</td><td>fail_streak</td><td>2</td><td>0</td><td>Normal</td><td>TRUE</td><td>유지</td></tr>
+      <tr><td>30004</td><td>5</td><td>hard_cooldown</td><td>1</td><td>0</td><td>Normal</td><td>TRUE</td><td>유지</td></tr>
+      <tr><td>30007</td><td>6</td><td>super_hard_guarantee</td><td>15</td><td>0</td><td>Super Hard</td><td>TRUE</td><td><strong>레벨 구간 행 추가</strong></td></tr>
+      <tr><td>30006</td><td>7</td><td>hard_guarantee</td><td>6</td><td>0</td><td>Hard</td><td>TRUE</td><td><strong>레벨 구간 행 추가</strong></td></tr>
+      <tr><td>30005</td><td>100</td><td>win_streak</td><td>99</td><td>0</td><td>Super Hard</td><td>FALSE</td><td>유지 (비활성)</td></tr>
+      <tr><td>30008</td><td>99</td><td>default</td><td>0</td><td>0</td><td>Normal</td><td>TRUE</td><td>유지</td></tr>
     </tbody>
   </table>
-
-  <h3>신규 테이블 — PST_level_default_tier</h3>
-  <div class="sheet-block">
-    <div class="sheet-block-title">컬럼 정의</div>
-    <div class="sheet-row"><span class="sheet-row-var">key_number</span><span class="sheet-row-default">240001~</span><span class="sheet-row-unit">정수</span><span class="sheet-row-desc">행 고유 번호</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">level_min</span><span class="sheet-row-default">1</span><span class="sheet-row-unit">정수</span><span class="sheet-row-desc">밴드 시작 레벨 (이상)</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">level_max</span><span class="sheet-row-default">24</span><span class="sheet-row-unit">정수</span><span class="sheet-row-desc">밴드 끝 레벨 (이하)</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">weight_tier2</span><span class="sheet-row-default">10000</span><span class="sheet-row-unit">분모 10000</span><span class="sheet-row-desc">Normal 추첨 가중치</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">weight_tier3</span><span class="sheet-row-default">0</span><span class="sheet-row-unit">분모 10000</span><span class="sheet-row-desc">Hard 추첨 가중치</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">weight_tier4</span><span class="sheet-row-default">0</span><span class="sheet-row-unit">분모 10000</span><span class="sheet-row-desc">Super Hard 추첨 가중치</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">hard_cooldown</span><span class="sheet-row-default">5</span><span class="sheet-row-unit">판</span><span class="sheet-row-desc">Hard 이상 배정 후 Normal 강제 판수. dynamic_level priority 4의 param_1을 이 값으로 덮어씀</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">in_use</span><span class="sheet-row-default">TRUE</span><span class="sheet-row-unit">불리언</span><span class="sheet-row-desc">행 활성 여부</span></div>
+  <div class="callout callout-yellow">
+    <p><strong>스펙 초안의 현행 수치는 구버전 스냅샷이었음.</strong> 초안은 <span class="sheet-var">hard_cooldown 5 · hard_guarantee 15 · super_hard_guarantee 30</span>을 전제했으나 라이브는 각각 <strong>1 · 6 · 15</strong>임. "쿨다운 5가 실효 상한을 16.7%로 묶는다"는 초안의 논거는 성립하지 않음 — 라이브 쿨다운 1은 상한 50%라 병목이 아님.</p>
   </div>
-  <p>행 데이터는 ① 섹션의 가중치 표를 그대로 사용함. Tutorial(20001)은 추첨 대상이 아님 — priority 1 규칙으로만 배정됨.</p>
+
+  <h3>시트 변경 — 신규 테이블 없음, 컬럼 2개 추가</h3>
+  <div class="sheet-block">
+    <div class="sheet-block-title">PST_dynamic_level 추가 컬럼</div>
+    <div class="sheet-row"><span class="sheet-row-var">level_min</span><span class="sheet-row-default">공란</span><span class="sheet-row-unit">정수</span><span class="sheet-row-desc">이 행이 적용되는 최소 유저 레벨 (이상). 공란이면 전 레벨</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">level_max</span><span class="sheet-row-default">공란</span><span class="sheet-row-unit">정수</span><span class="sheet-row-desc">이 행이 적용되는 최대 유저 레벨 (이하). 공란이면 전 레벨</span></div>
+  </div>
+  <p>기존 9개 행은 두 컬럼 모두 <strong>공란</strong>으로 두어 현행 동작을 그대로 유지함. 여기에 <span class="sheet-var">hard_guarantee</span> 5행 · <span class="sheet-var">super_hard_guarantee</span> 5행, 총 <strong>10행만 신규 추가</strong>함. 레벨 1~24 밴드는 기존 행이 그대로 담당하므로 별도 행이 필요 없음.</p>
+
+  <h3>추가 행</h3>
+  <table>
+    <thead><tr><th>key_number</th><th>priority</th><th>condition_type</th><th>param_1</th><th>level_min</th><th>level_max</th><th>result_tier_id</th></tr></thead>
+    <tbody>
+      <tr><td>30010</td><td>6</td><td>super_hard_guarantee</td><td>15</td><td>25</td><td>99</td><td>4</td></tr>
+      <tr><td>30011</td><td>6</td><td>super_hard_guarantee</td><td>12</td><td>100</td><td>349</td><td>4</td></tr>
+      <tr><td>30012</td><td>6</td><td>super_hard_guarantee</td><td>9</td><td>350</td><td>799</td><td>4</td></tr>
+      <tr><td>30013</td><td>6</td><td>super_hard_guarantee</td><td>7</td><td>800</td><td>1449</td><td>4</td></tr>
+      <tr><td>30014</td><td>6</td><td>super_hard_guarantee</td><td>6</td><td>1450</td><td>99999</td><td>4</td></tr>
+      <tr><td>30015</td><td>7</td><td>hard_guarantee</td><td>5</td><td>25</td><td>99</td><td>3</td></tr>
+      <tr><td>30016</td><td>7</td><td>hard_guarantee</td><td>4</td><td>100</td><td>349</td><td>3</td></tr>
+      <tr><td>30017</td><td>7</td><td>hard_guarantee</td><td>3</td><td>350</td><td>799</td><td>3</td></tr>
+      <tr><td>30018</td><td>7</td><td>hard_guarantee</td><td>2</td><td>800</td><td>1449</td><td>3</td></tr>
+      <tr><td>30019</td><td>7</td><td>hard_guarantee</td><td>1</td><td>1450</td><td>99999</td><td>3</td></tr>
+    </tbody>
+  </table>
+  <p>30010은 25~99 구간에서 현행값 15를 그대로 쓰므로 값 자체는 변하지 않지만, 구간 연속성을 위해 명시적으로 둠.</p>
 
   <h3>변경 로직</h3>
-  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>priority 1~7 평가 (현행 그대로)</strong><p>매칭되면 해당 티어로 확정하고 종료함. 단 priority 4 <span class="sheet-var">hard_cooldown</span>의 판수는 고정 5가 아니라 유저 레벨 밴드의 <span class="sheet-var">hard_cooldown</span> 값을 사용함.</p></div></div>
-  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>default 진입 시 레벨 밴드 조회</strong><p>유저의 현재 레벨로 <span class="sheet-var">PST_level_default_tier</span>에서 <span class="sheet-var">level_min ≤ 레벨 ≤ level_max</span> 이면서 <span class="sheet-var">in_use = TRUE</span>인 행을 찾음.</p></div></div>
-  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>가중 추첨</strong><p>세 가중치의 합을 분모로 난수 추첨해 Normal·Hard·Super Hard 중 하나를 배정함.</p></div></div>
-  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>쿨다운 갱신</strong><p>결과가 Hard 또는 Super Hard면 쿨다운 카운터를 밴드의 <span class="sheet-var">hard_cooldown</span> 값으로 세팅함. 쿨다운은 Hard와 Super Hard <strong>공통</strong>으로 적용함.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>레벨 필터를 먼저 적용함</strong><p>규칙 평가 전에 <span class="sheet-var">level_min ≤ 유저 레벨 ≤ level_max</span>를 만족하지 않는 행을 제외함. 두 값이 공란인 행은 항상 통과함.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>같은 condition_type이 둘 이상 남으면 레벨 조건이 있는 행이 이김</strong><p><span class="sheet-var">level_min</span>이 지정된 행이 공란 행을 덮어씀. 지정 행이 없으면 공란 행이 적용됨.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>이후는 현행과 완전히 동일함</strong><p>priority 오름차순 평가 → 첫 매칭 티어 확정. 카운터·쿨다운·default 동작 모두 변경 없음.</p></div></div>
+  <div class="callout callout-purple">
+    <p><strong>클라이언트 변경은 규칙 목록을 거르는 필터 한 겹이 전부임.</strong> 난수 추첨기·신규 테이블 로더·가중치 정규화가 모두 필요 없음.</p>
+  </div>
 
   <h3>엣지케이스</h3>
   <table>
     <thead><tr><th>상황</th><th>처리</th></tr></thead>
     <tbody>
-      <tr><td>레벨에 맞는 밴드 행이 없음</td><td>Normal로 폴백하고 경고 로그를 남김. 게임 진행은 막지 않음</td></tr>
-      <tr><td>가중치 합이 10000이 아님</td><td>실제 합을 분모로 정규화해 처리하고 경고 로그를 남김</td></tr>
-      <tr><td>가중치가 전부 0</td><td>Normal로 폴백함</td></tr>
-      <tr><td>밴드 구간이 겹치거나 비어 있음</td><td>시트 검증 단계에서 차단함. 배포 전 구간 연속성 검사 필수</td></tr>
+      <tr><td>레벨에 맞는 구간 행이 없음</td><td>공란 행(현행값)이 그대로 적용됨. 폴백이 곧 현행 동작이라 안전함</td></tr>
+      <tr><td>같은 레벨에 구간 행이 2개 이상 겹침</td><td>key_number가 작은 행을 적용하고 경고 로그를 남김. 배포 전 구간 중복·공백 검사 필수</td></tr>
       <tr><td>판 진행 중 레벨업</td><td>티어는 판 진입 시점의 레벨로 확정하고, 진행 중에는 재평가하지 않음</td></tr>
-      <tr><td>2연패 직후</td><td>priority 3 <span class="sheet-var">fail_streak</span>이 먼저 걸려 Normal로 내려감. 추첨을 타지 않음</td></tr>
-      <tr><td>in_use = FALSE로 전체 비활성</td><td>기존 default(Normal 고정) 동작으로 복귀함. 이것이 롤백 경로임</td></tr>
+      <tr><td>밴드 경계에서 레벨업</td><td>카운터는 리셋하지 않고 이어감. 다음 평가부터 새 param_1이 적용됨</td></tr>
+      <tr><td>연패 직후</td><td>priority 3·4의 <span class="sheet-var">fail_spiral</span>·<span class="sheet-var">fail_streak</span>이 먼저 걸려 Normal로 내려감. 변경 영향 없음</td></tr>
+      <tr><td>롤백</td><td>추가한 10행의 <span class="sheet-var">in_use</span>를 FALSE로 내리면 즉시 현행 복귀함. 클라이언트 재배포 불필요</td></tr>
     </tbody>
   </table>
 
@@ -336,14 +368,14 @@ ul li strong,ol li strong { color:var(--text); }
     <p><strong>입장료는 티어와 무관하게 동일한데 보상은 티어에 비례함.</strong> 실측 입장료 p50은 네 티어 모두 2,600골드로 같지만 <span class="sheet-var">reward_hammer</span>는 1 → 2 → 3으로 올라감. 티어 믹스를 올리면 입장료 유입은 그대로인 채 해머 발행만 늘어남.</p>
   </div>
   <table>
-    <thead><tr><th>항목</th><th>현행</th><th>적용 후 (최상위 밴드)</th><th>영향</th></tr></thead>
+    <thead><tr><th>항목</th><th>현행 (튜토 제외)</th><th>적용 후 (최상위 밴드)</th><th>영향</th></tr></thead>
     <tbody>
-      <tr><td>판당 평균 reward_hammer</td><td>1.26</td><td>1.75</td><td>해머 발행 +39%</td></tr>
+      <tr><td>판당 평균 reward_hammer</td><td>1.23</td><td>1.64</td><td>해머 발행 +33%</td></tr>
       <tr><td>판당 입장료 p50</td><td>2,600골드</td><td>2,600골드</td><td>변동 없음</td></tr>
       <tr><td>부스터 사용률</td><td>39% (Normal)</td><td>67~77% (Hard 이상)</td><td>아이템 소모 증가</td></tr>
     </tbody>
   </table>
-  <p>진행 중인 골드 경제 조정과 직접 충돌하는 지점임. <strong>해머 발행 증가분을 감안한 시트 조정이 같은 배포에 포함돼야 함.</strong></p>
+  <p>해머 발행 증가는 최상위 밴드에만 걸리고 하위 밴드는 증가폭이 훨씬 작음. 진행 중인 골드 경제 조정과 겹치는 지점이므로 <strong>밴드별 해머 발행량을 측정한 뒤 조정 여부를 판단함</strong>. 초안과 달리 같은 배포에 묶지 않음 — 밴드를 단계적으로 여는 방식이라 한 번에 전량이 들어오지 않음.</p>
 </section>
 
 <!-- ════════════════════════════════════
@@ -359,7 +391,7 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <div class="callout callout-yellow">
-    <p><strong>선행 블로커 — 유저 레벨이 로그에 없음.</strong> 현재 <span class="sheet-var">2100_GAMEPLAY_START</span>·<span class="sheet-var">2300_GAMEPLAY_FINISH</span>·<span class="sheet-var">1000_LOGIN_COMPLETE</span> 어디에도 레벨 필드가 없음. 레벨 밴드별 효과를 측정할 수단이 전혀 없는 상태라 <strong>로깅 추가가 가중치 확정보다 먼저임</strong>.</p>
+    <p><strong>선행 블로커 — 유저 레벨이 로그에 없음.</strong> 현재 <span class="sheet-var">2100_GAMEPLAY_START</span>·<span class="sheet-var">2300_GAMEPLAY_FINISH</span>·<span class="sheet-var">1000_LOGIN_COMPLETE</span> 어디에도 레벨 필드가 없음. 레벨 밴드별 효과를 측정할 수단이 전혀 없는 상태라 <strong>로깅 추가가 밴드 구간 확정보다 먼저임</strong>. ① 섹션의 구간 경계는 레벨 분포 실측 후 조정 대상임.</p>
   </div>
 
   <h3>로깅 추가 요청</h3>
@@ -367,39 +399,44 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>이벤트</th><th>추가 필드</th><th>타입</th><th>용도</th></tr></thead>
     <tbody>
       <tr><td>2100_GAMEPLAY_START</td><td><span class="sheet-var">user_level</span></td><td>정수</td><td>판 진입 시점 레벨. 밴드별 진입·완료 집계의 기준</td></tr>
-      <tr><td>2100_GAMEPLAY_START</td><td><span class="sheet-var">tier_reason</span></td><td>문자열</td><td>티어가 결정된 규칙. <span class="sheet-var">default_roll</span> / <span class="sheet-var">hard_guarantee</span> / <span class="sheet-var">win_streak</span> / <span class="sheet-var">fail_streak</span> / <span class="sheet-var">hard_cooldown</span> / <span class="sheet-var">level_range</span></td></tr>
+      <tr><td>2100_GAMEPLAY_START</td><td><span class="sheet-var">tier_reason</span> (권장)</td><td>문자열</td><td>티어를 확정한 규칙의 condition_type. <span class="sheet-var">hard_guarantee</span> / <span class="sheet-var">super_hard_guarantee</span> / <span class="sheet-var">fail_spiral</span> / <span class="sheet-var">fail_streak</span> / <span class="sheet-var">hard_cooldown</span> / <span class="sheet-var">user_level_range</span> / <span class="sheet-var">default</span></td></tr>
       <tr><td>2300_GAMEPLAY_FINISH</td><td><span class="sheet-var">user_level</span></td><td>정수</td><td>완료 판의 레벨. 판 길이·중도 종료율을 밴드별로 분리</td></tr>
     </tbody>
   </table>
-  <p><span class="sheet-var">tier_reason</span>이 없으면 추첨으로 나온 판과 주기 보장으로 나온 판을 구분할 수 없어 가중치 튜닝이 불가능함. 같이 실어야 함.</p>
+  <p><span class="sheet-var">user_level</span>이 필수임. 레벨이 없으면 밴드별 효과를 아예 분리할 수 없음. <span class="sheet-var">tier_reason</span>은 주기 보장으로 나온 판과 연패 구제로 내려간 판을 구분하는 용도로 권장이지만, 이번 설계는 결정론적이라 없어도 판정은 가능함.</p>
 
   <h3>진행 단계</h3>
-  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>로깅 추가 배포</strong><p>클라이언트에 <span class="sheet-var">user_level</span>·<span class="sheet-var">tier_reason</span> 실음. 로직 변경은 포함하지 않음</p></div></div>
-  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>레벨 분포 실측 (1주)</strong><p>레벨 밴드별 유저 수·판수 분포를 확인하고 ① 섹션의 가중치를 실제 분포에 맞게 확정함</p></div></div>
-  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>시트 반영</strong><p><span class="sheet-var">PST_level_default_tier</span> 신규 테이블 생성 및 <span class="sheet-var">PST_dynamic_level</span> priority 4·99 로직 교체</p></div></div>
-  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>50% A/B 2주</strong><p>레벨 25 이상 유저만 대상. 24 이하는 어차피 현행과 동일해 분모에서 제외함</p></div></div>
-  <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>전체 적용 또는 롤백</strong><p>아래 판정 기준으로 결정함</p></div></div>
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>로깅 추가 배포</strong><p>클라이언트에 <span class="sheet-var">user_level</span>을 실음. 로직 변경은 포함하지 않음</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>레벨 분포 실측 (1주)</strong><p>밴드별 유저 수·판수 분포를 확인함. 유저가 거의 없는 밴드는 병합하고 몰려 있는 밴드는 쪼갬</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>레벨 필터 로직 + 컬럼 2개 배포</strong><p><span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span>를 전 행 공란으로 둔 채 배포함. 이 시점에는 동작이 현행과 100% 동일해야 함 — 무변경 확인이 곧 검증임</p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>상위 밴드부터 단계 개방</strong><p>최상위 밴드(1450+) 행부터 <span class="sheet-var">in_use</span>를 켜고 1주 관측. 이상 없으면 아래 밴드로 한 단계씩 내림. 유저 수가 가장 적고 숙련도가 가장 높은 구간부터 여는 순서임</p></div></div>
+  <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>밴드별 확정 또는 되돌림</strong><p>아래 판정 기준으로 밴드 단위로 결정함. 전체 롤백이 아니라 밴드 단위 조정이 기본임</p></div></div>
+  <div class="callout callout-purple">
+    <p><strong>A/B 대신 단계 개방을 택함.</strong> 밴드마다 대상 유저 수가 다르고 상위 밴드는 표본이 작아 A/B 분할 시 유의성이 안 나옴. 밴드를 하나씩 여는 방식이면 밴드 자체가 실험 단위가 되고, 되돌리는 비용도 시트 셀 하나임.</p>
+  </div>
 
   <h3>검증 지표 — 레벨 밴드별로 분리해서 봄</h3>
   <table>
     <thead><tr><th>지표</th><th>산식</th><th>합격 기준</th></tr></thead>
     <tbody>
-      <tr><td>판 길이 p50</td><td>2300의 play_time 중앙값</td><td>고레벨 밴드 58초 이상</td></tr>
+      <tr><td>티어 믹스</td><td>밴드별 tier_id 분포</td><td>이론값 1÷(param_1+1) 대비 ±3%p</td></tr>
+      <tr><td>판 길이 p50</td><td>2300의 play_time 중앙값</td><td>밴드 목표치 −3초 이내</td></tr>
       <tr><td>판 완료율</td><td>2300 수 ÷ 2100 수</td><td>96% 이상 유지</td></tr>
       <tr><td>중도 종료율</td><td>2300 중 result가 fail인 비율</td><td>밴드별 8% 이하</td></tr>
       <tr><td>유저-일당 판수</td><td>2300 수 ÷ 유저-일</td><td>현행 대비 −15% 이내</td></tr>
       <tr><td>유저-일당 인게임 시간</td><td>유저-일 play_time 합</td><td>현행 818초 대비 상승</td></tr>
-      <tr><td>D7 · D14 리텐션</td><td>신규 코호트 n일 뒤 로그인 비율</td><td>대조군 대비 하락 없음</td></tr>
-      <tr><td>해머 발행량</td><td>판당 평균 reward_hammer</td><td>경제 조정치 범위 내</td></tr>
+      <tr><td>D7 · D14 리텐션</td><td>신규 코호트 n일 뒤 로그인 비율</td><td>개방 전 대비 하락 없음</td></tr>
+      <tr><td>해머 발행량</td><td>밴드별 판당 평균 reward_hammer</td><td>경제 조정 판단 근거로 기록</td></tr>
     </tbody>
   </table>
+  <p>첫 번째 지표가 핵심임. <strong>티어 믹스가 이론값과 맞는지부터 확인해야</strong> 이후 지표 해석이 가능함. 안 맞으면 카운터 리셋 조건이 예상과 다르다는 뜻이라 수치 튜닝 전에 로직부터 봐야 함.</p>
 
   <h3>롤백 기준</h3>
   <ul>
-    <li><strong>판 완료율이 96% 미만</strong>으로 떨어지면 즉시 롤백함</li>
-    <li><strong>어느 밴드든 중도 종료율이 8%를 초과</strong>하면 해당 밴드 가중치를 한 단계 낮춤. 두 번 낮춰도 안 잡히면 그 밴드를 Normal 고정으로 되돌림</li>
-    <li><strong>D7 리텐션이 대조군 대비 하락</strong>하면 판 길이가 올라갔더라도 실패로 판정함</li>
-    <li>롤백 경로는 <span class="sheet-var">in_use</span>를 FALSE로 내리는 것임. 클라이언트 재배포 없이 시트만으로 현행 동작 복귀가 가능해야 함</li>
+    <li><strong>판 완료율이 96% 미만</strong>으로 떨어지면 해당 밴드를 즉시 되돌림</li>
+    <li><strong>어느 밴드든 중도 종료율이 8%를 초과</strong>하면 그 밴드의 param_1을 한 단계 올림(=난이도 완화). 두 번 올려도 안 잡히면 그 밴드 행을 <span class="sheet-var">in_use</span> FALSE로 내림</li>
+    <li><strong>D7 리텐션이 개방 전 대비 하락</strong>하면 판 길이가 올라갔더라도 실패로 판정함</li>
+    <li>롤백 경로는 추가 행의 <span class="sheet-var">in_use</span>를 FALSE로 내리는 것임. 클라이언트 재배포 없이 시트만으로 현행 동작 복귀가 가능해야 함</li>
   </ul>
 
   <div class="callout callout-blue">
