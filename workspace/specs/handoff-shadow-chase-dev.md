@@ -47,7 +47,7 @@
 - [ ] ★**세션 상한 소진 시 이월(필수)** — 발동 연출이 팝업 체인 마지막 순번이라 앞 팝업이 세션 상한을 소진하면 큐에서 잘릴 수 있음. **잘라내지 말고 다음 로비 복귀로 이월**할 것. 연출 재생 = 타이머 시작이므로 스킵되면 `5441` 미발화 + **사이클 통째 유실**
 - [ ] 이월 중: `cooldown_sec` 타이머 **미시작** · `5440` **재발화 없음**(중복 계상 방지) · 이벤트 기간 이탈 시 보류분 폐기
 - [ ] 이월 상태는 enum 추가 없이 **IDLE + 보류 플래그**로 유지 (연출 재생 = `GRAB` 진입)
-- [ ] 언락 인트로와 발동 조건이 같은 진입에 겹치면 → **언락 인트로 먼저, 발동 연출은 이월**(같은 진입 2모달 금지)
+- [ ] **언락 인트로 없음** — `unlock.show_tutorial=FALSE` · `tutorial_guide` 미등록. Lv10 클리어 직후 조건이 맞으면 **발동 연출이 바로 재생**되며 2모달 충돌이 없음
 - [ ] 사이클 종료(성공/실패 무관) → `cooldown_sec`(43200) 재트리거 대기. `cooldown_until` 서버 저장. **기준점 = 사이클 종료 시각**(발동 시각 아님)
 - [ ] 타이머 권위 = **서버 시간(wall-clock)**. 재접속 시 remaining 재계산·복원
 - [ ] 기간 종료를 넘겨도 진행 중 유저는 개인 타이머까지 완주 인정(`grace_after_window=TRUE`) — **해당 유예 구간에 신규 발동은 없어야 함**
@@ -148,7 +148,7 @@
 - [ ] 진행 저장: 서버 `TPlayer.event_infos`에 `ShadowChaseInfo`
 - [ ] 신규 시트 탭 로드: `event_shadow_sprint`(**8변수** — 기존 5 + `ad_extend_threshold_sec`·`ad_extend_sec`·`ad_extend_max_per_cycle`) · `event_shadow_chest`(Normal 6행) — 번들 JSON + balance-sheet 로더 등록
 - [ ] `event_shadow_sprint`는 v1 1행 고정이나, **레벨 구간 차등이 필요해지면 `level_min`/`level_max` 컬럼을 가진 다행 구조로 확장**될 수 있음 — 로더를 단일 행 전제로 하드코딩하지 말 것
-- [ ] `unlock` 50031(`content_event_shadow_chase`·`level_clear`·10) — 별도 튜토리얼 없음(`tutorial_guide` 미등록). 클라 코드 등록 불필요(데이터 참조)
+- [ ] `unlock` 50031(`content_event_shadow_chase`·`level_clear`·10·**`show_tutorial=FALSE`**) — 별도 튜토리얼·언락 인트로 없음(`tutorial_guide` 미등록). 클라 코드 등록 불필요(데이터 참조)
 - [ ] string_code `T_SHADOW_CHASE_*` **8키** 등록 (`T_SHADOW_CHASE_FAIL_FLEE`·`T_SHADOW_CHASE_CHEST_NO_MULTIPLY` 미사용)
 - [ ] `reward_key`는 전부 **라이브 `item_list` 실존 키**만 사용 → 신규 아이템 등록 불필요. 열쇠는 연출 상징이며 **실아이템 아님**
 - [ ] ★개발 확인 ①: `goal_type=complete_sprint_cycle` 서버 처리(2차 저니용 — v1 훅만)
@@ -187,7 +187,7 @@
 - `5443.chest_tier` — 없으면 Normal/Jackpot 구분 불가 → "데코 진입률" 산출 불능
 - `5445.amount` — `balance_after`만으로는 다른 경로 획득분과 섞여 발행량 역산 불가
 - `5442.round_idx` — `total_rounds`가 시트 변수(6판 해피데이 운영 레버)인데 `1~8` 고정이면 차등 세팅 시 스키마 파손
-- `5442.level_id`/`round_sec` — **레벨 구간별 판당 소요 실측**에 직결
+- `5442.stage_id`/`play_time` — **레벨 구간별 판당 소요 실측**에 직결. **신규 필드가 아니라 `2300_GAMEPLAY_FINISH`가 이미 보내는 필드명**을 그대로 사용
 - `5441.fx_completed` — 강제 시청 구간 이탈 측정
 - `5440.deferred`/`fire_side` — 참여율(`5441÷5440`) 분모 정의. 이월분이 분모를 부풀리지 않게 분리
 
@@ -198,7 +198,7 @@
 
 ---
 
-## 8. 미결 — 개발 확인 4건
+## 8. 미결 — 개발 확인 5건
 
 | # | 항목 | 내용 |
 |---|---|---|
@@ -206,6 +206,7 @@
 | ② | `event_id=0` | milestone/sprint의 비귀속 관례 수용 여부 |
 | ③ | 판정 주체 | 기간·쿨다운을 서버 스케줄 push vs 클라 시각 판정(서버 시간 기준) 중 택 |
 | ④ | **타임존** | 월~목 경계 판정 기준(서버 UTC / 서버 로컬 / 유저 로컬). 서구권 타깃이라 기준에 따라 지역별 창이 어긋남 — ③과 함께 확정 |
+| ⑤ | **`cycle_id` 형식** | 발급 주체(서버)·시점(`5440`)·이월 시 유지는 확정. 남은 것은 **문자열 형식과 전역/유저 단위 유일성** |
 
 **확정 사항(질문 아님)** — 팝업 세션 상한 소진 시 발동 연출은 **잘라내지 말고 다음 로비 복귀로 이월**.
 
