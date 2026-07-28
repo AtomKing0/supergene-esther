@@ -4,7 +4,6 @@
 > 상세 명세 = `spec-027-shadow-chase.html` · 로비 팝업 규칙 = `handoff-lobby-popup-seq.md` · QA = `handoff-shadow-chase-qa.md`
 
 > **7-28 변경 요약**
-> ① 팝업 세션 상한 시 발동 연출 **이월**(유실 금지) — 신규 필수 규칙
 > ② **보상 수령 = 로비 체스트 오픈 팝업**(결과 화면 무변경 — 열쇠 획득 표시만)
 > ③ **타이머 말풍선 [+5 min]** 연장 추가 — **드롭 가능 항목**
 > ④ 실패 처리는 **비노출 전환만**(토스트 없음·`T_SHADOW_CHASE_FAIL_FLEE` 삭제)
@@ -44,9 +43,6 @@
 - [ ] 발동 조건 평가(로비 복귀 시): **기간 내 AND 쿨다운 경과 AND 미진행 중 AND 언락 완료** → 충족 시 발동 시퀀스 연출 자동 재생
 - [ ] 발동 순번: **기존 로비 팝업 체인(`runWinFlow`) 마지막 순번**에 추가 — 보상 정산·출석 등 우선 팝업 소화 후
 - [ ] 사이클당 1회: 발동 연출은 사이클 시작 시 1회만. **타이머 시작 = 연출 종료 시점**
-- [ ] ★**세션 상한 소진 시 이월(필수)** — 발동 연출이 팝업 체인 마지막 순번이라 앞 팝업이 세션 상한을 소진하면 큐에서 잘릴 수 있음. **잘라내지 말고 다음 로비 복귀로 이월**할 것. 연출 재생 = 타이머 시작이므로 스킵되면 `5441` 미발화 + **사이클 통째 유실**
-- [ ] 이월 중: `cooldown_sec` 타이머 **미시작** · `5440` **재발화 없음**(중복 계상 방지) · 이벤트 기간 이탈 시 보류분 폐기
-- [ ] 이월 상태는 enum 추가 없이 **IDLE + 보류 플래그**로 유지 (연출 재생 = `GRAB` 진입)
 - [ ] **언락 인트로 없음** — `unlock.show_tutorial=FALSE` · `tutorial_guide` 미등록. Lv10 클리어 직후 조건이 맞으면 **발동 연출이 바로 재생**되며 2모달 충돌이 없음
 - [ ] 사이클 종료(성공/실패 무관) → `cooldown_sec`(43200) 재트리거 대기. `cooldown_until` 서버 저장. **기준점 = 사이클 종료 시각**(발동 시각 아님)
 - [ ] 타이머 권위 = **서버 시간(wall-clock)**. 재접속 시 remaining 재계산·복원
@@ -144,9 +140,9 @@
 ## 6. 데이터·코드 등록 (클라/서버)
 
 - [ ] 신규 클래스: `PopupEventShadowChase`(발동 연출 + ⓘ 인포 겸용) · **`PopupEventShadowChest`(로비 체스트 오픈 — 신규)** · 🐾자국 스프라이트/Tween(`GRAB`·`ESCAPE` 연출용, 캐릭터 본체 미등장) · 기존 프리레벨 진행이벤트 행잉 태그 확장(체스트 + 타이머 + n/8 게이지 + 실루엣). **인게임 HUD 위젯 신규 없음**
-- [ ] `ProtocolTypes.ts`: `EventSchedule.type`에 `shadow_chase` 추가 · `ShadowChaseInfo` 타입 신설(`timer_start_ts`·`rounds_cleared`·`cooldown_until`·`cycle_result`·`deferred_pending`·`ad_extend_used`·**`key_pending`**)
+- [ ] `ProtocolTypes.ts`: `EventSchedule.type`에 `shadow_chase` 추가 · `ShadowChaseInfo` 타입 신설(`timer_start_ts`·`rounds_cleared`·`cooldown_until`·`cycle_result`·`ad_extend_used`·**`key_pending`**)
 - [ ] 진행 저장: 서버 `TPlayer.event_infos`에 `ShadowChaseInfo`
-- [ ] 신규 시트 탭 로드: `event_shadow_sprint`(**8변수** — 기존 5 + `ad_extend_threshold_sec`·`ad_extend_sec`·`ad_extend_max_per_cycle`) · `event_shadow_chest`(Normal 6행) — 번들 JSON + balance-sheet 로더 등록
+- [ ] 신규 시트 탭 로드: `event_shadow_sprint`(**8변수** — 기존 5 + `ad_extend_threshold_sec`·`ad_extend_sec`·`ad_extend_max_per_cycle`) · `event_shadow_chest`(Normal 6행 — `reward_item_key`+`reward_amount`, **`reward_type` 없음**) — 번들 JSON + balance-sheet 로더 등록
 - [ ] ★**시트 파서 규칙** — 추출기는 **행·열 모두 빈 내용을 만나면 생성을 멈춤**. 따라서 신규 탭은 **추출 컬럼을 앞에 붙이고 → 빈 열 1개 → `description`** 순서로 배치돼 있음. `event_shadow_sprint` = A~J 데이터·**K 빈 열**·L description / `event_shadow_chest` = A~G 데이터·**H 빈 열**·I description. 로더가 빈 열 이후를 읽지 않도록 할 것
 - [ ] `event_shadow_sprint`는 v1 1행 고정이나, **레벨 구간 차등이 필요해지면 `level_min`/`level_max` 컬럼을 가진 다행 구조로 확장**될 수 있음 — 로더를 단일 행 전제로 하드코딩하지 말 것
 - [ ] `unlock` 50031(`content_event_shadow_chase`·`level_clear`·10·**`show_tutorial=FALSE`**) — 별도 튜토리얼·언락 인트로 없음(`tutorial_guide` 미등록). 클라 코드 등록 불필요(데이터 참조)
@@ -171,8 +167,8 @@
 
 | 코드 | 발화 시점 | data 필드 |
 |---|---|---|
-| 5440_EVENT_SHADOW_CHASE_SLOT_OPEN | 발동 조건 충족(NOTIFY) · **이월 시 재발화 금지** | `cycle_id`·`trigger_type`·`window_sec`·`target_clear`·**`deferred(bool)`**·**`fire_side(server/client)`** |
-| 5441_EVENT_SHADOW_CHASE_ACTIVATE | 발동 연출 재생(사이클 시작·타이머 시작) | `cycle_id`·`remain_sec`·**`fx_completed(bool)`**·**`fx_watch_sec`**·**`deferred_count`** |
+| 5440_EVENT_SHADOW_CHASE_SLOT_OPEN | 발동 조건 충족(NOTIFY) | `cycle_id`·`trigger_type`·`window_sec`·`target_clear`·**`fire_side(server/client)`** |
+| 5441_EVENT_SHADOW_CHASE_ACTIVATE | 발동 연출 재생(사이클 시작·타이머 시작) | `cycle_id`·`remain_sec`·**`fx_completed(bool)`**·**`fx_watch_sec`** |
 | 5442_EVENT_SHADOW_CHASE_ROUND_CLEAR | 사이클 중 판 클리어(카운트 증가) | `cycle_id`·**`round_idx(1~total_rounds)`**·`clear_count`·`elapsed_sec`·**`level_id`**·**`round_sec`** |
 | 5443_EVENT_SHADOW_CHASE_CHEST_OPEN | **로비 체스트 오픈 팝업 [받기]** — 실지급 시점 | `cycle_id`·`elapsed_sec`·`txn_id`·**`chest_tier(normal/jackpot)`**·**`reward_keys[]`**·**`extended(bool)`** |
 | 5444_EVENT_SHADOW_CHASE_FAIL | 타이머 만료(또는 강제 만료) | `cycle_id`·`rounds_cleared`·`reason(timeout/event_end)`·**`extended(bool)`** |
@@ -190,7 +186,7 @@
 - `5442.round_idx` — `total_rounds`가 시트 변수(6판 해피데이 운영 레버)인데 `1~8` 고정이면 차등 세팅 시 스키마 파손
 - `5442.stage_id`/`play_time` — **레벨 구간별 판당 소요 실측**에 직결. **신규 필드가 아니라 `2300_GAMEPLAY_FINISH`가 이미 보내는 필드명**을 그대로 사용
 - `5441.fx_completed` — 강제 시청 구간 이탈 측정
-- `5440.deferred`/`fire_side` — 참여율(`5441÷5440`) 분모 정의. 이월분이 분모를 부풀리지 않게 분리
+- `5440.fire_side` — 참여율(`5441÷5440`) 분모 정의가 판정 주체(개발 확인 ③)에 따라 달라짐
 
 ### ★ RV 분해 (계측 설계 · v1 필수)
 
@@ -204,12 +200,11 @@
 | # | 항목 | 내용 |
 |---|---|---|
 | ① | `complete_sprint_cycle` | 서버 처리 방식 (2차 저니용 — v1은 훅만) |
-| ② | `event_id=0` | milestone/sprint의 비귀속 관례 수용 여부 |
+| ② | ~~`event_id=0`~~ | **해소** — 라이브 관례대로 `event_id=160005`(스케줄 키 참조) 적용 |
 | ③ | 판정 주체 | 기간·쿨다운을 서버 스케줄 push vs 클라 시각 판정(서버 시간 기준) 중 택 |
 | ④ | **타임존** | 월~목 경계 판정 기준(서버 UTC / 서버 로컬 / 유저 로컬). 서구권 타깃이라 기준에 따라 지역별 창이 어긋남 — ③과 함께 확정 |
-| ⑤ | **`cycle_id` 형식** | 발급 주체(서버)·시점(`5440`)·이월 시 유지는 확정. 남은 것은 **문자열 형식과 전역/유저 단위 유일성** |
+| ⑤ | **`cycle_id` 형식** | 발급 주체(서버)·시점(`5440`)·사이클 종료까지 유지는 확정. 남은 것은 **문자열 형식과 전역/유저 단위 유일성** |
 
-**확정 사항(질문 아님)** — 팝업 세션 상한 소진 시 발동 연출은 **잘라내지 말고 다음 로비 복귀로 이월**.
 
 ---
 

@@ -356,10 +356,7 @@ pre.mermaid[data-mmd="error"]::after{content:none}
 flowchart TD
   A["<b>이벤트 기간</b><br/><small>월 0:00 ~ 금 0:00 (= 월~목 4일) · 매주 반복 (event_schedule 1행)<br/>판정 주체(클라/서버) 미정 — 개발 확인 ③</small>"] --> P["<b>판 종료 → 로비 복귀</b><br/><small>우선순위 팝업 먼저 소화: 보상 정산·마일스톤·출석 등</small>"]
   P --> Q{"<b>발동 조건?</b><br/><small>기간 내 · 쿨다운 경과 · 미진행 중</small>"}
-  Q -- "충족" --> SC{"<b>팝업 세션 상한 여유?</b><br/><small>앞 팝업 소화로 상한 소진 여부</small>"}
-  SC -- "여유 있음" --> C["<b>발동 시퀀스 연출 자동 재생 + 타이머 시작</b><br/><small>발견 → 열쇠 강탈 → 도주 → 버튼 🐾마킹 (입력 잠금·사이클당 1회)<br/>duration_sec=900 (예: 15분)</small>"]
-  SC -- "상한 소진" --> DEF(["<b>다음 로비 복귀로 이월</b><br/><small>사이클 유실 아님 · 쿨다운 타이머 미시작 · 큐에 보류</small>"])
-  DEF --> P
+  Q -- "충족" --> C["<b>발동 시퀀스 연출 자동 재생 + 타이머 시작</b><br/><small>발견 → 열쇠 강탈 → 도주 → 버튼 🐾마킹 (입력 잠금·사이클당 1회)<br/>duration_sec=900 (예: 15분)</small>"]
   Q -- "미충족" --> P2(["<b>비노출</b><br/><small>쿨다운 중이거나 기간 밖 — 다음 로비 복귀 시 재평가</small>"])
   C --> ST["<b>진행 중 상태 표시</b><br/><small>프리레벨 행잉 태그(체스트·타이머·n/8 게이지+열쇠 골 마커·실루엣 귀+발) · 플레이 버튼 🐾마킹 두 가지뿐(인게임 표시 없음)</small>"]
   ST --> D["<b>플레이 반복</b><br/><small>타이머·n/8 인지는 매판 사이 프리레벨 행잉 태그에서</small>"]
@@ -377,7 +374,7 @@ flowchart TD
   classDef bad fill:#fdecec,stroke:#e06666,color:#6e1f1f;
   classDef auto fill:#efe9fc,stroke:#8b6ae0,color:#3a2b6e;
   classDef hook fill:#fff4d9,stroke:#d9a520,color:#6e5410;
-  class F,K good; class H bad; class C,ST auto; class E,Q,SC,RV hook; class CD,P2,DEF default;
+  class F,K good; class H bad; class C,ST auto; class E,Q,RV hook; class CD,P2 default;
   </pre>
 
   <h3>노출 시기 — 로비 팝업 시퀀서 정합</h3>
@@ -391,10 +388,8 @@ flowchart TD
     <tr><td>잔여 5분 이하 · 미완주</td><td><strong>행잉 태그 타이머 옆에 말풍선 [+5 min] 노출</strong>(TV 아이콘) — 시청 완료 시 <code>ad_extend_sec</code>만큼 타이머 연장(사이클당 1회)</td><td>행잉 태그 내 말풍선(신규 모달 없음) · <strong>드롭 가능</strong></td></tr>
     <tr><td>타이머 만료(실패)</td><td><strong>노출 없음</strong> — 행잉 태그·플레이 버튼 마킹 비노출 전환만. 별도 알림·토스트 없음</td><td>비노출 전환(팝업 체인 무관)</td></tr>
     <tr><td>Lv10 클리어 직후 로비 복귀</td><td><strong>언락 인트로 없음</strong>(<code>unlock.show_tutorial=FALSE</code> · <code>tutorial_guide</code> 미등록) — 조건이 맞으면 <strong>발동 연출이 바로 재생</strong>되고, 그 연출이 곧 안내 역할</td><td>2모달 충돌 없음</td></tr>
-    <tr><td><strong>팝업 세션 상한 소진</strong></td><td><strong>발동 연출을 다음 로비 복귀로 이월</strong> — 큐에 보류 상태로 유지. 사이클 유실 아님·쿨다운 타이머 미시작·<code>5440</code>은 재발화하지 않음(중복 계상 방지)</td><td>엣지 규칙 — 개발 필수</td></tr>
     </tbody>
   </table>
-  <div class="callout callout-red"><strong>⚠ 세션 상한 이월 규칙 (개발 필수)</strong> — 발동 연출은 팝업 체인 마지막 순번이라, 앞 팝업이 세션 상한을 소진하면 큐에서 잘릴 수 있음. <strong>이때 잘라내지 말고 다음 로비 복귀로 이월</strong>할 것. 타이머는 연출 종료 시점부터 시작하므로, 연출이 스킵되면 <code>5441</code>가 안 찍히고 <strong>사이클이 통째로 유실</strong>됨. 이월 중에는 쿨다운 타이머를 시작하지 않으며, 이벤트 기간을 벗어나면 보류분을 폐기함.</div>
   <div class="note"><strong>진입점</strong> — ① 발동 연출(로비 복귀·우선 팝업 소화 후 자동 재생, 사이클당 1회) ② 프리레벨 행잉 태그(타이머·n/8·실루엣) ③ 플레이 버튼 🐾마킹. <strong>사이클</strong> = 스프린트 1회(발동→성공/실패), 종료 후 <code>cooldown_sec</code> 경과 시 재트리거. 로비 팝업 순서 상세 = 아래 핸드오프 문서.</div>
 <h3>로비 복귀 팝업 순서 (현행 체인 · 발동 연출은 마지막 순번)</h3>
   <table>
@@ -409,10 +404,10 @@ flowchart TD
     <tr><td>6</td><td>출석(데일리)</td></tr>
     <tr><td>7</td><td>로비 튜토 가이드 · 이벤트 마일스톤 팝업</td></tr>
     <tr><td>8</td><td>망치 준비 가이드</td></tr>
-    <tr><td><strong>9</strong></td><td><strong>그림자 냥이 추격전 발동 연출</strong> — 위 팝업 전부 소화 후 재생(사이클당 1회) · <strong>세션 상한 소진 시 잘라내지 말고 다음 로비 복귀로 이월</strong></td></tr>
+    <tr><td><strong>9</strong></td><td><strong>그림자 냥이 추격전 발동 연출</strong> — 위 팝업 전부 소화 후 재생(사이클당 1회)</td></tr>
     </tbody>
   </table>
-<div class="callout callout-blue">📥 로비 팝업 우선순위·큐·억제 전체 규칙 = <strong>로비 팝업 시퀀서 핸드오프</strong>(P0~P6 티어·세션 상한·AS-IS 코드 매핑·마이그레이션 7단계) — 다운로드는 <a href="#handoff-hub"><strong>③ 개발 스펙 · 핸드오프 문서 모음</strong></a>에서 한번에.</div>
+<div class="callout callout-blue">📥 로비 팝업 우선순위·큐·억제 전체 규칙 = <strong>로비 팝업 시퀀서 핸드오프</strong>(P0~P6 티어·AS-IS 코드 매핑·마이그레이션 7단계) — 다운로드는 <a href="#handoff-hub"><strong>③ 개발 스펙 · 핸드오프 문서 모음</strong></a>에서 한번에.</div>
 
   <h3>정의</h3>
   <p>스프린트 목표 <strong>8판</strong>은 NRU가 하루에 걸쳐 치는 판수와 같은 양임(<strong>BQ 실측 8.5판</strong> — §3-1 근거). 이를 <strong>15분 창</strong>에 압축해 그날 판수를 2배 이상 끌어올리는 구조임. 실패해도 <strong>몰수 없음</strong>이라 다운사이드 없음. 발동 시퀀스(체스트 발견→열쇠 강탈→도주→마킹→행잉태그)는 원본 CCS "Catch the Troll"을 간소화 이식함.</p>
@@ -758,7 +753,7 @@ flowchart TD
   <!-- 3-1 파라미터 -->
   <div class="callout callout-green" id="dev-checklist">
     <strong>🛠 개발 처리 체크리스트 (한곳 정리)</strong> — 문서 곳곳의 개발 액션을 8개 영역으로 모음:
-    ① 발동·사이클(기간/쿨다운 판정·팝업 체인 마지막 순번·<strong>세션 상한 소진 시 다음 로비 복귀로 이월</strong>·서버 타이머) ② 연출·입력(잠금·스킵·자국만·<strong>강제 시청 6초 이내</strong>)
+    ① 발동·사이클(기간/쿨다운 판정·팝업 체인 마지막 순번·서버 타이머) ② 연출·입력(잠금·스킵·자국만·<strong>강제 시청 6초 이내</strong>)
     ③ 상태 표시(프리레벨 행잉 태그·플레이 버튼 🐾마킹 두 가지뿐 — 인게임 HUD·로비 아이콘 없음) + <strong>잔여 5분 이하 타이머 말풍선 [+{0}분]</strong>(드롭 가능) ④ <strong>성공=열쇠 획득(결과 화면 무변경) → 로비 체스트 오픈 팝업에서 지급</strong>
     ⑤ <strong>실패=비노출 전환만</strong>(별도 알림 없음) ⑥ 데이터·코드 등록(ProtocolTypes·시트 로드·unlock·확인 5건) ⑦ 로그 5440~5447(5xxx-1 이벤트 대역) ⑧ 킬스위치·운영. <strong>QA 케이스는 별도 문서</strong>.
   </div>
@@ -772,7 +767,7 @@ flowchart TD
         <tr>
           <td><a href="handoff-shadow-chase-dev.md" download><strong>📄 개발 체크리스트</strong></a><br><code>handoff-shadow-chase-dev.md</code></td>
           <td>클라 · 서버</td>
-          <td>발동·사이클(이월 규칙 포함) · <strong>판수 카운트 규칙</strong> · 연출·입력 잠금 · 진행 중 표시 · 성공/실패 처리 · 타이머 연장(드롭 가능) · 데이터·코드 등록 · <strong>킬스위치·운영</strong> · 로그 5440~5447 · <strong>개발 확인 5건</strong></td>
+          <td>발동·사이클 · <strong>판수 카운트 규칙</strong> · 연출·입력 잠금 · 진행 중 표시 · 성공/실패 처리 · 타이머 연장(드롭 가능) · 데이터·코드 등록 · <strong>킬스위치·운영</strong> · 로그 5440~5447 · <strong>개발 확인 5건</strong></td>
         </tr>
         <tr>
           <td><a href="handoff-shadow-chase-qa.md" download><strong>🧪 QA 테스트 케이스</strong></a><br><code>handoff-shadow-chase-qa.md</code></td>
@@ -782,7 +777,7 @@ flowchart TD
         <tr>
           <td><a href="handoff-lobby-popup-seq.md" download><strong>🪟 로비 팝업 시퀀서</strong></a><br><code>handoff-lobby-popup-seq.md</code></td>
           <td>클라 (공통 인프라)</td>
-          <td>P0~P6 우선순위 티어 · 큐/억제 모델 · 세션 상한 · <strong>발동 연출 이월 규칙</strong> · AS-IS 코드 매핑 · <code>lobby_popup</code> 시트 스키마 · 마이그레이션 7단계 · 엣지케이스</td>
+          <td>P0~P6 우선순위 티어 · 큐/억제 모델(TO-BE 제안) · AS-IS 코드 매핑 · <code>lobby_popup</code> 시트 스키마 · 마이그레이션 7단계 · 엣지케이스</td>
         </tr>
       </tbody>
     </table>
@@ -851,10 +846,10 @@ flowchart TD
       <tr><td><code>condition_val</code></td><td>int</td><td>10</td><td>Lv10 클리어 시 해금 — 별도 튜토 없음</td></tr>
       <tr><td rowspan="3"><code>event_shadow_chest</code></td><td><code>chest_tier</code></td><td>enum</td><td>normal / jackpot</td><td>티어 차이 = 체스트 내용만(배수 없음)</td></tr>
       <tr><td><code>slot</code></td><td>int(1~6)</td><td>1~6</td><td>티어당 6슬롯 (꽉 찬 오픈)</td></tr>
-      <tr><td><code>reward_type / reward_key / reward_amount</code></td><td>enum / string / int</td><td>item / currency_hammer / 3</td><td>reward_key = 라이브 item_list 실존 키(deco 조각만 클라 처리)</td></tr>
+      <tr><td><code>reward_item_key / reward_amount</code></td><td>string / int</td><td>currency_hammer / 3</td><td>라이브 <code>item_list</code> 실존 키. <b><code>reward_type</code>은 두지 않음</b> — 전 슬롯이 고정 아이템 지급이라 불필요하며, 라이브 보상 컬럼 관례도 <code>reward_item_key + reward_amount</code> 쌍임</td></tr>
     </tbody>
   </table>
-  <div class="note"><strong>정책(시트 변수 아님)</strong> — 발동 = 로비 복귀·우선 팝업 소화 후 자동 재생(사이클당 1회·[참가] 없음·<strong>세션 상한 소진 시 이월</strong>) · 해머 상한 6/일(3×일 2사이클·<strong>실측 기반 성공률 ~40%</strong> 적용 시 실효 ~2.4/유저-일) · OnFire류 요일 격리 · 상시 이벤트 해머 주간상한 ×1.3 공유. · <strong>목표 판수는 v1 고정(8판)</strong> — 단 <code>total_rounds</code>가 시트 변수라 요일·기간별 차등 세팅은 코드 없이 가능(운영 레버·예: 특정일 6판 해피데이). 랜덤 레인지는 부록 E.</div>
+  <div class="note"><strong>정책(시트 변수 아님)</strong> — 발동 = 로비 복귀·우선 팝업 소화 후 자동 재생(사이클당 1회·[참가] 없음) · 해머 상한 6/일(3×일 2사이클·<strong>실측 기반 성공률 ~40%</strong> 적용 시 실효 ~2.4/유저-일) · OnFire류 요일 격리 · 상시 이벤트 해머 주간상한 ×1.3 공유. · <strong>목표 판수는 v1 고정(8판)</strong> — 단 <code>total_rounds</code>가 시트 변수라 요일·기간별 차등 세팅은 코드 없이 가능(운영 레버·예: 특정일 6판 해피데이). 랜덤 레인지는 부록 E.</div>
   <div class="callout callout-red"><strong>⚠ 발행량 — 성공률에 직결됨</strong><br>
   실측 기반 예상 성공률 <strong>~40%</strong>(8판/15분) 적용 시 실효 발행은 <strong>해머 ~2.4/유저-일 · 골드 ~400/유저-일</strong>임. 성공률이 10%p 움직이면 발행량도 그만큼 비례해 움직임. 구조적 상한은 <strong>해머 6/일 · 골드 1,000/일</strong>(일 2사이클 × Normal 구성)이며, 실측이 60%로 나오면 <strong>발행량이 가정의 2배</strong>가 됨. 시트 변수라 되돌릴 수는 있어도 <strong>이미 뿌려진 재화는 회수 불가</strong>임.<br>
   → <strong>튜닝 게이트를 일정에 못박음(§4)</strong>: <code>in_use=TRUE</code> 후 <strong>D+2에 <code>5441→5443</code> 완주율을 확인</strong>하고 <code>duration_sec</code>/<code>total_rounds</code>를 조정할 것. 실측 없이 첫 주를 통째로 넘기지 않음.</div>
@@ -873,7 +868,6 @@ flowchart TD
     </tbody>
   </table>
   <div class="note"><strong>몰수 없음:</strong> 미완주 시 인게임 획득분(골드·판수)은 유지됨 → 클라 로직. 체스트(열쇠)만 미획득. <strong>실패에 별도 알림을 붙이지 않는 이유</strong> — 로비 진입 직후 부정 메시지를 얹는 비용 대비 값어치가 낮고(콜드스타트 팝업 피로), 재도전 유인은 쿨다운 후 <strong>다음 발동 연출 자동 재생</strong>이 이미 담당함. 조용히 사라지는 편이 "다운사이드 없는 이벤트"라는 인상과도 일관됨.</div>
-  <div class="note"><strong>이월 상태(<code>DEFERRED</code>) 취급:</strong> 발동 조건은 충족했으나 팝업 세션 상한으로 연출을 재생하지 못한 경우, 상태 enum을 늘리지 않고 <strong>IDLE + 보류 플래그</strong>로 유지함(연출 재생 = <code>GRAB</code> 진입). 보류 중에는 <code>cooldown_sec</code> 타이머를 시작하지 않으며, 기간을 벗어나면 보류분 폐기.</div>
 
   <!-- 3-3 계측 -->
   <h2 id="s3-log">3-3 계측 이벤트 (5440~5447 · 5xxx-1 이벤트 대역)</h2>
@@ -881,8 +875,8 @@ flowchart TD
   <table>
     <thead><tr><th>이벤트코드</th><th>발화 시점</th><th>data 필드 (핵심)</th></tr></thead>
     <tbody>
-      <tr><td><code>5440_EVENT_SHADOW_CHASE_SLOT_OPEN</code></td><td>발동 조건 충족 (NOTIFY)<br><small>이월 시 <strong>재발화하지 않음</strong>(중복 계상 방지)</small></td><td>cycle_id, trigger_type, window_sec(<code>duration_sec</code>), target_clear(<code>total_rounds</code>), <strong>deferred(bool)</strong>, <strong>fire_side(server/client)</strong></td></tr>
-      <tr><td><code>5441_EVENT_SHADOW_CHASE_ACTIVATE</code></td><td>발동 연출 재생 (사이클 시작·타이머 시작)</td><td>cycle_id, remain_sec, <strong>fx_completed(bool)</strong>, <strong>fx_watch_sec</strong>, <strong>deferred_count</strong></td></tr>
+      <tr><td><code>5440_EVENT_SHADOW_CHASE_SLOT_OPEN</code></td><td>발동 조건 충족 (NOTIFY)</td><td>cycle_id, trigger_type, window_sec(<code>duration_sec</code>), target_clear(<code>total_rounds</code>), <strong>fire_side(server/client)</strong></td></tr>
+      <tr><td><code>5441_EVENT_SHADOW_CHASE_ACTIVATE</code></td><td>발동 연출 재생 (사이클 시작·타이머 시작)</td><td>cycle_id, remain_sec, <strong>fx_completed(bool)</strong>, <strong>fx_watch_sec</strong></td></tr>
       <tr><td><code>5442_EVENT_SHADOW_CHASE_ROUND_CLEAR</code></td><td>사이클 중 판 클리어 (카운트 증가)</td><td>cycle_id, <strong>round_idx(1~<code>total_rounds</code>)</strong>, clear_count(n/<code>total_rounds</code>), elapsed_sec, <strong>stage_id</strong>, <strong>play_time</strong></td></tr>
       <tr><td><code>5443_EVENT_SHADOW_CHASE_CHEST_OPEN</code></td><td><strong>로비 체스트 오픈 팝업에서 [받기]</strong> — 실지급 시점</td><td>cycle_id, elapsed_sec, txn_id, <strong>chest_tier(normal/jackpot)</strong>, <strong>reward_keys[]</strong>, <strong>extended(bool)</strong></td></tr>
       <tr><td><code>5444_EVENT_SHADOW_CHASE_FAIL</code></td><td>타이머 만료 (또는 이벤트 종료 강제만료)</td><td>cycle_id, rounds_cleared, reason(timeout/event_end), <strong>extended(bool)</strong></td></tr>
@@ -897,7 +891,6 @@ flowchart TD
   <ul style="margin:8px 0 0 18px;padding:0">
     <li><strong>발급 주체·시점</strong> — <strong>서버</strong>가 <code>5440</code>(발동 조건 충족) 시점에 1개 발급. 타이머 권위가 서버이므로 ID도 서버가 쥠</li>
     <li><strong>유지 범위</strong> — 사이클 종료(<code>5448</code> 또는 <code>5444</code>)까지 동일 값</li>
-    <li><strong>이월 시</strong> — <code>5440</code>이 재발화하지 않으므로 <strong>기존 ID 유지</strong>. 새로 발급하면 <code>deferred</code> 플래그·중복 계상 방지가 무의미해짐</li>
     <li><strong>미수령 체스트</strong> — 나중에 <code>5443</code>이 찍힐 때도 <strong>그 체스트를 만든 사이클의 ID</strong> 사용</li>
     <li><strong>형식·유일성</strong> — 전역 유일 권장(BQ 조인 편의). 예: <code>{player_id}_{발동_epoch_ms}</code> 또는 UUID → <strong>개발 확인 ⑤</strong></li>
   </ul></div>
@@ -908,10 +901,10 @@ flowchart TD
       <li><code>5445.amount</code> — <code>balance_after</code>만으로는 <strong>지급량을 역산할 수 없음</strong>(다른 경로 획득분과 섞임). 해머 발행량 추적의 전제.</li>
       <li><code>5442.round_idx</code> — <code>total_rounds</code>가 시트 변수(6판 해피데이 운영 레버 명시)인데 <code>1~8</code> 하드코딩이면 <strong>차등 세팅 시 스키마가 깨짐</strong>. <code>stage_id</code>·<code>play_time</code>은 <strong>레벨 구간별 판당 소요 실측</strong>에 직결 — <strong>신규 필드가 아니라 <code>2300_GAMEPLAY_FINISH</code>가 이미 보내는 필드명</strong>을 그대로 씀.</li>
       <li><code>5441.fx_completed / fx_watch_sec</code> — 강제 시청 구간의 <strong>이탈</strong>을 측정하려면 재생 시작만이 아니라 완료 여부가 필요함.</li>
-      <li><code>5440.deferred / fire_side</code> — 참여율(<code>5441÷5440</code>)의 <strong>분모 정의</strong>가 판정 주체(개발 확인 ③)에 따라 달라짐. 이월분이 분모를 부풀리지 않도록 플래그로 분리.</li>
+      <li><code>5440.fire_side</code> — 참여율(<code>5441÷5440</code>)의 <strong>분모 정의</strong>가 판정 주체(개발 확인 ③)에 따라 달라짐.</li>
     </ul>
   </div>
-  <div class="note"><strong>활용:</strong> <code>5440/5441</code>로 참여율(<code>deferred</code> 제외), <code>5441→5448</code>로 완주율(사전 추정 ~40% 검증), <code>5448→5443</code>로 <strong>체스트 수령율</strong>, <code>5444</code>의 reason으로 만료 실패를 timeout vs event_end 분해, <code>5445/5446</code>로 해머 획득·소진(데코 게이트) 추적, <code>5447</code>로 연장 전환율·구제율(<code>extended=TRUE</code>인 <code>5443</code> 비중). 창 내 완료판 상승폭·D1/D3도 추적. 트랙 계열(2차)은 마스터 §9 참조.</div>
+  <div class="note"><strong>활용:</strong> <code>5440/5441</code>로 참여율, <code>5441→5448</code>로 완주율(사전 추정 ~40% 검증), <code>5448→5443</code>로 <strong>체스트 수령율</strong>, <code>5444</code>의 reason으로 만료 실패를 timeout vs event_end 분해, <code>5445/5446</code>로 해머 획득·소진(데코 게이트) 추적, <code>5447</code>로 연장 전환율·구제율(<code>extended=TRUE</code>인 <code>5443</code> 비중). 창 내 완료판 상승폭·D1/D3도 추적. 트랙 계열(2차)은 마스터 §9 참조.</div>
   <div class="callout callout-purple"><strong>🔗 RV 분해 — 4210 조인 (필수 설계)</strong><br>
   본 이벤트의 1순위 근거가 <strong>판당 RV 0.1354(코지 4.1배)</strong>인데, 15분 8판으로 압축하면 유저는 <strong>다음 판으로 빨리 가려고 RV를 스킵</strong>할 유인이 커짐. 판수가 늘어도 판당 RV 시청률이 깎이면 순증분이 상쇄되므로, "판수 늘렸다"까지만 말하고 <strong>"그래서 RV가 늘었다"는 말할 수 없게 됨</strong>.<br>
   → <code>4210_RV_FINISH</code>(지면 = <code>coalesce(data.type, data.position)</code>)를 <code>5442</code>의 <strong>사이클 귀속 판</strong>과 조인해, <strong>스프린트 창 안 판 vs 밖 판의 판당 RV 노출·시청률을 분해</strong>할 것. 이 설계는 <strong>사후 소급이 불가능</strong>하므로 v1 계측에 반드시 포함. RV 에러/논필 구간(현행 23~29%)도 같이 봐야 시청률 하락의 원인을 스킵 vs 논필로 가를 수 있음.</div>
@@ -1008,24 +1001,23 @@ flowchart TD
 
 <h3>④ event_shadow_chest 신규 탭 (슬롯형 · Normal 6슬롯 — v1)</h3>
 <div class="tbl-scroll"><table class="bs-table">
-<tr><th>key_number</th><th>chest_tier</th><th>slot</th><th>reward_type</th><th>reward_key</th><th>reward_amount</th><th>in_use</th><th class="dimcol">(빈 열)</th><th>description</th></tr>
-<tr><td>250001</td><td>normal</td><td>1</td><td>item</td><td>currency_gold</td><td>500</td><td>TRUE</td><td class="dimcol"></td><td>루나 체스트 · 골드</td></tr>
-<tr><td>250002</td><td>normal</td><td>2</td><td>item</td><td>currency_hammer</td><td>3</td><td>TRUE</td><td class="dimcol"></td><td>해머</td></tr>
-<tr><td>250003</td><td>normal</td><td>3</td><td>item</td><td>booster_wild_card</td><td>1</td><td>TRUE</td><td class="dimcol"></td><td>와일드카드</td></tr>
-<tr><td>250004</td><td>normal</td><td>4</td><td>item</td><td>booster_undo</td><td>2</td><td>TRUE</td><td class="dimcol"></td><td>되돌리기</td></tr>
-<tr><td>250005</td><td>normal</td><td>5</td><td>item</td><td>booster_fireworks</td><td>1</td><td>TRUE</td><td class="dimcol"></td><td>파이어웍스</td></tr>
-<tr><td>250006</td><td>normal</td><td>6</td><td>item</td><td>currency_ticket</td><td>1</td><td>TRUE</td><td class="dimcol"></td><td>무료 입장 티켓</td></tr>
+<tr><th>key_number</th><th>event_id</th><th>chest_tier</th><th>slot</th><th>reward_item_key</th><th>reward_amount</th><th>in_use</th><th class="dimcol">(빈 열)</th><th>description</th></tr>
+<tr><td>250001</td><td>160005</td><td>normal</td><td>1</td><td>currency_gold</td><td>500</td><td>TRUE</td><td class="dimcol"></td><td>루나 체스트 · 골드</td></tr>
+<tr><td>250002</td><td>160005</td><td>normal</td><td>2</td><td>currency_hammer</td><td>3</td><td>TRUE</td><td class="dimcol"></td><td>해머</td></tr>
+<tr><td>250003</td><td>160005</td><td>normal</td><td>3</td><td>booster_wild_card</td><td>1</td><td>TRUE</td><td class="dimcol"></td><td>와일드카드</td></tr>
+<tr><td>250004</td><td>160005</td><td>normal</td><td>4</td><td>booster_undo</td><td>2</td><td>TRUE</td><td class="dimcol"></td><td>되돌리기</td></tr>
+<tr><td>250005</td><td>160005</td><td>normal</td><td>5</td><td>booster_fireworks</td><td>1</td><td>TRUE</td><td class="dimcol"></td><td>파이어웍스</td></tr>
+<tr><td>250006</td><td>160005</td><td>normal</td><td>6</td><td>currency_ticket</td><td>1</td><td>TRUE</td><td class="dimcol"></td><td>무료 입장 티켓</td></tr>
 </table></div>
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트는 마일스톤이 아님 — 8판 완주로 <b>열쇠를 획득</b>하고, <b>로비 체스트 오픈 팝업에서 6슬롯 일괄 지급</b>(+"🐱 그림자 냥이 추격전" 뱃지). 티어당 6슬롯 = 오픈 연출에서 체스트가 꽉 차 보이는 구성. reward_key는 전부 라이브 item_list 실존 키(데코 조각만 클라 처리). Jackpot 행은 v1 OFF(해금 콘텐츠 도입 시 TRUE). 저니 트랙 마일스톤 탭(event_shadow_milestone)은 v1 반영분 아님 — 2차(저니 레이어) 등록 시 별도 반영.</div>
 <h3>⑤ event_shadow_sprint 신규 탭 (튜닝 코어 1행)</h3>
 <div class="tbl-scroll"><table class="bs-table">
 <tr><th>key_number</th><th>event_id</th><th>duration_sec</th><th>total_rounds</th><th>cooldown_sec</th><th>grace_after_window</th><th>ad_extend_threshold_sec</th><th>ad_extend_sec</th><th>ad_extend_max_per_cycle</th><th>in_use</th><th class="dimcol">(빈 열)</th><th>description</th></tr>
-<tr><td>240001</td><td>0</td><td>900</td><td>8</td><td>43200</td><td>TRUE</td><td>300</td><td>300</td><td>1</td><td>FALSE</td><td class="dimcol"></td><td>그림자 냥이 추격전 스프린트 파라미터 (15분/8판)</td></tr>
+<tr><td>240001</td><td><b>160005</b></td><td>900</td><td>8</td><td>43200</td><td>TRUE</td><td>300</td><td>300</td><td>1</td><td>FALSE</td><td class="dimcol"></td><td>그림자 냥이 추격전 스프린트 파라미터 (15분/8판)</td></tr>
 </table></div>
-<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트 보상은 event_shadow_chest 탭(④) 소관 — 튜닝 코어는 스프린트 파라미터만. event_id=0 = 스케줄 행(160005)과 분리된 공통 파라미터. <b>ad_extend_* 3컬럼은 타이머 말풍선 [+{0}분]용 신규</b> — <code>ad_extend_max_per_cycle=0</code>이면 기능 OFF(개별 킬스위치 겸 <b>v1 드롭 시 처리 수단</b>). <b>레벨 구간 차등이 필요해지면 이 탭을 <code>level_min</code>/<code>level_max</code> 컬럼을 가진 다행 구조로 확장</b>(v1은 1행 고정).</div>
+<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트 보상은 event_shadow_chest 탭(④) 소관 — 튜닝 코어는 스프린트 파라미터만. event_id = <b>160005</b>(event_schedule 키 참조) — <code>event_milestone</code>·<code>event_ranking</code>이 스케줄 키를 참조하는 라이브 관례와 동일. <b>ad_extend_* 3컬럼은 타이머 말풍선 [+{0}분]용 신규</b> — <code>ad_extend_max_per_cycle=0</code>이면 기능 OFF(개별 킬스위치 겸 <b>v1 드롭 시 처리 수단</b>). <b>레벨 구간 차등이 필요해지면 이 탭을 <code>level_min</code>/<code>level_max</code> 컬럼을 가진 다행 구조로 확장</b>(v1은 1행 고정).</div>
 
-<div class="callout callout-orange"><b>개발 확인 요청 5가지</b> — ① <code>goal_type=complete_sprint_cycle</code> 서버 처리 방식(2차 저니용 — v1 훅만) ② milestone/sprint의 <code>event_id=0</code>(비귀속) 관례 수용 여부 ③ 기간·쿨다운 <b>판정 주체</b> — 서버 스케줄 push vs 클라 시각 판정(서버 시간 기준) 중 택 ④ <b>요일 판정 타임존</b> — 월~목 경계를 서버 UTC / 서버 로컬 / 유저 로컬 중 무엇으로 자르는지. 서구권 타깃이라 기준에 따라 지역별 창이 어긋남.<br>⑤ <b><code>cycle_id</code> 발급 형식·유일성 범위</b> — 발급 주체(서버)·시점(<code>5440</code>)·이월 시 유지는 §3-3에 확정됨. 남은 것은 <b>문자열 형식과 전역/유저 단위 유일성</b>.<br><b>③·④는 함께 결론낼 것</b> — ③의 결론에 따라 <code>5440</code>의 발화 주체(<code>fire_side</code>)와 참여율 분모 정의도 같이 확정됨.</div>
-<div class="callout callout-green"><b>✅ 확정 항목 — 개발 반영 필수</b> — <b>팝업 세션 상한 소진 시 발동 연출은 잘라내지 말고 다음 로비 복귀로 이월</b>. 연출 재생이 곧 타이머 시작이라, 상한에 걸려 큐에서 잘리면 <code>5441</code> 미발화 + 사이클 통째 유실로 이어짐. 이월 중 쿨다운 미시작 · <code>5440</code> 재발화 없음 · 기간 이탈 시 보류분 폐기.</div>
+<div class="callout callout-orange"><b>개발 확인 요청 5가지</b> — ① <code>goal_type=complete_sprint_cycle</code> 서버 처리 방식(2차 저니용 — v1 훅만) ② <s>event_id=0 관례</s> — <b>해소됨</b>: 라이브 관례대로 <code>event_id=160005</code>(스케줄 키 참조) 적용 ③ 기간·쿨다운 <b>판정 주체</b> — 서버 스케줄 push vs 클라 시각 판정(서버 시간 기준) 중 택 ④ <b>요일 판정 타임존</b> — 월~목 경계를 서버 UTC / 서버 로컬 / 유저 로컬 중 무엇으로 자르는지. 서구권 타깃이라 기준에 따라 지역별 창이 어긋남.<br>⑤ <b><code>cycle_id</code> 발급 형식·유일성 범위</b> — 발급 주체(서버)·시점(<code>5440</code>)·이월 시 유지는 §3-3에 확정됨. 남은 것은 <b>문자열 형식과 전역/유저 단위 유일성</b>.<br><b>③·④는 함께 결론낼 것</b> — ③의 결론에 따라 <code>5440</code>의 발화 주체(<code>fire_side</code>)와 참여율 분모 정의도 같이 확정됨.</div>
 </div>
 
 </section>
@@ -1047,10 +1039,10 @@ flowchart TD
   <table class="tbl-keycol">
     <thead><tr><th>영역</th><th>항목</th><th>공수</th></tr></thead>
     <tbody>
-      <tr><td>클라</td><td>프리레벨 행잉 태그(타이머·n/8 게이지·실루엣) + 플레이 버튼 🐾마킹 + 발동 트리거(팝업 체인 마지막·<strong>세션 상한 시 이월</strong>) + 연출 입력 잠금(6초 이내) (인게임 HUD·타이머 위젯 없음)</td><td><span class="prio-high">L</span></td></tr>
+      <tr><td>클라</td><td>프리레벨 행잉 태그(타이머·n/8 게이지·실루엣) + 플레이 버튼 🐾마킹 + 발동 트리거(팝업 체인 마지막) + 연출 입력 잠금(6초 이내) (인게임 HUD·타이머 위젯 없음)</td><td><span class="prio-high">L</span></td></tr>
       <tr><td>클라</td><td><strong>로비 체스트 오픈 팝업 신규</strong>(<code>PopupEventShadowChest</code>) — 열쇠 꽂힘·오픈 연출·보상 6슬롯·[받기] · 미수령 큐 처리. <strong>결과 화면은 무변경</strong>(열쇠 획득 표시만)</td><td><span class="prio-mid">M</span></td></tr>
       <tr><td>클라</td><td><strong>타이머 말풍선 [+{0}분]</strong> — 행잉 태그 조건부 말풍선 + 기존 RV 지면 연동 + 연장 반영 (신규 모달 없음) · <strong>견적 크면 v1 드롭 가능</strong></td><td><span class="prio-low">S</span></td></tr>
-      <tr><td>서버</td><td>이벤트/스프린트 상태머신·기간/쿨다운 판정 (wall-clock 타이머 권위 · 발동 트리거=큐/폴백 · <strong>이월 보류 상태</strong> · <strong>연장 1회 검증</strong> · claim-chest 멱등)</td><td><span class="prio-high">L</span></td></tr>
+      <tr><td>서버</td><td>이벤트/스프린트 상태머신·기간/쿨다운 판정 (wall-clock 타이머 권위 · 발동 트리거=큐/폴백 · <strong>연장 1회 검증</strong> · claim-chest 멱등)</td><td><span class="prio-high">L</span></td></tr>
       <tr><td>계측</td><td>로그 파이프라인 (기존 코드+data 관례 확장 · <strong>5440~5447</strong> · 5xxx-1 이벤트 대역) + <strong>4210 조인 기반 RV 분해 쿼리</strong></td><td><span class="prio-mid">M</span></td></tr>
       <tr><td>기획</td><td>밸런스 파라미터·체스트 표 확정 (<strong>판당 소요 실측 — 레벨 구간별 분산까지</strong> 선행) + <strong>D+2 튜닝 게이트 운영</strong></td><td><span class="prio-mid">M</span></td></tr>
       <tr><td>아트</td><td>발동 시퀀스 연출 4종(자국·스프라이트 중심) · 루나 체스트 · <strong>지급 3컷 연출</strong>(태그 만충 → 체스트 오픈·🐾파티클 → 태그 소멸·마킹) · 연출 밀도는 아트 재량</td><td><span class="prio-mid">M</span></td></tr>
@@ -1067,7 +1059,7 @@ flowchart TD
     <thead><tr><th>시점</th><th>확인</th><th>액션</th></tr></thead>
     <tbody>
       <tr><td><strong>배포 전</strong></td><td>판당 소요 실측 — <strong>전체 평균이 아니라 레벨 구간별</strong>(Normal/Hard/Super Hard) 분포</td><td><code>duration_sec</code> 초기값 확정 · 구간 분산이 크면 시트를 다행 구조로 확장</td></tr>
-      <tr><td><code>in_use=TRUE</code>&nbsp;<strong>D+0</strong></td><td>발동·이월·타이머 정상 동작 · <code>5440/5441</code> 발화 · 이월 케이스 재현</td><td>이상 시 <code>in_use=FALSE</code> 즉시 킬</td></tr>
+      <tr><td><code>in_use=TRUE</code>&nbsp;<strong>D+0</strong></td><td>발동·타이머 정상 동작 · <code>5440/5441</code> 발화</td><td>이상 시 <code>in_use=FALSE</code> 즉시 킬</td></tr>
       <tr><td><strong>D+2</strong><span class="cellbadge prio-high">필수 게이트</span></td><td><strong>완주율(<code>5441→5443</code>)</strong> 확인. <strong>사전 추정 ~40%</strong> 대비 실측 · 해머/골드 실발행량 동시 확인</td><td>완주율이 <strong>가정보다 크게 높으면</strong> <code>total_rounds</code>↑ 또는 <code>duration_sec</code>↓ / <strong>크게 낮으면</strong> 반대로 완화. <strong>첫 주를 실측 없이 넘기지 않음</strong></td></tr>
       <tr><td><strong>D+4</strong>&nbsp;(기간 종료)</td><td>판수 순증분 · <strong>사이클 후 잔여 시간대·D+1 판수</strong>(카니발라이제이션) · <strong>스프린트 안/밖 판당 RV</strong> · D1/D3 가드레일</td><td>다음 주 회차 파라미터 확정 · 지표 악화 시 회차 중단</td></tr>
     </tbody>
@@ -1081,7 +1073,7 @@ flowchart TD
       <tr><td>판수 / 유저-일</td><td>완료판 ÷ 유저-일 (FB 퍼널 대시보드 SSOT)</td><td>이벤트 주간 vs 직전 주간 +유의미 상승 (창 내 완료판 상승폭 분해)</td></tr>
       <tr><td><strong>판당 RV (스프린트 안 vs 밖)</strong></td><td><strong><code>4210_RV_FINISH</code> ÷ 완료판</strong>을 <code>5442</code> 사이클 귀속 여부로 분해 (지면 = <code>coalesce(data.type, data.position)</code>)</td><td><strong>스프린트 안 판당 RV가 밖보다 열위가 아닐 것</strong> — 열위면 판수 증가분이 상쇄됨(핵심 검증)</td></tr>
       <tr><td><strong>판수 카니발라이제이션</strong></td><td>① 사이클 종료 후 <strong>당일 잔여 시간대 판수</strong> ② 참여 유저의 <strong>D+1 판수</strong> (참여 vs 비참여)</td><td><strong>비열위</strong> — 몰아친 만큼 이후가 줄면 순증이 아님</td></tr>
-      <tr><td>스프린트 참여율</td><td>사이클 시작(5441) ÷ 발동 조건 충족(5440, <code>deferred</code> 제외)</td><td>초안 목표 설정 후 관측 · 분모 정의는 개발 확인 ③과 함께 확정</td></tr>
+      <tr><td>스프린트 참여율</td><td>사이클 시작(5441) ÷ 발동 조건 충족(5440)</td><td>초안 목표 설정 후 관측 · 분모 정의는 개발 확인 ③과 함께 확정</td></tr>
       <tr><td>스프린트 완주율</td><td>완주(5448) ÷ 진입(5441) — <strong>실측 기반 예상 ~40%</strong> 검증</td><td>15분 8판 난이도 검증 (실측이 크게 벗어나면 시트 조정) · <strong>D+2 튜닝 게이트 판단 근거</strong></td></tr>
       <tr><td><strong>연출 이탈률</strong></td><td>발동 연출 미완주 = <code>5441.fx_completed=FALSE</code> 비율</td><td>강제 시청 6초 상한의 타당성 검증 — 높으면 스킵 허용 앞당김</td></tr>
       <tr><td><strong>타이머 연장 전환·구제율</strong></td><td>연장 시청(<code>5447</code>) ÷ 노출 · <code>extended=TRUE</code>인 <code>5443</code> 비중 <em>(연장 기능 채택 시에만)</em></td><td>RV 증분 · 연장이 실제 완주로 이어지는지</td></tr>
