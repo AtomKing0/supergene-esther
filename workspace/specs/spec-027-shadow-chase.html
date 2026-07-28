@@ -340,7 +340,7 @@ ul li strong,ol li strong { color:var(--text); }
   <p style="font-size:12px;color:var(--text2)">판수·시간·쿨다운 등은 전부 <code>event_shadow_sprint</code> 시트 변수 — 아래 수치는 <strong>예시값</strong>이며 변수명 병기.</p>
   <pre class="mermaid">
 flowchart TD
-  A["<b>이벤트 기간</b><br/><small>월 00:00 ~ 목 23:59 · 매주 반복 (event_schedule 1행)<br/>판정 주체(클라/서버) 미정 — 개발 확인 ③</small>"] --> P["<b>판 종료 → 로비 복귀</b><br/><small>우선순위 팝업 먼저 소화: 보상 정산·마일스톤·출석 등</small>"]
+  A["<b>이벤트 기간</b><br/><small>월 0:00 ~ 금 0:00 (= 월~목 4일) · 매주 반복 (event_schedule 1행)<br/>판정 주체(클라/서버) 미정 — 개발 확인 ③</small>"] --> P["<b>판 종료 → 로비 복귀</b><br/><small>우선순위 팝업 먼저 소화: 보상 정산·마일스톤·출석 등</small>"]
   P --> Q{"<b>발동 조건?</b><br/><small>기간 내 · 쿨다운 경과 · 미진행 중</small>"}
   Q -- "충족" --> SC{"<b>팝업 세션 상한 여유?</b><br/><small>앞 팝업 소화로 상한 소진 여부</small>"}
   SC -- "여유 있음" --> C["<b>발동 시퀀스 연출 자동 재생 + 타이머 시작</b><br/><small>발견 → 열쇠 강탈 → 도주 → 버튼 🐾마킹 (입력 잠금·사이클당 1회)<br/>duration_sec=1500 (예: 25분)</small>"]
@@ -777,13 +777,13 @@ flowchart TD
   난이도 티어(Normal / Hard / Super Hard)에 따라 판당 소요가 달라지는데 25분은 전 유저 공통임. 고레벨일수록 실패만 반복하는 구조가 되며, 하필 본 이벤트의 타깃이 <strong>헤비 구간(20판+)</strong> = 고레벨 비중이 높은 층임.<br>
   <strong>v1 조치</strong> — 차등은 넣지 않되, <strong>판당 소요 실측을 레벨 구간별로 쪼개서</strong> 볼 것(전체 평균만 보면 안 됨). 25분이 어느 구간까지 커버되는지 확인하고, <strong>구간 간 분산이 크면</strong> <code>event_shadow_sprint</code>를 1행 고정이 아니라 <strong>레벨 구간 키(<code>level_min</code>/<code>level_max</code>)를 받는 다행 구조</strong>로 미리 열어둘 것 — 나중에 뜯으면 서버 상태머신까지 영향이라 비쌈.</div>
   <div class="callout callout-yellow"><strong>✅ <code>grace_after_window=TRUE</code> — 의도된 설계 (방어 문구)</strong><br>
-  목요일 23:59 직전에 발동된 유저는 개인 타이머가 <strong>금요일 00:24까지</strong> 이어짐. 이는 버그가 아니라 의도임 — 기간 경계에서 발동된 유저의 사이클을 중간에 끊으면 <strong>이미 투입한 판수를 몰수하는 셈</strong>이 되어 "몰수 없음" 원칙과 정면으로 충돌함. 최대 초과 노출은 <code>duration_sec</code> + 연장 1회 = <strong>최장 30분</strong>으로 한정되며, 이 구간에는 <strong>신규 발동이 일어나지 않음</strong>(진행 중 사이클의 완주만 인정). 따라서 OnFire류 <strong>요일 격리 원칙과 실질 충돌 없음</strong> — 금요일 이벤트와 겹치는 것은 잔여 30분 내 완주 처리뿐임. <code>5444</code>의 <code>reason=event_end</code>는 이 유예까지 지난 강제 만료에만 사용.</div>
+  기간 종료 직전(금 0:00 직전)에 발동된 유저는 개인 타이머가 <strong>금요일 0:24까지</strong> 이어짐. 이는 버그가 아니라 의도임 — 기간 경계에서 발동된 유저의 사이클을 중간에 끊으면 <strong>이미 투입한 판수를 몰수하는 셈</strong>이 되어 "몰수 없음" 원칙과 정면으로 충돌함. 최대 초과 노출은 <code>duration_sec</code> + 연장 1회 = <strong>최장 30분</strong>으로 한정되며, 이 구간에는 <strong>신규 발동이 일어나지 않음</strong>(진행 중 사이클의 완주만 인정). 따라서 OnFire류 <strong>요일 격리 원칙과 실질 충돌 없음</strong> — 금요일 이벤트와 겹치는 것은 잔여 30분 내 완주 처리뿐임. <code>5444</code>의 <code>reason=event_end</code>는 이 유예까지 지난 강제 만료에만 사용.</div>
   <h3>공용 탭 관련 변수</h3>
   <table class="bs-table">
     <thead><tr><th>탭</th><th>변수명</th><th>타입</th><th>예시값</th><th>설명</th></tr></thead>
     <tbody>
-      <tr><td rowspan="4"><code>event_schedule</code></td><td><code>start_day / end_day</code></td><td>int(1~7)</td><td>1 / 4</td><td>월 00:00 ~ 목 23:59 (OnFire류 요일 격리)</td></tr>
-      <tr><td><code>start_time / end_time</code></td><td>HH:MM</td><td>00:00 / 23:59</td><td>기간형 1행(160005) — 유저 접속 기준 사이클 발동</td></tr>
+      <tr><td rowspan="4"><code>event_schedule</code></td><td><code>start_day / end_day</code></td><td>int(1~7)</td><td>1 / 5</td><td>월 0:00 ~ 금 0:00 (= 월~목 4일) · OnFire류 요일 격리<br><small>라이브 관례 = 종료일 자정 기준이라, 목요일 끝까지 열려면 <code>end_day=5</code></small></td></tr>
+      <tr><td><code>start_time / end_time</code></td><td>H:MM</td><td>0:00 / 0:00</td><td>기간형 1행(160005) — 유저 접속 기준 사이클 발동 (라이브 전 행 동일 포맷)</td></tr>
       <tr><td><code>repeat / interval_week</code></td><td>bool / int</td><td>TRUE / 1</td><td>매주 반복</td></tr>
       <tr><td><code>base_date</code></td><td>date</td><td>2026-08-01</td><td>기준일</td></tr>
       <tr><td rowspan="2"><code>unlock</code></td><td><code>condition_type</code></td><td>enum</td><td>level_clear</td><td>라이브 실존 enum(level/level_clear)</td></tr>
@@ -850,7 +850,7 @@ flowchart TD
   <table class="tbl-keycol bs-table">
     <thead><tr><th>구분</th><th>탭명</th><th>대역/키</th><th>내용</th></tr></thead>
     <tbody>
-      <tr><td>공용 등록</td><td><code>event_schedule</code></td><td>160005·160006</td><td>추격전 기간 창 1행 (월 00:00~목 23:59·유저 접속 기준 사이클)</td></tr>
+      <tr><td>공용 등록</td><td><code>event_schedule</code></td><td>160005·160006</td><td>추격전 기간 창 1행 (월 0:00~금 0:00 = 월~목 4일·유저 접속 기준 사이클)</td></tr>
       <tr><td>공용 등록</td><td><code>string_code</code></td><td>T_SHADOW_CHASE_* 9키</td><td>이벤트 카피 (T_ 대문자 관례)</td></tr>
       <tr><td>공용 등록</td><td><code>unlock</code></td><td>50031</td><td>레벨 10 클리어 언락 (condition_type=level_clear)</td></tr>
       <tr><td>전용 탭(2차)</td><td><code>event_shadow_milestone</code></td><td>260001~260006</td><td>저니 트랙 6마일스톤 — v1 시트 반영분 아님(저니 레이어 2차 등록)</td></tr>
@@ -875,12 +875,6 @@ flowchart TD
   </table>
   <p style="margin:10px 0 0;font-size:12.5px;color:var(--text2)">※ 열쇠는 <strong>연출 상징이며 실아이템 아님</strong>(item_list 등록 불필요). <code>deco_fragment_city</code>는 <strong>item_list에 없음</strong> — Jackpot(v1 OFF) 도입 시 메타 데코 경로로 별도 처리 필요.</p>
 </div>
-<div class="callout callout-red"><strong>⚠ 라이브 관례와 다른 점 2가지 (등록 전 확인)</strong>
-  <ul style="margin:8px 0 0 18px;padding:0">
-    <li><strong>종료 시각 표기</strong> — 라이브 <code>event_schedule</code>은 전 행이 <code>start_time=0:00 / end_time=0:00</code> 형식으로, <strong>종료일 자정에 끝나는</strong> 관례임(예: 블랙카드 <code>start_day=1·end_day=4·0:00</code> = 월 0시~목 0시). 본 스펙의 <code>23:59</code>는 비관례 표기이므로, <strong>목요일 끝까지</strong>를 의도한다면 <code>end_day=5 · end_time=0:00</code>(금 0시)로 등록하는 것이 라이브 관례에 맞음. <strong>등록 전 확정 필요.</strong></li>
-    <li><strong>string_code 언어 컬럼</strong> — 라이브는 <code>en·ar·es·pt·id·ru·fr·th·jp·kr</code> <strong>10개 언어</strong> 구조이며 <strong>en이 첫 컬럼</strong>임. 본 스펙은 kr 기준값만 작성했으므로 <strong>en 포함 나머지 9개 언어 번역이 등록 전 선행</strong>돼야 함.</li>
-  </ul>
-</div>
 
   <!-- ══════════════ 3-5 라이브 시트 반영 예정분 ══════════════ -->
   <div class="bs-block" id="sheet-preview" style="border:2px solid var(--green)">
@@ -890,7 +884,7 @@ flowchart TD
 <h3>① event_schedule +1행 (공용 · in_use=FALSE 선등록)</h3>
 <div class="tbl-scroll"><table class="bs-table">
 <tr><th>key_number</th><th>type</th><th>start_day</th><th>end_day</th><th>start_time</th><th>end_time</th><th>repeat</th><th>in_use</th><th>base_date</th><th>interval_week</th><th></th><th>description</th></tr>
-<tr><td>160005</td><td>shadow_chase</td><td>1</td><td>4</td><td>00:00</td><td>23:59</td><td>TRUE</td><td><b>FALSE</b></td><td>2026-08-01</td><td>1</td><td></td><td>그림자 냥이 추격전 기간 창 · 월 00:00~목 23:59</td></tr>
+<tr><td>160005</td><td>shadow_chase</td><td>1</td><td>5</td><td>0:00</td><td>0:00</td><td>TRUE</td><td><b>FALSE</b></td><td>2026-08-01</td><td>1</td><td></td><td>그림자 냥이 추격전 기간 창 · 월 0:00~금 0:00 (= 월~목 4일)</td></tr>
 </table></div>
 <div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ interval_week=1(매주 반복). 160006은 사용하지 않음(기간형 단일 행). 저니 트랙은 스케줄 행 없음(시즌메타).</div>
 <h3>② unlock +1행 (공용)</h3>
