@@ -335,7 +335,7 @@ flowchart TD
   ST --> D["<b>플레이 반복</b><br/><small>타이머·n/8 인지는 매판 사이 프리레벨 행잉 태그에서</small>"]
   D --> E{"<b>타이머 내 완주?</b><br/><small>total_rounds=8 (예: 8판)</small>"}
   E -- "✅ 성공 = 열쇠 획득" --> F["<b>체스트 보상 — 결과 화면 체스트 블록</b><br/><small>신규 팝업 없음 · 지급 연출은 결과 화면 안 3컷<br/>8판째 결과 화면 하단에 체스트 블록 [받기]<br/>일반 판 보상 RV ×2는 기존 그대로 유지</small>"]
-  E -- "⛔ 잔여 5분 이하 · 미완주" --> RV(["<b>RV 타이머 +5분 연장</b><br/><small>ad_extend_sec=300 · 사이클당 1회 · 미시청 시 그대로 만료</small>"])
+  E -- "⛔ 잔여 5분 이하 · 미완주" --> RV(["<b>RV 타이머 +5분 연장 (드롭 가능)</b><br/><small>타이머 옆 말풍선 [+5 min] · ad_extend_sec=300<br/>사이클당 1회 · 미시청 시 그대로 만료</small>"])
   RV --> D
   E -- "⛔ 시간 초과" --> H["<b>실패 — 신규 연출 없음 · 인지 토스트 1회</b><br/><small>행잉 태그·버튼 마킹 비노출 · 몰수 없음<br/>다음 로비 복귀 시 T_SHADOW_CHASE_FAIL_FLEE 토스트 1회</small>"]
   F --> CD["<b>사이클 종료 → 쿨다운</b><br/><small>cooldown_sec=43200 (예: 12h) 경과 후 재트리거 대기</small>"]
@@ -356,7 +356,7 @@ flowchart TD
     <tr><td>레벨10 클리어</td><td>이벤트 해금(unlock 50031) — 별도 튜토리얼 없음. 첫 발동 연출과 인포 팝업(ⓘ)이 안내 역할</td><td>해금 조건</td></tr>
     <tr><td>기간 내 · 쿨다운 경과 · 미진행 · 로비 복귀 시 <strong>우선 팝업 소화 후</strong></td><td><strong>발동 시퀀스 연출 자동 재생 + 타이머 시작</strong> — 유저의 최초 인식(사이클당 1회·기존 팝업 체인 마지막 순번)</td><td>기존 팝업 체인 마지막 순번</td></tr>
     <tr><td>8판 완주</td><td>체스트 보상을 <strong>8판째 결과 화면 하단 체스트 블록</strong>에 표시(신규 팝업 없음 · 지급 연출은 결과 화면 내 3컷) · 기여 항목 🐾마킹 · <strong>일반 판 보상 RV ×2는 기존 그대로 유지</strong></td><td>결과 화면 블록 추가(신규 모달 없음)</td></tr>
-    <tr><td>잔여 5분 이하 · 미완주</td><td><strong>행잉 태그에 [광고 보고 +5분] 버튼 노출</strong> — 시청 완료 시 <code>ad_extend_sec</code>만큼 타이머 연장(사이클당 1회)</td><td>행잉 태그 내 버튼(신규 모달 없음)</td></tr>
+    <tr><td>잔여 5분 이하 · 미완주</td><td><strong>행잉 태그 타이머 옆에 말풍선 [+5 min] 노출</strong>(TV 아이콘) — 시청 완료 시 <code>ad_extend_sec</code>만큼 타이머 연장(사이클당 1회)</td><td>행잉 태그 내 말풍선(신규 모달 없음) · <strong>드롭 가능</strong></td></tr>
     <tr><td>타이머 만료(실패)</td><td><strong>다음 로비 복귀 시 토스트 1회</strong> — <code>T_SHADOW_CHASE_FAIL_FLEE</code>("시간 종료… 다음 기회에 꼭 잡아요") · 몰수 없음 명시</td><td>토스트(모달 아님·팝업 체인 미점유)</td></tr>
     <tr><td>언락 인트로와 발동 조건 동시 충족</td><td>언락 인트로 먼저 → 발동 연출은 다음 로비 복귀 시(같은 진입 2모달 금지)</td><td>엣지 규칙</td></tr>
     <tr><td><strong>팝업 세션 상한 소진</strong></td><td><strong>발동 연출을 다음 로비 복귀로 이월</strong> — 큐에 보류 상태로 유지. 사이클 유실 아님·쿨다운 타이머 미시작·<code>7101</code>은 재발화하지 않음(중복 계상 방지)</td><td>엣지 규칙 — 개발 필수</td></tr>
@@ -595,25 +595,33 @@ flowchart TD
   </div>
 
   <div class="seq-step">
-    <span class="seq-tag">⑧ · 타이머 연장 (RV) — v1 포함</span>
-    <h4>⑧ 잔여 5분 이하 — [광고 보고 +5분]</h4>
+    <span class="seq-tag">⑧ · 타이머 연장 (RV) — 우선순위 최하위</span>
+    <h4>⑧ 잔여 5분 이하 — 타이머 말풍선 [+5 min]</h4>
     <span class="flow-label">🎬 진행 순서</span>
     <ul class="flowlist">
       <li><span class="n">1</span>잔여 시간 ≤ <code>ad_extend_threshold_sec</code>(예 300초) <strong>AND</strong> 미완주</li>
-      <li><span class="n">2</span><strong>프리레벨 행잉 태그 안</strong>에 [광고 보고 +5분] 버튼 노출</li>
+      <li><span class="n">2</span>행잉 태그의 <strong>타이머 옆에 말풍선</strong> 노출 — 꼬리가 타이머를 가리킴<br><small>구성 = 작은 TV 아이콘(RV 관용 표기) + "+5 min" · 크림 바탕 + 금색 테두리</small></li>
       <li><span class="n">3</span>시청 완료 → <code>ad_extend_sec</code>(예 300초)만큼 개인 타이머 연장</li>
       <li><span class="n">4</span><strong>사이클당 1회</strong>만 허용 (서버 검증)</li>
       <li><span class="n">5</span>미시청 시 그대로 만료 — <strong>패널티 없음</strong></li>
     </ul>
-    <div class="note"><strong>왜 v1에 넣는가</strong> — 잔여 5분·미완주는 <strong>사이클 전체에서 지불 의사가 가장 높은 지점</strong>이며(이미 투입한 판수를 잃기 직전 = 손실회피 최고점), 이벤트의 서사와도 정확히 일치함("놓치기 직전 한 번 더 쫓는다"). 신규 모달 없이 <strong>행잉 태그 안 버튼 1개</strong>라 공수도 작음. 연출 제작분 없음 — 연장 성공 시 타이머 숫자가 튀며 갱신되는 정도.</div>
+    <div class="note"><strong>왜 넣는가</strong> — 잔여 5분·미완주는 <strong>사이클 전체에서 지불 의사가 가장 높은 지점</strong>이며(이미 투입한 판수를 잃기 직전 = 손실회피 최고점), 이벤트의 서사와도 정확히 일치함("놓치기 직전 한 번 더 쫓는다"). 신규 모달 없이 <strong>행잉 태그 안 말풍선 1개</strong>라 공수도 작음. 연출 제작분 없음 — 연장 성공 시 타이머 숫자가 튀며 갱신되는 정도.</div>
+    <div class="callout callout-yellow"><strong>⚠ 구현이 복잡하면 v1에서 빼도 됨 (드롭 가능 항목)</strong><br>
+    본 기능은 <strong>스프린트 성립에 필수가 아님</strong> — 빠져도 이벤트는 그대로 동작함(잔여 시간 만료 = 실패, 기존 흐름 유지). 서버 타이머 연장 검증·RV 지면 연동·중복 방지가 예상보다 붙으면 <strong>v1에서 제외하고 2차로 미뤄도 무방</strong>함.<br>
+    빼는 경우 처리 = <code>ad_extend_max_per_cycle=0</code>으로 시트에서 OFF(코드 롤백 불필요) · 말풍선 미노출 · <code>7109</code> 미발화 · <code>7105/7106</code>의 <code>extended</code>는 항상 FALSE. <strong>판단은 개발 견적 기준으로 개발팀에 위임함.</strong></div>
     <div class="ours"><strong>루나 이식</strong>
       <ul class="flowlist">
-        <li><span class="k">UI</span>행잉 태그 컴포넌트에 <strong>조건부 버튼 1개</strong> 추가 (신규 모달 없음)</li>
+        <li><span class="k">UI</span>행잉 태그 컴포넌트에 <strong>조건부 말풍선 1개</strong> 추가 (신규 모달 없음)</li>
+        <li><span class="k">디자인</span>크림 말풍선 + 꼬리가 타이머를 지시 · 안에 <strong>틸 TV 아이콘 + "+5 min"</strong><br><small>태그 본체(보라·금)와 색을 분리해 별개 액션으로 읽히게 함 · 무게는 [플레이] 버튼보다 가볍게</small></li>
         <li><span class="k">RV</span>기존 RV 지면 문법 재활용</li>
         <li><span class="k">연출</span>없음 — 타이머 숫자가 튀며 갱신되는 정도</li>
         <li><span class="k">계측</span><code>7109</code>로 노출·시청·연장 결과</li>
       </ul>
     </div>
+    <div class="seq-imgs single">
+      <figure class="oursfig"><span class="imgrole role-ours">✅ 우리 게임 목업 — 타이머 말풍선</span><img src="ref-027-ours-09-extend.jpg" alt="ref-027-ours-09-extend" class="zoomable" loading="lazy"></figure>
+    </div>
+    <p style="font-size:11.5px;color:var(--text2);margin:6px 0 0">※ 목업의 "+5 min"은 영문 표기 예시임 — 한국어 빌드 문구는 <code>T_SHADOW_CHASE_AD_EXTEND</code> = "+5분".</p>
   </div>
 
   <div class="seq-step">
@@ -682,7 +690,7 @@ flowchart TD
       <tr><td>⑤ 마킹</td><td>플레이 버튼에 🐾발바닥 자국 1개 (진행 중 상시 표시)</td><td>버튼 오버레이</td></tr>
       <tr><td>⑥ 행잉 태그</td><td>프리레벨 밧줄에 체스트+남은시간+진행바(n/8) · 체스트 보상 표기</td><td>기존 진행이벤트 밧줄 재활용</td></tr>
       <tr><td>⑦ 지급</td><td>결과 화면 <strong>하단 체스트 블록</strong>에 지급 + "🐱 그림자 냥이 추격전" 뱃지 · 상단 판 보상(RV ×2)은 무변경</td><td>결과 화면 하단 블록 추가</td></tr>
-      <tr><td>⑧ 타이머 연장</td><td>잔여 5분 이하·미완주 시 행잉 태그 안 <strong>[광고 보고 +5분]</strong> 버튼 — 연출 제작분 없음(타이머 숫자 갱신)</td><td>행잉 태그 조건부 버튼 + 기존 RV 지면</td></tr>
+      <tr><td>⑧ 타이머 연장</td><td>잔여 5분 이하·미완주 시 타이머 옆 <strong>말풍선 [+5 min]</strong>(TV 아이콘·크림 바탕) — 연출 제작분 없음(타이머 숫자 갱신)</td><td>행잉 태그 조건부 말풍선 + 기존 RV 지면</td></tr>
       <tr><td>⛔ 실패 인지</td><td>다음 로비 복귀 시 <strong>토스트 1회</strong>(T_SHADOW_CHASE_FAIL_FLEE) — 모달 아님·신규 연출 없음</td><td>기존 토스트 재활용</td></tr>
     </tbody>
   </table>
@@ -700,14 +708,14 @@ flowchart TD
       <tr><td><strong>도주</strong></td><td><code>ESCAPE</code></td><td>발동 시퀀스 ④ (flow-04 참고) · 시간 초과 시 재사용</td><td>발바닥 자국 트레일 + 열쇠 아이콘 이동</td></tr>
       <tr><td><strong>포획 성공</strong></td><td><code>WIN</code></td><td>8판 완주</td><td><strong>신규 팝업 없음</strong> — 결과 화면 안에서 3컷 연출(태그 만충 → 체스트 오픈·파티클 → 태그 소멸·🐾마킹)</td></tr>
       <tr><td><strong>시간 초과</strong></td><td><code>LOSE</code></td><td>타이머 만료</td><td><strong>신규 연출 없음</strong> — 행잉 태그·로비 아이콘·버튼 마킹 비노출 처리(몰수 없음) · <strong>다음 로비 복귀 시 실패 토스트 1회</strong></td></tr>
-      <tr><td><strong>진행 중</strong></td><td><code>RUNNING</code></td><td>진행 중 상시</td><td>플레이 버튼 🐾마킹 · 프리레벨 행잉 태그 (flow-05·06 참고) — 인게임 HUD 없음 · <strong>잔여 5분 이하 시 태그에 [광고 보고 +5분] 노출</strong></td></tr>
+      <tr><td><strong>진행 중</strong></td><td><code>RUNNING</code></td><td>진행 중 상시</td><td>플레이 버튼 🐾마킹 · 프리레벨 행잉 태그 (flow-05·06 참고) — 인게임 HUD 없음 · <strong>잔여 5분 이하 시 타이머 말풍선 [+5 min] 노출</strong></td></tr>
     </tbody>
   </table>
   <div class="note"><strong>상태 추가 없음</strong> — 타이머 연장(⑧)·실패 토스트(⛔)는 별도 상태가 아니라 각각 <code>RUNNING</code>의 조건부 UI, <code>LOSE</code> 전이 직후의 1회성 노출임. enum은 5종 유지.</div>
   <div class="note"><strong>이벤트 컬러 아이덴티티:</strong> 보라 오라 + 별빛 🐾발자국 = "그림자 냥이 이벤트" 공통 시각 언어. 플레이 버튼(활성 상태)·프리레벨 행잉 태그 글로우에 동일 적용 — 기존 골드 톤 이벤트 태그와 한눈에 구분됨. 행잉 태그에는 "8판 완주 시 열쇠 획득" 문구와 게이지 끝 열쇠 골 마커 필수.</div>
 <div class="note"><strong>연출 재생 중 입력 잠금:</strong> 열쇠 강탈·도주 연출 재생 중 풀스크린 터치 가드 활성. 최초 1회 필수 시청(건너뛰기 불가). 재노출부터 탭 스킵 허용.</div>
   <div class="callout callout-pink">
-    <strong>손실회피 UX:</strong> 열쇠 강탈→도주 연출이 재도전 동기의 핵심. 동일 모티프(🐾자국·열쇠)를 <strong>밧줄 글로우·[광고 보고 +5분] 버튼·실패 토스트</strong> 세 지점에 일관 적용. 시간 초과 시 <strong>몰수 없음</strong>을 토스트 문구로 명확히 전달해 재도전 유도. <em>(v1에 이탈 만류 팝업은 없음 — 이탈 저지는 행잉 태그 상시 노출로만 담당)</em>
+    <strong>손실회피 UX:</strong> 열쇠 강탈→도주 연출이 재도전 동기의 핵심. 동일 모티프(🐾자국·열쇠)를 <strong>밧줄 글로우·타이머 말풍선·실패 토스트</strong> 세 지점에 일관 적용. 시간 초과 시 <strong>몰수 없음</strong>을 토스트 문구로 명확히 전달해 재도전 유도. <em>(v1에 이탈 만류 팝업은 없음 — 이탈 저지는 행잉 태그 상시 노출로만 담당)</em>
   </div>
 </section>
 
@@ -725,7 +733,7 @@ flowchart TD
   <div class="callout callout-green" id="dev-checklist">
     <strong>🛠 개발 처리 체크리스트 (한곳 정리)</strong> — 문서 곳곳의 개발 액션을 8개 영역으로 모음:
     ① 발동·사이클(기간/쿨다운 판정·팝업 체인 마지막 순번·<strong>세션 상한 소진 시 다음 로비 복귀로 이월</strong>·서버 타이머) ② 연출·입력(잠금·스킵·자국만·<strong>강제 시청 6초 이내</strong>)
-    ③ 상태 표시(프리레벨 행잉 태그·플레이 버튼 🐾마킹 두 가지뿐 — 인게임 HUD·로비 아이콘 없음) + <strong>잔여 5분 이하 [광고 보고 +5분] 버튼</strong> ④ <strong>성공=결과 화면 하단 체스트 블록 [받기] · 상단 판 보상 RV ×2는 무변경</strong>
+    ③ 상태 표시(프리레벨 행잉 태그·플레이 버튼 🐾마킹 두 가지뿐 — 인게임 HUD·로비 아이콘 없음) + <strong>잔여 5분 이하 타이머 말풍선 [+5 min]</strong>(드롭 가능) ④ <strong>성공=결과 화면 하단 체스트 블록 [받기] · 상단 판 보상 RV ×2는 무변경</strong>
     ⑤ 실패=비노출 전환 + <strong>다음 로비 복귀 시 토스트 1회</strong> ⑥ 데이터·코드 등록(ProtocolTypes·시트 로드·unlock·확인 3건) ⑦ 로그 7101~7109(7104 미사용) ⑧ QA 핵심.
     <br>📥 <a href="handoff-shadow-chase-dev.md" download><strong>개발 체크리스트 핸드오프 (MD 다운로드)</strong></a> — 개발자 전달용 체크박스 문서.
   </div>
@@ -739,9 +747,9 @@ flowchart TD
       <tr><td><code>total_rounds</code></td><td>int</td><td>판</td><td>8</td><td>완주 목표 판수 (= 열쇠·체스트 조건)</td></tr>
       <tr><td><code>cooldown_sec</code></td><td>int</td><td>초</td><td>43200</td><td>사이클 종료(성공/실패) 후 재트리거 대기 — 예 12h = 일 최대 2사이클 자연 상한</td></tr>
       <tr><td><code>grace_after_window</code></td><td>bool</td><td>—</td><td>TRUE</td><td>기간 종료 시각을 넘겨도 진행 중 유저는 개인 타이머 종료까지 완주 인정 (<strong>의도된 설계</strong> — 아래 방어 문구)</td></tr>
-      <tr><td><code>ad_extend_threshold_sec</code></td><td>int</td><td>초</td><td>300</td><td><strong>신규</strong> — 잔여 시간이 이 값 이하일 때 [광고 보고 +5분] 버튼 노출</td></tr>
+      <tr><td><code>ad_extend_threshold_sec</code></td><td>int</td><td>초</td><td>300</td><td><strong>신규</strong> — 잔여 시간이 이 값 이하일 때 타이머 말풍선 [+5 min] 노출</td></tr>
       <tr><td><code>ad_extend_sec</code></td><td>int</td><td>초</td><td>300</td><td><strong>신규</strong> — RV 시청 완료 시 연장되는 시간</td></tr>
-      <tr><td><code>ad_extend_max_per_cycle</code></td><td>int</td><td>회</td><td>1</td><td><strong>신규</strong> — 사이클당 연장 허용 횟수 (0 = 기능 OFF·킬스위치)</td></tr>
+      <tr><td><code>ad_extend_max_per_cycle</code></td><td>int</td><td>회</td><td>1</td><td><strong>신규</strong> — 사이클당 연장 허용 횟수 (<strong>0 = 기능 OFF</strong> · 킬스위치 겸 v1 드롭 시 처리)</td></tr>
       <tr><td><code>in_use</code></td><td>bool</td><td>—</td><td>FALSE→TRUE</td><td>킬스위치 겸용 (선등록 FALSE·라이브 시 TRUE)</td></tr>
     </tbody>
   </table>
@@ -778,7 +786,7 @@ flowchart TD
     <tbody>
       <tr><td><strong>열쇠 강탈</strong></td><td><code>GRAB</code></td><td>팝업 소화 후 자동 발동 · 체스트 발견 후 그림자 냥이 열쇠 강탈 연출(앞발+발톱) · 입력 잠금</td><td>연출 종료 → 도주(Escape)</td></tr>
       <tr><td><strong>도주</strong></td><td><code>ESCAPE</code></td><td>스토리 [확인] 후 로비 복귀 · 그림자 냥이 도주 연출(자국 트레일) · 입력 잠금 · 시퀀스 종료 시점부터 25분 타이머 시작</td><td>플레이 버튼 마킹 → 진행 중(RUNNING)</td></tr>
-      <tr><td><strong>진행 중</strong></td><td><code>RUNNING</code></td><td>스프린트 진행 중 · 플레이 버튼 🐾마킹·프리레벨 행잉 태그 상시 표시(인게임 HUD 없음) · <strong>잔여 <code>ad_extend_threshold_sec</code> 이하 시 [광고 보고 +5분] 노출(사이클당 1회)</strong></td><td>완주 → 포획 성공(Win) / 만료 → 시간 초과(Lose) · <strong>연장 시 RUNNING 유지</strong></td></tr>
+      <tr><td><strong>진행 중</strong></td><td><code>RUNNING</code></td><td>스프린트 진행 중 · 플레이 버튼 🐾마킹·프리레벨 행잉 태그 상시 표시(인게임 HUD 없음) · <strong>잔여 <code>ad_extend_threshold_sec</code> 이하 시 타이머 말풍선 [+5 min] 노출(사이클당 1회)</strong></td><td>완주 → 포획 성공(Win) / 만료 → 시간 초과(Lose) · <strong>연장 시 RUNNING 유지</strong></td></tr>
       <tr><td><strong>포획 성공</strong></td><td><code>WIN</code></td><td>시간창 내 total_rounds 완주 (열쇠 획득)</td><td><strong>신규 팝업 없음</strong> — 결과 화면 안 3컷 연출 → <strong>하단 체스트 블록</strong>+🐾마킹(상단 판 보상·RV ×2 무변경) → 태그·마킹 정리 → IDLE</td></tr>
       <tr><td><strong>시간 초과</strong></td><td><code>LOSE</code></td><td>타이머 만료 미완주 (또는 기간 강제만료)</td><td><strong>신규 연출 없음</strong> — 행잉 태그·버튼 마킹 비노출 전환(몰수 없음) → <strong>다음 로비 복귀 시 실패 토스트 1회</strong> → IDLE</td></tr>
     </tbody>
@@ -800,7 +808,7 @@ flowchart TD
       <tr><td><code>7106_SHADOW_CHASE_FAIL</code></td><td>타이머 만료 (또는 이벤트 종료 강제만료)</td><td>cycle_id, rounds_cleared, reason(timeout/event_end), <strong>extended(bool)</strong></td></tr>
       <tr><td><code>7107_SHADOW_CHASE_HAMMER_GRANT</code></td><td>해머 지급</td><td>cycle_id, <strong>amount</strong>, balance_after</td></tr>
       <tr><td><code>7108_SHADOW_CHASE_DECO_GATE_UNLOCK</code></td><td>해머로 데코 게이트 해제</td><td>cycle_id, gate_id</td></tr>
-      <tr><td><code>7109_SHADOW_CHASE_AD_EXTEND</code></td><td><strong>신규</strong> — [광고 보고 +5분] 노출·시청·연장</td><td>cycle_id, step(impression/watch_start/complete), remain_sec_before, extend_sec, result(success/abort/no_fill)</td></tr>
+      <tr><td><code>7109_SHADOW_CHASE_AD_EXTEND</code></td><td><strong>신규</strong> — 타이머 말풍선 [+5 min] 노출·시청·연장</td><td>cycle_id, step(impression/watch_start/complete), remain_sec_before, extend_sec, result(success/abort/no_fill)</td></tr>
     </tbody>
   </table>
   <div class="callout callout-red"><strong>⚠ 로그 스키마 보강 이유 (전부 KPI 산출 필수)</strong>
@@ -859,7 +867,7 @@ flowchart TD
 <tr><td>T_SHADOW_CHASE_CHEST_NORMAL</td><td>따라잡았어요! 루나 체스트가 열려요.</td></tr>
 <tr><td>T_SHADOW_CHASE_CHEST_JACKPOT</td><td>그림자 냥이의 비밀 보물! Jackpot 체스트가 열려요.</td></tr>
 <tr><td>T_SHADOW_CHASE_FAIL_FLEE</td><td>시간 종료… 그림자 냥이가 사라졌어요. 얻은 보상은 그대로예요. 다음 기회에 꼭 잡아요.</td></tr>
-<tr><td>T_SHADOW_CHASE_AD_EXTEND</td><td>광고 보고 +5분 더!</td></tr>
+<tr><td>T_SHADOW_CHASE_AD_EXTEND</td><td>+5분</td></tr>
 <tr><td>T_SHADOW_CHASE_CHEST_NO_MULTIPLY</td><td>이벤트 보상은 배수가 적용되지 않아요.</td></tr>
 <tr><td>T_SHADOW_CHASE_OFFLINE</td><td>연결이 필요해요…</td></tr>
 </table>
@@ -881,7 +889,7 @@ flowchart TD
 <tr><th>key_number</th><th>event_id</th><th>duration_sec</th><th>total_rounds</th><th>cooldown_sec</th><th>grace_after_window</th><th>ad_extend_threshold_sec</th><th>ad_extend_sec</th><th>ad_extend_max_per_cycle</th><th>in_use</th></tr>
 <tr><td>200201</td><td>0</td><td>1500</td><td>8</td><td>43200</td><td>TRUE</td><td>300</td><td>300</td><td>1</td><td>FALSE</td></tr>
 </table>
-<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트 보상은 event_shadow_chest 탭(④) 소관 — 튜닝 코어는 스프린트 파라미터만. event_id=0 = 스케줄 행(160005)과 분리된 공통 파라미터. <b>ad_extend_* 3컬럼은 [광고 보고 +5분]용 신규</b> — <code>ad_extend_max_per_cycle=0</code>이면 기능 OFF(개별 킬스위치). <b>레벨 구간 차등이 필요해지면 이 탭을 <code>level_min</code>/<code>level_max</code> 컬럼을 가진 다행 구조로 확장</b>(v1은 1행 고정).</div>
+<div style="font-size:11.5px;color:var(--text2);margin:4px 0 10px">※ 체스트 보상은 event_shadow_chest 탭(④) 소관 — 튜닝 코어는 스프린트 파라미터만. event_id=0 = 스케줄 행(160005)과 분리된 공통 파라미터. <b>ad_extend_* 3컬럼은 타이머 말풍선 [+5 min]용 신규</b> — <code>ad_extend_max_per_cycle=0</code>이면 기능 OFF(개별 킬스위치 겸 <b>v1 드롭 시 처리 수단</b>). <b>레벨 구간 차등이 필요해지면 이 탭을 <code>level_min</code>/<code>level_max</code> 컬럼을 가진 다행 구조로 확장</b>(v1은 1행 고정).</div>
 
 <div class="callout callout-orange"><b>개발 확인 요청 3가지</b> — ① goal_type=complete_sprint_cycle 서버 처리 방식(2차 저니용 — v1 훅만) ② milestone/sprint의 event_id=0(비귀속) 관례 수용 여부 ③ 기간·쿨다운 판정 주체 — 서버 스케줄 push vs 클라 시각 판정(서버 시간 기준) 중 택. <b>③의 결론에 따라 <code>7101</code>의 발화 주체(<code>fire_side</code>)와 참여율 분모 정의가 함께 확정됨</b> — 따로 정하지 말고 한 번에 결론낼 것.</div>
 <div class="callout callout-green"><b>✅ 확정된 항목 (질문 아님 · 개발 반영 필수)</b> — <b>팝업 세션 상한 소진 시 발동 연출은 잘라내지 말고 다음 로비 복귀로 이월</b>. 연출 재생이 곧 타이머 시작이라, 상한에 걸려 큐에서 잘리면 <code>7102</code> 미발화 + 사이클 통째 유실로 이어짐. 이월 중 쿨다운 미시작 · <code>7101</code> 재발화 없음 · 기간 이탈 시 보류분 폐기.</div>
@@ -908,7 +916,7 @@ flowchart TD
     <tbody>
       <tr><td>클라</td><td>프리레벨 행잉 태그(타이머·n/8 게이지·실루엣) + 플레이 버튼 🐾마킹 + 발동 트리거(팝업 체인 마지막·<strong>세션 상한 시 이월</strong>) + 연출 입력 잠금(6초 이내) (인게임 HUD·타이머 위젯 없음)</td><td><span class="prio-high">L</span></td></tr>
       <tr><td>클라</td><td>결과 화면(PopupCompleteLevel) <strong>하단 체스트 블록 추가</strong> — 6슬롯·🐾뱃지·[받기] 단일. <strong>기존 판 보상·RV ×2 로직은 무변경</strong>(기존안 대비 공수 감소)</td><td><span class="prio-low">S</span></td></tr>
-      <tr><td>클라</td><td><strong>[광고 보고 +5분]</strong> — 행잉 태그 조건부 버튼 + 기존 RV 지면 연동 + 연장 반영 (신규 모달 없음)</td><td><span class="prio-low">S</span></td></tr>
+      <tr><td>클라</td><td><strong>타이머 말풍선 [+5 min]</strong> — 행잉 태그 조건부 말풍선 + 기존 RV 지면 연동 + 연장 반영 (신규 모달 없음) · <strong>견적 크면 v1 드롭 가능</strong></td><td><span class="prio-low">S</span></td></tr>
       <tr><td>클라</td><td><strong>실패 토스트 1회</strong> — 기존 토스트 컴포넌트 재활용·중복 방지 플래그 (신규 UI 없음)</td><td><span class="prio-low">S</span></td></tr>
       <tr><td>서버</td><td>이벤트/스프린트 상태머신·기간/쿨다운 판정 (wall-clock 타이머 권위 · 발동 트리거=큐/폴백 · <strong>이월 보류 상태</strong> · <strong>연장 1회 검증</strong> · claim-chest 멱등)</td><td><span class="prio-high">L</span></td></tr>
       <tr><td>계측</td><td>7xxx 로그 파이프라인 (기존 코드+data 관례 확장 · <strong>7101~7109</strong>, 7104 미사용) + <strong>4210 조인 기반 RV 분해 쿼리</strong></td><td><span class="prio-mid">M</span></td></tr>
@@ -944,7 +952,7 @@ flowchart TD
       <tr><td>스프린트 참여율</td><td>사이클 시작(7102) ÷ 발동 조건 충족(7101, <code>deferred</code> 제외)</td><td>초안 목표 설정 후 관측 · 분모 정의는 개발 확인 ③과 함께 확정</td></tr>
       <tr><td>스프린트 완주율</td><td>완주(7105) ÷ 진입(7102) — 성공률 30% 검증 목표</td><td>25분 8판 난이도 검증 (너무 낮으면 완화) · <strong>D+2 튜닝 게이트 판단 근거</strong></td></tr>
       <tr><td><strong>연출 이탈률</strong></td><td>발동 연출 미완주 = <code>7102.fx_completed=FALSE</code> 비율</td><td>강제 시청 6초 상한의 타당성 검증 — 높으면 스킵 허용 앞당김</td></tr>
-      <tr><td><strong>타이머 연장 전환·구제율</strong></td><td>연장 시청(<code>7109</code>) ÷ 노출 · <code>extended=TRUE</code>인 <code>7105</code> 비중</td><td>RV 증분 · 연장이 실제 완주로 이어지는지</td></tr>
+      <tr><td><strong>타이머 연장 전환·구제율</strong></td><td>연장 시청(<code>7109</code>) ÷ 노출 · <code>extended=TRUE</code>인 <code>7105</code> 비중 <em>(연장 기능 채택 시에만)</em></td><td>RV 증분 · 연장이 실제 완주로 이어지는지</td></tr>
       <tr><td>해머 획득·소진</td><td>해머 지급(<code>7107.amount</code>)·데코 게이트 해제(7108) 빈도</td><td>해머 발행량·소진 경로 추적 (구조적 상한 6/일 대비 실측)</td></tr>
       <tr><td>데코 진입률</td><td>체스트 오픈(<code>7105</code>) 중 <code>chest_tier=jackpot</code>이며 deco_fragment_city 지급 비율</td><td>저니 완주 후 Jackpot 전환 추적(2차)</td></tr>
       <tr><td>D1/D3</td><td>이벤트 노출 코호트 리텐션 — <strong>가드레일</strong></td><td>이벤트 주간 vs 직전 비교 · <strong>비열위 확인용</strong>(상승 목표 아님)</td></tr>
