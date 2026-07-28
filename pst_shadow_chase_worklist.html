@@ -62,6 +62,7 @@ button:hover{border-color:var(--ac);color:var(--ac)}
       <div class="bar"><i id="barAll"></i></div>
       <div class="meta" id="phaseSum"></div>
     </div>
+    <button onclick="copyProgress()">📋 진행상황 복사</button>
     <button onclick="resetAll()">전체 초기화</button>
   </div>
 </div>
@@ -190,6 +191,25 @@ function render(){
     sum.push(ph+' '+d+'/'+ls.length);
   });
   document.getElementById('phaseSum').textContent=sum.join('  ·  ');
+}
+function copyProgress(){
+  var out=['# 그림자 냥이 등록 작업 진행상황'];
+  var done=items.filter(function(l){return l.querySelector('input').checked}).length;
+  out.push('총 '+done+'/'+items.length+' 완료\n');
+  ['A','B','C','D','E'].forEach(function(ph){
+    var ul=document.querySelector('ul.tasks[data-phase="'+ph+'"]');
+    if(!ul) return;
+    var h=ul.closest('.card').querySelector('h2').textContent.replace(/\s+/g,' ').trim();
+    out.push('## '+h);
+    [].slice.call(ul.querySelectorAll('li')).forEach(function(li){
+      var c=li.querySelector('input').checked?'x':' ';
+      out.push('- ['+c+'] '+li.querySelector('.t').textContent.trim());
+    });
+    out.push('');
+  });
+  var txt=out.join('\n');
+  navigator.clipboard.writeText(txt).then(function(){alert('진행상황을 복사했어요.\n대화창에 붙여넣으면 됩니다.')},
+    function(){ var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('진행상황을 복사했어요.'); });
 }
 function resetAll(){
   if(!confirm('모든 체크를 해제할까요?')) return;
