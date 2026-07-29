@@ -97,13 +97,13 @@
 ### 4-A-2. 로비 체스트 오픈 팝업 (신규 1종)
 
 - [ ] 열쇠 보유 상태로 **로비 복귀 시 자동 노출** — 보상 정산 계열이라 **팝업 체인 상위**(발동 연출보다 먼저)
-- [ ] 연출 = **3컷** — **① 잠김·대기**: 중앙에 잠긴 체스트만 · **열쇠 미등장** · **보상 미노출** · [Open] 활성 / **② 열쇠 삽입**: [Open] 탭 → 버튼 소멸 → 화면 밖에서 열쇠가 날아와 **자물쇠에 절반쯤 꽂힘**(입력 잠금) / **③ 개방**: 열쇠가 돌아감 → **자물쇠 파손·소멸** → 체스트 오픈 → **보상 6슬롯 처음 공개** → [받기]
+- [ ] 연출 = **3컷** — **① 잠김·대기**: 중앙에 잠긴 체스트만 · **열쇠 미등장** · **보상 미노출** · [Open] 활성 / **② 열쇠 삽입**: [Open] 탭 → 버튼 소멸 → 화면 밖에서 열쇠가 날아와 **자물쇠에 절반쯤 꽂힘**(입력 잠금) / **③ 개방·수령**: 자물쇠 파손 → 체스트 오픈 → **보상 6종이 로비 상단 재화 UI로 날아가 꽂히는 수령 연출**. **텍스트 없음 · 별도 [받기] 버튼 없음**
 - [ ] ★**[Open] 탭이 연출 트리거** — 유저 입력 전에는 열쇠가 등장하지 않음
 - [ ] ★**오픈 전 보상 미노출** — 잠긴 상태에서 내용물을 공개하면 여는 행위의 페이오프가 사라짐. 사전 확인은 **ⓘ 인포 팝업**으로만
 - [ ] 보상 품목·수량은 `event_shadow_chest` 시트 연동(**하드코딩 금지**)
 - [ ] 지급: 서버 커밋(**멱등 `txn_id`**) — `/api/event/shadow-chase/claim-chest` 신규 (기존 `/api/event/*` 관례)
-- [ ] `5443_EVENT_SHADOW_CHASE_CHEST_OPEN` = **[받기] 실지급 시점**에 발화
-- [ ] 수령 후 팝업 닫힘 → 로비 복귀
+- [ ] `5443_EVENT_SHADOW_CHASE_CHEST_OPEN` = **[Open] 탭 = 실지급 시점**에 발화
+- [ ] 연출 종료 후 **팝업 자동 닫힘** → 로비 복귀
 
 ### 4-A-3. 미수령 열쇠 처리 (필수)
 
@@ -146,7 +146,7 @@
 - [ ] ★**시트 파서 규칙** — 추출기는 **행·열 모두 빈 내용을 만나면 생성을 멈춤**. 따라서 신규 탭은 **추출 컬럼을 앞에 붙이고 → 빈 열 1개 → `description`** 순서로 배치돼 있음. `event_shadow_sprint` = A~J 데이터·**K 빈 열**·L description / `event_shadow_chest` = A~G 데이터·**H 빈 열**·I description. 로더가 빈 열 이후를 읽지 않도록 할 것
 - [ ] `event_shadow_sprint`는 v1 1행 고정이나, **레벨 구간 차등이 필요해지면 `level_min`/`level_max` 컬럼을 가진 다행 구조로 확장**될 수 있음 — 로더를 단일 행 전제로 하드코딩하지 말 것
 - [ ] `unlock` 50031(`content_event_shadow_chase`·`level_clear`·10·**`show_tutorial=FALSE`**) — 별도 튜토리얼·언락 인트로 없음(`tutorial_guide` 미등록). 클라 코드 등록 불필요(데이터 참조)
-- [ ] string_code `T_SHADOW_CHASE_*` **8키** 등록 (`T_SHADOW_CHASE_FAIL_FLEE`·`T_SHADOW_CHASE_CHEST_NO_MULTIPLY` 미사용)
+- [ ] string_code `T_SHADOW_CHASE_*` **11키 + T_OPEN** 등록 (`T_SHADOW_CHASE_FAIL_FLEE`·`T_SHADOW_CHASE_CHEST_NO_MULTIPLY` 미사용)
 - [ ] `reward_key`는 전부 **라이브 `item_list` 실존 키**만 사용 → 신규 아이템 등록 불필요. 열쇠는 연출 상징이며 **실아이템 아님**
 - [ ] ★개발 확인 ①: `goal_type=complete_sprint_cycle` 서버 처리(2차 저니용 — v1 훅만)
 - [ ] ★개발 확인 ②: milestone/sprint의 `event_id=0`(비귀속) 관례 수용 여부
@@ -170,7 +170,7 @@
 | 5440_EVENT_SHADOW_CHASE_SLOT_OPEN | 발동 조건 충족(NOTIFY) | `cycle_id`·`trigger_type`·`window_sec`·`target_clear`·**`fire_side(server/client)`** |
 | 5441_EVENT_SHADOW_CHASE_ACTIVATE | 발동 연출 재생(사이클 시작·타이머 시작) | `cycle_id`·`remain_sec`·**`fx_completed(bool)`**·**`fx_watch_sec`** |
 | 5442_EVENT_SHADOW_CHASE_ROUND_CLEAR | 사이클 중 판 클리어(카운트 증가) | `cycle_id`·**`round_idx(1~total_rounds)`**·`clear_count`·`elapsed_sec`·**`level_id`**·**`round_sec`** |
-| 5443_EVENT_SHADOW_CHASE_CHEST_OPEN | **로비 체스트 오픈 팝업 [받기]** — 실지급 시점 | `cycle_id`·`elapsed_sec`·`txn_id`·**`chest_tier(normal/jackpot)`**·**`reward_keys[]`**·**`extended(bool)`** |
+| 5443_EVENT_SHADOW_CHASE_CHEST_OPEN | **로비 체스트 오픈 팝업 [Open] 탭** — 실지급 시점 | `cycle_id`·`elapsed_sec`·`txn_id`·**`chest_tier(normal/jackpot)`**·**`reward_keys[]`**·**`extended(bool)`** |
 | 5444_EVENT_SHADOW_CHASE_FAIL | 타이머 만료(또는 강제 만료) | `cycle_id`·`rounds_cleared`·`reason(timeout/event_end)`·**`extended(bool)`** |
 | 5445_EVENT_SHADOW_CHASE_HAMMER_GRANT | 해머 지급 | `cycle_id`·**`amount`**·`balance_after` |
 | 5446_EVENT_SHADOW_CHASE_DECO_GATE_UNLOCK | 해머로 데코 게이트 해제 | `cycle_id`·`gate_id` |
