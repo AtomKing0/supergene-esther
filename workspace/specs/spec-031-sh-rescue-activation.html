@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-031 · Super Hard 구제장치 활성화</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #a78bfa;
+  --accent2: #c4b5fd;
+  --green: #34d399;   --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;     --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;    --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;  --purple-bg: rgba(167,139,250,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #1e1a35 45%, #1a1d27 100%);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #7c3aed; --accent2: #6d28d9;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626;   --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb;  --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --hero-bg: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 45%, #e0e7ff 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { display:none; }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200; }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;margin-left:260px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.1) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--accent),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-purple { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+.kpi-trend { font-size:0.72rem;font-weight:700;margin-top:6px; }
+.trend-up   { color:var(--green); }
+.trend-down { color:var(--red); }
+
+.container { max-width:1100px;margin:0 0 0 260px;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-num-3 { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--blue-bg);color:var(--blue); }
+.aud-dev { background:var(--green-bg);color:var(--green); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+h4 { font-size:0.95rem;font-weight:700;margin:24px 0 10px;color:var(--accent); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-purple { background:var(--purple-bg);border-left:3px solid var(--purple); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.86rem; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var     { font-family:monospace;color:var(--blue);font-weight:600;min-width:300px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:72px; }
+.sheet-row-unit    { font-size:0.75rem;color:var(--text2);min-width:100px; }
+.sheet-row-desc    { color:var(--text2);font-size:0.82rem;flex:1; }
+
+.flow-step { display:flex;gap:14px;margin-bottom:14px;align-items:flex-start; }
+.flow-dot  { width:28px;height:28px;border-radius:50%;background:var(--purple-bg);border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--purple);flex-shrink:0;margin-top:2px; }
+.flow-body { flex:1; }
+.flow-body strong { color:var(--text);font-size:0.9rem; }
+.flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+</style>
+</head><body>
+<a href="index.html" class="back-btn">← 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">☰</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-031</div>
+  <a href="#s1">① 기획 의도 &amp; 확정 설계</a>
+  <a href="#s2">② 개발 스펙</a>
+  <a href="#s3">③ 검증 · 롤백</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-031</span>
+      <span class="badge badge-yellow" id="hero-tag"      style="cursor:pointer" title="태그 변경">⚖️ 밸런스</span>
+      <span class="badge badge-yellow" id="hero-priority" style="cursor:pointer" title="우선순위 변경">🟡 보통 우선순위</span>
+      <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">🔵 검토중</span>
+      <span class="badge badge-green">2026. 7. 29.</span>
+    </div>
+    <h1>Super Hard 구제장치 활성화<br><span>SH Rescue Activation</span></h1>
+    <p class="hero-sub">포기율이 가장 높은 Super Hard 티어에 구제 수단이 사실상 없음. 클라이언트에 이미 구현돼 있으나 임계값이 사거리 밖이라 한 번도 작동한 적 없는 구제 로직을 시트 값만 조정해 켬. 코드 변경 없음.</p>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">변경 범위</div>
+        <div class="kpi-value" style="color:var(--accent)">3셀</div>
+        <div class="kpi-sub">difficulty_tier 20004 행</div>
+        <div class="kpi-trend trend-up">신규 로직 0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Super Hard 실패율</div>
+        <div class="kpi-value" style="color:var(--yellow)">18.6%</div>
+        <div class="kpi-sub">Hard의 3.2배 · 목표 16.0%</div>
+        <div class="kpi-trend trend-down">▼ 상대 −14%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">실패 시 평균 잔여</div>
+        <div class="kpi-value" style="color:var(--red)">12.4장</div>
+        <div class="kpi-sub">총 33.7장 중 · 목표 10장</div>
+        <div class="kpi-trend">근접 실패 아님</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Hard 대비 실패율 배수</div>
+        <div class="kpi-value" style="color:var(--green)">3.2배</div>
+        <div class="kpi-sub">가드레일 2.0배 이상 유지</div>
+        <div class="kpi-trend">티어 구분 지표</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════ SECTION 1 ════ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">①</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도 &amp; 확정 설계</div>
+      <span class="section-audience aud-all">전체 공유</span>
+    </div>
+  </div>
+
+  <h3>배경</h3>
+  <p>Super Hard 티어만 실패율이 <strong>18.6%</strong>로 Hard(5.9%)의 <strong>3.2배</strong>임. 부스터를 77%가 쓰는데도 다섯 판 중 한 판을 놓침. 반면 이 티어의 구제 파라미터는 <span class="sheet-var">deck_help_rate 625</span>·<span class="sheet-var">field_help_rate 375</span>·<span class="sheet-var">pity_trigger_count 99</span>로, 실질적으로 구제가 없는 상태임.</p>
+
+  <h3>실측 근거 (2026-07-22~28 · FB Instant Games)</h3>
+  <table>
+    <thead><tr><th>티어</th><th>판수</th><th>실패율</th><th>부스터 사용률</th><th>실패 시 평균 잔여</th><th>총 필드 카드</th></tr></thead>
+    <tbody>
+      <tr><td>20001 Tutorial</td><td>13,444</td><td>0.2%</td><td>6.0%</td><td>7.2장</td><td>13.5장</td></tr>
+      <tr><td>20002 Normal</td><td>49,296</td><td>4.0%</td><td>39.2%</td><td>5.1장</td><td>20.8장</td></tr>
+      <tr><td>20003 Hard</td><td>7,418</td><td>5.9%</td><td>67.1%</td><td>7.1장</td><td>27.5장</td></tr>
+      <tr><td>20004 Super Hard</td><td>3,742</td><td><strong>18.6%</strong></td><td>77.2%</td><td><strong>12.4장</strong></td><td>33.7장</td></tr>
+    </tbody>
+  </table>
+  <p>실패 로그의 <strong>93~95%</strong>가 <span class="sheet-var">remaining_draw_count = 0</span>임. 시간이나 조작이 아니라 덱을 다 쓰고 필드가 남아 끝남.</p>
+
+  <h3>포기율 상위 스테이지 — 전부 Super Hard임</h3>
+  <table>
+    <thead><tr><th>stage_id</th><th>티어</th><th>판수</th><th>실패율</th><th>실패 시 평균 잔여</th></tr></thead>
+    <tbody>
+      <tr><td>CC_0332</td><td>Super Hard</td><td>295</td><td><strong>34.2%</strong></td><td>11.8장</td></tr>
+      <tr><td>CC_0384</td><td>Super Hard</td><td>346</td><td>31.8%</td><td>14.8장</td></tr>
+      <tr><td>CC_0383</td><td>Super Hard</td><td>430</td><td>31.6%</td><td><strong>16.9장</strong></td></tr>
+      <tr><td>CC_0333</td><td>Super Hard</td><td>555</td><td>21.8%</td><td>7.3장</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-yellow">
+    <p><strong>덱을 몇 장 더 주는 방식은 이 구간에 맞지 않음.</strong> Super Hard는 필드 33.7장 중 <strong>12.4장을 남기고</strong> 짐. 잔여 3장 이하인 근접 실패는 14.8%뿐이라 덱을 3장 더 줘도 85%는 그대로 실패함. 반대로 덱 추가가 잘 먹는 Normal은 이미 실패율이 4.0%라 구제할 대상이 아님. <strong>덱 증량이 아니라 카드 질을 올리는 방향이 맞음.</strong></p>
+  </div>
+
+  <h3>확정 사항</h3>
+  <ol>
+    <li><strong>신규 시스템을 만들지 않음.</strong> 구제 로직은 클라이언트에 이미 완성돼 있음. <span class="sheet-var">difficulty_tier</span> 20004 행의 값 3개만 조정함.</li>
+    <li><strong>Super Hard 티어만 변경함.</strong> Tutorial·Normal·Hard 행은 손대지 않음.</li>
+    <li><strong>맵 데이터를 수정하지 않음.</strong> 고포기 스테이지의 맵 자체는 그대로 두고 티어 파라미터로만 완화함.</li>
+    <li><strong>티어 구분을 가드레일로 둠.</strong> Hard 대비 실패율 배수 <strong>2.0배 이상</strong>을 유지함. 이 선을 넘으면 Super Hard가 Hard와 구분되지 않음.</li>
+    <li><strong>덱 증량·이어하기 지면은 이 스펙에 포함하지 않음.</strong> 범위 밖 항목으로 분리함.</li>
+  </ol>
+
+  <h3>변경 값</h3>
+  <div class="sheet-block">
+    <div class="sheet-block-title">difficulty_tier · key_number 20004 (Super Hard)</div>
+    <div class="sheet-row"><span class="sheet-row-var">deck_help_rate</span><span class="sheet-row-default">625 → 1500</span><span class="sheet-row-unit">1% = 100</span><span class="sheet-row-desc">뽑는 카드를 매칭 가능한 값으로 만들 확률 (6.25% → 15%)</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">field_help_rate</span><span class="sheet-row-default">375 → 900</span><span class="sheet-row-unit">1% = 100</span><span class="sheet-row-desc">새로 뒤집히는 카드를 현재 카드 ±1로 보정할 확률 (3.75% → 9%)</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">pity_trigger_count</span><span class="sheet-row-default">99 → 5</span><span class="sheet-row-unit">회</span><span class="sheet-row-desc">연속 실패 N회 시 확률을 무시하고 강제 구제</span></div>
+  </div>
+
+  <h3>후보 비교 (Super Hard 실맵 44개 시뮬)</h3>
+  <table>
+    <thead><tr><th>deck / field / pity</th><th>상대 실패 감소</th><th>Hard 대비 도움 수준</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td>625 / 375 / 99</td><td>—</td><td>0%</td><td>현행</td></tr>
+      <tr><td>625 / 375 / 8 (pity만)</td><td>−6%</td><td>24%</td><td>효과 미미</td></tr>
+      <tr><td>1250 / 750 / 6</td><td>−10%</td><td>40%</td><td>보수적 대안</td></tr>
+      <tr><td><strong>1500 / 900 / 5</strong></td><td><strong>−14%</strong></td><td><strong>54%</strong></td><td><strong>확정</strong></td></tr>
+      <tr><td>2000 / 1200 / 6</td><td>−16%</td><td>61%</td><td>다소 과함</td></tr>
+      <tr><td>2500 / 1500 / 5</td><td>−23%</td><td>89%</td><td>티어 구분 소멸</td></tr>
+      <tr><td>3000 / 2450 / 8 (Hard 값)</td><td>−26%</td><td>100%</td><td>티어 의미 없음</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <p><strong><span class="sheet-var">pity_trigger_count</span>만 내리는 안은 효과가 없음.</strong> 99 → 8로 내려도 상대 감소가 6% 남짓임. 카운터가 덱·필드 실패를 함께 먹는데 <span class="sheet-var">deck_help_rate</span>가 6.25%라 도움 카드 자체가 가뭄이어서, pity가 한 번 구제해도 곧바로 원래 상태로 돌아감. <strong>덱 확률을 함께 올려야 실질 효과가 남음.</strong></p>
+  </div>
+
+  <h3>기대 결과</h3>
+  <table>
+    <thead><tr><th>지표</th><th>현행</th><th>적용 후</th></tr></thead>
+    <tbody>
+      <tr><td>Super Hard 실패율</td><td>18.6%</td><td>16.0%</td></tr>
+      <tr><td>Hard 대비 실패율 배수</td><td>3.2배</td><td>2.7배 (가드레일 2.0배)</td></tr>
+      <tr><td>실패 시 평균 잔여</td><td>12.4장</td><td>10장 내외</td></tr>
+      <tr><td>CC_0332</td><td>34.2%</td><td>29.5%</td></tr>
+      <tr><td>CC_0384</td><td>31.8%</td><td>27.4%</td></tr>
+      <tr><td>CC_0383</td><td>31.6%</td><td>27.2%</td></tr>
+      <tr><td>전체 판 완료율</td><td>95.7%</td><td>95.9%</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-yellow">
+    <p><strong>전체 지표 기여는 +0.13%p로 작음.</strong> Super Hard가 전체 판의 5.1%뿐이라 무대 자체가 작기 때문임. 이 스펙의 성과는 전체 완료율이 아니라 <strong>고포기 스테이지 개별 실패율</strong>로 판정함. SPEC-029 적용 시 Super Hard 비중이 6.0% → 9.0%로 올라가 같은 조치의 효과가 1.5배가 되므로, 함께 배포하는 것이 바람직함.</p>
+  </div>
+
+  <h3>범위 밖</h3>
+  <ul>
+    <li><strong>덱 소진 이어하기 지면</strong> — 현재 광고 보상 지면 7종 어디에도 이어하기·부활이 없음. 덱이 떨어지면 그대로 끝나고 입장료를 날림. 잠식할 수익 지면이 없어 신규 지면으로 검토할 가치가 있으나 별도 스펙으로 분리함.</li>
+    <li><strong>스테이지 재도전 횟수 기반 완화</strong> — 판을 가로지르는 카운터가 필요해 서버 저장이 붙음. 판 내부 구제인 pity와 역할이 겹쳐 보류함.</li>
+    <li><strong>고포기 맵 자체의 재설계</strong> — CC_0332·0383·0384는 맵 구조에서 기인할 가능성이 있으나 맵 수정은 별도 트랙임.</li>
+  </ul>
+</section>
+
+<!-- ════ SECTION 2 ════ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-3">②</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀</span>
+    </div>
+  </div>
+
+  <h3>클라이언트 현황 — 구현 완료 상태임</h3>
+  <p>구제 로직은 <span class="sheet-var">StageViewModel.ts</span>에 전부 구현돼 있음. 두 갈래로 동작함.</p>
+  <table>
+    <thead><tr><th>경로</th><th>함수</th><th>동작</th></tr></thead>
+    <tbody>
+      <tr><td>덱 보정</td><td><span class="sheet-var">getAvailableCardsByDeckHelpRate()</span></td><td>드로우 카드를 뽑을 때 확률에 걸리면 매칭 가능(±1) 카드 풀에서 선택</td></tr>
+      <tr><td>필드 보정</td><td><span class="sheet-var">applyFieldHelpToCards()</span></td><td>새로 뒤집히는 카드 값을 현재 카드 ±1로 교체</td></tr>
+    </tbody>
+  </table>
+  <p>pity는 <span class="sheet-var">_pityFailCount</span> 하나로 동작함. 확률 판정에 실패하면 증가하고, <span class="sheet-var">pity_trigger_count</span> 이상이면 확률을 무시하고 강제로 도움 카드를 냄. 성공하거나 발동하면 0으로 초기화됨. <strong>덱 pity는 매칭 카드 풀이 비어 있어도 필드 맨 위 카드를 기준으로 카드를 즉석 생성해 구제를 확정</strong>시킴.</p>
+  <div class="callout callout-yellow">
+    <p><strong>Super Hard에서 한 번도 작동한 적이 없음.</strong> 코드 주석은 <span class="sheet-var">0 = pity 비활성</span>이라 적혀 있어 99가 켜진 값처럼 보이지만, Super Hard 한 판의 필드 카드가 33.7장이라 카운터가 99까지 쌓일 수 없음. <strong>비활성이 아니라 도달 불가</strong>임. 임계값을 사거리 안으로 내리면 기존 코드가 그대로 동작함 — 분기 추가나 함수 신설이 필요 없음.</p>
+  </div>
+
+  <h3>개발 확인 사항</h3>
+  <table>
+    <thead><tr><th>항목</th><th>확인 내용</th></tr></thead>
+    <tbody>
+      <tr><td>카운터 공유</td><td><span class="sheet-var">_pityFailCount</span>를 덱·필드 보정이 공유함. Super Hard는 두 확률이 모두 낮아 실패가 양쪽에서 빠르게 쌓이므로, 같은 숫자여도 Normal보다 자주 발동함. 판당 발동 횟수가 과다하지 않은지 확인 필요</td></tr>
+      <tr><td>판 단위 초기화</td><td>판마다 <span class="sheet-var">StageViewModel</span>이 새로 생성돼 카운터가 0에서 시작함. 판을 가로지른 이월이 없어야 함</td></tr>
+      <tr><td>폴백 방향</td><td><span class="sheet-var">getDeckHelpRate()</span>는 시트 조회 실패 시 10000(100%)을, <span class="sheet-var">getFieldHelpRate()</span>는 0을 반환함. 폴백 방향이 서로 반대라 시트 로드 실패 시 난이도가 급격히 쉬워짐. 이번 변경과 별개로 인지 필요</td></tr>
+      <tr><td>티어 스킵 조건</td><td>튜토리얼과 tier 1은 필드 보정이 강제로 0임. Super Hard만 바꾸므로 영향 없음</td></tr>
+    </tbody>
+  </table>
+
+  <h3>배포 형태</h3>
+  <table>
+    <thead><tr><th>항목</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td>클라이언트 코드</td><td>변경 없음</td></tr>
+      <tr><td>클라이언트 재배포</td><td>불필요</td></tr>
+      <tr><td>시트</td><td><span class="sheet-var">difficulty_tier</span> 20004 행 3셀</td></tr>
+      <tr><td>롤백</td><td>같은 3셀을 원래 값으로 되돌림. 즉시 반영</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ SECTION 3 ════ -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-2">③</div>
+    <div class="section-meta">
+      <div class="section-title">검증 · 롤백</div>
+      <span class="section-audience aud-dev">개발 · 데이터</span>
+    </div>
+  </div>
+
+  <h3>진행 단계</h3>
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>에이전트 시트 수정</strong><p>원본 백업 기록 후 3셀 변경, 하이라이트 적용</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>라이브 시트 동기화</strong><p>확인 완료 후 동기화만 수행. 라이브 직접 수정 금지</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>QA 빌드 확인</strong><p>CC_0332·CC_0383·CC_0384에서 pity 발동이 실제로 일어나는지, 판당 발동 횟수가 과다하지 않은지 육안 확인</p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>배포 후 7일 관측</strong><p>아래 판정 기준으로 확정 또는 되돌림</p></div></div>
+
+  <h3>검증 지표</h3>
+  <table>
+    <thead><tr><th>지표</th><th>산식</th><th>합격 기준</th></tr></thead>
+    <tbody>
+      <tr><td>Super Hard 실패율</td><td>tier 20004의 result ≠ clear 비율</td><td>16% 내외 · 13% 미만이면 과보정</td></tr>
+      <tr><td>Hard 대비 실패율 배수</td><td>SH 실패율 ÷ Hard 실패율</td><td><strong>2.0배 이상 유지</strong></td></tr>
+      <tr><td>고포기 스테이지</td><td>CC_0332·0383·0384 개별 실패율</td><td>각 5%p 이상 하락</td></tr>
+      <tr><td>실패 시 평균 잔여</td><td>2300의 remaining_card_count 평균</td><td>12.4장 → 10장 내외</td></tr>
+      <tr><td>부스터 사용률</td><td>booster_used 비어있지 않은 비율</td><td>77% 대비 하락이면 정상</td></tr>
+      <tr><td>Super Hard 판 길이</td><td>2300의 play_time 중앙값</td><td>94초 대비 크게 변하지 않아야 함</td></tr>
+    </tbody>
+  </table>
+
+  <h3>롤백 기준</h3>
+  <ul>
+    <li><strong>Hard 대비 실패율 배수가 2.0배 미만</strong>이면 Super Hard가 Hard와 구분되지 않는다는 뜻이므로 <strong>1250 / 750 / 6</strong>으로 한 단계 되돌림</li>
+    <li>한 단계 되돌려도 배수가 회복되지 않으면 <strong>625 / 375 / 99</strong> 현행값으로 원복함</li>
+    <li><strong>Super Hard 실패율이 13% 미만</strong>으로 떨어지면 과보정으로 판정하고 위와 동일하게 단계 하향함</li>
+    <li>롤백 경로는 시트 3셀 원복이며 클라이언트 재배포가 필요 없어야 함</li>
+  </ul>
+
+  <div class="callout callout-blue">
+    <p><strong>시뮬레이션 기준.</strong> 위 후보 비교는 라이브 Super Hard 실맵 44개(필드 평균 33.0장·덱 평균 13.1장)에 클라이언트 로직을 이식해 산출함. 부스터(사용률 77%)와 런타임 기믹 주입은 모델에 포함하지 않았고 맵 생성기는 축약 모델로 대체했으므로, <strong>후보 간 상대 비교에만 사용함</strong>. 기대 결과의 수치는 상대 감소율을 실측에 곱한 값이며 실제 폭은 배포 후 확정됨.</p>
+  </div>
+</section>
+
+</div>
+<script>
+// ── 메타 배지 드롭다운 (index.html과 localStorage 공유) ──────────────
+(function () {
+  const SPEC_ID = 'spec-031';
+
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',    cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',  cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',    cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',   cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',  cls: 'badge-yellow' },
+    etc:     { label: '📌 기타',    cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL  = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS  = { tag: 'balance', priority: 'mid', status: 'open' };
+  let ddField = null;
+
+  // ── 드롭다운 HTML (body에 append) ──
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+
+  function applyBadge(el, info) {
+    el.className = 'badge ' + info.cls;
+    el.textContent = info.label;
+    el.style.cursor = 'pointer';
+  }
+
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o =>
+        `<div class="dd-itm${o.val === cur ? ' active' : ''}" data-val="${o.val}">${o.label}</div>`
+      ).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    const fieldMap = { 'hero-tag': 'tag', 'hero-priority': 'priority', 'hero-status': 'status' };
+    Object.keys(fieldMap).forEach(elId => {
+      document.getElementById(elId).addEventListener('click', e => openDropdown(e, fieldMap[elId]));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none';
+      ddField = null;
+      updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
+
+  // ── 사이드바 네비 ──
+  var links    = document.querySelectorAll('.nav-sidebar a');
+  var sections = document.querySelectorAll('section[id]');
+  function activate() {
+    var scrollY = window.pageYOffset + 120;
+    sections.forEach(function (s) {
+      if (s.offsetTop <= scrollY && s.offsetTop + s.offsetHeight > scrollY) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = document.querySelector('.nav-sidebar a[href="#' + s.id + '"]');
+        if (a) a.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', activate);
+  activate();
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.nav-sidebar') && !e.target.closest('.nav-toggle'))
+      document.querySelector('.nav-sidebar').classList.remove('open');
+  });
+})();
+</script>
+<script src="memo.js"></script>
+</body>
+</html>
