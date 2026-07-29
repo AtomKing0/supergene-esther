@@ -300,9 +300,9 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .toast { position:fixed;left:50%;bottom:80px;transform:translateX(-50%);z-index:950;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-full);box-shadow:var(--shadow-md);color:var(--text);font-size:var(--text-sm);font-weight:700;padding:8px 14px;display:none; }
 .toast.open { display:block; }
 /* ── 기획서 플로팅 뷰어 ── */
-.sp-modal { position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;background:rgba(8,10,16,0.66);backdrop-filter:blur(3px);padding:20px; }
+.sp-modal { position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;background:rgba(8,10,16,0.66);backdrop-filter:blur(3px);padding:10px; }
 .sp-modal.open { display:flex; }
-.sp-panel { width:min(1360px,96vw);height:min(90vh,1040px);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);display:flex;flex-direction:column;overflow:hidden; }
+.sp-panel { width:min(1360px,96vw);height:calc(100vh - 20px);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);display:flex;flex-direction:column;overflow:hidden; }
 .sp-head { display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface2); }
 .sp-head .sp-id { font-size:var(--text-xs);font-weight:800;color:var(--accent);flex-shrink:0; }
 .sp-head .sp-t { font-size:var(--text-sm);font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
@@ -311,6 +311,9 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .sp-body { flex:1;min-height:0; }
 .sp-body iframe { width:100%;height:100%;border:0;display:block;background:var(--bg); }
 </style>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -1311,7 +1314,8 @@ function openSpecModal(id) {
   document.getElementById('spModalId').textContent    = id.toUpperCase();
   document.getElementById('spModalTitle').textContent = item.title || '';
   document.getElementById('spModalOpen').href         = item.file;
-  document.getElementById('spModalFrame').src         = item.file;
+  // 캐시본이 뜨지 않도록 매번 새 쿼리를 붙여 강제 재요청
+  document.getElementById('spModalFrame').src         = item.file + '?v=' + Date.now();
   document.getElementById('specModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
