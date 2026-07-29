@@ -232,13 +232,14 @@ ul li strong,ol li strong { color:var(--text); }
   <h3>그래서 무엇을 고치는가</h3>
   <p>티어 믹스는 이미 <span class="sheet-var">PST_dynamic_level</span>의 <strong>주기 보장 카운터 2개</strong>가 전부 결정하고 있음. 이 두 숫자에 <strong>레벨 조건만 붙임</strong>.</p>
   <table>
-    <thead><tr><th>고치는 것</th><th>내용</th></tr></thead>
+    <thead><tr><th>고치는 것</th><th>key</th><th>현재 라이브 값</th><th>어떻게</th></tr></thead>
     <tbody>
-      <tr><td><span class="sheet-var">hard_guarantee</span></td><td>레벨 구간별로 다른 값을 적용. 지금은 전 레벨 단일값</td></tr>
-      <tr><td><span class="sheet-var">super_hard_guarantee</span></td><td>위와 동일</td></tr>
-      <tr><td>시트 컬럼</td><td><span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span> 2개 추가 + 행 7개 추가</td></tr>
+      <tr><td><span class="sheet-var">hard_guarantee</span></td><td>30007</td><td>param_1 = <strong>6</strong></td><td>레벨 구간별로 다른 값 적용</td></tr>
+      <tr><td><span class="sheet-var">super_hard_guarantee</span></td><td>30006</td><td>param_1 = <strong>15</strong></td><td>위와 동일</td></tr>
+      <tr><td>시트 컬럼</td><td>—</td><td>레벨 컬럼 없음</td><td><span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span> 2개 추가 + 행 7개 추가</td></tr>
     </tbody>
   </table>
+  <p>두 값 모두 <strong>전 레벨 공통 단일값</strong>임. 이 <strong>6 / 15</strong>가 티어 믹스를 그대로 결정함 — <span class="sheet-var">hard_guarantee 6</span>은 7판에 1번 Hard(14.3%), <span class="sheet-var">super_hard_guarantee 15</span>는 16판에 1번 Super Hard(6.3%)이고, 실측 비중 12.4%·5.6%와 일치함.</p>
   <div class="callout callout-blue">
     <p><strong>신규 테이블도, 가중치 추첨도 만들지 않음.</strong> 나머지 규칙(<span class="sheet-var">fail_spiral</span>·<span class="sheet-var">fail_streak</span>·<span class="sheet-var">hard_cooldown</span>·<span class="sheet-var">default</span>)은 전 레벨 공통으로 그대로 둠. 레벨 24 이하는 현행과 완전히 동일하게 동작함.</p>
   </div>
@@ -253,7 +254,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
       <tr><td>컬럼</td><td>key_number · priority · condition_type · param_1 · param_2 · result_tier_id · in_use · memo</td><td>동일 + <strong><span class="sheet-var">level_min</span> · <span class="sheet-var">level_max</span></strong> 2개 추가</td></tr>
       <tr><td>행 수</td><td>9행</td><td><strong>16행</strong> (7행 추가)</td></tr>
-      <tr><td>레벨 조건</td><td><span class="sheet-var">user_level_range</span> 행에만 있음 (레벨 1~10 전용)</td><td><strong>모든 규칙 행이 레벨 구간을 가질 수 있음</strong></td></tr>
+      <tr><td>레벨 조건</td><td><span class="sheet-var">condition_type</span>으로만 존재</td><td><strong>모든 규칙 행이 레벨 구간을 가질 수 있음</strong></td></tr>
       <tr><td>기존 9행 처리</td><td>—</td><td>두 컬럼 <strong>공란</strong> = 전 레벨 적용. 현행 동작 그대로 유지</td></tr>
     </tbody>
   </table>
