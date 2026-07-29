@@ -159,6 +159,8 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
 #lightbox-row img { width:100%;max-height:88vh;object-fit:contain;border-radius:8px; }
 #lightbox-row figcaption { color:#cfd3e4;font-size:0.8rem;text-align:center;margin-top:8px; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="spec-meta.js"></script>
 </head>
 <body>
 <a href="index.html" class="back-btn">← 목록</a>
@@ -327,49 +329,7 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
 <script>
 (function(){
   const SPEC_ID = 'spec-014';
-  const STATUS_INFO = {
-    open:    { label:'🔵 검토중',   cls:'badge-blue'   },
-    wip:     { label:'🟡 진행중',   cls:'badge-yellow' },
-    planned: { label:'🟣 진행 예정',cls:'badge-purple' },
-    hold:    { label:'⏸ 보류',     cls:'badge-purple' },
-    done:    { label:'✅ 완료',     cls:'badge-green'  },
-    archive: { label:'🗄️ 아카이브',cls:'badge-purple' },
-  };
-  const PRIORITY_INFO = {
-    high: { label:'🔴 높은 우선순위', cls:'badge-red'    },
-    mid:  { label:'🟡 보통 우선순위', cls:'badge-yellow' },
-    low:  { label:'🟢 낮은 우선순위', cls:'badge-green'  },
-  };
-  const TAG_INFO = {
-    ux:       { label:'🎨 UX/UI',  cls:'badge-purple'  },
-    feature:  { label:'✨ 기능',   cls:'badge-green'   },
-    balance:  { label:'⚖️ 밸런스', cls:'badge-blue'    },
-    bug:      { label:'🐛 버그',   cls:'badge-red'     },
-    content:  { label:'📦 콘텐츠', cls:'badge-yellow'  },
-    monetize: { label:'💰 수익화', cls:'badge-yellow'  },
-    social:   { label:'👥 소셜',   cls:'badge-blue'    },
-    etc:      { label:'📌 기타',   cls:'badge-purple'  },
-  };
-  function load(key, fb){ try{ return JSON.parse(localStorage.getItem(SPEC_ID+'-'+key)||'null')||fb; }catch(e){ return fb; } }
-  function save(key, val){ localStorage.setItem(SPEC_ID+'-'+key, JSON.stringify(val)); }
-
-  let state = { status: load('status','open'), priority: load('priority','low'), tag: load('tag','ux') };
-
-  function applyBadge(id, info, key){
-    const el = document.getElementById(id);
-    if(!el) return;
-    const d = info[state[key]];
-    el.textContent = d.label;
-    el.className = 'badge ' + d.cls;
-  }
-  function render(){
-    applyBadge('hero-status',   STATUS_INFO,   'status');
-    applyBadge('hero-priority', PRIORITY_INFO, 'priority');
-    applyBadge('hero-tag',      TAG_INFO,      'tag');
-  }
-  function cycle(obj, cur){ const keys=Object.keys(obj); return keys[(keys.indexOf(cur)+1)%keys.length]; }
-
-  document.getElementById('hero-status')  ?.addEventListener('click',()=>{ state.status  =cycle(STATUS_INFO,  state.status);   save('status',  state.status);   render(); });
+  SPEC_META.mountBadges(SPEC_ID);
   document.getElementById('hero-priority')?.addEventListener('click',()=>{ state.priority=cycle(PRIORITY_INFO,state.priority); save('priority',state.priority); render(); });
   document.getElementById('hero-tag')     ?.addEventListener('click',()=>{ state.tag     =cycle(TAG_INFO,     state.tag);      save('tag',     state.tag);      render(); });
 
