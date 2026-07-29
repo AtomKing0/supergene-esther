@@ -421,6 +421,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
     <div class="sp-head">
       <span class="sp-id" id="spModalId"></span>
       <span class="sp-t" id="spModalTitle"></span>
+      <button type="button" onclick="copySpecLink()" title="이 기획서 링크 복사">링크 복사 ⧉</button>
       <a id="spModalOpen" href="#" target="_blank" rel="noopener">새 탭 ↗</a>
       <button type="button" onclick="closeSpecModal()">닫기 ✕</button>
     </div>
@@ -1318,6 +1319,25 @@ function openSpecModal(id) {
   document.getElementById('spModalFrame').src         = item.file + '?v=' + Date.now();
   document.getElementById('specModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+}
+async function copySpecLink() {
+  const a = document.getElementById('spModalOpen');
+  if (!a || !a.getAttribute('href') || a.getAttribute('href') === '#') return;
+  const url = a.href;   // 절대 URL (캐시 버스팅 파라미터 없음)
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('clipboard fallback');
+    await navigator.clipboard.writeText(url);
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  }
+  showToast('링크 복사됨 ✓');
 }
 function closeSpecModal() {
   const m = document.getElementById('specModal');
