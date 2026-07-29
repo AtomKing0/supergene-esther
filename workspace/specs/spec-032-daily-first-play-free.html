@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-032 · 하루 첫 판 무료 입장</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #a78bfa;
+  --accent2: #c4b5fd;
+  --green: #34d399;   --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;     --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;    --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;  --purple-bg: rgba(167,139,250,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #1e1a35 45%, #1a1d27 100%);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #7c3aed; --accent2: #6d28d9;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626;   --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb;  --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --hero-bg: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 45%, #e0e7ff 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { display:none; }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200; }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;margin-left:260px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.1) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--accent),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-purple { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+.kpi-trend { font-size:0.72rem;font-weight:700;margin-top:6px; }
+.trend-up   { color:var(--green); }
+.trend-down { color:var(--red); }
+
+.container { max-width:1100px;margin:0 0 0 260px;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-num-3 { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--blue-bg);color:var(--blue); }
+.aud-dev { background:var(--green-bg);color:var(--green); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+h4 { font-size:0.95rem;font-weight:700;margin:24px 0 10px;color:var(--accent); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-purple { background:var(--purple-bg);border-left:3px solid var(--purple); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.86rem; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var     { font-family:monospace;color:var(--blue);font-weight:600;min-width:300px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:72px; }
+.sheet-row-unit    { font-size:0.75rem;color:var(--text2);min-width:100px; }
+.sheet-row-desc    { color:var(--text2);font-size:0.82rem;flex:1; }
+
+.flow-step { display:flex;gap:14px;margin-bottom:14px;align-items:flex-start; }
+.flow-dot  { width:28px;height:28px;border-radius:50%;background:var(--purple-bg);border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--purple);flex-shrink:0;margin-top:2px; }
+.flow-body { flex:1; }
+.flow-body strong { color:var(--text);font-size:0.9rem; }
+.flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">&larr; 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">&#9776;</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-032</div>
+  <a href="#s1">&#9312; 기획 의도 &amp; 확정 설계</a>
+  <a href="#s2">&#9313; 개발 스펙</a>
+  <a href="#s3">&#9314; 로깅 · 검증 · 롤백</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-032</span>
+      <span class="badge badge-green"  id="hero-tag"      style="cursor:pointer" title="태그 변경">&#10024; 기능</span>
+      <span class="badge badge-red"    id="hero-priority" style="cursor:pointer" title="우선순위 변경">&#128308; 높은 우선순위</span>
+      <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">&#128309; 검토중</span>
+      <span class="badge badge-green">2026. 7. 29.</span>
+    </div>
+    <h1>하루 첫 판 무료 입장<br><span>Daily First Play Free</span></h1>
+    <p class="hero-sub">골드 잔고 중앙값이 신규 시작 골드 <b>2,000</b>에 묶여 있어 접속 직후 입장료에서 막히는 유저가 발생함. 이때 뜨는 골드 충전 팝업의 광고 완료율이 세션 30초 이내 구간에서 <b>29.7%</b>라 회복도 되지 않음. <b>이미 구현된 티켓 메커니즘</b>에 하루 1장 지급만 얹어 접속 직후의 진입 실패를 제거함. 신규 로직 없음.</p>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">x1 입장료도 못 내는 상태</div>
+        <div class="kpi-value" style="color:var(--red)">12.6%</div>
+        <div class="kpi-sub">진입 전환율 · 그 외 구간은 92~97%</div>
+        <div class="kpi-trend trend-down">&#9660; 단독 차단 요인</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">세션 30초 내 광고 완료율</div>
+        <div class="kpi-value" style="color:var(--red)">29.7%</div>
+        <div class="kpi-sub">주력 지면 90.6% · 프리로드 20.2초</div>
+        <div class="kpi-trend trend-down">&#9660; 회복 경로 고장</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">신규 개발 로직</div>
+        <div class="kpi-value" style="color:var(--green)">0</div>
+        <div class="kpi-sub">티켓 = x1 입장료 면제, 이미 동작 중</div>
+        <div class="kpi-trend trend-up">&#9650; 지급만 추가</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">주간 골드 소비 감소</div>
+        <div class="kpi-value" style="color:var(--yellow)">1.2%</div>
+        <div class="kpi-sub">8.3M / 전체 713M · 하루 1회 기준</div>
+        <div class="kpi-trend">경제 영향 미미</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">&#9312;</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도 &amp; 확정 설계</div>
+    </div>
+  </div>
+
+  <h3>문제 &mdash; 접속 직후 입장료에서 막힘</h3>
+  <p>골드가 부족한 것은 <b>총량 문제가 아님</b>. 골드 수지는 획득/소비 <b>1.219배 흑자</b>이고 판당 보상이 입장료의 <b>3.3~5.6배</b>임. 문제는 <b>다 쓰고 나서 다음 판을 못 들어가는 순간</b>이며, 그 순간이 접속 직후에 집중됨.</p>
+  <table>
+    <tr><th>실측</th><th>값</th><th>해석</th></tr>
+    <tr><td>유저별 골드 잔고 중앙값</td><td><b>2,000</b></td><td>10 · 25 · 50퍼센타일이 모두 신규 시작 골드에 묶임. 3천 미만 <b>59.5%</b></td></tr>
+    <tr><td>x1 입장료도 못 내는 상태의 진입 전환율</td><td><b>12.6%</b></td><td>x1만 가능 93.4% · x2까지 92.2% · x4 가능 97.5% &mdash; <b>단독 차단 요인</b></td></tr>
+    <tr><td>골드 벽 구간</td><td><b>Lv 10~49</b><br><b>D1~D6</b></td><td>Lv 10~24 9.0% · Lv 25~49 12.9%로 전체 막힘의 70%. 시작 골드 소진 시점과 입장료 상승(1,200&rarr;1,800) 시점이 겹침</td></tr>
+    <tr><td>세션 30초 내 광고 완료율</td><td><b>29.7%</b></td><td>골드 충전 팝업의 <span class="sheet-var">free_coin</span> 지면. 앱 시작 프리로드가 평균 <b>20.2초</b> 걸려 그 전에 호출됨</td></tr>
+  </table>
+
+  <div class="callout callout-warn">
+    <b>회복 경로가 막혀 있어 골드 부족이 그대로 이탈 직전 상태로 남음.</b> 골드에 막힌 유저의 <b>80%</b>가 광고를 시도하지만 완료는 <b>38.5%</b>이고, 실패하면 상점이 강제 노출되나 결제로 이어지지 않음. 최종적으로 플레이에 도달하는 것은 <b>35.6%</b>뿐임.
+  </div>
+
+  <h3>확정 설계 &mdash; 하루 1회 티켓 지급</h3>
+  <p><b>티켓은 이미 "x1 상당 입장료 면제"로 구현돼 동작 중임.</b> 새 로직을 만들지 않고 <b>지급 한 줄만</b> 얹음.</p>
+  <div class="code-block">private getGoldCostForMultiple(multiple: number): number {
+    const baseCost = DataManager.getEntryCost();
+    const hasTicket = DataManager.getTicketCount() &gt; 0 || this.isTicketUnlimited();
+    if (hasTicket) {
+        // 티켓은 골드 1회 입장료만 차감: x1-&gt;0, x2-&gt;baseCost*1, x4-&gt;baseCost*3
+        const goldMultiple = multiple - 1;
+        return goldMultiple &gt;= 1 ? baseCost * goldMultiple : 0;
+    }
+    return baseCost * multiple;
+}</div>
+  <table>
+    <tr><th>항목</th><th>확정</th><th>근거</th></tr>
+    <tr><td>지급 수단</td><td><span class="sheet-var">currency_ticket</span> <b>1장</b></td><td>신규 아이템 · 신규 로직 불필요. 7일간 티켓 입장 <b>3,740건 / 1,037명</b>으로 이미 검증됨</td></tr>
+    <tr><td>지급 주기</td><td><b>하루 1회</b></td><td>세션 단위로 하면 앱 재시작으로 반복 취득이 가능함 &mdash; 어뷰징 차단</td></tr>
+    <tr><td>지급 시점</td><td>로그인 시 자동</td><td>수령 조작 없이 잔고에 반영. 유저가 인지하지 못해도 진입이 막히지 않는 것이 목적</td></tr>
+    <tr><td>배수 처리</td><td><b>x1 상당액만 면제</b></td><td>x1 선택 시 0골드, x2는 baseCost&times;1, x4는 baseCost&times;3. <b>배수 선택 자유가 유지됨</b></td></tr>
+    <tr><td>프리레벨 팝업</td><td><b>유지</b></td><td>스킵하면 배수 · 부스터 선택이 사라져 헤비 유저 보상이 1/4로 줄어듦(아래 참조)</td></tr>
+  </table>
+
+  <div class="callout callout-info">
+    <b>프리레벨 팝업을 건너뛰지 않는 이유.</b> 세션 첫 판의 x1 비중이 66%로 보이지만 <b>1판만 하고 이탈한 세션(79.3% x1)이 만든 착시</b>임. 세션 길이별로 보면 <b>10판 이상 세션의 첫 판은 x4가 41.8%</b>임 &mdash; 이들에게 x1을 강제하면 보상이 4배에서 1배로 줄어 오히려 손해가 됨. <b>티켓 방식은 배수를 그대로 고를 수 있어 이 문제가 없음.</b>
+  </div>
+
+  <h3>비용 &mdash; 주간 골드 소비 1.2%</h3>
+  <table>
+    <tr><th>구분</th><th>판수 (7일)</th><th>평균 x1 입장료</th><th>골드 소비 감소</th><th>전체 대비</th></tr>
+    <tr><td><b>하루 1회 (확정)</b></td><td><b>5,230</b></td><td>1,593</td><td><b>8.3M</b></td><td><b>1.2%</b></td></tr>
+    <tr><td class="dim">세션 1회 (미채택)</td><td class="dim">7,680</td><td class="dim">&mdash;</td><td class="dim">28.5M</td><td class="dim">4.0%</td></tr>
+  </table>
+  <div class="callout callout-ok">
+    <b>입장료 전면 폐지와는 규모가 완전히 다름.</b> 토스 빌드 220 A/B에서 입장료를 폐지했을 때 <b>인당 판수가 46% 감소</b>했으나(골드 소비의 78.9% 소멸), 본 안은 <b>1.2%</b>이며 골드를 벌 목표 자체는 그대로 유지됨.
+  </div>
+
+  <h3>기대 효과</h3>
+  <ul>
+    <li><b>접속 직후 진입 실패 제거</b> &mdash; 하루 첫 판은 잔고와 무관하게 항상 시작 가능</li>
+    <li><b>세션 초반 광고 호출이 줄어듦</b> &mdash; 30초 이내 <span class="sheet-var">free_coin</span> 호출 505건 중 상당수가 불필요해짐. 이 구간은 완료율이 29.7%로 실패가 집중되던 곳임</li>
+    <li><b>첫 판 도달 속도 상승</b> &mdash; 골드 충전 팝업 &rarr; 광고 &rarr; 실패 &rarr; 상점 동선이 사라짐</li>
+  </ul>
+</section>
+
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">&#9313;</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+    </div>
+  </div>
+
+  <h3>시트 &mdash; <span class="sheet-var">PST_const</span> 신규 2행</h3>
+  <table>
+    <tr><th>key_number</th><th>const_name</th><th>const_value</th><th>설명</th></tr>
+    <tr><td>10080</td><td><span class="sheet-var">daily_free_ticket_amount</span></td><td><b>1</b></td><td>하루 지급 티켓 수. <b>0이면 기능 OFF</b> (킬 스위치)</td></tr>
+    <tr><td>10081</td><td><span class="sheet-var">daily_free_ticket_min_level</span></td><td><b>10</b></td><td>지급 시작 레벨. 골드 벽이 Lv 10부터 발생하며 Lv 3~9는 막힘 0.9%로 불필요함</td></tr>
+  </table>
+
+  <h3>서버</h3>
+  <table>
+    <tr><th>항목</th><th>내용</th></tr>
+    <tr><td>지급 로직</td><td>로그인 처리 시 <b>일일 리셋 기준</b>으로 미지급이면 <span class="sheet-var">currency_ticket</span> +<span class="sheet-var">daily_free_ticket_amount</span></td></tr>
+    <tr><td>카운터</td><td>기존 일일 카운터 패턴 재사용 &mdash; <span class="sheet-var">ClaimedRvGoldCountInfos</span>(shop · mail · popup · lobby)와 동일한 구조로 <span class="sheet-var">dailyFreeTicketClaimed</span> 추가</td></tr>
+    <tr><td>리셋 시점</td><td><b>KST 0시</b> &mdash; 데일리 리셋 및 이벤트 경계와 정렬</td></tr>
+    <tr><td>멱등성</td><td>동일 일자 재로그인 시 재지급 없음. 서버 상태가 단일 기준</td></tr>
+  </table>
+
+  <h3>클라</h3>
+  <table>
+    <tr><th>항목</th><th>내용</th></tr>
+    <tr><td>입장료 계산</td><td><b>변경 없음</b> &mdash; <span class="sheet-var">getGoldCostForMultiple</span>이 티켓 보유를 이미 판정함</td></tr>
+    <tr><td>티켓 차감</td><td><b>변경 없음</b> &mdash; 기존 <span class="sheet-var">2511_ENTRY_COST_PAY_TICKET</span> 경로 그대로</td></tr>
+    <tr><td>UI</td><td>상단 티켓 카운터에 자동 반영. <b>별도 팝업이나 수령 연출을 만들지 않음</b></td></tr>
+    <tr><td>표기</td><td>프리레벨 팝업의 입장료 표시가 0으로 바뀜(기존 티켓 보유 시 동작과 동일)</td></tr>
+  </table>
+
+  <div class="callout callout-warn">
+    <b>확인 필요 2건</b><br>
+    &#9312; <b>티켓 보유 상한</b> &mdash; 기존 티켓과 합산될 때 상한 처리가 있는지. 이미 티켓이 있는 유저에게 중복 지급 시 정책 확정 필요<br>
+    &#9313; <b>무한 티켓 아이템과의 관계</b> &mdash; <span class="sheet-var">infinite_ticket_5m/10m/15m</span> 보유 중에는 지급을 건너뛸지 여부
+  </div>
+</section>
+
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">&#9314;</div>
+    <div class="section-meta">
+      <div class="section-title">로깅 · 검증 · 롤백</div>
+    </div>
+  </div>
+
+  <h3>로깅</h3>
+  <table>
+    <tr><th>이벤트</th><th>페이로드</th><th>비고</th></tr>
+    <tr><td><span class="sheet-var">9401_TICKET_TRANSACTION_LOG</span></td><td>기존 그대로 · reason에 <b>daily_free</b> 추가</td><td>신규 이벤트 없이 기존 원장에 사유만 구분</td></tr>
+    <tr><td class="dim">2511_ENTRY_COST_PAY_TICKET</td><td class="dim">변경 없음</td><td class="dim">티켓 입장 집계는 기존 경로 유지</td></tr>
+  </table>
+
+  <h3>검증 지표</h3>
+  <table>
+    <tr><th>지표</th><th>현재</th><th>목표</th></tr>
+    <tr><td><b>x1 입장료 미달 상태의 진입 전환율</b></td><td>12.6%</td><td><b>90% 이상</b> &mdash; 다른 구간과 동일 수준</td></tr>
+    <tr><td>세션 30초 이내 <span class="sheet-var">free_coin</span> 호출</td><td>505건 / 주</td><td><b>감소</b></td></tr>
+    <tr><td>유저-일당 완료 판수</td><td>&mdash;</td><td><b>비열위</b> &mdash; 감소하면 롤백 검토</td></tr>
+    <tr><td>D1 리텐션</td><td>&mdash;</td><td><b>비열위</b></td></tr>
+    <tr><td class="dim">골드 잔고 분포</td><td class="dim">중앙값 2,000</td><td class="dim">상승 여부 관찰 &mdash; 인플레 감시</td></tr>
+  </table>
+
+  <div class="callout callout-warn">
+    <b>가드레일 &mdash; 판수 감소 감시.</b> 토스 A/B에서 입장료 폐지가 <b>인당 판수 46% 감소</b>를 낳았음. 본 안은 규모가 1.2%로 작지만 <b>방향은 같음</b>. 적용 후 <b>유저-일당 완료 판수가 감소하면 즉시 롤백</b>함.
+  </div>
+
+  <h3>롤백</h3>
+  <p><span class="sheet-var">daily_free_ticket_amount</span>를 <b>0</b>으로 설정하면 다음 로그인부터 지급이 중단됨. <b>빌드 불필요 · 시트 push만으로 즉시 반영.</b> 이미 지급된 티켓은 정상 사용되도록 유지함.</p>
+</section>
+
+
+</div>
+
+<script>
+// ── 메타 배지 드롭다운 (index.html과 localStorage 공유) ──────────────
+(function () {
+  const SPEC_ID = 'spec-032';
+
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',    cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',  cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',    cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',   cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',  cls: 'badge-yellow' },
+    etc:     { label: '📌 기타',    cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL  = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS  = { tag: 'balance', priority: 'high', status: 'open' };
+  let ddField = null;
+
+  // ── 드롭다운 HTML (body에 append) ──
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+
+  function applyBadge(el, info) {
+    el.className = 'badge ' + info.cls;
+    el.textContent = info.label;
+    el.style.cursor = 'pointer';
+  }
+
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o =>
+        `<div class="dd-itm${o.val === cur ? ' active' : ''}" data-val="${o.val}">${o.label}</div>`
+      ).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    const fieldMap = { 'hero-tag': 'tag', 'hero-priority': 'priority', 'hero-status': 'status' };
+    Object.keys(fieldMap).forEach(elId => {
+      document.getElementById(elId).addEventListener('click', e => openDropdown(e, fieldMap[elId]));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none';
+      ddField = null;
+      updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
+
+  // ── 사이드바 네비 ──
+  var links    = document.querySelectorAll('.nav-sidebar a');
+  var sections = document.querySelectorAll('section[id]');
+  function activate() {
+    var scrollY = window.pageYOffset + 120;
+    sections.forEach(function (s) {
+      if (s.offsetTop <= scrollY && s.offsetTop + s.offsetHeight > scrollY) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = document.querySelector('.nav-sidebar a[href="#' + s.id + '"]');
+        if (a) a.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', activate);
+  activate();
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.nav-sidebar') && !e.target.closest('.nav-toggle'))
+      document.querySelector('.nav-sidebar').classList.remove('open');
+  });
+})();
+</script>
+<script src="memo.js"></script>
+</body>
+</html>
