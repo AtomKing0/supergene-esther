@@ -245,21 +245,38 @@ ul li strong,ol li strong { color:var(--text); }
 
   <div class="step-label">STEP 3</div>
   <h3>고치는 부분 — As-Is / To-Be</h3>
+
+  <h4>① 시트 구조</h4>
+  <p>레벨 조건을 담을 자리가 없어서 컬럼 2개를 먼저 만듦.</p>
+  <table>
+    <thead><tr><th>항목</th><th>As-Is</th><th>To-Be</th></tr></thead>
+    <tbody>
+      <tr><td>컬럼</td><td>key_number · priority · condition_type · param_1 · param_2 · result_tier_id · in_use · memo</td><td>동일 + <strong><span class="sheet-var">level_min</span> · <span class="sheet-var">level_max</span></strong> 2개 추가</td></tr>
+      <tr><td>행 수</td><td>9행</td><td><strong>16행</strong> (7행 추가)</td></tr>
+      <tr><td>레벨 조건</td><td><span class="sheet-var">user_level_range</span> 행에만 있음 (레벨 1~10 전용)</td><td><strong>모든 규칙 행이 레벨 구간을 가질 수 있음</strong></td></tr>
+      <tr><td>기존 9행 처리</td><td>—</td><td>두 컬럼 <strong>공란</strong> = 전 레벨 적용. 현행 동작 그대로 유지</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <p><strong><span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span>가 비어 있으면 전 레벨에 적용됨.</strong> 그래서 컬럼만 추가하고 값을 안 넣은 상태에서는 지금과 100% 동일하게 동작함. 값이 채워진 행이 있으면 그 행이 공란 행을 덮어씀. <strong>롤백은 추가한 7행의 <span class="sheet-var">in_use</span>를 FALSE로 내리는 것</strong>이고, 그러면 공란 행만 남아 현행으로 복귀함.</p>
+  </div>
+
+  <h4>② 카운터 값</h4>
   <p>지금은 전 레벨이 <strong>6 / 15</strong> 하나로 묶여 있음. 이걸 레벨 구간별로 나눔.</p>
   <table>
     <thead>
-      <tr><th rowspan="2">레벨 구간</th><th colspan="2">hard_guarantee</th><th colspan="2">super_hard_guarantee</th></tr>
-      <tr><th>As-Is</th><th>To-Be</th><th>As-Is</th><th>To-Be</th></tr>
+      <tr><th colspan="2">To-Be 레벨 구간</th><th colspan="2">hard_guarantee</th><th colspan="2">super_hard_guarantee</th></tr>
+      <tr><th>level_min</th><th>level_max</th><th>As-Is</th><th>To-Be</th><th>As-Is</th><th>To-Be</th></tr>
     </thead>
     <tbody>
-      <tr><td>1 ~ 24</td><td>6</td><td>6 <em>(유지)</em></td><td>15</td><td>15 <em>(유지)</em></td></tr>
-      <tr><td>25 ~ 99</td><td>6</td><td><strong>5</strong></td><td>15</td><td>15 <em>(유지)</em></td></tr>
-      <tr><td>100 ~ 349</td><td>6</td><td><strong>4</strong></td><td>15</td><td><strong>12</strong></td></tr>
-      <tr><td>350 ~ 799</td><td>6</td><td><strong>3</strong></td><td>15</td><td><strong>10</strong></td></tr>
-      <tr><td>800 이상</td><td>6</td><td><strong>2</strong></td><td>15</td><td><strong>9</strong></td></tr>
+      <tr><td>공란</td><td>공란</td><td>6</td><td>6 <em>(유지)</em></td><td>15</td><td>15 <em>(유지)</em></td></tr>
+      <tr><td>25</td><td>99</td><td>6</td><td><strong>5</strong></td><td>15</td><td>15 <em>(유지)</em></td></tr>
+      <tr><td>100</td><td>349</td><td>6</td><td><strong>4</strong></td><td>15</td><td><strong>12</strong></td></tr>
+      <tr><td>350</td><td>799</td><td>6</td><td><strong>3</strong></td><td>15</td><td><strong>10</strong></td></tr>
+      <tr><td>800</td><td>99999</td><td>6</td><td><strong>2</strong></td><td>15</td><td><strong>9</strong></td></tr>
     </tbody>
   </table>
-  <p>숫자가 작을수록 자주 나옴. <span class="sheet-var">hard_guarantee 2</span>는 "Normal이 2판 연속되면 다음은 Hard"라는 뜻임.</p>
+  <p>숫자가 작을수록 자주 나옴. <span class="sheet-var">hard_guarantee 2</span>는 "Normal이 2판 연속되면 다음은 Hard"라는 뜻임. 첫 줄(공란·공란)이 기존 행이고 레벨 1~24를 담당함 — 값이 안 바뀌므로 손대지 않음. 나머지 4개 구간이 <strong>신규 7행</strong>이며 구체적인 행 데이터는 ② 개발 스펙에 있음.</p>
 
   <h4>배분 순서가 이렇게 바뀜</h4>
   <div class="seq-block">
