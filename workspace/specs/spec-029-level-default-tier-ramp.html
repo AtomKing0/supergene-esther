@@ -291,7 +291,18 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
     <div class="seq-legend"><span><i class="n"></i>Normal</span><span><i class="h"></i>Hard</span><span><i class="s"></i>Super Hard</span><span class="seq-note">연속 24판 기준</span></div>
   </div>
-  <p>어려운 판이 연달아 붙는 구간이 없음. Hard·Super Hard 뒤에는 <span class="sheet-var">hard_cooldown</span>으로 항상 Normal이 한 판 들어가서 <strong>과부하가 누적되는 시퀀스는 구조적으로 발생하지 않음</strong>.</p>
+  <p>어려운 판은 대부분 Normal을 사이에 두고 떨어져 나옴. Hard·Super Hard를 <strong>클리어하면</strong> <span class="sheet-var">hard_cooldown</span>으로 다음 판이 반드시 Normal이기 때문임.</p>
+  <div class="callout callout-yellow">
+    <p><strong>예외 — Hard를 지면 바로 Super Hard가 올 수 있음.</strong> 위 To-Be 줄의 9~10번째가 그 경우임. <span class="sheet-var">hard_cooldown</span>이 <strong>클리어 시에만</strong> 걸려서 Hard를 지면 쿨다운이 붙지 않고, 1연패로는 <span class="sheet-var">fail_streak</span>(2연패 조건)도 발동하지 않아 그 틈으로 Super Hard 보장이 끼어듦.</p>
+  </div>
+  <table>
+    <thead><tr><th>구간</th><th>Hard 이상 직후 또 Hard 이상이 나올 확률</th><th>조건</th></tr></thead>
+    <tbody>
+      <tr><td>1~24 (현행)</td><td>0.01%</td><td rowspan="2">전부 <strong>직전 Hard를 진 경우</strong>이고 조합은 Hard → Super Hard 하나뿐임. 이긴 뒤에는 발생하지 않음</td></tr>
+      <tr><td>800+ (To-Be)</td><td><strong>1.36%</strong></td></tr>
+    </tbody>
+  </table>
+  <p>졌는데 더 어려운 판이 오는 흐름이라 체감이 가장 나쁜 경우임. 빈도는 낮지만 <strong>쿨다운을 승패와 무관하게 걸면 0%가 되고 믹스·판 길이 영향은 없음</strong> — Hard 비중 27.4% → 27.3%, 판 p50 56.4초 그대로임. 적용 여부는 ② 개발 확인 사항으로 올림.</p>
 
   <div class="step-label">STEP 4</div>
   <h3>고친 후 KPI — As-Is / To-Be</h3>
@@ -391,6 +402,17 @@ ul li strong,ol li strong { color:var(--text); }
   <div class="callout callout-purple">
     <p><strong>클라이언트 변경은 규칙 목록을 거르는 필터 한 겹이 전부임.</strong> 난수 추첨기·신규 테이블 로더·가중치 정규화가 모두 필요 없음.</p>
   </div>
+
+  <h3>개발 확인 사항 — hard_cooldown 발동 조건</h3>
+  <p>시트 메모 기준 <span class="sheet-var">hard_cooldown</span>은 <strong>"Hard 클리어 후 param_1 판은 Normal"</strong>이라 <strong>이겼을 때만</strong> 걸림. 그 결과 Hard를 진 직후에는 쿨다운이 없어 곧바로 Super Hard가 나올 수 있음.</p>
+  <table>
+    <thead><tr><th>안</th><th>Hard 이상 연속 발생률 (800+ 구간)</th><th>Hard 비중</th><th>판 p50</th><th>작업량</th></tr></thead>
+    <tbody>
+      <tr><td>현행 유지 — 클리어 시에만 쿨다운</td><td>1.36%</td><td>27.4%</td><td>56.4초</td><td>없음</td></tr>
+      <tr><td><strong>승패 무관 쿨다운</strong></td><td><strong>0%</strong></td><td>27.3%</td><td>56.4초</td><td>서버 조건 1줄</td></tr>
+    </tbody>
+  </table>
+  <p>믹스와 판 길이에 영향이 없으면서 "지고 나서 더 어려운 판" 케이스만 제거됨. 다만 DDA 판정은 <span class="sheet-var">GameEnd</span>의 <span class="sheet-var">dynamicLevelInfosToUpsert</span>로 처리되는 <strong>서버 로직</strong>이라 클라이언트 코드로 확인이 안 됨. <strong>실제 구현이 클리어 조건인지 먼저 확인 요청드림</strong>. 승패 무관이 이미 적용돼 있으면 이 항목은 불필요함.</p>
 
   <h3>엣지케이스</h3>
   <table>
