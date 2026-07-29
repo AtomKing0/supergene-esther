@@ -171,7 +171,7 @@ ul li strong,ol li strong { color:var(--text); }
       <div class="kpi-card">
         <div class="kpi-label">Normal 티어 판 비중</div>
         <div class="kpi-value" style="color:var(--blue)">80.9%</div>
-        <div class="kpi-sub">튜토 제외 · 최상위 밴드 목표 43%</div>
+        <div class="kpi-sub">튜토 제외 · 최상위 밴드 63.6%</div>
         <div class="kpi-trend trend-down">▼ 믹스 상향</div>
       </div>
       <div class="kpi-card">
@@ -238,40 +238,72 @@ ul li strong,ol li strong { color:var(--text); }
     <li><strong>레벨 24 이하는 현행과 완전히 동일함.</strong> 콘텐츠 해금이 끝나는 레벨 20 전후까지는 난이도를 건드리지 않음.</li>
     <li><strong>나머지 규칙은 전부 손대지 않음.</strong> <span class="sheet-var">fail_spiral</span>·<span class="sheet-var">fail_streak</span>·<span class="sheet-var">hard_cooldown</span>·<span class="sheet-var">default</span>는 현행 값 그대로 전 레벨 공통임.</li>
     <li><strong>Normal 티어 자체의 난이도는 손대지 않음.</strong> 완료율 98.7%로 가장 안정적인 구간이고 볼륨이 커서 리스크가 큼. 티어 내부가 아니라 티어 배정 주기만 바꿈.</li>
-    <li><strong>Super Hard 비중은 최대 10%를 넘기지 않음.</strong> 중도 종료율이 최대 28%로 유일한 과부하 구간이라 확대 대상이 아님.</li>
+    <li><strong>Super Hard 비중은 최대 10%를 넘기지 않음.</strong> 중도 종료율이 최대 28%로 유일한 과부하 구간이라 확대 대상이 아님. 이 제약이 판 길이 상한을 결정함.</li>
+    <li><strong><span class="sheet-var">hard_guarantee</span>의 하한을 2로 둠.</strong> 1로 내리면 배분 주기가 2판이 되어 유저가 다음 판 난이도를 학습함.</li>
   </ol>
 
   <h3>레벨 구간별 카운터 값</h3>
-  <p>바꾸는 숫자는 <strong>행당 2개</strong>임. 비중은 <span class="sheet-var">1 ÷ (param_1 + 1)</span>로 바로 읽힘.</p>
+  <p>바꾸는 숫자는 <strong>행당 2개</strong>이고 구간은 <strong>5개</strong>임. 아래 비중·판 길이는 라이브 규칙 엔진을 그대로 재현한 시뮬레이션(유저 4,000명 × 300판) 결과임.</p>
   <table>
-    <thead><tr><th>레벨</th><th>hard_guarantee</th><th>super_hard_guarantee</th><th>Hard</th><th>Super Hard</th><th>Normal</th><th>예상 판 길이 p50</th></tr></thead>
+    <thead><tr><th>레벨</th><th>hard_g</th><th>sh_g</th><th>Hard</th><th>Super Hard</th><th>Normal</th><th>판 p50</th><th>최장 Normal 연속</th><th>반복 주기</th></tr></thead>
     <tbody>
-      <tr><td>1 ~ 24</td><td>6 (현행)</td><td>15 (현행)</td><td>14.3%</td><td>5.4%</td><td>80.4%</td><td>51초 (현행)</td></tr>
-      <tr><td>25 ~ 99</td><td>5</td><td>15</td><td>16.7%</td><td>5.2%</td><td>78.1%</td><td>53초</td></tr>
-      <tr><td>100 ~ 349</td><td>4</td><td>12</td><td>20.0%</td><td>6.2%</td><td>73.8%</td><td>54초</td></tr>
-      <tr><td>350 ~ 799</td><td>3</td><td>9</td><td>25.0%</td><td>7.5%</td><td>67.5%</td><td>55초</td></tr>
-      <tr><td>800 ~ 1449</td><td>2</td><td>7</td><td>33.3%</td><td>8.3%</td><td>58.4%</td><td>57초</td></tr>
-      <tr><td>1450 이상</td><td>1</td><td>6</td><td>50.0%</td><td>7.1%</td><td>42.9%</td><td>60초</td></tr>
+      <tr><td>1 ~ 24</td><td>6 (현행)</td><td>15 (현행)</td><td>12.3%</td><td>6.0%</td><td>81.7%</td><td>52.2초</td><td>6판</td><td>14판</td></tr>
+      <tr><td>25 ~ 99</td><td>5</td><td>15 (현행)</td><td>12.7%</td><td>6.0%</td><td>81.3%</td><td>52.2초</td><td>5판</td><td>12판</td></tr>
+      <tr><td>100 ~ 349</td><td>4</td><td>12</td><td>15.3%</td><td>7.7%</td><td>77.0%</td><td>53.5초</td><td>4판</td><td>10판</td></tr>
+      <tr><td>350 ~ 799</td><td>3</td><td>10</td><td>18.0%</td><td>9.0%</td><td>73.0%</td><td>54.6초</td><td>3판</td><td>8판</td></tr>
+      <tr><td>800 이상</td><td>2</td><td>9</td><td>27.4%</td><td>9.0%</td><td>63.6%</td><td>56.4초</td><td>2판</td><td>6판</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <p><strong>판 길이는 Normal 47초 · Hard 66초 · Super Hard 94초 실측에 비중을 가중해 산출함.</strong> <span class="sheet-var">hard_cooldown</span>은 라이브 값 1로 전 밴드 동일하게 유지함. 최상위 밴드의 <span class="sheet-var">hard_guarantee 1</span>에서도 Hard 이상 비중이 쿨다운 상한 50%를 넘지 않아 충돌하지 않음.</p>
+    <p><strong>비중은 <span class="sheet-var">1 ÷ (param_1 + 1)</span>보다 항상 낮게 나옴.</strong> Super Hard 보장이 priority 6으로 Hard보다 먼저 걸리고, <span class="sheet-var">hard_cooldown</span> 1판이 그 뒤에 또 끼어들기 때문임. 산식은 상한일 뿐이고 실제 값은 시뮬 기준으로 봐야 함. 현행 <span class="sheet-var">hard_guarantee 6</span>의 시뮬값 12.3%가 실측 12.4%와 일치해 엔진 재현이 검증됨.</p>
+  </div>
+  <div class="callout callout-yellow">
+    <p><strong><span class="sheet-var">hard_guarantee</span>의 하한을 2로 둠.</strong> 카운터 방식은 결정론이라 패턴이 그대로 노출됨. 1로 내리면 <code>NHNHNHNS</code>처럼 <strong>주기 2</strong>가 되어 "다음 판은 어려운 판"이 눈에 보임. 2에서는 주기 6(<code>NNHNNHNNHS</code>)이라 학습이 어려움. 현행 1~24 구간도 이미 주기 14로 결정론적이므로 주기성 자체는 신규 리스크가 아니지만, 주기가 6 미만으로 내려가면 체감이 달라짐.</p>
   </div>
 
-  <h3>기대 결과</h3>
+  <h3>체감 시퀀스 (시뮬 44판 · N=Normal H=Hard S=Super Hard)</h3>
+  <div class="sheet-block">
+    <div class="sheet-block-title">밴드별 실제 배분 순서</div>
+    <div class="sheet-row"><span class="sheet-row-var">1~24</span><span class="sheet-row-desc" style="font-family:monospace">NNNNNNHNNNNNNHNSNNNNNNHNNNNNNHNSNNNNNNHNNNNN</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">25~99</span><span class="sheet-row-desc" style="font-family:monospace">NNNNNHNNNNNHNNNSNNNNNHNNNNNHNNNSNNNNNHNNNNNH</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">100~349</span><span class="sheet-row-desc" style="font-family:monospace">NNNNHNNNNHNNSNNNNHNNNNHNNSNNNNHNNNNHNNSNNNNH</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">350~799</span><span class="sheet-row-desc" style="font-family:monospace">NNNHNNNHNNSNNNHNNNHNNSNNNHNNNHNNSNNNHNNNHNNS</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">800+</span><span class="sheet-row-desc" style="font-family:monospace">NNHNNHNNHSNNHNNHNNHNSNNHNNHNNHNSNNHNNHNNHNSN</span></div>
+  </div>
+  <p>어려운 판이 연달아 붙는 구간이 없음. Hard 뒤에는 <span class="sheet-var">hard_cooldown</span>으로 항상 Normal이 한 판 들어가고, Super Hard도 마찬가지임. <strong>과부하가 누적되는 시퀀스는 구조적으로 발생하지 않음.</strong></p>
+
+  <h3>기대 결과 (시뮬 기준)</h3>
   <table>
-    <thead><tr><th>지표</th><th>현행</th><th>목표</th></tr></thead>
+    <thead><tr><th>지표</th><th>현행</th><th>800+ 밴드 적용 후</th><th>변화</th></tr></thead>
     <tbody>
-      <tr><td>최상위 밴드 판 길이 p50</td><td>51초</td><td>60초 내외</td></tr>
-      <tr><td>신규 → 기존 판 길이 램프</td><td>1.25배</td><td>1.5~1.6배</td></tr>
-      <tr><td>유저-일당 인게임 시간</td><td>818초</td><td>900~1,000초</td></tr>
-      <tr><td>Normal 티어 비중 (최상위 밴드)</td><td>80.4%</td><td>43% 내외</td></tr>
-      <tr><td>판 완료율 (튜토 제외)</td><td>98.0%</td><td>유지</td></tr>
+      <tr><td>판 길이 p50</td><td>52.2초</td><td>56.4초</td><td>+8.0%</td></tr>
+      <tr><td>Normal 티어 비중</td><td>81.7%</td><td>63.6%</td><td>−18.1%p</td></tr>
+      <tr><td>판당 평균 reward_hammer</td><td>1.24</td><td>1.45</td><td>+17%</td></tr>
+      <tr><td>부스터 사용률</td><td>44.6%</td><td>50.5%</td><td>+13%</td></tr>
+      <tr><td>연속 8판 소요 시간</td><td>6.9분</td><td>7.7분</td><td>+11%</td></tr>
+      <tr><td>판 완료율 (튜토 제외)</td><td>98.0%</td><td>유지</td><td>가드레일</td></tr>
+    </tbody>
+  </table>
+
+  <h3>목표 수정 — 램프 1.5배는 이 스펙으로 달성 불가</h3>
+  <div class="callout callout-yellow">
+    <p><strong>티어 믹스만으로 도달 가능한 판 길이의 물리적 상한은 66초임.</strong> 100% Hard로 채워도 Hard의 실측 p50이 66초이기 때문임. 신규 기준선 41.8초 대비 <strong>최대 1.58배</strong>이고, Super Hard를 안전 범위(≤10%)로 묶으면 실제 상한은 <strong>1.35배</strong>임. 초안의 목표 <strong>1.5~1.6배는 구조적으로 불가능</strong>함.</p>
+  </div>
+  <p>타 3종의 3.4~3.6배는 티어 배정이 아니라 <strong>레벨이 올라갈수록 맵 자체가 커지는 구조</strong>에서 나옴. 판 길이 램프를 그 수준으로 올리려면 카드 수·기믹 수를 레벨에 따라 늘리는 별도 트랙이 필요함. 이 스펙의 역할은 거기까지가 아님.</p>
+  <table>
+    <thead><tr><th>지표</th><th>초안 목표</th><th>수정 목표</th><th>사유</th></tr></thead>
+    <tbody>
+      <tr><td>최상위 밴드 판 p50</td><td>60초</td><td><strong>56~57초</strong></td><td>60초는 hard_g 1(주기 2 노출) 또는 SH 20%(중도 종료 리스크)를 요구함</td></tr>
+      <tr><td>신규 → 기존 램프</td><td>1.5~1.6배</td><td><strong>1.35배</strong></td><td>티어 믹스 상한이 1.58배. 안전 범위 내 최대치가 1.35배</td></tr>
+      <tr><td>Normal 비중</td><td>45~55%</td><td><strong>63% 내외</strong></td><td>위와 동일한 상한 제약</td></tr>
     </tbody>
   </table>
   <div class="callout callout-yellow">
     <p><strong>전체 평균 Normal 비중은 목표로 잡지 않음.</strong> 레벨 분포가 아직 로그에 없어 밴드 가중 평균을 계산할 수 없음. 판정은 <strong>밴드별로 분리해서</strong> 함.</p>
   </div>
+
+  <h3>연패 구제는 안전망으로 기대하지 않음</h3>
+  <p>시뮬에서 <span class="sheet-var">fail_streak</span>·<span class="sheet-var">fail_spiral</span> 발동률은 현행 <strong>0.2%</strong>, 최상위 밴드에서도 <strong>0.3%</strong>에 그침. 각 티어 중도 종료율이 낮아 2연패 자체가 드물기 때문임. 난이도를 올려도 구제 규칙은 사실상 잠들어 있음. <strong>과부하 방어는 구제 규칙이 아니라 <span class="sheet-var">hard_cooldown</span>과 보장 주기가 담당함</strong>.</p>
   <div class="callout callout-purple">
     <p><strong>목표는 판을 길게 만드는 것이 아니라 레벨에 따라 무거워지게 만드는 것임.</strong> 성과 판정은 판 길이 단독이 아니라 D7·D14 리텐션과 세션 수로 함.</p>
   </div>
@@ -322,25 +354,22 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="sheet-row"><span class="sheet-row-var">level_min</span><span class="sheet-row-default">공란</span><span class="sheet-row-unit">정수</span><span class="sheet-row-desc">이 행이 적용되는 최소 유저 레벨 (이상). 공란이면 전 레벨</span></div>
     <div class="sheet-row"><span class="sheet-row-var">level_max</span><span class="sheet-row-default">공란</span><span class="sheet-row-unit">정수</span><span class="sheet-row-desc">이 행이 적용되는 최대 유저 레벨 (이하). 공란이면 전 레벨</span></div>
   </div>
-  <p>기존 9개 행은 두 컬럼 모두 <strong>공란</strong>으로 두어 현행 동작을 그대로 유지함. 여기에 <span class="sheet-var">hard_guarantee</span> 5행 · <span class="sheet-var">super_hard_guarantee</span> 5행, 총 <strong>10행만 신규 추가</strong>함. 레벨 1~24 밴드는 기존 행이 그대로 담당하므로 별도 행이 필요 없음.</p>
+  <p>기존 9개 행은 두 컬럼 모두 <strong>공란</strong>으로 두어 현행 동작을 그대로 유지함. 여기에 <strong>7행만 신규 추가</strong>함. 레벨 1~24는 기존 행이 그대로 담당하고, 25~99 구간의 <span class="sheet-var">super_hard_guarantee</span>도 현행값 15와 같으므로 공란 행에 맡기고 별도 행을 두지 않음.</p>
 
-  <h3>추가 행</h3>
+  <h3>추가 행 (7행)</h3>
   <table>
     <thead><tr><th>key_number</th><th>priority</th><th>condition_type</th><th>param_1</th><th>level_min</th><th>level_max</th><th>result_tier_id</th></tr></thead>
     <tbody>
-      <tr><td>30010</td><td>6</td><td>super_hard_guarantee</td><td>15</td><td>25</td><td>99</td><td>4</td></tr>
-      <tr><td>30011</td><td>6</td><td>super_hard_guarantee</td><td>12</td><td>100</td><td>349</td><td>4</td></tr>
-      <tr><td>30012</td><td>6</td><td>super_hard_guarantee</td><td>9</td><td>350</td><td>799</td><td>4</td></tr>
-      <tr><td>30013</td><td>6</td><td>super_hard_guarantee</td><td>7</td><td>800</td><td>1449</td><td>4</td></tr>
-      <tr><td>30014</td><td>6</td><td>super_hard_guarantee</td><td>6</td><td>1450</td><td>99999</td><td>4</td></tr>
-      <tr><td>30015</td><td>7</td><td>hard_guarantee</td><td>5</td><td>25</td><td>99</td><td>3</td></tr>
-      <tr><td>30016</td><td>7</td><td>hard_guarantee</td><td>4</td><td>100</td><td>349</td><td>3</td></tr>
-      <tr><td>30017</td><td>7</td><td>hard_guarantee</td><td>3</td><td>350</td><td>799</td><td>3</td></tr>
-      <tr><td>30018</td><td>7</td><td>hard_guarantee</td><td>2</td><td>800</td><td>1449</td><td>3</td></tr>
-      <tr><td>30019</td><td>7</td><td>hard_guarantee</td><td>1</td><td>1450</td><td>99999</td><td>3</td></tr>
+      <tr><td>30010</td><td>6</td><td>super_hard_guarantee</td><td>12</td><td>100</td><td>349</td><td>4</td></tr>
+      <tr><td>30011</td><td>6</td><td>super_hard_guarantee</td><td>10</td><td>350</td><td>799</td><td>4</td></tr>
+      <tr><td>30012</td><td>6</td><td>super_hard_guarantee</td><td>9</td><td>800</td><td>99999</td><td>4</td></tr>
+      <tr><td>30013</td><td>7</td><td>hard_guarantee</td><td>5</td><td>25</td><td>99</td><td>3</td></tr>
+      <tr><td>30014</td><td>7</td><td>hard_guarantee</td><td>4</td><td>100</td><td>349</td><td>3</td></tr>
+      <tr><td>30015</td><td>7</td><td>hard_guarantee</td><td>3</td><td>350</td><td>799</td><td>3</td></tr>
+      <tr><td>30016</td><td>7</td><td>hard_guarantee</td><td>2</td><td>800</td><td>99999</td><td>3</td></tr>
     </tbody>
   </table>
-  <p>30010은 25~99 구간에서 현행값 15를 그대로 쓰므로 값 자체는 변하지 않지만, 구간 연속성을 위해 명시적으로 둠.</p>
+  <p><span class="sheet-var">hard_guarantee</span>는 <strong>2가 하한</strong>임. 1로 내리면 배분 주기가 2판이 되어 패턴이 노출됨 — ① 섹션 참조.</p>
 
   <h3>변경 로직</h3>
   <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>레벨 필터를 먼저 적용함</strong><p>규칙 평가 전에 <span class="sheet-var">level_min ≤ 유저 레벨 ≤ level_max</span>를 만족하지 않는 행을 제외함. 두 값이 공란인 행은 항상 통과함.</p></div></div>
@@ -368,11 +397,11 @@ ul li strong,ol li strong { color:var(--text); }
     <p><strong>입장료는 티어와 무관하게 동일한데 보상은 티어에 비례함.</strong> 실측 입장료 p50은 네 티어 모두 2,600골드로 같지만 <span class="sheet-var">reward_hammer</span>는 1 → 2 → 3으로 올라감. 티어 믹스를 올리면 입장료 유입은 그대로인 채 해머 발행만 늘어남.</p>
   </div>
   <table>
-    <thead><tr><th>항목</th><th>현행 (튜토 제외)</th><th>적용 후 (최상위 밴드)</th><th>영향</th></tr></thead>
+    <thead><tr><th>항목</th><th>현행 (시뮬)</th><th>적용 후 (800+ 밴드)</th><th>영향</th></tr></thead>
     <tbody>
-      <tr><td>판당 평균 reward_hammer</td><td>1.23</td><td>1.64</td><td>해머 발행 +33%</td></tr>
+      <tr><td>판당 평균 reward_hammer</td><td>1.24</td><td>1.45</td><td>해머 발행 +17%</td></tr>
       <tr><td>판당 입장료 p50</td><td>2,600골드</td><td>2,600골드</td><td>변동 없음</td></tr>
-      <tr><td>부스터 사용률</td><td>39% (Normal)</td><td>67~77% (Hard 이상)</td><td>아이템 소모 증가</td></tr>
+      <tr><td>부스터 사용률 (가중 평균)</td><td>44.6%</td><td>50.5%</td><td>아이템 소모 +13%</td></tr>
     </tbody>
   </table>
   <p>해머 발행 증가는 최상위 밴드에만 걸리고 하위 밴드는 증가폭이 훨씬 작음. 진행 중인 골드 경제 조정과 겹치는 지점이므로 <strong>밴드별 해머 발행량을 측정한 뒤 조정 여부를 판단함</strong>. 초안과 달리 같은 배포에 묶지 않음 — 밴드를 단계적으로 여는 방식이라 한 번에 전량이 들어오지 않음.</p>
@@ -409,7 +438,7 @@ ul li strong,ol li strong { color:var(--text); }
   <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>로깅 추가 배포</strong><p>클라이언트에 <span class="sheet-var">user_level</span>을 실음. 로직 변경은 포함하지 않음</p></div></div>
   <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>레벨 분포 실측 (1주)</strong><p>밴드별 유저 수·판수 분포를 확인함. 유저가 거의 없는 밴드는 병합하고 몰려 있는 밴드는 쪼갬</p></div></div>
   <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>레벨 필터 로직 + 컬럼 2개 배포</strong><p><span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span>를 전 행 공란으로 둔 채 배포함. 이 시점에는 동작이 현행과 100% 동일해야 함 — 무변경 확인이 곧 검증임</p></div></div>
-  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>상위 밴드부터 단계 개방</strong><p>최상위 밴드(1450+) 행부터 <span class="sheet-var">in_use</span>를 켜고 1주 관측. 이상 없으면 아래 밴드로 한 단계씩 내림. 유저 수가 가장 적고 숙련도가 가장 높은 구간부터 여는 순서임</p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>상위 밴드부터 단계 개방</strong><p>최상위 밴드(800+) 행부터 <span class="sheet-var">in_use</span>를 켜고 1주 관측. 이상 없으면 아래 밴드로 한 단계씩 내림. 유저 수가 가장 적고 숙련도가 가장 높은 구간부터 여는 순서임</p></div></div>
   <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>밴드별 확정 또는 되돌림</strong><p>아래 판정 기준으로 밴드 단위로 결정함. 전체 롤백이 아니라 밴드 단위 조정이 기본임</p></div></div>
   <div class="callout callout-purple">
     <p><strong>A/B 대신 단계 개방을 택함.</strong> 밴드마다 대상 유저 수가 다르고 상위 밴드는 표본이 작아 A/B 분할 시 유의성이 안 나옴. 밴드를 하나씩 여는 방식이면 밴드 자체가 실험 단위가 되고, 되돌리는 비용도 시트 셀 하나임.</p>
@@ -419,12 +448,13 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>지표</th><th>산식</th><th>합격 기준</th></tr></thead>
     <tbody>
-      <tr><td>티어 믹스</td><td>밴드별 tier_id 분포</td><td>이론값 1÷(param_1+1) 대비 ±3%p</td></tr>
-      <tr><td>판 길이 p50</td><td>2300의 play_time 중앙값</td><td>밴드 목표치 −3초 이내</td></tr>
+      <tr><td>티어 믹스</td><td>밴드별 tier_id 분포</td><td>① 섹션 시뮬값 대비 ±2%p</td></tr>
+      <tr><td>판 길이 p50</td><td>2300의 play_time 중앙값</td><td>밴드 시뮬값 −2초 이내</td></tr>
       <tr><td>판 완료율</td><td>2300 수 ÷ 2100 수</td><td>96% 이상 유지</td></tr>
       <tr><td>중도 종료율</td><td>2300 중 result가 fail인 비율</td><td>밴드별 8% 이하</td></tr>
       <tr><td>유저-일당 판수</td><td>2300 수 ÷ 유저-일</td><td>현행 대비 −15% 이내</td></tr>
       <tr><td>유저-일당 인게임 시간</td><td>유저-일 play_time 합</td><td>현행 818초 대비 상승</td></tr>
+      <tr><td>연속 8판 소요 시간</td><td>세션 내 8판 play_time 합 p50</td><td>800+ 밴드 8.5분 이하 (스프린트 이벤트 15분 제한 대비)</td></tr>
       <tr><td>D7 · D14 리텐션</td><td>신규 코호트 n일 뒤 로그인 비율</td><td>개방 전 대비 하락 없음</td></tr>
       <tr><td>해머 발행량</td><td>밴드별 판당 평균 reward_hammer</td><td>경제 조정 판단 근거로 기록</td></tr>
     </tbody>
