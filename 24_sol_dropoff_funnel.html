@@ -17,18 +17,25 @@ iframe{width:100%;border:none;display:block;background:#F4F6FA}</style></head><b
 <div class="bar">
 <h1>솔리테어 신규 유저 이탈 포인트 분석</h1>
 <div class="seg-wrap"><button class="seg active" data-k="all" onclick="pick(this,'all')">전체</button><button class="seg" data-k="na" onclick="pick(this,'na')">NA</button><button class="seg" data-k="eu" onclick="pick(this,'eu')">EU</button><button class="seg" data-k="west" onclick="pick(this,'west')">서구권</button><button class="seg" data-k="row" onclick="pick(this,'row')">그 외 지역</button></div>
-<span class="note">지역 토글 · NA = US·CA (북미) · EU = GB·FR·DE 등 유럽 주요국 · 그 외 지역 = NA·EU 제외 나머지 · 자동 갱신 2026-07-29 11:05</span>
+<span class="note">지역 토글 · NA = US·CA (북미) · EU = GB·FR·DE 등 유럽 주요국 · 그 외 지역 = NA·EU 제외 나머지 · 자동 갱신 2026-07-29 11:45</span>
 </div>
-<iframe id="geoframe" src="24_sol_dropoff_funnel_all.html" scrolling="no"></iframe>
+<div id="frames"><iframe class="geoifr" data-k="all" src="24_sol_dropoff_funnel_all.html" scrolling="no"></iframe></div>
 <script>
-var f=document.getElementById('geoframe');
-function fit(){try{f.style.height=(f.contentWindow.document.body.scrollHeight+40)+'px';}catch(e){}}
-f.addEventListener('load',fit);
-window.addEventListener('resize',fit);
-setInterval(fit,1500);  // 차트 렌더·폰트 로드 후 높이 재보정
+var cur='all';
+function frameFor(k){var f=document.querySelector('.geoifr[data-k="'+k+'"]');
+ if(!f){f=document.createElement('iframe');f.className='geoifr';f.dataset.k=k;
+  f.src='24_sol_dropoff_funnel_'+k+'.html';f.style.display='none';f.setAttribute('scrolling','no');
+  document.getElementById('frames').appendChild(f);}
+ return f;}
+function fit(){var f=document.querySelector('.geoifr[data-k="'+cur+'"]');
+ try{f.style.height=(f.contentWindow.document.body.scrollHeight+40)+'px';}catch(e){}}
 function pick(btn,k){
-  document.querySelectorAll('.seg').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-  f.src='24_sol_dropoff_funnel_'+k+'.html';
-}
+ document.querySelectorAll('.seg').forEach(function(b){b.classList.remove('active');});
+ btn.classList.add('active');
+ document.querySelectorAll('.geoifr').forEach(function(x){x.style.display='none';});
+ var f=frameFor(k);f.style.display='block';cur=k;fit();}
+window.addEventListener('resize',fit);setInterval(fit,1500);
+// 나머지 권역 백그라운드 프리로드 → 전환 시 재로딩·깜빡임 없음
+window.addEventListener('load',function(){setTimeout(function(){
+ ['na','eu','west','row'].forEach(function(k){frameFor(k);});},1500);});
 </script></body></html>
