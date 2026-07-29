@@ -132,6 +132,24 @@ ul li strong,ol li strong { color:var(--text); }
 .flow-body { flex:1; }
 .flow-body strong { color:var(--text);font-size:0.9rem; }
 .flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+
+.step-label{display:inline-block;font-size:.66rem;font-weight:800;letter-spacing:.12em;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,.3);padding:3px 10px;border-radius:6px;margin-top:34px}
+.step-label+h3{margin-top:8px;color:var(--text);font-size:1.15rem}
+.d-up{color:var(--green);font-weight:700}
+.d-down{color:var(--red);font-weight:700}
+.seq-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin:16px 0}
+.seq-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.seq-label{min-width:118px;font-size:.8rem;font-weight:700;color:var(--text)}
+.seq-label span{display:block;font-weight:500;font-size:.72rem;color:var(--text2)}
+.seq{display:flex;gap:3px;flex-wrap:wrap}
+.seq i,.seq-legend i{display:inline-block;width:15px;height:19px;border-radius:3px;vertical-align:-4px}
+.seq i.n,.seq-legend i.n{background:#3a4056}
+.seq i.h,.seq-legend i.h{background:var(--yellow)}
+.seq i.s,.seq-legend i.s{background:var(--red)}
+[data-theme="light"] .seq i.n,[data-theme="light"] .seq-legend i.n{background:#c8cbd6}
+.seq-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.75rem;color:var(--text2);border-top:1px solid var(--border);padding-top:12px}
+.seq-legend span{display:flex;align-items:center;gap:6px}
+.seq-note{margin-left:auto;color:var(--text2)}
 </style>
 </head>
 <body>
@@ -198,120 +216,97 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
   </div>
 
-  <h3>배경</h3>
-  <p>난이도 티어를 올리면 판 길이가 정직하게 따라 올라감. 실측 기준 <strong>Tutorial 28초 · Normal 47초 · Hard 66초 · Super Hard 94초</strong>임. 난이도 램프 자체는 이미 정상 작동함.</p>
-  <p>문제는 티어가 배정되는 비중임. 튜토리얼을 제외한 판의 <strong>80.9%가 Normal</strong>에 몰려 있음. 원인은 <span class="sheet-var">PST_dynamic_level</span>의 레벨 조건이 레벨 10에서 끝나고, 그 이후로는 <strong>레벨이 티어 배정에 전혀 개입하지 않기</strong> 때문임. 레벨 11 유저와 레벨 2,000 유저가 완전히 같은 믹스를 받고 있음.</p>
-  <p>그 결과 신규 유저와 기존 유저의 판 길이 차이가 <strong>1.25배</strong>에 그침. 같은 방식으로 측정한 타 3종은 3.4~3.6배임. 진행할수록 판이 무거워지는 감각이 사실상 없는 상태임.</p>
-
-  <h3>현행 믹스는 이미 카운터 2개가 결정하고 있음</h3>
-  <p>라이브 시트를 열어보면 <span class="sheet-var">default</span>는 사실상 아무 일도 하지 않음. Hard·Super Hard가 나오는 경로는 <strong>주기 보장 카운터 두 개</strong>뿐이고, 그 두 숫자가 믹스를 그대로 결정함.</p>
+  <div class="step-label">STEP 1</div>
+  <h3>어디가 문제인가</h3>
+  <p><strong>레벨이 티어 배정에 전혀 개입하지 않음.</strong> 레벨 11 유저와 레벨 2,000 유저가 완전히 같은 난이도 믹스를 받고 있음. 그래서 진행할수록 판이 무거워지는 감각이 없음.</p>
   <table>
-    <thead><tr><th>규칙</th><th>라이브 param_1</th><th>산식</th><th>이론 비중</th><th>실측 비중</th></tr></thead>
+    <thead><tr><th>지표</th><th>현재</th><th>문제</th></tr></thead>
     <tbody>
-      <tr><td>hard_guarantee</td><td>6</td><td>1 ÷ (6+1)</td><td>14.3%</td><td>12.4%</td></tr>
-      <tr><td>super_hard_guarantee</td><td>15</td><td>1 ÷ (15+1)</td><td>6.3%</td><td>5.6%</td></tr>
-      <tr><td>hard_cooldown</td><td>1</td><td>상한 1 ÷ (1+1)</td><td>상한 50%</td><td>미도달</td></tr>
+      <tr><td>Normal 티어 비중</td><td><strong>81.7%</strong></td><td>전 레벨 동일. 대부분의 판이 가장 쉬운 티어</td></tr>
+      <tr><td>신규 → 기존 판 길이 램프</td><td><strong>1.25배</strong></td><td>타 3종은 3.4~3.6배. 성장 체감이 사실상 없음</td></tr>
+      <tr><td>판 길이 p50</td><td><strong>52.2초</strong></td><td>레벨과 무관하게 고정</td></tr>
+    </tbody>
+  </table>
+
+  <div class="step-label">STEP 2</div>
+  <h3>그래서 무엇을 고치는가</h3>
+  <p>티어 믹스는 이미 <span class="sheet-var">PST_dynamic_level</span>의 <strong>주기 보장 카운터 2개</strong>가 전부 결정하고 있음. 이 두 숫자에 <strong>레벨 조건만 붙임</strong>.</p>
+  <table>
+    <thead><tr><th>고치는 것</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sheet-var">hard_guarantee</span></td><td>레벨 구간별로 다른 값을 적용. 지금은 전 레벨 단일값</td></tr>
+      <tr><td><span class="sheet-var">super_hard_guarantee</span></td><td>위와 동일</td></tr>
+      <tr><td>시트 컬럼</td><td><span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span> 2개 추가 + 행 7개 추가</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <p><strong>이론값과 실측이 거의 정확히 일치함.</strong> 티어 믹스는 확률 구조가 아니라 카운터 주기로 이미 완전히 통제되고 있다는 뜻임. 따라서 믹스를 올리는 데 필요한 것은 <strong>가중치 테이블이 아니라 이 숫자를 낮추는 것</strong>임. <span class="sheet-var">hard_cooldown</span>은 1이라 상한 50%로 아무것도 묶고 있지 않음 — 손댈 필요 없음.</p>
+    <p><strong>신규 테이블도, 가중치 추첨도 만들지 않음.</strong> 나머지 규칙(<span class="sheet-var">fail_spiral</span>·<span class="sheet-var">fail_streak</span>·<span class="sheet-var">hard_cooldown</span>·<span class="sheet-var">default</span>)은 전 레벨 공통으로 그대로 둠. 레벨 24 이하는 현행과 완전히 동일하게 동작함.</p>
   </div>
 
-  <h3>실측 근거 (2026-07-20~26 · FB Instant Games)</h3>
+  <div class="step-label">STEP 3</div>
+  <h3>고치는 부분 — As-Is / To-Be</h3>
+  <p>지금은 전 레벨이 <strong>6 / 15</strong> 하나로 묶여 있음. 이걸 레벨 구간별로 나눔.</p>
   <table>
-    <thead><tr><th>티어</th><th>진입</th><th>비중</th><th>완료율</th><th>중도 종료율</th><th>판 길이 p50</th><th>부스터 사용</th></tr></thead>
+    <thead>
+      <tr><th rowspan="2">레벨 구간</th><th colspan="2">hard_guarantee</th><th colspan="2">super_hard_guarantee</th></tr>
+      <tr><th>As-Is</th><th>To-Be</th><th>As-Is</th><th>To-Be</th></tr>
+    </thead>
     <tbody>
-      <tr><td>20001 Tutorial</td><td>22,903</td><td>27.3%</td><td>63.7%</td><td>0.2%</td><td>28초</td><td>5.4%</td></tr>
-      <tr><td>20002 Normal</td><td>49,317</td><td>58.8%</td><td>98.7%</td><td>3.9%</td><td>47초</td><td>39%</td></tr>
-      <tr><td>20003 Hard</td><td>7,553</td><td>9.0%</td><td>97.3%</td><td>5.7%</td><td>66초</td><td>67%</td></tr>
-      <tr><td>20004 Super Hard</td><td>4,091</td><td>4.9%</td><td>90.6%</td><td>15~28%</td><td>94초</td><td>77%</td></tr>
+      <tr><td>1 ~ 24</td><td>6</td><td>6 <em>(유지)</em></td><td>15</td><td>15 <em>(유지)</em></td></tr>
+      <tr><td>25 ~ 99</td><td>6</td><td><strong>5</strong></td><td>15</td><td>15 <em>(유지)</em></td></tr>
+      <tr><td>100 ~ 349</td><td>6</td><td><strong>4</strong></td><td>15</td><td><strong>12</strong></td></tr>
+      <tr><td>350 ~ 799</td><td>6</td><td><strong>3</strong></td><td>15</td><td><strong>10</strong></td></tr>
+      <tr><td>800 이상</td><td>6</td><td><strong>2</strong></td><td>15</td><td><strong>9</strong></td></tr>
     </tbody>
   </table>
-  <div class="callout callout-blue">
-    <p><strong>Hard 구간이 핵심임.</strong> 완료율 97.3%·중도 종료율 5.7%로 Normal(98.7%·3.9%)과 차이가 미미한데 판 길이는 47초에서 66초로 40% 늘어남. 이탈 리스크 거의 없이 길이를 버는 유일한 구간임.</p>
+  <p>숫자가 작을수록 자주 나옴. <span class="sheet-var">hard_guarantee 2</span>는 "Normal이 2판 연속되면 다음은 Hard"라는 뜻임.</p>
+
+  <h4>배분 순서가 이렇게 바뀜</h4>
+  <div class="seq-block">
+    <div class="seq-row">
+      <div class="seq-label">As-Is <span>전 레벨</span></div>
+      <div class="seq"><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="h"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="h"></i><i class="n"></i><i class="s"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="h"></i><i class="n"></i></div>
+    </div>
+    <div class="seq-row">
+      <div class="seq-label">To-Be <span>800+ 구간</span></div>
+      <div class="seq"><i class="n"></i><i class="n"></i><i class="h"></i><i class="n"></i><i class="n"></i><i class="h"></i><i class="n"></i><i class="n"></i><i class="h"></i><i class="s"></i><i class="n"></i><i class="n"></i><i class="h"></i><i class="n"></i><i class="n"></i><i class="h"></i><i class="n"></i><i class="n"></i><i class="h"></i><i class="n"></i><i class="s"></i><i class="n"></i><i class="n"></i><i class="h"></i></div>
+    </div>
+    <div class="seq-legend"><span><i class="n"></i>Normal</span><span><i class="h"></i>Hard</span><span><i class="s"></i>Super Hard</span><span class="seq-note">연속 24판 기준</span></div>
   </div>
+  <p>어려운 판이 연달아 붙는 구간이 없음. Hard·Super Hard 뒤에는 <span class="sheet-var">hard_cooldown</span>으로 항상 Normal이 한 판 들어가서 <strong>과부하가 누적되는 시퀀스는 구조적으로 발생하지 않음</strong>.</p>
 
-  <h3>확정 사항</h3>
-  <ol>
-    <li><strong>신규 테이블을 만들지 않음.</strong> <span class="sheet-var">PST_dynamic_level</span>에 <span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span> 두 컬럼만 추가하고, 기존 규칙 행을 레벨 구간별로 복제함.</li>
-    <li><strong>가중치·추첨을 도입하지 않음.</strong> 이미 믹스를 결정하고 있는 <span class="sheet-var">hard_guarantee</span>·<span class="sheet-var">super_hard_guarantee</span>의 param_1만 레벨별로 다르게 둠. 난수가 개입하지 않아 결과가 결정론적이고 QA·검증이 쉬움.</li>
-    <li><strong>레벨 24 이하는 현행과 완전히 동일함.</strong> 콘텐츠 해금이 끝나는 레벨 20 전후까지는 난이도를 건드리지 않음.</li>
-    <li><strong>나머지 규칙은 전부 손대지 않음.</strong> <span class="sheet-var">fail_spiral</span>·<span class="sheet-var">fail_streak</span>·<span class="sheet-var">hard_cooldown</span>·<span class="sheet-var">default</span>는 현행 값 그대로 전 레벨 공통임.</li>
-    <li><strong>Normal 티어 자체의 난이도는 손대지 않음.</strong> 완료율 98.7%로 가장 안정적인 구간이고 볼륨이 커서 리스크가 큼. 티어 내부가 아니라 티어 배정 주기만 바꿈.</li>
-    <li><strong>Super Hard 비중은 최대 10%를 넘기지 않음.</strong> 중도 종료율이 최대 28%로 유일한 과부하 구간이라 확대 대상이 아님. 이 제약이 판 길이 상한을 결정함.</li>
-    <li><strong><span class="sheet-var">hard_guarantee</span>의 하한을 2로 둠.</strong> 1로 내리면 배분 주기가 2판이 되어 유저가 다음 판 난이도를 학습함.</li>
-  </ol>
-
-  <h3>레벨 구간별 카운터 값</h3>
-  <p>바꾸는 숫자는 <strong>행당 2개</strong>이고 구간은 <strong>5개</strong>임. 아래 비중·판 길이는 라이브 규칙 엔진을 그대로 재현한 시뮬레이션(유저 4,000명 × 300판) 결과임.</p>
+  <div class="step-label">STEP 4</div>
+  <h3>고친 후 KPI — As-Is / To-Be</h3>
+  <p>최상위 구간(레벨 800 이상) 기준임.</p>
   <table>
-    <thead><tr><th>레벨</th><th>hard_g</th><th>sh_g</th><th>Hard</th><th>Super Hard</th><th>Normal</th><th>판 p50</th><th>최장 Normal 연속</th><th>반복 주기</th></tr></thead>
+    <thead><tr><th>KPI</th><th>As-Is</th><th>To-Be</th><th>변화</th></tr></thead>
     <tbody>
-      <tr><td>1 ~ 24</td><td>6 (현행)</td><td>15 (현행)</td><td>12.3%</td><td>6.0%</td><td>81.7%</td><td>52.2초</td><td>6판</td><td>14판</td></tr>
-      <tr><td>25 ~ 99</td><td>5</td><td>15 (현행)</td><td>12.7%</td><td>6.0%</td><td>81.3%</td><td>52.2초</td><td>5판</td><td>12판</td></tr>
-      <tr><td>100 ~ 349</td><td>4</td><td>12</td><td>15.3%</td><td>7.7%</td><td>77.0%</td><td>53.5초</td><td>4판</td><td>10판</td></tr>
-      <tr><td>350 ~ 799</td><td>3</td><td>10</td><td>18.0%</td><td>9.0%</td><td>73.0%</td><td>54.6초</td><td>3판</td><td>8판</td></tr>
-      <tr><td>800 이상</td><td>2</td><td>9</td><td>27.4%</td><td>9.0%</td><td>63.6%</td><td>56.4초</td><td>2판</td><td>6판</td></tr>
-    </tbody>
-  </table>
-  <div class="callout callout-blue">
-    <p><strong>비중은 <span class="sheet-var">1 ÷ (param_1 + 1)</span>보다 항상 낮게 나옴.</strong> Super Hard 보장이 priority 6으로 Hard보다 먼저 걸리고, <span class="sheet-var">hard_cooldown</span> 1판이 그 뒤에 또 끼어들기 때문임. 산식은 상한일 뿐이고 실제 값은 시뮬 기준으로 봐야 함. 현행 <span class="sheet-var">hard_guarantee 6</span>의 시뮬값 12.3%가 실측 12.4%와 일치해 엔진 재현이 검증됨.</p>
-  </div>
-  <div class="callout callout-yellow">
-    <p><strong><span class="sheet-var">hard_guarantee</span>의 하한을 2로 둠.</strong> 카운터 방식은 결정론이라 패턴이 그대로 노출됨. 1로 내리면 <code>NHNHNHNS</code>처럼 <strong>주기 2</strong>가 되어 "다음 판은 어려운 판"이 눈에 보임. 2에서는 주기 6(<code>NNHNNHNNHS</code>)이라 학습이 어려움. 현행 1~24 구간도 이미 주기 14로 결정론적이므로 주기성 자체는 신규 리스크가 아니지만, 주기가 6 미만으로 내려가면 체감이 달라짐.</p>
-  </div>
-
-  <h3>체감 시퀀스 (시뮬 44판 · N=Normal H=Hard S=Super Hard)</h3>
-  <div class="sheet-block">
-    <div class="sheet-block-title">밴드별 실제 배분 순서</div>
-    <div class="sheet-row"><span class="sheet-row-var">1~24</span><span class="sheet-row-desc" style="font-family:monospace">NNNNNNHNNNNNNHNSNNNNNNHNNNNNNHNSNNNNNNHNNNNN</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">25~99</span><span class="sheet-row-desc" style="font-family:monospace">NNNNNHNNNNNHNNNSNNNNNHNNNNNHNNNSNNNNNHNNNNNH</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">100~349</span><span class="sheet-row-desc" style="font-family:monospace">NNNNHNNNNHNNSNNNNHNNNNHNNSNNNNHNNNNHNNSNNNNH</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">350~799</span><span class="sheet-row-desc" style="font-family:monospace">NNNHNNNHNNSNNNHNNNHNNSNNNHNNNHNNSNNNHNNNHNNS</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">800+</span><span class="sheet-row-desc" style="font-family:monospace">NNHNNHNNHSNNHNNHNNHNSNNHNNHNNHNSNNHNNHNNHNSN</span></div>
-  </div>
-  <p>어려운 판이 연달아 붙는 구간이 없음. Hard 뒤에는 <span class="sheet-var">hard_cooldown</span>으로 항상 Normal이 한 판 들어가고, Super Hard도 마찬가지임. <strong>과부하가 누적되는 시퀀스는 구조적으로 발생하지 않음.</strong></p>
-
-  <h3>기대 결과 (시뮬 기준)</h3>
-  <table>
-    <thead><tr><th>지표</th><th>현행</th><th>800+ 밴드 적용 후</th><th>변화</th></tr></thead>
-    <tbody>
-      <tr><td>판 길이 p50</td><td>52.2초</td><td>56.4초</td><td>+8.0%</td></tr>
-      <tr><td>Normal 티어 비중</td><td>81.7%</td><td>63.6%</td><td>−18.1%p</td></tr>
-      <tr><td>판당 평균 reward_hammer</td><td>1.24</td><td>1.45</td><td>+17%</td></tr>
-      <tr><td>부스터 사용률</td><td>44.6%</td><td>50.5%</td><td>+13%</td></tr>
-      <tr><td>연속 8판 소요 시간</td><td>6.9분</td><td>7.7분</td><td>+11%</td></tr>
+      <tr><td>Normal 티어 비중</td><td>81.7%</td><td><strong>63.6%</strong></td><td class="d-down">−18.1%p</td></tr>
+      <tr><td>Hard 티어 비중</td><td>12.3%</td><td><strong>27.4%</strong></td><td class="d-up">+15.1%p</td></tr>
+      <tr><td>Super Hard 티어 비중</td><td>6.0%</td><td><strong>9.0%</strong></td><td class="d-up">+3.0%p</td></tr>
+      <tr><td>판 길이 p50</td><td>52.2초</td><td><strong>56.4초</strong></td><td class="d-up">+8.0%</td></tr>
+      <tr><td>신규 → 기존 램프</td><td>1.25배</td><td><strong>1.35배</strong></td><td class="d-up">+0.10배</td></tr>
+      <tr><td>판당 평균 reward_hammer</td><td>1.24</td><td>1.45</td><td class="d-up">+17%</td></tr>
+      <tr><td>연속 8판 소요 시간</td><td>6.9분</td><td>7.7분</td><td class="d-up">+11%</td></tr>
       <tr><td>판 완료율 (튜토 제외)</td><td>98.0%</td><td>유지</td><td>가드레일</td></tr>
     </tbody>
   </table>
-
-  <h3>목표 수정 — 램프 1.5배는 이 스펙으로 달성 불가</h3>
   <div class="callout callout-yellow">
-    <p><strong>티어 믹스만으로 도달 가능한 판 길이의 물리적 상한은 66초임.</strong> 100% Hard로 채워도 Hard의 실측 p50이 66초이기 때문임. 신규 기준선 41.8초 대비 <strong>최대 1.58배</strong>이고, Super Hard를 안전 범위(≤10%)로 묶으면 실제 상한은 <strong>1.35배</strong>임. 초안의 목표 <strong>1.5~1.6배는 구조적으로 불가능</strong>함.</p>
-  </div>
-  <p>타 3종의 3.4~3.6배는 티어 배정이 아니라 <strong>레벨이 올라갈수록 맵 자체가 커지는 구조</strong>에서 나옴. 판 길이 램프를 그 수준으로 올리려면 카드 수·기믹 수를 레벨에 따라 늘리는 별도 트랙이 필요함. 이 스펙의 역할은 거기까지가 아님.</p>
-  <table>
-    <thead><tr><th>지표</th><th>초안 목표</th><th>수정 목표</th><th>사유</th></tr></thead>
-    <tbody>
-      <tr><td>최상위 밴드 판 p50</td><td>60초</td><td><strong>56~57초</strong></td><td>60초는 hard_g 1(주기 2 노출) 또는 SH 20%(중도 종료 리스크)를 요구함</td></tr>
-      <tr><td>신규 → 기존 램프</td><td>1.5~1.6배</td><td><strong>1.35배</strong></td><td>티어 믹스 상한이 1.58배. 안전 범위 내 최대치가 1.35배</td></tr>
-      <tr><td>Normal 비중</td><td>45~55%</td><td><strong>63% 내외</strong></td><td>위와 동일한 상한 제약</td></tr>
-    </tbody>
-  </table>
-  <div class="callout callout-yellow">
-    <p><strong>전체 평균 Normal 비중은 목표로 잡지 않음.</strong> 레벨 분포가 아직 로그에 없어 밴드 가중 평균을 계산할 수 없음. 판정은 <strong>밴드별로 분리해서</strong> 함.</p>
+    <p><strong>램프 목표를 1.5~1.6배에서 1.35배로 낮춤.</strong> Hard의 실측 판 길이가 66초라 <strong>100% Hard로 채워도 1.58배가 물리적 상한</strong>임. Super Hard를 안전 범위(10% 이하)로 묶으면 실제 상한이 1.35배임. 타 3종의 3.4~3.6배는 티어 배정이 아니라 레벨이 오를수록 맵 자체가 커지는 구조에서 나오는 것이라, 그 수준을 원하면 카드 수·기믹 수를 늘리는 별도 트랙이 필요함.</p>
   </div>
 
-  <h3>연패 구제는 안전망으로 기대하지 않음</h3>
-  <p>시뮬에서 <span class="sheet-var">fail_streak</span>·<span class="sheet-var">fail_spiral</span> 발동률은 현행 <strong>0.2%</strong>, 최상위 밴드에서도 <strong>0.3%</strong>에 그침. 각 티어 중도 종료율이 낮아 2연패 자체가 드물기 때문임. 난이도를 올려도 구제 규칙은 사실상 잠들어 있음. <strong>과부하 방어는 구제 규칙이 아니라 <span class="sheet-var">hard_cooldown</span>과 보장 주기가 담당함</strong>.</p>
-  <div class="callout callout-purple">
-    <p><strong>목표는 판을 길게 만드는 것이 아니라 레벨에 따라 무거워지게 만드는 것임.</strong> 성과 판정은 판 길이 단독이 아니라 D7·D14 리텐션과 세션 수로 함.</p>
-  </div>
+  <h3>보충 — 값을 이렇게 잡은 이유</h3>
+  <ul>
+    <li><strong><span class="sheet-var">hard_guarantee</span>의 하한은 2임.</strong> 1로 내리면 배분 주기가 2판이 되어 <code>N H N H N H</code>가 되고 다음 판 난이도가 눈에 보임. 2에서는 주기가 6이라 학습이 어려움.</li>
+    <li><strong>Super Hard는 10%를 넘기지 않음.</strong> 중도 종료율이 최대 28%로 유일한 과부하 구간임. 이 제약이 판 길이 상한을 결정함.</li>
+    <li><strong>비중은 <span class="sheet-var">1 ÷ (값 + 1)</span>보다 항상 낮게 나옴.</strong> Super Hard 보장이 Hard보다 먼저 걸리고 <span class="sheet-var">hard_cooldown</span>이 그 뒤에 또 끼어들기 때문임. 위 수치는 전부 규칙 엔진 시뮬(유저 4,000명 × 300판) 값이며, 현행 설정의 시뮬값 12.3%가 실측 12.4%와 일치해 재현이 검증됨.</li>
+    <li><strong>연패 구제는 안전망이 아님.</strong> <span class="sheet-var">fail_streak</span>·<span class="sheet-var">fail_spiral</span> 발동률이 현행 0.2%, 적용 후에도 0.3%임. 과부하 방어는 <span class="sheet-var">hard_cooldown</span>과 보장 주기가 담당함.</li>
+  </ul>
 
   <h3>범위 밖</h3>
   <ul>
     <li><strong>튜토리얼 티어 이탈</strong> — 판 미완료의 86.9%가 튜토리얼 티어에서 발생하지만 난이도가 아니라 FTUE 문제임. 별도 트랙에서 다룸.</li>
-    <li><strong>Super Hard 구제장치</strong> — <span class="sheet-var">deck_help_rate 625</span>·<span class="sheet-var">field_help_rate 375</span>·<span class="sheet-var">pity_trigger_count 99</span>로 구제가 사실상 없고 중도 종료율이 최대 28%임. 별도 스펙으로 분리함.</li>
+    <li><strong>Super Hard 구제장치</strong> — SPEC-031로 분리함.</li>
     <li><strong>비활성 규칙 정리</strong> — <span class="sheet-var">win_streak</span> 행은 param_1 99 · in_use FALSE로 꺼져 있음. 이번 스펙에서 되살리지 않음.</li>
   </ul>
 </section>

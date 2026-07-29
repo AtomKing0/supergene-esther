@@ -132,6 +132,11 @@ ul li strong,ol li strong { color:var(--text); }
 .flow-body { flex:1; }
 .flow-body strong { color:var(--text);font-size:0.9rem; }
 .flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+
+.step-label{display:inline-block;font-size:.66rem;font-weight:800;letter-spacing:.12em;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,.3);padding:3px 10px;border-radius:6px;margin-top:34px}
+.step-label+h3{margin-top:8px;color:var(--text);font-size:1.15rem}
+.d-up{color:var(--green);font-weight:700}
+.d-down{color:var(--red);font-weight:700}
 </style>
 </head><body>
 <a href="index.html" class="back-btn">← 목록</a>
@@ -195,85 +200,88 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
   </div>
 
-  <h3>배경</h3>
-  <p>Super Hard 티어만 실패율이 <strong>18.6%</strong>로 Hard(5.9%)의 <strong>3.2배</strong>임. 부스터를 77%가 쓰는데도 다섯 판 중 한 판을 놓침. 반면 이 티어의 구제 파라미터는 <span class="sheet-var">deck_help_rate 625</span>·<span class="sheet-var">field_help_rate 375</span>·<span class="sheet-var">pity_trigger_count 99</span>로, 실질적으로 구제가 없는 상태임.</p>
-
-  <h3>실측 근거 (2026-07-22~28 · FB Instant Games)</h3>
+  <div class="step-label">STEP 1</div>
+  <h3>어디가 문제인가</h3>
+  <p><strong>Super Hard 티어만 구제 수단이 없음.</strong> 실패율이 Hard의 3.2배인데, 부스터를 77%가 쓰는데도 다섯 판 중 한 판을 놓침.</p>
   <table>
-    <thead><tr><th>티어</th><th>판수</th><th>실패율</th><th>부스터 사용률</th><th>실패 시 평균 잔여</th><th>총 필드 카드</th></tr></thead>
+    <thead><tr><th>티어</th><th>판수</th><th>실패율</th><th>부스터 사용률</th><th>실패 시 평균 잔여</th></tr></thead>
     <tbody>
-      <tr><td>20001 Tutorial</td><td>13,444</td><td>0.2%</td><td>6.0%</td><td>7.2장</td><td>13.5장</td></tr>
-      <tr><td>20002 Normal</td><td>49,296</td><td>4.0%</td><td>39.2%</td><td>5.1장</td><td>20.8장</td></tr>
-      <tr><td>20003 Hard</td><td>7,418</td><td>5.9%</td><td>67.1%</td><td>7.1장</td><td>27.5장</td></tr>
-      <tr><td>20004 Super Hard</td><td>3,742</td><td><strong>18.6%</strong></td><td>77.2%</td><td><strong>12.4장</strong></td><td>33.7장</td></tr>
+      <tr><td>20002 Normal</td><td>49,296</td><td>4.0%</td><td>39.2%</td><td>5.1장 / 20.8장</td></tr>
+      <tr><td>20003 Hard</td><td>7,418</td><td>5.9%</td><td>67.1%</td><td>7.1장 / 27.5장</td></tr>
+      <tr><td>20004 Super Hard</td><td>3,742</td><td><strong>18.6%</strong></td><td>77.2%</td><td><strong>12.4장 / 33.7장</strong></td></tr>
     </tbody>
   </table>
-  <p>실패 로그의 <strong>93~95%</strong>가 <span class="sheet-var">remaining_draw_count = 0</span>임. 시간이나 조작이 아니라 덱을 다 쓰고 필드가 남아 끝남.</p>
+  <p>포기율 상위 스테이지는 <strong>전부 Super Hard</strong>임 — CC_0332 34.2% · CC_0384 31.8% · CC_0383 31.6%. 실패 로그의 <strong>93~95%</strong>가 덱 소진(<span class="sheet-var">remaining_draw_count = 0</span>)임.</p>
+  <div class="callout callout-yellow">
+    <p><strong>덱을 몇 장 더 주는 방식은 이 구간에 맞지 않음.</strong> Super Hard는 필드 33.7장 중 <strong>12.4장을 남기고</strong> 짐. 아깝게 지는 게 아니라 대차게 짐. 잔여 3장 이하인 근접 실패는 14.8%뿐이라 덱을 3장 더 줘도 85%는 그대로 실패함. <strong>덱 증량이 아니라 카드 질을 올리는 방향이 맞음.</strong></p>
+  </div>
 
-  <h3>포기율 상위 스테이지 — 전부 Super Hard임</h3>
+  <div class="step-label">STEP 2</div>
+  <h3>그래서 무엇을 고치는가</h3>
+  <p>구제 로직은 <strong>클라이언트에 이미 완성돼 있음</strong>. 다만 Super Hard의 임계값이 사거리 밖이라 한 번도 작동한 적이 없음. <span class="sheet-var">difficulty_tier</span> 시트 <strong>20004 행의 값 3개</strong>만 조정함.</p>
   <table>
-    <thead><tr><th>stage_id</th><th>티어</th><th>판수</th><th>실패율</th><th>실패 시 평균 잔여</th></tr></thead>
+    <thead><tr><th>고치는 것</th><th>내용</th></tr></thead>
     <tbody>
-      <tr><td>CC_0332</td><td>Super Hard</td><td>295</td><td><strong>34.2%</strong></td><td>11.8장</td></tr>
-      <tr><td>CC_0384</td><td>Super Hard</td><td>346</td><td>31.8%</td><td>14.8장</td></tr>
-      <tr><td>CC_0383</td><td>Super Hard</td><td>430</td><td>31.6%</td><td><strong>16.9장</strong></td></tr>
-      <tr><td>CC_0333</td><td>Super Hard</td><td>555</td><td>21.8%</td><td>7.3장</td></tr>
+      <tr><td><span class="sheet-var">deck_help_rate</span></td><td>뽑는 카드를 매칭 가능한 값으로 만들 확률</td></tr>
+      <tr><td><span class="sheet-var">field_help_rate</span></td><td>새로 뒤집히는 카드를 현재 카드 ±1로 보정할 확률</td></tr>
+      <tr><td><span class="sheet-var">pity_trigger_count</span></td><td>연속 실패 N회 시 확률을 무시하고 강제 구제</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <p><strong>신규 시스템도, 클라이언트 코드 변경도 없음.</strong> Tutorial·Normal·Hard 행은 손대지 않고, 맵 데이터도 수정하지 않음. 롤백은 같은 3셀을 되돌리는 것으로 즉시 됨.</p>
+  </div>
+
+  <div class="step-label">STEP 3</div>
+  <h3>고치는 부분 — As-Is / To-Be</h3>
+  <table>
+    <thead><tr><th>컬럼</th><th>As-Is</th><th>To-Be</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sheet-var">deck_help_rate</span></td><td>625 <em>(6.25%)</em></td><td><strong>1500 <em>(15%)</em></strong></td><td>Hard는 3000. 그 절반 수준</td></tr>
+      <tr><td><span class="sheet-var">field_help_rate</span></td><td>375 <em>(3.75%)</em></td><td><strong>900 <em>(9%)</em></strong></td><td>Hard는 2450. 그 37% 수준</td></tr>
+      <tr><td><span class="sheet-var">pity_trigger_count</span></td><td>99 <em>(도달 불가)</em></td><td><strong>5</strong></td><td>Normal 5 · Hard 8</td></tr>
     </tbody>
   </table>
   <div class="callout callout-yellow">
-    <p><strong>덱을 몇 장 더 주는 방식은 이 구간에 맞지 않음.</strong> Super Hard는 필드 33.7장 중 <strong>12.4장을 남기고</strong> 짐. 잔여 3장 이하인 근접 실패는 14.8%뿐이라 덱을 3장 더 줘도 85%는 그대로 실패함. 반대로 덱 추가가 잘 먹는 Normal은 이미 실패율이 4.0%라 구제할 대상이 아님. <strong>덱 증량이 아니라 카드 질을 올리는 방향이 맞음.</strong></p>
+    <p><strong>99는 꺼진 값이 아니라 닿지 않는 값임.</strong> 코드 주석은 <span class="sheet-var">0 = pity 비활성</span>이라 적혀 있어 99가 켜져 있는 것처럼 보이지만, Super Hard 한 판의 필드 카드가 33.7장이라 카운터가 99까지 쌓일 수 없음. 임계값을 사거리 안으로 내리면 기존 코드가 그대로 동작함.</p>
   </div>
 
-  <h3>확정 사항</h3>
-  <ol>
-    <li><strong>신규 시스템을 만들지 않음.</strong> 구제 로직은 클라이언트에 이미 완성돼 있음. <span class="sheet-var">difficulty_tier</span> 20004 행의 값 3개만 조정함.</li>
-    <li><strong>Super Hard 티어만 변경함.</strong> Tutorial·Normal·Hard 행은 손대지 않음.</li>
-    <li><strong>맵 데이터를 수정하지 않음.</strong> 고포기 스테이지의 맵 자체는 그대로 두고 티어 파라미터로만 완화함.</li>
-    <li><strong>티어 구분을 가드레일로 둠.</strong> Hard 대비 실패율 배수 <strong>2.0배 이상</strong>을 유지함. 이 선을 넘으면 Super Hard가 Hard와 구분되지 않음.</li>
-    <li><strong>덱 증량·이어하기 지면은 이 스펙에 포함하지 않음.</strong> 범위 밖 항목으로 분리함.</li>
-  </ol>
-
-  <h3>변경 값</h3>
-  <div class="sheet-block">
-    <div class="sheet-block-title">difficulty_tier · key_number 20004 (Super Hard)</div>
-    <div class="sheet-row"><span class="sheet-row-var">deck_help_rate</span><span class="sheet-row-default">625 → 1500</span><span class="sheet-row-unit">1% = 100</span><span class="sheet-row-desc">뽑는 카드를 매칭 가능한 값으로 만들 확률 (6.25% → 15%)</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">field_help_rate</span><span class="sheet-row-default">375 → 900</span><span class="sheet-row-unit">1% = 100</span><span class="sheet-row-desc">새로 뒤집히는 카드를 현재 카드 ±1로 보정할 확률 (3.75% → 9%)</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">pity_trigger_count</span><span class="sheet-row-default">99 → 5</span><span class="sheet-row-unit">회</span><span class="sheet-row-desc">연속 실패 N회 시 확률을 무시하고 강제 구제</span></div>
+  <div class="step-label">STEP 4</div>
+  <h3>고친 후 KPI — As-Is / To-Be</h3>
+  <table>
+    <thead><tr><th>KPI</th><th>As-Is</th><th>To-Be</th><th>변화</th></tr></thead>
+    <tbody>
+      <tr><td>Super Hard 실패율</td><td>18.6%</td><td><strong>16.0%</strong></td><td class="d-down">−2.6%p</td></tr>
+      <tr><td>실패 시 평균 잔여</td><td>12.4장</td><td><strong>10장 내외</strong></td><td class="d-down">−2.4장</td></tr>
+      <tr><td>CC_0332</td><td>34.2%</td><td>29.5%</td><td class="d-down">−4.7%p</td></tr>
+      <tr><td>CC_0384</td><td>31.8%</td><td>27.4%</td><td class="d-down">−4.4%p</td></tr>
+      <tr><td>CC_0383</td><td>31.6%</td><td>27.2%</td><td class="d-down">−4.4%p</td></tr>
+      <tr><td>Hard 대비 실패율 배수</td><td>3.2배</td><td>2.7배</td><td>가드레일 2.0배</td></tr>
+      <tr><td>전체 판 완료율</td><td>95.7%</td><td>95.9%</td><td class="d-up">+0.13%p</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-yellow">
+    <p><strong>전체 지표 기여는 +0.13%p로 작음.</strong> Super Hard가 전체 판의 5.1%뿐이라 무대 자체가 작기 때문임. 이 스펙의 성과는 전체 완료율이 아니라 <strong>고포기 스테이지 개별 실패율</strong>로 판정함. SPEC-029 적용 시 Super Hard 비중이 6.0% → 9.0%로 올라가 같은 조치의 효과가 1.5배가 되므로 함께 배포하는 것이 바람직함.</p>
   </div>
 
-  <h3>후보 비교 (Super Hard 실맵 44개 시뮬)</h3>
+  <h3>보충 — 값을 이렇게 잡은 이유</h3>
+  <p>Super Hard 실맵 44개(필드 평균 33.0장 · 덱 평균 13.1장)에 클라이언트 로직을 이식해 후보를 비교함.</p>
   <table>
     <thead><tr><th>deck / field / pity</th><th>상대 실패 감소</th><th>Hard 대비 도움 수준</th><th>판정</th></tr></thead>
     <tbody>
       <tr><td>625 / 375 / 99</td><td>—</td><td>0%</td><td>현행</td></tr>
-      <tr><td>625 / 375 / 8 (pity만)</td><td>−6%</td><td>24%</td><td>효과 미미</td></tr>
-      <tr><td>1250 / 750 / 6</td><td>−10%</td><td>40%</td><td>보수적 대안</td></tr>
+      <tr><td>625 / 375 / 8 <em>(pity만)</em></td><td>−6%</td><td>24%</td><td>효과 미미</td></tr>
+      <tr><td>1250 / 750 / 6</td><td>−10%</td><td>40%</td><td>보수적 대안 · 1차 롤백 지점</td></tr>
       <tr><td><strong>1500 / 900 / 5</strong></td><td><strong>−14%</strong></td><td><strong>54%</strong></td><td><strong>확정</strong></td></tr>
       <tr><td>2000 / 1200 / 6</td><td>−16%</td><td>61%</td><td>다소 과함</td></tr>
       <tr><td>2500 / 1500 / 5</td><td>−23%</td><td>89%</td><td>티어 구분 소멸</td></tr>
-      <tr><td>3000 / 2450 / 8 (Hard 값)</td><td>−26%</td><td>100%</td><td>티어 의미 없음</td></tr>
+      <tr><td>3000 / 2450 / 8 <em>(Hard 값)</em></td><td>−26%</td><td>100%</td><td>티어 의미 없음</td></tr>
     </tbody>
   </table>
-  <div class="callout callout-blue">
-    <p><strong><span class="sheet-var">pity_trigger_count</span>만 내리는 안은 효과가 없음.</strong> 99 → 8로 내려도 상대 감소가 6% 남짓임. 카운터가 덱·필드 실패를 함께 먹는데 <span class="sheet-var">deck_help_rate</span>가 6.25%라 도움 카드 자체가 가뭄이어서, pity가 한 번 구제해도 곧바로 원래 상태로 돌아감. <strong>덱 확률을 함께 올려야 실질 효과가 남음.</strong></p>
-  </div>
-
-  <h3>기대 결과</h3>
-  <table>
-    <thead><tr><th>지표</th><th>현행</th><th>적용 후</th></tr></thead>
-    <tbody>
-      <tr><td>Super Hard 실패율</td><td>18.6%</td><td>16.0%</td></tr>
-      <tr><td>Hard 대비 실패율 배수</td><td>3.2배</td><td>2.7배 (가드레일 2.0배)</td></tr>
-      <tr><td>실패 시 평균 잔여</td><td>12.4장</td><td>10장 내외</td></tr>
-      <tr><td>CC_0332</td><td>34.2%</td><td>29.5%</td></tr>
-      <tr><td>CC_0384</td><td>31.8%</td><td>27.4%</td></tr>
-      <tr><td>CC_0383</td><td>31.6%</td><td>27.2%</td></tr>
-      <tr><td>전체 판 완료율</td><td>95.7%</td><td>95.9%</td></tr>
-    </tbody>
-  </table>
-  <div class="callout callout-yellow">
-    <p><strong>전체 지표 기여는 +0.13%p로 작음.</strong> Super Hard가 전체 판의 5.1%뿐이라 무대 자체가 작기 때문임. 이 스펙의 성과는 전체 완료율이 아니라 <strong>고포기 스테이지 개별 실패율</strong>로 판정함. SPEC-029 적용 시 Super Hard 비중이 6.0% → 9.0%로 올라가 같은 조치의 효과가 1.5배가 되므로, 함께 배포하는 것이 바람직함.</p>
-  </div>
+  <ul>
+    <li><strong><span class="sheet-var">pity_trigger_count</span>만 내리는 안은 효과가 없음.</strong> 99 → 8로 내려도 상대 감소가 6% 남짓임. 카운터가 덱·필드 실패를 함께 먹는데 <span class="sheet-var">deck_help_rate</span>가 6.25%라 도움 카드 자체가 가뭄이어서, pity가 한 번 구제해도 곧바로 원래 상태로 돌아감. 덱 확률을 함께 올려야 실질 효과가 남음.</li>
+    <li><strong>티어 구분이 상한을 결정함.</strong> Hard 값까지 올리면 Super Hard가 Hard와 구분되지 않음. Hard 대비 도움 수준 54%가 "어렵되 손 놓게 두지는 않는" 위치임.</li>
+    <li><strong>시뮬은 상대 비교에만 사용함.</strong> 부스터(사용률 77%)와 런타임 기믹 주입을 모델에 포함하지 않았고 맵 생성기는 축약 모델로 대체함. 위 KPI 수치는 상대 감소율을 실측에 곱한 값이며 실제 폭은 배포 후 확정됨.</li>
+  </ul>
 
   <h3>범위 밖</h3>
   <ul>
