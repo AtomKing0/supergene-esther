@@ -945,7 +945,7 @@ flowchart TD
   <table>
     <thead><tr><th>이벤트코드</th><th>발화 시점</th><th>data 필드 (핵심)</th></tr></thead>
     <tbody>
-      <tr><td><code>5440_EVENT_SHADOW_CHASE_SLOT_OPEN</code></td><td>매 로비에서 조건 체크</td><td>cycle_id, window_sec, target_clear</td></tr>
+      <tr><td><code>5440_EVENT_SHADOW_CHASE_SLOT_OPEN</code></td><td>매 로비에서 조건 체크 → <strong>충족 시 발화</strong><br><small>미충족이면 미발화</small></td><td>cycle_id, window_sec, target_clear</td></tr>
       <tr><td><code>5441_EVENT_SHADOW_CHASE_ACTIVATE</code></td><td>발동 연출을 <strong>끝까지 본 경우</strong><br><small>미발화 = 연출 도중 앱 종료</small></td><td>cycle_id, <strong>fx_watch_sec</strong></td></tr>
       <tr><td><code>5442_EVENT_SHADOW_CHASE_ROUND_CLEAR</code></td><td>사이클 중 판 클리어</td><td>cycle_id, round_idx, clear_count, elapsed_sec, <strong>remain_sec</strong>, stage_id, play_time</td></tr>
       <tr><td><code>5444_EVENT_SHADOW_CHASE_FAIL</code></td><td>타이머 만료</td><td>cycle_id, rounds_cleared, extended</td></tr>
@@ -980,6 +980,7 @@ flowchart TD
       <li><code>stage_id</code>·<code>play_time</code> — <code>2400_FINISH_RESULT</code>와 동일 필드명</li>
       <li><code>5447</code> — <code>impression</code>은 <strong>사이클당 다회</strong>(프리레벨 팝업 열 때마다). 클릭률 = <code>watch_start ÷ impression</code>. 연장 성공 여부는 <code>4210_RV_FINISH</code>/<code>4220_RV_ERROR</code> 조인 → <strong><code>LogRVPosition</code>에 <code>shadow_chase_extend</code> 추가 필수</strong></li>
       <li><strong><code>5449.remain_sec</code> 분포가 <code>duration_sec</code>/<code>total_rounds</code> 밸런싱의 핵심 지표</strong></li>
+      <li><code>5440</code>은 <strong>조건 충족 시에만 발화</strong> — <code>window_sec</code>·<code>target_clear</code>가 슬롯이 실제로 열릴 때만 존재하는 값이기 때문. 따라서 <strong>참여율 = <code>5441 ÷ 5440</code></strong>이 그대로 성립함(분모가 체크 횟수로 부풀지 않음)</li>
     </ul>
   </div>
   <div class="note"><strong>활용:</strong> <code>5441÷5440</code>=참여율 · <code>5441→5449</code>=완주율(사전 추정 ~40% 검증) · <strong><code>5449.remain_sec</code> 분포=난이도 밸런싱</strong> · <code>5447</code> <code>watch_start÷impression</code>=연장 클릭률 · <code>5449.extended</code>=연장 구제율 · 해머 발행·소진=<code>9402</code>+<code>8102</code> · 창 안/밖 판당 RV=<code>5442</code>×<code>4210</code> 조인. 트랙 계열(2차)은 마스터 §9 참조.</div>
