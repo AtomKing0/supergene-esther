@@ -1,0 +1,271 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개발자 Q&amp;A — FB 대시보드 빅쿼리 구조</title>
+<style>
+:root{--bg:#0e1117;--card:#161b22;--line:#2a313c;--tx:#e6edf3;--dim:#8b949e;--acc:#58a6ff;--raw:#f0883e;--stat:#3fb950;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.65;padding:0 16px 80px}
+.wrap{max-width:920px;margin:0 auto}
+h1{font-size:26px;margin:32px 0 6px}
+.sub{color:var(--dim);font-size:14px;margin-bottom:28px}
+h2{font-size:20px;margin:40px 0 4px;padding-top:14px;border-top:1px solid var(--line)}
+.q-lead{color:var(--acc);font-weight:700;font-size:15px;margin:2px 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+.big{font-size:18px;font-weight:800}
+.hl{color:#ffd866}
+.pipe{display:flex;flex-direction:column;gap:0;margin:16px 0;font-size:14px}
+.step{display:flex;align-items:flex-start;gap:12px;padding:10px 0}
+.step .ic{flex:0 0 34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.cron{background:#1f2a44;color:#79c0ff;border:1px solid #2f4570}
+.usr{background:#26301f;color:#7ee787;border:1px solid #38512b}
+.arrow{color:var(--dim);text-align:center;font-size:16px;margin:-2px 0 -2px 16px}
+.step b{font-size:14px} .step .d{color:var(--dim);font-size:13px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--dim);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+td.num{color:var(--dim);width:30px} td.desc{color:var(--dim)}
+.bdg{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:.03em}
+.bdg.raw{background:rgba(240,136,62,.16);color:var(--raw)}
+.bdg.stat{background:rgba(63,185,80,.16);color:var(--stat)}
+details.q{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:8px 0}
+details.q summary{cursor:pointer;padding:11px 14px;font-weight:600;font-size:13.5px;user-select:none}
+details.q[open] summary{border-bottom:1px solid var(--line)}
+pre{margin:0;padding:14px 16px;overflow:auto;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:12px;line-height:1.5;color:#c9d1d9;white-space:pre-wrap}
+.ba{display:grid;grid-template-columns:1fr auto auto;gap:2px 18px;align-items:center;font-size:13.5px}
+.ba .h{color:var(--dim);font-size:12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.ba .b{color:var(--raw);font-weight:700;text-align:right} .ba .a{color:var(--stat);font-weight:700;text-align:right}
+.ba .tot{border-top:1px solid var(--line);padding-top:8px;font-weight:800;font-size:15px}
+.note{color:var(--dim);font-size:12.5px;margin-top:10px}
+code{background:#22272e;padding:1px 5px;border-radius:4px;font-size:12px}
+.foot{color:var(--dim);font-size:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:14px}
+</style></head><body><div class="wrap">
+<h1>FB 대시보드 · 빅쿼리 구조 Q&amp;A</h1>
+<div class="sub">솔리테어 시티 저니 FB 퍼널 대시보드 · 개발자 문의 응답 · 갱신 2026-07-30</div>
+
+<h2>Q1. 대시보드 진입 시 빅쿼리가 실시간으로 호출되나?</h2>
+<div class="q-lead">아니요 — 진입 시 빅쿼리 호출 0건임</div>
+<div class="card">
+<div class="big">대시보드는 <span class="hl">정적 HTML</span>(GitHub Pages)이고, 데이터는 빌드 시점에 HTML 안에 <span class="hl">JSON으로 박제</span>돼 있음.</div>
+<div style="margin-top:8px;color:var(--dim);font-size:14px">브라우저는 그 JSON을 렌더만 함. 화면 숫자 = <b>마지막 크론 빌드 스냅샷</b>(최신 정시분, 최대 ~1시간 지연). 새로고침해도 BQ 안 감 — 다음 크론이 파일을 교체해야 갱신됨.</div>
+<div class="pipe">
+<div class="step"><div class="ic cron">CRON</div><div><b>launchd 매 정시</b> (01~07시 스킵) <span class="d">— 하루 17회</span></div></div>
+<div class="arrow">▼</div>
+<div class="step"><div class="ic cron">1</div><div><b>fb_dashboard_extract.py</b><div class="d">여기서만 BigQuery 호출 → /tmp/fb_dash_daily.json</div></div></div>
+<div class="arrow">▼</div>
+<div class="step"><div class="ic cron">2</div><div><b>fb_dashboard_build.py</b><div class="d">JSON을 20_fb_funnel_dashboard.html에 인라인 임베드</div></div></div>
+<div class="arrow">▼</div>
+<div class="step"><div class="ic cron">3</div><div><b>fb_dashboard_deploy.sh</b><div class="d">supergene-esther(GitHub Pages)로 push</div></div></div>
+<div class="arrow">▼</div>
+<div class="step"><div class="ic usr">USER</div><div><b>대시보드 열람</b><div class="d">정적 HTML + 임베드 JSON 렌더 — 빅쿼리 접근 없음</div></div></div>
+</div>
+<div class="note">→ 대시보드 조회수는 BQ 비용과 무관. 비용은 오직 <b>크론 빌드 횟수 × 쿼리</b>에서만 발생. 그래서 비용 완화가 ①쿼리를 stat 적재본으로 ②새벽 빌드 off ③재스캔 제거에 집중됨.</div>
+</div>
+
+<h2>Q2. 전체 쿼리 (SQL 형태)</h2>
+<div class="q-lead">풀 추출 1회 = 고유 쿼리 159개 · 실질 쿼리 셰이프 11종</div>
+<div class="note" style="margin-bottom:6px">대부분 날짜창·국가필터만 다른 동일 패턴 반복임. 아래는 셰이프별 대표 + 실제 캡처 SQL 전문(펼치기).</div>
+<table><thead><tr><th>#</th><th>셰이프</th><th>소스</th><th>용도</th></tr></thead><tbody>
+<tr><td class="num">1</td><td><b>daily() — 일별 DAU/NRU/판수 + 로딩 p50</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">일별 세그 지표 한 방. data(JSON) 스캔이라 가장 무거움(1회 ~4GB)</td></tr>
+<tr><td class="num">2</td><td><b>session_metrics — 세션수·세션타임</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">유저-일 max 세션타임 평균(PLAYTIME)</td></tr>
+<tr><td class="num">3</td><td><b>retention_matrix — 리텐션 코호트 조인</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">D1~D14. sol은 이제 RU만 raw, NRU는 stat</td></tr>
+<tr><td class="num">4</td><td><b>org_filter — 오가닉 판별</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">최초 로그인 소셜 null 유저 집합</td></tr>
+<tr><td class="num">5</td><td><b>entry_segments — 진입 지면 세그먼트</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">FBS 진입 지면(Meta배포 vs 자체)</td></tr>
+<tr><td class="num">6</td><td><b>기타:WITH u AS ( SELECT player_id, MAX(IF(eve</b></td><td><span class="bdg raw">RAW</span></td><td class="desc"></td></tr>
+<tr><td class="num">7</td><td><b>stat 리텐션 — 사다리·D1</b></td><td><span class="bdg stat">STAT</span></td><td class="desc">적재본 읽기(managed-query 산출본). raw 조인 대체</td></tr>
+<tr><td class="num">8</td><td><b>wau_window — WAU</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">최근 7일 활성 유저</td></tr>
+<tr><td class="num">9</td><td><b>deco/city — 꾸미기 진척</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">도시·꾸미기 완료 유저</td></tr>
+<tr><td class="num">10</td><td><b>deco/city — 꾸미기 진척</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">도시·꾸미기 완료 유저</td></tr>
+<tr><td class="num">11</td><td><b>stat 코어 — 권역 일별 카운트</b></td><td><span class="bdg stat">STAT</span></td><td class="desc">DAU/NRU/판수/첫터치 적재본 읽기</td></tr>
+</tbody></table>
+<div style="margin-top:18px"><b style="font-size:14px">셰이프별 실제 SQL (실행 후킹 캡처본)</b></div>
+<details class="q"><summary><span class="bdg raw">RAW</span> daily() — 일별 DAU/NRU/판수 + 로딩 p50</summary><pre>WITH ev AS (
+      SELECT log_date, player_id, event,
+        CAST(JSON_EXTRACT_SCALAR(data,&#x27;$.time&#x27;) AS INT64) AS t,
+        CAST(JSON_EXTRACT_SCALAR(data,&#x27;$.request_time&#x27;) AS INT64) AS rt,
+        MAX(IF(event=&#x27;1000_LOGIN_COMPLETE&#x27; AND logincount_total=1,1,0))
+          OVER(PARTITION BY log_date,player_id) AS is_nru,
+        MAX(IF(event=&#x27;1000_LOGIN_COMPLETE&#x27;,1,0))
+          OVER(PARTITION BY log_date,player_id) AS has_login
+      FROM `game-log-359704.raw.cozy_tiles_prod`
+      WHERE log_date BETWEEN DATE_SUB(CURRENT_DATE(&#x27;Asia/Seoul&#x27;),INTERVAL 3 DAY) AND DATE_SUB(CURRENT_DATE(&#x27;Asia/Seoul&#x27;),INTERVAL 1 DAY)
+        AND is_dev IS DISTINCT FROM TRUE AND player_id&gt;0
+    ),
+    pl AS (  -- 유저-일당 로딩값(ld)
+      SELECT log_date, player_id, MAX(is_nru) is_nru, MAX(has_login) has_login, CASE WHEN MIN(IF(event=&#x27;2100_GAMEPLAY_START&#x27;, rt, NULL)) IS NOT NULL AND MIN(IF(event=&#x27;1010_LOAD_COMPLETE&#x27; AND t IS NOT NULL, rt - t, NULL)) IS NOT NULL AND MIN(IF(event=&#x27;2100_GAMEPLAY_START&#x27;, rt, NULL)) - (MIN(IF(event=&#x27;1010_LOAD_COMPLETE&#x27; AND t IS NOT NULL, rt - t, NULL))) &gt;= 0 THEN MIN(IF(event=&#x27;2100_GAMEPLAY_START&#x27;, rt, NULL)) - (MIN(IF(event=&#x27;1010_LOAD_COMPLETE&#x27; AND t IS NOT NULL, rt - t, NULL))) END AS ld
+      FROM ev GROUP BY log_date, player_id
+    ),
+    ldd AS (  -- 일별 로딩 중앙값(세그별)
+      SELECT log_date,
+        APPROX_QUANTILES(ld,100)[OFFSET(50)]                              AS load_md,
+        APPROX_QUANTILES(IF(is_nru=1,ld,NULL),100)[OFFSET(50)]            AS nru_load_md,
+        APPROX_QUANTILES(IF(is_nru=0 AND has_login=1,ld,NULL),100)[OFFSET(50)] AS ru_load_md
+      FROM pl GROUP BY log_date
+    )
+    SELECT m.log_date,
+      m.nru_u, m.nru_g, m.nru_rvf, m.nru_start, m.nru_touch, m.nru_finish,
+      m.ru_u, m.ru_g, m.ru_rvf, m.nru_fc, m.ru_fc,
+      m.dau_u, m.dau_g, m.dau_fc, m.dau_rvf,
+      ldd.load_md, ldd.nru_load_md, ldd.ru_load_md
+    FROM (
+      SELECT log_date,
+        COUNT(DISTINCT IF(is_nru=1,player_id,NULL))               AS nru_u,
+        COUNTIF(event=&#x27;2100_GAMEPLAY_START&#x27; AND is_nru=1)         AS nru_g,
+        COUNTIF(event LIKE &#x27;%RV_FINISH%&#x27; AND is_nru=1)            AS nru_rvf,
+        COUNT(DISTINCT IF(event=&#x27;2100_GAMEPLAY_START&#x27; AND is_nru=1,player_id,NULL)) AS nru_start,
+        COUNT(DISTINCT IF(event=&#x27;2115_GAMEPLAY_FIRST_TOUCH&#x27; AND is_nru=1,player_id,NULL))            AS nru_touch,
+        COUNT(DISTINCT IF(event=&#x27;2300_GAMEPLAY_FINISH&#x27; AND is_nru=1,player_id,NULL)) AS nru_finish,
+        COUNT(DISTINCT IF(is_nru=0 AND has_login=1,player_id,NULL))               AS ru_u,
+        COUNTIF(event=&#x27;2100_GAMEPLAY_START&#x27; AND is_nru=0 AND has_login=1)         AS ru_g,
+        COUNTIF(event LIKE &#x27;%RV_FINISH%&#x27; AND is_nru=0 AND has_login=1)            AS ru_rvf,
+        COUNTIF(event=&#x27;2300_GAMEPLAY_FINISH&#x27; AND is_nru=1)                   AS nru_fc,
+        COUNTIF(event=&#x27;2300_GAMEPLAY_FINISH&#x27; AND is_nru=0 AND has_login=1)   AS ru_fc,
+        COUNT(DISTINCT IF(has_login=1,player_id,NULL))                       AS dau_u,
+        COUNTIF(event=&#x27;2100_GAMEPLAY_START&#x27; AND has_login=1)                 AS dau_g,
+        COUNTIF(event=&#x27;2300_GAMEPLAY_FINISH&#x27; AND has_login=1)                AS dau_fc,
+        COUNTIF(event LIKE &#x27;%RV_FINISH%&#x27; AND has_login=1)                    AS dau_rvf
+      FROM ev GROUP BY 1
+    ) m LEFT JOIN ldd USING(log_date) ORDER BY m.log_date</pre></details>
+<details class="q"><summary><span class="bdg raw">RAW</span> session_metrics — 세션수·세션타임</summary><pre>WITH u AS (
+      SELECT log_date, player_id,
+        MAX(IF(event=&#x27;1000_LOGIN_COMPLETE&#x27; AND logincount_total=1,1,0)) AS is_nru,
+        MAX(IF(event=&#x27;1000_LOGIN_COMPLETE&#x27;,logincount_today,NULL))      AS sessions,
+        MAX(IF(event LIKE &#x27;%PLAYTIME%&#x27;,
+               CAST(JSON_EXTRACT_SCALAR(data,&#x27;$.session_time&#x27;) AS INT64),NULL)) AS max_pt
+      FROM `game-log-359704.raw.cozy_tiles_prod`
+      WHERE log_date BETWEEN DATE(&#x27;2026-01-04&#x27;) AND DATE_ADD(DATE(&#x27;2026-01-04&#x27;),INTERVAL 20 DAY)
+        AND is_dev IS DISTINCT FROM TRUE AND player_id&gt;0
+      GROUP BY 1,2
+    )
+    SELECT
+      AVG(IF(is_nru=1,sessions,NULL))                              AS nru_sess,
+      AVG(IF(is_nru=1,max_pt,NULL))                                AS nru_pt,
+      AVG(IF(is_nru=0,sessions,NULL))                              AS ru_sess,
+      AVG(IF(is_nru=0,max_pt,NULL))                                AS ru_pt,
+      AVG(sessions)                                                AS dau_sess,
+      AVG(max_pt)                                                  AS dau_pt
+    FROM u</pre></details>
+<details class="q"><summary><span class="bdg raw">RAW</span> retention_matrix — 리텐션 코호트 조인</summary><pre>WITH nru AS (
+      SELECT DISTINCT log_date AS d, player_id
+      FROM `game-log-359704.raw.cozy_tiles_prod`
+      WHERE log_date BETWEEN DATE(&#x27;2026-01-04&#x27;) AND DATE_ADD(DATE(&#x27;2026-01-04&#x27;),INTERVAL 20 DAY)
+        AND event=&#x27;1000_LOGIN_COMPLETE&#x27; AND logincount_total=1
+        AND is_dev IS DISTINCT FROM TRUE AND player_id&gt;0
+    ),
+    act AS (
+      SELECT DISTINCT log_date AS d, player_id
+      FROM `game-log-359704.raw.cozy_tiles_prod`
+      WHERE log_date BETWEEN DATE_ADD(DATE(&#x27;2026-01-04&#x27;),INTERVAL 1 DAY)
+                         AND DATE_ADD(DATE_ADD(DATE(&#x27;2026-01-04&#x27;),INTERVAL 20 DAY),INTERVAL 1 DAY)
+        AND event=&#x27;1000_LOGIN_COMPLETE&#x27;  -- 복귀=로그인 기준 (루커 정합, 7/12 확정)
+        AND is_dev IS DISTINCT FROM TRUE AND player_id&gt;0
+    )
+    SELECT n.d AS cohort_date,
+      COUNT(DISTINCT n.player_id)                                  AS cohort_n,
+      COUNT(DISTINCT IF(a.player_id IS NOT NULL,n.player_id,NULL)) AS ret_n
+    FROM nru n
+    LEFT JOIN act a
+      ON a.player_id=n.player_id AND a.d=DATE_ADD(n.d,INTERVAL 1 DAY)
+    GROUP BY 1 ORDER BY 1</pre></details>
+<details class="q"><summary><span class="bdg raw">RAW</span> org_filter — 오가닉 판별</summary><pre>WITH coh AS (
+      SELECT DISTINCT log_date AS d, player_id FROM `game-log-359704.raw.cozy_tiles_prod`
+      WHERE log_date BETWEEN DATE_SUB(CURRENT_DATE(&#x27;Asia/Seoul&#x27;),INTERVAL 28 DAY) AND DATE_SUB(CURRENT_DATE(&#x27;Asia/Seoul&#x27;),INTERVAL 1 DAY)
+        AND event=&#x27;1000_LOGIN_COMPLETE&#x27; AND logincount_total=1
+        AND is_dev IS DISTINCT FROM TRUE AND player_id&gt;0) SELECT d, COUNT(DISTINCT player_id) AS n FROM coh GROUP BY 1</pre></details>
+<details class="q"><summary><span class="bdg raw">RAW</span> entry_segments — 진입 지면 세그먼트</summary><pre>WITH coh AS (
+      SELECT DISTINCT log_date AS d, player_id FROM `game-log-359704.raw.cozy_tiles_prod`
+      WHERE log_date BETWEEN DATE(&#x27;2026-01-04&#x27;) AND DATE_ADD(DATE(&#x27;2026-01-04&#x27;),INTERVAL 16 DAY)
+        AND event=&#x27;1000_LOGIN_COMPLETE&#x27; AND logincount_total=1 AND country=&#x27;US&#x27; AND player_id IN (SELECT player_id FROM `game-log-359704.raw.cozy_tiles_prod` WHERE log_date BETWEEN DATE(&#x27;2026-01-04&#x27;) AND DATE_ADD(DATE(&#x27;2026-01-04&#x27;),INTERVAL 16 DAY) AND event=&#x27;1000_LOGIN_COMPLETE&#x27; AND logincount_total=1 AND JSON_EXTRACT_SCALAR(entrypoint_join,&#x27;$.payload.social&#x27;) IS NULL AND is_dev IS DISTINCT FROM TRUE AND player_id&gt;0)
+        AND is_dev IS DISTINCT FROM TRUE AND player_id&gt;0) SELECT d, COUNT(DISTINCT player_id) AS n FROM coh GROUP BY 1</pre></details>
+<details class="q"><summary><span class="bdg raw">RAW</span> 기타:WITH u AS ( SELECT player_id, MAX(IF(eve</summary><pre>WITH u AS (
+      SELECT player_id,
+        MAX(IF(event=&#x27;1000_LOGIN_COMPLETE&#x27; AND logincount_total=1,1,0)) AS is_nru,
+        MAX(IF(event=&#x27;1000_LOGIN_COMPLETE&#x27;,1,0)) AS has_login,
+        COUNTIF(event=&#x27;2100_GAMEPLAY_START&#x27;) AS g,
+        COUNTIF(event=&#x27;2300_GAMEPLAY_FINISH&#x27;) AS f,
+        COUNTIF(event LIKE &#x27;%RV_FINISH%&#x27;) AS rvf
+      FROM `game-log-359704.raw.solitaire_city_journey`
+      WHERE log_date BETWEEN DATE(&#x27;2026-07-10&#x27;) AND CURRENT_DATE(&#x27;Asia/Seoul&#x27;)
+        AND is_dev IS DISTINCT FROM TRUE AND player_id&gt;0
+      GROUP BY 1
+    )
+    SELECT
+      COUNTIF(has_login=1) AS dau_n, SUM(IF(has_login=1,g,0)) AS dau_g,
+      SUM(IF(has_login=1,f,0)) AS dau_f, SUM(IF(has_login=1,rvf,0)) AS dau_rvf,
+      COUNTIF(is_nru=1) AS nru_n, SUM(IF(is_nru=1,g,0)) AS nru_g,
+      SUM(IF(is_nru=1,f,0)) AS nru_f, SUM(IF(is_nru=1,rvf,0)) AS nru_rvf,
+      COUNTIF(is_nru=0 AND has_login=1) AS ru_n,
+      SUM(IF(is_nru=0 AND has_login=1,g,0)) AS ru_g,
+      SUM(IF(is_nru=0 AND has_login=1,f,0)) AS ru_f, SUM(IF(is_nru=0 AND has_login=1,rvf,0)) AS ru_rvf
+    FROM u</pre></details>
+<details class="q"><summary><span class="bdg stat">STAT</span> stat 리텐션 — 사다리·D1</summary><pre>SELECT join_date, SUM(nru_count) cn, SUM(nru_count*d1) rn
+            FROM `game-log-359704.stat.solitaire_city_journey_nru_retention3`
+            WHERE join_date BETWEEN DATE(&#x27;2026-07-13&#x27;) AND DATE_ADD(DATE(&#x27;2026-07-13&#x27;),INTERVAL 20 DAY) GROUP BY 1 ORDER BY 1</pre></details>
+<details class="q"><summary><span class="bdg raw">RAW</span> wau_window — WAU</summary><pre>SELECT COUNT(DISTINCT player_id) AS wau
+    FROM `game-log-359704.raw.solitaire_city_journey`
+    WHERE log_date BETWEEN DATE_ADD(DATE(&#x27;2026-07-13&#x27;),INTERVAL 8 DAY) AND DATE_ADD(DATE(&#x27;2026-07-13&#x27;),INTERVAL 14 DAY)
+      AND is_dev IS DISTINCT FROM TRUE AND player_id&gt;0</pre></details>
+<details class="q"><summary><span class="bdg raw">RAW</span> deco/city — 꾸미기 진척</summary><pre>SELECT log_date,
+              COUNT(DISTINCT IF(event=&#x27;8102_CITY_DECO_UPGRADE_SUCCESS&#x27;,player_id,NULL)) deco_u,
+              COUNTIF(event=&#x27;8102_CITY_DECO_UPGRADE_SUCCESS&#x27;) deco_s,
+              COUNT(DISTINCT IF(event=&#x27;8104_CITY_DECO_CITY_COMPLETE&#x27;,player_id,NULL)) city_u,
+              COUNTIF(event IN (&#x27;3400_MSG_P2P&#x27;,&#x27;3500_FEED_SHARE&#x27;,&#x27;3600_SCREENSHOT_SHARE&#x27;)) msg_t,
+              COUNTIF(event IN (&#x27;3410_MSG_P2P_SUCCESS&#x27;,&#x27;3510_FEED_SHARE_SUCCESS&#x27;,&#x27;3610_SCREENSHOT_SHARE_SUCCESS&#x27;)) msg_s
+            FROM `game-log-359704.raw.solitaire_city_journey`
+            WHERE log_date BETWEEN DATE(&#x27;2026-07-10&#x27;) AND CURRENT_DATE(&#x27;Asia/Seoul&#x27;)
+              AND is_dev IS DISTINCT FROM TRUE AND player_id&gt;0
+            GROUP BY 1 ORDER BY 1</pre></details>
+<details class="q"><summary><span class="bdg raw">RAW</span> deco/city — 꾸미기 진척</summary><pre>SELECT COUNT(DISTINCT IF(event=&#x27;8102_CITY_DECO_UPGRADE_SUCCESS&#x27;,player_id,NULL)) u,
+          COUNTIF(event=&#x27;8102_CITY_DECO_UPGRADE_SUCCESS&#x27;) s,
+          COUNT(DISTINCT IF(event=&#x27;8104_CITY_DECO_CITY_COMPLETE&#x27;,player_id,NULL)) cu
+        FROM `game-log-359704.raw.solitaire_city_journey`
+        WHERE log_date BETWEEN DATE(&#x27;2026-07-10&#x27;) AND CURRENT_DATE(&#x27;Asia/Seoul&#x27;)
+          AND is_dev IS DISTINCT FROM TRUE AND player_id&gt;0</pre></details>
+<details class="q"><summary><span class="bdg stat">STAT</span> stat 코어 — 권역 일별 카운트</summary><pre>WITH s AS (
+      SELECT log_date, stat_name, player_type, SUM(player_count) pc, SUM(log_count) lc
+      FROM `game-log-359704.stat.solitaire_city_journey`
+      WHERE log_date BETWEEN DATE(&#x27;2026-07-10&#x27;) AND CURRENT_DATE(&#x27;Asia/Seoul&#x27;) AND country IN (&#x27;US&#x27;,&#x27;CA&#x27;)
+      GROUP BY 1,2,3)
+    SELECT log_date,
+      MAX(IF(stat_name=&#x27;DAU&#x27; AND player_type=&#x27;ALL&#x27;,pc,0)) dau_u,
+      MAX(IF(stat_name=&#x27;DAU&#x27; AND player_type=&#x27;NRU&#x27;,pc,0)) nru_u,
+      MAX(IF(stat_name=&#x27;DAU&#x27; AND player_type=&#x27;RU&#x27;,pc,0)) ru_u,
+      MAX(IF(stat_name=&#x27;2100_GAMEPLAY_START&#x27; AND player_type=&#x27;NRU&#x27;,pc,0)) nru_start,
+      MAX(IF(stat_name=&#x27;2100_GAMEPLAY_START&#x27; AND player_type=&#x27;NRU&#x27;,lc,0)) nru_g,
+      MAX(IF(stat_name=&#x27;2100_GAMEPLAY_START&#x27; AND player_type=&#x27;RU&#x27;,lc,0))  ru_g,
+      MAX(IF(stat_name=&#x27;2100_GAMEPLAY_START&#x27; AND player_type=&#x27;ALL&#x27;,lc,0)) dau_g,
+      MAX(IF(stat_name=&#x27;2300_GAMEPLAY_FINISH&#x27; AND player_type=&#x27;NRU&#x27;,lc,0)) nru_fc,
+      MAX(IF(stat_name=&#x27;2300_GAMEPLAY_FINISH&#x27; AND player_type=&#x27;RU&#x27;,lc,0))  ru_fc,
+      MAX(IF(stat_name=&#x27;2300_GAMEPLAY_FINISH&#x27; AND player_type=&#x27;ALL&#x27;,lc,0)) dau_fc,
+      MAX(IF(stat_name=&#x27;9990_PLAY_FIRST_TOUCH&#x27; AND player_type=&#x27;NRU&#x27;,pc,0)) nru_touch,
+      MAX(IF(stat_name=&#x27;2300_GAMEPLAY_FINISH&#x27; AND player_type=&#x27;NRU&#x27;,pc,0)) nru_finish,
+      MAX(IF(stat_name=&#x27;4210_RV_FINISH&#x27; AND player_type=&#x27;NRU&#x27;,lc,0)) nru_rvf,
+      MAX(IF(stat_name=&#x27;4210_RV_FINISH&#x27; AND player_type=&#x27;RU&#x27;,lc,0))  ru_rvf,
+      MAX(IF(stat_name=&#x27;4210_RV_FINISH&#x27; AND player_type=&#x27;ALL&#x27;,lc,0)) dau_rvf
+    FROM s GROUP BY 1 ORDER BY 1</pre></details>
+
+
+<h2>비용 완화 조치 (참고)</h2>
+<div class="card"><b>주요 스캔 · 시간별 1회 (dry-run 실측 추정)</b>
+<div class="ba" style="margin-top:12px">
+<div class="h">컴포넌트</div><div class="h" style="text-align:right">BEFORE</div><div class="h" style="text-align:right">AFTER</div>
+<div>daily() 풀스캔</div><div class="b">58.0 GB</div><div class="a">20.7 GB</div>
+<div>retention 코호트조인</div><div class="b">13.2 GB</div><div class="a">2.2 GB</div>
+<div>d1_daily</div><div class="b">7.7 GB</div><div class="a">0 GB</div>
+<div>org_filter</div><div class="b">3.3 GB</div><div class="a">1.7 GB</div>
+<div>stat 읽기(신규)</div><div class="b">—</div><div class="a">1.0 GB</div>
+<div class="tot">합계</div><div class="tot b" style="text-align:right">82.3 GB</div><div class="tot a" style="text-align:right">25.5 GB</div>
+</div>
+<div class="note">→ 1회 <b>−69%</b>. 하루 17회 기준 <b>1.4TB → 0.43TB</b>. 새벽 off(24→17회)까지 곱하면 원상태 대비 체감 <b>~78% 감소</b>.</div>
+</div>
+<div class="card" style="font-size:13.5px">
+<b>무엇을 했나</b>
+<ul style="margin:8px 0 0;padding-left:20px;color:var(--dim)">
+<li><b style="color:var(--tx)">stat 적재본 재사용</b> — 리텐션·권역 카운트·D1을 raw 자가조인 대신 <code>stat.solitaire_city_journey*</code>(managed-query) 읽기로. 과거일 재집계 안 함, 당일도 30분 갱신본 재사용(약간의 오차 허용).</li>
+<li><b style="color:var(--tx)">새벽 01~07시 빌드 off</b> + 중복 크론 1개 정지.</li>
+<li><b style="color:var(--tx)">재스캔 제거</b> — 이미 가져온 데이터(rrows) 부분집합을 다시 긁던 센터차트·dap 스캔을 필터 재사용으로.</li>
+</ul>
+<div class="note">stat 계정 쓰기 권한 없어(403) 기존 적재본 읽기로만 처리. 로딩 p50(percentile)·세션타임은 stat 집계 정의가 달라 base는 raw 유지.</div>
+</div>
+
+<div class="foot">solitaire_city_journey · FB Instant Games 퍼널 대시보드 · 문의: Esther</div>
+</div></body></html>
