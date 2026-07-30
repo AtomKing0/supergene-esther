@@ -157,7 +157,7 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="badge badge-green">2026. 7. 29.</span>
     </div>
     <h1>컨텍스트 전환 노출 확대 A/B<br><span>Context Switch Exposure Expansion</span></h1>
-    <p class="hero-sub">컨텍스트 전환은 <strong>이미 라이브</strong>이나, 콜드스타트 중 레벨 시작에 뎁스가 생기는 것을 피하려고 노출을 최소로 막아둔 상태임. 그 결과 <strong>115.5판당 1회</strong>만 뜸(코지 1.9판 · 마종 2.3판마다 1회 — <strong>60배 성김</strong>). 노출을 벤치 수준으로 열어 <strong>초대 메시지·토너먼트 피드로 이어지는 자체 바이럴</strong>을 만들고 정착률을 올림. 기능 추가가 아니라 <strong>노출 규칙 변경</strong>임.</p>
+    <p class="hero-sub">컨텍스트 전환은 <strong>이미 라이브</strong>이나, 콜드스타트 중 레벨 시작에 뎁스가 생기는 것을 피하려고 노출을 최소로 막아둔 상태임. 그 결과 완료 판수 대비 <strong>노출 밀도가 벤치의 1/60</strong>임(솔 115.5판당 1회 · 코지 1.9판 · 마종 2.3판). 노출을 벤치 수준으로 열어 <strong>초대 메시지·토너먼트 피드로 이어지는 자체 바이럴</strong>을 만들고 정착률을 올림. 기능 추가가 아니라 <strong>노출 규칙 변경</strong>임.</p>
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">세션당 전환 시도</div>
@@ -234,17 +234,20 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>항목</th><th>As-Is (대조군 = 현행)</th><th>To-Be (실험군)</th><th>근거</th></tr></thead>
     <tbody>
-      <tr><td>노출 트리거</td><td>최소 노출<br><span class="t">사실상 유저가 직접 찾아갈 때만</span></td><td><strong>레벨 시작 시점</strong></td><td>벤치 동일</td></tr>
-      <tr><td>노출 주기</td><td><strong>115.5판마다 1회</strong></td><td><strong>2판마다 1회</strong></td><td>코지 1.9판 · 마종 2.3판 실측</td></tr>
+      <tr><td>노출 트리거</td><td>최소 노출<br><span class="t">사실상 유저가 직접 찾아갈 때만</span></td><td><strong>세션 시작 직후</strong><br><span class="t">부팅 완료 시점</span></td><td>벤치 실측 — 호출의 <strong>97~98%가 세션 시작 5초 이내</strong>(p50 0.7초). 레벨 시작이 아니라 부팅 시점임</td></tr>
+      <tr><td>세션당 노출</td><td>사실상 없음<br><span class="t">115.5판마다 1회</span></td><td><strong>1회</strong><br><span class="t">그 안의 시도 횟수는 유저 행동에 따름</span></td><td>벤치 세션당 API 호출 p50 코지 3회·마종 2회(p99 20~30회) — 상한 흔적 없음</td></tr>
       <tr><td>FTUE 구간</td><td>해당 없음</td><td><strong>첫 3판 완료 전 미노출</strong></td><td>벤치 첫 전환 이전 완료 판수 — 마종 2판 · 코지 3판(0판은 양쪽 0%)</td></tr>
-      <tr><td>세션당 상한</td><td>해당 없음</td><td><strong>없음</strong></td><td>상한을 두면 벤치 조건 재현 불가</td></tr>
-      <tr><td>거절 쿨다운</td><td>해당 없음</td><td><strong>없음</strong></td><td>동일</td></tr>
-      <tr><td>이미 컨텍스트 진입한 세션</td><td>해당 없음</td><td><strong>미노출</strong></td><td>중복 방지</td></tr>
+      <tr><td>세션당 상한</td><td>해당 없음</td><td><strong>없음</strong></td><td>벤치도 상한 없음(위 p99 참조). 상한을 두면 조건 재현 불가</td></tr>
+      <tr><td>거절 쿨다운</td><td>해당 없음</td><td><strong>없음</strong></td><td>벤치는 부팅마다 재호출 — 쿨다운 없음</td></tr>
       <tr><td>배정</td><td colspan="2" style="text-align:center">유저 단위 고정 50:50 · 최초 진입 시 확정 후 불변</td><td>—</td></tr>
     </tbody>
   </table>
   <div class="callout callout-purple">
-    <p><strong>벤치와 다른 건 첫 3판 게이팅 하나뿐임.</strong> 그마저도 벤치 실측 범위 안(마종 2판·코지 3판)이라, 사실상 <strong>동일 조건 재현</strong>에 가까움. 벤치 D0 전환 경험자의 D0 판수가 6.6~8.4판이므로 3판은 충분히 앞단이고 D0 노출은 대부분 살아 있음.</p>
+    <p><strong>벤치 조건 대조 — 어디까지 같은가.</strong></p>
+    <p>· <strong>같음</strong> — 트리거(세션 시작 직후) · 세션당 상한 없음 · 거절 쿨다운 없음 · FTUE 게이팅(코지 3판·마종 2판 실측과 동일값)<br>
+       · <strong>우리 결정</strong> — 유저 단위 50:50 고정 배정(A/B 운영을 위한 것이라 벤치와 무관)<br>
+       · <strong>로그로 확인 불가</strong> — 팝업 문구·버튼 구성, 친구 목록 정렬 방식. 이 스펙은 빈도만 다루므로 현행 팝업 그대로 사용</p>
+    <p>벤치 D0 전환 경험자의 D0 판수가 6.6~8.4판이므로 첫 3판 게이팅으로도 D0 노출은 대부분 살아 있음.</p>
   </div>
 
   <h3>4. As-Is → To-Be · KPI</h3>
@@ -258,7 +261,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>전환 사용 유저 비율</td><td>1.7%</td><td>15% 이상</td><td>코지 26.4% · 마종 46.0%</td></tr>
       <tr><td>토너먼트 피드 유입<br><span class="t">POST 컨텍스트 진입</span></td><td>13.78%</td><td>상승</td><td>전환 성공 시 피드 생성</td></tr>
       <tr><td rowspan="4" style="color:var(--yellow);font-weight:700">가드레일</td>
-        <td><strong>첫판 도달률</strong></td><td>92.1%</td><td><strong>유지</strong> <span class="t">−3%p면 롤백</span></td><td>레벨 시작 뎁스의 직접 영향면</td></tr>
+        <td><strong>첫판 도달률</strong></td><td>92.1%</td><td><strong>유지</strong> <span class="t">−3%p면 롤백</span></td><td>진입 앞단 뎁스의 직접 영향면</td></tr>
       <tr><td><strong>D1</strong></td><td>17.5%</td><td><strong>유지</strong> <span class="t">−2%p면 롤백</span></td><td>정착률</td></tr>
       <tr><td>세션당 판수</td><td>4.5판</td><td>유지 <span class="t">−10%면 롤백</span></td><td>플레이 흐름</td></tr>
       <tr><td>팝업 수락률</td><td><strong>미측정</strong></td><td>기준선 확보</td><td>노출 로그가 없어 지금은 잴 수 없음 — 로그 신설이 선행 조건</td></tr>
@@ -302,22 +305,10 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="sheet-row-desc">누적 완료 판수가 이 값 미만이면 미노출 (FTUE 보호)</span>
     </div>
     <div class="sheet-row">
-      <span class="sheet-row-var">ctx_popup_play_interval</span>
-      <span class="sheet-row-default">2</span>
-      <span class="sheet-row-unit">판</span>
-      <span class="sheet-row-desc">직전 노출 이후 이 판수를 완료하면 재노출 (벤치 실측 1.9~2.3판)</span>
-    </div>
-    <div class="sheet-row">
-      <span class="sheet-row-var">ctx_popup_per_session</span>
-      <span class="sheet-row-default">0</span>
-      <span class="sheet-row-unit">회</span>
-      <span class="sheet-row-desc">세션당 상한. 0 = 무제한(벤치 동일). 가드레일 이탈 시 조이는 손잡이로만 사용</span>
-    </div>
-    <div class="sheet-row">
-      <span class="sheet-row-var">ctx_popup_skip_in_context</span>
-      <span class="sheet-row-default">true</span>
-      <span class="sheet-row-unit">bool</span>
-      <span class="sheet-row-desc">이미 THREAD·POST 컨텍스트로 진입한 세션은 미노출</span>
+      <span class="sheet-row-var">ctx_popup_trigger</span>
+      <span class="sheet-row-default">session_start</span>
+      <span class="sheet-row-unit">str</span>
+      <span class="sheet-row-desc">노출 시점. 부팅 완료 직후 1회 (벤치 실측: 호출 97~98%가 세션 시작 5초 내)</span>
     </div>
   </div>
 
@@ -326,11 +317,10 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>순서</th><th>조건</th><th>불충족 시</th></tr></thead>
     <tbody>
       <tr><td>1</td><td>실험군인가</td><td>미노출</td></tr>
-      <tr><td>2</td><td>진입 컨텍스트가 SOLO인가</td><td>미노출</td></tr>
-      <tr><td>3</td><td>누적 완료 판수 ≥ <span class="sheet-var">ctx_popup_min_plays</span></td><td>미노출</td></tr>
-      <tr><td>4</td><td>직전 노출 이후 완료 판수 ≥ <span class="sheet-var">ctx_popup_play_interval</span></td><td>미노출</td></tr>
-      <tr><td>5</td><td><span class="sheet-var">ctx_popup_per_session</span>이 0이 아니면 세션 노출 횟수 확인</td><td>미노출</td></tr>
-      <tr><td>6</td><td>레벨 시작 시점 도달</td><td>노출</td></tr>
+      <tr><td>2</td><td>누적 완료 판수 ≥ <span class="sheet-var">ctx_popup_min_plays</span></td><td>미노출</td></tr>
+      <tr><td>3</td><td>튜토리얼 진행 중이 아닌가</td><td>미노출</td></tr>
+      <tr><td>4</td><td>이번 세션에 아직 노출하지 않았는가</td><td>미노출</td></tr>
+      <tr><td>5</td><td>부팅 완료</td><td><strong>노출</strong></td></tr>
     </tbody>
   </table>
 
@@ -354,6 +344,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
       <tr><td>친구 목록이 비어 있음<br><span class="t">솔 유저의 90.4%가 친구 0명</span></td><td><strong>확인 필요</strong> — 게임 미설치 FB 친구도 선택 가능하면 그대로 진행. 플레이 중인 친구만 노출되는 방식이면 90%가 빈 목록을 보게 되므로 <strong>빈 목록일 때 미노출</strong> 처리 필요</td></tr>
       <tr><td>전환 타임아웃</td><td>마종에 <span class="sheet-var">8960_SWITCH_CONTEXT_TIME_OUT</span> 사례 있음(10,844명). 타임아웃 시 조용히 원복하고 판 진행을 막지 않음</td></tr>
+      <tr><td>이미 컨텍스트(THREAD·POST)로 진입한 세션</td><td><strong>그대로 노출</strong> — 벤치도 구분하지 않음. 별도 예외를 두면 조건이 달라짐</td></tr>
       <tr><td>이미 토너먼트 컨텍스트</td><td>전환 대신 참가로 분기. 현재 <code>INVALID_OPERATION</code>이 20일간 24,619건 발생 중이라 <strong>이 수정을 선행 권장</strong></td></tr>
       <tr><td>전환 후 세션 이어짐</td><td>전환 성공 시 컨텍스트가 바뀌므로 <span class="sheet-var">ab_group</span>이 유지되는지 확인 필요(유저 단위 고정 배정이라 유지되어야 함)</td></tr>
       <tr><td>튜토리얼 진행 중</td><td>무조건 미노출. <span class="sheet-var">ctx_popup_min_plays</span>=3으로 자연 차단되나 명시적으로도 막을 것</td></tr>
@@ -423,7 +414,7 @@ ul li strong,ol li strong { color:var(--text); }
 
   <h3>롤백 기준</h3>
   <ul>
-    <li>첫판 도달률 <strong>−3%p</strong> 이상 — 레벨 시작 뎁스가 실제로 판 진입을 막는다는 뜻. 즉시 중단</li>
+    <li>첫판 도달률 <strong>−3%p</strong> 이상 — 진입 앞단 뎁스가 실제로 판 진입을 막는다는 뜻. 즉시 중단</li>
     <li>D1 <strong>−2%p</strong> 이상 — 정착률 훼손. 즉시 중단</li>
     <li>D0 판수 또는 세션당 판수 <strong>−10%</strong> 이상 — 플레이 흐름 훼손</li>
     <li><strong>전환 성공률 하락은 롤백 근거가 아님</strong> — 현행 90.3%는 유저가 자발적으로 고른 구좌만 집계된 값이라, 노출을 열면 벤치대(58~69%)로 내려가는 것이 정상임. 판정은 <strong>절대 성공 건수</strong>로 함</li>
@@ -452,10 +443,9 @@ ul li strong,ol li strong { color:var(--text); }
   <p>기획 확정본 기준. 이 표의 값이 구현의 단일 기준이며, 본문과 어긋나면 이 표가 우선함.</p>
   <table class="ho"><thead><tr><th>구분</th><th>항목</th><th>확정 내용</th></tr></thead><tbody>
     <tr><td>파라미터</td><td><strong><code>ctx_popup_min_plays</code></strong></td><td><strong>3</strong> — 누적 완료 판수가 이 값 미만이면 미노출 (FTUE 보호)</td></tr>
-    <tr><td>파라미터</td><td><strong><code>ctx_popup_play_interval</code></strong></td><td><strong>2</strong> — 직전 노출 이후 이 판수를 완료하면 재노출 (벤치 실측 1.9~2.3판)</td></tr>
+    <tr><td>파라미터</td><td><strong><code>ctx_popup_trigger</code></strong></td><td><strong>session_start</strong> — 부팅 완료 직후 1회. 벤치 실측 호출의 97~98%가 세션 시작 5초 내(p50 0.7초)</td></tr>
     <tr><td>파라미터</td><td><strong><code>ctx_popup_per_session</code></strong></td><td><strong>0</strong> = 무제한(벤치 동일). 가드레일 이탈 시 조이는 손잡이로만 사용</td></tr>
-    <tr><td>파라미터</td><td><strong><code>ctx_popup_skip_in_context</code></strong></td><td><strong>true</strong> — 이미 THREAD·POST 컨텍스트로 진입한 세션은 미노출</td></tr>
-    <tr><td>로직</td><td><strong>노출 판정 순서</strong></td><td>① 실험군 → ② 진입 컨텍스트 SOLO → ③ 누적 판수 ≥ min_plays → ④ 직전 노출 이후 판수 ≥ interval → ⑤ per_session 확인 → ⑥ <strong>레벨 시작 시점에 노출</strong>. 하나라도 불충족이면 미노출</td></tr>
+    <tr><td>로직</td><td><strong>노출 판정 순서</strong></td><td>① 실험군 → ② 누적 판수 ≥ min_plays → ③ 튜토리얼 진행 중 아님 → ④ 이번 세션 미노출 → ⑤ <strong>부팅 완료 시점에 노출</strong>. 하나라도 불충족이면 미노출</td></tr>
     <tr><td>배정</td><td><strong>A/B 그룹</strong></td><td><strong>유저 단위 고정 50:50.</strong> 최초 진입 시 확정 후 불변</td></tr>
     <tr><td>범위</td><td><strong>손대지 않는 것</strong></td><td>전환 기능 자체·팝업 UI·문구·친구 메시지/토너먼트 채널 <strong>전부 현행 유지</strong>. 빈도만 바꿔야 원인이 분리됨</td></tr>
     <tr><td>규모</td><td><strong>A/B 기간</strong></td><td>일 NRU 1,206명 기준 <strong>2주</strong>면 군당 약 8,450명. D1 17.5%에서 −2%p 감지 가능</td></tr>
@@ -465,21 +455,20 @@ ul li strong,ol li strong { color:var(--text); }
   <table><thead><tr><th>상황</th><th>처리</th></tr></thead><tbody>
     <tr><td><strong>친구 목록이 비어 있음</strong></td><td>솔 유저의 <strong>90.4%가 친구 0명</strong>. 게임 미설치 FB 친구도 선택 가능하면 그대로 진행하고, <strong>플레이 중인 친구만 노출되는 방식이면 빈 목록일 때 미노출 처리 필요</strong> — 개발 확인 필수</td></tr>
     <tr><td><strong>전환 타임아웃</strong></td><td>마종에 <code>8960_SWITCH_CONTEXT_TIME_OUT</code> 사례 10,844명 있음. 타임아웃 시 <strong>조용히 원복</strong>하고 게임 흐름을 막지 않음. 실패를 노출 카운트로 소진시키지 말 것</td></tr>
-    <tr><td><strong>이미 컨텍스트로 진입한 세션</strong></td><td><code>skip_in_context</code>가 true라 미노출. THREAD·POST 진입 세션에서 중복 유도 금지</td></tr>
+    <tr><td><strong>이미 컨텍스트로 진입한 세션</strong></td><td><strong>구분 없이 그대로 노출</strong>. 벤치도 예외를 두지 않으므로 별도 조건을 걸면 조건 재현이 깨짐</td></tr>
     <tr><td><strong>대조군 오염</strong></td><td>배정은 <strong>유저 단위 고정</strong>이라 기기 변경·재로그인에도 유지돼야 함. 세션 단위 재추첨이면 A/B가 무의미해짐</td></tr>
     <tr><td><strong>첫 3판 게이팅과 D0 노출</strong></td><td>벤치 D0 전환 경험자의 D0 판수가 6.6~8.4판이라 3판 게이팅으로도 <strong>D0 노출은 대부분 살아 있음</strong>. 게이팅을 더 올리면 D0 노출이 사라져 벤치 재현이 깨짐</td></tr>
     <tr><td><strong>수락률 하락은 실패 신호가 아님</strong></td><td>현행 90.3%는 <strong>유저가 스스로 찾아온 구좌</strong>라 생긴 선택편향임. 노출을 열면 벤치대(58~69%)로 내려가는 것이 정상</td></tr>
     <tr><td><strong>가드레일 이탈</strong></td><td>첫판 도달률 −3%p · D1 −2%p · 세션당 판수 −10% 중 하나라도 걸리면 <strong>롤백</strong>. 먼저 <code>per_session</code>을 1~2로 조여 보고 그래도 안 잡히면 실험군 종료</td></tr>
-    <tr><td><strong>레벨 시작 뎁스</strong></td><td>팝업이 레벨 시작에 뎁스를 만드는 것이 원래 우려였음. <strong>첫판 도달률이 직접 영향면</strong>이므로 최우선 관측</td></tr>
+    <tr><td><strong>진입 앞단 뎁스</strong></td><td>팝업이 게임 진입 앞단에 뎁스를 만드는 것이 원래 우려였음. 트리거가 <strong>부팅 직후</strong>라 <strong>첫판 도달률이 직접 영향면</strong>이므로 최우선 관측</td></tr>
   </tbody></table>
 
   <h3>C. QA 체크리스트</h3>
   <h4>C-1. 노출 규칙</h4>
   <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
     <tr><td><strong>FTUE 보호</strong></td><td>신규 계정으로 1·2판 완료</td><td><strong>팝업 미노출</strong></td></tr>
-    <tr><td><strong>첫 노출</strong></td><td>3판째 완료 후 레벨 시작</td><td><strong>팝업 노출</strong></td></tr>
-    <tr><td><strong>주기</strong></td><td>노출 이후 판을 이어서 진행</td><td>2판 완료마다 재노출</td></tr>
-    <tr><td><strong>컨텍스트 스킵</strong></td><td>THREAD 또는 POST로 진입한 세션에서 플레이</td><td>팝업 미노출</td></tr>
+    <tr><td><strong>첫 노출</strong></td><td>3판째 완료 후 다음 부팅</td><td><strong>팝업 노출</strong></td></tr>
+    <tr><td><strong>세션당 1회</strong></td><td>노출을 닫고 같은 세션에서 계속 플레이</td><td>같은 세션에선 재노출 없음 · 다음 부팅에 다시 노출</td></tr>
     <tr><td><strong>대조군</strong></td><td>대조군 계정으로 20판 이상</td><td>현행대로 사실상 미노출</td></tr>
   </tbody></table>
   <h4>C-2. A/B 배정</h4>
