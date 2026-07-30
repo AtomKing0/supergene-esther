@@ -178,8 +178,8 @@ ul li strong,ol li strong { color:var(--text); }
       </div>
       <div class="kpi-card">
         <div class="kpi-label">주간 골드 소비 감소</div>
-        <div class="kpi-value" style="color:var(--yellow)">1.2%</div>
-        <div class="kpi-sub">8.3M / 전체 713M · 하루 1회 기준</div>
+        <div class="kpi-value" style="color:var(--yellow)">0.38%</div>
+        <div class="kpi-sub">2.68M / 전체 713M · Lv 50 미만 한정</div>
         <div class="kpi-trend">경제 영향 미미</div>
       </div>
     </div>
@@ -212,7 +212,7 @@ ul li strong,ol li strong { color:var(--text); }
     <strong>회복 경로가 막혀 있어 골드 부족이 그대로 이탈 직전 상태로 남음.</strong> 골드에 막힌 유저의 <strong>80%</strong>가 광고를 시도하지만 완료는 <strong>38.5%</strong>이고, 실패하면 상점이 강제 노출되나 결제로 이어지지 않음. 최종적으로 플레이에 도달하는 것은 <strong>35.6%</strong>뿐임.
   </div>
 
-  <h3>확정 설계 &mdash; 하루 1회 티켓 지급</h3>
+  <h3>확정 설계 &mdash; Lv 50 미만에 하루 1회 티켓 지급</h3>
   <p><strong>티켓은 이미 "x1 상당 입장료 면제"로 구현돼 동작 중임.</strong> 새 로직을 만들지 않고 <strong>지급 한 줄만</strong> 얹음.</p>
   <p><span class="sheet-var">PopupGameEntry.getGoldCostForMultiple</span>이 티켓 보유 여부를 이미 판정하고 있음. 티켓이 있으면 <strong>1회 입장료만큼만 차감</strong>됨.</p>
   <table>
@@ -228,6 +228,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td>지급 수단</td><td><span class="sheet-var">currency_ticket</span> <strong>1장</strong></td><td>신규 아이템 · 신규 로직 불필요. 7일간 티켓 입장 <strong>3,740건 / 1,037명</strong>으로 이미 검증됨</td></tr>
     <tr><td>지급 주기</td><td><strong>하루 1회</strong></td><td>세션 단위로 하면 앱 재시작으로 반복 취득이 가능함 &mdash; 어뷰징 차단</td></tr>
+    <tr><td><strong>지급 대상</strong></td><td><strong>Lv 50 미만</strong><br><span style="color:var(--text2)">입장료 2,100골드 이하 구간</span></td><td><strong>골드 벽의 70%가 Lv 10~49에 몰려 있음</strong>(Lv10~24 9.0% · Lv25~49 12.9%). Lv 50 이상은 입장료에서 막히지 않으므로 지급 이유가 없음 &mdash; 아래 형평성 항목 참조</td></tr>
     <tr><td>지급 시점</td><td>로그인 시 자동</td><td>수령 조작 없이 잔고에 반영. 유저가 인지하지 못해도 진입이 막히지 않는 것이 목적</td></tr>
     <tr><td>배수 처리</td><td><strong>x1 상당액만 면제</strong></td><td>x1 선택 시 0골드, x2는 baseCost&times;1, x4는 baseCost&times;3. <strong>배수 선택 자유가 유지됨</strong></td></tr>
     <tr><td>프리레벨 팝업</td><td><strong>유지</strong></td><td>스킵하면 배수 · 부스터 선택이 사라져 헤비 유저 보상이 1/4로 줄어듦(아래 참조)</td></tr>
@@ -238,16 +239,48 @@ ul li strong,ol li strong { color:var(--text); }
     <strong>프리레벨 팝업을 건너뛰지 않는 이유.</strong> 세션 첫 판의 x1 비중이 66%로 보이지만 <strong>1판만 하고 이탈한 세션(79.3% x1)이 만든 착시</strong>임. 세션 길이별로 보면 <strong>10판 이상 세션의 첫 판은 x4가 41.8%</strong>임 &mdash; 이들에게 x1을 강제하면 보상이 4배에서 1배로 줄어 오히려 손해가 됨. <strong>티켓 방식은 배수를 그대로 고를 수 있어 이 문제가 없음.</strong>
   </div>
 
-  <h3>비용 &mdash; 주간 골드 소비 1.2%</h3>
+  <h3>형평성 &mdash; 왜 전 구간이 아니라 Lv 50 미만인가</h3>
+  <p>광고 보상은 <span class="sheet-var">entry_cost &times; rv_gold_ratio / 10000</span>으로 계산되며, 이 비율이 레벨을 따라 <strong>65% → 30%로 내려감</strong>. 고레벨일수록 회복 수단을 의도적으로 억제해둔 설계임. 그런데 티켓은 x1 입장료를 <strong>전액</strong> 면제하므로, 전 구간에 주면 두 수단의 방향이 정반대가 됨.</p>
   <table>
-    <thead><tr><th>구분</th><th>판수 (7일)</th><th>평균 x1 입장료</th><th>골드 소비 감소</th><th>전체 대비</th></tr></thead>
+    <thead><tr><th>레벨</th><th>입장료</th><th>광고 보상</th><th>보상 비율</th><th>티켓 면제액</th><th>면제 &divide; 광고</th></tr></thead>
     <tbody>
-    <tr><td><strong>하루 1회 (확정)</strong></td><td><strong>5,230</strong></td><td>1,593</td><td><strong>8.3M</strong></td><td><strong>1.2%</strong></td></tr>
-    <tr><td style="color:var(--text2)">세션 1회 (미채택)</td><td style="color:var(--text2)">7,680</td><td style="color:var(--text2)">&mdash;</td><td style="color:var(--text2)">28.5M</td><td style="color:var(--text2)">4.0%</td></tr>
+    <tr><td>Lv 3~9</td><td>1,200</td><td>780</td><td>65%</td><td>1,200</td><td><strong>1.54배</strong></td></tr>
+    <tr><td>Lv 10~24</td><td>1,800</td><td>990</td><td>55%</td><td>1,800</td><td>1.82배</td></tr>
+    <tr><td>Lv 25~49</td><td>2,100</td><td>1,050</td><td>50%</td><td>2,100</td><td>2.00배</td></tr>
+    <tr style="color:var(--text2)"><td>Lv 100~199</td><td>2,600</td><td>1,170</td><td>45%</td><td>2,600</td><td>2.22배</td></tr>
+    <tr style="color:var(--text2)"><td>Lv 550~799</td><td>4,000</td><td>1,520</td><td>38%</td><td>4,000</td><td>2.63배</td></tr>
+    <tr style="color:var(--text2)"><td>Lv 1450+</td><td>6,000</td><td>1,800</td><td>30%</td><td>6,000</td><td><strong>3.33배</strong></td></tr>
     </tbody>
   </table>
+  <div class="callout callout-yellow">
+    <strong>레벨이 오를수록 티켓의 상대 가치가 1.54배 → 3.33배로 벌어짐.</strong> 회색 구간(Lv 50 이상)은 격차가 가장 큰데 정작 <strong>입장료에서 막히지 않는 층</strong>임 &mdash; 필요 없는 곳에 가장 큰 금액을 주게 됨. 지급을 Lv 50 미만으로 한정하면 문제가 있는 구간만 덮으면서 이 역전이 사라짐.
+  </div>
+
+  <h3>비용 &mdash; 주간 골드 소비 0.38%</h3>
+  <p>2100 로그의 <span class="sheet-var">entry_cost</span> 실값으로 유저-일 첫 판을 전수 합산함(7일). 전체 첫 판 8,898건 중 <strong>73.5%(6,540건)는 Lv 1~2로 이미 입장료가 0</strong>이라 티켓과 무관함.</p>
+  <table>
+    <thead><tr><th>구간</th><th>입장료</th><th>첫 판 (7일)</th><th>면제 골드</th><th>지급 대상</th></tr></thead>
+    <tbody>
+    <tr><td>Lv 3~9</td><td>1,200</td><td>410</td><td>0.49M</td><td><strong>포함</strong></td></tr>
+    <tr><td>Lv 10~24</td><td>1,800</td><td>600</td><td>1.08M</td><td><strong>포함</strong></td></tr>
+    <tr><td>Lv 25~49</td><td>2,100</td><td>527</td><td>1.11M</td><td><strong>포함</strong></td></tr>
+    <tr style="color:var(--text2)"><td>Lv 50~99</td><td>2,400</td><td>331</td><td>0.79M</td><td>제외</td></tr>
+    <tr style="color:var(--text2)"><td>Lv 100~199</td><td>2,600</td><td>253</td><td>0.66M</td><td>제외</td></tr>
+    <tr style="color:var(--text2)"><td>Lv 200+</td><td>3,000~6,000</td><td>237</td><td>0.79M</td><td>제외</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>안</th><th>대상 첫 판</th><th>골드 소비 감소</th><th>전체 713M 대비</th></tr></thead>
+    <tbody>
+    <tr><td><strong>Lv 50 미만 한정 (확정)</strong></td><td><strong>1,537</strong></td><td><strong>2.68M</strong></td><td><strong>0.38%</strong></td></tr>
+    <tr style="color:var(--text2)">전 구간 (미채택)</td><td style="color:var(--text2)">2,358</td><td style="color:var(--text2)">4.92M</td><td style="color:var(--text2)">0.69%</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <strong>한정안이 비용을 45% 줄이면서 효과는 대부분 보존함.</strong> 제외되는 Lv 50 이상은 면제 골드의 45%를 쓰지만 골드 벽 발생의 30%에 불과함. 초판 개정 전 추정치(8.3M · 1.2%)는 평균 입장료를 곱한 값이었고, 이번에 <strong>entry_cost 실값 합산으로 재산출</strong>해 2.68M · 0.38%로 정정함.
+  </div>
   <div class="callout callout-purple">
-    <strong>입장료 전면 폐지와는 규모가 완전히 다름.</strong> 토스 빌드 220 A/B에서 입장료를 폐지했을 때 <strong>인당 판수가 46% 감소</strong>했으나(골드 소비의 78.9% 소멸), 본 안은 <strong>1.2%</strong>이며 골드를 벌 목표 자체는 그대로 유지됨.
+    <strong>입장료 전면 폐지와는 규모가 완전히 다름.</strong> 토스 빌드 220 A/B에서 입장료를 폐지했을 때 <strong>인당 판수가 46% 감소</strong>했으나(골드 소비의 78.9% 소멸), 본 안은 <strong>0.38%</strong>이며 골드를 벌 목표 자체는 그대로 유지됨.
   </div>
 
   <h3>기대 효과</h3>
@@ -279,9 +312,10 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>항목</th><th>내용</th></tr></thead>
     <tbody>
-    <tr><td>지급 로직</td><td>로그인 처리 시 <strong>일일 리셋 기준</strong>으로 미지급이면 <span class="sheet-var">currency_ticket</span> +<span class="sheet-var">daily_free_ticket_amount</span></td></tr>
+    <tr><td>지급 로직</td><td>로그인 처리 시 <strong>일일 리셋 기준</strong>으로 미지급이고 <strong>레벨 조건을 만족하면</strong> <span class="sheet-var">currency_ticket</span> +<span class="sheet-var">daily_free_ticket_amount</span></td></tr>
+    <tr><td><strong>레벨 조건</strong></td><td><span class="sheet-var">level &lt; daily_free_ticket_max_level</span> (기본 <strong>50</strong>)일 때만 지급. 상수로 빼서 시트에서 조정 가능하게 함 &mdash; 구간을 넓히거나 좁히는 데 클라 수정이 필요 없어야 함</td></tr>
     <tr><td>카운터</td><td>기존 일일 카운터 패턴 재사용 &mdash; <span class="sheet-var">ClaimedRvGoldCountInfos</span>(shop · mail · popup · lobby)와 동일한 구조로 <span class="sheet-var">dailyFreeTicketClaimed</span> 추가</td></tr>
-    <tr><td>리셋 시점</td><td><strong>KST 0시</strong> &mdash; 데일리 리셋 및 이벤트 경계와 정렬</td></tr>
+    <tr><td>리셋 시점</td><td><strong>UTC 0시</strong> &mdash; 이 게임의 데일리 리셋·이벤트가 전부 UTC 0시 단일축이므로 그대로 정렬(현지시 분리 장치 없음)</td></tr>
     <tr><td>멱등성</td><td>동일 일자 재로그인 시 재지급 없음. 서버 상태가 단일 기준</td></tr>
     </tbody>
   </table>
@@ -334,7 +368,7 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
 
   <div class="callout callout-yellow">
-    <strong>가드레일 &mdash; 판수 감소 감시.</strong> 토스 A/B에서 입장료 폐지가 <strong>인당 판수 46% 감소</strong>를 낳았음. 본 안은 규모가 1.2%로 작지만 <strong>방향은 같음</strong>. 적용 후 <strong>유저-일당 완료 판수가 감소하면 즉시 롤백</strong>함.
+    <strong>가드레일 &mdash; 판수 감소 감시.</strong> 토스 A/B에서 입장료 폐지가 <strong>인당 판수 46% 감소</strong>를 낳았음. 본 안은 규모가 0.38%로 작지만 <strong>방향은 같음</strong>. 적용 후 <strong>유저-일당 완료 판수가 감소하면 즉시 롤백</strong>함.
   </div>
 
   <h3>롤백</h3>
@@ -350,6 +384,7 @@ ul li strong,ol li strong { color:var(--text); }
   const SPEC_ID = 'spec-032';
 
   SPEC_META.mountBadges(SPEC_ID);
+
   // ── 사이드바 네비 ──
   var links    = document.querySelectorAll('.nav-sidebar a');
   var sections = document.querySelectorAll('section[id]');

@@ -185,6 +185,11 @@ const SPECS = [
     title: '[UX-인게임] 덱 잔여 수량 표시',
     tags: ['ux'], priority: 'high', status: 'open', date: '2026. 7. 30.', dueDate: null, relatedTo: [],
   },
+  {
+    id: 'spec-034', file: 'spec-034-ingame-booster-sale.html',
+    title: '[수익화-부스터] 인게임 부스터 판매 정비',
+    tags: ['monetize'], priority: 'mid', status: 'open', date: '2026. 7. 30.', dueDate: null, relatedTo: ['spec-032'],
+  },
 ];
 
 /* ── 어휘 ──────────────────────────────────────────────────────────────
