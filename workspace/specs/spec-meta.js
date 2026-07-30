@@ -187,7 +187,7 @@ const SPECS = [
   },
   {
     id: 'spec-034', file: 'spec-034-ingame-booster-sale.html',
-    title: '[수익화-부스터] 인게임 부스터 판매 정비',
+    title: '[수익화-부스터] 파이어웍스 인게임 아이템 확장',
     tags: ['monetize'], priority: 'mid', status: 'open', date: '2026. 7. 30.', dueDate: null, relatedTo: ['spec-032'],
   },
 ];

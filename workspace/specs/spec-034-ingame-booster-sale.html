@@ -174,32 +174,32 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">&#128309; 검토중</span>
       <span class="badge badge-green">2026. 7. 30.</span>
     </div>
-    <h1>인게임 부스터 판매 정비<br><span>In-Game Booster Sale</span></h1>
-    <p class="hero-sub">프리레벨 팝업에서 <strong>파이어웍스 · 골든티켓</strong>을 골드로 팔고 있으나 기획 문서가 없어 가격 근거도 성과 판정 기준도 없음. 파이어웍스는 판의 <strong>12.9%</strong>에서 쓰이는데 <strong>골든티켓은 사용 로그가 0건</strong>임. 현행을 명세화하고 죽은 슬롯을 정리함.</p>
+    <h1>파이어웍스 인게임 아이템 확장<br><span>Fireworks In-Game Item</span></h1>
+    <p class="hero-sub">인게임 파이어웍스 버튼은 이미 구현돼 있으나 <strong>프리레벨 부스터와 같은 키(40010)를 읽어 같은 값</strong>으로 잡히고, 구매 대상 키 목록에서도 빠져 있어 <strong>실제로 팔리지 않음</strong>. 골든티켓 3장 대 와일드카드 1장이 만든 <strong>인게임 프리미엄 2.29배</strong> 공식에 맞춰 전용 가격을 신설함.</p>
     <div class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-label">파이어웍스 사용 판</div>
-        <div class="kpi-value" style="color:var(--blue)">12.9%</div>
-        <div class="kpi-sub">7일 85,195판 중 10,954판</div>
-        <div class="kpi-trend trend-up">&#9650; 실사용 검증됨</div>
+        <div class="kpi-label">인게임 프리미엄 배수</div>
+        <div class="kpi-value" style="color:var(--blue)">2.29배</div>
+        <div class="kpi-sub">와일드 6500 &divide; 골든티켓 장당 2,833</div>
+        <div class="kpi-trend trend-up">&#9650; 기존 공식</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">골든티켓 사용 로그</div>
-        <div class="kpi-value" style="color:var(--red)">0건</div>
-        <div class="kpi-sub">슬롯은 켜져 있는데 기록이 없음</div>
-        <div class="kpi-trend">&#9660; 미로깅 또는 미사용</div>
+        <div class="kpi-label">확정 가격</div>
+        <div class="kpi-value" style="color:var(--green)">17000</div>
+        <div class="kpi-sub">입장료의 170% · 프리레벨 7500의 2.27배</div>
+        <div class="kpi-trend trend-up">&#9650; 신규 시트 행</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">파이어웍스 사용 시 클리어율</div>
-        <div class="kpi-value" style="color:var(--green)">98.3%</div>
-        <div class="kpi-sub">미사용 96.9% 대비 +1.4%p</div>
-        <div class="kpi-trend trend-up">&#9650; 값을 하고 있음</div>
+        <div class="kpi-label">현재 구매 가능 여부</div>
+        <div class="kpi-value" style="color:var(--red)">불가</div>
+        <div class="kpi-sub">buyItem 대상 키가 40012~40014뿐</div>
+        <div class="kpi-trend">&#9660; 40010 누락</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">기획 문서</div>
-        <div class="kpi-value" style="color:var(--yellow)">없음</div>
-        <div class="kpi-sub">가격 근거 · 성과 기준 부재</div>
-        <div class="kpi-trend">&#9660; 본 스펙으로 신설</div>
+        <div class="kpi-label">프리레벨 파이어웍스 사용</div>
+        <div class="kpi-value" style="color:var(--yellow)">12.9%</div>
+        <div class="kpi-sub">클리어율 98.3% · 미사용 96.9%</div>
+        <div class="kpi-trend trend-up">&#9650; 수요 검증됨</div>
       </div>
     </div>
   </div>
@@ -213,54 +213,60 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="section-meta"><div class="section-title">기획 의도 &amp; 확정 설계</div></div>
   </div>
 
-  <h3>문제 &mdash; 팔고 있는데 기획서가 없음</h3>
-  <p>프리레벨 팝업(<span class="sheet-var">PopupGameEntry</span>)에서 부스터를 <strong>골드로 판매</strong>하고 있음. 가격은 시트의 <span class="sheet-var">entry_cost_ratio</span>로 정의돼 동작 중이나, <strong>이 가격이 왜 그 값인지에 대한 기획 근거가 문서로 남아 있지 않음</strong>. 스펙 인덱스에도 항목이 없어 성과를 판정할 기준도, 손댈 때 참조할 원본도 없는 상태임.</p>
-
+  <h3>문제 &mdash; 인게임 버튼은 있는데 팔 수가 없음</h3>
+  <p>파이어웍스는 지금 <strong>프리레벨 팝업에서만</strong> 부스터로 팔림. 인게임 아이템 버튼(<span class="sheet-var">onClickFireworks</span>)은 클라에 이미 구현돼 있으나 두 가지가 막고 있음.</p>
   <table>
-    <thead><tr><th>부스터</th><th>키</th><th>entry_cost_ratio</th><th>Lv 25~49 기준 가격</th><th>노출</th></tr></thead>
+    <thead><tr><th>#</th><th>막는 지점</th><th>현재 상태</th></tr></thead>
     <tbody>
-    <tr><td><strong>파이어웍스</strong></td><td><span class="sheet-var">booster_fireworks</span></td><td>7500</td><td><strong>1,575골드</strong> (입장료의 75%)</td><td><strong>슬롯 1</strong></td></tr>
-    <tr><td><strong>골든티켓</strong></td><td><span class="sheet-var">booster_golden_ticket</span></td><td>8500</td><td><strong>1,785골드</strong> (85%)</td><td><strong>슬롯 2</strong></td></tr>
-    <tr style="color:var(--text2)"><td>추가 덱</td><td><span class="sheet-var">booster_extra_deck</span></td><td>0 &mdash; <span class="sheet-var">tier_extra_deck</span></td><td>&mdash;</td><td>주석 처리 (미노출)</td></tr>
-    <tr style="color:var(--text2)"><td>와일드카드</td><td><span class="sheet-var">booster_wild_card</span></td><td>6500</td><td>1,365골드</td><td>인게임 아이템</td></tr>
-    <tr style="color:var(--text2)"><td>실행취소</td><td><span class="sheet-var">booster_undo</span></td><td>0 &mdash; <span class="sheet-var">tier_undo</span></td><td>&mdash;</td><td>인게임 아이템</td></tr>
+    <tr><td>1</td><td>가격 키가 프리레벨과 동일</td><td><span class="sheet-var">IngameItemButtonView.getKeyNumber()</span>가 <span class="sheet-var">booster_fireworks(40010)</span>를 그대로 반환함 &mdash; <strong>인게임에서도 프리레벨과 같은 7500</strong>으로 잡힘</td></tr>
+    <tr><td>2</td><td>구매 대상 키에서 누락</td><td><span class="sheet-var">onClickInactivePaid()</span>의 <span class="sheet-var">targetItemKeyNumber</span>가 <span class="sheet-var">40012 | 40013 | 40014</span>로 한정됨 &mdash; <strong>40010은 포함되지 않아 구매가 성립하지 않음</strong></td></tr>
     </tbody>
   </table>
-
-  <div class="callout callout-blue">
-    <strong>가격 산식.</strong> <span class="sheet-var">basePrice = entryCost &times; betting &times; (entry_cost_ratio / 10000)</span> &mdash; 입장료뿐 아니라 <strong>베팅 배수까지 곱해짐</strong>. x4로 걸면 파이어웍스가 Lv 25~49에서 <strong>6,300골드</strong>가 되며, 이는 같은 구간 광고 보상(1,050골드)의 <strong>6배</strong>임.
-  </div>
-
-  <h3>실측 &mdash; 파이어웍스는 살아 있고 골든티켓은 죽어 있음</h3>
-  <table>
-    <thead><tr><th>사용 조합</th><th>판수 (7일)</th><th>비중</th><th>클리어율</th></tr></thead>
-    <tbody>
-    <tr><td>미사용</td><td>55,558</td><td>65.2%</td><td>96.9%</td></tr>
-    <tr><td>와일드카드</td><td>12,763</td><td>15.0%</td><td>97.0%</td></tr>
-    <tr><td><strong>파이어웍스</strong></td><td><strong>5,535</strong></td><td><strong>6.5%</strong></td><td><strong>98.3%</strong></td></tr>
-    <tr><td>와일드카드 + 파이어웍스</td><td>4,354</td><td>5.1%</td><td>98.9%</td></tr>
-    <tr><td>실행취소</td><td>4,142</td><td>4.9%</td><td>95.4%</td></tr>
-    <tr><td>실행취소 + 와일드카드</td><td>1,778</td><td>2.1%</td><td>93.2%</td></tr>
-    <tr style="color:var(--red)"><td><strong>골든티켓 포함 조합</strong></td><td><strong>0</strong></td><td><strong>0%</strong></td><td>&mdash;</td></tr>
-    </tbody>
-  </table>
-  <p>파이어웍스는 단독·조합 합산 <strong>10,954판(12.9%)</strong>에서 쓰이고, 사용 시 클리어율이 <strong>98.3%</strong>로 미사용(96.9%)보다 높음 &mdash; 값을 하고 있다는 뜻임. 반면 <strong>골든티켓은 2300 로그의 <span class="sheet-var">booster_used</span>에 단 한 건도 잡히지 않음</strong>.</p>
-
   <div class="callout callout-yellow">
-    <strong>골든티켓 0건은 두 가지 중 하나임 &mdash; 확인이 선행돼야 함.</strong> ① 노출은 되는데 <strong>비싸서 아무도 안 사는 것</strong>(파이어웍스보다 13% 비쌈), ② 사용은 되는데 <span class="sheet-var">booster_used</span>에 <strong>기록이 안 되는 것</strong>. ②라면 로깅 버그이고 ①이면 상품 문제라 처방이 정반대임.
+    <strong>2300 로그의 골든티켓 0건도 같은 계열의 문제로 보임.</strong> 프리레벨 슬롯은 열려 있으나 인게임 계측·구매 경로가 정비돼 있지 않음. 본 스펙은 파이어웍스를 먼저 정리하고, 골든티켓은 별건으로 남김.
   </div>
 
-  <h3>확정 설계</h3>
+  <h3>가격 공식 &mdash; 기존 선례에서 그대로 끌어옴</h3>
+  <p>모든 아이템 가격은 <strong>입장료 대비 비율</strong>로 책정됨: <span class="sheet-var">basePrice = entryCost &times; betting &times; (entry_cost_ratio / 10000)</span>. 같은 기능을 프리레벨과 인게임에서 각각 파는 선례가 이미 하나 있음 &mdash; <strong>골든티켓과 와일드카드</strong>임.</p>
   <table>
-    <thead><tr><th>항목</th><th>확정</th><th>근거</th></tr></thead>
+    <thead><tr><th>구분</th><th>아이템</th><th>비율</th><th>지급 수량</th><th>장당 비율</th></tr></thead>
     <tbody>
-    <tr><td>파이어웍스 가격</td><td><strong>현행 유지</strong> (7500)</td><td>12.9% 사용 · 클리어율 +1.4%p로 이미 작동 중임. 근거 없이 건드릴 이유가 없음</td></tr>
-    <tr><td>골든티켓</td><td><strong>로깅 확인 후 결정</strong></td><td>0건의 원인이 미사용인지 미로깅인지 갈리기 전에는 가격도 노출도 손대지 않음</td></tr>
-    <tr><td>추가 덱 슬롯</td><td><strong>주석 유지</strong></td><td><span class="sheet-var">BOOSTER_TYPES</span>에서 주석 처리돼 있으나 <span class="sheet-var">boosterSelected</span>는 3칸으로 남아 있음 &mdash; 되살릴지는 덱 노선 결정에 종속</td></tr>
-    <tr><td>배수 연동 가격</td><td><strong>현행 유지</strong></td><td>x4에서 6,300골드가 되는 것은 보상도 4배가 되기 때문임. 비율 자체는 일관됨</td></tr>
-    <tr><td>본 스펙의 범위</td><td><strong>명세화 + 골든티켓 정리</strong></td><td>가격 개편이 아님. 문서 없는 판매 구조를 기록하고 죽은 슬롯 하나를 판정하는 것이 목적</td></tr>
+    <tr><td>프리레벨</td><td>골든티켓</td><td>8500</td><td><strong>와일드카드 3장</strong><br><span style="color:var(--text2)">wildPreBoosterCount = 3</span></td><td>2,833</td></tr>
+    <tr><td>인게임</td><td>와일드카드</td><td>6500</td><td>1장</td><td><strong>6,500</strong></td></tr>
+    <tr style="background:var(--hero-bg)"><td colspan="4"><strong>인게임 프리미엄 배수</strong></td><td><strong>2.29배</strong></td></tr>
     </tbody>
   </table>
+  <p>같은 기능이라도 <strong>판을 하다가 급할 때 사는 인게임 쪽이 장당 2.29배 비쌈</strong>. 프리레벨은 미리 계획해서 묶음으로 싸게 사고, 인게임은 즉시성에 값을 매기는 구조임.</p>
+
+  <h3>확정 &mdash; 인게임 파이어웍스 17000</h3>
+  <table>
+    <thead><tr><th>항목</th><th>확정</th><th>산출</th></tr></thead>
+    <tbody>
+    <tr><td>프리레벨 파이어웍스</td><td><strong>7500 유지</strong></td><td>GrandFireworksCard 1장. 12.9% 사용 · 클리어율 98.3%로 작동 중이라 건드리지 않음</td></tr>
+    <tr><td><strong>인게임 파이어웍스</strong></td><td><strong>17000</strong></td><td>7500 &times; 2.29 = 17,175 &rarr; <strong>17000</strong>(입장료의 170%)으로 정리</td></tr>
+    <tr><td>사용당 상승</td><td><strong>2500</strong></td><td>추가덱과 동일. 효과가 가장 강한 아이템이라 반복 사용에 제동이 필요함</td></tr>
+    <tr><td>상승 상한</td><td><strong>25000</strong></td><td>추가덱의 상한/기준 비율(12000/9000 &asymp; 1.33배)을 적용해 17000 &times; 1.47 수준에서 마감</td></tr>
+    <tr><td>지급 수량</td><td><strong>1장</strong></td><td>와일드카드 인게임과 동일하게 1회 사용분</td></tr>
+    </tbody>
+  </table>
+
+  <h3>검산 &mdash; Lv 25~49 (입장료 2,100) 기준</h3>
+  <table>
+    <thead><tr><th>아이템</th><th>지면</th><th>비율</th><th>x1 가격</th><th>효과</th></tr></thead>
+    <tbody>
+    <tr><td>실행취소</td><td>인게임</td><td>1600 <span style="color:var(--text2)">(tier_undo)</span></td><td>336골드</td><td>직전 1수 되돌림</td></tr>
+    <tr><td>와일드카드</td><td>인게임</td><td>6500</td><td>1,365골드</td><td>아무 카드 1장 매칭</td></tr>
+    <tr><td>추가 덱</td><td>인게임</td><td>7500 <span style="color:var(--text2)">(tier_extra_deck)</span></td><td>1,575골드</td><td>덱 보충</td></tr>
+    <tr><td>파이어웍스</td><td>프리레벨</td><td>7500</td><td>1,575골드</td><td rowspan="2"><strong>현재 선택 가능한 필드 카드를 전부 제거</strong></td></tr>
+    <tr style="background:var(--hero-bg)"><td><strong>파이어웍스</strong></td><td><strong>인게임</strong></td><td><strong>17000</strong></td><td><strong>3,570골드</strong></td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <strong>와일드카드의 2.6배지만 효과 차이를 감안하면 과하지 않음.</strong> 와일드카드는 1장을 매칭하는 데 그치나, 파이어웍스는 <span class="sheet-var">clickGrandFireworksCard</span>가 그 시점에 선택 가능한 <strong>필드 카드를 전부 제거</strong>함(PlusCard 제외 · 로프카드는 값 1 감소). 판을 뒤집는 급의 아이템임.
+  </div>
+  <div class="callout callout-purple">
+    <strong>베팅 배수까지 곱해지는 점에 유의.</strong> x4로 건 판이면 인게임 파이어웍스가 <strong>14,280골드</strong>가 됨. 보상도 4배라 비율은 일관되나, 골드 중앙값이 2,000인 층에는 사실상 닿지 않는 가격임 &mdash; <strong>헤비 유저용 sink</strong>로 설계된 것이 맞음.
+  </div>
 </section>
 
 <section id="s2">
@@ -269,31 +275,42 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="section-meta"><div class="section-title">개발 스펙</div></div>
   </div>
 
-  <h3>선행 &mdash; 골든티켓 로깅 점검</h3>
+  <h3>시트 &mdash; item_list 신규 행</h3>
   <table>
-    <thead><tr><th>항목</th><th>내용</th></tr></thead>
+    <thead><tr><th>필드</th><th>값</th></tr></thead>
     <tbody>
-    <tr><td>확인 대상</td><td>프리레벨 팝업에서 골든티켓을 구매·선택했을 때 2300 <span class="sheet-var">booster_used</span>에 <span class="sheet-var">golden_ticket</span>이 실리는지</td></tr>
-    <tr><td>비교군</td><td>파이어웍스는 <span class="sheet-var">fireworks</span>로 정상 기록됨 &mdash; 같은 슬롯 구조인데 한쪽만 빠지면 로깅 누락임</td></tr>
-    <tr><td>판정</td><td>기록되는데 0건이면 <strong>상품 문제</strong>, 기록 자체가 없으면 <strong>로깅 버그</strong></td></tr>
+    <tr><td>key_number</td><td><strong>40015</strong> <span style="color:var(--text2)">(40010~40014 다음 빈 번호)</span></td></tr>
+    <tr><td>type</td><td>booster</td></tr>
+    <tr><td>usage_type</td><td>inventory</td></tr>
+    <tr><td>name_key</td><td><span class="sheet-var">ingame_fireworks</span></td></tr>
+    <tr><td>entry_cost_ratio</td><td><strong>17000</strong></td></tr>
+    <tr><td>interval_type</td><td>fixed</td></tr>
+    <tr><td>use_count_increase_rate</td><td><strong>2500</strong></td></tr>
+    <tr><td>use_count_max_ratio</td><td><strong>25000</strong></td></tr>
+    <tr><td>target_name_key</td><td><span class="sheet-var">booster_fireworks</span> &mdash; 효과는 기존 것을 그대로 씀</td></tr>
     </tbody>
   </table>
+  <div class="callout callout-yellow">
+    <strong>기존 40010을 고쳐 쓰면 안 됨.</strong> 프리레벨과 인게임이 <strong>서로 다른 가격</strong>을 가져야 하는데 현재 한 행을 공유하고 있음. 행을 나누지 않으면 한쪽을 올릴 때 다른 쪽이 같이 올라감.
+  </div>
 
   <h3>클라</h3>
   <table>
-    <thead><tr><th>항목</th><th>내용</th></tr></thead>
+    <thead><tr><th>파일</th><th>수정</th></tr></thead>
     <tbody>
-    <tr><td>수정 범위</td><td><strong>로깅 버그인 경우에만</strong> <span class="sheet-var">PopupGameEntry</span>의 부스터 사용 기록 경로 보정. 그 외에는 클라 변경 없음</td></tr>
-    <tr><td>가격 로직</td><td>변경 없음 &mdash; <span class="sheet-var">getBoosterSlotGoldCost</span>가 <span class="sheet-var">entry_cost_ratio</span>를 읽는 현행 유지</td></tr>
-    <tr><td>슬롯 배열</td><td><span class="sheet-var">boosterSelected</span>가 3칸인데 <span class="sheet-var">BOOSTER_TYPES</span>는 2종 &mdash; 빈 칸이 남아 있음. 추가 덱 복원 여부가 정해질 때까지 <strong>그대로 둠</strong>(건드리면 인덱스가 어긋남)</td></tr>
+    <tr><td><span class="sheet-var">IngameItemButtonView.getKeyNumber()</span></td><td><span class="sheet-var">case "fireworks"</span>의 반환을 <span class="sheet-var">booster_fireworks(40010)</span> &rarr; <strong>ingame_fireworks(40015)</strong>로 변경. 프리레벨 경로(<span class="sheet-var">PopupGameEntry</span>)는 40010 그대로 유지</td></tr>
+    <tr><td><span class="sheet-var">IngameItemButtonView.onClickInactivePaid()</span></td><td><span class="sheet-var">targetItemKeyNumber</span> 타입을 <span class="sheet-var">40012 | 40013 | 40014</span> &rarr; <strong>40012 | 40013 | 40014 | 40015</strong>로 확장. 현재 <span class="sheet-var">as</span> 캐스팅이라 컴파일은 통과하나 서버가 받지 못함</td></tr>
+    <tr><td><span class="sheet-var">getContentIdForUnlock()</span></td><td>인게임 파이어웍스의 해금 content_id 지정. 프리레벨 부스터와 <strong>별도 해금</strong>으로 둘지 공유할지 확정 필요 &mdash; 기본은 공유</td></tr>
     </tbody>
   </table>
 
-  <h3>시트</h3>
+  <h3>서버</h3>
   <table>
-    <thead><tr><th>테이블</th><th>변경</th></tr></thead>
+    <thead><tr><th>항목</th><th>내용</th></tr></thead>
     <tbody>
-    <tr><td><span class="sheet-var">item_list</span></td><td>변경 없음. 본 스펙은 현행 값(<span class="sheet-var">40010</span> 7500 · <span class="sheet-var">40011</span> 8500)을 <strong>기록하는 것</strong>이 목적임</td></tr>
+    <tr><td><span class="sheet-var">buyItem</span></td><td>40015 수신 허용. 가격 검증은 기존 <span class="sheet-var">entry_cost_ratio &times; entryCost &times; betting</span> 산식 재사용</td></tr>
+    <tr><td>사용 횟수</td><td>판 내 사용 횟수에 따라 <span class="sheet-var">use_count_increase_rate</span> 적용 &mdash; 추가덱·실행취소와 동일한 기존 로직</td></tr>
+    <tr><td>효과 처리</td><td>신규 없음. <span class="sheet-var">target_name_key</span>로 기존 GrandFireworksCard 효과에 연결</td></tr>
     </tbody>
   </table>
 </section>
@@ -304,22 +321,32 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="section-meta"><div class="section-title">로깅 · 검증 · 롤백</div></div>
   </div>
 
+  <h3>로깅</h3>
+  <table>
+    <thead><tr><th>항목</th><th>내용</th></tr></thead>
+    <tbody>
+    <tr><td>구분 필요</td><td>2300 <span class="sheet-var">booster_used</span>에서 <strong>프리레벨 파이어웍스와 인게임 파이어웍스가 구분</strong>돼야 함. 현재는 둘 다 <span class="sheet-var">fireworks</span>로 찍히면 지면별 성과를 나눌 수 없음</td></tr>
+    <tr><td>제안 값</td><td>프리레벨 <span class="sheet-var">fireworks</span> 유지 · 인게임 <span class="sheet-var">ingame_fireworks</span> 신설</td></tr>
+    <tr><td>선행 확인</td><td>골든티켓이 0건인 원인 점검을 함께 진행 &mdash; 같은 구조의 누락일 가능성이 있음</td></tr>
+    </tbody>
+  </table>
+
   <h3>측정</h3>
   <table>
     <thead><tr><th>지표</th><th>현재</th><th>기대</th></tr></thead>
     <tbody>
-    <tr><td>파이어웍스 사용 판 비중</td><td>12.9%</td><td>유지 &mdash; 본 스펙은 변경을 가하지 않음</td></tr>
-    <tr><td>골든티켓 사용 기록</td><td>0건</td><td><strong>0이 아닌 값 또는 &ldquo;진짜 0&rdquo; 확정</strong></td></tr>
-    <tr><td>부스터 골드 소비</td><td>미집계</td><td>지면별 골드 sink 분해에 부스터 항목 신설</td></tr>
+    <tr><td>인게임 파이어웍스 구매</td><td>0 <span style="color:var(--text2)">(경로 미성립)</span></td><td>발생 &mdash; 절대치보다 <strong>지면별 단가 차이가 유지되는지</strong>가 핵심</td></tr>
+    <tr><td>프리레벨 파이어웍스 사용</td><td>12.9%</td><td><strong>유지</strong> &mdash; 인게임으로 수요가 옮겨가면 단가 설계가 틀린 것</td></tr>
+    <tr><td>부스터 골드 소비</td><td>미집계</td><td>골드 sink 분해에 지면별 부스터 항목 신설</td></tr>
+    <tr><td>실패율</td><td>3.06%</td><td>소폭 감소 &mdash; 막힌 판을 되살릴 수단이 하나 늘어남</td></tr>
     </tbody>
   </table>
-
   <div class="callout callout-purple">
-    <strong>골드 sink 관점.</strong> 골드 경제 진단에서 sink가 부족하다고 봤는데, 부스터는 이미 <strong>배수까지 곱해지는 강한 sink</strong>임에도 집계에서 빠져 있었음. 본 스펙으로 항목을 세워두면 덱 노선(추가 덱 상품화) 판단 때 비교 기준이 생김.
+    <strong>골드 sink 관점.</strong> 골드 경제 진단에서 sink 부족을 지적했는데, 인게임 파이어웍스는 <strong>입장료의 170%에 배수까지 곱해지는</strong> 가장 강한 sink가 됨. 골드를 벌 목적을 유지한 채 헤비 구간의 잉여를 흡수하는 자리임.
   </div>
 
   <h3>롤백</h3>
-  <p>가격·노출을 바꾸지 않으므로 롤백 대상이 없음. 로깅 보정만 들어가는 경우 해당 커밋 되돌림으로 종료됨.</p>
+  <p>시트에서 <span class="sheet-var">40015</span> 행의 <span class="sheet-var">in_use</span>를 내리면 인게임 버튼이 비활성화되고 프리레벨 경로는 영향받지 않음. 클라 롤백 없이 시트만으로 되돌릴 수 있음.</p>
 </section>
 </section>
 
