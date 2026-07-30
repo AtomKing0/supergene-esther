@@ -180,6 +180,11 @@ const SPECS = [
     title: '[경제-온보딩] 하루 첫 판 무료 입장',
     tags: ['feature', 'balance'], priority: 'high', status: 'open', date: '2026. 7. 29.', dueDate: null, relatedTo: [],
   },
+  {
+    id: 'spec-033', file: 'spec-033-deck-counter.html',
+    title: '[UX-인게임] 덱 잔여 수량 표시',
+    tags: ['ux'], priority: 'high', status: 'open', date: '2026. 7. 30.', dueDate: null, relatedTo: [],
+  },
 ];
 
 /* ── 어휘 ──────────────────────────────────────────────────────────────
