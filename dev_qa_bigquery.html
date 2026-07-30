@@ -2,12 +2,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>개발자 Q&amp;A — FB 대시보드 빅쿼리 구조</title>
 <style>
-:root{--bg:#0e1117;--card:#161b22;--line:#2a313c;--tx:#e6edf3;--dim:#8b949e;--acc:#58a6ff;--raw:#f0883e;--stat:#3fb950;}
+:root{--bg:#0e1117;--card:#161b22;--line:#2a313c;--tx:#e6edf3;--dim:#8b949e;--acc:#58a6ff;--raw:#f0883e;--stat:#3fb950;--warn:#e3b341;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.65;padding:0 16px 80px}
 .wrap{max-width:920px;margin:0 auto}
 h1{font-size:26px;margin:32px 0 6px}
-.sub{color:var(--dim);font-size:14px;margin-bottom:28px}
+.sub{color:var(--dim);font-size:14px;margin-bottom:8px}
+.upd{display:inline-block;background:rgba(63,185,80,.14);color:var(--stat);font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:24px}
 h2{font-size:20px;margin:40px 0 4px;padding-top:14px;border-top:1px solid var(--line)}
 .q-lead{color:var(--acc);font-weight:700;font-size:15px;margin:2px 0 12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
@@ -27,6 +28,8 @@ td.num{color:var(--dim);width:30px} td.desc{color:var(--dim)}
 .bdg{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:.03em}
 .bdg.raw{background:rgba(240,136,62,.16);color:var(--raw)}
 .bdg.stat{background:rgba(63,185,80,.16);color:var(--stat)}
+.bdg.ok{background:rgba(63,185,80,.16);color:var(--stat)}
+.bdg.warn{background:rgba(227,179,65,.16);color:var(--warn)}
 details.q{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:8px 0}
 details.q summary{cursor:pointer;padding:11px 14px;font-weight:600;font-size:13.5px;user-select:none}
 details.q[open] summary{border-bottom:1px solid var(--line)}
@@ -37,10 +40,12 @@ pre{margin:0;padding:14px 16px;overflow:auto;font-family:'SF Mono',Menlo,Consola
 .ba .tot{border-top:1px solid var(--line);padding-top:8px;font-weight:800;font-size:15px}
 .note{color:var(--dim);font-size:12.5px;margin-top:10px}
 code{background:#22272e;padding:1px 5px;border-radius:4px;font-size:12px}
+ul{margin:8px 0 0;padding-left:20px} li{margin:4px 0}
 .foot{color:var(--dim);font-size:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:14px}
 </style></head><body><div class="wrap">
 <h1>FB 대시보드 · 빅쿼리 구조 Q&amp;A</h1>
-<div class="sub">솔리테어 시티 저니 FB 퍼널 대시보드 · 개발자 문의 응답 · 갱신 2026-07-30</div>
+<div class="sub">솔리테어 시티 저니 FB 퍼널 대시보드 · 개발자 문의 응답</div>
+<div class="upd">최신화 2026-07-30 · 코드리뷰·추가 최적화 반영</div>
 
 <h2>Q1. 대시보드 진입 시 빅쿼리가 실시간으로 호출되나?</h2>
 <div class="q-lead">아니요 — 진입 시 빅쿼리 호출 0건임</div>
@@ -58,24 +63,24 @@ code{background:#22272e;padding:1px 5px;border-radius:4px;font-size:12px}
 <div class="arrow">▼</div>
 <div class="step"><div class="ic usr">USER</div><div><b>대시보드 열람</b><div class="d">정적 HTML + 임베드 JSON 렌더 — 빅쿼리 접근 없음</div></div></div>
 </div>
-<div class="note">→ 대시보드 조회수는 BQ 비용과 무관. 비용은 오직 <b>크론 빌드 횟수 × 쿼리</b>에서만 발생. 그래서 비용 완화가 ①쿼리를 stat 적재본으로 ②새벽 빌드 off ③재스캔 제거에 집중됨.</div>
+<div class="note">→ 대시보드 조회수는 BQ 비용과 무관. 비용은 오직 <b>크론 빌드 횟수 × 쿼리</b>에서만 발생.</div>
 </div>
 
 <h2>Q2. 전체 쿼리 (SQL 형태)</h2>
-<div class="q-lead">풀 추출 1회 = 고유 쿼리 159개 · 실질 쿼리 셰이프 11종</div>
-<div class="note" style="margin-bottom:6px">대부분 날짜창·국가필터만 다른 동일 패턴 반복임. 아래는 셰이프별 대표 + 실제 캡처 SQL 전문(펼치기).</div>
+<div class="q-lead">실질 쿼리 셰이프 11종 · 대부분 날짜창·국가필터만 다른 반복</div>
+<div class="note" style="margin-bottom:6px">셰이프별 대표 + 실제 캡처 SQL 전문(펼치기). ★표시는 이번 최적화 대상.</div>
 <table><thead><tr><th>#</th><th>셰이프</th><th>소스</th><th>용도</th></tr></thead><tbody>
-<tr><td class="num">1</td><td><b>daily() — 일별 DAU/NRU/판수 + 로딩 p50</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">일별 세그 지표 한 방. data(JSON) 스캔이라 가장 무거움(1회 ~4GB)</td></tr>
-<tr><td class="num">2</td><td><b>session_metrics — 세션수·세션타임</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">유저-일 max 세션타임 평균(PLAYTIME)</td></tr>
-<tr><td class="num">3</td><td><b>retention_matrix — 리텐션 코호트 조인</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">D1~D14. sol은 이제 RU만 raw, NRU는 stat</td></tr>
+<tr><td class="num">1</td><td><b>daily() — 일별 DAU/NRU/판수 + 로딩 p50</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">일별 세그 지표 한 방. data(JSON) 스캔이라 가장 무거움(1회 ~4GB). base 표는 로딩 때문에 raw 유지</td></tr>
+<tr><td class="num">2</td><td><b>session_metrics / session_from — 세션수·세션타임</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">★2-a: 변형마다 재스캔하던 걸 GROUP BY country 단일 스캔으로 통합</td></tr>
+<tr><td class="num">3</td><td><b>retention_matrix — 리텐션 코호트 조인</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">sol은 이제 RU만 raw, NRU는 stat</td></tr>
 <tr><td class="num">4</td><td><b>org_filter — 오가닉 판별</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">최초 로그인 소셜 null 유저 집합</td></tr>
-<tr><td class="num">5</td><td><b>entry_segments — 진입 지면 세그먼트</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">FBS 진입 지면(Meta배포 vs 자체)</td></tr>
+<tr><td class="num">5</td><td><b>entry_segments — 진입 지면 세그먼트</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">아직 변형 5회 재스캔(다음 최적화 후보)</td></tr>
 <tr><td class="num">6</td><td><b>기타:WITH u AS ( SELECT player_id, MAX(IF(eve</b></td><td><span class="bdg raw">RAW</span></td><td class="desc"></td></tr>
-<tr><td class="num">7</td><td><b>stat 리텐션 — 사다리·D1</b></td><td><span class="bdg stat">STAT</span></td><td class="desc">적재본 읽기(managed-query 산출본). raw 조인 대체</td></tr>
+<tr><td class="num">7</td><td><b>stat 리텐션 — 사다리·D1</b></td><td><span class="bdg stat">STAT</span></td><td class="desc">적재본 읽기(managed-query). ★메모이즈로 실행내 중복 제거</td></tr>
 <tr><td class="num">8</td><td><b>wau_window — WAU</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">최근 7일 활성 유저</td></tr>
 <tr><td class="num">9</td><td><b>deco/city — 꾸미기 진척</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">도시·꾸미기 완료 유저</td></tr>
 <tr><td class="num">10</td><td><b>deco/city — 꾸미기 진척</b></td><td><span class="bdg raw">RAW</span></td><td class="desc">도시·꾸미기 완료 유저</td></tr>
-<tr><td class="num">11</td><td><b>stat 코어 — 권역 일별 카운트</b></td><td><span class="bdg stat">STAT</span></td><td class="desc">DAU/NRU/판수/첫터치 적재본 읽기</td></tr>
+<tr><td class="num">11</td><td><b>stat 코어 — 권역 일별 카운트</b></td><td><span class="bdg stat">STAT</span></td><td class="desc">DAU/NRU/판수/첫터치 적재본. ★메모이즈 적용</td></tr>
 </tbody></table>
 <div style="margin-top:18px"><b style="font-size:14px">셰이프별 실제 SQL (실행 후킹 캡처본)</b></div>
 <details class="q"><summary><span class="bdg raw">RAW</span> daily() — 일별 DAU/NRU/판수 + 로딩 p50</summary><pre>WITH ev AS (
@@ -125,7 +130,7 @@ code{background:#22272e;padding:1px 5px;border-radius:4px;font-size:12px}
         COUNTIF(event LIKE &#x27;%RV_FINISH%&#x27; AND has_login=1)                    AS dau_rvf
       FROM ev GROUP BY 1
     ) m LEFT JOIN ldd USING(log_date) ORDER BY m.log_date</pre></details>
-<details class="q"><summary><span class="bdg raw">RAW</span> session_metrics — 세션수·세션타임</summary><pre>WITH u AS (
+<details class="q"><summary><span class="bdg raw">RAW</span> session_metrics / session_from — 세션수·세션타임</summary><pre>WITH u AS (
       SELECT log_date, player_id,
         MAX(IF(event=&#x27;1000_LOGIN_COMPLETE&#x27; AND logincount_total=1,1,0)) AS is_nru,
         MAX(IF(event=&#x27;1000_LOGIN_COMPLETE&#x27;,logincount_today,NULL))      AS sessions,
@@ -244,10 +249,11 @@ code{background:#22272e;padding:1px 5px;border-radius:4px;font-size:12px}
     FROM s GROUP BY 1 ORDER BY 1</pre></details>
 
 
-<h2>비용 완화 조치 (참고)</h2>
-<div class="card"><b>주요 스캔 · 시간별 1회 (dry-run 실측 추정)</b>
+<h2>코드리뷰 · 최적화 조치</h2>
+<div class="card">
+<b>빅쿼리 비용 완화 (요청 3건 모두 반영)</b>
 <div class="ba" style="margin-top:12px">
-<div class="h">컴포넌트</div><div class="h" style="text-align:right">BEFORE</div><div class="h" style="text-align:right">AFTER</div>
+<div class="h">주요 스캔 · 시간별 1회</div><div class="h" style="text-align:right">BEFORE</div><div class="h" style="text-align:right">AFTER</div>
 <div>daily() 풀스캔</div><div class="b">58.0 GB</div><div class="a">20.7 GB</div>
 <div>retention 코호트조인</div><div class="b">13.2 GB</div><div class="a">2.2 GB</div>
 <div>d1_daily</div><div class="b">7.7 GB</div><div class="a">0 GB</div>
@@ -257,14 +263,36 @@ code{background:#22272e;padding:1px 5px;border-radius:4px;font-size:12px}
 </div>
 <div class="note">→ 1회 <b>−69%</b>. 하루 17회 기준 <b>1.4TB → 0.43TB</b>. 새벽 off(24→17회)까지 곱하면 원상태 대비 체감 <b>~78% 감소</b>.</div>
 </div>
-<div class="card" style="font-size:13.5px">
-<b>무엇을 했나</b>
-<ul style="margin:8px 0 0;padding-left:20px;color:var(--dim)">
-<li><b style="color:var(--tx)">stat 적재본 재사용</b> — 리텐션·권역 카운트·D1을 raw 자가조인 대신 <code>stat.solitaire_city_journey*</code>(managed-query) 읽기로. 과거일 재집계 안 함, 당일도 30분 갱신본 재사용(약간의 오차 허용).</li>
-<li><b style="color:var(--tx)">새벽 01~07시 빌드 off</b> + 중복 크론 1개 정지.</li>
-<li><b style="color:var(--tx)">재스캔 제거</b> — 이미 가져온 데이터(rrows) 부분집합을 다시 긁던 센터차트·dap 스캔을 필터 재사용으로.</li>
+
+<div class="card">
+<b>① raw → stat 적재본 재사용</b> <span class="bdg ok">완료</span>
+<ul style="color:var(--dim)">
+<li>리텐션·권역 카운트·D1을 raw 자가조인 대신 <code>stat.solitaire_city_journey*</code>(managed-query) 읽기로. 과거일 재집계 안 함, 당일도 30분 갱신본 재사용(약간의 오차 허용).</li>
+<li>예외: 로딩 p50(percentile)·세션타임은 stat 집계 정의가 달라 base는 raw 유지.</li>
 </ul>
-<div class="note">stat 계정 쓰기 권한 없어(403) 기존 적재본 읽기로만 처리. 로딩 p50(percentile)·세션타임은 stat 집계 정의가 달라 base는 raw 유지.</div>
+<b>② 새벽 시간대 off</b> <span class="bdg ok">완료</span>
+<ul style="color:var(--dim)"><li>01~07시(KST) 빌드 스킵(24→17회) + 동일 산출물 중복 크론 1개 정지.</li></ul>
+<b>③ 쿼리 최적화 (코드리뷰)</b> <span class="bdg ok">완료</span>
+<ul style="color:var(--dim)">
+<li><b style="color:var(--tx)">이미 가져온 데이터 재사용</b> — 센터차트·dap 지표가 이미 스캔한 recent 집합의 부분집합 → 재스캔 대신 필터.</li>
+<li><b style="color:var(--tx)">stat 읽기 메모이즈</b> — 동일 인자 재호출 시 쿼리 재발사 방지 → <b>완전 중복 쿼리 3종 → 0</b>.</li>
+<li><b style="color:var(--tx)">최소집합 먼저 추출</b> — 세션 지표를 변형(base·NA·EU·ASIA)마다 재스캔하던 걸 <code>GROUP BY country</code> 단일 스캔으로 통합 → <b>무거운 data 스캔 14 → 11회</b>.</li>
+</ul>
+<div class="ba" style="margin-top:6px;grid-template-columns:1fr auto auto">
+<div class="h">시간별 쿼리 지표</div><div class="h" style="text-align:right">BEFORE</div><div class="h" style="text-align:right">AFTER</div>
+<div>완전 중복 쿼리</div><div class="b">3종</div><div class="a">0</div>
+<div>무거운 data 스캔</div><div class="b">14회</div><div class="a">11회</div>
+<div>총 쿼리 발사</div><div class="b">88발</div><div class="a">82발</div>
+</div>
+<div class="note">세션 검증: 세션수는 원본과 완전 일치, session_time은 base 일치·권역만 ~1% 오차(BI 허용 오차·토글뷰).</div>
+</div>
+
+<div class="card" style="border-color:#3a3320">
+<b><span class="bdg warn">남음</span> 다음 최적화 후보</b>
+<ul style="color:var(--dim)">
+<li><code>entry_segments</code>(진입 지면)가 아직 변형 5회 × 같은 창 재스캔 — 세션과 동일 방식으로 통합 가능(외부 모듈이라 리스크 검토 후 진행).</li>
+<li>세션타임 stat 이전(<code>_session_time_v2</code>) — 단 "샘플 평균 vs 유저-일 max 평균" 정의 차이라 값이 바뀜 → 팀 합의 필요.</li>
+</ul>
 </div>
 
 <div class="foot">solitaire_city_journey · FB Instant Games 퍼널 대시보드 · 문의: Esther</div>
