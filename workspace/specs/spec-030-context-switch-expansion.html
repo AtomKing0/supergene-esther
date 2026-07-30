@@ -235,17 +235,18 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>항목</th><th>As-Is (대조군 = 현행)</th><th>To-Be (실험군)</th><th>근거</th></tr></thead>
     <tbody>
       <tr><td>노출 트리거</td><td>최소 노출<br><span class="t">사실상 유저가 직접 찾아갈 때만</span></td><td><strong>판 시작마다</strong></td><td>벤치 동일 — 게임 시작 시점에 노출</td></tr>
-      <tr><td>세션당 노출</td><td>사실상 없음<br><span class="t">115.5판마다 1회</span></td><td><strong>무제한</strong></td><td>벤치 세션당 전환 호출 p50 코지 3회 · 마종 2회, p99 20~30회 — 상한 없음</td></tr>
+      <tr><td>세션당 노출</td><td>사실상 없음<br><span class="t">115.5판마다 1회</span></td><td><strong>무제한</strong><br><span class="t">단 아래 거절 상한에 걸리면 중단</span></td><td>벤치 세션당 전환 호출 p50 코지 3회 · 마종 2회, p99 20~30회 — 상한 없음</td></tr>
       <tr><td>FTUE 구간</td><td>해당 없음</td><td><strong>첫 3판 완료 전 미노출</strong></td><td>벤치 첫 전환 이전 완료 판수 — 마종 2판 · 코지 3판(0판은 양쪽 0%)</td></tr>
       <tr><td>세션당 상한</td><td>해당 없음</td><td><strong>없음</strong></td><td>상한을 두면 벤치 조건 재현 불가</td></tr>
-      <tr><td>거절 쿨다운</td><td>해당 없음</td><td><strong>없음</strong></td><td>벤치도 없음 — 닫아도 다음 판 시작에 다시 노출</td></tr>
+      <tr><td>거절 쿨다운</td><td>해당 없음</td><td><strong>없음</strong></td><td>닫아도 다음 판 시작에 다시 노출</td></tr>
+      <tr><td><strong>세션 내 거절 상한</strong></td><td>해당 없음</td><td><strong>3회</strong><br><span class="t">그 세션 동안 미노출</span></td><td><strong>우리 추가 조건</strong> — 벤치엔 없음. 같은 세션에서 세 번 닫은 유저에게 계속 띄우지 않기 위한 피로 방어선. 값은 파라미터로 조정</td></tr>
       <tr><td>배정</td><td colspan="2" style="text-align:center">유저 단위 고정 50:50 · 최초 진입 시 확정 후 불변</td><td>—</td></tr>
     </tbody>
   </table>
   <div class="callout callout-purple">
     <p><strong>벤치 조건 대조 — 어디까지 같은가.</strong></p>
     <p>· <strong>같음</strong> — 트리거(판 시작마다) · 세션당 무제한 · 거절 쿨다운 없음 · FTUE 게이팅(코지 3판·마종 2판 실측과 동일값)<br>
-       · <strong>우리 결정</strong> — 유저 단위 50:50 고정 배정(A/B 운영을 위한 것이라 벤치와 무관)<br>
+       · <strong>우리 결정</strong> — 유저 단위 50:50 고정 배정(A/B 운영용) · <strong>세션 내 거절 3회 상한</strong>(벤치엔 없는 피로 방어선)<br>
        · <strong>로그로 확인 불가</strong> — 팝업 문구·버튼 구성, 친구 목록 정렬 방식. 이 스펙은 빈도만 다루므로 현행 팝업 그대로 사용</p>
     <p>벤치 D0 전환 경험자의 D0 판수가 6.6~8.4판이므로 첫 3판 게이팅으로도 D0 노출은 대부분 살아 있음.</p>
   </div>
@@ -305,6 +306,12 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="sheet-row-desc">누적 완료 판수가 이 값 미만이면 미노출 (FTUE 보호)</span>
     </div>
     <div class="sheet-row">
+      <span class="sheet-row-var">ctx_popup_session_reject_limit</span>
+      <span class="sheet-row-default">3</span>
+      <span class="sheet-row-unit">회</span>
+      <span class="sheet-row-desc">같은 세션에서 이 횟수만큼 닫으면 그 세션 동안 미노출. 다음 세션에서 초기화. 타임아웃·전환 실패는 거절로 세지 않음</span>
+    </div>
+    <div class="sheet-row">
       <span class="sheet-row-var">ctx_popup_trigger</span>
       <span class="sheet-row-default">level_start</span>
       <span class="sheet-row-unit">str</span>
@@ -319,7 +326,8 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>1</td><td>실험군인가</td><td>미노출</td></tr>
       <tr><td>2</td><td>누적 완료 판수 ≥ <span class="sheet-var">ctx_popup_min_plays</span></td><td>미노출</td></tr>
       <tr><td>3</td><td>튜토리얼 진행 중이 아닌가</td><td>미노출</td></tr>
-      <tr><td>4</td><td>판 시작</td><td><strong>노출</strong></td></tr>
+      <tr><td>4</td><td>이번 세션 거절 횟수 &lt; <span class="sheet-var">ctx_popup_session_reject_limit</span></td><td>미노출</td></tr>
+      <tr><td>5</td><td>판 시작</td><td><strong>노출</strong></td></tr>
     </tbody>
   </table>
 
@@ -332,7 +340,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
       <tr><td><span class="sheet-var">3050_SWITCH_CONTEXT_POPUP</span></td><td>팝업 노출</td><td>ab_group · 누적 판수 · 세션 내 순번</td></tr>
       <tr><td><span class="sheet-var">3051_SWITCH_CONTEXT_POPUP_ACCEPT</span></td><td>연결 버튼 클릭</td><td>ab_group</td></tr>
-      <tr><td><span class="sheet-var">3052_SWITCH_CONTEXT_POPUP_CLOSE</span></td><td>닫기·바깥 터치</td><td>ab_group · 노출 후 경과 시간</td></tr>
+      <tr><td><span class="sheet-var">3052_SWITCH_CONTEXT_POPUP_CLOSE</span></td><td>닫기·바깥 터치</td><td>ab_group · 노출 후 경과 시간 · <strong>이번 세션 거절 누적 횟수</strong>(상한 도달 여부 검증용)</td></tr>
       <tr><td>전 이벤트 공통</td><td>—</td><td><strong><span class="sheet-var">ab_group</span></strong>을 <code>data</code>에 실어야 전 지표를 군별로 분리 가능</td></tr>
     </tbody>
   </table>
@@ -443,8 +451,9 @@ ul li strong,ol li strong { color:var(--text); }
   <table class="ho"><thead><tr><th>구분</th><th>항목</th><th>확정 내용</th></tr></thead><tbody>
     <tr><td>파라미터</td><td><strong><code>ctx_popup_min_plays</code></strong></td><td><strong>3</strong> — 누적 완료 판수가 이 값 미만이면 미노출 (FTUE 보호)</td></tr>
     <tr><td>파라미터</td><td><strong><code>ctx_popup_trigger</code></strong></td><td><strong>level_start</strong> — 판 시작마다 노출. 세션당 상한·거절 쿨다운 없음(벤치 동일)</td></tr>
+    <tr><td>파라미터</td><td><strong><code>ctx_popup_session_reject_limit</code></strong></td><td><strong>3</strong> — 같은 세션에서 3회 닫으면 그 세션 동안 미노출. 다음 세션에서 초기화. 타임아웃·전환 실패는 거절로 세지 않음</td></tr>
     <tr><td>파라미터</td><td><strong><code>ctx_popup_per_session</code></strong></td><td><strong>0</strong> = 무제한(벤치 동일). 가드레일 이탈 시 조이는 손잡이로만 사용</td></tr>
-    <tr><td>로직</td><td><strong>노출 판정 순서</strong></td><td>① 실험군 → ② 누적 판수 ≥ min_plays → ③ 튜토리얼 진행 중 아님 → ④ <strong>판 시작마다 노출</strong>. 하나라도 불충족이면 미노출</td></tr>
+    <tr><td>로직</td><td><strong>노출 판정 순서</strong></td><td>① 실험군 → ② 누적 판수 ≥ min_plays → ③ 튜토리얼 진행 중 아님 → ④ 이번 세션 거절 횟수 &lt; session_reject_limit → ⑤ <strong>판 시작마다 노출</strong>. 하나라도 불충족이면 미노출</td></tr>
     <tr><td>배정</td><td><strong>A/B 그룹</strong></td><td><strong>유저 단위 고정 50:50.</strong> 최초 진입 시 확정 후 불변</td></tr>
     <tr><td>범위</td><td><strong>손대지 않는 것</strong></td><td>전환 기능 자체·팝업 UI·문구·친구 메시지/토너먼트 채널 <strong>전부 현행 유지</strong>. 빈도만 바꿔야 원인이 분리됨</td></tr>
     <tr><td>규모</td><td><strong>A/B 기간</strong></td><td>일 NRU 1,206명 기준 <strong>2주</strong>면 군당 약 8,450명. D1 17.5%에서 −2%p 감지 가능</td></tr>
@@ -468,6 +477,9 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td><strong>FTUE 보호</strong></td><td>신규 계정으로 1·2판 완료</td><td><strong>팝업 미노출</strong></td></tr>
     <tr><td><strong>첫 노출</strong></td><td>3판째 완료 후 다음 판 시작</td><td><strong>팝업 노출</strong></td></tr>
     <tr><td><strong>세션당 무제한</strong></td><td>팝업을 닫고 같은 세션에서 판을 이어서 진행</td><td>다음 판 시작에 다시 노출 · 세션당 횟수 제한 없음</td></tr>
+    <tr><td><strong>거절 상한</strong></td><td>같은 세션에서 팝업을 3회 닫고 판을 계속 진행</td><td>4번째부터 <strong>그 세션 동안 미노출</strong></td></tr>
+    <tr><td><strong>거절 카운트 초기화</strong></td><td>3회 닫아 막힌 뒤 게임을 재진입</td><td>새 세션에서 <strong>다시 노출</strong></td></tr>
+    <tr><td><strong>실패는 거절 아님</strong></td><td>전환 도중 타임아웃·실패 3회 유발</td><td>거절로 카운트되지 않아 <strong>계속 노출</strong></td></tr>
     <tr><td><strong>대조군</strong></td><td>대조군 계정으로 20판 이상</td><td>현행대로 사실상 미노출</td></tr>
   </tbody></table>
   <h4>C-2. A/B 배정</h4>
