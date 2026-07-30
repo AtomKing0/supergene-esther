@@ -140,7 +140,6 @@ ul li strong,ol li strong { color:var(--text); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="spec-meta.js"></script>
-<script src="spec-handoff.js" defer></script>
 </head><body>
 <a href="index.html" class="back-btn">← 목록</a>
 <button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">☰</button>
@@ -149,7 +148,6 @@ ul li strong,ol li strong { color:var(--text); }
   <a href="#s1">① 기획 의도 &amp; 확정 설계</a>
   <a href="#s2">② 개발 스펙</a>
   <a href="#s3">③ 검증 · 롤백</a>
-  <a href="#s4">④ 개발 핸드오프 · QA</a>
 </nav>
 
 <div class="hero">
@@ -173,8 +171,8 @@ ul li strong,ol li strong { color:var(--text); }
       <div class="kpi-card">
         <div class="kpi-label">Super Hard 실패율</div>
         <div class="kpi-value" style="color:var(--yellow)">18.6%</div>
-        <div class="kpi-sub">Hard의 3.2배 · 목표 16.0%</div>
-        <div class="kpi-trend trend-down">▼ 상대 −14%</div>
+        <div class="kpi-sub">Hard의 3.2배 · 목표 16.3%</div>
+        <div class="kpi-trend trend-down">▼ 상대 −12%</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">실패 시 평균 잔여</div>
@@ -185,7 +183,7 @@ ul li strong,ol li strong { color:var(--text); }
       <div class="kpi-card">
         <div class="kpi-label">Hard 대비 실패율 배수</div>
         <div class="kpi-value" style="color:var(--green)">3.2배</div>
-        <div class="kpi-sub">가드레일 2.0배 이상 유지</div>
+        <div class="kpi-sub">→ 2.8배 · 가드레일 2.0배</div>
         <div class="kpi-trend">티어 구분 지표</div>
       </div>
     </div>
@@ -240,13 +238,16 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>컬럼</th><th>As-Is</th><th>To-Be</th><th>의미</th></tr></thead>
     <tbody>
-      <tr><td><span class="sheet-var">deck_help_rate</span></td><td>625 <em>(6.25%)</em></td><td><strong>1500 <em>(15%)</em></strong></td><td>Hard는 3000. 그 절반 수준</td></tr>
-      <tr><td><span class="sheet-var">field_help_rate</span></td><td>375 <em>(3.75%)</em></td><td><strong>900 <em>(9%)</em></strong></td><td>Hard는 2450. 그 37% 수준</td></tr>
-      <tr><td><span class="sheet-var">pity_trigger_count</span></td><td>99 <em>(도달 불가)</em></td><td><strong>5</strong></td><td>Normal 5 · Hard 8</td></tr>
+      <tr><td><span class="sheet-var">deck_help_rate</span></td><td>625 <em>(6.25%)</em></td><td><strong>2200 <em>(22%)</em></strong></td><td>Hard 3000의 73%</td></tr>
+      <tr><td><span class="sheet-var">field_help_rate</span></td><td>375 <em>(3.75%)</em></td><td><strong>1320 <em>(13.2%)</em></strong></td><td>Hard 2450의 54%. 덱보다 보수적으로</td></tr>
+      <tr><td><span class="sheet-var">pity_trigger_count</span></td><td>99 <em>(도달 불가)</em></td><td><strong>10</strong></td><td>Tutorial 3 · Normal 5 · Hard 8 · 그다음 자리</td></tr>
     </tbody>
   </table>
   <div class="callout callout-yellow">
     <p><strong>99는 꺼진 값이 아니라 닿지 않는 값임.</strong> 코드 주석은 <span class="sheet-var">0 = pity 비활성</span>이라 적혀 있어 99가 켜져 있는 것처럼 보이지만, Super Hard 한 판의 필드 카드가 33.7장이라 카운터가 99까지 쌓일 수 없음. 임계값을 사거리 안으로 내리면 기존 코드가 그대로 동작함.</p>
+  </div>
+  <div class="callout callout-blue">
+    <p><strong>세 컬럼 모두 티어 순서를 유지함.</strong> <span class="sheet-var">pity_trigger_count</span>는 Tutorial 3 · Normal 5 · Hard 8로 <strong>어려울수록 커지는</strong> 컬럼임 — 안전장치가 늦게 걸린다는 뜻임. Super Hard는 그다음 자리인 10으로 둠. 확률 두 개도 Hard 미만을 유지해(73% · 54%) 세 축 전부 순서가 깨지지 않음.</p>
   </div>
 
   <div class="step-label">STEP 4</div>
@@ -254,13 +255,12 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>KPI</th><th>As-Is</th><th>To-Be</th><th>변화</th></tr></thead>
     <tbody>
-      <tr><td>Super Hard 실패율</td><td>18.6%</td><td><strong>16.0%</strong></td><td class="d-down">−2.6%p</td></tr>
+      <tr><td>Super Hard 실패율</td><td>18.6%</td><td><strong>16.3%</strong></td><td class="d-down">−2.3%p</td></tr>
       <tr><td>실패 시 평균 잔여</td><td>12.4장</td><td><strong>10장 내외</strong></td><td class="d-down">−2.4장</td></tr>
-      <tr><td>CC_0332</td><td>34.2%</td><td>29.5%</td><td class="d-down">−4.7%p</td></tr>
-      <tr><td>CC_0384</td><td>31.8%</td><td>27.4%</td><td class="d-down">−4.4%p</td></tr>
-      <tr><td>CC_0383</td><td>31.6%</td><td>27.2%</td><td class="d-down">−4.4%p</td></tr>
-      <tr><td>Hard 대비 실패율 배수</td><td>3.2배</td><td>2.7배</td><td>가드레일 2.0배</td></tr>
-      <tr><td>전체 판 완료율</td><td>95.7%</td><td>95.9%</td><td class="d-up">+0.13%p</td></tr>
+      <tr><td>최장 연속 미매칭</td><td>상한 없음 <em>(p99 25회)</em></td><td><strong>10회</strong></td><td class="d-down">상한 신설</td></tr>
+      <tr><td>고포기 3개 스테이지 합산 실패율</td><td>32.4%</td><td>28.5%</td><td class="d-down">−3.9%p</td></tr>
+      <tr><td>Hard 대비 실패율 배수</td><td>3.2배</td><td>2.8배</td><td>가드레일 2.0배</td></tr>
+      <tr><td>전체 판 완료율</td><td>95.7%</td><td>95.8%</td><td class="d-up">+0.12%p</td></tr>
     </tbody>
   </table>
   <div class="callout callout-yellow">
@@ -268,23 +268,37 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>보충 — 값을 이렇게 잡은 이유</h3>
-  <p>Super Hard 실맵 44개(필드 평균 33.0장 · 덱 평균 13.1장)에 클라이언트 로직을 이식해 후보를 비교함.</p>
+  <p>Super Hard 실맵 266개에 클라이언트 런타임 구제 로직을 이식해 조건당 1만 5,960판씩 돌리고, 아래 제약을 <strong>동시에</strong> 만족하는 조합을 찾음.</p>
   <table>
-    <thead><tr><th>deck / field / pity</th><th>상대 실패 감소</th><th>Hard 대비 도움 수준</th><th>판정</th></tr></thead>
+    <thead><tr><th>제약</th><th>요구</th><th>확정안</th></tr></thead>
     <tbody>
-      <tr><td>625 / 375 / 99</td><td>—</td><td>0%</td><td>현행</td></tr>
-      <tr><td>625 / 375 / 8 <em>(pity만)</em></td><td>−6%</td><td>24%</td><td>효과 미미</td></tr>
-      <tr><td>1250 / 750 / 6</td><td>−10%</td><td>40%</td><td>보수적 대안 · 1차 롤백 지점</td></tr>
-      <tr><td><strong>1500 / 900 / 5</strong></td><td><strong>−14%</strong></td><td><strong>54%</strong></td><td><strong>확정</strong></td></tr>
-      <tr><td>2000 / 1200 / 6</td><td>−16%</td><td>61%</td><td>다소 과함</td></tr>
-      <tr><td>2500 / 1500 / 5</td><td>−23%</td><td>89%</td><td>티어 구분 소멸</td></tr>
-      <tr><td>3000 / 2450 / 8 <em>(Hard 값)</em></td><td>−26%</td><td>100%</td><td>티어 의미 없음</td></tr>
+      <tr><td>컬럼 단조성</td><td>세 컬럼 모두 Hard 대비 방향 유지</td><td>2200 &lt; 3000 · 1320 &lt; 2450 · 10 &gt; 8</td></tr>
+      <tr><td>실효 도움 총량</td><td>Hard 미만</td><td>판당 3.02회 — Hard 4.43의 68%</td></tr>
+      <tr><td>최악 구간 길이</td><td>Hard 이상</td><td>10회 — Hard 8회</td></tr>
+      <tr><td>필드 보정 밀도</td><td>Hard 대비 충분히 낮게</td><td>뒤집힌 카드의 4.1% — Hard 7.7%의 53%</td></tr>
+      <tr><td>티어 구분</td><td>Hard 대비 실패율 2.0배 이상</td><td>2.8배</td></tr>
+      <tr><td>과보정 방지</td><td>실패율 13% 이상 유지</td><td>16.3%</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>deck / field / pity</th><th>상대 실패 감소</th><th>pity 발동/판</th><th>최장 미매칭</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td>625 / 375 / 99</td><td>—</td><td>0.00</td><td>상한 없음</td><td>현행</td></tr>
+      <tr><td>625 / 375 / 8 <em>(pity만)</em></td><td>−5.0%</td><td>0.92</td><td>8</td><td>효과 미미</td></tr>
+      <tr><td>1500 / 900 / 99 <em>(확률만)</em></td><td>−6.2%</td><td>0.00</td><td>상한 없음</td><td>꼬리 그대로</td></tr>
+      <tr><td>1500 / 900 / 10</td><td>−8.1%</td><td>0.35</td><td>10</td><td>효과 부족</td></tr>
+      <tr><td>1800 / 1080 / 10</td><td>−10.1%</td><td>0.28</td><td>10</td><td>보수적 대안 · 1차 롤백 지점</td></tr>
+      <tr><td><strong>2200 / 1320 / 10</strong></td><td><strong>−12.2%</strong></td><td><strong>0.20</strong></td><td><strong>10</strong></td><td><strong>확정</strong></td></tr>
+      <tr><td>2500 / 1500 / 10</td><td>−15.0%</td><td>0.16</td><td>10</td><td>덱이 Hard의 83% · 구분 흐려짐</td></tr>
+      <tr><td>2800 / 1680 / 10</td><td>−17.6%</td><td>0.12</td><td>10</td><td>다소 과함</td></tr>
+      <tr><td>3000 / 2450 / 8 <em>(Hard 값)</em></td><td>−21.8%</td><td>0.19</td><td>8</td><td>티어 의미 없음</td></tr>
     </tbody>
   </table>
   <ul>
-    <li><strong><span class="sheet-var">pity_trigger_count</span>만 내리는 안은 효과가 없음.</strong> 99 → 8로 내려도 상대 감소가 6% 남짓임. 카운터가 덱·필드 실패를 함께 먹는데 <span class="sheet-var">deck_help_rate</span>가 6.25%라 도움 카드 자체가 가뭄이어서, pity가 한 번 구제해도 곧바로 원래 상태로 돌아감. 덱 확률을 함께 올려야 실질 효과가 남음.</li>
-    <li><strong>티어 구분이 상한을 결정함.</strong> Hard 값까지 올리면 Super Hard가 Hard와 구분되지 않음. Hard 대비 도움 수준 54%가 "어렵되 손 놓게 두지는 않는" 위치임.</li>
-    <li><strong>시뮬은 상대 비교에만 사용함.</strong> 부스터(사용률 77%)와 런타임 기믹 주입을 모델에 포함하지 않았고 맵 생성기는 축약 모델로 대체함. 위 KPI 수치는 상대 감소율을 실측에 곱한 값이며 실제 폭은 배포 후 확정됨.</li>
+    <li><strong>확률만 올리는 안은 꼬리를 못 자름.</strong> 확률은 기억이 없어서 연속으로 빗나가는 구간 자체는 사라지지 않고 드물어지기만 함. 확률을 Normal 수준까지 끌어올려도 최장 연속 미매칭이 15회로 남고, 그 지점에선 실패율이 55%까지 내려가 티어가 Normal이 됨.</li>
+    <li><strong>pity만 내리는 안도 답이 아님.</strong> 확률을 그대로 두고 임계값만 내리면 확률 도움이 가물어 카운터가 계속 임계에 닿음. 구제의 주력이 pity가 되면서 "확률로 도와주는 게임"이 아니라 "N번 틀리면 무조건 주는 게임"이 됨.</li>
+    <li><strong>확정안의 pity 발동은 판당 0.20회로 Hard(0.19회)와 같은 프로파일임.</strong> 평상시 난이도는 확률이 담당하고 pity는 드물게 걸리는 백스톱으로만 작동함. 원 설계에서 pity가 맡던 역할과 같음.</li>
+    <li><strong>시뮬은 상대 비교에만 사용함.</strong> 맵 생성기와 부스터(사용률 77%)·힌트·언두를 모델에 넣지 않아 절대 실패율은 라이브보다 높음. 위 KPI는 상대 감소율을 실측에 곱한 값이며 실제 폭은 배포 후 확정됨.</li>
   </ul>
 
   <h3>범위 밖</h3>
@@ -323,8 +337,8 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>항목</th><th>확인 내용</th></tr></thead>
     <tbody>
-      <tr><td>카운터 공유</td><td><span class="sheet-var">_pityFailCount</span>를 덱·필드 보정이 공유함. Super Hard는 두 확률이 모두 낮아 실패가 양쪽에서 빠르게 쌓이므로, 같은 숫자여도 Normal보다 자주 발동함. 판당 발동 횟수가 과다하지 않은지 확인 필요</td></tr>
-      <tr><td>판 단위 초기화</td><td>판마다 <span class="sheet-var">StageViewModel</span>이 새로 생성돼 카운터가 0에서 시작함. 판을 가로지른 이월이 없어야 함</td></tr>
+      <tr><td>카운터 공유</td><td><span class="sheet-var">_pityFailCount</span>를 덱·필드 보정이 공유함. 시뮬레이션상 판당 발동은 0.20회로 Hard(0.19회)와 같은 수준이며 4천 판 기준 최댓값 2회임. QA에서 육안으로 재확인 필요</td></tr>
+      <tr><td>판 단위 초기화</td><td><span class="sheet-var">new StageViewModel</span>이 <span class="sheet-var">initGame()</span> 한 곳에서만 호출되므로 판마다 새 인스턴스가 생성돼 카운터가 0에서 시작함 — 이월 없음을 코드로 확인함. 참고로 이월이 발생하면 판당 발동이 두 배가 되고 첫 판정부터 강제 구제가 걸림</td></tr>
       <tr><td>폴백 방향</td><td><span class="sheet-var">getDeckHelpRate()</span>는 시트 조회 실패 시 10000(100%)을, <span class="sheet-var">getFieldHelpRate()</span>는 0을 반환함. 폴백 방향이 서로 반대라 시트 로드 실패 시 난이도가 급격히 쉬워짐. 이번 변경과 별개로 인지 필요</td></tr>
       <tr><td>티어 스킵 조건</td><td>튜토리얼과 tier 1은 필드 보정이 강제로 0임. Super Hard만 바꾸므로 영향 없음</td></tr>
     </tbody>
@@ -364,91 +378,24 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
       <tr><td>Super Hard 실패율</td><td>tier 20004의 result ≠ clear 비율</td><td>16% 내외 · 13% 미만이면 과보정</td></tr>
       <tr><td>Hard 대비 실패율 배수</td><td>SH 실패율 ÷ Hard 실패율</td><td><strong>2.0배 이상 유지</strong></td></tr>
-      <tr><td>고포기 스테이지</td><td>CC_0332·0383·0384 개별 실패율</td><td>각 5%p 이상 하락</td></tr>
+      <tr><td>고포기 스테이지</td><td>CC_0332·0383·0384 합산 실패율</td><td>3%p 이상 하락 · 스테이지별 편차 확인</td></tr>
       <tr><td>실패 시 평균 잔여</td><td>2300의 remaining_card_count 평균</td><td>12.4장 → 10장 내외</td></tr>
       <tr><td>부스터 사용률</td><td>booster_used 비어있지 않은 비율</td><td>77% 대비 하락이면 정상</td></tr>
-      <tr><td>Super Hard 판 길이</td><td>2300의 play_time 중앙값</td><td>94초 대비 크게 변하지 않아야 함</td></tr>
+      <tr><td>Super Hard 판 길이</td><td>2300의 play_time 중앙값</td><td>98초 대비 크게 변하지 않아야 함</td></tr>
     </tbody>
   </table>
 
   <h3>롤백 기준</h3>
   <ul>
-    <li><strong>Hard 대비 실패율 배수가 2.0배 미만</strong>이면 Super Hard가 Hard와 구분되지 않는다는 뜻이므로 <strong>1250 / 750 / 6</strong>으로 한 단계 되돌림</li>
-    <li>한 단계 되돌려도 배수가 회복되지 않으면 <strong>625 / 375 / 99</strong> 현행값으로 원복함</li>
+    <li><strong>Hard 대비 실패율 배수가 2.0배 미만</strong>이면 Super Hard가 Hard와 구분되지 않는다는 뜻이므로 <strong>1800 / 1080 / 10</strong>으로 한 단계 되돌림</li>
+    <li>한 단계 되돌려도 배수가 회복되지 않으면 <strong>625 / 375 / 99</strong> 현행값으로 원복함. 한 단계 하향안도 pity 10을 유지해 컬럼 순서가 깨지지 않음</li>
     <li><strong>Super Hard 실패율이 13% 미만</strong>으로 떨어지면 과보정으로 판정하고 위와 동일하게 단계 하향함</li>
     <li>롤백 경로는 시트 3셀 원복이며 클라이언트 재배포가 필요 없어야 함</li>
   </ul>
 
   <div class="callout callout-blue">
-    <p><strong>시뮬레이션 기준.</strong> 위 후보 비교는 라이브 Super Hard 실맵 44개(필드 평균 33.0장·덱 평균 13.1장)에 클라이언트 로직을 이식해 산출함. 부스터(사용률 77%)와 런타임 기믹 주입은 모델에 포함하지 않았고 맵 생성기는 축약 모델로 대체했으므로, <strong>후보 간 상대 비교에만 사용함</strong>. 기대 결과의 수치는 상대 감소율을 실측에 곱한 값이며 실제 폭은 배포 후 확정됨.</p>
+    <p><strong>시뮬레이션 기준.</strong> 위 후보 비교는 라이브 Super Hard 실맵 266개(필드 평균 32.5장·덱 중앙값 12장)에 클라이언트 런타임 구제 로직 7개 함수를 이식해 조건당 1만 5,960판씩 산출함. 카드 겹침 판정도 실제와 동일한 방식으로 계산했고, 보드 생성 난수를 게임플레이 난수와 분리해 조건 간 동일 보드를 보장함. 부스터(사용률 77%)·힌트·언두와 런타임 기믹 주입은 모델에 포함하지 않았고 맵 생성기는 축약 모델로 대체했으므로 <strong>후보 간 상대 비교에만 사용함</strong>. 기대 결과의 수치는 상대 감소율을 실측에 곱한 값이며 실제 폭은 배포 후 확정됨.</p>
   </div>
-</section>
-
-<section id="s4">
-  <div class="section-header">
-    <div class="section-num section-num-2">④</div>
-    <div class="section-meta">
-      <div class="section-title">개발 핸드오프 · 엣지케이스 · QA</div>
-      <span class="section-audience aud-dev">개발 · QA</span>
-    </div>
-  </div>
-  <style>#s4 table.ho td:first-child,#s4 table.ho th:first-child{white-space:nowrap;width:1%;color:var(--text2);font-weight:600}#s4 h4{margin:18px 0 8px;font-size:0.95rem;color:var(--accent)}</style>
-
-  <h3>A. 개발 핸드오프 — 확정 구현 항목</h3>
-  <p>기획 확정본 기준. 이 표의 값이 구현의 단일 기준이며, 본문과 어긋나면 이 표가 우선함.</p>
-  <table class="ho"><thead><tr><th>구분</th><th>항목</th><th>확정 내용</th></tr></thead><tbody>
-    <tr><td>시트</td><td><strong>difficulty_tier 20004 · deck_help_rate</strong></td><td>625 → <strong>1500</strong> (6.25% → 15%)</td></tr>
-    <tr><td>시트</td><td><strong>difficulty_tier 20004 · field_help_rate</strong></td><td>375 → <strong>900</strong> (3.75% → 9%)</td></tr>
-    <tr><td>시트</td><td><strong>difficulty_tier 20004 · pity_trigger_count</strong></td><td>99 → <strong>5</strong> (도달 불가 → 사거리 안)</td></tr>
-    <tr><td>시트</td><td><strong>변경 범위</strong></td><td>20004(Super Hard) <strong>단 1행 3셀</strong>. 20002·20003·튜토리얼 행 불변</td></tr>
-    <tr><td>클라이언트</td><td><strong>코드 변경</strong></td><td><strong>없음.</strong> <code>getAvailableCardsByDeckHelpRate()</code>·<code>applyFieldHelpToCards()</code>·<code>_pityFailCount</code> 기존 구현 그대로 동작</td></tr>
-    <tr><td>클라이언트</td><td><strong>재배포</strong></td><td><strong>불필요.</strong> 시트 반영만으로 적용</td></tr>
-    <tr><td>맵</td><td><strong>맵 데이터</strong></td><td>수정 없음. CC_0332·CC_0383·CC_0384 포함 전 맵 불변</td></tr>
-    <tr><td>롤백</td><td><strong>경로</strong></td><td>같은 3셀 원복. 1단계 = <code>1250 / 750 / 6</code>, 2단계 = <code>625 / 375 / 99</code>(현행)</td></tr>
-    <tr><td>배포</td><td><strong>동시 배포 권장</strong></td><td>SPEC-029 적용 시 Super Hard 비중 6.0% → 9.0%로 올라 같은 조치의 효과가 1.5배가 됨</td></tr>
-  </tbody></table>
-
-  <h3>B. 엣지케이스 처리</h3>
-  <table><thead><tr><th>상황</th><th>처리</th></tr></thead><tbody>
-    <tr><td><strong>pity 카운터를 덱·필드가 공유함</strong></td><td><code>_pityFailCount</code> 하나를 두 보정이 같이 씀. Super Hard는 두 확률이 모두 낮아 실패가 양쪽에서 빠르게 쌓이므로 <strong>같은 임계값 5여도 Normal보다 자주 발동함</strong>. 판당 발동 횟수를 QA에서 계측해 과다하면 6으로 한 단계 올림</td></tr>
-    <tr><td><strong>판을 가로지른 카운터 이월</strong></td><td>판마다 <code>StageViewModel</code>이 새로 생성돼 0에서 시작해야 함. 이월되면 판 시작 직후 즉시 pity가 터지므로 <strong>판 단위 초기화를 반드시 확인</strong></td></tr>
-    <tr><td><strong>덱 pity인데 매칭 카드 풀이 비어 있음</strong></td><td>기존 구현이 필드 맨 위 카드 기준으로 카드를 즉석 생성해 구제를 확정시킴. 풀이 비어도 pity가 헛돌지 않아야 함</td></tr>
-    <tr><td><strong>시트 로드 실패 시 폴백 방향이 반대</strong></td><td><code>getDeckHelpRate()</code>는 실패 시 10000(100%), <code>getFieldHelpRate()</code>는 0을 반환함. <strong>로드 실패 시 난이도가 급격히 쉬워짐</strong>. 이번 변경과 무관한 기존 이슈이나 QA 중 시트 로드 실패를 만나면 이 현상임을 인지할 것</td></tr>
-    <tr><td><strong>튜토리얼·tier 1</strong></td><td>필드 보정이 강제로 0임. Super Hard만 바꾸므로 영향 없음 — 회귀만 확인</td></tr>
-    <tr><td><strong>과보정으로 너무 쉬워짐</strong></td><td>Super Hard 실패율이 <strong>13% 미만</strong>이거나 Hard 대비 배수가 <strong>2.0배 미만</strong>이면 티어 구분이 소멸한 것으로 보고 1단계 롤백</td></tr>
-    <tr><td><strong>부스터와 중첩</strong></td><td>부스터 사용률 77% 구간에 구제가 겹침. 부스터 사용률이 <strong>하락</strong>하면 정상(덜 급해짐), 상승하면 구제가 체감되지 않는다는 신호</td></tr>
-  </tbody></table>
-
-  <h3>C. QA 체크리스트</h3>
-  <h4>C-1. 시트 반영 확인</h4>
-  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
-    <tr><td><strong>값 적용</strong></td><td>QA 빌드에서 difficulty_tier 20004 행 조회</td><td>deck 1500 · field 900 · pity 5로 로드됨</td></tr>
-    <tr><td><strong>타 티어 불변</strong></td><td>20002·20003 행 조회</td><td>As-Is 값 그대로. 변경 흔적 없음</td></tr>
-    <tr><td><strong>클라 버전</strong></td><td>빌드 번호 확인</td><td>시트만 바꿨으므로 <strong>재배포 없이</strong> 값이 반영돼야 함</td></tr>
-  </tbody></table>
-  <h4>C-2. 구제 동작</h4>
-  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
-    <tr><td><strong>덱 보정 발동</strong></td><td>Super Hard 진입 후 드로우 반복</td><td>매칭 가능(±1) 카드가 현행보다 눈에 띄게 자주 나옴</td></tr>
-    <tr><td><strong>필드 보정 발동</strong></td><td>카드 제거로 새 카드 뒤집기 반복</td><td>뒤집힌 카드가 현재 카드 ±1로 보정되는 경우 발생</td></tr>
-    <tr><td><strong>pity 강제 발동</strong></td><td>연속 5회 확률 실패 유도</td><td><strong>6회차에 확률 무시하고 도움 카드 확정 지급</strong></td></tr>
-    <tr><td><strong>pity 리셋</strong></td><td>pity 발동 직후 상태 확인</td><td>카운터 0으로 초기화. 곧바로 재발동하지 않음</td></tr>
-    <tr><td><strong>판당 발동 과다 여부</strong></td><td>CC_0332에서 10판 플레이하며 pity 발동 횟수 기록</td><td>판당 발동이 과다하지 않을 것 — 계측치를 기획에 전달</td></tr>
-  </tbody></table>
-  <h4>C-3. 고포기 스테이지 집중 확인</h4>
-  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
-    <tr><td><strong>CC_0332</strong></td><td>10판 이상 플레이</td><td>pity 발동이 실제로 일어남. 실패 시 잔여 카드가 현행 12.4장보다 줄어듦</td></tr>
-    <tr><td><strong>CC_0383 · CC_0384</strong></td><td>각 10판 이상 플레이</td><td>위와 동일</td></tr>
-    <tr><td><strong>판 길이</strong></td><td>판별 소요 시간 기록</td><td>중앙값 94초 대비 크게 늘거나 줄지 않음</td></tr>
-  </tbody></table>
-  <h4>C-4. 회귀</h4>
-  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
-    <tr><td><strong>Normal(20002)</strong></td><td>10판 플레이</td><td>체감 난이도·구제 빈도 변화 없음</td></tr>
-    <tr><td><strong>Hard(20003)</strong></td><td>10판 플레이</td><td>변화 없음. Super Hard보다 여전히 쉬움</td></tr>
-    <tr><td><strong>튜토리얼</strong></td><td>신규 계정으로 진입</td><td>필드 보정 0 유지. 동작 변화 없음</td></tr>
-    <tr><td><strong>롤백 동작</strong></td><td>3셀을 625/375/99로 되돌림</td><td><strong>클라 재배포 없이</strong> 즉시 현행 난이도로 복귀</td></tr>
-  </tbody></table>
-
-  <p><p><strong>판정은 배포 후 7일 관측으로 함.</strong> QA는 “구제가 실제로 작동하는가”와 “판당 발동이 과다하지 않은가”까지만 보고, 실패율 목표치(16% 내외) 달성 여부는 라이브 지표로 판정함.</p></p>
 </section>
 
 </div>
@@ -458,6 +405,7 @@ ul li strong,ol li strong { color:var(--text); }
   const SPEC_ID = 'spec-031';
 
   SPEC_META.mountBadges(SPEC_ID);
+
   // ── 사이드바 네비 ──
   var links    = document.querySelectorAll('.nav-sidebar a');
   var sections = document.querySelectorAll('section[id]');
