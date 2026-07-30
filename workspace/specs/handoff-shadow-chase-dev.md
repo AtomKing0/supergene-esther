@@ -92,7 +92,7 @@
 - [ ] 결과 화면의 행잉 태그 게이지 **8/8 만충 · 글로우 → 🔑 열쇠 획득** 표시
 - [ ] ★**보상 지급 없음** · ★**결과 화면(`PopupCompleteLevel`) 무변경** — 판 보상 · **RV ×2** · 홈 버튼 전부 기존 그대로. 추가되는 것은 기존 행잉 태그 컴포넌트의 **상태 변화**뿐
 - [ ] 이 시점에 **사이클 종료** 처리 → `cooldown_until` 세팅(쿨다운 시작). 수령 지연이 다음 사이클을 막지 않아야 함
-- [ ] `5448_EVENT_SHADOW_CHASE_KEY_GET` 발화
+- [ ] `5449_EVENT_SHADOW_CHASE_COMPLETE` 발화 — **보상은 서버가 완주 시점에 자동 지급**(`isReceivedChest` false→true). 클라 수령 요청 없음
 
 ### 4-A-2. 로비 체스트 오픈 팝업 (신규 1종)
 
@@ -101,16 +101,16 @@
 - [ ] ★**[Open] 탭이 연출 트리거** — 유저 입력 전에는 열쇠가 등장하지 않음
 - [ ] ★**오픈 전 보상 미노출** — 잠긴 상태에서 내용물을 공개하면 여는 행위의 페이오프가 사라짐. 사전 확인은 **ⓘ 인포 팝업**으로만
 - [ ] 보상 품목·수량은 `event_shadow_chest` 시트 연동(**하드코딩 금지**)
-- [ ] 지급: 서버 커밋(**멱등 `txn_id`**) — `/api/event/shadow-chase/claim-chest` 신규 (기존 `/api/event/*` 관례)
-- [ ] `5443_EVENT_SHADOW_CHASE_CHEST_OPEN` = **[Open] 탭 = 실지급 시점**에 발화
+- [ ] ★**지급 = 서버가 완주 시점에 자동** — 클라 수령 API·멱등 txn_id 불필요. 팝업은 **연출 전용**
+- [ ] 지급 로그는 `5449`가 겸함 — **별도 수령 로그 없음**
 - [ ] 연출 종료 후 **팝업 자동 닫힘** → 로비 복귀
 
 ### 4-A-3. 미수령 열쇠 처리 (필수)
 
-- [ ] 열쇠 획득과 수령은 **분리된 시점**임 — 획득 후 앱 종료·강종·**이벤트 기간 종료**에도 **열쇠는 소멸하지 않음**
-- [ ] 미수령 상태면 **다음 로비 복귀 시 팝업 재노출**
-- [ ] 미수령 체스트가 **2개 이상 쌓이면 순차로 1개씩** 처리
-- [ ] claim 실패(네트워크) → 보상 **미소멸** · 재시도 가능 · 재진입 시 미수령 상태 복원
+- [ ] **미수령 상태가 없음** — 완주 즉시 지급. 팝업은 아직 못 보여준 **연출 대기 큐**
+- [ ] 연출 미표시분은 **다음 로비 복귀 시 재생**
+- [ ] 연출 대기분이 **2건 이상이면 순차로 1개씩** 재생
+- [ ] 팝업 연출을 못 봤어도 **재화는 이미 지급됨** — 미표시 연출은 다음 로비 복귀 시 재생
 
 ## 4-B. 타이머 연장 — 타이머 말풍선 [+5 min] (클라/서버) · ★**드롭 가능 항목**
 
@@ -124,7 +124,7 @@
 - [ ] RV 논필(no-fill)·시청 중단 → **연장 미적용 · 횟수 미차감**(재시도 가능)
 - [ ] 시청 중 강종 → **중복 연장 금지**. 서버가 사이클당 1회를 최종 판정
 - [ ] `ad_extend_max_per_cycle=0`이면 기능 OFF (개별 킬스위치)
-- [ ] `5447_EVENT_SHADOW_CHASE_AD_EXTEND` 로깅(노출/시청/결과) · `5448`·`5444`에 `extended(bool)` 기록
+- [ ] `5447` 로깅 = **impression / watch_start 2단계만**(result·extend_sec 제거) · `5449`·`5444`에 `extended` 기록 · **`LogRVPosition`에 `shadow_chase_extend` 추가 필수**
 
 ---
 
@@ -167,26 +167,35 @@
 
 | 코드 | 발화 시점 | data 필드 |
 |---|---|---|
-| 5440_EVENT_SHADOW_CHASE_SLOT_OPEN | 발동 조건 충족(NOTIFY) | `cycle_id`·`trigger_type`·`window_sec`·`target_clear`·**`fire_side(server/client)`** |
-| 5441_EVENT_SHADOW_CHASE_ACTIVATE | 발동 연출 재생(사이클 시작·타이머 시작) | `cycle_id`·`remain_sec`·**`fx_completed(bool)`**·**`fx_watch_sec`** |
-| 5442_EVENT_SHADOW_CHASE_ROUND_CLEAR | 사이클 중 판 클리어(카운트 증가) | `cycle_id`·**`round_idx(1~total_rounds)`**·`clear_count`·`elapsed_sec`·**`level_id`**·**`round_sec`** |
-| 5443_EVENT_SHADOW_CHASE_CHEST_OPEN | **로비 체스트 오픈 팝업 [Open] 탭** — 실지급 시점 | `cycle_id`·`elapsed_sec`·`txn_id`·**`chest_tier(normal/jackpot)`**·**`reward_keys[]`**·**`extended(bool)`** |
-| 5444_EVENT_SHADOW_CHASE_FAIL | 타이머 만료(또는 강제 만료) | `cycle_id`·`rounds_cleared`·`reason(timeout/event_end)`·**`extended(bool)`** |
-| 5445_EVENT_SHADOW_CHASE_HAMMER_GRANT | 해머 지급 | `cycle_id`·**`amount`**·`balance_after` |
-| 5446_EVENT_SHADOW_CHASE_DECO_GATE_UNLOCK | 해머로 데코 게이트 해제 | `cycle_id`·`gate_id` |
-| **5448_EVENT_SHADOW_CHASE_KEY_GET** | **신규** — 8판 완주·열쇠 획득(지급 아님) | `cycle_id`·`elapsed_sec`·`extended(bool)` |
-| **5447_EVENT_SHADOW_CHASE_AD_EXTEND** | **신규**(연장 채택 시) — 말풍선 노출/시청/결과 | `cycle_id`·`step(impression/watch_start/complete)`·`remain_sec_before`·`extend_sec`·`result(success/abort/no_fill)` |
+| 5440_EVENT_SHADOW_CHASE_SLOT_OPEN | 매 로비에서 조건 체크 | `cycle_id`·`window_sec`·`target_clear` |
+| 5441_EVENT_SHADOW_CHASE_ACTIVATE | 발동 연출을 **끝까지 본 경우**(미발화 = 도중 앱 종료) | `cycle_id`·**`fx_watch_sec`** |
+| 5442_EVENT_SHADOW_CHASE_ROUND_CLEAR | 사이클 중 판 클리어 | `cycle_id`·`round_idx`·`clear_count`·`elapsed_sec`·**`remain_sec`**·`stage_id`·`play_time` |
+| 5444_EVENT_SHADOW_CHASE_FAIL | 타이머 만료 | `cycle_id`·`rounds_cleared`·`extended` |
+| 5447_EVENT_SHADOW_CHASE_AD_EXTEND | 말풍선 노출 / 광고 버튼 클릭 **각 1회** | `cycle_id`·`step(impression/watch_start)`·`remain_sec_before` |
+| **5449_EVENT_SHADOW_CHASE_COMPLETE** | **완주 시 1회**(`isReceivedChest` false→true) | `cycle_id`·**`remain_sec`**·`extended`·`chest_tier` |
 
 `round_idx`는 **`1~8` 하드코딩 금지** — `total_rounds`가 시트 변수임.
 
-### ★ 로그 필드 보강 이유 (전부 KPI 산출 필수 · 사후 소급 불가)
+### 🗑 폐기 4종 — 기존 로그로 대체 (개발 리뷰 7/30)
 
-- `5443.chest_tier` — 없으면 Normal/Jackpot 구분 불가 → "데코 진입률" 산출 불능
-- `5445.amount` — `balance_after`만으로는 다른 경로 획득분과 섞여 발행량 역산 불가
-- `5442.round_idx` — `total_rounds`가 시트 변수(6판 해피데이 운영 레버)인데 `1~8` 고정이면 차등 세팅 시 스키마 파손
-- `5442.stage_id`/`play_time` — **레벨 구간별 판당 소요 실측**에 직결. **신규 필드가 아니라 `2300_GAMEPLAY_FINISH`가 이미 보내는 필드명**을 그대로 사용
-- `5441.fx_completed` — 강제 시청 구간 이탈 측정
-- `5440.fire_side` — 참여율(`5441÷5440`) 분모 정의가 판정 주체(개발 확인 ③)에 따라 달라짐
+| 폐기 | 대체 경로 |
+|---|---|
+| `5443_CHEST_OPEN` | 보상이 **완주 시점 서버 자동 지급**으로 확정 — 별도 수령 이벤트 없음, `5449`가 겸함 |
+| `5448_KEY_GET` | 완주와 지급이 같은 시점이 되어 `5449`로 통합 |
+| `5445_HAMMER_GRANT` | **`9402_HAMMER_TRANSACTION_LOG`**(모든 해머 증감)로 발행량 추적. `5449` × `event_shadow_chest` 역산도 가능 |
+| `5446_DECO_GATE_UNLOCK` | **`8102_CITY_DECO_UPGRADE_SUCCESS`** + `9402` 조인으로 해머→데코 전환 산출 |
+
+**상수였던 필드도 제거** — `deferred`(이월 규칙 폐기) · `fire_side`(판정 전부 서버) · `trigger_type`(로비 복귀 단일) · `fx_completed`(스킵 경로 없음 → 발화가 곧 완주 신호) · `reason`(timeout 단일) · `result`·`extend_sec`(RV 로그·시트 고정값)
+
+### ⚠ 계측 구현 주의
+
+- `5442.round_idx` — **서버 `clearedRounds` 값 그대로**. 클라 자체 카운터 금지
+- `5442.clear_count` — 완주 시 서버가 0으로 리셋할 수 있어 **시트 `total_rounds` 폴백** 필요. 게이팅을 `sprintEndAt > now`로 하면 **만료 후 마지막 판 누락**
+- `elapsed_sec` — CCstorage 저장 시작 시각 기준. `sprintEndAt − duration_sec` 역산 금지(**RV 연장 시 5분 틀어짐**)
+- `remain_sec` — `Math.max(0, sprintEndAt − now)`. **`0` = 만료 후 도착한 gameEnd로 카운트/완주**(정상). 검산 = `elapsed_sec + remain_sec = duration_sec`
+- `stage_id`·`play_time` — **`2400_FINISH_RESULT`와 동일 필드명**
+- `5447.impression`은 **사이클당 다회**(프리레벨 팝업 열 때마다). 클릭률 = `watch_start ÷ impression`. 연장 성공 여부는 `4210`/`4220` 조인 → **`LogRVPosition`에 `shadow_chase_extend` 추가 필수**
+- **`5449.remain_sec` 분포가 `duration_sec`/`total_rounds` 밸런싱의 핵심 지표**
 
 ### ★ RV 분해 (계측 설계 · v1 필수)
 
