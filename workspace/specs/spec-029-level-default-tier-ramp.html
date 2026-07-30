@@ -264,11 +264,11 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>컬럼</td><td>key_number · priority · condition_type · param_1 · param_2 · result_tier_id · in_use · memo</td><td>동일 + <strong><span class="sheet-var">level_min</span> · <span class="sheet-var">level_max</span></strong> 2개 추가</td></tr>
       <tr><td>행 수</td><td>9행</td><td><strong>16행</strong> (7행 추가)</td></tr>
       <tr><td>레벨 조건</td><td><span class="sheet-var">condition_type</span>으로만 존재</td><td><strong>모든 규칙 행이 레벨 구간을 가질 수 있음</strong></td></tr>
-      <tr><td>기존 9행 처리</td><td>—</td><td>두 컬럼 <strong>공란</strong> = 전 레벨 적용. 현행 동작 그대로 유지</td></tr>
+      <tr><td>기존 9행 처리</td><td>—</td><td><strong>1 / 99999</strong> 입력 = 전 레벨 적용. 현행 동작 그대로 유지</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <p><strong><span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span>가 비어 있으면 전 레벨에 적용됨.</strong> 그래서 컬럼만 추가하고 값을 안 넣은 상태에서는 지금과 100% 동일하게 동작함. 값이 채워진 행이 있으면 그 행이 공란 행을 덮어씀. <strong>롤백은 추가한 7행의 <span class="sheet-var">in_use</span>를 FALSE로 내리는 것</strong>이고, 그러면 공란 행만 남아 현행으로 복귀함.</p>
+    <p><strong>전 레벨 적용은 <span class="sheet-var">1 / 99999</span>로 씀.</strong> 밸런스시트는 빈 셀을 두지 않는 규칙이라 "공란 = 전 레벨" 같은 암묵 규칙을 쓰지 않고 범위를 명시함. 기존 9행에 <span class="sheet-var">1 / 99999</span>를 넣은 상태는 지금과 100% 동일하게 동작함.<br>같은 <span class="sheet-var">condition_type</span>에서 매칭 행이 둘 이상이면 <strong>구간이 좁은 행이 이김</strong>. <strong>롤백은 추가한 7행의 <span class="sheet-var">in_use</span>를 FALSE로 내리는 것</strong>이고, 그러면 <span class="sheet-var">1 / 99999</span> 행만 남아 현행으로 복귀함.</p>
   </div>
 
   <h4>② 카운터 값</h4>
@@ -279,14 +279,14 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><th>level_min</th><th>level_max</th><th>As-Is</th><th>To-Be</th><th>As-Is</th><th>To-Be</th></tr>
     </thead>
     <tbody>
-      <tr><td>공란</td><td>공란</td><td>6</td><td>6 <em>(유지)</em></td><td>15</td><td>15 <em>(유지)</em></td></tr>
+      <tr><td>1</td><td>99999</td><td>6</td><td>6 <em>(유지)</em></td><td>15</td><td>15 <em>(유지)</em></td></tr>
       <tr><td>25</td><td>99</td><td>6</td><td><strong>5</strong></td><td>15</td><td>15 <em>(유지)</em></td></tr>
       <tr><td>100</td><td>349</td><td>6</td><td><strong>4</strong></td><td>15</td><td><strong>12</strong></td></tr>
       <tr><td>350</td><td>799</td><td>6</td><td><strong>3</strong></td><td>15</td><td><strong>10</strong></td></tr>
       <tr><td>800</td><td>99999</td><td>6</td><td><strong>2</strong></td><td>15</td><td><strong>9</strong></td></tr>
     </tbody>
   </table>
-  <p>숫자가 작을수록 자주 나옴. <span class="sheet-var">hard_guarantee 2</span>는 "Normal이 2판 연속되면 다음은 Hard"라는 뜻임. 첫 줄(공란·공란)이 기존 행이고 레벨 1~24를 담당함 — 값이 안 바뀌므로 손대지 않음. 나머지 4개 구간이 <strong>신규 7행</strong>이며 구체적인 행 데이터는 ② 개발 스펙에 있음.</p>
+  <p>숫자가 작을수록 자주 나옴. <span class="sheet-var">hard_guarantee 2</span>는 "Normal이 2판 연속되면 다음은 Hard"라는 뜻임. 첫 줄(1 / 99999)이 기존 행이고 <strong>레벨 조건 컬럼만 채우고 값은 그대로</strong> 둠. 아래 4개 구간 행이 자기 레벨에서 이 행을 덮어쓰므로 결과적으로 레벨 1~24를 담당함. 나머지 4개 구간이 <strong>신규 7행</strong>이며 구체적인 행 데이터는 ② 개발 스펙에 있음.</p>
 
   <h4>배분 순서가 이렇게 바뀜</h4>
   <div class="seq-block">
@@ -385,10 +385,10 @@ ul li strong,ol li strong { color:var(--text); }
   <h3>시트 변경 — 신규 테이블 없음, 컬럼 2개 추가</h3>
   <div class="sheet-block">
     <div class="sheet-block-title">PST_dynamic_level 추가 컬럼</div>
-    <div class="sheet-row"><span class="sheet-row-var">level_min</span><span class="sheet-row-default">공란</span><span class="sheet-row-unit">정수</span><span class="sheet-row-desc">이 행이 적용되는 최소 유저 레벨 (이상). 공란이면 전 레벨</span></div>
-    <div class="sheet-row"><span class="sheet-row-var">level_max</span><span class="sheet-row-default">공란</span><span class="sheet-row-unit">정수</span><span class="sheet-row-desc">이 행이 적용되는 최대 유저 레벨 (이하). 공란이면 전 레벨</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">level_min</span><span class="sheet-row-default">1</span><span class="sheet-row-unit">정수</span><span class="sheet-row-desc">이 행이 적용되는 최소 유저 레벨 (이상). 빈 셀 금지 — 전 레벨이면 1</span></div>
+    <div class="sheet-row"><span class="sheet-row-var">level_max</span><span class="sheet-row-default">99999</span><span class="sheet-row-unit">정수</span><span class="sheet-row-desc">이 행이 적용되는 최대 유저 레벨 (이하). 빈 셀 금지 — 전 레벨이면 99999</span></div>
   </div>
-  <p>기존 9개 행은 두 컬럼 모두 <strong>공란</strong>으로 두어 현행 동작을 그대로 유지함. 여기에 <strong>7행만 신규 추가</strong>함. 레벨 1~24는 기존 행이 그대로 담당하고, 25~99 구간의 <span class="sheet-var">super_hard_guarantee</span>도 현행값 15와 같으므로 공란 행에 맡기고 별도 행을 두지 않음.</p>
+  <p>기존 9개 행은 두 컬럼에 <strong>1 / 99999</strong>를 넣어 현행 동작을 그대로 유지함. 여기에 <strong>7행만 신규 추가</strong>함. 레벨 1~24는 기존 행이 담당하고, 25~99 구간의 <span class="sheet-var">super_hard_guarantee</span>도 현행값 15와 같으므로 별도 행을 두지 않음.</p>
 
   <h3>추가 행 (7행)</h3>
   <table>
@@ -406,8 +406,8 @@ ul li strong,ol li strong { color:var(--text); }
   <p><span class="sheet-var">hard_guarantee</span>는 <strong>2가 하한</strong>임. 1로 내리면 배분 주기가 2판이 되어 패턴이 노출됨 — ① 섹션 참조.</p>
 
   <h3>변경 로직</h3>
-  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>레벨 필터를 먼저 적용함</strong><p>규칙 평가 전에 <span class="sheet-var">level_min ≤ 유저 레벨 ≤ level_max</span>를 만족하지 않는 행을 제외함. 두 값이 공란인 행은 항상 통과함.</p></div></div>
-  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>같은 condition_type이 둘 이상 남으면 레벨 조건이 있는 행이 이김</strong><p><span class="sheet-var">level_min</span>이 지정된 행이 공란 행을 덮어씀. 지정 행이 없으면 공란 행이 적용됨.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>레벨 필터를 먼저 적용함</strong><p>규칙 평가 전에 <span class="sheet-var">level_min ≤ 유저 레벨 ≤ level_max</span>를 만족하지 않는 행을 제외함. <span class="sheet-var">1 / 99999</span> 행은 항상 통과함.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>같은 condition_type이 둘 이상 남으면 구간이 좁은 행이 이김</strong><p><span class="sheet-var">level_max − level_min</span>이 작은 행을 적용함. 폭이 같으면 <span class="sheet-var">key_number</span>가 작은 행을 적용하고 경고 로그를 남김.</p></div></div>
   <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>이후는 현행과 완전히 동일함</strong><p>priority 오름차순 평가 → 첫 매칭 티어 확정. 카운터·쿨다운·default 동작 모두 변경 없음.</p></div></div>
   <div class="callout callout-purple">
     <p><strong>클라이언트 변경은 규칙 목록을 거르는 필터 한 겹이 전부임.</strong> 난수 추첨기·신규 테이블 로더·가중치 정규화가 모두 필요 없음.</p>
@@ -433,8 +433,10 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>상황</th><th>처리</th></tr></thead>
     <tbody>
-      <tr><td>레벨에 맞는 구간 행이 없음</td><td>공란 행(현행값)이 그대로 적용됨. 폴백이 곧 현행 동작이라 안전함</td></tr>
-      <tr><td>같은 레벨에 구간 행이 2개 이상 겹침</td><td>key_number가 작은 행을 적용하고 경고 로그를 남김. 배포 전 구간 중복·공백 검사 필수</td></tr>
+      <tr><td>레벨에 맞는 구간 행이 없음</td><td><span class="sheet-var">1 / 99999</span> 행(현행값)이 적용됨. 폴백이 곧 현행 동작이라 안전함</td></tr>
+      <tr><td>level_min·level_max가 빈 셀이거나 0</td><td>시트 검증 단계에서 차단함. 두 컬럼은 <strong>1 이상 정수 필수</strong>이며 빈 셀을 허용하지 않음. 런타임에서는 해당 행을 무시하고 경고 로그를 남김</td></tr>
+      <tr><td>level_min &gt; level_max</td><td>행을 무시하고 경고 로그를 남김. 배포 전 검증에서 차단함</td></tr>
+      <tr><td>같은 레벨에 같은 폭의 구간 행이 겹침</td><td>key_number가 작은 행을 적용하고 경고 로그를 남김. 배포 전 동일 폭 중복 검사 필수</td></tr>
       <tr><td>판 진행 중 레벨업</td><td>티어는 판 진입 시점의 레벨로 확정하고, 진행 중에는 재평가하지 않음</td></tr>
       <tr><td>밴드 경계에서 레벨업</td><td>카운터는 리셋하지 않고 이어감. 다음 평가부터 새 param_1이 적용됨</td></tr>
       <tr><td>연패 직후</td><td>priority 3·4의 <span class="sheet-var">fail_spiral</span>·<span class="sheet-var">fail_streak</span>이 먼저 걸려 Normal로 내려감. 변경 영향 없음</td></tr>
@@ -487,7 +489,7 @@ ul li strong,ol li strong { color:var(--text); }
   <h3>진행 단계</h3>
   <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>로깅 추가 배포</strong><p>클라이언트에 <span class="sheet-var">user_level</span>을 실음. 로직 변경은 포함하지 않음</p></div></div>
   <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>레벨 분포 실측 (1주)</strong><p>밴드별 유저 수·판수 분포를 확인함. 유저가 거의 없는 밴드는 병합하고 몰려 있는 밴드는 쪼갬</p></div></div>
-  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>레벨 필터 로직 + 컬럼 2개 배포</strong><p><span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span>를 전 행 공란으로 둔 채 배포함. 이 시점에는 동작이 현행과 100% 동일해야 함 — 무변경 확인이 곧 검증임</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>레벨 필터 로직 + 컬럼 2개 배포</strong><p>기존 9행에 <span class="sheet-var">1 / 99999</span>만 채운 채 배포함. 이 시점에는 동작이 현행과 100% 동일해야 함 — 무변경 확인이 곧 검증임</p></div></div>
   <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>상위 밴드부터 단계 개방</strong><p>최상위 밴드(800+) 행부터 <span class="sheet-var">in_use</span>를 켜고 1주 관측. 이상 없으면 아래 밴드로 한 단계씩 내림. 유저 수가 가장 적고 숙련도가 가장 높은 구간부터 여는 순서임</p></div></div>
   <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>밴드별 확정 또는 되돌림</strong><p>아래 판정 기준으로 밴드 단위로 결정함. 전체 롤백이 아니라 밴드 단위 조정이 기본임</p></div></div>
   <div class="callout callout-purple">
