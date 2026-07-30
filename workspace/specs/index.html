@@ -306,6 +306,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .sp-head { display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface2); }
 .sp-head .sp-id { font-size:var(--text-xs);font-weight:800;color:var(--accent);flex-shrink:0; }
 .sp-head .sp-t { font-size:var(--text-sm);font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.sp-head .sp-file { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:2px 7px;flex-shrink:1;min-width:0;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .sp-head a,.sp-head button { height:28px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-size:var(--text-xs);padding:0 10px;cursor:pointer;display:inline-flex;align-items:center;text-decoration:none;flex-shrink:0; }
 .sp-head a:hover,.sp-head button:hover { border-color:var(--accent);color:var(--accent); }
 .sp-body { flex:1;min-height:0; }
@@ -422,6 +423,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
     <div class="sp-head">
       <span class="sp-id" id="spModalId"></span>
       <span class="sp-t" id="spModalTitle"></span>
+      <span class="sp-file" id="spModalFile" title="HTML 파일명"></span>
       <button type="button" onclick="copySpecLink()" title="이 기획서 링크 복사">링크 복사 ⧉</button>
       <a id="spModalOpen" href="#" target="_blank" rel="noopener">새 탭 ↗</a>
       <button type="button" onclick="closeSpecModal()">닫기 ✕</button>
@@ -1106,6 +1108,9 @@ function openSpecModal(id) {
   if (!item) return;
   document.getElementById('spModalId').textContent    = id.toUpperCase();
   document.getElementById('spModalTitle').textContent = item.title || '';
+  const _fname = (item.file || '').replace(/\.html?$/i, '');   // 확장자 없는 HTML 파일명
+  const _fe = document.getElementById('spModalFile');
+  if (_fe) { _fe.textContent = _fname; _fe.title = item.file || ''; }
   document.getElementById('spModalOpen').href         = item.file;
   // 캐시본이 뜨지 않도록 매번 새 쿼리를 붙여 강제 재요청
   document.getElementById('spModalFrame').src         = item.file + '?v=' + Date.now();
