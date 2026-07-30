@@ -151,6 +151,7 @@ ul li strong,ol li strong { color:var(--text); }
   <a href="#s1">① 기획 의도 &amp; 플로우</a>
   <a href="#s2">② 아트 가이드</a>
   <a href="#s3">③ 개발 스펙</a>
+  <a href="#s4">④ 개발 핸드오프 · QA</a>
 </nav>
 
 <div class="hero">
@@ -321,6 +322,72 @@ ul li strong,ol li strong { color:var(--text); }
   <div class="callout callout-red">
     <p><strong>중복 지급 방지(필수)</strong> — 보상 지급은 서버 권위 기준 1회. 클라 연출 재생 ≠ 지급 확정. 연출 트리거가 콜렉션 진입에서 퍼즐 리스트 진입으로 바뀌어도 멱등(idempotent) 지급 보장.</p>
   </div>
+</section>
+
+<section id="s4">
+  <div class="section-header">
+    <div class="section-num section-num-2">④</div>
+    <div class="section-meta">
+      <div class="section-title">개발 핸드오프 · 엣지케이스 · QA</div>
+      <span class="section-audience aud-dev">개발 · QA</span>
+    </div>
+  </div>
+  <style>#s4 table.ho td:first-child,#s4 table.ho th:first-child{white-space:nowrap;width:1%;color:var(--text2);font-weight:600}#s4 h4{margin:18px 0 8px;font-size:0.95rem;color:var(--accent)}</style>
+
+  <h3>A. 개발 핸드오프 — 확정 구현 항목</h3>
+  <p>기획 확정본 기준. 이 표의 값이 구현의 단일 기준이며, 본문과 어긋나면 이 표가 우선함.</p>
+  <table class="ho"><thead><tr><th>구분</th><th>항목</th><th>확정 내용</th></tr></thead><tbody>
+    <tr><td>트리거</td><td><strong>보상 연출 재생 시점</strong></td><td>콜렉션 화면 onEnter → <strong>퍼즐 리스트(All Puzzles) 화면 onEnter</strong></td></tr>
+    <tr><td>트리거</td><td><strong>판정 단위</strong></td><td>버튼 클릭 핸들러가 아니라 <strong>화면 진입 단위</strong>. 딥링크·숏컷 직행도 동일하게 재생돼야 함</td></tr>
+    <tr><td>레드닷</td><td><strong>로비 콜렉션 버튼</strong></td><td>기존 로직 유지 — 수령 대기 보상 1개 이상이면 노출</td></tr>
+    <tr><td>레드닷</td><td><strong>앨범 화면 All Puzzles 버튼</strong></td><td><strong>신규.</strong> 수령 대기 보상 1개 이상이면 노출. 버튼 우상단 모서리에 걸치도록 배치</td></tr>
+    <tr><td>레드닷</td><td><strong>소거 시점</strong></td><td>콜렉션 진입 시 → <strong>퍼즐 리스트 진입(연출 재생) 시</strong>. 남은 대기 보상이 없을 때 로비·앨범·All Puzzles 3곳 모두 제거</td></tr>
+    <tr><td>아트</td><td><strong>신규 에셋</strong></td><td>레드닷 1종 — 기존 로비 콜렉션 레드닷 에셋·크기·애니메이션 <strong>재사용</strong>. 신규 디자인 없음</td></tr>
+    <tr><td>아트</td><td><strong>연출·사운드</strong></td><td><strong>변경 없음.</strong> 파티클·카운트업·사운드 전부 기존 연출 그대로. 바뀌는 건 재생 시점뿐</td></tr>
+    <tr><td>서버</td><td><strong>지급 권위</strong></td><td>지급은 <strong>서버 권위 1회</strong>. 클라 연출 재생 ≠ 지급 확정. 트리거 이동과 무관하게 멱등 보장</td></tr>
+    <tr><td>제거</td><td><strong>기존 트리거</strong></td><td><strong>콜렉션 진입 즉시 연출 코드를 반드시 제거·비활성화.</strong> 남기면 연출이 두 번 재생됨</td></tr>
+  </tbody></table>
+
+  <h3>B. 엣지케이스 처리</h3>
+  <table><thead><tr><th>상황</th><th>처리</th></tr></thead><tbody>
+    <tr><td><strong>대기 보상이 여러 건</strong></td><td>퍼즐 리스트 진입 시 큐에 쌓인 연출을 <strong>순차 재생</strong>(기존 다건 처리 로직 준용). 전부 소진한 뒤 레드닷 소거</td></tr>
+    <tr><td><strong>연출 도중 화면 이탈</strong></td><td>보상은 <strong>이미 지급된 것으로 처리</strong>(미지급 방지). 다음 진입 시 중복 연출·중복 지급 금지</td></tr>
+    <tr><td><strong>앨범 화면을 거치지 않는 진입</strong></td><td>딥링크·숏컷으로 퍼즐 리스트에 직행해도 <strong>화면 onEnter 기준</strong>이라 동일하게 재생됨</td></tr>
+    <tr><td><strong>로비 레드닷만 보고 콜렉션을 닫음</strong></td><td>보상 미수령 유지. 레드닷 그대로 노출</td></tr>
+    <tr><td><strong>콜렉션까지 들어왔다가 All Puzzles를 안 누르고 나감</strong></td><td>미수령 유지. 로비·앨범 레드닷 모두 유지 — 다음 진입 때 다시 유도</td></tr>
+    <tr><td><strong>연출 중 앱 강제 종료·백그라운드 전환</strong></td><td>재기동 시 서버 수령 플래그가 기준. 이미 지급됐으면 재연출 없이 레드닷만 정리</td></tr>
+    <tr><td><strong>네트워크 실패로 지급 동기화 실패</strong></td><td>연출을 재생했더라도 <strong>수령 플래그를 갱신하지 않음</strong>. 레드닷 유지하고 다음 진입에서 재시도</td></tr>
+    <tr><td><strong>회귀 — 이중 재생</strong></td><td>기존 트리거가 남아 있으면 콜렉션·퍼즐 리스트 양쪽에서 연출이 재생됨. <strong>QA 최우선 확인 항목</strong></td></tr>
+  </tbody></table>
+
+  <h3>C. QA 체크리스트</h3>
+  <h4>C-1. 레드닷 전파</h4>
+  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
+    <tr><td><strong>대기 보상 있음</strong></td><td>마일스톤 달성 후 로비 진입</td><td>로비 콜렉션 버튼에 레드닷 노출</td></tr>
+    <tr><td><strong>앨범 화면 진입</strong></td><td>콜렉션 진입</td><td><strong>All Puzzles 버튼에 레드닷 노출</strong>. 이 시점에 연출 재생 안 됨</td></tr>
+    <tr><td><strong>대기 보상 없음</strong></td><td>보상 전부 수령 후 재진입</td><td>로비·앨범 레드닷 모두 미노출</td></tr>
+  </tbody></table>
+  <h4>C-2. 연출 트리거</h4>
+  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
+    <tr><td><strong>정상 경로</strong></td><td>로비 → 콜렉션 → All Puzzles</td><td><strong>퍼즐 리스트 진입 시에만</strong> 연출 재생</td></tr>
+    <tr><td><strong>이중 재생 회귀</strong></td><td>위 경로를 그대로 진행하며 콜렉션 화면 관찰</td><td><strong>콜렉션 진입 시 연출이 재생되면 실패</strong></td></tr>
+    <tr><td><strong>다건</strong></td><td>마일스톤 2건 이상 대기 상태로 진입</td><td>연출 순차 재생 후 전부 소진 시 레드닷 소거</td></tr>
+    <tr><td><strong>직행 경로</strong></td><td>딥링크·숏컷으로 퍼즐 리스트 직행</td><td>동일하게 연출 재생</td></tr>
+  </tbody></table>
+  <h4>C-3. 지급 정합성</h4>
+  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
+    <tr><td><strong>연출 중 이탈</strong></td><td>연출 재생 중 뒤로가기</td><td>보상 지급 완료 상태. 재진입 시 재연출·재지급 없음</td></tr>
+    <tr><td><strong>앱 강제 종료</strong></td><td>연출 중 앱 종료 후 재기동</td><td>중복 지급 없음. 서버 플래그 기준으로 정리</td></tr>
+    <tr><td><strong>네트워크 차단</strong></td><td>기내 모드로 퍼즐 리스트 진입</td><td>지급 동기화 실패 시 수령 플래그 미갱신 · 레드닷 유지</td></tr>
+    <tr><td><strong>멱등성</strong></td><td>동일 마일스톤에 대해 반복 진입</td><td>지급은 <strong>1회만</strong></td></tr>
+  </tbody></table>
+  <h4>C-4. 회귀</h4>
+  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
+    <tr><td><strong>콜렉션 일반 열람</strong></td><td>대기 보상 없는 상태로 콜렉션·퍼즐 리스트 순회</td><td>연출이 끼어들지 않음 — 이 스펙의 목적</td></tr>
+    <tr><td><strong>기존 연출 품질</strong></td><td>연출 재생 관찰</td><td>파티클·카운트업·사운드가 기존과 동일</td></tr>
+    <tr><td><strong>입력 차단</strong></td><td>연출 중 터치</td><td>기존 정책대로 입력 차단 유지</td></tr>
+  </tbody></table>
+
 </section>
 
 </div>

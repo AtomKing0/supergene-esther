@@ -163,6 +163,7 @@ ul li strong,ol li strong { color:var(--text); }
   <a href="#s1">① 기획 의도 &amp; 확정 설계</a>
   <a href="#s2">② 개발 스펙</a>
   <a href="#s3">③ 로깅 · 검증 · 롤백</a>
+  <a href="#s4">④ 개발 핸드오프 · QA</a>
 </nav>
 
 <div class="hero">
@@ -524,6 +525,79 @@ ul li strong,ol li strong { color:var(--text); }
   <div class="callout callout-blue">
     <p><strong>측정 기준일.</strong> 위 현행 수치는 전부 2026-07-20~26 7일치이고, 런칭 직후라 기존 유저 비중이 67%로 낮은 편임. A/B 판정 시 대조군을 같은 기간에서 뽑아 비교해야 하고, 런칭 전 수치와 직접 비교하면 안 됨.</p>
   </div>
+</section>
+
+<section id="s4">
+  <div class="section-header">
+    <div class="section-num section-num-2">④</div>
+    <div class="section-meta">
+      <div class="section-title">개발 핸드오프 · 엣지케이스 · QA</div>
+      <span class="section-audience aud-dev">개발 · QA</span>
+    </div>
+  </div>
+  <style>#s4 table.ho td:first-child,#s4 table.ho th:first-child{white-space:nowrap;width:1%;color:var(--text2);font-weight:600}#s4 h4{margin:18px 0 8px;font-size:0.95rem;color:var(--accent)}</style>
+
+  <h3>선행 조건 — 착수 전 반드시 해소</h3>
+  <table><thead><tr><th>항목</th><th>내용</th><th>없으면 생기는 일</th></tr></thead><tbody>
+    <tr><td><strong>유저 레벨 로깅</strong></td><td><code>2100_GAMEPLAY_START</code>·<code>2300_GAMEPLAY_FINISH</code>에 <code>user_level</code>(정수) 추가</td><td>밴드별 효과를 <strong>아예 분리할 수 없음</strong>. 구간 경계 확정보다 먼저임</td></tr>
+    <tr><td><strong>레벨 분포 실측(1주)</strong></td><td>로깅 배포 후 밴드별 유저 수·판수 분포 확인</td><td>유저가 없는 밴드를 열거나 몰린 밴드를 못 쪼갬. ① 섹션 경계는 실측 후 조정 대상</td></tr>
+    <tr><td><strong><code>tier_reason</code> (권장)</strong></td><td>티어를 확정한 규칙의 condition_type을 <code>2100</code>에 기록</td><td>주기 보장으로 나온 판과 연패 구제로 내려간 판을 구분 못 함. 설계가 결정론적이라 없어도 판정은 가능</td></tr>
+  </tbody></table>
+
+  <h3>A. 개발 핸드오프 — 확정 구현 항목</h3>
+  <p>기획 확정본 기준. 이 표의 값이 구현의 단일 기준이며, 본문과 어긋나면 이 표가 우선함.</p>
+  <table class="ho"><thead><tr><th>구분</th><th>항목</th><th>확정 내용</th></tr></thead><tbody>
+    <tr><td>시트 구조</td><td><strong>PST_dynamic_level 컬럼 추가</strong></td><td><code>level_min</code> · <code>level_max</code> <strong>2개 추가</strong></td></tr>
+    <tr><td>시트 구조</td><td><strong>행 수</strong></td><td>9행 → <strong>16행</strong> (7행 추가)</td></tr>
+    <tr><td>시트 구조</td><td><strong>기존 9행 처리</strong></td><td>전부 <code>1 / 99999</code> 입력 = 전 레벨 적용. <strong>빈 셀 금지</strong> — 암묵 규칙 대신 범위를 명시</td></tr>
+    <tr><td>로직</td><td><strong>매칭 우선순위</strong></td><td>같은 <code>condition_type</code>에서 매칭 행이 둘 이상이면 <strong>구간이 좁은 행이 이김</strong></td></tr>
+    <tr><td>값</td><td><strong>hard_guarantee (30007)</strong></td><td>1~24: <strong>6</strong> · 25~99: <strong>5</strong> · 100~349: <strong>4</strong> · 350~799: <strong>3</strong> · 800+: <strong>2</strong></td></tr>
+    <tr><td>값</td><td><strong>super_hard_guarantee (30006)</strong></td><td>1~99: <strong>15</strong> · 100~349: <strong>12</strong> · 350~799: <strong>10</strong> · 800+: <strong>9</strong></td></tr>
+    <tr><td>값</td><td><strong>hard_cooldown 조건 변경</strong></td><td>클리어 조건 → <strong>승패 무관</strong>. Hard를 지고 나서 Super Hard가 오는 흐름을 막음</td></tr>
+    <tr><td>범위</td><td><strong>손대지 않는 것</strong></td><td><code>fail_spiral</code>·<code>fail_streak</code>·<code>default</code>는 전 레벨 공통 유지. <strong>신규 테이블·가중치 추첨 없음</strong></td></tr>
+    <tr><td>범위</td><td><strong>레벨 24 이하</strong></td><td><strong>현행과 완전히 동일하게 동작</strong>해야 함</td></tr>
+    <tr><td>배포</td><td><strong>개방 순서</strong></td><td><strong>상위 밴드(800+)부터</strong> <code>in_use</code>를 켜고 1주씩 관측하며 아래로 내림. A/B 아님</td></tr>
+    <tr><td>롤백</td><td><strong>경로</strong></td><td>추가한 7행의 <code>in_use</code>를 FALSE로. <code>1 / 99999</code> 행만 남아 현행 복귀. <strong>클라 재배포 불필요</strong></td></tr>
+  </tbody></table>
+
+  <h3>B. 엣지케이스 처리</h3>
+  <table><thead><tr><th>상황</th><th>처리</th></tr></thead><tbody>
+    <tr><td><strong>레벨 조건이 겹치는 행이 둘 이상</strong></td><td><strong>구간이 좁은 행이 우선</strong>. <code>1/99999</code>는 항상 가장 넓으므로 최후 폴백이 됨</td></tr>
+    <tr><td><strong>빈 셀</strong></td><td>밸런스시트 규칙상 <strong>빈 셀 금지</strong>. 전 레벨 적용은 반드시 <code>1 / 99999</code>로 명시</td></tr>
+    <tr><td><strong>레벨 경계값</strong></td><td><code>level_min</code>·<code>level_max</code>는 <strong>양끝 포함</strong>. 레벨 99와 100이 서로 다른 밴드에 정확히 한 번씩만 매칭돼야 함</td></tr>
+    <tr><td><strong>user_level이 로그에 없는 구버전 클라</strong></td><td>밴드 집계에서 제외. 레벨 미상 판을 <strong>1~24 밴드로 넣지 말 것</strong> — 지표가 오염됨</td></tr>
+    <tr><td><strong>레벨이 밴드 경계를 넘는 순간</strong></td><td>판 <strong>진입 시점 레벨</strong>로 판정. 판 도중 레벨업해도 그 판의 티어는 바뀌지 않음</td></tr>
+    <tr><td><strong>카운터 리셋 조건이 예상과 다름</strong></td><td>티어 믹스가 이론값과 ±2%p를 벗어나면 <strong>수치 튜닝 전에 로직부터 확인</strong>. 주기 보장 카운터의 리셋 시점 문제일 가능성</td></tr>
+    <tr><td><strong>hard_cooldown 승패 무관 변경의 부작용</strong></td><td>Hard 패배 직후 Super Hard 연속 발생이 막히면서 <strong>Hard 비중이 예상보다 늘 수 있음</strong>. 밴드별 티어 믹스로 확인</td></tr>
+    <tr><td><strong>해머 발행 증가</strong></td><td>800+ 밴드에서 판당 <code>reward_hammer</code> 1.24 → 1.45(+17%). 입장료는 2,600골드로 불변이라 <strong>발행만 늘어남</strong>. 밴드별로 측정해 경제 조정 판단</td></tr>
+    <tr><td><strong>스프린트 이벤트와의 충돌</strong></td><td>SPEC-027 그림자 냥이 추격전은 15분 8판 제한임. 800+ 밴드에서 <strong>연속 8판 p50이 8.5분을 넘으면</strong> 이벤트 난이도가 동반 상승함</td></tr>
+  </tbody></table>
+
+  <h3>C. QA 체크리스트</h3>
+  <h4>C-1. 무변경 확인 (3단계 배포 시 핵심)</h4>
+  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
+    <tr><td><strong>현행 동작 보존</strong></td><td>컬럼 2개 + <code>1/99999</code>만 채운 빌드로 플레이</td><td><strong>티어 믹스·판 길이가 현행과 100% 동일.</strong> 무변경 확인이 곧 검증</td></tr>
+    <tr><td><strong>레벨 24 이하</strong></td><td>레벨 24 이하 계정으로 30판</td><td>밴드 행을 켠 뒤에도 현행과 동일하게 동작</td></tr>
+  </tbody></table>
+  <h4>C-2. 밴드별 티어 배정</h4>
+  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
+    <tr><td><strong>800+ 밴드</strong></td><td>레벨 800 이상 계정으로 24판 연속</td><td>Hard가 3판에 1회 수준(<code>hard_guarantee 2</code>), Super Hard가 10판에 1회 수준으로 배정</td></tr>
+    <tr><td><strong>경계값 99 / 100</strong></td><td>레벨 99와 100 계정 각각 플레이</td><td>서로 다른 밴드 값이 적용됨. 어느 쪽도 두 밴드에 중복 매칭되지 않음</td></tr>
+    <tr><td><strong>구간 우선순위</strong></td><td>넓은 행과 좁은 행이 동시 매칭되는 레벨로 플레이</td><td><strong>좁은 행 값이 적용됨</strong></td></tr>
+    <tr><td><strong>연속 배정 금지</strong></td><td>Hard·Super Hard 클리어/패배 직후 다음 판 확인</td><td><code>hard_cooldown</code>이 <strong>승패 무관</strong>으로 걸려 연속 배정되지 않음</td></tr>
+  </tbody></table>
+  <h4>C-3. 로깅</h4>
+  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
+    <tr><td><strong>user_level</strong></td><td>판 진입·완료 로그 확인</td><td><code>2100</code>·<code>2300</code> 양쪽에 정수로 기록</td></tr>
+    <tr><td><strong>tier_reason</strong></td><td>주기 보장·연패 구제 상황 각각 유도</td><td>condition_type이 정확히 기록됨</td></tr>
+  </tbody></table>
+  <h4>C-4. 롤백</h4>
+  <table><thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead><tbody>
+    <tr><td><strong>밴드 단위 롤백</strong></td><td>특정 밴드 행의 <code>in_use</code>를 FALSE로</td><td>해당 밴드만 현행으로 복귀. 다른 밴드는 영향 없음</td></tr>
+    <tr><td><strong>전체 롤백</strong></td><td>추가 7행 전부 FALSE</td><td><code>1/99999</code> 행만 남아 <strong>클라 재배포 없이</strong> 현행 복귀</td></tr>
+  </tbody></table>
+
+  <p><p><strong>판정 단위는 밴드임.</strong> 전체 롤백이 아니라 밴드 단위 조정이 기본이며, 판 완료율 96% 미만·중도 종료율 8% 초과·D7 하락 중 하나라도 걸리면 그 밴드만 되돌림.</p></p>
 </section>
 
 </div>
