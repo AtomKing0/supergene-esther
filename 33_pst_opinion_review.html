@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>솔리테어 시티 저니 — 기획 의견 검증 결과</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:-apple-system,'Apple SD Gothic Neo','Pretendard',Roboto,sans-serif;
+       background:#e8ecf2;padding:24px 16px;color:#16283d;}
+  /* 전체 80% 축소. zoom은 폭·높이를 같은 배율로 줄이므로 16:9 비율은 그대로 유지됨. */
+  .deck{max-width:1640px;margin:0 auto;display:flex;flex-direction:column;gap:28px;zoom:.8;}
+
+  /* 16:9를 '고정 높이'가 아니라 '최소 높이'로 줌.
+     aspect-ratio를 쓰면 높이가 고정돼 넘치는 내용이 잘리므로 쓰지 않음.
+     내용이 16:9 안에 들어가면 정확히 16:9, 넘치면 그만큼 늘어남. */
+  .slide{width:100%;height:auto;
+         min-height:calc(min(1640px, 100vw - 32px) * 0.5625);
+         background:#fff;border-radius:18px;position:relative;
+         box-shadow:0 10px 34px rgba(15,36,64,.13);overflow:hidden;
+         display:grid;grid-template-rows:auto auto 1fr auto;padding:20px 42px 26px;}
+
+  /* 헤더 */
+  .sl-head{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:2px solid #eef2f7;}
+  .sl-no{min-width:38px;height:38px;padding:0 11px;border-radius:11px;background:#0f2440;color:#fff;
+         display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex:none;
+         font-variant-numeric:tabular-nums;letter-spacing:-.5px;}
+  .sl-no.sub{background:#42597a;font-size:16px;}
+  .sl-title{font-size:24px;font-weight:800;letter-spacing:-.7px;color:#0f2440;}
+  .sl-verdict{margin-left:auto;font-size:14px;font-weight:800;padding:7px 18px;border-radius:22px;flex:none;}
+  .v-reject{background:#fdecec;color:#b5291b;border:2px solid #f3bbb4;}
+  .v-redo{background:#fff4e0;color:#9a6100;border:2px solid #f0d7a3;}
+  .v-plan{background:#eaf3fb;color:#1a5f96;border:2px solid #b9d5ec;}
+
+  /* 밴드 공통 */
+  .band{padding:15px 0;}
+  .band + .band{border-top:1px dashed #d3dce7;}
+  .bk{font-size:11px;font-weight:800;letter-spacing:1.5px;margin-bottom:9px;}
+  .bk-h{color:#7c8ba0;} .bk-v{color:#1a6fb0;} .bk-c{color:#1c7a3c;}
+
+  /* 가설 밴드 — 가로 */
+  .hypo{display:flex;align-items:stretch;gap:22px;}
+  .hypo .q{flex:1;background:#f4f7fa;border-left:4px solid #9fb2c6;border-radius:0 10px 10px 0;
+           padding:14px 20px;font-size:15.5px;line-height:1.62;color:#3c4f66;
+           display:flex;align-items:center;min-width:0;}
+  .hypo .q > span{display:block;}
+  .hypo .q b{color:#16283d;font-weight:800;}
+  .hypo .pre{flex:none;width:400px;display:flex;flex-direction:column;justify-content:center;gap:5px;}
+  .hypo .pre .t{font-size:10.5px;font-weight:800;color:#8b98a9;letter-spacing:1px;}
+  .hypo .pre div.p{font-size:13px;color:#5a6b80;line-height:1.5;}
+  .hypo .pre div.p b{color:#16283d;}
+
+  /* 검증 밴드 — 가로 2분할 */
+  .verify{display:grid;grid-template-columns:1.15fr 1fr;gap:34px;align-items:start;}
+  .vpane{min-width:0;}
+  .vt{font-size:12.5px;color:#48586c;margin-bottom:8px;font-weight:700;}
+
+  .bars{display:flex;flex-direction:column;gap:8px;}
+  .brow{display:flex;align-items:center;gap:11px;font-size:13px;}
+  .brow .nm{width:140px;text-align:right;font-weight:700;color:#3c4f66;flex:none;}
+  .brow .tr{flex:1;background:#eef2f7;border-radius:5px;height:26px;overflow:hidden;}
+  .brow .tr i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#7f93ab,#a9bacd);}
+  .brow.hi .nm{color:#b5291b;} .brow.hi .tr i{background:linear-gradient(90deg,#c0392b,#ea7b6d);}
+  .brow.ok .nm{color:#177038;} .brow.ok .tr i{background:linear-gradient(90deg,#1c7a3c,#69c78e);}
+  .brow .vl{width:80px;font-weight:800;font-variant-numeric:tabular-nums;flex:none;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:7px 11px;border-bottom:1px solid #eef2f6;text-align:left;}
+  th{background:#f6f9fc;color:#5a6b80;font-weight:700;font-size:11.5px;}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  tr.hl td{background:#fdf5f4;font-weight:700;}
+  tr.gd td{background:#f4fcf7;}
+  .cap{font-size:11px;color:#95a3b5;margin-top:7px;line-height:1.5;}
+  .cap b{color:#6e7d90;}
+
+  /* 결론 밴드 — 가로 */
+  .concl{display:grid;grid-template-columns:0.95fr 1.35fr;gap:28px;align-items:stretch;}
+  .vbox{background:#0f2440;color:#fff;border-radius:13px;padding:18px 22px;display:flex;
+        flex-direction:column;justify-content:center;}
+  .vbox .big{font-size:19px;font-weight:800;line-height:1.42;letter-spacing:-.4px;}
+  .vbox .big em{font-style:normal;color:#8fd0ff;}
+  .clist{display:flex;flex-direction:column;gap:8px;justify-content:center;}
+  .citem{font-size:13.5px;line-height:1.55;color:#3c4f66;padding-left:17px;position:relative;}
+  .citem:before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:#9fb2c6;}
+  .citem b{color:#16283d;}
+  .next{background:#f2fbf5;border:1px solid #c3e8d1;border-radius:10px;padding:12px 15px;
+        font-size:13px;color:#1c6b34;line-height:1.55;}
+  .next b{color:#14512a;}
+  .next.warn{background:#fff8ec;border-color:#f0dcb0;color:#8a5f00;} .next.warn b{color:#6b4a00;}
+
+  /* 가설 카드 3종 */
+  .hcards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .hcard{border:2px solid #e0e7ef;border-radius:12px;padding:12px 15px;display:flex;flex-direction:column;gap:6px;}
+  .slide.tight .band{padding:11px 0;}
+  .slide.tight .hcard .hd{font-size:12px;}
+  .hcard.bad{border-color:#f0c4bd;background:#fdf7f6;}
+  .hcard.good{border-color:#b6dfc6;background:#f6fdf9;}
+  .hcard .hh{font-size:14.5px;font-weight:800;color:#16283d;line-height:1.35;}
+  .hcard .hd{font-size:12.5px;color:#5a6b80;line-height:1.55;}
+  .hcard .hv{margin-top:auto;font-size:11.5px;font-weight:800;padding:5px 10px;border-radius:7px;align-self:flex-start;}
+  .hv-x{background:#fdecec;color:#b5291b;} .hv-o{background:#e8f7ee;color:#177038;} .hv-q{background:#fff4e0;color:#9a6100;}
+
+  .foot{font-size:10.5px;color:#b3bfcd;text-align:right;padding-top:8px;}
+  @media(max-width:940px){
+    .slide{min-height:0;padding:18px 24px 22px;}
+    .hypo{flex-direction:column;} .hypo .pre{width:100%;}
+    .verify{grid-template-columns:1fr;gap:20px;}
+    .concl{grid-template-columns:1fr;}
+    .hcards{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- ═══════════ SLIDE 01 ═══════════ -->
+<div class="slide">
+  <div class="sl-head">
+    <div class="sl-no">01</div>
+    <div class="sl-title">판당 플레이 타임 A/B 제안</div>
+    <div class="sl-verdict v-redo">전제 반대 · 재설계 필요</div>
+  </div>
+
+  <div class="band">
+    <div class="bk bk-h">가설</div>
+    <div class="hypo">
+      <div class="q"><span>&ldquo;솔리테어가 다른 게임에 비해 <b>판당 플레이 타임이 기니까</b>, 짧은 거랑 긴 거랑 A/B 테스트 하면 어때요?&rdquo;</span></div>
+      <div class="pre">
+        <div class="t">검증할 전제</div>
+        <div class="p">&#9312; 우리 판이 타 게임보다 <b>길다</b></div>
+        <div class="p">&#9313; 판이 길어서 <b>이탈이 생긴다</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="band">
+    <div class="bk bk-v">실측 검증</div>
+    <div class="verify">
+      <div class="vpane">
+        <div class="vt">판당 플레이 타임 중앙값 &mdash; 자사 5개 게임 (7일, 총 590만 판)</div>
+        <div class="bars">
+          <div class="brow ok"><span class="nm">솔리테어 시티 저니</span><span class="tr"><i style="width:20.4%"></i></span><span class="vl">47초</span></div>
+          <div class="brow"><span class="nm">코지 타일즈</span><span class="tr"><i style="width:31.7%"></i></span><span class="vl">73초</span></div>
+          <div class="brow"><span class="nm">코인 매치</span><span class="tr"><i style="width:40.0%"></i></span><span class="vl">92초</span></div>
+          <div class="brow"><span class="nm">마종</span><span class="tr"><i style="width:43.5%"></i></span><span class="vl">100초</span></div>
+          <div class="brow hi"><span class="nm">퍼즐 블록 마스터</span><span class="tr"><i style="width:100%"></i></span><span class="vl">230초</span></div>
+        </div>
+        <div class="cap">2300_GAMEPLAY_FINISH · play_time 중앙값 · 2026-07-14~20 · 솔리테어 85,195판</div>
+      </div>
+      <div class="vpane">
+        <div class="vt">맵 구조로도 확인 &mdash; 라이브 372 스테이지 전수</div>
+        <table>
+          <thead><tr><th>구성</th><th class="n">우리 게임</th><th class="n">표준 트라이픽스</th><th class="n">비율</th></tr></thead>
+          <tbody>
+            <tr><td>보드 카드</td><td class="n">26장</td><td class="n">28장</td><td class="n">93%</td></tr>
+            <tr class="hl"><td>덱 카드</td><td class="n">11장</td><td class="n">23장</td><td class="n">48%</td></tr>
+            <tr class="hl"><td>총 카드</td><td class="n">38장</td><td class="n">51~52장</td><td class="n">73%</td></tr>
+          </tbody>
+        </table>
+        <div class="cap">stage_list.json 전수 파싱 · 중앙값 기준 · 보드는 표준의 93%인데 <b>덱만 절반</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="band">
+    <div class="bk bk-c">결론</div>
+    <div class="concl">
+      <div class="vbox">
+        <div class="big">솔리테어가 <em>5개 게임 중 가장 짧음</em><br>전제가 사실과 반대임</div>
+      </div>
+      <div class="clist">
+        <div class="citem">2위 코지 타일즈(73초)의 <b>64%</b>, 마종·코인매치의 <b>절반</b>, 퍼블마의 <b>5분의 1</b> 수준</div>
+        <div class="citem">맵 구조도 총 카드 <b>38장</b>으로 표준의 73%. 데이터와 설계가 같은 방향을 가리킴</div>
+        <div class="citem">짧은 건 부작용이 아니라 <b>의도된 결과</b>임 &mdash; 도움 카드율(help_rate)을 높게 잡아 막히지 않게 튜닝해둔 설계라, 덱이 작아도 클리어됨</div>
+        <div class="citem">따라서 비교 축이 &ldquo;짧은 vs 긴&rdquo;이 아니라 <b>&ldquo;현행 vs 더 긴 판&rdquo;</b>으로 바뀜 &mdash; <b>재설계 방향은 01-2</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">근거 · BigQuery raw.solitaire_city_journey 외 4종 · 라이브 밸런스시트 2026-07-21</div>
+</div>
+
+<!-- ═══════════ SLIDE 02 ═══════════ -->
+<div class="slide tight">
+  <div class="sl-head">
+    <div class="sl-no sub">01-2</div>
+    <div class="sl-title">그럼 판을 늘려야 하나 &mdash; 재설계 방향 검증</div>
+    <div class="sl-verdict v-plan">늘리는 방향 비권장</div>
+  </div>
+
+  <div class="band">
+    <div class="bk bk-h">재설계 질문</div>
+    <div class="hypo">
+      <div class="q"><span>우리 판이 가장 짧다면, <b>더 길게 만드는 A/B</b>가 맞는 방향인가? &mdash; 판 길이가 실제로 이어하기에 영향을 주는지 먼저 확인함</span></div>
+      <div class="pre">
+        <div class="t">측정 방법</div>
+        <div class="p">클리어한 판을 길이별로 나눠</div>
+        <div class="p"><b>10분 내 다음 판 진행률</b> 비교</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="band">
+    <div class="bk bk-v">실측 검증</div>
+    <div class="verify">
+      <div class="vpane">
+        <div class="vt">판 길이별 &mdash; 다음 판으로 이어진 비율 (클리어 판 82,584건)</div>
+        <div class="bars">
+          <div class="brow ok"><span class="nm">20초 미만</span><span class="tr"><i style="width:94.6%"></i></span><span class="vl">94.6%</span></div>
+          <div class="brow ok"><span class="nm">20~39초</span><span class="tr"><i style="width:91.5%"></i></span><span class="vl">91.5%</span></div>
+          <div class="brow ok"><span class="nm">40~59초 &nbsp;&#9664; 현재</span><span class="tr"><i style="width:92.3%"></i></span><span class="vl">92.3%</span></div>
+          <div class="brow"><span class="nm">60~89초</span><span class="tr"><i style="width:90.0%"></i></span><span class="vl">90.0%</span></div>
+          <div class="brow hi"><span class="nm">90~149초</span><span class="tr"><i style="width:85.7%"></i></span><span class="vl">85.7%</span></div>
+          <div class="brow hi"><span class="nm">150초 이상</span><span class="tr"><i style="width:78.5%"></i></span><span class="vl">78.5%</span></div>
+        </div>
+        <div class="cap">다음 판 진행 = 클리어 후 10분 이내 다음 판 종료 · <b>판이 길수록 이어하지 않음</b></div>
+      </div>
+      <div class="vpane">
+        <div class="vt">현재 분포 &mdash; 이미 최적 구간에 몰려 있음</div>
+        <table>
+          <thead><tr><th>판 길이</th><th class="n">비중</th><th class="n">다음 판</th><th>해석</th></tr></thead>
+          <tbody>
+            <tr class="gd"><td>20~59초</td><td class="n">68.1%</td><td class="n">91~92%</td><td>현재 주력 구간</td></tr>
+            <tr><td>60~89초</td><td class="n">19.9%</td><td class="n">90.0%</td><td>완만한 하락 시작</td></tr>
+            <tr class="hl"><td>90초 이상</td><td class="n">8.2%</td><td class="n">78~86%</td><td>이어하기 급락</td></tr>
+          </tbody>
+        </table>
+        <div class="cap"><b>주의</b> &mdash; 긴 판은 어려운 판일 가능성이 있어 인과는 미확정. 다만 <b>&ldquo;늘리면 좋아진다&rdquo;는 신호는 전혀 없음</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="band">
+    <div class="bk bk-c">재설계 가설 3안</div>
+    <div class="hcards">
+      <div class="hcard bad">
+        <div class="hh">H1. 판을 늘린다</div>
+        <div class="hd">보드 카드를 늘려 60~90초대로. 몰입과 성취감을 키운다는 가설</div>
+        <div class="hv hv-x">데이터 반대 &mdash; 비권장</div>
+      </div>
+      <div class="hcard good">
+        <div class="hh">H2. 긴 판을 줄인다</div>
+        <div class="hd">90초 넘는 <b>8.2%</b> 구간을 60초대로 당김. 이어하기가 급락하는 구간만 손봄</div>
+        <div class="hv hv-o">검증 가치 있음</div>
+      </div>
+      <div class="hcard">
+        <div class="hh">H3. 길이는 그대로 둔다</div>
+        <div class="hd">짧은 판이 강점. 신규 이탈(1판&rarr;2판 <b>&minus;37.9%p</b>)의 원인을 길이 밖에서 찾음</div>
+        <div class="hv hv-q">우선 확인 대상</div>
+      </div>
+    </div>
+    <div class="next warn" style="margin-top:11px">
+      <b>제안 &mdash; 길이를 늘리는 수단은 사실상 둘뿐이고, 둘 다 대가가 큼.</b>
+      &#9312; <b>보드 카드 증량</b> = 매치 수를 늘림. 길이는 확실히 늘지만 이어하기가 떨어지는 구간(90초+)으로 밀어 넣음.
+      &#9313; <b>도움 카드율 하향</b> = 매치당 초를 늘림. 곧 <b>카드 붙는 맛을 깎는 것</b>이라 우리 강점을 직접 훼손함.
+      <b>덱 증량은 길이를 안 늘림</b> &mdash; 덱은 실패 리스크 자원이지 작업량이 아님. 결국 A/B 축은 &ldquo;길이&rdquo;가 아니라 <b>&ldquo;보드 카드 수&rdquo;</b>로 잡아야 함.
+    </div>
+  </div>
+
+  <div class="foot">근거 · BigQuery raw.solitaire_city_journey · 2026-07-14~20 클리어 판 82,584건</div>
+</div>
+
+<!-- ═══════════ SLIDE 03 ═══════════ -->
+<div class="slide">
+  <div class="sl-head">
+    <div class="sl-no">02</div>
+    <div class="sl-title">권역별 난이도 하향 제안</div>
+    <div class="sl-verdict v-reject">기각</div>
+  </div>
+
+  <div class="band">
+    <div class="bk bk-h">가설</div>
+    <div class="hypo">
+      <div class="q"><span>&ldquo;권역별로 게임 난이도를 다르게 하는 건 어떨까요? <b>필리핀이나 아프리카 쪽은 좀 쉬운 판</b>을 주면 온보딩이 개선되지 않을까요?&rdquo;</span></div>
+      <div class="pre">
+        <div class="t">검증할 전제</div>
+        <div class="p">&#9312; 해당 권역이 <b>난이도 때문에</b> 이탈한다</div>
+        <div class="p">&#9313; 그 권역의 <b>실패율이 높다</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="band">
+    <div class="bk bk-v">실측 검증</div>
+    <div class="verify">
+      <div class="vpane">
+        <div class="vt">신규 유저 퍼널 &mdash; 국가별 (2026-07-05~19 코호트)</div>
+        <table>
+          <thead><tr><th>국가</th><th class="n">신규</th><th class="n">판 시작</th><th class="n">판 완료</th><th class="n">실패율</th></tr></thead>
+          <tbody>
+            <tr class="hl"><td>필리핀</td><td class="n">842</td><td class="n">67.6%</td><td class="n">27.6%</td><td class="n">1.82%</td></tr>
+            <tr class="hl"><td>남아공</td><td class="n">210</td><td class="n">62.4%</td><td class="n">27.6%</td><td class="n">0.63%</td></tr>
+            <tr class="hl"><td>인도</td><td class="n">463</td><td class="n">72.1%</td><td class="n">36.3%</td><td class="n">0.60%</td></tr>
+            <tr><td>베트남</td><td class="n">292</td><td class="n">80.1%</td><td class="n">47.9%</td><td class="n">2.70%</td></tr>
+            <tr class="gd"><td>미국</td><td class="n">1,479</td><td class="n">90.5%</td><td class="n">66.0%</td><td class="n">2.83%</td></tr>
+            <tr class="gd"><td>독일</td><td class="n">257</td><td class="n">89.1%</td><td class="n">73.9%</td><td class="n">2.78%</td></tr>
+          </tbody>
+        </table>
+        <div class="cap">전체 평균 실패율 3.06% &mdash; <b>지목된 권역(붉은 행)이 오히려 평균보다 낮음</b></div>
+      </div>
+      <div class="vpane">
+        <div class="vt">이탈은 판 이전에 발생 &mdash; 권역별 로딩</div>
+        <table>
+          <thead><tr><th>권역</th><th class="n">첫판 도달</th><th class="n">인트로&rarr;번들</th><th class="n">로딩 p50</th></tr></thead>
+          <tbody>
+            <tr class="gd"><td>북미</td><td class="n">87.2%</td><td class="n">96.5%</td><td class="n">5.9초</td></tr>
+            <tr class="gd"><td>서유럽</td><td class="n">87.3%</td><td class="n">93.9%</td><td class="n">6.4초</td></tr>
+            <tr class="hl"><td>아시아</td><td class="n">63.5%</td><td class="n">86.3%</td><td class="n">11.7초</td></tr>
+            <tr class="hl"><td>아프리카</td><td class="n">55.9%</td><td class="n">81.3%</td><td class="n">13.1초</td></tr>
+          </tbody>
+        </table>
+        <div class="cap">최대 낙차 = <b>인트로 완료 &rarr; 번들 다운로드</b> 구간(15%p) · 로딩 시간은 북미의 2배</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="band">
+    <div class="bk bk-c">결론</div>
+    <div class="concl">
+      <div class="vbox">
+        <div class="big">해당 권역은 <em>이미 가장 쉽게</em> 클리어 중<br>이탈은 <em>판 이전</em>에 발생함</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="clist">
+          <div class="citem">필리핀 <b>1.82%</b> · 인도 <b>0.60%</b> · 남아공 <b>0.63%</b> &mdash; 전체 평균 3.06%보다 낮음. 오히려 미국·독일이 더 높음</div>
+          <div class="citem">필리핀 신규의 <b>32.4%가 판을 시작조차 못 함</b>. 한 판이라도 끝낸 비율 <b>27.6%</b>(미국 66.0% · 독일 73.9%)</div>
+        </div>
+        <div class="next">
+          <b>&rarr; 같은 목적의 실효 있는 방향은 로딩 최적화임.</b> 아시아 첫판 도달률을 서유럽 수준(63.5% &rarr; 87.3%)으로 올리면 <b>첫판 유저 +37%</b>. 선행 작업은 번들 크기 · CDN 응답시간 권역별 실측
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">근거 · BigQuery raw.solitaire_city_journey · 신규 코호트 2026-07-05~19</div>
+</div>
+
+</div>
+</body>
+</html>
