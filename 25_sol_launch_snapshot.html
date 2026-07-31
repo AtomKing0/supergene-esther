@@ -11,11 +11,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:#EDF0F6;display:flex;flex-
 #region-bar .rgseg button{border:0;background:#fff;color:#5a6273;font-size:13.5px;font-weight:800;padding:8px 24px;cursor:pointer;font-family:inherit}
 #region-bar .rgseg button.on{background:#1c2530;color:#fff}
 #region-bar .hint{font-size:11px;color:#98a2b0;margin-left:6px}
+#region-bar .div{width:1px;height:22px;background:#CBD5E0;margin:0 4px}
 </style>
 <script>
 // 상단 필터 → 3개 iframe(bench/trend/extra)에 권역 postMessage 브로드캐스트.
 // 각 하위 페이지는 message 수신 시 setRegion 실행(임베드 시 자체 필터는 숨김).
 var curRegion = 'all';
+var curPeriod = 'launch_same';   // 기간 토글(벤치 비교에만 적용) — 20 대시보드 MODE 개념
 function broadcast(){
   ['bench','trend','extra'].forEach(function(id){
     var f=document.getElementById(id);
@@ -24,14 +26,26 @@ function broadcast(){
 }
 function setRegion(r){
   curRegion=r;
-  document.querySelectorAll('#region-bar button').forEach(function(b){b.classList.toggle('on',b.dataset.rk===r);});
+  document.querySelectorAll('#region-bar button[data-rk]').forEach(function(b){b.classList.toggle('on',b.dataset.rk===r);});
   broadcast();
+}
+function broadcastPeriod(){
+  // period 핸들러는 bench에만 있음(trend/extra는 무시) — 3개 다 보내도 무방
+  ['bench','trend','extra'].forEach(function(id){
+    var f=document.getElementById(id);
+    if(f&&f.contentWindow){try{f.contentWindow.postMessage({t:'period',p:curPeriod},'*');}catch(e){}}
+  });
+}
+function setPeriod(p){
+  curPeriod=p;
+  document.querySelectorAll('#region-bar button[data-pk]').forEach(function(b){b.classList.toggle('on',b.dataset.pk===p);});
+  broadcastPeriod();
 }
 // iframe 높이 자동 맞춤 — 차트 비동기 렌더 + 버튼/토글 상호작용으로 높이가 바뀌므로
 // ResizeObserver로 콘텐츠 변화를 상시 감지해 재조정(내부 스크롤 완전 방지). setTimeout은 초기 보강.
 function fit(f,fb){
   // 로드 직후 현재 선택 권역을 해당 iframe에 동기화(뒤늦게 로드된 프레임도 맞춤)
-  [60,300,800,1600].forEach(function(t){setTimeout(function(){try{f.contentWindow.postMessage({t:'region',r:curRegion},'*');}catch(e){}},t);});
+  [60,300,800,1600].forEach(function(t){setTimeout(function(){try{f.contentWindow.postMessage({t:'region',r:curRegion},'*');f.contentWindow.postMessage({t:'period',p:curPeriod},'*');}catch(e){}},t);});
   function H(){try{var h=f.contentWindow.document.documentElement.scrollHeight;if(h>50)f.style.height=h+'px';}catch(e){f.style.height=fb;}}
   H();[250,700,1500,3000].forEach(function(t){setTimeout(H,t);});
   try{var d=f.contentWindow.document;new ResizeObserver(H).observe(d.body);
@@ -48,7 +62,13 @@ function fit(f,fb){
     <button data-rk="west" onclick="setRegion('west')">서구권</button>
     <button data-rk="asia" onclick="setRegion('asia')">ASIA</button>
   </div>
-  <span class="hint">3개 리포트(벤치·추세·상세) 전체에 적용 · 벤치도 자기 런칭창 동일 권역</span>
+  <div class="div"></div>
+  <span class="lbl">기간</span>
+  <div class="rgseg">
+    <button data-pk="launch_same" class="on" onclick="setPeriod('launch_same')">런칭 동기간</button>
+    <button data-pk="postboost" onclick="setPeriod('postboost')">부스트 이후</button>
+  </div>
+  <span class="hint">권역=3개 리포트 공통 · 기간=벤치 비교에만 적용(부스트 이후=벤치 D+30~59 정착기)</span>
 </div>
 <div class="card"><iframe id="bench" src="sol_bench.html" onload="fit(this,'840px')"></iframe></div>
 <div class="card"><iframe id="trend" src="sol_trend.html" onload="fit(this,'900px')"></iframe></div>
