@@ -881,6 +881,14 @@ flowchart TD
     </table>
     <p style="margin:10px 0 0;font-size:12.5px;color:var(--text2)">※ QA용으로 시트 값(<code>duration_sec</code>·<code>total_rounds</code>·<code>cooldown_sec</code>)을 줄여 회전시킨 뒤 <strong>원복</strong>하는 절차가 QA 문서에 포함돼 있음.</p>
   </div>
+  <div class="callout callout-purple"><strong>📐 용어 3층 정의 (이 문서 전체 공통)</strong><br>
+  시간 구조를 지칭하는 단어를 3층으로 분리함 — 한 단어가 두 개념을 겹쳐 지칭하지 않음.
+  <table style="margin-top:8px"><thead><tr><th>층</th><th>용어</th><th>정의</th><th>근거 변수</th></tr></thead><tbody>
+    <tr><td>①</td><td><strong>주간 기간</strong></td><td>이벤트가 열려 있는 스케줄 창 (월 0:00 ~ 금 0:00 · 매주 반복)</td><td><code>event_schedule</code> 160005</td></tr>
+    <tr><td>②</td><td><strong>스프린트</strong></td><td>15분 참여 회차 1건 (발동 → 성공/실패). <strong>이 문서의 "사이클" = 이것만</strong> 지칭 — 쿨다운은 포함하지 않음</td><td><code>duration_sec</code></td></tr>
+    <tr><td>③</td><td><strong>쿨다운</strong></td><td>스프린트 종료(성공/실패 무관) 후 재트리거 대기 구간. <strong><code>cooldownEndAt</code> 존재 = "쿨다운 대기 중"이지 "참여 중"이 아님</strong></td><td><code>cooldown_sec</code></td></tr>
+  </tbody></table></div>
+
   <h2 id="s3-param">3-1 밸런스 파라미터</h2>
   <p>SSOT = 라이브 시트([PST] 밸런스시트) 형식의 이벤트 전용 탭. 값은 전부 <strong>예시값(초안)</strong> — 시트에서 빌드 없이 튜닝. </p>
   <h3>event_shadow_sprint 탭 (240001 · 튜닝 코어 1행)</h3>
@@ -931,7 +939,14 @@ flowchart TD
   난이도 티어(Normal / Hard / Super Hard)에 따라 판당 소요가 달라지는데 15분은 전 유저 공통임. 고레벨일수록 실패만 반복하는 구조가 되며, 하필 본 이벤트의 타깃이 <strong>헤비 구간(20판+)</strong> = 고레벨 비중이 높은 층임.<br>
   <strong>v1 조치</strong> — 차등은 넣지 않되, <strong>판당 소요 실측을 레벨 구간별로 쪼개서</strong> 볼 것(전체 평균만 보면 안 됨). 15분이 어느 구간까지 커버되는지 확인하고, <strong>구간 간 분산이 크면</strong> <code>event_shadow_sprint</code>를 1행 고정이 아니라 <strong>레벨 구간 키(<code>level_min</code>/<code>level_max</code>)를 받는 다행 구조</strong>로 미리 열어둘 것 — 나중에 뜯으면 서버 상태머신까지 영향이라 비쌈.</div>
   <div class="callout callout-yellow"><strong>✅ <code>grace_after_window=TRUE</code> — 의도된 설계</strong><br>
-  기간 종료 직전(금 0:00 직전)에 발동된 유저는 개인 타이머가 <strong>금요일 0:20까지</strong> 이어짐. <strong>버그가 아님</strong> — 기간 경계에서 발동된 유저의 사이클을 중간에 끊으면 <strong>이미 투입한 판수를 몰수하는 셈</strong>이 되어 "몰수 없음" 원칙과 정면으로 충돌함. 최대 초과 노출은 <code>duration_sec</code> + 연장 1회 = <strong>최장 20분</strong>으로 한정되며, 이 구간에는 <strong>신규 발동이 일어나지 않음</strong>(진행 중 사이클의 완주만 인정). 따라서 OnFire류 <strong>요일 격리 원칙과 실질 충돌 없음</strong> — 금요일 이벤트와 겹치는 것은 잔여 30분 내 완주 처리뿐임. <code>5444</code>의 <code>reason=event_end</code>는 이 유예까지 지난 강제 만료에만 사용.</div>
+  기간 종료 직전(금 0:00 직전)에 발동된 유저는 개인 타이머가 <strong>금요일 0:20까지</strong> 이어짐. <strong>버그가 아님</strong> — 기간 경계에서 발동된 유저의 사이클을 중간에 끊으면 <strong>이미 투입한 판수를 몰수하는 셈</strong>이 되어 "몰수 없음" 원칙과 정면으로 충돌함. 최대 초과 노출은 <code>duration_sec</code> + 연장 1회 = <strong>최장 20분</strong>으로 한정되며, 이 구간에는 <strong>신규 발동이 일어나지 않음</strong>(진행 중 사이클의 완주만 인정). 따라서 OnFire류 <strong>요일 격리 원칙과 실질 충돌 없음</strong> — 금요일 이벤트와 겹치는 것은 잔여 30분 내 완주 처리뿐임. <code>5444</code>의 <code>reason=event_end</code>는 이 유예까지 지난 강제 만료에만 사용.
+  <p style="margin:10px 0 4px"><strong>그럼 이때는? (파생 시나리오)</strong></p>
+  <ul style="margin:0 0 0 18px;padding:0">
+    <li><strong>기간이 끝났는데 진행 중이면 이벤트 UI는?</strong> → 행잉 태그·타이머·플레이 버튼 마킹 <strong>그대로 유지</strong>(개인 만료까지). 발동 연출·인포 등 신규 진입 UI만 비노출.</li>
+    <li><strong>그 구간에 새로 발동은 되나?</strong> → 안 됨 — 발동(참여 가능) 판정에 주간 기간 조건이 포함됨. 유예는 <strong>진행 중 스프린트의 완주 인정만</strong>.</li>
+    <li><strong>긴급 킬(<code>in_use=FALSE</code>)하면 진행 중인 사람은?</strong> → 신규 발동은 즉시 중단되지만, 진행 중 스프린트는 개인 만료까지 <strong>최대 20분(15분+연장 5분) 생존</strong>함(몰수 없음 원칙 유지). 즉시 전원 차단이 필요하면 <strong>별도 강제 종료 경로</strong>로 처리하고 <code>5444.reason=event_end</code> 기록.</li>
+    <li><strong>서버 구현 파급</strong> → 기존 이벤트 4종의 "기간 종료 = 데이터 삭제" 패턴을 <strong>그대로 쓸 수 없음</strong>(유예 진행분 판정 블록 별도 필요) · 클라 응답의 종료 시각(<code>endAt</code>)은 <strong>개인 만료 시각까지 연장</strong>해 내려야 함.</li>
+  </ul></div>
   <h3>공용 탭 관련 변수</h3>
   <table class="bs-table">
     <thead><tr><th>탭</th><th>변수명</th><th>타입</th><th>예시값</th><th>설명</th></tr></thead>
@@ -952,9 +967,24 @@ flowchart TD
   실측 기반 예상 성공률 <strong>~40%</strong>(8판/15분) 적용 시 실효 발행은 <strong>해머 ~2.4/유저-일 · 골드 ~400/유저-일</strong>임. 성공률이 10%p 움직이면 발행량도 그만큼 비례해 움직임. 구조적 상한은 <strong>해머 6/일 · 골드 1,000/일</strong>(일 2사이클 × Normal 구성)이며, 실측이 60%로 나오면 <strong>발행량이 가정의 2배</strong>가 됨. 시트 변수라 되돌릴 수는 있어도 <strong>이미 뿌려진 재화는 회수 불가</strong>임.<br>
   → <strong>튜닝 게이트를 일정에 못박음(§4)</strong>: <code>in_use=TRUE</code> 후 <strong>D+2에 <code>5441→5449</code> 완주율을 확인</strong>하고 <code>duration_sec</code>/<code>total_rounds</code>를 조정할 것. 실측 없이 첫 주를 통째로 넘기지 않음.</div>
 
-  <!-- 3-2 상태 5종 -->
-  <h2 id="s3-state">3-2 연출 상태 5종 (상태 머신)</h2>
-  
+  <!-- 3-2 상태 모델 -->
+  <h2 id="s3-state">3-2 상태 모델 — 서버 저장 상태 / 클라 연출 상태 (층 분리)</h2>
+  <div class="callout callout-red"><strong>⚠ 두 층을 섞지 말 것</strong> — 아래 ⓐ가 <strong>서버가 저장·판정하는 상태</strong>이고, ⓑ(GRAB/ESCAPE/RUNNING/WIN/LOSE)는 <strong>클라 연출 단계</strong>임. 연출 enum을 프로토콜 <code>state</code>로 옮기지 않음.</div>
+
+  <h3>ⓐ 서버 저장 상태 모델 — 서버가 기억해야 하는 것</h3>
+  <table class="tbl-keycol tbl-keycol2">
+    <thead><tr><th>서버 상태</th><th>전이 조건 (언제 넘어가는가)</th><th>그때 서버가 저장·갱신하는 값</th></tr></thead>
+    <tbody>
+      <tr><td><strong>기간 밖</strong></td><td>주간 기간 밖 또는 <code>in_use=FALSE</code></td><td>저장값 없음 · 만료 데이터 정리 — 단 <strong>유예 진행분은 예외</strong>(아래 행)</td></tr>
+      <tr><td><strong>참여 가능</strong></td><td>주간 기간 안 · 진행 중 아님 · 쿨다운 경과(<code>cooldownEndAt</code> 없음/과거)</td><td>저장값 없음(발동 대기) — 로비 조회 시점에 발동 처리</td></tr>
+      <tr><td><strong>스프린트 진행 중</strong></td><td>발동 처리 시점</td><td><code>sprintEndAt</code>(개인 만료 시각·<strong>타이머 권위=서버</strong>) · <code>clearedRounds</code> · <code>extendUsed</code>(연장 소진 여부) · <code>cycle_id</code>(계측 전용). RV 연장 승인 시 <code>sprintEndAt += ad_extend_sec</code>(회수 검증=<code>ad_extend_max_per_cycle</code>)</td></tr>
+      <tr><td><strong>쿨다운 대기</strong></td><td><code>sprintEndAt</code> 경과(미완주) 또는 <code>clearedRounds ≥ total_rounds</code>(완주 확정·보상 즉시 지급)</td><td><code>cooldownEndAt = 스프린트 종료 시각 + cooldown_sec</code>(<strong>만료 시점 기준 — 감지 시점 아님</strong>) · 완주 시 <code>isReceivedChest</code>(오픈 연출 재생 여부·정산 시 함께 정리) · 진행값 정리</td></tr>
+      <tr><td><strong>유예 진행</strong></td><td>주간 기간 종료 시점에 "스프린트 진행 중"이면 (<code>grace_after_window=TRUE</code>)</td><td>진행 중 상태를 <code>sprintEndAt</code>까지 그대로 유지 · <strong>신규 발동 없음</strong> — 기존 이벤트 4종의 "기간 종료=삭제" 패턴 사용 불가(별도 판정 블록 필요)</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><strong><code>cooldownEndAt</code> 의미 고정</strong> — 이 값이 <strong>존재하면 "쿨다운 대기 중"</strong>임(참여 중 아님). 참여 중 여부는 <code>sprintEndAt</code>이 담당. 두 필드의 존재 의미를 바꿔 읽지 말 것.</div>
+
+  <h3>ⓑ 클라 연출 상태 5종 — 프로토콜 state 아님</h3>
   <table class="tbl-keycol tbl-keycol2">
     <thead><tr><th>상태</th><th>클라 상태값</th><th>진입 조건</th><th>다음 상태</th></tr></thead>
     <tbody>
@@ -982,6 +1012,7 @@ flowchart TD
     </tbody>
   </table>
   <div class="callout callout-green"><strong>🔑 <code>cycle_id</code> 정의</strong><br>
+  <strong>용도 = 순수 계측(BQ 조인 키)</strong> — 플레이어당 진행 중 스프린트가 항상 1개라 <strong>서버 판정 로직에는 불필요</strong>한 값임. 오로지 <strong>로그 6종(5440~5449)을 한 회차로 묶기 위해</strong> 존재함.<br>
   <strong>사이클 = 스프린트 1회(발동 → 성공/실패)</strong>이고, <code>cycle_id</code>는 <strong>그 1회를 식별하는 ID</strong>임. 한 사이클의 로그가 <strong>전부 동일한 <code>cycle_id</code>로 묶여야</strong> 퍼널이 성립함 — 참여율(<code>5441÷5440</code>) · 완주율(<code>5441→5449</code>) · 연장 클릭률(<code>5447</code>).
   <ul style="margin:8px 0 0 18px;padding:0">
     <li><strong>발급 주체·시점</strong> — <strong>서버</strong>가 <code>5440</code>(발동 조건 충족) 시점에 1개 발급. 타이머 권위가 서버이므로 ID도 서버가 쥠</li>
@@ -1006,6 +1037,7 @@ flowchart TD
       <li><code>elapsed_sec</code> — CCstorage 저장 시작 시각 기준. <code>sprintEndAt − duration_sec</code> 역산 금지(<strong>RV 연장 시 5분 틀어짐</strong>)</li>
       <li><code>remain_sec</code> — <code>Math.max(0, sprintEndAt − now)</code>. <strong><code>0</code> = 만료 후 도착한 gameEnd로 카운트/완주</strong>(정상). 검산 = <code>elapsed_sec + remain_sec = duration_sec</code>(만료 판 제외)</li>
       <li><code>stage_id</code>·<code>play_time</code> — <code>2400_FINISH_RESULT</code>와 동일 필드명</li>
+      <li><code>5444/5449.extended</code> — <strong>출처 = 서버 저장값 <code>extendUsed</code></strong>. 클라 자체 추적 금지 — 발화 시점 서버 응답에 없는 값을 클라가 만들어내는 설계가 되면 안 됨(계측 필드마다 <strong>"누가 어디서 얻는가"</strong> 기준: 이 값은 서버)</li>
       <li><code>5447</code> — <code>impression</code>은 <strong>사이클당 다회</strong>(프리레벨 팝업 열 때마다). 클릭률 = <code>watch_start ÷ impression</code>. 연장 성공 여부는 <code>4210_RV_FINISH</code>/<code>4220_RV_ERROR</code> 조인 → <strong><code>LogRVPosition</code>에 <code>shadow_chase_extend</code> 추가 필수</strong></li>
       <li><strong><code>5449.remain_sec</code> 분포가 <code>duration_sec</code>/<code>total_rounds</code> 밸런싱의 핵심 지표</strong></li>
       <li><code>5440</code>은 <strong>조건 충족 시에만 발화</strong> — <code>window_sec</code>·<code>target_clear</code>가 슬롯이 실제로 열릴 때만 존재하는 값이기 때문. 따라서 <strong>참여율 = <code>5441 ÷ 5440</code></strong>이 그대로 성립함(분모가 체크 횟수로 부풀지 않음)</li>
@@ -1026,7 +1058,8 @@ flowchart TD
       <tr><td>공용 등록</td><td><code>string_code</code></td><td>T_SHADOW_CHASE_* 11키 + <code>T_OPEN</code>(범용)</td><td>이벤트 카피 (T_ 대문자 관례) · 재사용 7키는 신규 등록 불필요</td></tr>
       <tr><td>공용 등록</td><td><code>unlock</code></td><td>50031</td><td>레벨 10 클리어 언락 (condition_type=level_clear)</td></tr>
       <tr><td>전용 탭(2차)</td><td><code>event_shadow_milestone</code></td><td>260001~260006</td><td>저니 트랙 6마일스톤 — v1 시트 반영분 아님(저니 레이어 2차 등록)</td></tr>
-      <tr><td>전용 탭</td><td><code>event_shadow_sprint</code></td><td>240001</td><td>스프린트 파라미터 1행 (컬럼식) — 체스트 보상 컬럼 통합(normal_*·jackpot_*). multiplier·heart 컬럼 없음</td></tr>
+      <tr><td>전용 탭</td><td><code>event_shadow_sprint</code></td><td>240001</td><td>스프린트 파라미터 1행 (컬럼식) — <strong>체스트 보상은 포함하지 않음</strong>(아래 <code>event_shadow_chest</code> 별도 탭). multiplier·heart 컬럼 없음</td></tr>
+      <tr><td>전용 탭</td><td><code>event_shadow_chest</code></td><td>250001~250006</td><td>체스트 보상 행식(<code>chest_tier</code>·<code>slot</code>·<code>reward_item_key</code>·<code>reward_amount</code>) — Jackpot 예약 250007~250012. <strong>★확정 서술은 이 표</strong>임(구판의 "sprint 탭 normal_*/jackpot_* 컬럼 통합" 서술은 폐기 — 개발 구현도 별도 탭 기준)</td></tr>
     </tbody>
   </table>
   <div class="callout callout-green"><strong>✅ 라이브 시트 실측 검증 완료 (2026-07-28 · [PST] 밸런스시트 직접 조회)</strong>
@@ -1053,6 +1086,7 @@ flowchart TD
   <div class="bs-block" id="sheet-preview" style="border:2px solid var(--green)">
 <h3 style="font-size:16px">🧾 라이브 시트 반영 예정분 — 개발 검토용 미리보기</h3>
 <p><b>아래 행을 그대로 라이브 시트에 붙여넣음.</b> 안전장치: 공용 탭(event_schedule)은 <b>in_use=FALSE 선등록</b>(개발 완료 시 TRUE 전환 = 킬스위치 겸용·기구현). unlock은 참조 콘텐츠가 클라에 아직 없어 등록돼도 무동작. </p>
+<div class="callout callout-red"><strong>⚠ 실배포 상태 불일치 (2026-07-31 서버 개발 확인)</strong> — 문서상 FALSE 선등록이나 <strong>dev CDN에는 이미 <code>in_use=TRUE</code>로 배포돼 있음</strong> → 코드가 머지되면 즉시 동작함. 의도된 것인지 확인 후, FALSE 선등록 원칙을 지킬 거면 dev CDN 값을 FALSE로 되돌릴 것.</div>
 
 <h3>① event_schedule +1행 (공용 · in_use=FALSE 선등록)</h3>
 <div class="tbl-scroll"><table class="bs-table">
@@ -1154,8 +1188,8 @@ flowchart TD
     <div class="day we"><div class="dnum">8/1</div></div>
 
     <div class="day we"><div class="dnum">8/2</div></div>
-    <div class="day"><div class="dnum">8/3</div><span class="bar b-fx">연출 착수</span></div>
-    <div class="day"><div class="dnum">8/4</div><span class="bar b-fx">연출</span></div>
+    <div class="day"><div class="dnum">8/3</div><span class="bar b-fx">연출 착수</span><span class="bar b-art">원화</span></div>
+    <div class="day"><div class="dnum">8/4</div><span class="bar b-fx">연출</span><span class="bar b-art">원화 마감</span></div>
     <div class="day"><div class="dnum">8/5</div><span class="bar b-fx">연출 종료</span></div>
     <div class="day"><div class="dnum">8/6</div><span class="bar b-qa">QA</span></div>
     <div class="day"><div class="dnum">8/7</div><span class="bar b-qa">QA 종료</span></div>
@@ -1171,7 +1205,7 @@ flowchart TD
   </div>
   <div class="callegend">
     <span><i style="background:#1c9e63"></i>UI · <b>완료</b>(7/30)</span>
-    <span><i style="background:#f97316"></i>원화 · 확정</span>
+    <span><i style="background:#f97316"></i>원화 · 확정(연출과 병행)</span>
     <span><i style="background:rgba(124,58,237,.16);border:1px dashed #a78bfa"></i>연출 · 예정(8/3 착수)</span>
     <span><i style="background:rgba(28,158,99,.16);border:1px dashed #6ee7b7"></i>QA · 예정(연출 후 1.5일)</span>
     <span><i style="background:var(--surface2);border:1px dashed #b9c2d0"></i>티어 동결(참고)</span>
@@ -1181,14 +1215,14 @@ flowchart TD
     <thead><tr><th>단계</th><th>기간</th><th>산출물</th></tr></thead>
     <tbody>
       <tr><td><strong>UI 작업</strong><span class="art-chip-mini">ART</span></td><td>7/28 ~ <strong>7/30</strong> <span style="color:#1c9e63;font-weight:800">완료 ✓</span></td><td>발동 연출 풀스크린 · 스토리 팝업 · 프리레벨 행잉 태그 · 플레이 버튼 🐾마킹 · 로비 체스트 오픈 팝업 3컷 · 인포 팝업 · 타이머 말풍선 · FB 배너 2종</td></tr>
-      <tr><td><strong>원화</strong><span class="art-chip-mini">ART</span></td><td>7/28 ~ <strong>7/31</strong></td><td>체스트(잠김/열림) · 열쇠 · 자물쇠 · 🐾자국 스프라이트 · 실루엣(귀+열쇠 든 발) · 루나 체스트</td></tr>
-      <tr><td><strong>연출</strong><span class="art-chip-mini">ART</span></td><td><strong>8/3(월) 착수</strong> · 2~3일<br><small>8/3 ~ 8/5</small></td><td>강탈·도주 Tween · 열쇠 꽂힘 / 자물쇠 파손 · 체스트 오픈 · 🐾파티클 · 게이지 만충 글로우 <span class="dim2">(클라 병행)</span></td></tr>
+      <tr><td><strong>원화</strong><span class="art-chip-mini">ART</span></td><td>7/28 ~ <strong>8/3–4</strong><br><small>연출과 병행</small></td><td>체스트(잠김/열림) · 열쇠 · 자물쇠 · 🐾자국 스프라이트 · 실루엣(귀+열쇠 든 발) · 루나 체스트</td></tr>
+      <tr><td><strong>연출</strong><span class="art-chip-mini">ART</span></td><td><strong>8/3(월) 착수</strong> · 2~3일<br><small>8/3 ~ 8/5 · 원화 대기 없음</small></td><td>강탈·도주 Tween · 열쇠 꽂힘 / 자물쇠 파손 · 체스트 오픈 · 🐾파티클 · 게이지 만충 글로우 <span class="dim2">(클라 병행)</span></td></tr>
       <tr><td><strong>QA</strong></td><td>연출 후 <strong>1.5일</strong><br><small>8/6 ~ 8/7</small></td><td>QA 테스트 케이스 14개 영역 · 🔴 필수 항목 전건 통과</td></tr>
     </tbody>
   </table>
   <div class="callout callout-green"><strong>★ 8/12 티어 동결 전 라이브 가능</strong> — 위 일정대로면 <strong>~8/7 QA 완료</strong>라, <strong>콜드스타트 종료·티어 최초 동결(8/12)</strong> 전에 라이브에 올릴 수 있음. 즉 본 이벤트의 성과가 <strong>첫 티어 평가 구간에 반영</strong>됨.</div>
   <div class="callout callout-red"><strong>⚠ 일정 리스크</strong><br>
-  ① <strong>원화 마감 확인 필요</strong> — 연출이 <strong>8/3(월) 착수</strong>이므로 원화는 그 전(7/31)에 끝나 있어야 함. 기존 계획은 ~8/3–4였음.<br>
+  ① <strong>원화는 크리티컬 패스가 아님</strong> — 연출 착수(8/3)를 기다리지 않고 <strong>병행</strong> 가능. 최종 원화가 늦게 나와도 <strong>이미지 교체만</strong> 하면 되므로 연출·QA 일정에 영향 없음.<br>
   ② <strong>서버 상태머신(L)·클라 발동 트리거(L)는 아트와 병행 가능</strong>하므로 개발 착수를 UI 완료까지 기다리지 말 것. 그러려면 <strong>개발 확인 4건 회신이 선행</strong>돼야 함.</div>
 
   <h3>공수 (S/M/L · 스프린트 관련)</h3>

@@ -145,6 +145,7 @@
 - [ ] `ProtocolTypes.ts`: `EventSchedule.type`에 `shadow_chase` 추가 · `ShadowChaseInfo` 타입 신설(`timer_start_ts`·`rounds_cleared`·`cooldown_until`·`cycle_result`·`ad_extend_used`·**`key_pending`**)
 - [ ] 진행 저장: 서버 `TPlayer.event_infos`에 `ShadowChaseInfo`
 - [ ] 신규 시트 탭 로드: `event_shadow_sprint`(**8변수** — 기존 5 + `ad_extend_threshold_sec`·`ad_extend_sec`·`ad_extend_max_per_cycle`) · `event_shadow_chest`(Normal 6행 — `reward_item_key`+`reward_amount`, **`reward_type` 없음**) — 번들 JSON + balance-sheet 로더 등록
+- [ ] 아트 원화는 **크리티컬 패스가 아님** — 연출 착수를 기다리지 않고 병행. 최종 원화는 **이미지 교체**로 반영
 - [ ] ★**시트 파서 규칙** — 추출기는 **행·열 모두 빈 내용을 만나면 생성을 멈춤**. 따라서 신규 탭은 **추출 컬럼을 앞에 붙이고 → 빈 열 1개 → `description`** 순서로 배치돼 있음. `event_shadow_sprint` = A~J 데이터·**K 빈 열**·L description / `event_shadow_chest` = A~G 데이터·**H 빈 열**·I description. 로더가 빈 열 이후를 읽지 않도록 할 것
 - [ ] `event_shadow_sprint`는 v1 1행 고정이나, **레벨 구간 차등이 필요해지면 `level_min`/`level_max` 컬럼을 가진 다행 구조로 확장**될 수 있음 — 로더를 단일 행 전제로 하드코딩하지 말 것
 - [ ] `unlock` 50031(`content_event_shadow_chase`·`level_clear`·10·**`show_tutorial=FALSE`**) — 별도 튜토리얼·언락 인트로 없음(`tutorial_guide` 미등록). 클라 코드 등록 불필요(데이터 참조)
@@ -213,7 +214,7 @@
 | ① | `complete_sprint_cycle` | 서버 처리 방식 (2차 저니용 — v1은 훅만) |
 | ② | ~~`event_id=0`~~ | **해소** — 라이브 관례대로 `event_id=160005`(스케줄 키 참조) 적용 |
 | ③ | 판정 주체 | 기간·쿨다운을 서버 스케줄 push vs 클라 시각 판정(서버 시간 기준) 중 택 |
-| ④ | **타임존** | 월~목 경계 판정 기준(서버 UTC / 서버 로컬 / 유저 로컬). 서구권 타깃이라 기준에 따라 지역별 창이 어긋남 — ③과 함께 확정 |
+| ④ | **타임존 (여전히 미결·결과 실제로 갈림)** | 월~금 경계 판정 기준. **FB 서버=UTC · 토스 서버=KST**라 기간 경계가 플랫폼별 **9시간** 어긋나고, 12h 쿨다운과 맞물리면 **일 2회 참여 상한이 플랫폼마다 다르게 걸릴 수 있음**. 기획 권고 = PST 라이브 관례대로 **UTC 0시 단일축**(데일리 리셋·타 이벤트 전부 UTC) — 토스도 UTC 기준으로 자를 수 있는지 서버 확인 필요. ③과 함께 확정 |
 | ⑤ | **`cycle_id` 형식** | 발급 주체(서버)·시점(`5440`)·사이클 종료까지 유지는 확정. 남은 것은 **문자열 형식과 전역/유저 단위 유일성** |
 
 
