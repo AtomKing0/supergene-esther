@@ -187,6 +187,8 @@ tr:last-child td{border-bottom:none}
 .sep td{background:var(--surface2);font-size:.68rem;font-weight:700;letter-spacing:.09em;color:var(--muted);
 padding:6px 10px;text-align:left;font-family:inherit}
 tr.no td:first-child{color:var(--alarm)}
+tr.ok td{background:var(--felt-soft)}
+tr.ok td:first-child{color:var(--felt)}
 
 /* 결정 트리 */
 .tree{display:grid;gap:10px;margin-top:8px}
@@ -226,12 +228,12 @@ footer p{max-width:none;margin:0 0 5px}
 
 <!-- WATCH:START -->
 <section id="watch">
-  <h2>자동 감시 <span class="wstamp">07/31 16:21 기준</span> <span class="wbadge ok">이상 없음</span></h2>
-  <p class="sub">매일 09 · 12 · 15 · 18 · 21시 자동 갱신. Super Hard 지표는 층화 전 원값이라 <b>사고 감시용</b>이며 성과 판정에는 쓰지 않음. 이번 실행 스캔 18일 파티션.</p>
+  <h2>자동 감시 <span class="wstamp">07/31 16:38 기준</span> <span class="wbadge ok">이상 없음</span></h2>
+  <p class="sub">매일 09 · 12 · 15 · 18 · 21시 자동 갱신. Super Hard 지표는 층화 전 원값이라 <b>사고 감시용</b>이며 성과 판정에는 쓰지 않음. 이번 실행 스캔 1일 파티션.</p>
   <div class="watch"><div class="wrow info"><span class="wl">패치 후 데이터</span><span class="wv">없음</span><span class="wt">배포(2026-08-01 09:00:00 KST) 전이거나 아직 로그가 없음</span><span class="wbadge info">참고</span></div></div>
   <h3 style="margin-top:26px">의사결정 게이트 <span class="wstamp">배포 전</span></h3>
   <div class="watch"><div class="wrow info"><span class="wl">D+3 <em>8/4 (화)</em></span><span class="wv">배포 전</span><span class="wt">8/1 09:00 이후 집계 시작</span><span class="wbadge info">대기</span></div><div class="wrow info"><span class="wl">D+7 <em>8/8 (금)</em></span><span class="wv">D+0.0 · 판정 대기</span><span class="wt">표준화 잔여로 판정 · 누적 0판 / 약 3,800판 필요</span><span class="wbadge info">대기</span></div></div>
-
+<h3 style="margin-top:22px">밴드 개방 안전성 — SH 실패 후 세션 종료율</h3><div class="watch"><div class="wrow info"><span class="wl">로그인 1~3</span><span class="wv">31.5%</span><span class="wt">패치 후 표본 없음 · 패치 전 값</span><span class="wbadge info">확인</span></div><div class="wrow info"><span class="wl">4~10</span><span class="wv">21.4%</span><span class="wt">패치 후 표본 없음 · 패치 전 값</span><span class="wbadge info">확인</span></div><div class="wrow info"><span class="wl">11~30</span><span class="wv">18.7%</span><span class="wt">패치 후 표본 없음 · 패치 전 값</span><span class="wbadge info">확인</span></div><div class="wrow info"><span class="wl">31회 이상</span><span class="wv">16.4%</span><span class="wt">패치 후 표본 없음 · 패치 전 값</span><span class="wbadge info">확인</span></div></div><p class="sub" style="margin-top:9px">하위 밴드를 개방하기 전에 그 밴드의 값을 확인할 것. 패치 전 대비 5%p 넘게 오르면 개방 보류.</p>
 </section>
 <!-- WATCH:END -->
 
@@ -273,6 +275,45 @@ footer p{max-width:none;margin:0 0 5px}
   <div class="callout c-warn">
     <p><b>서로를 상쇄하는 게 아니라 보완함.</b> 029는 Super Hard 비중을 6.2% → 9%로 올려 밴드 전체 중도 종료율을 4.5% → 5.1%로 밀어올리는데, 031이 Super Hard 자체 실패율을 17.2% → 16.3%로 내려 그중 일부를 되돌림(5.05%). <b>029의 가드레일 8%를 지키는 데 031이 기여함</b> — 같이 내는 게 오히려 안전한 조합임.</p>
     <p>다만 <b>측정은 별개임.</b> 겹치는 칸의 원값만 보면 어느 쪽 효과인지 알 수 없음.</p>
+  </div>
+</section>
+
+<!-- ══ 밴드 반응 ══ -->
+<section>
+  <h2>어느 밴드가 Super Hard를 견디는가</h2>
+  <p class="sub">SPEC-029는 상위 밴드부터 Super Hard 노출을 늘림. 밴드마다 반응이 크게 달라서 개방 순서가 곧 안전 마진임.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>밴드 (로그인 횟수)</th><th>SH 실패율</th><th>SH 판 완료율</th><th>SH 실패 후 세션 종료</th><th>Normal 실패 후 종료</th></tr></thead>
+      <tbody>
+        <tr class="no"><td>1 ~ 3회 (신규)</td><td>21.2%</td><td>89.7%</td><td><b>31.5%</b></td><td>27.2%</td></tr>
+        <tr><td>4 ~ 10회</td><td>17.4%</td><td>90.2%</td><td>21.2%</td><td>26.3%</td></tr>
+        <tr><td>11 ~ 30회</td><td>14.3%</td><td>92.6%</td><td>18.8%</td><td>19.6%</td></tr>
+        <tr class="ok"><td><b>31회 이상 (029 1차 대상)</b></td><td><b>9.1%</b></td><td><b>92.0%</b></td><td><b>16.0%</b></td><td>18.5%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout c-felt">
+    <p><b>오래 한 유저일수록 Super Hard를 잘 견딤.</b> 덜 지고(9.1% vs 21.2%), 중도에 덜 던지고(완료율 92.0%), 져도 덜 그만둠(16.0% vs 31.5%).</p>
+    <p>결정적으로 <b>고인 유저는 Super Hard에서 졌을 때(16.0%)가 Normal에서 졌을 때(18.5%)보다 오히려 덜 그만둠.</b> 어려운 판이라는 걸 알고 들어가 져도 납득한다는 뜻임. 신규는 반대로 Super Hard 실패 후 이탈(31.5%)이 Normal(27.2%)보다 높음 — <b>충격을 받는 쪽은 신규지 고레벨이 아님.</b></p>
+    <p>SPEC-029가 노출을 먼저 늘리는 대상이 맨 아랫줄이므로 <b>개방 순서가 위험이 가장 낮은 쪽부터로 잡혀 있음.</b></p>
+  </div>
+
+  <h3>밴드 중도 종료율 전망 — 029 가드레일 8%</h3>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>밴드</th><th>현재</th><th>029만</th><th>029 + 031</th><th>가드레일</th></tr></thead>
+      <tbody>
+        <tr><td>1 ~ 3회</td><td>5.27%</td><td>6.11%</td><td>6.01%</td><td>8% 이하</td></tr>
+        <tr><td>4 ~ 10회</td><td>4.48%</td><td>5.13%</td><td>5.04%</td><td>8% 이하</td></tr>
+        <tr><td>11 ~ 30회</td><td>3.89%</td><td>4.43%</td><td>4.36%</td><td>8% 이하</td></tr>
+        <tr><td>31회 이상</td><td>2.96%</td><td>3.33%</td><td>3.29%</td><td>8% 이하</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout c-warn">
+    <p><b>전 밴드가 가드레일에 한참 못 미침</b> — 가장 빠듯한 신규도 6.01%로 2%p 여유가 있음. 031이 SH 실패율을 낮춰 각 밴드에서 0.04 ~ 0.10%p씩 되돌려줌.</p>
+    <p><b>남는 위험은 고레벨이 아니라 하위 밴드 개방 때임.</b> 신규는 SH 실패 후 이탈률이 31.5%로 가장 높음. 밴드를 내릴 때마다 그 밴드의 실패 후 세션 종료율을 따로 확인하고, 패치 전 대비 5%p 넘게 오르면 개방을 멈출 것.</p>
   </div>
 </section>
 
@@ -443,6 +484,7 @@ footer p{max-width:none;margin:0 0 5px}
       <li><span class="tag t31">031</span><div>표준화 실패 시 잔여<span class="crit">10.8장 → 10장 방향 확인. <b>7일이면 1장 차이 검출 가능</b> · 원값이 올라도 표준화가 내려가면 정상</span></div></li>
       <li><span class="tag t31">031</span><div>부스터 사용률<span class="crit">77.4% 기준 · 하락이 정상 · 상승이면 구제가 체감 안 되는 것</span></div></li>
       <li><span class="tag tboth">공통</span><div><b>이상 없으면 다음 밴드 개방</b><span class="crit">최상위 밴드 이상 없을 때만. 이상 있으면 개방 보류하고 원인부터</span></div></li>
+      <li><span class="tag t29">029</span><div><b>개방할 밴드의 SH 실패 후 세션 종료율 확인</b> — 밴드 내릴 때마다<span class="crit">밴드별 중도 종료율과 <b>별개 지표임.</b> 패치 전 대비 <b>5%p 넘게 오르면 개방 보류.</b> 자동 감시의 「밴드 개방 안전성」 블록에 표시됨</span></div></li>
     </ul></div>
   </div>
 
