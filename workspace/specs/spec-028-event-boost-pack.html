@@ -143,8 +143,6 @@ ul li strong,ol li strong { color:var(--text); }
 .callout-gold{background:var(--gold-bg);border-left:3px solid var(--gold)}
 .badge-gold{background:var(--gold-bg);color:var(--gold);border:1px solid rgba(251,191,36,.3)}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="spec-meta.js"></script>
 </head>
 <body>
 <a href="index.html" class="back-btn">← 목록</a>
@@ -269,7 +267,7 @@ ul li strong,ol li strong { color:var(--text); }
             <div style="width:44px;height:44px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🌟</div>
             <div style="flex:1;line-height:1.45">
               <div style="font-size:.8rem;font-weight:800;color:var(--gold)">부스트 팩 $1.99</div>
-              <div style="font-size:.7rem;color:var(--text2)">남은 보상 전부 ×2 + 부스터 6종</div>
+              <div style="font-size:.7rem;color:var(--text2)">남은 보상 전부 ×2 + 부스터 4종 9개</div>
               <div style="font-size:.7rem;font-weight:700;color:var(--gold)">이미 받은 보상도 차액 지급!</div>
             </div>
           </div>
@@ -314,6 +312,33 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
   </div>
 
+  <div class="callout callout-red">
+    <p><strong>⚠ 확정 필요 — 문서 내 서술 상충 (2026-07-31 서버 핸드오프 감사)</strong></p>
+    <ul style="margin:8px 0 0">
+      <li><strong>구매 제한 저장 단위</strong> — 히어로·흐름 4 "이벤트당 1회" vs 엣지 케이스 "purchase_limit는 사이클 기준" / 이벤트 2개 동시 활성 시 purchase_limit를 event_id 단위로 저장할지 주말 사이클 단위로 저장할지가 갈림(아래 용어 정의 노트 참조).</li>
+      <li><strong>이벤트 명명 매핑</strong> — 히어로 Midnight·Sunset·Golden Stamp vs 시트 black/red/winning / City Race↔city_race 외 3종의 대응은 문서에 명시 없음(아래 매핑 표의 추정을 확정 필요).</li>
+      <li><strong>종료 직전 결제</strong> — 이벤트 종료 직전 결제 시작 → 종료 후 <span class="code">iap-success</span> 도착 시 처리("그럼 이때는?" 미결): 이벤트 데이터가 이미 delete된 상태에서 boostPurchased를 어디에 기록하고 무엇을 지급할지 미정.</li>
+      <li><strong>오퍼 긴급 OFF 수단</strong> — 라이브 이슈 시 오퍼만 끄는 킬스위치(시트 플래그·서버 토글 등)가 문서에 없음.</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-yellow">
+    <p><strong>용어 정의 — "이벤트당 1회"의 두 해석:</strong> ① <strong>이벤트 창</strong> = event_id 단위(이벤트별 각 1회 구매 가능) ② <strong>주말 창</strong> = 사이클 단위(같은 주말에 여러 이벤트가 활성이어도 합산 1회). 오퍼가 활성 이벤트 전부에 ×2를 적용하는 구조상 purchase_limit의 저장 단위가 갈리므로 위 콜아웃대로 확정 필요.</p>
+  </div>
+
+  <p style="font-size:0.85rem">기준 시각 = UTC 0시 단일축(PST 라이브 관례 — 데일리 리셋·타 이벤트 동일). 토스 플랫폼(KST 서버) 확장 시 경계 9시간 차 확인 필요.</p>
+
+  <h3>이벤트 명명 매핑 (마케팅명 ↔ 시트 event type)</h3>
+  <table>
+    <thead><tr><th>마케팅명(히어로·기획 서술)</th><th>시트 event type</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>City Race</td><td><span class="code">city_race</span></td><td>확정(명칭 일치)</td></tr>
+      <tr><td>Midnight</td><td><span class="code">black</span></td><td>추정 — 확정 필요</td></tr>
+      <tr><td>Sunset</td><td><span class="code">red</span></td><td>추정 — 확정 필요</td></tr>
+      <tr><td>Golden Stamp</td><td><span class="code">winning</span></td><td>추정 — 확정 필요</td></tr>
+    </tbody>
+  </table>
+
   <h3 id="s3-bs">밸런스 시트 · 상품</h3>
   <div class="sheet-block">
     <div class="sheet-block-title">신규 탭: event_boost_offer · key_number 234001~ (시즌 패스 233xxx 다음 대역)</div>
@@ -355,6 +380,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
       <tr><td>5457_EVENT_OFFER_IMPRESSION</td><td>오퍼 노출</td><td>surface(popup_banner/widget/inline) · event_id</td></tr>
       <tr><td>5458_EVENT_OFFER_PURCHASE</td><td>구매 성공</td><td>event_id · 이벤트 경과일 · 소급 차액량</td></tr>
+      <tr><td colspan="3" style="font-weight:400">↳ 5458의 <strong>소급 차액량은 서버 계산값</strong>이므로 <span class="code">iap-success</span> 서버 응답에 포함해 클라가 그대로 발화한다(클라 자체 계산 금지). 이벤트 경과일도 서버 기준으로 산출. <span class="code">event_id</span>는 5457/5459와 묶는 BQ 조인 키 용도.</td></tr>
       <tr><td>5459_EVENT_OFFER_DOUBLE_PAYOUT</td><td>×2 지급 발생</td><td>milestone step · 증분량</td></tr>
     </tbody>
   </table>
@@ -379,7 +405,92 @@ ul li strong,ol li strong { color:var(--text); }
 // ── 메타 배지 드롭다운 (index.html과 localStorage 공유) ──────────────
 (function () {
   const SPEC_ID = 'spec-028';
-  SPEC_META.mountBadges(SPEC_ID);
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',    cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',  cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',    cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',   cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',  cls: 'badge-yellow' },
+    social:  { label: '👥 소셜',    cls: 'badge-teal'   },
+    monetize:{ label: '💰 수익화',  cls: 'badge-green'  },
+    iap:     { label: '🛒 IAP',     cls: 'badge-yellow' },
+    test:    { label: '🧪 테스트',  cls: 'badge-blue'   },
+    etc:     { label: '📌 기타',    cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL  = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS  = { tag: 'monetize', priority: 'high', status: 'wip' };
+  let ddField = null;
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+  function applyBadge(el, info) {
+    if (!el) return;
+    el.className = 'badge ' + info.cls;
+    el.textContent = info.label;
+    el.style.cursor = 'pointer';
+  }
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o =>
+        `<div class="dd-itm${o.val === cur ? ' active' : ''}" data-val="${o.val}">${o.label}</div>`
+      ).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    const fieldMap = { 'hero-tag': 'tag', 'hero-priority': 'priority', 'hero-status': 'status' };
+    Object.keys(fieldMap).forEach(elId => {
+      const el = document.getElementById(elId);
+      if (el) el.addEventListener('click', e => openDropdown(e, fieldMap[elId]));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none';
+      ddField = null;
+      updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
   // ── 사이드바 네비 스크롤스파이 ──
   var links    = document.querySelectorAll('.nav-sidebar a');
   var sections = document.querySelectorAll('section[id]');

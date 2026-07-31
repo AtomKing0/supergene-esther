@@ -140,8 +140,6 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
 .cal-day.super { border-color:var(--blue);background:rgba(96,165,250,0.1);box-shadow:0 0 12px rgba(96,165,250,0.2); }
 .cal-day.super .day-num { color:var(--blue);font-weight:700; }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="spec-meta.js"></script>
 </head>
 <body>
 <a href="index.html" class="back-btn">← 목록</a>
@@ -163,7 +161,7 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
       <span class="badge badge-green">2026. 4. 13.</span>
     </div>
     <h1>데일리 기프트 <span>30일 확장</span></h1>
-    <p class="hero-sub">7일 출석 보상을 30일 사이클로 확장하여 장기 리텐션 루프를 구축한다. 매 7일 마다 마일스톤 보상, Day 30 SUPER 보상으로 이탈 방지 앵커 생성.</p>
+    <p class="hero-sub">7일 출석 보상을 30일 사이클로 확장하여 장기 리텐션 루프를 구축한다. Day 7·14·21·30 마일스톤 보상(21→30 구간은 9일 간격), Day 30 SUPER 보상으로 이탈 방지 앵커 생성.</p>
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">사이클 길이</div>
@@ -232,8 +230,8 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
   <h3>사이클 리셋 정책</h3>
   <ul>
     <li><strong>30일 완주 후:</strong> Day 1부터 재시작 (무한 반복 사이클)</li>
-    <li><strong>연속 로그인 기준:</strong> 하루 1회 수령 (UTC 기준 0시 리셋 또는 현지 자정)</li>
-    <li><strong>미수령일:</strong> 스킵 — 다음 날 수령 가능, 되돌아가기 불가. 단 진행도는 유지 (이탈·복귀 시 중단된 날부터 재개)</li>
+    <li><strong>연속 로그인 기준:</strong> 하루 1회 수령 — 리셋 기준은 UTC 0시를 권고 기본으로 함(PST 라이브 관례). 상세는 ③ 개발 스펙의 확정 필요 콜아웃 참조</li>
+    <li><strong>미수령일:</strong> 진행도 정지(day 증가 없음) — 되돌아가기 불가, 복귀 시 중단된 day부터 재개. 확정 서술은 ③ 개발 스펙 "진행도 저장 로직" 기준</li>
   </ul>
 
   <div class="callout callout-blue">
@@ -280,7 +278,7 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
   </div>
 
   <div class="callout callout-purple">
-    <p><strong>골드 총량 (30일 기준, 초안):</strong> ~43,100g / 30일 = ~1,437g/일 — 기존 7일(~1,286g/일) 대비 약 +11%. 시뮬레이션 후 조정 필요.</p>
+    <p><strong>골드 총량 (30일 기준, 초안):</strong> 43,900g / 30일 = ~1,463g/일 — 기존 7일(~1,286g/일) 대비 약 +14%. 시뮬레이션 후 조정 필요.</p>
   </div>
 </section>
 
@@ -338,6 +336,15 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
       <span class="section-audience aud-dev">개발팀</span>
     </div>
   </div>
+
+  <div class="callout callout-yellow">
+    <p><strong>⚠ 확정 필요 — 문서 내 서술 상충 (2026-07-31 서버 핸드오프 감사)</strong></p>
+    <ul style="margin-top:8px;margin-bottom:0;">
+      <li><strong>리셋 기준:</strong> ①의 "UTC 0시 리셋 또는 현지 자정" vs ③의 "24h 경과 또는 일 기준 자정" — 리셋 방식(고정 시각 vs 마지막 수령 후 24h 경과)이 갈림. 권고 기본은 UTC 0시 고정 리셋(PST 라이브 관례)이나 최종 정책 결정 필요.</li>
+    </ul>
+  </div>
+  <p>기준 시각 = UTC 0시 단일축(PST 라이브 관례 — 데일리 리셋·타 이벤트 동일). 토스 플랫폼(KST 서버) 확장 시 경계 9시간 차 확인 필요.</p>
+  <p><strong>day 표기 체계:</strong> 시트 <code>day</code> 컬럼 0~29가 기준(SSOT). 문서·UI의 달력 표기 Day 1~30은 <code>day+1</code>에 대응한다 (Day 30 = day 29, 수령 완료 후 day 0으로 리셋).</p>
 
   <h3>시트 변경 — daily_gift</h3>
   <p>기존 7행(150001~150007)을 30행(150001~150030)으로 확장한다. 스키마 구조는 동일하되 <strong><code>is_milestone</code> 컬럼</strong>을 추가하여 마일스톤 칸을 명시적으로 구분한다.</p>
@@ -418,8 +425,8 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
   <ul>
     <li><code>player.daily_gift_day</code>: 현재 수령 완료 일차 (0~29). 30 도달 시 0으로 리셋.</li>
     <li><code>player.daily_gift_last_claimed_at</code>: 마지막 수령 UTC timestamp</li>
-    <li>수령 가능 조건: <code>now ≥ last_claimed_at + 24h</code> (또는 일 기준 자정 리셋 — 정책 결정 필요)</li>
-    <li>미수령일 처리: 진행도 정지 (day 증가 없음). 복귀 시 이어서 수령 가능.</li>
+    <li>수령 가능 조건 (권고 기본): <code>date_utc(last_claimed_at) &lt; date_utc(now)</code> — UTC 0시 고정 리셋(PST 라이브 관례). 24h 경과 방식(<code>now ≥ last_claimed_at + 24h</code>)은 상단 확정 필요 콜아웃 참조.</li>
+    <li><strong>미수령일 처리 (확정 서술):</strong> 진행도 정지 (day 증가 없음). 복귀 시 중단된 day부터 이어서 수령 가능.</li>
   </ul>
 
   <h3>엣지 케이스</h3>
@@ -437,7 +444,93 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
 (function () {
   const SPEC_ID = 'spec-013';
 
-  SPEC_META.mountBadges(SPEC_ID);
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',    cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',  cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',    cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',   cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',  cls: 'badge-yellow' },
+    etc:     { label: '📌 기타',    cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL  = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS  = { tag: 'feature', priority: 'mid', status: 'open' };
+  let ddField = null;
+
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+
+  function applyBadge(el, info) {
+    el.className = 'badge ' + info.cls;
+    el.textContent = info.label;
+    el.style.cursor = 'pointer';
+  }
+
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o =>
+        `<div class="dd-itm${o.val === cur ? ' active' : ''}" data-val="${o.val}">${o.label}</div>`
+      ).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    const fieldMap = { 'hero-tag': 'tag', 'hero-priority': 'priority', 'hero-status': 'status' };
+    Object.keys(fieldMap).forEach(elId => {
+      document.getElementById(elId).addEventListener('click', e => openDropdown(e, fieldMap[elId]));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none';
+      ddField = null;
+      updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
 
   var links    = document.querySelectorAll('.nav-sidebar a');
   var sections = document.querySelectorAll('section[id]');

@@ -380,6 +380,18 @@ a{color:var(--accent);text-decoration:none}
       </div>
     </div>
 
+    <div class="callout callout-red">
+      <strong>⚠ 확정 필요 — 문서 내 서술 상충 (2026-07-31 서버 핸드오프 감사)</strong>
+      <ul style="margin:6px 0 0;padding-left:1.3em">
+        <li><strong>미수령 보상 이관 경로</strong> — §1 흐름 5의 "우편함 또는 보상 큐로 이관" 양자택일 방치 / 어느 시스템으로 이관할지 미확정.</li>
+        <li><strong>킬스위치 처리</strong> — 이벤트 긴급 중단 시 진행 중 팀(적립분·claimable 단계)의 처리 방침이 문서에 없음.</li>
+        <li><strong>active → claim_only 전환</strong> — 전환 주체(서버 배치 vs 요청 시 판정)와 정확한 전환 시점이 미정.</li>
+        <li><strong>claim_window 정의</strong> — §1 "이벤트 종료 전후 수령 가능" vs §3 시트 변수 "종료 후 보상 수령 가능 기간" / 수령 창이 종료 전을 포함하는지가 갈림.</li>
+        <li><strong>계측 정의 필요</strong> — KPI 표가 전제한 팀 생성/합류/기여/claim 로그의 이벤트 코드·data 필드가 미정의. 정의 시 <code>friend_piggy_team_id</code>를 BQ 조인 키로 포함할 것.</li>
+      </ul>
+    </div>
+    <p class="note">기준 시각 = UTC 0시 단일축(PST 라이브 관례 — 데일리 리셋·타 이벤트 동일). 토스 플랫폼(KST 서버) 확장 시 경계 9시간 차 확인 필요.</p>
+
     <h2>밸런스 시트 변수</h2>
     <div class="bs-block">
       <p class="note">아래 값은 확정 수치가 아니라 시트 설계를 위한 변수명과 탭 제안이다. 실제 key_number 및 값은 밸런스 시트 워크플로우에서 확정한다.</p>
@@ -437,6 +449,22 @@ a{color:var(--accent);text-decoration:none}
       <tr><td>goal_reached</td><td>팀 목표 달성</td><td>완성 연출 큐 등록, 보상 claim 가능</td></tr>
       <tr><td>claim_only</td><td>운영 기간 종료 후 수령 가능</td><td>신규 적립 억제, 수령 및 우편 이관만 수행</td></tr>
       <tr><td>closed</td><td>완전 종료</td><td>미수령 보상 후처리 완료, 로비 배지 제거</td></tr>
+    </table>
+    <h3>유저 단위 서버 상태</h3>
+    <p class="note">위 표는 이벤트/팀 단위 상태. 아래는 참여자 개인 단위로 서버가 별도 보관해야 하는 상태다. 보상 claim 가능 여부는 유저 상태 단일 값이 아니라 <strong>stage별 claimable 플래그</strong>(<code>team_id</code> × <code>user_id</code> × <code>stage_id</code> 단위)로 분리 저장한다.</p>
+    <table>
+      <tr><th>유저 상태</th><th>의미</th><th>전이 조건</th><th>처리</th></tr>
+      <tr><td>not_joined</td><td>이벤트 미참여(팀 소속 없음)</td><td>이벤트 첫 진입 시 팀 생성/합류로 이탈</td><td>기여 불가, 유저 단위 데이터 생성 없음</td></tr>
+      <tr><td>joined</td><td>팀 소속·기여 진행 중</td><td>개인 기여량 ≥ <code>friend_piggy_min_contribution_amount</code> 도달 시 contribution_met으로</td><td>클리어 시 개인 기여량·팀 누적량 동시 증가</td></tr>
+      <tr><td>contribution_met</td><td>개인 최소 기여 조건 충족</td><td>최종 보상 claim 완료 시 claimed로</td><td>팀 목표 달성 시 최종 보상 수령 자격 부여</td></tr>
+      <tr><td>claimed</td><td>최종 보상 수령 완료</td><td>—</td><td>같은 이벤트 인스턴스에서 중복 claim 차단(멱등)</td></tr>
+    </table>
+    <table>
+      <tr><th>stage별 claimable 필드</th><th>설명</th></tr>
+      <tr><td>stage_claimable[stage_id]</td><td>팀 누적량이 해당 단계 required_amount를 넘으면 true. 유저 상태와 별개로 단계별 수령 가능 여부를 표시</td></tr>
+      <tr><td>stage_claimed_at[stage_id]</td><td>해당 유저의 단계 보상 지급 완료 시각. 존재하면 재지급하지 않음</td></tr>
+      <tr><td>중간 보상의 개인 기여 조건 적용 여부</td><td>미정 — 개발 확정 필요 (문서에는 최종 보상의 최소 기여 조건만 정의됨)</td></tr>
+      <tr><td>contribution_met 이전 도달 단계의 소급 수령</td><td>미정 — 개발 확정 필요</td></tr>
     </table>
     <ul>
       <li>진행도 업데이트는 서버 응답을 기준으로 하며, 클라이언트는 임시 증가 연출 후 서버 값으로 보정한다.</li>

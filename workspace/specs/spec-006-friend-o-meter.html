@@ -275,7 +275,7 @@ ul li strong,ol li strong { color:var(--text); }
 
   <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>미터 노출</strong><p>메인 화면 또는 소셜 탭에서 현재 전체 초대 진행 게이지와 "목표까지 N명 남음"을 상시 표시. 긴박감을 주는 숫자가 핵심.</p></div></div>
   <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>초대 행동</strong><p>유저가 초대 링크를 공유. 링크를 통해 가입한 친구가 자격 조건(일정 판 수 플레이)을 충족하면 전체 카운터에 +1 합산.</p></div></div>
-  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>목표 달성 알림</strong><p>전체 목표 수 달성 시 참여한 유저(최소 1명 이상 초대)에게 보상 지급 알림 발송. 보상은 자동 지급 또는 수동 수령 방식 선택.</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>목표 달성 알림</strong><p>전체 목표 수 달성 시 참여한 유저(최소 1명 이상 초대)에게 보상 지급 알림 발송. 지급 방식은 §3 확정 기준(서버 배치 지급 → 미터 자동 리셋)을 따름.</p></div></div>
   <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>다음 라운드 자동 시작</strong><p>목표 달성 후 미터 리셋, 새 라운드 즉시 시작. 유저는 다시 초대 행동을 이어갈 동기를 얻음.</p></div></div>
 
   <h3>플레이어 경험 흐름 — 안 B (개인 누적 미터)</h3>
@@ -482,6 +482,34 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
   </div>
 
+  <div class="callout callout-red">
+    <p><strong>⚠ 확정 필요 — 문서 내 서술 상충 (2026-07-31 서버 핸드오프 감사)</strong></p>
+    <ul>
+      <li>안 A "라운드" 길이 — <span class="sheet-var">friend_meter_global_period_day</span>=14 "최대 기간" vs "목표 달성 후 미터 리셋, 새 라운드 즉시 시작" — 라운드가 고정 14일 창인지, 달성 즉시 종료·재시작되는 가변 창인지 스키마가 갈림.</li>
+      <li><span class="sheet-var">friend_meter_qualify_day_limit</span>(7일)과 라운드 경계 교차 — 라운드 종료 시점에 아직 자격 진행 중인 피초대자의 유효 초대가 어느 라운드에 귀속되는지(종료 라운드 소급 vs 다음 라운드 vs 무효) 미정.</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-orange">
+    <p><strong>용어 정의:</strong> 이 문서에서 <strong>"라운드"</strong> = 안 A 전체 공동 미터의 1회 집계 창(시작 → 목표 달성 또는 <span class="sheet-var">friend_meter_global_period_day</span> 만료 → 리셋). 개별 유효 초대 인정 창(가입 후 <span class="sheet-var">friend_meter_qualify_day_limit</span>일)은 <strong>"자격 기간"</strong>으로 구분해 부름. 두 창의 경계 교차는 위 콜아웃의 확정 필요 항목.</p>
+  </div>
+
+  <div class="callout callout-blue">
+    <p><strong>기준 시각:</strong> 기준 시각 = UTC 0시 단일축(PST 라이브 관례 — 데일리 리셋·타 이벤트 동일). 토스 플랫폼(KST 서버) 확장 시 경계 9시간 차 확인 필요.</p>
+  </div>
+
+  <h3>피초대자 자격 라이프사이클 — 서버 저장 상태</h3>
+  <table>
+    <thead><tr><th>서버 상태</th><th>전이 조건</th><th>저장·갱신 값</th></tr></thead>
+    <tbody>
+      <tr><td>가입(초대 귀속)</td><td>초대 링크로 신규 가입 완료 + 서버 검증 통과(기존 데이터 없음·자기 초대 아님) → 자격 진행 중</td><td>초대자 UID, 피초대자 UID, 가입 시각, 기기 식별자</td></tr>
+      <tr><td>자격 진행 중</td><td><span class="sheet-var">friend_meter_qualify_day_limit</span>일 내 <span class="sheet-var">friend_meter_qualify_play_count</span>판 플레이 완료 → 유효 초대 확정 / 기한 경과 → 자격 만료</td><td>누적 플레이 판 수, 자격 만료 시각</td></tr>
+      <tr><td>유효 초대 확정</td><td>확정 시 초대자 카운터 +1(안 A: 전체 카운터, 안 B: 개인 카운터). 이후 피초대자 탈퇴에도 롤백 없음</td><td>확정 시각, 귀속 카운터(귀속 라운드 = 미정 — 개발 확정 필요)</td></tr>
+      <tr><td>자격 만료</td><td>기한 내 미달성. 재부활 여부 = 미정 — 개발 확정 필요</td><td>만료 처리 시각</td></tr>
+      <tr><td>어뷰징 플래그</td><td>동일 기기 <span class="sheet-var">friend_meter_abuse_block_same_device_count</span> 초과 등 어뷰징 조건 감지 시 → 카운터 미집계</td><td>플래그 사유, 감지 시각</td></tr>
+    </tbody>
+  </table>
+
   <h3>밸런스 시트 변수 — 공통 (신규 탭 제안)</h3>
   <div class="sheet-block">
     <div class="sheet-block-title">신규 시트 탭: friend_meter_config &nbsp;·&nbsp; key_number 30001~</div>
@@ -638,7 +666,7 @@ ul li strong,ol li strong { color:var(--text); }
   <ul>
     <li>전체 카운터는 서버 단일 진실 소스 (Single Source of Truth). 클라이언트 로컬 캐시 금지.</li>
     <li>클라이언트는 <span class="sheet-var">friend_meter_global_refresh_count_sec</span> 주기로 서버 폴링 또는 실시간 푸시 수신.</li>
-    <li>목표 달성 시 서버에서 참여 유저 목록 추출 → 보상 배치 지급 → 미터 자동 리셋.</li>
+    <li>목표 달성 시 서버에서 참여 유저 목록 추출 → 보상 배치 지급 → 미터 자동 리셋. <strong>(보상 수령 방식 확정 기준 — SSOT. §1의 지급 방식 서술은 본 항목을 따름)</strong></li>
     <li>기간 만료 시 목표 미달성이면 미터 리셋 (보상 없음), 다음 라운드 즉시 시작.</li>
   </ul>
 
@@ -664,7 +692,7 @@ ul li strong,ol li strong { color:var(--text); }
   <ul>
     <li><strong>네트워크 오프라인 중 달성:</strong> 서버 이벤트 기반이므로 오프라인 달성 없음. 온라인 복귀 후 정상 처리.</li>
     <li><strong>안 A 달성 직후 동시 기여자:</strong> 목표 카운터 초과 집계 허용 (선착순 컷오프 시 서버 부담 크고 불만 유발). 초과분은 다음 라운드 이월 불가.</li>
-    <li><strong>안 B 동일 시점 다단계 달성:</strong> 예: 초대 수 1에서 5로 점프 시 1~3단계 보상 모두 지급. 배치 지급 처리 확인 필요.</li>
+    <li><strong>안 B 동일 시점 다단계 달성:</strong> 아직 지급되지 않은 중간 단계 전부 지급 — 기지급 단계는 제외 (예: 1단계 기지급 상태에서 초대 수 1→5 점프 시 2~3단계만 지급). 배치 지급 처리 확인 필요.</li>
     <li><strong>초대 취소/탈퇴:</strong> 피초대 유저가 탈퇴해도 이미 집계된 카운터는 유지 (롤백 없음).</li>
     <li><strong>안 A 참여 기준 모호성:</strong> "참여"의 정의 = <span class="sheet-var">friend_meter_global_min_invite_count</span> 이상 유효 초대. 단순 미터 열람은 해당 없음.</li>
   </ul>

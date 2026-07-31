@@ -227,7 +227,7 @@ ul li strong,ol li strong { color:var(--text); }
       <div class="kpi-card"><div class="kpi-label">핵심 지표</div><div class="kpi-value kv-orange">판/세션</div></div>
       <div class="kpi-card"><div class="kpi-label">부수 지표</div><div class="kpi-value kv-yellow">부스터 구매율</div></div>
       <div class="kpi-card"><div class="kpi-label">리스크 지표</div><div class="kpi-value kv-blue">클리어율</div></div>
-      <div class="kpi-card"><div class="kpi-label">기간</div><div class="kpi-value kv-green" style="font-size:16px">ab_test_duration_days</div></div>
+      <div class="kpi-card"><div class="kpi-label">기간</div><div class="kpi-value kv-green" style="font-size:16px">ab_pre_level_test_duration_days</div></div>
     </div>
   </div>
 </div>
@@ -383,6 +383,16 @@ ul li strong,ol li strong { color:var(--text); }
       </div>
     </div>
 
+    <div class="card" style="border-left:3px solid var(--red)">
+      <div class="card-title">⚠ 확정 필요 — 문서 내 서술 상충 (2026-07-31 서버 핸드오프 감사)</div>
+      <ul>
+        <li>배정 영속성 미정 — "유저 ID 기반 해시 50:50 분기(서버 결정)"만 있고, 재접속·기간 중 재해시 시 그룹이 고정 유지되는지(배정값 저장 vs 매번 해시 재계산) 서버 저장 스키마가 갈림.</li>
+        <li>클라 플래그 수신 경로 미정 — "클라이언트는 플래그 수신"만 있고 어느 API/시점(login·get-data·밸런스시트 핫리로드)으로 내려오는지 미정.</li>
+        <li>테스트 시작 기준일 미정 — <code>ab_pre_level_test_duration_days</code>의 기산점(전체 동시 시작 vs 유저별 첫 노출) 미정.</li>
+      </ul>
+      <p style="font-size:.85rem;color:var(--text2);margin-top:8px">기준 시각 = UTC 0시 단일축(PST 라이브 관례 — 데일리 리셋·타 이벤트 동일). 토스 플랫폼(KST 서버) 확장 시 경계 9시간 차 확인 필요.</p>
+    </div>
+
     <div class="card">
       <div class="card-title">밸런스 시트 변수</div>
       <div class="bs-block">
@@ -418,7 +428,7 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="card">
       <div class="card-title">측정 이벤트</div>
       <ul>
-        <li><code>ab_game_start</code> — variant(a/b), level_id 포함</li>
+        <li><code>ab_game_start</code> — variant(a/b), level_id, forced(bool) 포함. <span class="hl">variant = 서버 배정 그룹값(실노출 아님)</span> — 튜토 미완료로 A안이 강제 노출된 경우에도 배정값을 그대로 기록하고, 강제 노출 여부는 별도 필드 <code>forced</code>로 구분</li>
         <li><code>ab_game_result</code> — variant, result(clear/quit), booster_used</li>
         <li><code>ab_booster_purchase</code> — variant, booster_type, source(pregame/ingame)</li>
         <li>세션당 판수: <code>ab_game_start</code> 집계로 도출</li>

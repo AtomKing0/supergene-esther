@@ -631,7 +631,17 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
   </div>
 
-  
+  <div class="callout callout-red">
+    <p><strong>⚠ 확정 필요 — 문서 내 서술 상충 (2026-07-31 서버 핸드오프 감사)</strong></p>
+    <ul>
+      <li>상태표 "ACTIVE = 시즌 활성 (전 유저 자동)" · 티어 보상표 "무료 = 전원 자동 참여" vs §2의 해금 게이트 3곳(위젯 "잠금 자물쇠 + 해금 레벨" · FTUE "해금 레벨 도달 → 1회 강제 오픈" · 화면 목록 "잠금 버전(해금 전)") — 참여 레코드가 전 유저 자동 생성인지, 해금 레벨 도달 시 생성인지 서버 스키마·전이 조건이 갈림.</li>
+      <li>해금 레벨의 구체 값과 대응 시트 변수가 문서 어디에도 없음(<span class="code">season_pass_const</span> 230001~230023에 부재) — 게이트 채택 시 변수 신설 필요.</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-blue">
+    <p><strong>용어 정의:</strong> 이 문서에서 <strong>"시즌 티어(패스 Lv.)"</strong> = 패스 XP로 오르는 1~30 진행 단계(<span class="code">season_pass_tier</span>). <strong>"유저 레벨(level_band)"</strong> = 게임 본편 레벨 진행에 따른 A/B/C 밴드(해머 배율·상자 가중치 판정용). 두 개념은 별개 축이며, "레벨"이 단독으로 나오면 문맥상 유저 레벨을 가리킴.</p>
+  </div>
 
   <h3 id="s3-bs">밸런스 시트 — 신규 탭 4개</h3>
 
@@ -890,15 +900,16 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>코드</th><th>이벤트</th><th>시점</th></tr></thead>
     <tbody>
-      <tr><td>5450_SEASON_PASS_POPUP</td><td>패스 메인 오픈</td><td>data: 현재 티어·XP·잔여일</td></tr>
-      <tr><td>5451_SEASON_PASS_TIER_CLAIM</td><td>티어 보상 수령</td><td>data: tier·일괄 여부·보상</td></tr>
-      <tr><td>5452_SEASON_PASS_QUEST_COMPLETE</td><td>퀘 완료</td><td>data: task_type·cadence</td></tr>
-      <tr><td>5453_SEASON_PASS_COMPLETE</td><td>티어 30 완주 (덱 지급)</td><td>data: 소요일</td></tr>
-      <tr><td>5454_SEASON_PASS_BONUS_BOX_OPEN</td><td>보너스 상자 개봉</td><td>data: level_band·보상</td></tr>
-      <tr><td>5455_SEASON_PASS_END_POPUP</td><td>정산 팝업 노출</td><td>data: 최종 티어·자동지급 수</td></tr>
-      <tr><td>5456_SEASON_PASS_CLOSE</td><td>패스 메인 닫기</td><td></td></tr>
+      <tr><td>5450_SEASON_PASS_POPUP</td><td>패스 메인 오픈</td><td>data: event_id·현재 티어·XP·잔여일</td></tr>
+      <tr><td>5451_SEASON_PASS_TIER_CLAIM</td><td>티어 보상 수령</td><td>data: event_id·tier·일괄 여부·보상</td></tr>
+      <tr><td>5452_SEASON_PASS_QUEST_COMPLETE</td><td>퀘 완료</td><td>data: event_id·task_type·cadence</td></tr>
+      <tr><td>5453_SEASON_PASS_COMPLETE</td><td>티어 30 완주 (덱 지급)</td><td>data: event_id·소요일</td></tr>
+      <tr><td>5454_SEASON_PASS_BONUS_BOX_OPEN</td><td>보너스 상자 개봉</td><td>data: event_id·level_band·보상</td></tr>
+      <tr><td>5455_SEASON_PASS_END_POPUP</td><td>정산 팝업 노출</td><td>data: event_id·최종 티어·자동지급 수</td></tr>
+      <tr><td>5456_SEASON_PASS_CLOSE</td><td>패스 메인 닫기</td><td>data: event_id</td></tr>
     </tbody>
   </table>
+  <p style="font-size:.8rem"><span class="code">event_id</span> = 시즌 식별자(event_schedule 키). 5450~5456 전 로그 공통 필드 — 시즌 단위 KPI 집계·BQ 조인 키로 사용.</p>
 
   <h3>스트링 키 (CCS 명명 준용)</h3>
   <table>

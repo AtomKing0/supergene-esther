@@ -639,6 +639,15 @@ pre .cm{color:var(--text-dim)}
     </div>
   </div>
 
+  <div class="callout callout-yellow">
+    <strong>⚠ 확정 필요 — 문서 내 서술 상충 (2026-07-31 서버 핸드오프 감사)</strong>
+    <ul style="margin:8px 0 0;padding-left:1.3em">
+      <li><strong>팀 인원 정의:</strong> 팀 목표 = "팀 인원 × <code>coop_base_goal</code>" — 팀 인원이 생성 시 슬롯 수(최대 5)인지 실참가자 수인지, 인원 미달 확정 시 목표 재계산 여부가 미정. 목표값이 payload에 생성 시점 고정으로 실리므로 정의에 따라 로직이 갈림.</li>
+      <li><strong>24h 창의 이중 용도:</strong> <code>coop_duration_sec</code> 24시간이 모집과 플레이를 겸용 — 늦게 참가한 팀원일수록 실플레이 시간이 줄어듦. 모집 마감·플레이 시간 분리 여부 판단 필요.</li>
+      <li><strong><code>coop_max_active_per_user</code>=3 vs 단일 챌린지 전제 코드:</strong> 점수 기여 예시 코드가 단일 <code>challengeId</code>·단일 <code>postScoreAsync</code>를 전제 — 동시 3개 참가 시 기여를 챌린지별로 어떻게 분배·업데이트할지 미정.</li>
+    </ul>
+  </div>
+
   <!-- ────────────────────────────────────────────────────────────────────── -->
   <h2 id="s3-fb">3-1 Facebook Instant Tournament API 연동</h2>
 
@@ -680,10 +689,13 @@ await serverApi.registerChallenge(newChallengeId, fbTournamentId);
   <pre><span class="cm">// 메신저 카드 탭 → 게임 실행 시 진입점</span>
 <span class="kw">const</span> entryPointData = FBInstant.getEntryPointData();
 <span class="kw">if</span> (entryPointData?.challengeId) {
-  <span class="kw">await</span> FBInstant.tournament.joinAsync(entryPointData.fbTournamentId);
+  <span class="cm">// challengeId로 서버에서 fbTournamentId 조회 (공유 data에는 challengeId만 실림)</span>
+  <span class="kw">const</span> { fbTournamentId } = <span class="kw">await</span> serverApi.getChallenge(entryPointData.challengeId);
+  <span class="kw">await</span> FBInstant.tournament.joinAsync(fbTournamentId);
   <span class="kw">await</span> serverApi.joinChallenge(entryPointData.challengeId, playerId);
   <span class="cm">// 정원 초과 시 서버에서 error: 'CHALLENGE_FULL' 반환 → UI 안내</span>
 }</pre>
+  <p><strong>정정 (2026-07-31 감사):</strong> 공유 payload와 참가 리더의 키를 <code>challengeId</code> 하나로 통일 — 기존 코드는 공유 <code>data</code>에 없는 <code>entryPointData.fbTournamentId</code>를 참조해 참가가 항상 실패하는 결함이었음. <code>fbTournamentId</code>는 서버 조회(<code>getChallenge</code>)로 획득한다.</p>
 
   <h3>레벨 클리어 시 점수 기여</h3>
   <pre><span class="cm">// game_end 이벤트 처리 (기존 레벨 클리어 파이프라인에 추가)</span>
@@ -753,7 +765,7 @@ await serverApi.registerChallenge(newChallengeId, fbTournamentId);
   <table>
     <thead><tr><th>상태</th><th>진입 조건</th><th>다음 상태</th></tr></thead>
     <tbody>
-      <tr><td><code>CREATED</code></td><td>호스트가 챌린지 생성. FB 토너먼트 ID 발급 완료.</td><td>팀원 참가 → <code>ACTIVE</code> (최소 인원 충족 시 자동 전환. 미충족이더라도 호스트가 직접 시작 버튼 탭 시 전환 가능.)</td></tr>
+      <tr><td><code>CREATED</code></td><td>호스트가 챌린지 생성. FB 토너먼트 ID 발급 완료.</td><td>팀원 참가 → <code>ACTIVE</code> (최소 인원 충족 시 자동 전환. 미충족이더라도 호스트가 직접 시작 버튼 탭 시 전환 가능.) / <code>coop_duration_sec</code> 내 최소 인원 미충족 → <code>FAILED</code> (3-4 엣지 케이스와 동일 규칙)</td></tr>
       <tr><td><code>ACTIVE</code></td><td>팀 구성 완료, 점수 집계 시작.</td><td>목표 달성 → <code>SUCCESS</code> / 시간 초과 → <code>FAILED</code></td></tr>
       <tr><td><code>SUCCESS</code></td><td>group_total_score ≥ group_goal.</td><td>보상 수령 또는 윈도우 만료 → <code>CLOSED</code></td></tr>
       <tr><td><code>FAILED</code></td><td>endTime 도달, 목표 미달성.</td><td>위로 지급(옵션) 후 → <code>CLOSED</code></td></tr>

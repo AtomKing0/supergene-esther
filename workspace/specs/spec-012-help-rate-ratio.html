@@ -126,8 +126,6 @@ code { font-family:monospace;font-size:0.85rem;background:var(--surface2);border
 pre  { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin:16px 0;overflow-x:auto;font-size:0.83rem;color:var(--text2);line-height:1.6; }
 pre code { background:none;border:none;padding:0;color:inherit; }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="spec-meta.js"></script>
 </head>
 <body>
 <a href="index.html" class="back-btn">← 목록</a>
@@ -185,6 +183,7 @@ pre code { background:none;border:none;padding:0;color:inherit; }
 
   <h3>배경 — 현재 구조의 한계</h3>
   <p>현재 <code>difficulty_tier</code> 시트에는 <strong>deck_help_rate</strong>, <strong>field_help_rate</strong> 값이 난이도 구간(Easy/Normal/Hard)별로 고정되어 있다. 레벨 번호와 무관하게 동일 구간이면 동일 확률이 적용된다.</p>
+  <p style="font-size:.85rem;color:var(--text2)">※ 용어 구분: 이 문서의 "구간"은 <strong>난이도 구간</strong>(difficulty_tier의 Easy/Normal/Hard)과 <strong>레벨 구간</strong>(level_entry_tier 220001~220012) 두 가지가 있음. 이하 "초반/중반/후반 구간"은 모두 레벨 구간을 가리킴.</p>
   <p>그러나 <strong>초반 레벨(Lv.1~30 권)의 신규 유저</strong>와 <strong>후반 레벨(Lv.200+)의 숙련 유저</strong>는 동일 help_rate를 체감하는 방식이 매우 다르다. 초반에는 도움이 자주 나와야 진입 장벽이 낮아지고, 후반에는 도움 빈도를 줄여 긴장감·과금 동기를 유지할 수 있다.</p>
 
   <h3>목표</h3>
@@ -240,6 +239,14 @@ pre code { background:none;border:none;padding:0;color:inherit; }
       <div class="section-title">개발 스펙</div>
       <span class="section-audience aud-dev">개발팀</span>
     </div>
+  </div>
+
+  <div class="callout" style="background:var(--red-bg);border-left:3px solid var(--red)">
+    <p><strong>⚠ 확정 필요 — 문서 내 서술 상충 (2026-07-31 서버 핸드오프 감사)</strong></p>
+    <ul>
+      <li>초반 레벨 구간 — §1 목표 "220001~220004 = 기본값 대비 120~150%" vs §2 초기 권장 수치 표 "220004 = 110%" — 220004가 목표 범위 밖. 목표 범위와 표 수치 중 어느 쪽이 확정인지 지정 필요.</li>
+      <li>후반 레벨 구간 — §1 목표 "220008~220012 = 50~70%" vs §2 표 "220008 = 80%" — 220008이 목표 범위 밖. 동일하게 확정 지정 필요.</li>
+    </ul>
   </div>
 
   <h3>시트 변경 — level_entry_tier</h3>
@@ -324,7 +331,93 @@ effective_field_help_rate = difficulty_tier.field_help_rate × (level_entry_tier
 (function () {
   const SPEC_ID = 'spec-012';
 
-  SPEC_META.mountBadges(SPEC_ID);
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',    cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',  cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',    cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',   cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',  cls: 'badge-yellow' },
+    etc:     { label: '📌 기타',    cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL  = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS  = { tag: 'balance', priority: 'low', status: 'hold' };
+  let ddField = null;
+
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+
+  function applyBadge(el, info) {
+    el.className = 'badge ' + info.cls;
+    el.textContent = info.label;
+    el.style.cursor = 'pointer';
+  }
+
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.low);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.hold);
+  }
+
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o =>
+        `<div class="dd-itm${o.val === cur ? ' active' : ''}" data-val="${o.val}">${o.label}</div>`
+      ).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    const fieldMap = { 'hero-tag': 'tag', 'hero-priority': 'priority', 'hero-status': 'status' };
+    Object.keys(fieldMap).forEach(elId => {
+      document.getElementById(elId).addEventListener('click', e => openDropdown(e, fieldMap[elId]));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none';
+      ddField = null;
+      updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
 
   var links    = document.querySelectorAll('.nav-sidebar a');
   var sections = document.querySelectorAll('section[id]');
