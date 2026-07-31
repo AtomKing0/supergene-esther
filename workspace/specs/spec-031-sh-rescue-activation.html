@@ -148,6 +148,7 @@ ul li strong,ol li strong { color:var(--text); }
   <a href="#s1">① 기획 의도 &amp; 확정 설계</a>
   <a href="#s2">② 개발 스펙</a>
   <a href="#s3">③ 검증 · 롤백</a>
+  <a href="#s4">④ 개발 핸드오프 · QA</a>
 </nav>
 
 <div class="hero">
@@ -369,7 +370,7 @@ ul li strong,ol li strong { color:var(--text); }
   <h3>진행 단계</h3>
   <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>에이전트 시트 수정</strong><p>원본 백업 기록 후 3셀 변경, 하이라이트 적용</p></div></div>
   <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>라이브 시트 동기화 · 서버 패치</strong><p>시트 반영 완료(7/30). 서버 패치 대기분은 <span class="sheet-var">balance_sheet/패치필요/</span>에 있음</p></div></div>
-  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>QA 빌드 확인</strong><p>CC_0332·CC_0383·CC_0384에서 강제 구제가 실제로 일어나는지, 판당 발동 횟수가 과다하지 않은지, 특정 숫자로 쏠리지 않는지 육안 확인. 케이스 목록은 <span class="sheet-var">handoff-sh-rescue-qa.md</span></p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>QA 빌드 확인</strong><p>CC_0332·CC_0383·CC_0384에서 강제 구제가 실제로 일어나는지, 판당 발동 횟수가 과다하지 않은지, 특정 숫자로 쏠리지 않는지 육안 확인. 케이스 목록은 ④ 섹션 C</p></div></div>
   <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>배포 후 7일 관측</strong><p>아래 판정 기준으로 확정 또는 되돌림</p></div></div>
 
   <h3>검증 지표</h3>
@@ -396,6 +397,117 @@ ul li strong,ol li strong { color:var(--text); }
   <div class="callout callout-blue">
     <p><strong>시뮬레이션 기준.</strong> 위 후보 비교는 라이브 Super Hard 실맵 266개(필드 평균 32.5장·덱 중앙값 12장)에 클라이언트 런타임 구제 로직 7개 함수를 이식해 조건당 1만 5,960판씩 산출함. 카드 겹침 판정도 실제와 동일한 방식으로 계산했고, 보드 생성 난수를 게임플레이 난수와 분리해 조건 간 동일 보드를 보장함. 부스터(사용률 77%)·힌트·언두와 런타임 기믹 주입은 모델에 포함하지 않았고 맵 생성기는 축약 모델로 대체했으므로 <strong>후보 간 상대 비교에만 사용함</strong>. 기대 결과의 수치는 상대 감소율을 실측에 곱한 값이며 실제 폭은 배포 후 확정됨.</p>
   </div>
+</section>
+
+<!-- ════ SECTION 4 — 개발 핸드오프 · QA ════ -->
+<section id="s4">
+  <div class="section-header">
+    <div class="section-num section-num-3">④</div>
+    <div class="section-meta">
+      <div class="section-title">개발 핸드오프 · QA</div>
+      <span class="section-audience aud-dev">서버 · 데이터 · QA</span>
+    </div>
+  </div>
+
+  <h3>선행 조건 — 착수 전 반드시 해소</h3>
+  <table>
+    <thead><tr><th>항목</th><th>내용</th><th>없으면 생기는 일</th></tr></thead>
+    <tbody>
+      <tr><td>현행값 재확인</td><td>적용 직전 <code>difficulty_tier</code> 20004 행의 실제 값을 다시 읽을 것</td><td>2026-07-30에 값이 하루 만에 바뀐 사례가 있음. 오래된 As-Is 기준으로 덮어쓰면 남의 변경을 되돌림</td></tr>
+      <tr><td>QA 난이도 진입 수단</td><td>Super Hard 티어 맵으로 바로 진입하는 치트 또는 디버그 메뉴</td><td>Super Hard는 전체 판의 5.1%뿐이라 자연 배정을 기다리면 검증에 시간이 과다 소요됨</td></tr>
+      <tr><td>고포기 스테이지 지정 진입</td><td>CC_0332·CC_0383·CC_0384를 지정해 여는 수단</td><td>핵심 검증 대상에 도달하지 못함</td></tr>
+      <tr><td>pity 발동 가시화</td><td>디버그 빌드에서 pity 발동 시점을 로그나 화면으로 확인할 수단</td><td>강제 구제가 실제로 도는지 육안 확인 불가</td></tr>
+    </tbody>
+  </table>
+
+  <h3>A. 개발 핸드오프 — 확정 구현 항목</h3>
+  <table>
+    <thead><tr><th>구분</th><th>항목</th><th>확정 내용</th></tr></thead>
+    <tbody>
+      <tr><td>시트</td><td>변경 범위</td><td><code>difficulty_tier</code> <strong>20004(Super Hard) 행 3셀만</strong>. 다른 티어 행·같은 행의 다른 컬럼은 손대지 않음</td></tr>
+      <tr><td>시트</td><td><code>deck_help_rate</code></td><td>625 → <strong>2200</strong> (6.25% → 22%). 분모 10000</td></tr>
+      <tr><td>시트</td><td><code>field_help_rate</code></td><td>375 → <strong>1320</strong> (3.75% → 13.2%). 분모 10000</td></tr>
+      <tr><td>시트</td><td><code>pity_trigger_count</code></td><td>99 → <strong>10</strong></td></tr>
+      <tr><td>클라</td><td>코드 변경</td><td><strong>없음.</strong> 구제 로직은 <code>StageViewModel.ts</code>에 이미 완성돼 있음. 재배포 불필요</td></tr>
+      <tr><td>클라</td><td>기존 로직 확인</td><td>덱 보정 <code>getAvailableCardsByDeckHelpRate()</code> · 필드 보정 <code>applyFieldHelpToCards()</code> · pity 카운터 <code>_pityFailCount</code>. 판마다 <code>StageViewModel</code>이 새로 생성돼 카운터는 0에서 시작</td></tr>
+      <tr><td>클라</td><td>99가 안 돌던 이유</td><td>주석은 <code>0 = pity 비활성</code>이지만 99는 비활성이 아니라 <strong>도달 불가</strong>. Super Hard 한 판의 필드 카드가 33.7장이라 카운터가 99까지 쌓일 수 없었음</td></tr>
+      <tr><td>주의</td><td>카운터 공유</td><td><code>_pityFailCount</code>를 덱 보정과 필드 보정이 <strong>공유</strong>함. Super Hard는 두 확률이 낮아 실패가 양쪽에서 빠르게 쌓이므로 같은 숫자여도 Normal보다 자주 발동함. Normal 5 · Hard 8의 연장선으로 단순 외삽하면 안 됨</td></tr>
+      <tr><td>주의</td><td>폴백 방향</td><td><code>getDeckHelpRate()</code>는 시트 조회 실패 시 <strong>10000(100%)</strong>, <code>getFieldHelpRate()</code>는 <strong>0</strong>을 반환함. 방향이 반대라 시트 로드 실패 시 난이도가 급격히 쉬워짐 — 이번 변경과 별개로 인지 필요</td></tr>
+      <tr><td>가드레일</td><td>티어 구분</td><td>Hard 대비 실패율 배수 <strong>2.0배 이상 유지</strong>. 세 컬럼 모두 Tutorial → Normal → Hard → Super Hard 방향 단조성이 유지되어야 함</td></tr>
+      <tr><td>롤백</td><td>경로</td><td>같은 3셀 원복. 1차 롤백 지점은 완전 원복이 아니라 <strong>1800 / 1080 / 10</strong> 한 단계 하향</td></tr>
+    </tbody>
+  </table>
+  <p>티어 순서 확인 — 덱 2200 &lt; Hard 3000 · 필드 1320 &lt; Hard 2450 · pity 10 &gt; Hard 8. Super Hard는 평상시 도움이 가장 적고 안전장치는 가장 늦게 걸림.</p>
+
+  <h3>B. 엣지케이스 처리</h3>
+  <table>
+    <thead><tr><th>상황</th><th>처리</th></tr></thead>
+    <tbody>
+      <tr><td>pity 발동 시 매칭 카드 풀이 비어 있음</td><td>필드 맨 위 카드를 기준으로 ±1 값의 카드를 <strong>즉석 생성</strong>해 구제를 확정함. 필드에 없는 symbol-value 조합 우선 — 기구현</td></tr>
+      <tr><td>확률 판정 성공했는데 매칭 카드가 없음</td><td>랜덤 카드를 반환하고 <strong>카운터는 변경하지 않음</strong> — 기구현</td></tr>
+      <tr><td>판 종료 후 다음 판</td><td><code>StageViewModel</code>이 새로 생성되어 카운터 0에서 시작. 판을 가로지른 이월 없음</td></tr>
+      <tr><td>시트 로드 실패</td><td><code>deck_help_rate</code>는 10000, <code>field_help_rate</code>는 0으로 폴백. 난이도가 급격히 쉬워지므로 로드 실패 자체를 감지해야 함</td></tr>
+      <tr><td>튜토리얼·tier 1</td><td>필드 보정이 강제로 0. Super Hard만 바꾸므로 영향 없음</td></tr>
+      <tr><td>이미 보정된 카드</td><td><code>fieldHelpCorrected</code> 플래그로 재보정하지 않음 — 기구현</td></tr>
+      <tr><td>값을 Hard 이상으로 올림</td><td>티어 구분이 소멸함. <code>2500 / 1500</code> 이상은 Hard와 실질 동등해지므로 상한으로 두지 않음</td></tr>
+      <tr><td>과보정</td><td>Super Hard 실패율이 13% 미만으로 떨어지면 한 단계 하향</td></tr>
+    </tbody>
+  </table>
+
+  <h3>C. QA 체크리스트</h3>
+
+  <h4>C-1. 구제 동작 확인</h4>
+  <table>
+    <thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead>
+    <tbody>
+      <tr><td>pity 발동</td><td>Super Hard 판에서 매칭 실패를 연속으로 유도하며 카운트</td><td>연속 10회에 도달하면 확률과 무관하게 매칭 가능한 카드가 나옴</td></tr>
+      <tr><td>발동 후 리셋</td><td>pity 발동 직후 이어서 플레이</td><td>카운터가 0으로 초기화되어 다시 10회를 쌓아야 발동</td></tr>
+      <tr><td>판 간 이월 없음</td><td>카운터가 쌓인 상태에서 판을 종료하고 새 Super Hard 판 진입</td><td>새 판은 카운터 0에서 시작</td></tr>
+      <tr><td>매칭 풀 없을 때</td><td>필드 상단이 전부 매칭 불가한 상태에서 pity 발동 유도</td><td>카드를 즉석 생성해 구제. 게임이 멈추거나 오류가 나지 않음</td></tr>
+      <tr><td>발동 빈도</td><td>Super Hard 20판 플레이하며 판당 pity 발동 횟수 기록</td><td>판당 발동이 과다하지 않음. 특정 숫자로 쏠리지 않음</td></tr>
+      <tr><td>덱 보정 체감</td><td>Super Hard 판에서 뽑히는 카드 관찰</td><td>변경 전보다 매칭 가능한 카드가 눈에 띄게 자주 나옴</td></tr>
+    </tbody>
+  </table>
+
+  <h4>C-2. 난이도 · 티어 구분</h4>
+  <table>
+    <thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead>
+    <tbody>
+      <tr><td>고포기 스테이지</td><td>CC_0332·CC_0383·CC_0384를 각 10회 이상 플레이</td><td>변경 전보다 클리어가 쉬워짐. 실패해도 남는 카드가 줄어듦</td></tr>
+      <tr><td>Super Hard 실패율</td><td>Super Hard 30판 이상 플레이 후 집계</td><td>16% 내외. <strong>13% 미만이면 과보정</strong>으로 보고</td></tr>
+      <tr><td>티어 구분 유지</td><td>Hard와 Super Hard를 각 20판씩 플레이하고 체감 비교</td><td>Super Hard가 여전히 명확히 더 어려움. Hard와 구분되지 않으면 보고</td></tr>
+      <tr><td>Hard 대비 배수</td><td>Hard·Super Hard 실패율을 각각 집계해 비율 계산</td><td><strong>2.0배 이상 유지</strong>. 미만이면 롤백 대상</td></tr>
+      <tr><td>판 길이</td><td>Super Hard 판 소요 시간 기록</td><td>94초 내외에서 크게 변하지 않음</td></tr>
+      <tr><td>부스터 의존도</td><td>부스터 없이 Super Hard 플레이</td><td>변경 전보다 부스터 없이 클리어할 여지가 늘어남</td></tr>
+    </tbody>
+  </table>
+
+  <h4>C-3. 회귀 — 건드리지 않은 영역</h4>
+  <table>
+    <thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead>
+    <tbody>
+      <tr><td>Normal 티어</td><td>Normal 30판 플레이 후 실패율·체감 확인</td><td>실패율 4% 내외 — 무변경</td></tr>
+      <tr><td>Hard 티어</td><td>Hard 20판 플레이</td><td>실패율 6% 내외 — 무변경</td></tr>
+      <tr><td>Tutorial 티어</td><td>레벨 1~8 튜토리얼 진행</td><td>무변경</td></tr>
+      <tr><td>보상</td><td>Super Hard 클리어 후 보상 확인</td><td><code>reward_hammer</code> 3 — 무변경</td></tr>
+      <tr><td>입장료</td><td>티어별 입장료 확인</td><td>티어 무관 동일 — 무변경</td></tr>
+      <tr><td>기믹 개수</td><td>Super Hard 맵의 기믹 카드 수 확인</td><td><code>required_gimmick_count</code> 4 — 무변경</td></tr>
+      <tr><td>점수 구간</td><td>Super Hard 맵 배정 확인</td><td><code>score_min</code> 901 · <code>score_max</code> 1400 — 무변경</td></tr>
+    </tbody>
+  </table>
+
+  <h4>C-4. 롤백 · 시트 이상값</h4>
+  <table>
+    <thead><tr><th>케이스</th><th>절차</th><th>기대 결과</th></tr></thead>
+    <tbody>
+      <tr><td>완전 원복</td><td>3셀을 <code>625 / 375 / 99</code>로 되돌리고 재로드</td><td>변경 전 동작으로 복귀. 클라 재배포 없이 반영됨</td></tr>
+      <tr><td>한 단계 하향</td><td>3셀을 <code>1800 / 1080 / 10</code>으로 변경</td><td>구제 강도가 중간 수준으로 조정됨</td></tr>
+      <tr><td>pity 비활성</td><td><code>pity_trigger_count</code>를 0으로 설정</td><td>강제 구제가 발동하지 않음. 확률 보정만 동작</td></tr>
+      <tr><td>확률 0</td><td><code>deck_help_rate</code>·<code>field_help_rate</code>를 0으로 설정</td><td>보정 없이 순수 랜덤. 게임이 멈추거나 오류가 나지 않음</td></tr>
+      <tr><td>확률 상한</td><td><code>deck_help_rate</code>를 10000으로 설정</td><td>항상 매칭 카드가 나옴. 오류 없음</td></tr>
+      <tr><td>단조성 검증</td><td>네 티어의 세 컬럼 값을 표로 비교</td><td>Tutorial → Normal → Hard → Super Hard 방향이 세 컬럼 모두 유지됨</td></tr>
+    </tbody>
+  </table>
 </section>
 
 </div>
@@ -427,6 +539,7 @@ ul li strong,ol li strong { color:var(--text); }
   });
 })();
 </script>
+<script src="spec-handoff.js" defer></script>
 <script src="memo.js"></script>
 </body>
 </html>
