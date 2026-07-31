@@ -264,6 +264,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>컬럼</td><td>key_number · priority · condition_type · param_1 · param_2 · result_tier_id · in_use · memo</td><td>동일 + <strong><span class="sheet-var">level_min</span> · <span class="sheet-var">level_max</span></strong> 2개 추가</td></tr>
       <tr><td>행 수</td><td>9행</td><td><strong>16행</strong> (7행 추가)</td></tr>
       <tr><td>레벨 조건</td><td><span class="sheet-var">condition_type</span>으로만 존재</td><td><strong>모든 규칙 행이 레벨 구간을 가질 수 있음</strong></td></tr>
+      <tr><td>30001·30002</td><td>레벨 범위가 <span class="sheet-var">param_1</span>·<span class="sheet-var">param_2</span>에 있음</td><td><strong>그대로 유지</strong> · 레벨 컬럼은 <span class="sheet-var">1 / 99999</span>로 두어 필터를 무력화함</td></tr>
       <tr><td>기존 9행 처리</td><td>—</td><td><strong>1 / 99999</strong> 입력 = 전 레벨 적용. 현행 동작 그대로 유지</td></tr>
     </tbody>
   </table>
@@ -412,6 +413,14 @@ ul li strong,ol li strong { color:var(--text); }
   <div class="callout callout-purple">
     <p><strong>클라이언트 변경은 규칙 목록을 거르는 필터 한 겹이 전부임.</strong> 난수 추첨기·신규 테이블 로더·가중치 정규화가 모두 필요 없음.</p>
   </div>
+
+  <h3>레벨을 param으로 쓰던 기존 행 처리</h3>
+  <p><span class="sheet-var">user_level_range</span>(30001)·<span class="sheet-var">user_level_specific</span>(30002)은 원래 레벨 범위를 <span class="sheet-var">param_1</span>·<span class="sheet-var">param_2</span>로 들고 있음. 여기에 <span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span>까지 같은 값을 넣으면 <strong>레벨 범위의 출처가 두 곳이 되어</strong>, 나중에 한쪽만 고쳤을 때 조용히 어긋남.</p>
+  <p>그래서 두 행은 레벨 컬럼을 <span class="sheet-var">1 / 99999</span>로 두어 <strong>필터를 항상 통과시키고, 판정은 기존대로 <span class="sheet-var">param_1</span>·<span class="sheet-var">param_2</span>가 하도록</strong> 함. 동작은 현행과 완전히 동일하고, 튜토 구간을 바꿀 때 고칠 셀도 2개 그대로임.</p>
+  <div class="callout callout-blue">
+    <p><strong>레벨 컬럼은 조건을 대체하는 것이 아니라 그 위에 얹는 필터임.</strong> <span class="sheet-var">level_min ≤ 유저 레벨 ≤ level_max</span>를 만족하는 행만 평가 대상에 넣고, 그 뒤 판정은 <span class="sheet-var">condition_type</span>과 <span class="sheet-var">param</span>이 함. 두 층의 역할이 겹치지 않게 유지해야 함.</p>
+  </div>
+  <p>장기적으로는 <span class="sheet-var">user_level_range</span>·<span class="sheet-var">user_level_specific</span>이라는 <span class="sheet-var">condition_type</span> 자체가 레벨 컬럼과 역할이 겹치므로 정리 대상이지만, FTUE 직결 구간이라 이번 스펙에서는 건드리지 않음.</p>
 
   <h3>병행 변경 — hard_cooldown 발동 조건</h3>
   <p>시트 메모 기준 <span class="sheet-var">hard_cooldown</span>은 <strong>"Hard 클리어 후 param_1 판은 Normal"</strong>이라 <strong>이겼을 때만</strong> 걸림. 그래서 Hard를 진 직후에는 쿨다운이 없어 곧바로 Super Hard가 나올 수 있음. <strong>이 흐름을 허용하지 않기로 확정했으므로 발동 조건을 승패 무관으로 변경함.</strong></p>
