@@ -223,24 +223,43 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>3</td><td>가격이 지면별로 나뉘지 않음</td><td>로그는 이미 갖춰져 있음(<span class="sheet-var">2170~2173_GAMEPLAY_ITEM_FIREWORKS_*</span> · <span class="sheet-var">type</span>과 <span class="sheet-var">price</span> 포함). 다만 <strong>프리레벨과 인게임이 같은 40010을 읽어 price가 동일하게 찍힘</strong></td></tr>
     </tbody>
   </table>
-  <h3>실측 &mdash; 인게임 사용은 이미 발생 중임</h3>
-  <p>2100의 <span class="sheet-var">boosters</span>(프리레벨 선택)와 2300의 <span class="sheet-var">booster_used</span>(실제 사용)를 판 단위로 대조함.</p>
+  <h3>실측 &mdash; 인게임 골드 구매가 파이어웍스만 0건임</h3>
+  <p>아이템별 <span class="sheet-var">*_TRY</span> 로그를 결제 타입으로 분해함. <span class="sheet-var">type=4</span>가 골드 구매, <span class="sheet-var">type=1</span>이 보유분 소진임.</p>
   <table>
-    <thead><tr><th>구분</th><th>판수 (7일)</th><th>비중</th></tr></thead>
+    <thead><tr><th>아이템</th><th>로그</th><th>골드 구매</th><th>보유분 소진</th><th>골드 구매 비중</th><th>구매 단가 p50</th></tr></thead>
     <tbody>
-    <tr><td>파이어웍스 사용 판 전체</td><td>17,345</td><td>100%</td></tr>
-    <tr><td>프리레벨에서 선택함</td><td>9,028</td><td>52.0%</td></tr>
-    <tr style="background:var(--hero-bg)"><td><strong>프리레벨 미선택 &mdash; 인게임 사용</strong></td><td><strong>8,317</strong></td><td><strong>48.0%</strong></td></tr>
+    <tr><td>추가 덱</td><td>2190</td><td><strong>26,182</strong></td><td>4,825</td><td><strong>84.4%</strong></td><td>2,360골드</td></tr>
+    <tr><td>와일드카드</td><td>2180</td><td><strong>8,711</strong></td><td>6,177</td><td><strong>58.5%</strong></td><td>1,690골드</td></tr>
+    <tr style="background:var(--hero-bg)"><td><strong>파이어웍스</strong></td><td>2170</td><td><strong>0</strong></td><td>11,593</td><td><strong>0%</strong></td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-yellow">
+    <strong>파이어웍스만 인게임에서 한 번도 팔리지 않았음.</strong> 2170 로그 11,593건이 <strong>전부 <span class="sheet-var">type="item"</span></strong>이고 <span class="sheet-var">price</span> 필드 자체가 없음 &mdash; 즉 <span class="sheet-var">IngameItemButtonView</span>의 구매 경로가 <strong>한 번도 실행된 적이 없음</strong>. 실패 로그(2172)도 0건이라 시도조차 도달하지 않음. 원인은 <span class="sheet-var">targetItemKeyNumber</span>에서 40010이 빠진 것으로 보임.
+  </div>
+
+  <h3>11,593건은 어디서 왔나</h3>
+  <table>
+    <thead><tr><th>경로</th><th>판수 / 건수</th><th>확인</th></tr></thead>
+    <tbody>
+    <tr><td>프리레벨 부스터 선택</td><td>7,512판</td><td>2100의 <span class="sheet-var">boosters</span>에 <span class="sheet-var">fireworks</span> 포함(단독 4,458 + 골든티켓 동시 3,054)</td></tr>
+    <tr><td>맵 기믹 카드</td><td>약 4,081건</td><td>차액. 스테이지에 배치된 GrandFireworksCard를 클릭한 경우</td></tr>
+    <tr><td><strong>인게임 아이템 구매</strong></td><td><strong>0건</strong></td><td>price 페이로드를 가진 로그가 하나도 없음</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <strong>인게임 버튼은 이미 동작하고 있고 사용량도 프리레벨과 맞먹음.</strong> 전용 뷰 클래스(<span class="sheet-var">FireworkItemButtonView</span>)·미사일 발사 연출·<span class="sheet-var">ViewGame.prefab</span> 배선까지 완성돼 있음. <strong>남은 것은 가격 분리 · 구매 키 · 계측 세 가지임.</strong><br>
-    이 8,317판이 골드 구매인지 보유분 소진인지는 <strong>이미 로그로 구분 가능함</strong> &mdash; <span class="sheet-var">2170_GAMEPLAY_ITEM_FIREWORKS_TRY</span>의 <span class="sheet-var">type</span>이 <span class="sheet-var">ticket · item · rv · free · gold</span>를 구분하고 <span class="sheet-var">price</span> · <span class="sheet-var">use_count</span>까지 실림. 적용 전 기준선은 이 로그로 바로 뽑으면 됨.
+    <strong>골든티켓은 정상 작동 중임.</strong> 2195 로그 <strong>5,469건 / 639명</strong>이며, 2100의 프리레벨 선택 건수(3,054 + 2,415 = 5,469)와 <strong>정확히 일치</strong>함. 앞서 <span class="sheet-var">booster_used</span> 필드에 안 잡혀 0건으로 봤던 것은 오독이었음 &mdash; 골든티켓은 그 필드에 기록되지 않을 뿐임.
   </div>
 
-  <div class="callout callout-yellow">
-    <strong>2300 로그의 골든티켓 0건도 같은 계열의 문제로 보임.</strong> 프리레벨 슬롯은 열려 있으나 인게임 계측·구매 경로가 정비돼 있지 않음. 본 스펙은 파이어웍스를 먼저 정리하고, 골든티켓은 별건으로 남김.
-  </div>
+  <h3>로그 정의 불일치 &mdash; 같이 정리 필요</h3>
+  <table>
+    <thead><tr><th>로그</th><th>type 값</th><th>price</th><th>use_count</th></tr></thead>
+    <tbody>
+    <tr><td>2180 와일드카드 · 2190 추가 덱</td><td>숫자 <span class="sheet-var">1</span> · <span class="sheet-var">4</span></td><td>있음</td><td>있음</td></tr>
+    <tr><td>2170 파이어웍스</td><td>문자열 <span class="sheet-var">"item"</span></td><td><strong>없음</strong></td><td><strong>없음</strong></td></tr>
+    <tr><td>2195 골든티켓</td><td>문자열 <span class="sheet-var">"paid"</span></td><td>0 고정</td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+  <p>2170과 2195는 <span class="sheet-var">IngameItemButtonView</span>가 아니라 <span class="sheet-var">StageView</span>의 카드 클릭 경로에서 찍히기 때문에 페이로드 규격이 다름. <strong>아이템 버튼 경로가 살아나면 같은 2170에 숫자 type과 price가 섞여 들어오므로</strong>, 지금 규격을 통일해두지 않으면 집계가 깨짐.</p>
 
   <h3>가격 공식 &mdash; 기존 선례에서 그대로 끌어옴</h3>
   <p>모든 아이템 가격은 <strong>입장료 대비 비율</strong>로 책정됨: <span class="sheet-var">basePrice = entryCost &times; betting &times; (entry_cost_ratio / 10000)</span>. 같은 기능을 프리레벨과 인게임에서 각각 파는 선례가 이미 하나 있음 &mdash; <strong>골든티켓과 와일드카드</strong>임.</p>
@@ -383,11 +402,11 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>1</td><td>기획</td><td><span class="sheet-var">item_list</span>에 <strong>40015</strong> 행 등록 &mdash; <span class="sheet-var">ingame_fireworks</span> · ratio <strong>17000</strong> · 상승 2500 · 상한 25000 · <span class="sheet-var">target_name_key = booster_fireworks</span></td><td>최초</td></tr>
     <tr><td>2</td><td>기획</td><td><strong>해금 정책 확정</strong> &mdash; 기존 <span class="sheet-var">booster_fireworks</span>(50014 · level_clear 8) 공유가 기본. 별도로 둘 경우 unlock 행 신설</td><td>1과 동시</td></tr>
     <tr><td>3</td><td>기획</td><td><span class="sheet-var">string_code</span> 아이템명·설명 등록 (10개 언어)</td><td>1과 동시</td></tr>
-    <tr><td>4</td><td>기획</td><td>로그 정의서에 <strong>40015 아이템 키</strong> 반영 (이벤트 2170 계열은 기존 정의 유지)</td><td>1과 동시</td></tr>
+    <tr><td>4</td><td>기획</td><td>로그 정의서에 <strong>40015 키</strong>와 <strong>2170 type/price 규격</strong> 반영 (카드 경로 · 버튼 경로 구분 명시)</td><td>1과 동시</td></tr>
     <tr><td>5</td><td>클라</td><td><span class="sheet-var">IngameItemButtonView.getKeyNumber()</span> &mdash; <span class="sheet-var">case "fireworks"</span> 반환을 <strong>40010 &rarr; 40015</strong>. 프리레벨(<span class="sheet-var">PopupGameEntry</span>)은 40010 유지</td><td>1 이후</td></tr>
     <tr><td>6</td><td>클라</td><td><span class="sheet-var">onClickInactivePaid()</span>의 <span class="sheet-var">targetItemKeyNumber</span> 타입에 <strong>40015 추가</strong></td><td>5와 동시</td></tr>
     <tr><td>7</td><td>클라</td><td><span class="sheet-var">getContentIdForUnlock()</span>이 파이어웍스 해금을 올바로 참조하는지 확인 (2번 결정 반영)</td><td>2 이후</td></tr>
-    <tr><td>8</td><td>클라</td><td><strong>로그 신설 불필요</strong> &mdash; 2170 계열이 <span class="sheet-var">type</span>·<span class="sheet-var">price</span>·<span class="sheet-var">use_count</span>까지 이미 찍고 있음. 프리레벨 선택분도 2170으로 잡히는지만 확인</td><td>확인만</td></tr>
+    <tr><td>8</td><td>클라</td><td><strong>2170 페이로드 규격 통일</strong> &mdash; 카드 클릭 경로(StageView)는 <span class="sheet-var">type="item"</span>에 price가 없고, 아이템 버튼 경로는 숫자 type과 price를 실음. 버튼 경로가 살아나면 한 이벤트에 두 규격이 섞이므로 <strong>가격 적용 전에 통일</strong>해야 함. 2195 골든티켓(<span class="sheet-var">"paid"</span>)도 같이 정리</td><td><strong>가격 적용 전</strong></td></tr>
     <tr><td>9</td><td>클라</td><td>반복 사용 시 상승 가격이 버튼 UI에 반영되는지 확인</td><td>5 이후</td></tr>
     <tr><td>10</td><td>서버</td><td><span class="sheet-var">buyItem</span> <strong>40015 수신 허용</strong> + 가격 검증 (<span class="sheet-var">entryCost &times; betting &times; ratio/10000</span>)</td><td>1 이후</td></tr>
     <tr><td>11</td><td>서버</td><td>판 내 사용 횟수별 가격 상승 로직에 40015 연결 (추가덱·실행취소와 동일 경로)</td><td>10과 동시</td></tr>
@@ -399,8 +418,8 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>17</td><td>QA</td><td>롤백 확인 &mdash; 40015 <span class="sheet-var">in_use</span> OFF 시 인게임 버튼만 비활성, 프리레벨 무영향</td><td>전체 이후</td></tr>
     </tbody>
   </table>
-  <div class="callout callout-blue">
-    <strong>기준선은 지금 바로 뽑을 수 있음.</strong> 2170 계열 로그에 <span class="sheet-var">type</span>과 <span class="sheet-var">price</span>가 이미 실려 있어, 인게임 파이어웍스의 <strong>골드 구매 건수 · 결제 단가 · 판 내 반복 횟수</strong>를 적용 전에 확보 가능함. 로깅 대기 없이 시트·클라·서버를 바로 진행하면 됨.
+  <div class="callout callout-yellow">
+    <strong>기준선은 0임 &mdash; 비교 대상이 없음.</strong> 인게임 파이어웍스 골드 구매는 현재 0건이라 전후 비교가 아니라 <strong>신규 매출 라인 개설</strong>로 봐야 함. 비교군은 같은 지면의 와일드카드(구매 비중 58.5% · 단가 1,690)와 추가 덱(84.4% · 2,360)이며, <strong>파이어웍스가 이 둘 사이 어디에 안착하는지</strong>가 판정 기준임.
   </div>
 
   <h3>롤백</h3>
