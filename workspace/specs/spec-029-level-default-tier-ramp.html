@@ -487,13 +487,14 @@ ul li strong,ol li strong { color:var(--text); }
   <p><span class="sheet-var">user_level</span>이 필수임. 레벨이 없으면 밴드별 효과를 아예 분리할 수 없음. <span class="sheet-var">tier_reason</span>은 주기 보장으로 나온 판과 연패 구제로 내려간 판을 구분하는 용도로 권장이지만, 이번 설계는 결정론적이라 없어도 판정은 가능함.</p>
 
   <h3>진행 단계</h3>
-  <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>로깅 추가 배포</strong><p>클라이언트에 <span class="sheet-var">user_level</span>을 실음. 로직 변경은 포함하지 않음</p></div></div>
-  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>레벨 분포 실측 (1주)</strong><p>밴드별 유저 수·판수 분포를 확인함. 유저가 거의 없는 밴드는 병합하고 몰려 있는 밴드는 쪼갬</p></div></div>
-  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>레벨 필터 로직 + 컬럼 2개 배포</strong><p>기존 9행에 <span class="sheet-var">1 / 99999</span>만 채운 채 배포함. 이 시점에는 동작이 현행과 100% 동일해야 함 — 무변경 확인이 곧 검증임</p></div></div>
-  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>상위 밴드부터 단계 개방</strong><p>최상위 밴드(800+) 행부터 <span class="sheet-var">in_use</span>를 켜고 1주 관측. 이상 없으면 아래 밴드로 한 단계씩 내림. 유저 수가 가장 적고 숙련도가 가장 높은 구간부터 여는 순서임</p></div></div>
-  <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>밴드별 확정 또는 되돌림</strong><p>아래 판정 기준으로 밴드 단위로 결정함. 전체 롤백이 아니라 밴드 단위 조정이 기본임</p></div></div>
-  <div class="callout callout-purple">
-    <p><strong>A/B 대신 단계 개방을 택함.</strong> 밴드마다 대상 유저 수가 다르고 상위 밴드는 표본이 작아 A/B 분할 시 유의성이 안 나옴. 밴드를 하나씩 여는 방식이면 밴드 자체가 실험 단위가 되고, 되돌리는 비용도 시트 셀 하나임.</p>
+  <div class="flow-step"><div class="flow-dot">✓</div><div class="flow-body"><strong>시트 반영 (2026-07-31 완료)</strong><p><span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span> 컬럼 추가, 기존 9행에 <span class="sheet-var">1 / 99999</span> 입력, 신규 7행(30010~30016) 추가. <strong>신규 행은 전부 <span class="sheet-var">in_use = FALSE</span></strong>라 현재 동작은 현행과 완전히 동일함</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>로깅 추가 배포</strong><p><span class="sheet-var">2100</span>·<span class="sheet-var">2300</span>에 <span class="sheet-var">user_level</span>을 실음. 이게 없으면 밴드별 효과를 분리해 측정할 수 없음</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>레벨 필터 로직 구현</strong><p>시트에 이미 들어간 컬럼·행을 기준으로 구현함. <span class="sheet-var">hard_cooldown</span>을 승패 무관으로 바꾸는 변경도 이 배포에 포함(확정 사항 6번). 배포 시점에는 신규 행이 <span class="sheet-var">in_use = FALSE</span>라 <strong>동작이 현행과 100% 동일해야 함 — 무변경 확인이 곧 검증임</strong></p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>레벨 분포 실측 (1주)</strong><p>밴드별 유저 수·판수 분포를 확인함. 유저가 거의 없는 밴드는 병합하고 몰려 있는 밴드는 쪼갬</p></div></div>
+  <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>상위 밴드부터 단계 개방</strong><p>최상위 밴드(800+) 행부터 <span class="sheet-var">in_use</span>를 TRUE로 올리고 1주 관측. 이상 없으면 아래 밴드로 한 단계씩 내림</p></div></div>
+  <div class="flow-step"><div class="flow-dot">6</div><div class="flow-body"><strong>밴드별 확정 또는 되돌림</strong><p>아래 판정 기준으로 밴드 단위로 결정함</p></div></div>
+  <div class="callout callout-blue">
+    <p><strong>시트를 먼저 넣은 이유.</strong> 클라이언트 구현이 시트 구조를 보고 이루어지므로 데이터가 먼저 있어야 함. 신규 7행을 <span class="sheet-var">in_use = FALSE</span>로 넣어 현재 클라이언트에는 아무 영향이 없게 했음 — 레벨 컬럼을 읽지 못하는 상태에서 TRUE로 켜면 같은 <span class="sheet-var">condition_type</span> 행이 여러 개로 보여 어느 행이 적용될지 보장되지 않음.</p>
   </div>
 
   <h3>검증 지표 — 레벨 밴드별로 분리해서 봄</h3>
