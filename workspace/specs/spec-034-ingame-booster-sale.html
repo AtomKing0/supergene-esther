@@ -220,7 +220,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td>1</td><td>가격 키가 프리레벨과 동일</td><td><span class="sheet-var">IngameItemButtonView.getKeyNumber()</span>가 <span class="sheet-var">booster_fireworks(40010)</span>를 그대로 반환함 &mdash; <strong>인게임에서도 프리레벨과 같은 7500</strong>으로 잡힘</td></tr>
     <tr><td>2</td><td>구매 대상 키에서 누락</td><td><span class="sheet-var">onClickInactivePaid()</span>의 <span class="sheet-var">targetItemKeyNumber</span>가 <span class="sheet-var">40012 | 40013 | 40014</span>로 한정됨 &mdash; 40010이 빠져 있음(<span class="sheet-var">as</span> 캐스팅이라 컴파일만 통과)</td></tr>
-    <tr><td>3</td><td>인게임 아이템 구매·사용 로그 부재</td><td>프리레벨은 <span class="sheet-var">2091_PRE_LEVEL_BOOSTER_SELECT</span>로 잡히나 <strong>인게임 아이템은 시도·구매 로그가 아예 없음</strong> &mdash; 지금 팔려도 성과를 볼 수 없음</td></tr>
+    <tr><td>3</td><td>가격이 지면별로 나뉘지 않음</td><td>로그는 이미 갖춰져 있음(<span class="sheet-var">2170~2173_GAMEPLAY_ITEM_FIREWORKS_*</span> · <span class="sheet-var">type</span>과 <span class="sheet-var">price</span> 포함). 다만 <strong>프리레벨과 인게임이 같은 40010을 읽어 price가 동일하게 찍힘</strong></td></tr>
     </tbody>
   </table>
   <h3>실측 &mdash; 인게임 사용은 이미 발생 중임</h3>
@@ -235,7 +235,7 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
   <div class="callout callout-blue">
     <strong>인게임 버튼은 이미 동작하고 있고 사용량도 프리레벨과 맞먹음.</strong> 전용 뷰 클래스(<span class="sheet-var">FireworkItemButtonView</span>)·미사일 발사 연출·<span class="sheet-var">ViewGame.prefab</span> 배선까지 완성돼 있음. <strong>남은 것은 가격 분리 · 구매 키 · 계측 세 가지임.</strong><br>
-    다만 이 8,317판이 <strong>골드 구매인지 보유 인벤토리 소진인지 구분할 수 없음</strong> &mdash; 구매 로그가 없기 때문임(신규 유저 무료 아이템 <span class="sheet-var">nru_ingame_free_item_count = 3</span>도 섞여 있음). 이 판정이 로깅 작업의 이유임.
+    이 8,317판이 골드 구매인지 보유분 소진인지는 <strong>이미 로그로 구분 가능함</strong> &mdash; <span class="sheet-var">2170_GAMEPLAY_ITEM_FIREWORKS_TRY</span>의 <span class="sheet-var">type</span>이 <span class="sheet-var">ticket · item · rv · free · gold</span>를 구분하고 <span class="sheet-var">price</span> · <span class="sheet-var">use_count</span>까지 실림. 적용 전 기준선은 이 로그로 바로 뽑으면 됨.
   </div>
 
   <div class="callout callout-yellow">
@@ -337,15 +337,30 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="section-meta"><div class="section-title">로깅 · 검증 · 롤백</div></div>
   </div>
 
-  <h3>로깅</h3>
+  <h3>로깅 &mdash; 이미 갖춰져 있음</h3>
+  <p>인게임 아이템 로그는 <strong>2xxx-1 대역에 아이템별로 이미 정의돼 있음</strong>. 신설할 것이 없고, 지면 구분만 확인하면 됨.</p>
   <table>
-    <thead><tr><th>항목</th><th>내용</th></tr></thead>
+    <thead><tr><th>아이템</th><th>Try</th><th>Success</th><th>Fail</th><th>Unlock</th></tr></thead>
     <tbody>
-    <tr><td>구분 필요</td><td>2300 <span class="sheet-var">booster_used</span>에서 <strong>프리레벨 파이어웍스와 인게임 파이어웍스가 구분</strong>돼야 함. 현재는 둘 다 <span class="sheet-var">fireworks</span>로 찍히면 지면별 성과를 나눌 수 없음</td></tr>
-    <tr><td>제안 값</td><td>프리레벨 <span class="sheet-var">fireworks</span> 유지 · 인게임 <span class="sheet-var">ingame_fireworks</span> 신설</td></tr>
-    <tr><td>선행 확인</td><td>골든티켓이 0건인 원인 점검을 함께 진행 &mdash; 같은 구조의 누락일 가능성이 있음</td></tr>
+    <tr><td>실행취소</td><td>2160</td><td>2161</td><td>2162</td><td>2163</td></tr>
+    <tr style="background:var(--hero-bg)"><td><strong>파이어웍스</strong></td><td><strong>2170</strong></td><td><strong>2171</strong></td><td><strong>2172</strong></td><td><strong>2173</strong></td></tr>
+    <tr><td>와일드카드</td><td>2180</td><td>2181</td><td>2182</td><td>2183</td></tr>
+    <tr><td>추가 덱</td><td>2190</td><td>2191</td><td>2192</td><td>2193</td></tr>
+    <tr><td>골든티켓</td><td>2195</td><td>2196</td><td>2197</td><td>&mdash;</td></tr>
     </tbody>
   </table>
+  <table>
+    <thead><tr><th>페이로드</th><th>값</th><th>쓰임</th></tr></thead>
+    <tbody>
+    <tr><td><span class="sheet-var">type</span></td><td><span class="sheet-var">ticket · item · rv · free · gold</span></td><td><strong>gold면 골드 구매</strong>, item이면 보유분 소진 &mdash; 구매/소진 구분이 이미 됨</td></tr>
+    <tr><td><span class="sheet-var">price</span></td><td>결제 골드</td><td>지면별 단가 검증에 그대로 씀. <strong>40015 적용 후 인게임만 값이 올라야 함</strong></td></tr>
+    <tr><td><span class="sheet-var">use_count</span></td><td>판 내 사용 횟수</td><td>상승 가격(2500)이 실제로 반영되는지 확인</td></tr>
+    <tr><td><span class="sheet-var">seed</span> · <span class="sheet-var">difficulty_tier</span></td><td>판 식별 · 티어</td><td>2100/2300과 조인</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <strong>남는 확인 1건.</strong> 프리레벨에서 고른 파이어웍스도 2170 계열로 찍히는지, 아니면 <span class="sheet-var">2091_PRE_LEVEL_BOOSTER_SELECT</span>로만 잡히는지 확인이 필요함. 둘 다 2170으로 찍힌다면 <span class="sheet-var">price</span> 값으로 지면이 자연히 갈리므로(7500 대 17000) 추가 구분값이 필요 없음.
+  </div>
 
   <h3>측정</h3>
   <table>
@@ -368,11 +383,11 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>1</td><td>기획</td><td><span class="sheet-var">item_list</span>에 <strong>40015</strong> 행 등록 &mdash; <span class="sheet-var">ingame_fireworks</span> · ratio <strong>17000</strong> · 상승 2500 · 상한 25000 · <span class="sheet-var">target_name_key = booster_fireworks</span></td><td>최초</td></tr>
     <tr><td>2</td><td>기획</td><td><strong>해금 정책 확정</strong> &mdash; 기존 <span class="sheet-var">booster_fireworks</span>(50014 · level_clear 8) 공유가 기본. 별도로 둘 경우 unlock 행 신설</td><td>1과 동시</td></tr>
     <tr><td>3</td><td>기획</td><td><span class="sheet-var">string_code</span> 아이템명·설명 등록 (10개 언어)</td><td>1과 동시</td></tr>
-    <tr><td>4</td><td>기획</td><td>로그 정의서에 <strong>인게임 아이템 시도·구매·사용</strong> 이벤트 정의 추가</td><td>1과 동시</td></tr>
+    <tr><td>4</td><td>기획</td><td>로그 정의서에 <strong>40015 아이템 키</strong> 반영 (이벤트 2170 계열은 기존 정의 유지)</td><td>1과 동시</td></tr>
     <tr><td>5</td><td>클라</td><td><span class="sheet-var">IngameItemButtonView.getKeyNumber()</span> &mdash; <span class="sheet-var">case "fireworks"</span> 반환을 <strong>40010 &rarr; 40015</strong>. 프리레벨(<span class="sheet-var">PopupGameEntry</span>)은 40010 유지</td><td>1 이후</td></tr>
     <tr><td>6</td><td>클라</td><td><span class="sheet-var">onClickInactivePaid()</span>의 <span class="sheet-var">targetItemKeyNumber</span> 타입에 <strong>40015 추가</strong></td><td>5와 동시</td></tr>
     <tr><td>7</td><td>클라</td><td><span class="sheet-var">getContentIdForUnlock()</span>이 파이어웍스 해금을 올바로 참조하는지 확인 (2번 결정 반영)</td><td>2 이후</td></tr>
-    <tr><td>8</td><td>클라</td><td><strong>인게임 아이템 로그 신설</strong> &mdash; 시도·구매·사용. 2300 <span class="sheet-var">booster_used</span>에 지면 구분값 <span class="sheet-var">ingame_fireworks</span> 추가</td><td><strong>가격 적용 전</strong></td></tr>
+    <tr><td>8</td><td>클라</td><td><strong>로그 신설 불필요</strong> &mdash; 2170 계열이 <span class="sheet-var">type</span>·<span class="sheet-var">price</span>·<span class="sheet-var">use_count</span>까지 이미 찍고 있음. 프리레벨 선택분도 2170으로 잡히는지만 확인</td><td>확인만</td></tr>
     <tr><td>9</td><td>클라</td><td>반복 사용 시 상승 가격이 버튼 UI에 반영되는지 확인</td><td>5 이후</td></tr>
     <tr><td>10</td><td>서버</td><td><span class="sheet-var">buyItem</span> <strong>40015 수신 허용</strong> + 가격 검증 (<span class="sheet-var">entryCost &times; betting &times; ratio/10000</span>)</td><td>1 이후</td></tr>
     <tr><td>11</td><td>서버</td><td>판 내 사용 횟수별 가격 상승 로직에 40015 연결 (추가덱·실행취소와 동일 경로)</td><td>10과 동시</td></tr>
@@ -384,8 +399,8 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>17</td><td>QA</td><td>롤백 확인 &mdash; 40015 <span class="sheet-var">in_use</span> OFF 시 인게임 버튼만 비활성, 프리레벨 무영향</td><td>전체 이후</td></tr>
     </tbody>
   </table>
-  <div class="callout callout-yellow">
-    <strong>8번 로깅을 가격 적용보다 먼저 넣어야 함.</strong> 현재 인게임 사용 8,317판이 구매인지 인벤토리 소진인지 구분되지 않는 상태라, 로깅 없이 가격을 올리면 <strong>전후 비교의 기준선이 사라짐</strong>. 로깅 선반영 후 최소 며칠 기준선을 잡고 17000을 적용하는 순서가 안전함.
+  <div class="callout callout-blue">
+    <strong>기준선은 지금 바로 뽑을 수 있음.</strong> 2170 계열 로그에 <span class="sheet-var">type</span>과 <span class="sheet-var">price</span>가 이미 실려 있어, 인게임 파이어웍스의 <strong>골드 구매 건수 · 결제 단가 · 판 내 반복 횟수</strong>를 적용 전에 확보 가능함. 로깅 대기 없이 시트·클라·서버를 바로 진행하면 됨.
   </div>
 
   <h3>롤백</h3>
