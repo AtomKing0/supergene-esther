@@ -149,7 +149,7 @@
 - [ ] ★**시트 파서 규칙** — 추출기는 **행·열 모두 빈 내용을 만나면 생성을 멈춤**. 따라서 신규 탭은 **추출 컬럼을 앞에 붙이고 → 빈 열 1개 → `description`** 순서로 배치돼 있음. `event_shadow_sprint` = A~J 데이터·**K 빈 열**·L description / `event_shadow_chest` = A~G 데이터·**H 빈 열**·I description. 로더가 빈 열 이후를 읽지 않도록 할 것
 - [ ] `event_shadow_sprint`는 v1 1행 고정이나, **레벨 구간 차등이 필요해지면 `level_min`/`level_max` 컬럼을 가진 다행 구조로 확장**될 수 있음 — 로더를 단일 행 전제로 하드코딩하지 말 것
 - [ ] `unlock` 50031(`content_event_shadow_chase`·`level_clear`·10·**`show_tutorial=FALSE`**) — 별도 튜토리얼·언락 인트로 없음(`tutorial_guide` 미등록). 클라 코드 등록 불필요(데이터 참조)
-- [ ] string_code `T_SHADOW_CHASE_*` **11키 + T_OPEN** 등록 (`T_SHADOW_CHASE_FAIL_FLEE`·`T_SHADOW_CHASE_CHEST_NO_MULTIPLY` 미사용)
+- [ ] string_code `T_SHADOW_CHASE_*` **10키 + T_OPEN** 등록 (`T_SHADOW_CHASE_FAIL_FLEE`·`T_SHADOW_CHASE_CHEST_NO_MULTIPLY` 미사용)
 - [ ] `reward_key`는 전부 **라이브 `item_list` 실존 키**만 사용 → 신규 아이템 등록 불필요. 열쇠는 연출 상징이며 **실아이템 아님**
 - [ ] ★개발 확인 ①: `goal_type=complete_sprint_cycle` 서버 처리(2차 저니용 — v1 훅만)
 - [ ] ★개발 확인 ②: milestone/sprint의 `event_id=0`(비귀속) 관례 수용 여부
