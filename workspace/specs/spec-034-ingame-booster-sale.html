@@ -278,37 +278,38 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>항목</th><th>확정</th><th>산출</th></tr></thead>
     <tbody>
     <tr><td>프리레벨 파이어웍스</td><td><strong>7500 유지</strong></td><td>GrandFireworksCard 1장. 12.9% 사용 · 클리어율 98.3%로 작동 중이라 건드리지 않음</td></tr>
-    <tr><td><strong>인게임 파이어웍스 기준가</strong></td><td><strong>12000</strong></td><td>첫 사용은 낮게 잡고 상승폭으로 제동을 걺 &mdash; 아래 곡선 참조</td></tr>
-    <tr><td><strong>사용당 상승</strong></td><td><strong>8000</strong></td><td>추가덱(2500)의 3.2배. <strong>급격한 상승이 반복 사용의 주 제동장치</strong>임</td></tr>
-    <tr><td><strong>상승 상한</strong></td><td><strong>36000</strong></td><td>4회차부터 고정. 입장료의 3.6배로 사실상 더 못 쓰게 됨</td></tr>
+    <tr><td><strong>인벤토리</strong></td><td><strong>프리레벨과 공유</strong></td><td>아이템 키는 <span class="sheet-var">booster_fireworks(40010)</span> 하나를 유지함. <strong>보상 지급처가 15곳</strong>(데일리 태스크 8 · 이벤트 마일스톤 4 · 상품 1 · 스트릭 1 · 룰렛 1)이라 키를 나누면 받은 아이템을 인게임에서 못 쓰게 됨</td></tr>
+    <tr><td><strong>인게임 기준가</strong></td><td><span class="sheet-var">ingame_entry_cost_ratio</span> <strong>12000</strong></td><td>첫 사용은 낮게, 상승폭으로 제동 &mdash; 아래 곡선 참조</td></tr>
+    <tr><td><strong>사용당 상승</strong></td><td><span class="sheet-var">ingame_use_count_increase_rate</span> <strong>6700</strong></td><td>매 사용 <strong>+67%</strong>(추가덱 +25%의 2.7배)</td></tr>
+    <tr><td><strong>상승 상한</strong></td><td><span class="sheet-var">ingame_use_count_max_ratio</span> <strong>20000</strong></td><td>기준가의 <strong>3배</strong>에서 마감. 4회차부터 고정</td></tr>
     <tr><td>지급 수량</td><td><strong>1장</strong></td><td>와일드카드 인게임과 동일하게 1회 사용분</td></tr>
     </tbody>
   </table>
 
   <h3>상승 곡선 &mdash; 싸게 시작해 급격히 오름</h3>
   <p>파이어웍스는 <strong>판당 사용 횟수 제한이 없음</strong>(<span class="sheet-var">canUseFireworks</span>는 필드가 비었는지만 봄). 고정가로 두면 골드 여유가 있는 유저가 연타해서 판을 끝낼 수 있으므로, <strong>가격 상승이 유일한 제동장치</strong>임. 대신 첫 사용은 낮게 잡아 실제로 팔리게 함.</p>
+  <div class="callout callout-blue">
+    <strong>상승은 덧셈이 아니라 곱셈임.</strong> <span class="sheet-var">getCurrentPrice()</span>의 실제 산식은<br>
+    <span class="sheet-var">useRatio = min(use_count_max_ratio, useCount &times; use_count_increase_rate)</span><br>
+    <span class="sheet-var">price = 기준가 &times; (1 + useRatio / 10000)</span> &mdash; 10원 단위 반올림<br>
+    즉 <span class="sheet-var">increase_rate</span> 2500은 &ldquo;+2500&rdquo;이 아니라 <strong>매 사용 +25%</strong>이고, <span class="sheet-var">max_ratio</span>는 상승률의 상한임(12000 = 최대 +120%).
+  </div>
   <table>
-    <thead><tr><th>사용 회차</th><th>비율</th><th>비율값</th><th>Lv 25~49 가격</th><th>배수 x4일 때</th></tr></thead>
+    <thead><tr><th>사용 회차</th><th>비율</th><th>상승률</th><th>유효 비율</th><th>Lv 25~49</th><th>배수 x4</th></tr></thead>
     <tbody>
-    <tr><td><strong>1회차</strong></td><td><strong>64.0%</strong></td><td><strong>12000</strong></td><td><strong>2,520골드</strong></td><td>10,080골드</td></tr>
-    <tr><td>2회차</td><td>21.3%</td><td>20000</td><td>4,200골드</td><td>16,800골드</td></tr>
-    <tr><td>3회차</td><td>7.7%</td><td>28000</td><td>5,880골드</td><td>23,520골드</td></tr>
-    <tr><td>4회차 이상</td><td>7.0%</td><td>36000 <span style="color:var(--text2)">(상한)</span></td><td>7,560골드</td><td>30,240골드</td></tr>
+    <tr><td><strong>1회차</strong></td><td><strong>64.0%</strong></td><td>+0%</td><td><strong>12,000</strong></td><td><strong>2,520골드</strong></td><td>10,080골드</td></tr>
+    <tr><td>2회차</td><td>21.3%</td><td>+67%</td><td>20,040</td><td>4,210골드</td><td>16,830골드</td></tr>
+    <tr><td>3회차</td><td>7.7%</td><td>+134%</td><td>28,080</td><td>5,900골드</td><td>23,590골드</td></tr>
+    <tr><td>4회차 이상</td><td>7.0%</td><td>+200% <span style="color:var(--text2)">(상한)</span></td><td>36,000</td><td>7,560골드</td><td>30,240골드</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <strong>회차별 비율은 추정이 아니라 실측임.</strong> 추가 덱의 골드 구매 <span class="sheet-var">use_count</span> 분포(1회차 64.0% · 2회차 21.3% · 3회차 7.7%)를 그대로 적용함 &mdash; <strong>85%가 2회 안에 멈춤</strong>. 이 분포로 가중평균을 내면 <strong>16,616</strong>으로, 골든티켓·와일드카드가 만든 <strong>인게임 프리미엄 2.29배</strong>에 거의 정확히 맞음(2.22배).<br>
+    <strong>회차별 비율은 추정이 아니라 실측임.</strong> 추가 덱의 골드 구매 <span class="sheet-var">use_count</span> 분포(1회차 64.0% · 2회차 21.3% · 3회차 7.7%)를 그대로 적용함 &mdash; <strong>85%가 2회 안에 멈춤</strong>. 이 분포로 가중평균을 내면 <strong>16,640</strong>으로, 골든티켓·와일드카드가 만든 <strong>인게임 프리미엄 2.29배</strong>에 거의 정확히 맞음(2.22배).<br>
     즉 <strong>첫 사용은 프리레벨의 1.6배로 낮추되, 전체 평균으로는 기존 공식을 지키는</strong> 곡선임.
   </div>
-  <table>
-    <thead><tr><th>대안</th><th>1회차</th><th>상승</th><th>상한</th><th>가중평균</th><th>프리미엄</th></tr></thead>
-    <tbody>
-    <tr><td>A &mdash; 완만</td><td>10000</td><td>+8000</td><td>34000</td><td>14,616</td><td>1.95배</td></tr>
-    <tr style="background:var(--hero-bg)"><td><strong>B &mdash; 확정</strong></td><td><strong>12000</strong></td><td><strong>+8000</strong></td><td><strong>36000</strong></td><td><strong>16,616</strong></td><td><strong>2.22배</strong></td></tr>
-    <tr><td>C &mdash; 급격</td><td>9000</td><td>+11000</td><td>42000</td><td>15,347</td><td>2.05배</td></tr>
-    </tbody>
-  </table>
-  <p>A는 첫 사용이 <strong>입장료 1회분과 정확히 같아</strong>(2,100골드) 눈금이 직관적이나 평균 프리미엄이 기준에 못 미침. C는 첫 사용이 가장 싸지만 2회차에서 곧바로 두 배 이상 뛰어 체감이 급함. <strong>B가 첫 사용 접근성과 기존 가격 공식을 동시에 만족함.</strong></p>
+  <div class="callout callout-purple">
+    <strong>산식 검증.</strong> 같은 식으로 추가 덱을 계산하면 Lv 25~49에서 1,580 &rarr; 1,970 &rarr; <strong>2,360</strong> &rarr; 2,760골드가 나옴. 실측 골드 구매 단가 <strong>p50이 정확히 2,360골드</strong>이고, 관측 최고가 <strong>11,880골드</strong>는 최고 티어 상한(5,400 &times; 2.2)과 일치함 &mdash; 산식 해석이 맞음을 확인함.
+  </div>
 
   <h3>검산 &mdash; Lv 25~49 (입장료 2,100) 기준</h3>
   <table>
@@ -335,32 +336,42 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="section-meta"><div class="section-title">개발 스펙</div></div>
   </div>
 
-  <h3>시트 &mdash; item_list 신규 행</h3>
+  <div class="callout callout-yellow">
+    <strong>⚠ 확정 필요 — 문서 내 서술 상충 (2026-07-31 서버 핸드오프 감사)</strong>
+    <ul style="margin:8px 0 0">
+      <li><strong>2170 <span class="sheet-var">type</span> 규격 이중</strong> — 실측 표의 숫자 type(2180 <span class="sheet-var">1</span> · 2190 <span class="sheet-var">4</span>) vs 로그 필드 표의 문자열 type(<span class="sheet-var">ticket · item · rv · free · gold</span>) / 작업 8 "규격 통일"의 최종 규격이 미확정 — 숫자/문자열 중 확정 필요, 확정 전 개발 임의 결정 금지.</li>
+      <li><strong>신규 유저 무료 아이템 지급 키</strong> — 작업 12 "40010과 40010 중 무엇을 지급하는지 정리" / <span class="sheet-var">nru_ingame_free_item_count = 3</span>이 프리레벨용 40010인지 인게임용 40010인지 미확정.</li>
+    </ul>
+  </div>
+
+  <h3>시트 &mdash; item_list 40010 행에 인게임 필드 3개 추가</h3>
+  <p><strong>신규 아이템 행을 만들지 않음.</strong> 인벤토리를 공유해야 하므로 기존 <span class="sheet-var">booster_fireworks(40010)</span> 행에 지면별 가격 필드만 얹음.</p>
   <table>
-    <thead><tr><th>필드</th><th>값</th></tr></thead>
+    <thead><tr><th>필드</th><th>현재</th><th>추가</th><th>쓰임</th></tr></thead>
     <tbody>
-    <tr><td>key_number</td><td><strong>40015</strong> <span style="color:var(--text2)">(40010~40014 다음 빈 번호)</span></td></tr>
-    <tr><td>type</td><td>booster</td></tr>
-    <tr><td>usage_type</td><td>inventory</td></tr>
-    <tr><td>name_key</td><td><span class="sheet-var">ingame_fireworks</span></td></tr>
-    <tr><td>entry_cost_ratio</td><td><strong>12000</strong></td></tr>
-    <tr><td>interval_type</td><td>fixed</td></tr>
-    <tr><td>use_count_increase_rate</td><td><strong>8000</strong></td></tr>
-    <tr><td>use_count_max_ratio</td><td><strong>36000</strong></td></tr>
-    <tr><td>target_name_key</td><td><span class="sheet-var">booster_fireworks</span> &mdash; 효과는 기존 것을 그대로 씀</td></tr>
+    <tr><td><span class="sheet-var">entry_cost_ratio</span></td><td><strong>7500</strong></td><td>변경 없음</td><td>프리레벨 부스터 가격 (고정)</td></tr>
+    <tr><td><span class="sheet-var">use_count_increase_rate</span></td><td>0</td><td>변경 없음</td><td>프리레벨은 상승 없음</td></tr>
+    <tr><td><span class="sheet-var">ingame_entry_cost_ratio</span></td><td>&mdash;</td><td><strong>12000</strong></td><td>인게임 아이템 기준가</td></tr>
+    <tr><td><span class="sheet-var">ingame_use_count_increase_rate</span></td><td>&mdash;</td><td><strong>6700</strong></td><td>인게임 사용당 +67%</td></tr>
+    <tr><td><span class="sheet-var">ingame_use_count_max_ratio</span></td><td>&mdash;</td><td><strong>20000</strong></td><td>인게임 상승 상한 (기준가의 3배)</td></tr>
     </tbody>
   </table>
+  <div class="callout callout-blue">
+    <strong>이 방식이면 따라오는 문제가 전부 사라짐.</strong> 보상 15곳의 지급 키를 재정의할 필요 없고, 해금(<span class="sheet-var">50014</span> 레벨 8 클리어)도 그대로 쓰며, 신규 유저 무료 아이템(<span class="sheet-var">nru_ingame_free_item_count</span>)도 손댈 것이 없음. 유저에게 파이어웍스는 <strong>여전히 한 종류</strong>이고, 보상으로 받은 것은 지면 구분 없이 무료로 씀.
+  </div>
   <div class="callout callout-yellow">
-    <strong>기존 40010을 고쳐 쓰면 안 됨.</strong> 프리레벨과 인게임이 <strong>서로 다른 가격</strong>을 가져야 하는데 현재 한 행을 공유하고 있음. 행을 나누지 않으면 한쪽을 올릴 때 다른 쪽이 같이 올라감.
+    <strong>다른 아이템으로 확장 가능한 구조여야 함.</strong> 와일드카드·추가 덱도 지면별 단가가 다를 여지가 있으므로, <span class="sheet-var">ingame_*</span> 필드는 파이어웍스 전용이 아니라 <strong>item_list 공통 컬럼</strong>으로 만들고 비어 있으면 기존 값을 쓰도록 함(하위 호환).
   </div>
 
   <h3>클라</h3>
   <table>
     <thead><tr><th>파일</th><th>수정</th></tr></thead>
     <tbody>
-    <tr><td><span class="sheet-var">IngameItemButtonView.getKeyNumber()</span></td><td><span class="sheet-var">case "fireworks"</span>의 반환을 <span class="sheet-var">booster_fireworks(40010)</span> &rarr; <strong>ingame_fireworks(40015)</strong>로 변경. 프리레벨 경로(<span class="sheet-var">PopupGameEntry</span>)는 40010 그대로 유지</td></tr>
-    <tr><td><span class="sheet-var">IngameItemButtonView.onClickInactivePaid()</span></td><td><span class="sheet-var">targetItemKeyNumber</span> 타입을 <span class="sheet-var">40012 | 40013 | 40014</span> &rarr; <strong>40012 | 40013 | 40014 | 40015</strong>로 확장. 현재 <span class="sheet-var">as</span> 캐스팅이라 컴파일은 통과하나 서버가 받지 못함</td></tr>
-    <tr><td><span class="sheet-var">getContentIdForUnlock()</span></td><td>인게임 파이어웍스의 해금 content_id 지정. 프리레벨 부스터와 <strong>별도 해금</strong>으로 둘지 공유할지 확정 필요 &mdash; 기본은 공유</td></tr>
+    <tr><td><span class="sheet-var">IngameItemButtonView.getCurrentPrice()</span></td><td><strong>인게임 필드 우선 참조</strong> &mdash; <span class="sheet-var">ingame_entry_cost_ratio</span>가 있으면 그 값을, 없으면 기존 <span class="sheet-var">entry_cost_ratio</span>를 씀. 상승률·상한도 동일하게 <span class="sheet-var">ingame_*</span> 우선</td></tr>
+    <tr><td><span class="sheet-var">IngameItemButtonView.onClickInactivePaid()</span></td><td><span class="sheet-var">targetItemKeyNumber</span> 타입을 <span class="sheet-var">40012 | 40013 | 40014</span> &rarr; <strong><span class="sheet-var">40010</span> 포함</strong>으로 확장. <strong>이것이 구매 0건의 직접 원인</strong>임</td></tr>
+    <tr><td><span class="sheet-var">getKeyNumber()</span></td><td><strong>변경 없음</strong> &mdash; 40010 유지가 인벤토리 공유의 핵심</td></tr>
+    <tr><td><span class="sheet-var">PopupGameEntry</span></td><td><strong>변경 없음</strong> &mdash; 프리레벨은 <span class="sheet-var">entry_cost_ratio</span> 7500을 그대로 읽음</td></tr>
+    <tr><td>2170 로그</td><td>아이템 버튼 경로에도 <span class="sheet-var">price</span>·<span class="sheet-var">use_count</span>가 실리도록 규격 통일 (현재 카드 경로는 <span class="sheet-var">type="item"</span>만 있고 price 없음)</td></tr>
     </tbody>
   </table>
 
@@ -368,9 +379,10 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>항목</th><th>내용</th></tr></thead>
     <tbody>
-    <tr><td><span class="sheet-var">buyItem</span></td><td>40015 수신 허용. 가격 검증은 기존 <span class="sheet-var">entry_cost_ratio &times; entryCost &times; betting</span> 산식 재사용</td></tr>
-    <tr><td>사용 횟수</td><td>판 내 사용 횟수에 따라 <span class="sheet-var">use_count_increase_rate</span> 적용 &mdash; 추가덱·실행취소와 동일한 기존 로직</td></tr>
-    <tr><td>효과 처리</td><td>신규 없음. <span class="sheet-var">target_name_key</span>로 기존 GrandFireworksCard 효과에 연결</td></tr>
+    <tr><td><span class="sheet-var">buyItem</span></td><td><strong>40010 수신 허용</strong> + 가격 검증. 검증 시 <strong>지면을 구분해야 함</strong> &mdash; 같은 아이템이 프리레벨 7500 · 인게임 12000(+상승)으로 값이 다르므로 요청에 지면 정보가 필요함</td></tr>
+    <tr><td>사용 횟수</td><td>판 내 <span class="sheet-var">useCount</span>에 <span class="sheet-var">ingame_use_count_increase_rate</span> 적용. 추가덱·실행취소와 동일 경로 재사용</td></tr>
+    <tr><td>인벤토리</td><td><strong>변경 없음</strong> &mdash; 40010 단일 스택. 보유분이 있으면 지면 무관하게 무료 소진, 0일 때만 골드 구매</td></tr>
+    <tr><td>보상 지급</td><td><strong>변경 없음</strong> &mdash; 기존 15개 지급처가 주는 40010이 양쪽 지면에서 그대로 쓰임</td></tr>
     </tbody>
   </table>
 </section>
@@ -397,7 +409,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>페이로드</th><th>값</th><th>쓰임</th></tr></thead>
     <tbody>
     <tr><td><span class="sheet-var">type</span></td><td><span class="sheet-var">ticket · item · rv · free · gold</span></td><td><strong>gold면 골드 구매</strong>, item이면 보유분 소진 &mdash; 구매/소진 구분이 이미 됨</td></tr>
-    <tr><td><span class="sheet-var">price</span></td><td>결제 골드</td><td>지면별 단가 검증에 그대로 씀. <strong>40015 적용 후 인게임만 값이 올라야 함</strong></td></tr>
+    <tr><td><span class="sheet-var">price</span></td><td>결제 골드</td><td>지면별 단가 검증에 그대로 씀. <strong>40010 적용 후 인게임만 값이 올라야 함</strong></td></tr>
     <tr><td><span class="sheet-var">use_count</span></td><td>판 내 사용 횟수</td><td>상승 가격(2500)이 실제로 반영되는지 확인</td></tr>
     <tr><td><span class="sheet-var">seed</span> · <span class="sheet-var">difficulty_tier</span></td><td>판 식별 · 티어</td><td>2100/2300과 조인</td></tr>
     </tbody>
@@ -424,23 +436,20 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>#</th><th>담당</th><th>작업</th><th>선후</th></tr></thead>
     <tbody>
-    <tr><td>1</td><td>기획</td><td><span class="sheet-var">item_list</span>에 <strong>40015</strong> 행 등록 &mdash; <span class="sheet-var">ingame_fireworks</span> · ratio <strong>12000</strong> · 상승 <strong>8000</strong> · 상한 <strong>36000</strong> · <span class="sheet-var">target_name_key = booster_fireworks</span></td><td>최초</td></tr>
-    <tr><td>2</td><td>기획</td><td><strong>해금 정책 확정</strong> &mdash; 기존 <span class="sheet-var">booster_fireworks</span>(50014 · level_clear 8) 공유가 기본. 별도로 둘 경우 unlock 행 신설</td><td>1과 동시</td></tr>
-    <tr><td>3</td><td>기획</td><td><span class="sheet-var">string_code</span> 아이템명·설명 등록 (10개 언어)</td><td>1과 동시</td></tr>
-    <tr><td>4</td><td>기획</td><td>로그 정의서에 <strong>40015 키</strong>와 <strong>2170 type/price 규격</strong> 반영 (카드 경로 · 버튼 경로 구분 명시)</td><td>1과 동시</td></tr>
-    <tr><td>5</td><td>클라</td><td><span class="sheet-var">IngameItemButtonView.getKeyNumber()</span> &mdash; <span class="sheet-var">case "fireworks"</span> 반환을 <strong>40010 &rarr; 40015</strong>. 프리레벨(<span class="sheet-var">PopupGameEntry</span>)은 40010 유지</td><td>1 이후</td></tr>
-    <tr><td>6</td><td>클라</td><td><span class="sheet-var">onClickInactivePaid()</span>의 <span class="sheet-var">targetItemKeyNumber</span> 타입에 <strong>40015 추가</strong></td><td>5와 동시</td></tr>
-    <tr><td>7</td><td>클라</td><td><span class="sheet-var">getContentIdForUnlock()</span>이 파이어웍스 해금을 올바로 참조하는지 확인 (2번 결정 반영)</td><td>2 이후</td></tr>
-    <tr><td>8</td><td>클라</td><td><strong>2170 페이로드 규격 통일</strong> &mdash; 카드 클릭 경로(StageView)는 <span class="sheet-var">type="item"</span>에 price가 없고, 아이템 버튼 경로는 숫자 type과 price를 실음. 버튼 경로가 살아나면 한 이벤트에 두 규격이 섞이므로 <strong>가격 적용 전에 통일</strong>해야 함. 2195 골든티켓(<span class="sheet-var">"paid"</span>)도 같이 정리</td><td><strong>가격 적용 전</strong></td></tr>
-    <tr><td>9</td><td>클라</td><td>반복 사용 시 상승 가격이 버튼 UI에 반영되는지 확인</td><td>5 이후</td></tr>
-    <tr><td>10</td><td>서버</td><td><span class="sheet-var">buyItem</span> <strong>40015 수신 허용</strong> + 가격 검증 (<span class="sheet-var">entryCost &times; betting &times; ratio/10000</span>)</td><td>1 이후</td></tr>
-    <tr><td>11</td><td>서버</td><td>판 내 사용 횟수별 가격 상승 로직에 40015 연결 (추가덱·실행취소와 동일 경로)</td><td>10과 동시</td></tr>
-    <tr><td>12</td><td>서버</td><td>신규 유저 무료 아이템(<span class="sheet-var">nru_ingame_free_item_count = 3</span>)이 40010과 40015 중 무엇을 지급하는지 정리</td><td>10과 동시</td></tr>
-    <tr><td>13</td><td>QA</td><td>프리레벨 <strong>7500 고정</strong> · 인게임 <strong>12000 &rarr; 20000 &rarr; 28000 &rarr; 36000</strong>이 각각 맞게 청구되는지</td><td>전체 이후</td></tr>
-    <tr><td>14</td><td>QA</td><td>배수 x2 · x4에서 가격이 곱해지는지</td><td>전체 이후</td></tr>
-    <tr><td>15</td><td>QA</td><td>판 내 반복 사용 시 <strong>8000씩</strong> 오르고 <strong>36000에서 멈추는지</strong></td><td>전체 이후</td></tr>
-    <tr><td>16</td><td>QA</td><td>골드 부족 시 충전 팝업 &rarr; 복귀 후 구매 이어지는지</td><td>전체 이후</td></tr>
-    <tr><td>17</td><td>QA</td><td>롤백 확인 &mdash; 40015 <span class="sheet-var">in_use</span> OFF 시 인게임 버튼만 비활성, 프리레벨 무영향</td><td>전체 이후</td></tr>
+    <tr><td>1</td><td>기획</td><td><span class="sheet-var">item_list</span>에 <strong>인게임 공통 컬럼 3종 신설</strong>(<span class="sheet-var">ingame_entry_cost_ratio</span> · <span class="sheet-var">ingame_use_count_increase_rate</span> · <span class="sheet-var">ingame_use_count_max_ratio</span>), 비면 기존 값 사용</td><td>최초</td></tr>
+    <tr><td>2</td><td>기획</td><td>40010 행에 <strong>12000 · 6700 · 20000</strong> 입력</td><td>1 이후</td></tr>
+    <tr><td>3</td><td>기획</td><td>로그 정의서에 <strong>2170 지면별 페이로드 규격</strong> 반영 (카드 경로 · 버튼 경로)</td><td>1과 동시</td></tr>
+    <tr><td>4</td><td>클라</td><td><span class="sheet-var">getCurrentPrice()</span>가 <span class="sheet-var">ingame_*</span> 필드를 우선 참조하도록 수정</td><td>1 이후</td></tr>
+    <tr><td>5</td><td>클라</td><td><span class="sheet-var">onClickInactivePaid()</span>의 <span class="sheet-var">targetItemKeyNumber</span>에 <strong>40010 추가</strong> &mdash; 구매 0건의 직접 원인</td><td>4와 동시</td></tr>
+    <tr><td>6</td><td>클라</td><td>2170 로그 규격 통일 &mdash; 버튼 경로에 <span class="sheet-var">price</span>·<span class="sheet-var">use_count</span> 포함</td><td><strong>가격 적용 전</strong></td></tr>
+    <tr><td>7</td><td>클라</td><td>반복 사용 시 상승 가격이 버튼 UI에 반영되는지 확인</td><td>4 이후</td></tr>
+    <tr><td>8</td><td>서버</td><td><span class="sheet-var">buyItem</span> <strong>40010 수신 허용</strong> + <strong>지면 구분 가격 검증</strong></td><td>1 이후</td></tr>
+    <tr><td>9</td><td>서버</td><td>인게임 사용 횟수별 상승 로직에 <span class="sheet-var">ingame_*</span> 연결</td><td>8과 동시</td></tr>
+    <tr><td>10</td><td>QA</td><td>프리레벨 <strong>7500 고정</strong> · 인게임 <strong>12000 &rarr; 20040 &rarr; 28080 &rarr; 36000</strong> 청구 확인</td><td>전체 이후</td></tr>
+    <tr><td>11</td><td>QA</td><td>배수 x2 · x4에서 가격이 곱해지는지</td><td>전체 이후</td></tr>
+    <tr><td>12</td><td>QA</td><td><strong>인벤토리 공유 확인</strong> &mdash; 보상으로 받은 파이어웍스가 프리레벨·인게임 양쪽에서 무료로 소진되는지</td><td>전체 이후</td></tr>
+    <tr><td>13</td><td>QA</td><td>보유 0일 때만 골드 구매가 뜨는지, 골드 부족 시 충전 팝업 &rarr; 복귀 흐름</td><td>전체 이후</td></tr>
+    <tr><td>14</td><td>QA</td><td>롤백 확인 &mdash; <span class="sheet-var">ingame_*</span> 값을 비우면 인게임도 7500으로 돌아가는지</td><td>전체 이후</td></tr>
     </tbody>
   </table>
   <div class="callout callout-yellow">
@@ -448,7 +457,7 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>롤백</h3>
-  <p>시트에서 <span class="sheet-var">40015</span> 행의 <span class="sheet-var">in_use</span>를 내리면 인게임 버튼이 비활성화되고 프리레벨 경로는 영향받지 않음. 클라 롤백 없이 시트만으로 되돌릴 수 있음.</p>
+  <p><span class="sheet-var">ingame_*</span> 필드 3개를 비우면 인게임 가격이 기존 <span class="sheet-var">entry_cost_ratio</span> 7500으로 돌아감. 아이템 행을 나누지 않았으므로 인벤토리·보상·해금은 애초에 영향받지 않음. <strong>클라 롤백 없이 시트만으로 되돌릴 수 있음.</strong></p>
 </section>
 </section>
 
