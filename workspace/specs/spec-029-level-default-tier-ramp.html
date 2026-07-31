@@ -163,9 +163,6 @@ ul li strong,ol li strong { color:var(--text); }
   <a href="#s1">① 기획 의도 &amp; 확정 설계</a>
   <a href="#s2">② 개발 스펙</a>
   <a href="#s3">③ 로깅 · 검증 · 롤백</a>
-  <div class="nav-title" style="margin-top:18px">핸드오프</div>
-  <a href="handoff-level-tier-ramp-dev.md">📄 개발 체크리스트</a>
-  <a href="handoff-level-tier-ramp-qa.md">🧪 QA 테스트 케이스</a>
 </nav>
 
 <div class="hero">
@@ -209,9 +206,7 @@ ul li strong,ol li strong { color:var(--text); }
 </div>
 
 <div class="container">
-<div class="callout callout-purple" style="margin-top:26px">
-  <p><strong>핸드오프 문서</strong> — 개발 액션만 추출한 체크리스트 <a href="handoff-level-tier-ramp-dev.md"><code>handoff-level-tier-ramp-dev.md</code></a> · QA 테스트 케이스 <a href="handoff-level-tier-ramp-qa.md"><code>handoff-level-tier-ramp-qa.md</code></a></p>
-</div>
+
 
 <!-- ════════════════════════════════════
   SECTION 1 — 기획 의도 & 확정 설계
@@ -504,10 +499,11 @@ ul li strong,ol li strong { color:var(--text); }
   <h3>진행 단계</h3>
   <div class="flow-step"><div class="flow-dot">✓</div><div class="flow-body"><strong>시트 반영 (2026-07-31 완료)</strong><p><span class="sheet-var">level_min</span>·<span class="sheet-var">level_max</span> 컬럼 추가, 기존 9행에 <span class="sheet-var">1 / 99999</span> 입력, 신규 7행(30010~30016) 추가. <strong><span class="sheet-var">in_use = TRUE</span></strong>로 활성화해 DEV에서 클라이언트가 바로 참조할 수 있게 함</p></div></div>
   <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>로깅 추가 배포</strong><p><span class="sheet-var">2100</span>·<span class="sheet-var">2300</span>에 <span class="sheet-var">user_level</span>을 실음. 이게 없으면 밴드별 효과를 분리해 측정할 수 없음</p></div></div>
-  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>레벨 필터 로직 구현</strong><p>시트에 이미 들어간 컬럼·행을 기준으로 구현함. <span class="sheet-var">hard_cooldown</span>을 승패 무관으로 바꾸는 변경도 이 배포에 포함(확정 사항 6번). DEV에서 밴드별 티어 배정이 ① 섹션 표대로 나오는지 확인함</p></div></div>
-  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>레벨 분포 실측 (1주)</strong><p>밴드별 유저 수·판수 분포를 확인함. 유저가 거의 없는 밴드는 병합하고 몰려 있는 밴드는 쪼갬</p></div></div>
-  <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>상위 밴드부터 단계 개방</strong><p>프로덕션 반영 후 최상위 밴드(800+)부터 관측함. 이상이 있으면 해당 밴드 행의 <span class="sheet-var">in_use</span>를 FALSE로 내려 밴드 단위로 되돌림</p></div></div>
-  <div class="flow-step"><div class="flow-dot">6</div><div class="flow-body"><strong>밴드별 확정 또는 되돌림</strong><p>아래 판정 기준으로 밴드 단위로 결정함</p></div></div>
+  <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>레벨 필터 로직 구현</strong><p>시트에 이미 들어간 컬럼·행을 기준으로 구현함. <span class="sheet-var">hard_cooldown</span>을 승패 무관으로 바꾸는 변경도 이 배포에 포함(확정 사항 6번). 개발 액션 목록은 <span class="sheet-var">handoff-level-tier-ramp-dev.md</span></p></div></div>
+  <div class="flow-step"><div class="flow-dot">4</div><div class="flow-body"><strong>QA 검증</strong><p>레벨 24 이하 무변경 확인, 구간 경계 전환, Hard 이상 연속 배정 0건, 밴드별 배분 순서 대조. 케이스 목록은 <span class="sheet-var">handoff-level-tier-ramp-qa.md</span></p></div></div>
+  <div class="flow-step"><div class="flow-dot">5</div><div class="flow-body"><strong>레벨 분포 실측 (1주)</strong><p>밴드별 유저 수·판수 분포를 확인함. 유저가 거의 없는 밴드는 병합하고 몰려 있는 밴드는 쪼갬</p></div></div>
+  <div class="flow-step"><div class="flow-dot">6</div><div class="flow-body"><strong>상위 밴드부터 단계 개방</strong><p>프로덕션 반영 후 최상위 밴드(800+)부터 관측함. 이상이 있으면 해당 밴드 행의 <span class="sheet-var">in_use</span>를 FALSE로 내려 밴드 단위로 되돌림</p></div></div>
+  <div class="flow-step"><div class="flow-dot">7</div><div class="flow-body"><strong>밴드별 확정 또는 되돌림</strong><p>아래 판정 기준으로 밴드 단위로 결정함</p></div></div>
   <div class="callout callout-blue">
     <p><strong>시트를 먼저 넣은 이유.</strong> 클라이언트 구현이 시트 구조를 보고 이루어지므로 데이터가 먼저 있어야 함. DEV 서버에 패치된 상태로 클라이언트가 참조해 작업함.</p><p style="margin-top:10px"><strong>프로덕션 반영 조건.</strong> 레벨 필터를 지원하지 않는 클라이언트가 이 데이터를 받으면 같은 <span class="sheet-var">condition_type</span> 행이 여러 개로 보여 어느 행이 적용될지 보장되지 않음. <strong>레벨 필터가 구현된 빌드가 나가기 전에는 프로덕션에 퍼블리시하지 않아야 함.</strong></p>
   </div>
