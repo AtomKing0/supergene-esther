@@ -148,7 +148,7 @@ const SPECS = [
   {
     id: 'spec-026', file: 'spec-026-album-milestone-reward-flow.html',
     title: '[UX-플로우] 앨범 마일스톤 보상 플로우 수정',
-    tags: ['ux'], priority: 'mid', status: 'open', date: '2026. 6. 4.', dueDate: null, relatedTo: ['spec-015', 'spec-016'],
+    tags: ['ux'], priority: 'mid', status: 'done', date: '2026. 6. 4.', dueDate: null, relatedTo: ['spec-015', 'spec-016'],
   },
   {
     id: 'spec-027', file: 'spec-027-shadow-chase.html',

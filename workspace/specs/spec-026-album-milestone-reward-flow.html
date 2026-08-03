@@ -112,6 +112,8 @@ tbody td:first-child { color:var(--text);font-weight:600; }
 .callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
 .callout-purple { background:var(--purple-bg);border-left:3px solid var(--purple); }
 .callout-red    { background:var(--red-bg);border-left:3px solid var(--red); }
+.callout-green  { background:var(--green-bg);border-left:3px solid var(--green); }
+.section-num-4 { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
 .callout strong { color:var(--text); }
 .callout p { margin:0;color:var(--text2); }
 
@@ -153,6 +155,7 @@ ul li strong,ol li strong { color:var(--text); }
   <a href="#s2">② 아트 가이드</a>
   <a href="#s3">③ 개발 스펙</a>
   <a href="#s4">④ 개발 핸드오프 · QA</a>
+  <a href="#s5">⑤ 결과 검증</a>
 </nav>
 
 <div class="hero">
@@ -161,7 +164,7 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="spec-id-badge">SPEC-026</span>
       <span class="badge badge-purple" id="hero-tag"      style="cursor:pointer" title="태그 변경">🎨 UX/UI</span>
       <span class="badge badge-yellow" id="hero-priority" style="cursor:pointer" title="우선순위 변경">🟡 보통 우선순위</span>
-      <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">🔵 검토중</span>
+      <span class="badge badge-green"  id="hero-status"   style="cursor:pointer" title="상태 변경">✅ 완료</span>
       <span class="badge badge-green">2026. 6. 4.</span>
     </div>
     <h1>앨범 마일스톤 보상 플로우 수정<br><span>레드닷을 퍼즐 리스트까지 전파</span></h1>
@@ -388,6 +391,58 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td><strong>기존 연출 품질</strong></td><td>연출 재생 관찰</td><td>파티클·카운트업·사운드가 기존과 동일</td></tr>
     <tr><td><strong>입력 차단</strong></td><td>연출 중 터치</td><td>기존 정책대로 입력 차단 유지</td></tr>
   </tbody></table>
+
+</section>
+
+<!-- ════════════════════════════════════
+  SECTION 5 — 결과 검증
+════════════════════════════════════ -->
+<section id="s5">
+  <div class="section-header">
+    <div class="section-num section-num-4">⑤</div>
+    <div class="section-meta">
+      <div class="section-title">결과 검증</div>
+      <span class="section-audience aud-all">전체 공유</span>
+    </div>
+  </div>
+
+  <p>페이스북 인스턴트 게임 <strong>#403 빌드로 2026-07-30(목) 16:04 KST 라이브 반영</strong>. 전 = #401, 후 = #403·#409.</p>
+
+  <div class="callout callout-green">
+    <p><strong>결론 — 기대했던 효과는 미미하나 우려했던 부작용이 없으므로 현 상태를 유지한다.</strong><br>
+    측정 가능한 전 항목이 통계적으로 무유의하다. "All Puzzles에 들어가지 않아 보상을 못 받는" 리크도, 콜렉션 인지·재방문 강화도 둘 다 관측되지 않았다.</p>
+  </div>
+
+  <h4>적용 확인 — 지급 경로 교체</h4>
+  <table><thead><tr><th>빌드</th><th>마일스톤 보상 지급 경로</th></tr></thead><tbody>
+    <tr><td>#401 이하</td><td><code>collection/unlock-puzzle-piece</code>에 자동 번들 지급 · 별도 claim 호출 0건</td></tr>
+    <tr><td><strong>#403 이상</strong></td><td><strong><code>collection/claim-puzzle-milestones</code> 신설</strong> · 명시적 수령 (#402 이하 0건으로 버전 게이팅 확인)</td></tr>
+  </tbody></table>
+
+  <h4>지표 변화 — 유저-일 기준 (7/28~30 → 7/31~8/2)</h4>
+  <table><thead><tr><th>지표</th><th>전 → 후</th><th>판정</th></tr></thead><tbody>
+    <tr><td><strong>콜렉션 진입자 중 보상 수령</strong></td><td>18.9% → 17.6%</td><td>p=0.490 무유의</td></tr>
+    <tr><td style="padding-left:28px">7/30 동일일자 빌드 스플릿 (#401 vs #403)</td><td>19.1% → 17.7%</td><td>p=0.755 무유의</td></tr>
+    <tr><td>진입자 중 탭 전환</td><td>33.8% → 30.7%</td><td>p=0.128 무유의</td></tr>
+    <tr><td>진입자 중 덱 수령</td><td>17.8% → 16.2%</td><td>p=0.362 무유의</td></tr>
+    <tr><td>진입자당 진입 횟수</td><td>4.07 → 3.92</td><td>동일</td></tr>
+    <tr><td>콜렉션 진입률</td><td>15.0% → 19.5%</td><td>유저믹스 효과</td></tr>
+    <tr><td style="padding-left:28px">대조 · 도시꾸미기 팝업</td><td>14.8% → 19.1%</td><td>—</td></tr>
+    <tr><td style="padding-left:28px">대조 · 도시목록 팝업</td><td>4.4% → 6.5%</td><td>—</td></tr>
+  </tbody></table>
+  <p>2비율 z검정. 콜렉션 진입률 상승은 이 패치의 효과가 아니다 — 무관한 대조 팝업 2종이 같은 폭으로 올랐고, 같은 기간 일간 접속자가 2,600명에서 1,300명으로 줄면서 잔존 유저 농도가 오른 결과다. 유입 믹스·요일·이벤트가 모두 동일한 <strong>7/30 동일일자 빌드 스플릿이 가장 신뢰도 높은 비교</strong>이며, 여기서도 차이가 없다. 연출 이중 재생 회귀 흔적도 검출되지 않았다.</p>
+
+  <div class="callout callout-yellow">
+    <p><strong>주의 — 직전 #401의 수령률 하락은 이 스펙과 무관하다.</strong><br>
+    7/28 동일일자 스플릿에서 #386 33.6% → #401 19.5%(p=0.005)로 계단이 있으나, 이는 #401의 "광고 시청 없이 보상이 획득되는 현상" 수정에 따른 과지급 정상화다. 베이스라인이 이동한 것이며 #403 비교의 기준선으로는 문제가 없다.</p>
+  </div>
+
+  <div class="callout callout-red">
+    <p><strong>측정 한계 — 이 스펙의 핵심 퍼널은 현재 계측되지 않는다.</strong><br>
+    콜렉션 영역에서 수집되는 로그는 콜렉션 팝업(8120) · 탭 전환(8121, cards↔decks) · 덱 선택/수령(8127·8128)뿐이다. <strong>앨범 화면 진입 · All Puzzles 레드닷 노출 · 퍼즐 리스트 진입 · 연출 재생 4종이 모두 미계측(8122~8126 대역 공백)</strong>이라 위 검증은 주변 지표로 갈음한 것이다. 콜렉션 플로우를 다시 개정할 경우 해당 로그 4종 추가가 선결 과제다.</p>
+  </div>
+
+  <p style="color:var(--text2);font-size:0.82rem">데이터 · BigQuery <code>game-log-359704.raw.solitaire_city_journey</code> · 2026-07-22 ~ 08-02 · 보상 수령 판정 = 통화 트랜잭션 로그(9400~9403) 중 <code>latency.api</code> ∈ (<code>collection/unlock-puzzle-piece</code>, <code>collection/claim-puzzle-milestones</code>) · type=earn</p>
 
 </section>
 
