@@ -162,8 +162,9 @@ const SPECS = [
   },
   {
     id: 'spec-029', file: 'spec-029-level-default-tier-ramp.html',
+    monitorUrl: '../../32_sol_diff_watch.html', monitorSince: '2026-08-01',
     title: '[밸런스-난이도] 레벨 기반 기본 난이도 승급',
-    tags: ['balance'], priority: 'high', status: 'open', date: '2026. 7. 28.', dueDate: null, relatedTo: ['spec-012'],
+    tags: ['balance'], priority: 'high', status: 'monitor', date: '2026. 7. 28.', dueDate: null, relatedTo: ['spec-012'],
   },
   {
     id: 'spec-030', file: 'spec-030-context-switch-expansion.html',
@@ -172,8 +173,9 @@ const SPECS = [
   },
   {
     id: 'spec-031', file: 'spec-031-sh-rescue-activation.html',
+    monitorUrl: '../../32_sol_diff_watch.html', monitorSince: '2026-08-01',
     title: '[밸런스-난이도] Super Hard 구제장치 활성화',
-    tags: ['balance'], priority: 'mid', status: 'open', date: '2026. 7. 29.', dueDate: null, relatedTo: ['spec-029'],
+    tags: ['balance'], priority: 'mid', status: 'monitor', date: '2026. 7. 29.', dueDate: null, relatedTo: ['spec-029'],
   },
   {
     id: 'spec-032', file: 'spec-032-daily-first-play-free.html',
@@ -218,6 +220,7 @@ const STATUS_INFO = {
   planned: { label: '🟣 진행 예정', cls: 'status-planned', hcls: 'badge-purple' },
   open:    { label: '🔵 검토중',    cls: 'status-open',    hcls: 'badge-blue'   },
   wip:     { label: '🟡 진행중',    cls: 'status-wip',     hcls: 'badge-yellow' },
+  monitor: { label: '📈 모니터링중', cls: 'status-monitor', hcls: 'badge-green'  },
   hold:    { label: '⏸ 보류',      cls: 'status-hold',    hcls: 'badge-blue'   },
   done:    { label: '✅ 완료',      cls: 'status-done',    hcls: 'badge-green'  },
   archive: { label: '🗄️ 아카이브', cls: 'status-hold',    hcls: 'badge-blue'   },
