@@ -197,6 +197,28 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .status-wip  { color:var(--yellow);   border-color:var(--yellow-border); background:var(--yellow-bg); }
 .status-done { color:var(--green);    border-color:var(--green-border);  background:var(--green-bg);  }
 .status-hold    { color:var(--text-dim); border-color:var(--border);          background:var(--surface2);    }
+/* ── 관측 그룹 바 ── */
+.mgroup { border:1.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:10px;background:var(--surface); }
+.mgroup.ok   { border-color:var(--green); }
+.mgroup.warn { border-color:#D9A441; }
+.mgroup.crit { border-color:var(--red,#EF4444); }
+.mbar { display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 14px;background:var(--surface2);border-bottom:1px solid var(--border); }
+.mbar .mdot { width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;animation:mpulse 1.8s ease-in-out infinite; }
+.mgroup.warn .mbar .mdot { background:#D9A441; }
+.mgroup.crit .mbar .mdot { background:var(--red,#EF4444); }
+.mbar .mname { font-size:var(--text-sm);font-weight:800;color:var(--text); }
+.mbar .mmeta { font-size:var(--text-xs);color:var(--text-dim);font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+.mbar .mstate { font-size:var(--text-xs);font-weight:800;padding:2px 9px;border-radius:var(--radius-full);
+  color:var(--green);background:var(--green-bg,rgba(52,211,153,.12));border:1px solid var(--green); }
+.mgroup.warn .mbar .mstate { color:#8A6414;background:rgba(217,164,65,.14);border-color:#D9A441; }
+.mgroup.crit .mbar .mstate { color:var(--red,#EF4444);background:rgba(239,68,68,.12);border-color:var(--red,#EF4444); }
+.mbar .mopen { margin-left:auto;height:28px;padding:0 12px;border-radius:var(--radius-sm);border:1px solid var(--accent);
+  background:var(--accent);color:#fff;font-size:var(--text-xs);font-weight:700;cursor:pointer;display:inline-flex;align-items:center; }
+.mbar .mopen:hover { filter:brightness(1.08); }
+.mline { padding:7px 14px;font-size:var(--text-xs);color:var(--text-dim);background:var(--surface2);border-bottom:1px solid var(--border); }
+.mline b { color:var(--text); }
+.mgroup .spec-card { border:0;border-radius:0;border-top:1px solid var(--border);margin:0; }
+.mgroup .spec-card:first-of-type { border-top:0; }
 .status-monitor { color:var(--green);border-color:var(--green);background:var(--green-bg,rgba(52,211,153,.12)); }
 .monitor-chip { display:inline-flex;align-items:center;gap:4px;font-size:var(--text-xs);font-weight:700;
   color:var(--green);background:var(--green-bg,rgba(52,211,153,.12));border:1px solid var(--green);
@@ -471,6 +493,12 @@ const TAG_INFO   = SPEC_META.TAG_INFO;
 const PRI_LABEL  = Object.fromEntries(Object.entries(SPEC_META.PRI_INFO).map(([k,v])=>[k,v.label]));
 const PRI_ORDER  = SPEC_META.PRI_ORDER;
 const STATUS_INFO = SPEC_META.STATUS_INFO;
+let MONITOR_STATUS = {};
+fetch('../../monitor_status.json?v=' + Date.now())
+  .then(r => r.ok ? r.json() : {})
+  .then(j => { MONITOR_STATUS = j || {}; if (window.render) render(); })
+  .catch(() => {});
+
 let activeFilter       = 'all';
 let activeStatusFilter = 'all';
 let searchQuery        = '';
@@ -711,6 +739,8 @@ function render() {
           <span class="archive-count">${archiveGroup.length}개</span>
         </div>
       </div>`;
+    } else if (sec.key === 'monitor' && group.length) {
+      html += renderMonitorGroups(group);
     } else if (group.length) {
       html += group.map(item => renderCard(item)).join('');
     } else {
@@ -724,6 +754,38 @@ function render() {
   if (archiveModalOpen) renderArchiveModal();
   syncControls();
   updateBulkBar();
+}
+
+function renderMonitorGroups(items) {
+  const G = (window.SPEC_META && SPEC_META.MONITOR_GROUPS) || {};
+  const buckets = {}, loose = [];
+  items.forEach(i => {
+    const k = i.monitorGroup;
+    if (k && G[k]) (buckets[k] = buckets[k] || []).push(i);
+    else loose.push(i);
+  });
+  let out = '';
+  Object.keys(buckets).forEach(k => {
+    const g  = G[k];
+    const st = MONITOR_STATUS[k] || {};
+    const lv = st.level || 'ok';
+    const badge = st.nCrit ? `위반 ${st.nCrit}` : (st.nWarn ? `주의 ${st.nWarn}` : '이상 없음');
+    const dn = (st.dn != null) ? `D+${st.dn}` : '';
+    out += `<div class="mgroup ${lv}">
+      <div class="mbar">
+        <span class="mdot"></span>
+        <span class="mname">${escHtml(g.label)}</span>
+        <span class="mmeta">${dn}${dn ? ' · ' : ''}${g.since} 배포</span>
+        <span class="mstate">${badge}</span>
+        <button type="button" class="mopen"
+          onclick="event.stopPropagation();openMonitorModal('${g.url}','${k}')">리포트 열기</button>
+      </div>
+      ${st.headline ? `<div class="mline">${escHtml(st.headline)}${st.nextGate ? ` · 다음 게이트 <b>${escHtml(st.nextGate)}</b>` : ''}${st.stamp ? ` · ${escHtml(st.stamp)} 기준` : ''}</div>` : ''}
+      ${buckets[k].map(item => renderCard(item)).join('')}
+    </div>`;
+  });
+  out += loose.map(item => renderCard(item)).join('');
+  return out;
 }
 
 function renderCard(item) {
@@ -760,7 +822,6 @@ function renderCard(item) {
       <span class="spec-date">${item.date}</span>
       ${dueChip}
       ${related}
-      ${item.monitorUrl ? `<span class="monitor-chip" onclick="event.preventDefault();event.stopPropagation();openMonitorModal('${item.monitorUrl}','${item.id}')" title="관측 리포트 열기"><span class="dot"></span>모니터링 리포트</span>` : ''}
       <span class="related-chip" onclick="event.preventDefault();openDropdown(event,'${item.id}','related')" title="관련 기획서 연결">관련</span>
       ${history}
     </div>
@@ -1127,11 +1188,12 @@ function openSpecModal(id) {
   document.getElementById('specModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-function openMonitorModal(url, id) {
-  const item = getAllItems().find(i => i.id === id) || {};
+function openMonitorModal(url, key) {
+  const G = (window.SPEC_META && SPEC_META.MONITOR_GROUPS) || {};
+  const item = getAllItems().find(i => i.id === key);
+  const name = (G[key] && G[key].label) || (item && item.title) || String(key).toUpperCase();
   document.getElementById('spModalId').textContent    = '모니터링';
-  document.getElementById('spModalTitle').textContent =
-    (item.title || id.toUpperCase()) + ' — 적용 후 관측 리포트';
+  document.getElementById('spModalTitle').textContent = name + ' — 적용 후 관측 리포트';
   const _fe = document.getElementById('spModalFile');
   if (_fe) { _fe.textContent = url.split('/').pop().replace(/\.html?$/i, ''); _fe.title = url; }
   document.getElementById('spModalOpen').href = url;

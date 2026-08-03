@@ -162,7 +162,7 @@ const SPECS = [
   },
   {
     id: 'spec-029', file: 'spec-029-level-default-tier-ramp.html',
-    monitorUrl: '../../32_sol_diff_watch.html', monitorSince: '2026-08-01',
+    monitorGroup: 'sol-difficulty',
     title: '[밸런스-난이도] 레벨 기반 기본 난이도 승급',
     tags: ['balance'], priority: 'high', status: 'monitor', date: '2026. 7. 28.', dueDate: null, relatedTo: ['spec-012'],
   },
@@ -173,7 +173,7 @@ const SPECS = [
   },
   {
     id: 'spec-031', file: 'spec-031-sh-rescue-activation.html',
-    monitorUrl: '../../32_sol_diff_watch.html', monitorSince: '2026-08-01',
+    monitorGroup: 'sol-difficulty',
     title: '[밸런스-난이도] Super Hard 구제장치 활성화',
     tags: ['balance'], priority: 'mid', status: 'monitor', date: '2026. 7. 29.', dueDate: null, relatedTo: ['spec-029'],
   },
@@ -216,6 +216,16 @@ const PRI_INFO = {
 };
 
 /* 정의 순서 = 드롭다운 노출 순서. 진행 흐름(예정→검토→진행→보류→완료→보관) */
+/* ── 관측 그룹 — 여러 스펙이 하나의 리포트를 공유할 때 ──────────────── */
+const MONITOR_GROUPS = {
+  'sol-difficulty': {
+    label: '솔 난이도 튜닝',
+    since: '2026-08-01',
+    url:   '../../32_sol_diff_watch.html',
+    specs: ['spec-029', 'spec-031'],
+  },
+};
+
 const STATUS_INFO = {
   planned: { label: '🟣 진행 예정', cls: 'status-planned', hcls: 'badge-purple' },
   open:    { label: '🔵 검토중',    cls: 'status-open',    hcls: 'badge-blue'   },
@@ -433,7 +443,7 @@ function _mount(specId) {
 }
 
 global.SPEC_META = {
-  SPECS, TAG_INFO, PRI_INFO, STATUS_INFO, PRI_ORDER, DD_OPTIONS, DD_LABEL, DEFAULTS,
+  SPECS, TAG_INFO, PRI_INFO, STATUS_INFO, MONITOR_GROUPS, PRI_ORDER, DD_OPTIONS, DD_LABEL, DEFAULTS,
   loadOverrides, effective, setField, mountBadges, getEditKey,
   sb: () => _sb,
 };
