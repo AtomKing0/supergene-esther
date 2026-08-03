@@ -649,8 +649,8 @@ function buildList() {
 }
 
 const STATUS_SECTIONS = [
-  { key: 'wip',     label: '🟡 진행중'    },
   { key: 'monitor', label: '📈 적용 후 모니터링중' },
+  { key: 'wip',     label: '🟡 진행중'    },
   { key: 'planned', label: '🟣 진행 예정' },
   { key: 'open',    label: '🔵 검토중'    },
   { key: 'hold',    label: '⏸ 보류'       },
@@ -760,7 +760,7 @@ function renderCard(item) {
       <span class="spec-date">${item.date}</span>
       ${dueChip}
       ${related}
-      ${item.monitorUrl ? `<span class="monitor-chip" onclick="event.preventDefault();event.stopPropagation();window.open('${item.monitorUrl}','_blank')" title="관측 리포트 열기"><span class="dot"></span>모니터링 리포트</span>` : ''}
+      ${item.monitorUrl ? `<span class="monitor-chip" onclick="event.preventDefault();event.stopPropagation();openMonitorModal('${item.monitorUrl}','${item.id}')" title="관측 리포트 열기"><span class="dot"></span>모니터링 리포트</span>` : ''}
       <span class="related-chip" onclick="event.preventDefault();openDropdown(event,'${item.id}','related')" title="관련 기획서 연결">관련</span>
       ${history}
     </div>
@@ -1109,7 +1109,7 @@ function onCardClick(e, id) {
   // 새 탭/새 창 열기는 그대로 둠
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
   // 배지·체크박스·드래그 핸들 등 카드 안 조작 요소는 각자 동작 유지
-  if (e.target.closest('.badge,.pri-badge,.status-pill,.related-chip,.bulk-select,.drag-handle,.hist-line,.due-chip')) return;
+  if (e.target.closest('.badge,.pri-badge,.status-pill,.related-chip,.monitor-chip,.bulk-select,.drag-handle,.hist-line,.due-chip')) return;
   e.preventDefault();
   openSpecModal(id);
 }
@@ -1124,6 +1124,18 @@ function openSpecModal(id) {
   document.getElementById('spModalOpen').href         = item.file;
   // 캐시본이 뜨지 않도록 매번 새 쿼리를 붙여 강제 재요청
   document.getElementById('spModalFrame').src         = item.file + '?v=' + Date.now();
+  document.getElementById('specModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function openMonitorModal(url, id) {
+  const item = getAllItems().find(i => i.id === id) || {};
+  document.getElementById('spModalId').textContent    = '모니터링';
+  document.getElementById('spModalTitle').textContent =
+    (item.title || id.toUpperCase()) + ' — 적용 후 관측 리포트';
+  const _fe = document.getElementById('spModalFile');
+  if (_fe) { _fe.textContent = url.split('/').pop().replace(/\.html?$/i, ''); _fe.title = url; }
+  document.getElementById('spModalOpen').href = url;
+  document.getElementById('spModalFrame').src = url + '?v=' + Date.now();
   document.getElementById('specModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
