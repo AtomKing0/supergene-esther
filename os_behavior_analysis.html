@@ -37,7 +37,7 @@ hr.s{border:0;border-top:1px solid #E6EAF2;margin:34px 0 0}
 .kick{font-size:16.5px;font-weight:900;line-height:1.5;color:#1c2530;margin:8px 0 6px;padding-left:12px;border-left:4px solid #2563EB}
 .kick .g{color:#16A34A}.kick .r{color:#DC2626}.kick .b{color:#2563EB}</style></head><body><div class="wrap">
 <h1>OS별 유저 활동성 — <b>Solitaire City Journey</b></h1>
-<div class="sub"><b style="color:#2563EB">권역 = NA+EU(서구권)만</b> · 솔=정식 트래킹 7/10~어제 누적 · 벤치(코지·퍼블마)=런칭 부스트 30일 종료 후 D+30~59 · PC=Windows+OS X+Linux · 데이터=stat 적재본(raw 스캔 없음) · 갱신 2026-08-04 14:48</div>
+<div class="sub"><b style="color:#2563EB">권역 = NA+EU(서구권)만</b> · 솔=정식 트래킹 7/10~어제 누적 · 벤치(코지·퍼블마)=런칭 부스트 30일 종료 후 D+30~59 · PC=Windows+OS X+Linux · 데이터=stat 적재본(raw 스캔 없음) · 갱신 2026-08-04 14:55</div>
 <div class="finding"><div class="big">활동량은 <span style="color:#2563EB">세 게임 모두 PC가 가장 좋음</span> · 모바일(iOS/Android)은 지표별로 갈림</div>
 <ul><li><b>솔리테어 안에서</b> — 판수·리텐션·세션타임·RV 전 지표 PC 압도(🤖 Android ≳ 🍎 iOS). 단 이 격차는 유저 질이 아니라 <b>신규 진입 성공률</b> 차이가 크게 섞여 있음</li>
 <li><b>다른 게임과 대보면</b> — PC÷Android 격차는 솔 2.1~2.8배로 벤치 1.7~2.7배와 비슷한 수준. <b>"솔만 유독 모바일이 약하다"는 성립 안 함.</b> 솔은 <b>리텐션·판당 RV가 강하고 판수·세션타임이 약한</b> 모양</li>
@@ -87,8 +87,8 @@ Android는 시도가 더 많지만 <b>실패의 68.5%가 유저 취소</b>라 �
 <ul style="margin:6px 0 0;padding-left:19px">
 <li><b>68.5%(102건)가 USER_INPUT — 유저가 결제창을 그냥 닫은 것.</b> 정상 이탈이지 고장이 아님</li>
 <li>나머지 <b>47건이 시스템 실패</b> — 성공 대비 65.3%로 처음 본 "85.6%"보다는 줄지만 <b>PC 3.9%보다는 여전히 크게 높음</b></li>
-<li>다만 그 대부분이 <b>PAYMENT_NOT_AVAILABLE</b>(35건·11명) — 해당 계정·지역에서 결제 자체가 불가한 Meta측 조건이라 우리가 못 고침. 빌드 363~409에 흩어져 있어 특정 빌드 회귀도 아니고, 1명이 9번 재시도한 케이스가 건수를 부풀림</li>
-<li><b>우리 몫은 PENDING_REQUEST</b> — purchaseAsync 중복 호출 잠금. 클라 디바운스 문제이고 건수는 적음</li>
+<li>다만 그 대부분이 <b>PAYMENT_NOT_AVAILABLE</b>(35건·11명) — <b>전수가 모바일이고 PC는 0건</b>. 전 지역으로 넓혀도 21명 전원 모바일(Android 20·iOS 1)이고 <b>그중 한 명도 끝내 결제에 성공한 적이 없음</b>(1명은 10번 재시도). 계정·지역 조건일 수도 있지만 <b>모바일에서만 결제 초기화가 안 되는 것일 가능성</b>이 있어 클라 확인이 필요함. 빌드 363~409에 흩어져 있어 특정 빌드 회귀는 아님</li>
+<li><b>PENDING_REQUEST는 원인 확정</b> — purchaseAsync 중복 호출 잠금. 전수를 시각으로 확인하니 <b>예외 없이 직전 구매 시도로부터 0~2초 안</b>에 찍혔고 60초 내 시도가 2~5회. 구매 버튼 <b>중복 탭</b>이며 디바운스로 막힘</li>
 <li>남는 진짜 신호는 고장이 아니라 <b>취소율</b> — 시도 대비 취소가 Android 51.0% vs PC 35.6%. 결제창까지 갔다가 무르는 비율이 Android가 확연히 높음</li></ul>
 <table class="tbl"><thead><tr><th>Android 실패 사유</th><th style="text-align:left">구분</th><th>건수</th><th>유저</th></tr></thead><tbody><tr><td>USER_INPUT</td><td>유저 취소</td><td>102</td><td>62</td></tr><tr><td>PAYMENT_NOT_AVAILABLE</td><td>시스템 실패</td><td>35</td><td>11</td></tr><tr><td>PENDING_REQUEST</td><td>시스템 실패</td><td>11</td><td>8</td></tr><tr><td>NETWORK_FAILURE</td><td>시스템 실패</td><td>1</td><td>1</td></tr></tbody></table></div>
 <div class="note"><div class="h">🔍 게임 3종 비교 — 취소가 많은 건 우리만의 일인가</div>
@@ -106,7 +106,8 @@ Android는 시도가 더 많지만 <b>실패의 68.5%가 유저 취소</b>라 �
 <li>게임 비교로도 <b>취소 자체는 3게임 공통</b>이라 솔만의 문제가 아님 — 대신 <b>시스템 실패 비중만 솔이 24.1%로 튐</b>(벤치 1.4~3.3%). 손댈 곳은 여기</li>
 <li>어느 쪽이든 결제 유저 절대 규모가 두 자릿수라 <b>이벤트 성패 판정이 불가능</b>. 지금은 실험 단계가 아니라 <b>상품·가격 점검 단계</b></li></ul></div>
 <div class="hz"><div class="h"><span class="tag" style="background:#16A34A">대안</span>순서를 바꿔 네 가지로</div>
-<ul><li><b>1순위 · 솔에만 있는 실패 코드 2종 처리</b> — 게임 비교로 확인된 유일한 우리 고유 이상. <b>PENDING_REQUEST</b>는 구매 버튼 중복 탭 디바운스로 바로 막히고, <b>PAYMENT_NOT_AVAILABLE</b>은 재현 조건(계정·지역·결제수단)을 Meta에 확인해야 함</li>
+<ul><li><b>1순위-a · PENDING_REQUEST 디바운스</b> — 원인 확정(중복 탭)이라 <b>추가 조사 없이 클라 수정만 하면 됨</b>. 구매 버튼을 promise 종료까지 잠그기</li>
+<li><b>1순위-b · PAYMENT_NOT_AVAILABLE 클라 점검</b> — 이쪽은 확인이 먼저. ①부팅·상점 오픈 시 결제 가용 여부(payments 초기화·카탈로그 로드)를 확인하는지 ②실패한 유저에게 안내 없이 같은 버튼을 계속 누르게 두고 있는지(10회 재시도 사례). <b>모바일 전용이라 Meta측 계정 조건으로만 단정하면 안 됨</b></li>
 <li><b>2순위 · OS 내부 취소율 격차</b> — 시도 대비 취소가 Android 51.0% vs PC 35.6%. 상품별·가격대별로 쪼개 어느 가격에서 무르는지 확인($1.99~$49.99)</li>
 <li><b>3순위 · IAP 로그 신뢰도 교정</b> — 성공 로그에 과다계상 이슈가 확인된 적 있음(로그 건수 ≫ Meta 실집계). 솔의 시도 대비 성공률이 벤치보다 높게 나오는 것도 이 영향일 수 있어 Meta 결제 데이터 대조가 선행돼야 함</li>
 <li><b>4순위 · 타깃을 OS가 아니라 "고관여" 자체로</b> — OS는 관여도의 프록시일 뿐임. 판수·세션 상위 구간으로 직접 자르면 OS를 안 가리고 세그먼트도 더 정확해짐</li></ul></div>
