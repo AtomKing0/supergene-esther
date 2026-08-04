@@ -840,47 +840,46 @@ flowchart TD
   </div>
 
   <h3 id="s2-sound">사운드 명세</h3>
-  <p>연출 지점별 클립 지정. <strong>신규 제작은 4종뿐</strong>이고 나머지는 전부 <strong>클라이언트 번들에 이미 있는 클립 재사용</strong>임 — 사운드 때문에 일정이 밀리지 않음.</p>
+  <p>연출 지점별 클립 지정. 지정되지 않은 지점은 <strong>무음이 확정 사양</strong>임 — 임의로 추가하지 말 것.</p>
 
-  <div class="callout callout-pink">
-    <strong>원본 이벤트(CCS "Catch the Troll")의 사운드를 출발점으로 쓰되, 캐릭터가 달라 그대로는 쓰지 않음.</strong> 사내 원본 라이브러리(<code>assets/audio/event_feature/</code>)에 CTT 전용 사운드가 <code>CTT_</code> 접두사로 남아 있어 <strong>②강탈·④도주</strong>에 그대로 얹어봤으나, <strong>원본은 젤리 촉수 컨셉이라 질감이 끈적해 그림자 고양이와 맞지 않음</strong>(측정: 고역비 0.35 · ZCR 2,806으로 후보 30여 종 중 최저). 강탈은 <strong>원본의 타격감만 남기고 질척이는 뒷부분을 잘라 깔끔한 꼬리로 교체</strong>했고, 발자국은 <strong>실제 발걸음 소스를 고양이 체급으로 피치업</strong>해 새로 만듦.
-  </div>
-
-  <h4 style="margin:18px 0 8px;font-size:14px">신규 제작 (4종) — 확정</h4>
+  <h4 style="margin:18px 0 8px;font-size:14px">신규 4종 <span style="font-weight:400;color:var(--text2)">— 클라이언트 번들 반영 완료</span></h4>
   <table class="tbl-keycol">
-    <thead><tr><th>클립명</th><th>구성</th><th>길이</th><th>지점</th></tr></thead>
+    <thead><tr><th>클립명</th><th>길이</th><th>지점</th></tr></thead>
     <tbody>
-      <tr><td><code>FX_EVENT_SHADOW_GRAB</code></td><td><code>371_CTT_Sticky_Hand</code>의 <strong>어택 구간(0.015~0.118s)만</strong> 발췌 + <code>062_Card_Slide_In</code> 꼬리 레이어<br><small>원본 0.10~0.22s의 <strong>끈적하게 떼어지는 두 번째 덩어리를 절단</strong> — 타격감은 원본 유지, 뒤끝만 교체</small></td><td>0.34s</td><td><strong>② 열쇠 강탈</strong> — 앞발이 열쇠를 채가는 순간</td></tr>
-      <tr><td><code>FX_EVENT_SHADOW_STEP_01</code><br><code>FX_EVENT_SHADOW_STEP_02</code><br><code>FX_EVENT_SHADOW_STEP_03</code></td><td><code>375~377_TOF_Yeti_Footsteps_01~03</code>을 <strong>+6반음 피치업</strong><br><small>라이브러리에서 실제 "발걸음"으로 수록된 유일한 소스. 예티는 체급이 커서 <strong>피치를 올려 고양이 체급으로 축소</strong> — 길이도 함께 짧아지는데 작은 동물의 걸음이 짧고 빠른 것이 자연스러우므로 복원하지 않음</small></td><td>0.30s<br>0.34s<br>0.26s</td><td><strong>④ 도주 트레일</strong> — 자국 1개마다 3종 중 랜덤 1개 · <strong>⑤ 마킹</strong> 착지 1회</td></tr>
+      <tr><td><code>FX_EVENT_SHADOW_GRAB</code></td><td>0.34s</td><td><strong>② 열쇠 강탈</strong> — 앞발이 열쇠를 채가는 순간</td></tr>
+      <tr><td><code>FX_EVENT_SHADOW_STEP_01</code></td><td>0.30s</td><td rowspan="3"><strong>④ 도주 트레일</strong> — 자국 1개마다 3종 중 랜덤 1개<br><strong>⑤ 마킹</strong> — 착지 1회</td></tr>
+      <tr><td><code>FX_EVENT_SHADOW_STEP_02</code></td><td>0.34s</td></tr>
+      <tr><td><code>FX_EVENT_SHADOW_STEP_03</code></td><td>0.26s</td></tr>
     </tbody>
   </table>
-  <div class="note"><strong>음량 정규화 완료</strong> — 강탈은 <code>FX_GIMMICK_KEY_ACTIVATE</code>에 정렬(mean −17.5dB), 발자국은 배경 트레일이라 더 낮게(mean −29.6dB) 깔았고 <strong>3종 상호 편차 0.1dB</strong>(랜덤 재생이라 편차가 있으면 소리가 튐). 후보 비교·이력은 <code>docs/sound-list.html</code>에서 슬롯별로 재생 가능.</div>
+  <div class="note">규격 = 기존 SFX와 동일(<strong>mp3 · mono · 22050Hz · 128k</strong>). 음량은 강탈 mean −17.5dB · 발자국 mean −29.6dB로 정규화 완료, <strong>발자국 3종 상호 편차 0.1dB</strong>(랜덤 재생이라 편차가 있으면 소리가 튐).</div>
+  <div class="callout callout-pink"><strong>4종 모두 0.26~0.34초로 짧음 — 연출 길이를 사운드에 맞출 것.</strong> 특히 <strong>②강탈</strong>은 앞발이 들어와 채고 빠지는 동작이 0.34초를 넘으면 소리가 먼저 끝남.</div>
 
-  <h4 style="margin:18px 0 8px;font-size:14px">기존 번들 재사용 (파일 작업 없음)</h4>
+  <h4 style="margin:18px 0 8px;font-size:14px">기존 클립 재사용 <span style="font-weight:400;color:var(--text2)">— 파일 작업 없음</span></h4>
   <table class="tbl-keycol">
-    <thead><tr><th>지점</th><th>클립</th><th>선택 이유</th></tr></thead>
+    <thead><tr><th>지점</th><th>클립</th></tr></thead>
     <tbody>
-      <tr><td>① 발견 풀스크린 등장</td><td><code>FX_REWARD_STAR_BURST</code></td><td>보상 발견 임팩트</td></tr>
-      <tr><td>① 보상 6슬롯 순차 공개</td><td><code>FX_STREAK_SLOT_FILLED_01~06</code></td><td><strong>6단 피치 상승본이라 6슬롯에 1:1 대응</strong> — 슬롯 순서대로 <code>_01</code>→<code>_06</code></td></tr>
-      <tr><td>③ 루나 등장</td><td><code>FX_INGAME_LUNA_TAP_01</code></td><td>루나 전용 보이스가 이미 있음</td></tr>
-      <tr><td>⑥ 행잉 태그 등장</td><td><code>FX_GIMMICK_ROPE_REMOVED</code></td><td>밧줄 문법 동일 — 태그가 밧줄에 내려오는 연출</td></tr>
-      <tr><td>⑥-B 게이지 n/8 갱신</td><td><code>FX_REWARD_GAUGE_FILL</code></td><td>기존 마일스톤 게이지와 동일 문법</td></tr>
-      <tr><td>⑥-C <strong>8/8 만충 → 🔑</strong></td><td><code>FX_STREAK_COMPLETED</code></td><td>성공 확정 스팅</td></tr>
-      <tr><td>⑦-1 [Open] 탭</td><td><code>FX_UI_BTN_TAP</code></td><td><code>ClickSound</code> 기본값 — 별도 지정 불필요</td></tr>
-      <tr><td>⑦-2 열쇠 삽입·자물쇠 해제</td><td><code>FX_GIMMICK_KEY_ACTIVATE</code></td><td><strong>이름 그대로 열쇠 발동음</strong></td></tr>
-      <tr><td>⑦-3 체스트 개방</td><td><code>FX_REWARD_BIG_BOX_OPEN</code></td><td>큰 상자 오픈</td></tr>
-      <tr><td>⑦-3 보상 6종 날아가 꽂힘</td><td><code>FX_REWARD_ITEM_FLIES</code><br><code>FX_EVENT_REWARD_CLAIMED</code></td><td>후자는 <code>PopupRewardClaim</code> 경유로 <strong>이미 자동 재생 중</strong></td></tr>
+      <tr><td>⑥-B 게이지 n/8 갱신</td><td><code>FX_REWARD_GAUGE_FILL</code></td></tr>
+      <tr><td>⑦-1 [Open] 탭</td><td><code>FX_UI_BTN_TAP</code> <small>(<code>ClickSound</code> 기본값 — 별도 지정 불필요)</small></td></tr>
+      <tr><td>⑦-2 열쇠 삽입·자물쇠 해제</td><td><code>FX_GIMMICK_KEY_ACTIVATE</code></td></tr>
+      <tr><td>⑦-3 체스트 개방</td><td><code>FX_REWARD_BIG_BOX_OPEN</code></td></tr>
+      <tr><td>⑦-3 보상 6종 날아가 꽂힘</td><td><code>FX_REWARD_ITEM_FLIES</code> · <code>FX_EVENT_REWARD_CLAIMED</code> <small>(후자는 <code>PopupRewardClaim</code> 경유로 이미 자동 재생)</small></td></tr>
     </tbody>
   </table>
 
-  <h4 style="margin:18px 0 8px;font-size:14px">넣지 않는 것 (확정)</h4>
+  <h4 style="margin:18px 0 8px;font-size:14px">무음 지점 <span style="font-weight:400;color:var(--text2)">— 확정 사양</span></h4>
   <table class="tbl-keycol">
-    <thead><tr><th>지점</th><th>판단</th></tr></thead>
+    <thead><tr><th>지점</th><th>비고</th></tr></thead>
     <tbody>
-      <tr><td><strong>⑧ 타이머 말풍선 — 전 구간 무음</strong></td><td>등장음·경고음·연장 성공음 <strong>전부 없음</strong>. 말풍선이 타이머 옆에 붙는 UI라 거기만 소리가 나면 타이머 알림으로 읽힘. 이 게임에 <code>FX_TIMER*</code>/<code>FX_WARN*</code> 관행이 전무하고, 벤치마크 3세트에도 카운트다운 계열이 통째로 없음. ⑧ 자체가 <strong>드롭 가능 항목</strong>이라 사운드도 같이 후순위.</td></tr>
-      <tr><td><strong>실패(타이머 만료)</strong></td><td>기획상 <strong>실패에 알림을 붙이지 않는다</strong>가 확정이므로 사운드도 일관되게 무음. 태그가 비노출로 전환될 뿐.</td></tr>
-      <tr><td><strong>팝업 오픈/클로즈음</strong></td><td>이 게임은 <strong>팝업 공통 오픈음이 없음</strong>(전역 미도입). 이번 이벤트만 넣으면 다른 팝업과 어긋나므로 <strong>도입하지 않음</strong>.</td></tr>
-      <tr><td><strong>이벤트 전용 BGM</strong></td><td>15분 스프린트에 로비 BGM을 교체할 실익 없음. <code>BGM_LOBBY</code> 유지.</td></tr>
+      <tr><td>① 발견 풀스크린 등장</td><td rowspan="5">사운드 없음</td></tr>
+      <tr><td>① 보상 6슬롯 순차 공개</td></tr>
+      <tr><td>③ 루나 등장</td></tr>
+      <tr><td>⑥ 행잉 태그 등장</td></tr>
+      <tr><td>⑥-C 8/8 만충 → 🔑 열쇠 획득</td></tr>
+      <tr><td><strong>⑧ 타이머 말풍선 — 전 구간</strong></td><td>등장음·경고음·연장 성공음 <strong>전부 없음</strong>. 말풍선이 타이머 옆에 붙는 UI라 거기만 소리가 나면 타이머 알림으로 읽힘</td></tr>
+      <tr><td><strong>실패(타이머 만료)</strong></td><td>실패에 알림을 붙이지 않는다는 기획과 일관. 태그가 비노출로 전환될 뿐</td></tr>
+      <tr><td>팝업 오픈/클로즈</td><td>게임 전역에 공통 오픈음이 미도입 상태이므로 이번 이벤트도 도입하지 않음</td></tr>
+      <tr><td>이벤트 전용 BGM</td><td><code>BGM_LOBBY</code> 유지</td></tr>
     </tbody>
   </table>
 
