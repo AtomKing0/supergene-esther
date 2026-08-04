@@ -215,13 +215,14 @@
 
 | 클립명 | 길이 | 지점 |
 |---|---|---|
-| `FX_EVENT_SHADOW_GRAB` | 0.58s | ② 열쇠 강탈 — 앞발이 채가는 순간 |
-| `FX_EVENT_SHADOW_STEP_01` | 0.54s | ④ 도주 트레일 (3종 랜덤) · ⑤ 마킹 착지 |
-| `FX_EVENT_SHADOW_STEP_02` | 0.54s | 〃 |
-| `FX_EVENT_SHADOW_STEP_03` | 0.60s | 〃 |
+| `FX_EVENT_SHADOW_GRAB` | 0.34s | ② 열쇠 강탈 — 앞발이 채가는 순간 |
+| `FX_EVENT_SHADOW_STEP_01` | 0.30s | ④ 도주 트레일 (3종 랜덤) · ⑤ 마킹 착지 |
+| `FX_EVENT_SHADOW_STEP_02` | 0.34s | 〃 |
+| `FX_EVENT_SHADOW_STEP_03` | 0.26s | 〃 |
 
-- 규격 = 기존 SFX와 동일 (**mp3 · mono · 22050Hz · 128k**), 음량 정규화 완료(STEP 3종 상호 편차 0.0dB)
-- 출처 = 원본 이벤트(CCS "Catch the Troll")의 실제 사운드. 사내 오디오 라이브러리 `assets/audio/event_feature/368~371_CTT_*`
+- 규격 = 기존 SFX와 동일 (**mp3 · mono · 22050Hz · 128k**), 음량 정규화 완료(강탈 mean −17.5dB / 발자국 mean −29.6dB · **STEP 3종 상호 편차 0.1dB**)
+- 출처 = 강탈은 CCS "Catch the Troll"의 `371_CTT_Sticky_Hand` **어택 구간만** 발췌 + `062_Card_Slide_In` 꼬리 레이어(원본의 끈적한 뒷부분 절단), 발자국은 `375~377_TOF_Yeti_Footsteps`를 **+6반음 피치업**(고양이 체급으로 축소)
+- ⚠ **4종 모두 0.26~0.34s로 짧음** — 연출 타이밍을 여기에 맞출 것. 특히 ②강탈은 앞발이 들어와 채고 빠지는 동작이 0.34s를 넘으면 소리가 먼저 끝남
 - ⚠ **`.meta`가 아직 없음** — Cocos 에디터에서 임포트하면 생성됨. 커밋 시 `.meta` 4개 포함할 것
 - 원본 WAV는 `solitaire-esther-1/audio_sets/rec/`에 보존. 번들은 기존 관례대로 **mp3만** 둠(같은 이름의 wav/mp3 공존 시 에셋명 충돌)
 
