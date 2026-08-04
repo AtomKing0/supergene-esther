@@ -256,13 +256,23 @@ ul li strong,ol li strong { color:var(--text); }
     이 표의 값을 <strong>다른 섹션에 다시 적지 않음</strong>. 시트 반영 후에는 <strong>시트 값이 최종</strong>이고 이 표는 초기값 기록으로 남음.
   </div>
 
-  <h3>노출 지면 &mdash; 승리 직후 한 곳으로 한정</h3>
-  <p>메타 권장 지면은 &ldquo;레벨 사이&rdquo;와 &ldquo;레벨 클리어 직후&rdquo; 두 가지인데, <strong>승리 직후 한 곳만</strong> 사용함. 패배 직후는 이탈 위험이 가장 높은 순간이라 광고를 얹을 자리가 아님.</p>
+  <h3>노출 지면 &mdash; 승리 직후 · 나가기 확정 두 곳</h3>
+  <p>클라에 정의된 전면 지면은 <span class="sheet-var">LogITPosition</span> 5종인데, 실제 호출부가 있는 건 두 개뿐임. 그 두 개를 <strong>모두 사용</strong>하고 나머지는 이번 범위에서 다루지 않음.</p>
+  <table>
+    <thead><tr><th>지면</th><th>발화 시점</th><th>현재 상태</th><th>이번 스펙</th></tr></thead>
+    <tbody>
+    <tr><td><span class="sheet-var">game_over</span></td><td>승리 결과 화면에서 보상 수령 직후</td><td>호출부 있음. <span class="sheet-var">clear_interval</span>이 0이라 미노출</td><td><strong>레벨 구간 곡선으로 확장</strong></td></tr>
+    <tr><td><span class="sheet-var">game_quit</span></td><td>인게임 나가기 팝업에서 나가기 확정 직전</td><td>호출부 있으나 <strong>페이스북만 비활성 분기</strong>(2026-07-13). 비-페이스북 플랫폼은 그대로 호출 중</td><td><strong>페이스북에서도 되살림</strong> &mdash; 플랫폼 분기 제거, 시트 스위치로 대체</td></tr>
+    <tr><td><span class="sheet-var">game_play</span></td><td>판 시작 직전(컨텍스트 전환 전)</td><td>호출부 주석 처리</td><td>범위 밖 &mdash; SPEC-030 컨텍스트 전환과 같은 자리라 겹침</td></tr>
+    <tr><td><span class="sheet-var">switch_cancel</span> · <span class="sheet-var">gameover_resultLeague</span></td><td>&mdash;</td><td>enum만 있고 <strong>호출부 0건</strong></td><td>범위 밖 &mdash; 구현 자체가 없음</td></tr>
+    </tbody>
+  </table>
   <div class="callout callout-blue">
-    <strong>승리 한정으로 해도 물량 손실이 거의 없음.</strong> 솔리테어 트라이픽스는 실패율이 <strong>0.9%</strong>라 승패를 가려도 대상 판수의 <strong>99.1%</strong>가 그대로 남음. 이탈 위험이 큰 0.9%를 버리는 대신 얻는 안전 마진이 큼.
+    <strong>나가기 지면은 물량이 아니라 회수 목적임.</strong> 실측 14일 기준 <span class="sheet-var">2222_GAMEPLAY_END_SURE_YES</span>는 <strong>6,050건 · 유저-일당 0.19회</strong>임. 승리 지면(곡선상 최대 8회)에 비하면 <strong>3% 미만</strong>이라 노출량을 늘리는 효과는 거의 없고, 최소 간격·일 상한에 걸리면 더 줄어듦. 대신 <strong>판을 포기하고 나가는 순간</strong>이라 그 판의 보상 기대가 이미 없는 자리임.<br>패배 직후(<span class="sheet-var">game_over</span>의 실패 케이스)는 여전히 제외함 &mdash; 실패율 <strong>0.9%</strong>라 물량이 없는데 이탈 위험만 큼.
   </div>
 
-  <h3>게이트 3종</h3>
+  <h3>게이트 3종 &mdash; 두 지면이 공유함</h3>
+  <p>아래 세 게이트와 일 상한 카운터는 <span class="sheet-var">game_over</span>·<span class="sheet-var">game_quit</span>이 <strong>함께 씀</strong>. 승리 직후 광고를 본 유저가 60초 안에 나가기를 눌러도 다시 뜨지 않고, 일 8회도 두 지면 합산임.</p>
   <table>
     <thead><tr><th>게이트</th><th>확정값</th><th>근거</th></tr></thead>
     <tbody>
@@ -282,6 +292,9 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>긴급 킬로 <span class="sheet-var">is_interstitial_ad_open</span>을 0으로 바꿈</td><td><strong>다음 판정부터 즉시 0%</strong>. 이미 재생 중인 광고는 그대로 두고, 진행 중 세션도 다음 판부터 미노출. 클라 재시작 불필요</td></tr>
     <tr><td>튜토리얼 진행 중</td><td>구간 1(간격 0)에 자연히 포함되지만, <strong>튜토리얼 플래그가 있으면 간격과 무관하게 차단</strong>. 이중 방어</td></tr>
     <tr><td>세션 게이트에 걸린 1세션 유저</td><td>판정 자체를 하지 않음. 클리어 카운터·일 상한도 갱신하지 않음</td></tr>
+    <tr><td>승리 광고를 본 직후 나가기를 누름</td><td>최소 간격 60초에 걸려 <strong>미노출</strong>. 두 지면이 같은 <span class="sheet-var">lastItShownAt</span>을 봄</td></tr>
+    <tr><td>1~5레벨 유저가 나가기를 누름</td><td><strong>미노출</strong>. 구간 1은 나가기 지면도 차단함 &mdash; 초반 보호는 지면과 무관하게 적용</td></tr>
+    <tr><td>나가기 광고가 늦게 닫힘</td><td>광고 결과와 무관하게 <strong>나가기는 반드시 진행</strong>. 기존 타임아웃 처리를 그대로 유지해 유저가 갇히지 않게 함</td></tr>
     <tr><td>일 상한에 도달한 뒤 날짜가 바뀜</td><td><strong>UTC 0시</strong>에 카운터 리셋 &mdash; 기존 데일리 리셋 축과 동일</td></tr>
     </tbody>
   </table>
@@ -290,7 +303,7 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>지표</th><th>As-Is</th><th>To-Be</th><th>판정</th></tr></thead>
     <tbody>
-    <tr><td>전면 노출 / DAU</td><td><strong style="color:var(--red)">0</strong></td><td><strong>6.6</strong> <span style="font-weight:400">(레벨 분포 기준 산출 · 코지 5.67 구간)</span></td><td>4000 로그 &divide; DAU</td></tr>
+    <tr><td>전면 노출 / DAU</td><td><strong style="color:var(--red)">0</strong></td><td><strong>6.8</strong> <span style="font-weight:400">(승리 6.6 + 나가기 0.19 · 코지 5.67 구간)</span></td><td>4000 로그 &divide; DAU</td></tr>
     <tr><td>전면 임프레션율</td><td>&mdash;</td><td>메타 기준 <strong>안드로이드 58% · iOS 60% · 데스크톱 72%</strong></td><td>4010 &divide; 4000</td></tr>
     <tr><td>프리로드 낭비</td><td>53,338건 전량 낭비</td><td>노출로 회수</td><td>4080 대비 4000 비율</td></tr>
     <tr><td><strong>D1 리텐션</strong></td><td>현행</td><td><strong>유지</strong> &mdash; 상승 목표 아님</td><td>가드레일. 유의하게 하락 시 롤백</td></tr>
@@ -338,27 +351,28 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>ⓑ 판정 순서</h3>
-  <p>승리 결과 화면을 닫는 시점에 아래 순서로 판정함. <strong>먼저 걸리는 게이트에서 즉시 종료</strong>하고 이후 단계를 평가하지 않음.</p>
+  <p>승리 결과 화면을 닫는 시점, 그리고 나가기를 확정하는 시점에 아래 순서로 판정함. <strong>먼저 걸리는 게이트에서 즉시 종료</strong>하고 이후 단계를 평가하지 않음. <strong>3·6번만 지면별로 다르고 나머지는 동일</strong>함.</p>
   <table>
     <thead><tr><th>순서</th><th>검사</th><th>불통과 시</th></tr></thead>
     <tbody>
     <tr><td>1</td><td><span class="sheet-var">is_interstitial_ad_open</span>이 1인가</td><td>종료 &mdash; 로그 없음</td></tr>
     <tr><td>2</td><td>튜토리얼 진행 중이 아닌가</td><td>종료 &mdash; 로그 없음</td></tr>
-    <tr><td>3</td><td>승리로 끝난 판인가</td><td>종료 &mdash; 로그 없음. <strong>클리어 카운터도 올리지 않음</strong></td></tr>
-    <tr><td>4</td><td>레벨 구간의 <span class="sheet-var">clear_interval</span>이 0보다 큰가</td><td>종료 &mdash; 구간 1(1~5레벨)이 여기서 걸림</td></tr>
+    <tr><td>2-1</td><td>(나가기 지면만) <span class="sheet-var">is_interstitial_ad_quit_open</span>이 1인가</td><td>종료 &mdash; 로그 없음</td></tr>
+    <tr><td>3</td><td>(승리 지면만) 승리로 끝난 판인가</td><td>종료 &mdash; 로그 없음. <strong>클리어 카운터도 올리지 않음</strong></td></tr>
+    <tr><td>4</td><td>레벨 구간의 <span class="sheet-var">clear_interval</span>이 0보다 큰가</td><td>종료 &mdash; 구간 1(1~5레벨)이 여기서 걸림. <strong>나가기 지면에도 동일 적용</strong>(초반 보호)</td></tr>
     <tr><td>5</td><td><span class="sheet-var">loginCountTotal</span> &ge; <span class="sheet-var">interstitial_ad_session_gate</span></td><td>종료 &mdash; 로그 없음</td></tr>
-    <tr><td>6</td><td><span class="sheet-var">clearCountSinceAd</span> + 1 &ge; <span class="sheet-var">clear_interval</span></td><td>카운터만 +1 하고 종료 &mdash; <span class="sheet-var">skip_reason=interval_not_met</span></td></tr>
+    <tr><td>6</td><td>(승리 지면만) <span class="sheet-var">clearCountSinceAd</span> + 1 &ge; <span class="sheet-var">clear_interval</span></td><td>카운터만 +1 하고 종료 &mdash; <span class="sheet-var">skip_reason=interval_not_met</span>. <strong>나가기 지면은 이 단계를 건너뜀</strong>(레벨 클리어 기반 카운터라 무관)</td></tr>
     <tr><td>7</td><td><span class="sheet-var">itShownToday</span> &lt; <span class="sheet-var">interstitial_ad_daily_limit</span></td><td>종료 &mdash; <span class="sheet-var">skip_reason=daily_cap</span>. <strong>카운터 유지</strong>(다음 판에 재시도)</td></tr>
     <tr><td>8</td><td>직전 노출 이후 <span class="sheet-var">interstitial_ad_min_interval_sec</span> 경과</td><td>종료 &mdash; <span class="sheet-var">skip_reason=too_soon</span>. <strong>카운터 유지</strong></td></tr>
     <tr><td>9</td><td>프리로드 완료 상태인가</td><td>종료 &mdash; <span class="sheet-var">skip_reason=not_ready</span>. <strong>카운터 유지</strong></td></tr>
-    <tr><td>10</td><td colspan="2"><strong>노출</strong> &rarr; <span class="sheet-var">4000</span> 발화 · <span class="sheet-var">clearCountSinceAd</span> 0으로 리셋 · <span class="sheet-var">itShownToday</span> +1 · <span class="sheet-var">lastItShownAt</span> 갱신</td></tr>
+    <tr><td>10</td><td colspan="2"><strong>노출</strong> &rarr; <span class="sheet-var">4000</span> 발화(<span class="sheet-var">position</span>에 지면) · <span class="sheet-var">clearCountSinceAd</span> 0으로 리셋 · <span class="sheet-var">itShownToday</span> +1 · <span class="sheet-var">lastItShownAt</span> 갱신</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
     <strong>6번에서만 카운터를 소모하고 7~9번에서는 유지하는 것이 핵심임.</strong> 간격 조건을 채웠는데 상한·시간·재고 때문에 못 띄운 경우, 카운터를 리셋해 버리면 그 유저는 다시 N판을 채워야 해서 <strong>실질 노출률이 설정값보다 계속 낮아짐</strong>. 카운터를 유지하면 조건이 풀리는 즉시 다음 판에 노출됨.
   </div>
 
-  <h3>시트 &mdash; 신규 탭 1개 + 상수 4개</h3>
+  <h3>시트 &mdash; 신규 탭 1개 + 상수 5개</h3>
 
   <p><strong>① 신규 탭 <span class="sheet-var">interstitial_tier</span></strong> &mdash; 구조는 기존 <span class="sheet-var">level_entry_tier</span>를 그대로 따름. <span class="sheet-var">tool</span> 탭 현재 최대 대역이 <strong>250001</strong>(<span class="sheet-var">event_shadow_chest</span>)이므로 신규 대역은 <strong>260001</strong>이고, <span class="sheet-var">tool</span> 탭에 행 추가가 함께 필요함.</p>
   <table>
@@ -371,13 +385,14 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
 
-  <p><strong>② <span class="sheet-var">const</span> 탭 신규 4행</strong> &mdash; 현재 최대 <span class="sheet-var">key_number</span>가 <strong>10100</strong>이므로 <strong>10101</strong>부터 부여함.</p>
+  <p><strong>② <span class="sheet-var">const</span> 탭 신규 5행</strong> &mdash; 현재 최대 <span class="sheet-var">key_number</span>가 <strong>10100</strong>이므로 <strong>10101</strong>부터 부여함.</p>
   <table>
     <thead><tr><th>key_number</th><th>const_name</th><th>초기값</th><th>설명</th></tr></thead>
     <tbody>
     <tr><td>10101</td><td><span class="sheet-var">is_interstitial_ad_open</span></td><td><strong>1</strong></td><td>전면 광고 마스터 스위치. 0=미노출, 1=노출. <strong>개발 테스트를 위해 시트에 1로 넣어둠</strong> &mdash; 라이브 배포 시점엔 0으로 내렸다가 검증 게이트 순서대로 켬</td></tr>
     <tr><td>10102</td><td><span class="sheet-var">interstitial_ad_min_interval_sec</span></td><td>60</td><td>직전 전면 광고 노출 이후 최소 경과 시간 (초)</td></tr>
     <tr><td>10103</td><td><span class="sheet-var">interstitial_ad_session_gate</span></td><td>2</td><td>누적 로그인 횟수가 이 값 이상인 유저부터 노출</td></tr>
+    <tr><td>10105</td><td><span class="sheet-var">is_interstitial_ad_quit_open</span></td><td><strong>1</strong></td><td>나가기 지면 단독 스위치. 0=나가기 지면만 끔, 1=노출. 승리 지면은 영향 없음</td></tr>
     <tr><td>10104</td><td><span class="sheet-var">interstitial_ad_daily_limit</span></td><td>8</td><td>일 노출 상한 (UTC0 기준 리셋). 0=무제한</td></tr>
     </tbody>
   </table>
@@ -400,7 +415,9 @@ ul li strong,ol li strong { color:var(--text); }
 
   <h3>클라</h3>
   <ul>
-    <li>판정 로직은 승리 결과 화면 <strong>닫기 직후</strong> 1회만 실행. 결과 화면 위에 겹쳐 띄우지 않음</li>
+    <li>승리 지면은 결과 화면 <strong>닫기 직후</strong> 1회만 실행. 결과 화면 위에 겹쳐 띄우지 않음</li>
+    <li>나가기 지면은 <span class="sheet-var">PopupQuitLevel</span>의 <strong>페이스북 비활성 분기를 제거</strong>하고 <span class="sheet-var">is_interstitial_ad_quit_open</span>으로 대체. 광고 성공·실패와 무관하게 나가기는 진행(기존 타임아웃 유지)</li>
+    <li><span class="sheet-var">ADPlayer</span>에 이미 <strong>레벨 6 미만 하드 차단</strong>이 있음. 구간 1(1~5)과 중복되지만 이중 방어로 그대로 둠</li>
     <li>난수를 쓰지 않음 &mdash; 간격 카운터만으로 결정됨. 같은 조건이면 항상 같은 시점에 노출됨</li>
     <li>보상형 영상을 시청한 판은 전면 판정을 건너뜀 &mdash; 판정 진입 전에 해당 판의 보상형 시청 여부를 확인</li>
     <li><span class="sheet-var">interstitial_tier</span> 로드 실패 시 <strong>하드코딩 0으로 폴백</strong>(노출 안 함). 예외를 던져 크래시내지 않음. <span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079)은 참조하지 않음</li>
@@ -425,6 +442,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>필드</th><th>값</th><th>출처</th></tr></thead>
     <tbody>
     <tr><td><span class="sheet-var">level_at_show</span></td><td>판정 시점 유저 레벨</td><td><strong>서버 응답</strong>(기존 유저 데이터)</td></tr>
+    <tr><td><span class="sheet-var">position</span></td><td><span class="sheet-var">game_over</span> / <span class="sheet-var">game_quit</span></td><td><strong>클라</strong> &mdash; 기존 필드 재사용. 플랫폼별로 <span class="sheet-var">position</span>·<span class="sheet-var">type</span> 키가 갈리므로 조회는 <span class="sheet-var">coalesce(data.type, data.position)</span></td></tr>
     <tr><td><span class="sheet-var">tier_key</span></td><td>적용된 티어 <span class="sheet-var">key_number</span>(260001~260004)</td><td><strong>클라</strong> &mdash; 레벨을 티어 탭에 대입해 산출</td></tr>
     <tr><td><span class="sheet-var">clear_interval</span></td><td>그 티어의 간격값</td><td><strong>시트</strong>(<span class="sheet-var">interstitial_tier</span> 탭)</td></tr>
     <tr><td><span class="sheet-var">clear_count</span></td><td>노출 직전 누적 클리어 수</td><td><strong>서버 응답</strong>(<span class="sheet-var">clearCountSinceAd</span>)</td></tr>
@@ -444,7 +462,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td>1</td><td><span class="sheet-var">is_interstitial_ad_open=0</span> 상태 배포</td><td>노출 0 유지 · <strong>프리로드도 0으로 떨어짐</strong></td></tr>
     <tr><td>2</td><td>내부 계정으로 <span class="sheet-var">is_interstitial_ad_open=1</span></td><td>구간별 간격이 로그의 <span class="sheet-var">tier_key</span> · <span class="sheet-var">clear_interval</span>과 일치</td></tr>
-    <tr><td>3</td><td>게이트 동작 확인</td><td>1세션 유저 노출 0건 · 60초 내 연속 노출 0건 · 일 9회차 이상 0건 · 간격 미달 판 0건</td></tr>
+    <tr><td>3</td><td>게이트 동작 확인</td><td>1세션 유저 노출 0건 · 60초 내 연속 노출 0건(지면 교차 포함) · 일 9회차 이상 0건 · 간격 미달 판 0건 · <span class="sheet-var">position</span>이 <span class="sheet-var">game_over</span>·<span class="sheet-var">game_quit</span> 두 값으로만 찍힘</td></tr>
     <tr><td>4</td><td>소규모 오픈</td><td>노출/DAU가 <strong>5~7 구간</strong>(산출 6.6) · 임프레션율이 메타 기준 근방</td></tr>
     <tr><td>5</td><td>가드레일 판정</td><td><strong>D1 리텐션·판수 유의 하락 없음</strong>(z검정). 하락 시 즉시 6단계</td></tr>
     <tr><td>6</td><td>롤백</td><td><span class="sheet-var">is_interstitial_ad_open=0</span> &mdash; 빌드 없이 즉시</td></tr>
@@ -471,7 +489,7 @@ ul li strong,ol li strong { color:var(--text); }
   <h3>연관</h3>
   <ul>
     <li>근거 문서 &mdash; 메타 Play 이벤트 정리(2026-07-28) · 메타 벤치마크 갭 분석</li>
-    <li>선행 이력 &mdash; <span class="sheet-var">#361</span>에서 <span class="sheet-var">game_quit</span> 전면 지면 제거로 노출 0이 됨</li>
+    <li>선행 이력 &mdash; 2026-07-13 <span class="sheet-var">game_quit</span> 지면을 <strong>페이스북에서만 비활성</strong>(코드 분기, 제거 아님). 승리 지면은 <span class="sheet-var">clear_interval</span> 0으로 꺼져 있어 결과적으로 전 지면 노출 0이 됨</li>
     <li>후속 &mdash; IAP 확장 계획(별도 문서). 합산 ARPDAU 부족분의 주된 몫은 그쪽에서 회수함</li>
   </ul>
 </section>
