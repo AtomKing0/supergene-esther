@@ -179,39 +179,60 @@
 </table>
 </div>
 
-<h2>7. 8월 안에 처리해야 할 선행 과제 — 보상형 광고 에러</h2>
+<h2>7. 8월 안에 처리해야 할 선행 과제 — 북미 광고 미충전</h2>
 
 <div class="card">
-<p style="margin:0 0 10px">유입을 늘려도 도착한 유저의 광고가 실패하면 회수가 새므로, 개발 인력이 있을 때 처리해야 함.</p>
+<p style="margin:0 0 10px">유입을 늘려도 도착한 유저의 광고가 실패하면 회수가 새므로 개발 인력이 있을 때 처리해야 함.
+다만 <b>벤치마크와 대조하니 문제의 위치가 예상과 달랐음.</b></p>
+
+<p style="margin:12px 0 6px"><b>전체로 보면 우리가 높지 않음</b> — 보상형 광고 시작 대비 에러율</p>
 <table>
-<tr><th>권역</th><th class="n">완료</th><th class="n">에러</th><th class="n">에러율</th><th class="n">우리가 고칠 수 있는 비중</th></tr>
-<tr><td class="r"><b>북미</b></td><td class="n">19,988</td><td class="n">5,957</td><td class="n r"><b>23.0%</b></td><td class="n"><b>41.3%</b></td></tr>
-<tr><td>유럽</td><td class="n">22,449</td><td class="n">3,863</td><td class="n">14.7%</td><td class="n">38.6%</td></tr>
-<tr><td>기타</td><td class="n">10,969</td><td class="n">1,541</td><td class="n">12.3%</td><td class="n">36.1%</td></tr>
-<tr><td colspan="3"><b>전체</b></td><td class="n"><b>17.5%</b></td><td class="n"><b>39.8%</b></td></tr>
+<tr><th>게임</th><th class="n">RV 시작</th><th class="n">에러</th><th class="n">에러율</th></tr>
+<tr><td>코지 타일즈</td><td class="n">655,429</td><td class="n">122,909</td><td class="n">18.8%</td></tr>
+<tr><td><b>솔리테어 시티 저니</b></td><td class="n">66,373</td><td class="n">11,361</td><td class="n"><b>17.1%</b></td></tr>
+<tr><td>퍼즐 블록 마스터</td><td class="n">476,867</td><td class="n">70,621</td><td class="n">14.8%</td></tr>
+</table>
+<p style="margin:6px 0 0;font-size:12.5px;color:var(--sub)">세 게임 중간값임. 전사 공통 수준이라 여기서는 특이사항 없음.</p>
+
+<p style="margin:16px 0 6px"><b>그런데 권역을 나누면 뒤집힘</b></p>
+<table>
+<tr><th>게임</th><th class="n">북미 에러율</th><th class="n">북미 외 에러율</th></tr>
+<tr><td class="r"><b>솔리테어 시티 저니</b></td><td class="n r"><b>22.2%</b></td><td class="n g">13.6%</td></tr>
+<tr><td>코지 타일즈</td><td class="n">14.6%</td><td class="n">23.7%</td></tr>
+<tr><td>퍼즐 블록 마스터</td><td class="n">13.9%</td><td class="n">16.7%</td></tr>
 </table>
 
 <div class="warn">
-<b>북미가 가장 나쁘고, 고칠 수 있는 비중도 가장 큼.</b> 유료 유입을 살 지역과 정확히 겹침.
+<b>북미 외에서는 우리가 가장 좋고(13.6%), 북미에서만 가장 나쁨(22.2%).</b>
+벤치 대비 <b>1.5~1.6배</b>임. 북미는 eCPM이 가장 높고 유료 유입을 살 지역이라 손실이 큼.
 </div>
 
-<p style="margin:10px 0 6px">에러 사유 분해 (전체 11,361건)</p>
+<p style="margin:16px 0 6px"><b>원인은 프리로드가 아니라 광고 미충전(<code>ADS_NO_FILL</code>)임</b></p>
 <table>
-<tr><th>사유</th><th class="n">비중</th><th>성격</th></tr>
-<tr><td><code>ADS_NO_FILL</code></td><td class="n">40.6%</td><td>메타 광고 인벤토리 부족 — <b class="r">우리 통제 밖</b></td></tr>
-<tr><td><code>AD_NOT_LOADED</code></td><td class="n">21.6%</td><td rowspan="3" style="vertical-align:middle">클라이언트 프리로드·타이밍 — <b class="g">우리가 고칠 수 있음 (합 39.8%)</b></td></tr>
-<tr><td><code>ADS_FREQUENT_LOAD</code></td><td class="n">11.2%</td></tr>
-<tr><td><code>ADS_EXPIRED</code> 외</td><td class="n">6.9%</td></tr>
-<tr><td><code>USER_INPUT</code></td><td class="n">12.1%</td><td>유저가 광고를 닫음 — 정상 이탈</td></tr>
-<tr><td>기타</td><td class="n">7.6%</td><td>—</td></tr>
+<tr><th>북미 · RV 시작 대비</th><th class="n">솔리테어</th><th class="n">코지</th><th class="n">퍼블마</th></tr>
+<tr><td><code>ADS_NO_FILL</code> 발생률</td><td class="n r"><b>9.28%</b></td><td class="n">2.95%</td><td class="n">1.33%</td></tr>
+<tr><td>프리로드·타이밍 계열 비중</td><td class="n">41.3%</td><td class="n">36.6%</td><td class="n">49.2%</td></tr>
 </table>
 
-<p style="margin:10px 0 0"><b>기대 효과 — 프리로드 계열을 회수하면 광고 완료 +8.5%</b>(4,522건).
-전체 에러 17.5%를 다 없애는 것이 아님. 통제 가능한 40%만 대상임.</p>
+<div class="note">
+<b>프리로드 계열은 벤치와 같은 수준임</b>(퍼블마가 오히려 더 높음) — 여기는 우리 특이점이 아님.<br>
+차이를 만드는 것은 <b>북미 미충전 하나</b>임. 코지의 <b>3.1배</b>, 퍼블마의 <b>7.0배</b>.
+북미 초과 에러 약 2,048건 중 <b>83%가 미충전에서 나옴.</b>
+</div>
+
+<p style="margin:12px 0 0"><b>기대 효과 — 북미 미충전을 코지 수준으로만 낮춰도 광고 완료 약 +1,700건</b>(북미 완료 대비 +8.5%).
+전체 에러율을 낮추는 것이 아니라 <b>북미 미충전 한 항목</b>만 대상임.</p>
+
+<div class="warn">
+<b>미확인 — 원인 규명이 선행돼야 함.</b> 미충전은 통상 메타 광고 인벤토리 사정이라 우리 통제 밖으로 보지만,
+<b>같은 시기·같은 지역에서 자사 게임 간 3~7배 차이가 나는 것은 인벤토리만으로 설명되지 않음.</b>
+요청 빈도·광고 유닛 설정·요청 시점 중 무엇이 원인인지 확인 요청한 상태임.
+원인이 우리 쪽이면 8월 내 수정 대상이고, 메타 측이면 집행 지역 배분에 반영해야 함.
+</div>
 
 <div class="note">
 참고로 <b>결제 실패</b>(<code>5003</code>)는 성격이 다름 — <b>75.1%가 유저가 결제창에서 나간 정상 이탈</b>이라
-손댈 것이 없음. 보상형 광고 에러와 혼동하지 말 것.
+손댈 것이 없음. 보상형 광고 에러와 혼동하지 말 것(보상형 광고의 유저 이탈은 12.1%).
 </div>
 </div>
 
