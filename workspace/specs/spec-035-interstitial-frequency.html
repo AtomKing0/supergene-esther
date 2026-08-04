@@ -175,7 +175,7 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="badge badge-green">2026. 8. 4.</span>
     </div>
     <h1>전면 광고 빈도 곡선<br><span>Interstitial Frequency Ramp</span></h1>
-    <p class="hero-sub">전면 광고는 <span class="sheet-var">#361</span> 이후 <strong>노출 0</strong>인데 프리로드만 14일 <strong>53,338회</strong> 돌고 있어 수익 없이 대역폭만 쓰는 중임. 라이브 시트에 이미 <span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079, 현재 0)이 있으므로 <strong>신규 방식을 만들지 않고 그 간격 방식을 레벨 구간별로 확장</strong>함. 값은 전부 시트에 두어 <strong>빌드 없이 0으로 되돌릴 수 있게</strong> 함.</p>
+    <p class="hero-sub">전면 광고는 <span class="sheet-var">#361</span> 이후 <strong>노출 0</strong>인데 프리로드만 14일 <strong>53,338회</strong> 돌고 있어 수익 없이 대역폭만 쓰는 중임. 라이브 시트에 이미 <span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079, 현재 0)이 있으므로 <strong>신규 방식을 만들지 않고 그 간격 방식을 레벨 구간별로 확장</strong>함(10079 자체는 참조 제거, 신규 <span class="sheet-var">interstitial_tier</span> 탭이 단일 소스). 값은 전부 시트에 두어 <strong>빌드 없이 0으로 되돌릴 수 있게</strong> 함.</p>
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">현재 전면 광고 노출</div>
@@ -389,13 +389,13 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>항목</th><th>처리</th></tr></thead>
     <tbody>
-    <tr><td><span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079)</td><td><strong>폴백 기본값으로 유지</strong>. 현재값 0 그대로 둠</td></tr>
-    <tr><td>티어 탭을 못 읽었을 때</td><td>10079 값을 전 레벨에 적용 &mdash; <strong>0이므로 노출되지 않음</strong>(안전 기본값)</td></tr>
-    <tr><td>티어 탭을 정상적으로 읽었을 때</td><td>티어 값이 <strong>10079를 덮어씀</strong></td></tr>
+    <tr><td><span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079)</td><td><strong>클라가 더 이상 참조하지 않음</strong>. 행은 값 0으로 남겨두되 읽지 않음</td></tr>
+    <tr><td>티어 탭을 못 읽었을 때</td><td><strong>클라 하드코딩 0</strong>으로 폴백 &mdash; 10079를 보지 않음. 노출되지 않는 것이 안전 기본값</td></tr>
+    <tr><td>노출 강도를 조정할 때</td><td><span class="sheet-var">interstitial_tier</span> 탭의 <span class="sheet-var">clear_interval</span>이 유일한 소스</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <strong>10079는 남김 &mdash; 값 0 고정.</strong> 이미 라이브 클라가 읽고 있는 필드라 신규 클라 배포 전에 지우면 현행 클라가 읽던 키가 사라짐. 값이 0이라 남겨도 라이브 영향은 없음. 다만 <strong>10079는 더 이상 튜닝 손잡이가 아님</strong> &mdash; 노출 강도는 <span class="sheet-var">interstitial_tier</span> 탭에서만 조정하고 10079는 항상 0으로 둠.
+    <strong>10079는 참조 제거 &mdash; 행만 값 0으로 남김.</strong> 노출 빈도의 소스는 <span class="sheet-var">interstitial_tier</span> 탭 하나임. 값이 두 곳에 존재하면 어느 쪽이 먹히는지 헷갈리므로 클라는 10079를 아예 읽지 않음. 시트에서 행을 지우지는 않는데, 현행 라이브 클라가 아직 이 키를 읽고 있어 신규 클라 배포 전에 지우면 없는 키를 읽게 되기 때문임. 값이 0이라 남겨도 라이브 영향은 없음.
   </div>
 
   <h3>클라</h3>
@@ -403,7 +403,7 @@ ul li strong,ol li strong { color:var(--text); }
     <li>판정 로직은 승리 결과 화면 <strong>닫기 직후</strong> 1회만 실행. 결과 화면 위에 겹쳐 띄우지 않음</li>
     <li>난수를 쓰지 않음 &mdash; 간격 카운터만으로 결정됨. 같은 조건이면 항상 같은 시점에 노출됨</li>
     <li>보상형 영상을 시청한 판은 전면 판정을 건너뜀 &mdash; 판정 진입 전에 해당 판의 보상형 시청 여부를 확인</li>
-    <li><span class="sheet-var">interstitial_tier</span> 로드 실패 시 <strong>10079 값(현재 0)으로 폴백</strong>. 예외를 던져 크래시내지 않음</li>
+    <li><span class="sheet-var">interstitial_tier</span> 로드 실패 시 <strong>하드코딩 0으로 폴백</strong>(노출 안 함). 예외를 던져 크래시내지 않음. <span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079)은 참조하지 않음</li>
     <li>프리로드 정책은 기존 유지. 다만 <span class="sheet-var">is_interstitial_ad_open</span>이 0이면 <strong>프리로드도 중단</strong>해 현재의 낭비를 없앰</li>
   </ul>
   <div class="callout callout-purple">
