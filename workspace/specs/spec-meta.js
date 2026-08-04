@@ -193,6 +193,11 @@ const SPECS = [
     title: '[수익화-부스터] 파이어웍스 인게임 아이템 확장',
     tags: ['monetize'], priority: 'mid', status: 'open', date: '2026. 7. 30.', dueDate: null, relatedTo: ['spec-032'],
   },
+  {
+    id: 'spec-035', file: 'spec-035-interstitial-frequency.html',
+    title: '[수익화-광고] 전면 광고 빈도 곡선',
+    tags: ['monetize', 'balance'], priority: 'high', status: 'open', date: '2026. 8. 4.', dueDate: null, relatedTo: [],
+  },
 ];
 
 /* ── 어휘 ──────────────────────────────────────────────────────────────

@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-035 · 전면 광고 빈도 곡선</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #a78bfa;
+  --accent2: #c4b5fd;
+  --green: #34d399;   --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;     --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;    --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;  --purple-bg: rgba(167,139,250,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #1e1a35 45%, #1a1d27 100%);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #7c3aed; --accent2: #6d28d9;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626;   --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb;  --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --hero-bg: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 45%, #e0e7ff 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { display:none; }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200; }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;margin-left:260px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.1) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--accent),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-yellow { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+.kpi-trend { font-size:0.72rem;font-weight:700;margin-top:6px; }
+.trend-up   { color:var(--green); }
+.trend-down { color:var(--red); }
+
+.container { max-width:1100px;margin:0 0 0 260px;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-num-3 { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--blue-bg);color:var(--blue); }
+.aud-dev { background:var(--green-bg);color:var(--green); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+h4 { font-size:0.95rem;font-weight:700;margin:24px 0 10px;color:var(--accent); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-purple { background:var(--purple-bg);border-left:3px solid var(--purple); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.86rem; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var     { font-family:monospace;color:var(--blue);font-weight:600;min-width:300px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:72px; }
+.sheet-row-unit    { font-size:0.75rem;color:var(--text2);min-width:100px; }
+.sheet-row-desc    { color:var(--text2);font-size:0.82rem;flex:1; }
+
+.flow-step { display:flex;gap:14px;margin-bottom:14px;align-items:flex-start; }
+.flow-dot  { width:28px;height:28px;border-radius:50%;background:var(--purple-bg);border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--purple);flex-shrink:0;margin-top:2px; }
+.flow-body { flex:1; }
+.flow-body strong { color:var(--text);font-size:0.9rem; }
+.flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+
+.step-label{display:inline-block;font-size:.66rem;font-weight:800;letter-spacing:.12em;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,.3);padding:3px 10px;border-radius:6px;margin-top:34px}
+.step-label+h3{margin-top:8px;color:var(--text);font-size:1.15rem}
+.d-up{color:var(--green);font-weight:700}
+.d-down{color:var(--red);font-weight:700}
+.seq-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin:16px 0}
+.seq-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.seq-label{min-width:118px;font-size:.8rem;font-weight:700;color:var(--text)}
+.seq-label span{display:block;font-weight:500;font-size:.72rem;color:var(--text2)}
+.seq{display:flex;gap:3px;flex-wrap:wrap}
+.seq i,.seq-legend i{display:inline-block;width:15px;height:19px;border-radius:3px;vertical-align:-4px}
+.seq i.n,.seq-legend i.n{background:#3a4056}
+.seq i.h,.seq-legend i.h{background:var(--yellow)}
+.seq i.s,.seq-legend i.s{background:var(--red)}
+[data-theme="light"] .seq i.n,[data-theme="light"] .seq-legend i.n{background:#c8cbd6}
+.seq-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.75rem;color:var(--text2);border-top:1px solid var(--border);padding-top:12px}
+.seq-legend span{display:flex;align-items:center;gap:6px}
+.seq-note{margin-left:auto;color:var(--text2)}
+
+.pick td{background:var(--green-bg)}
+.pick td:first-child{color:var(--green)}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">&larr; 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">&#9776;</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-035</div>
+  <a href="#s1">&#9312; 기획 의도 &amp; 확정 설계</a>
+  <a href="#s2">&#9313; 개발 스펙</a>
+  <a href="#s3">&#9314; 로깅 · 검증 · 롤백</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-035</span>
+      <span class="badge badge-purple" id="hero-tag"      style="cursor:pointer" title="태그 변경">&#128176; 수익화</span>
+      <span class="badge badge-red"    id="hero-priority" style="cursor:pointer" title="우선순위 변경">&#128308; 높은 우선순위</span>
+      <span class="badge badge-blue"   id="hero-status"   style="cursor:pointer" title="상태 변경">&#128309; 검토중</span>
+      <span class="badge badge-green">2026. 8. 4.</span>
+    </div>
+    <h1>전면 광고 빈도 곡선<br><span>Interstitial Frequency Ramp</span></h1>
+    <p class="hero-sub">전면 광고는 <span class="sheet-var">#361</span> 이후 <strong>노출 0</strong>인데 프리로드만 14일 <strong>53,338회</strong> 돌고 있어 수익 없이 대역폭만 쓰는 중임. 재개 시점에 맞춰 메타가 제시한 <strong>레벨 구간별 노출 확률 곡선</strong>과 <strong>최소 간격 · 세션 게이트</strong>를 시트로 제어 가능한 형태로 신설함. 값은 전부 시트에 두어 <strong>빌드 없이 0%로 되돌릴 수 있게</strong> 함.</p>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">현재 전면 광고 노출</div>
+        <div class="kpi-value" style="color:var(--red)">0</div>
+        <div class="kpi-sub">프리로드 53,338 · 실패 18,532</div>
+        <div class="kpi-trend">&#9660; #361 이후 정지</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">목표 노출량</div>
+        <div class="kpi-value" style="color:var(--green)">2.6</div>
+        <div class="kpi-sub">DAU당 · 정상화 시 기존 예측치</div>
+        <div class="kpi-trend trend-up">&#9650; 신규</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">전면 eCPM 목표선</div>
+        <div class="kpi-value" style="color:var(--blue)">$29.4</div>
+        <div class="kpi-sub">미국 안드로이드 · 메타 최소 기준</div>
+        <div class="kpi-trend trend-up">&#9650; iOS $22.2 · 데스크톱 $5.0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">가드레일</div>
+        <div class="kpi-value" style="color:var(--yellow)">D1 유지</div>
+        <div class="kpi-sub">하락 시 즉시 롤백</div>
+        <div class="kpi-trend">&#9654; in_use 단독 차단</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">&#9312;</div>
+    <div class="section-meta">
+      <div class="section-title">기획 의도 &amp; 확정 설계</div>
+    </div>
+  </div>
+
+  <h3>문제 &mdash; 꺼져 있는데 비용은 계속 나감</h3>
+  <p>전면 광고는 <span class="sheet-var">#361</span>에서 <span class="sheet-var">game_quit</span> 지면을 제거한 뒤 <strong>전 구간 노출 0</strong>임. 콜드스타트 리텐션 보호를 위한 의도된 정지였으나, 프리로드 파이프라인은 그대로 살아 있어 실측 14일 기준 <span class="sheet-var">4080_INTERSTITIAL_AD_PRELOAD_FINISH</span> <strong>53,338건</strong> · <span class="sheet-var">4090_INTERSTITIAL_AD_PRELOAD_ERROR</span> <strong>18,532건</strong>이 계속 발생함. <strong>수익 0인 상태로 로딩과 대역폭만 소비하는 구조</strong>임.</p>
+  <p>더 큰 문제는 재개 방식임. 기준 없이 다시 켜면 노출 강도를 감으로 정하게 되고, 리텐션이 흔들려도 <strong>광고 때문인지 다른 변경 때문인지 분리할 수 없음</strong>.</p>
+
+  <div class="callout callout-yellow">
+    <strong>합산 ARPDAU 부족분의 거의 전부는 결제 쪽에서 나옴.</strong> 실측 합산 <strong>$0.025</strong> 대 메타 하이브리드 목표 <strong>$0.063</strong>인데, 보상형 영상은 이미 <strong>2.22회/DAU · 완료율 80%</strong>로 목표선 근처임. 따라서 이 스펙의 목적은 <strong>수익 극대화가 아니라 꺼져 있는 채널을 안전한 기준값으로 되살리는 것</strong>이고, 객단가 회복은 별도 IAP 확장 계획이 담당함.
+  </div>
+
+  <h3>고칠 부분</h3>
+  <table>
+    <thead><tr><th>#</th><th>고칠 것</th><th>방식</th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td>노출 강도 기준 부재</td><td>유저 진행 레벨 구간별 <strong>노출 확률 곡선</strong>을 시트 값으로 신설</td></tr>
+    <tr><td>2</td><td>연속 노출 방지 장치 부재</td><td><strong>최소 간격</strong>(마지막 노출 이후 경과 시간) 게이트 추가</td></tr>
+    <tr><td>3</td><td>신규 유저 보호 장치 부재</td><td><strong>세션 게이트</strong>(2세션 이상부터) 추가</td></tr>
+    <tr><td>4</td><td>과다 노출 상한 부재</td><td><strong>일 상한</strong> 추가 &mdash; 곡선 오설정 시의 안전핀</td></tr>
+    <tr><td>5</td><td>즉시 되돌릴 수단 부재</td><td><span class="sheet-var">in_use</span> 단독 플래그로 <strong>빌드 없이 전 구간 차단</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>확정 곡선 &mdash; 이 표가 유일한 SSOT</h3>
+  <p>메타가 2026-07-28 Play 이벤트에서 제시한 권장 곡선을 그대로 초기값으로 채택함. 자체 근거로 만든 값이 아니라 <strong>플랫폼 권장치라 최초 기준선으로 삼고, 이후 실측으로만 조정</strong>함.</p>
+  <table>
+    <thead><tr><th>구간</th><th>유저 레벨</th><th>노출 확률</th><th>의도</th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td>1 ~ 5</td><td><strong style="color:var(--green)">0%</strong></td><td>첫 경험 완전 보호 &mdash; 튜토리얼 구간 포함</td></tr>
+    <tr><td>2</td><td>6 ~ 10</td><td><strong>20%</strong></td><td>광고 존재를 인지시키는 최소 노출</td></tr>
+    <tr><td>3</td><td>11 ~ 20</td><td><strong>50%</strong></td><td>습관 형성 이후 본격 노출</td></tr>
+    <tr><td>4</td><td>21 이상</td><td><strong style="color:var(--yellow)">75%</strong></td><td>정착 유저 대상 정상 강도</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    이 표의 수치를 <strong>다른 섹션에 다시 적지 않음</strong>. 개발·QA·시트 어디서든 값이 필요하면 이 표를 참조함. 시트 반영 후에는 <strong>시트 값이 최종</strong>이고 이 표는 초기값 기록으로 남음.
+  </div>
+
+  <h3>노출 지면 &mdash; 승리 직후 한 곳으로 한정</h3>
+  <p>메타 권장 지면은 &ldquo;레벨 사이&rdquo;와 &ldquo;레벨 클리어 직후&rdquo; 두 가지인데, <strong>승리 직후 한 곳만</strong> 사용함. 패배 직후는 이탈 위험이 가장 높은 순간이라 광고를 얹을 자리가 아님.</p>
+  <div class="callout callout-blue">
+    <strong>승리 한정으로 해도 물량 손실이 거의 없음.</strong> 솔리테어 트라이픽스는 실패율이 <strong>0.9%</strong>라 승패를 가려도 대상 판수의 <strong>99.1%</strong>가 그대로 남음. 이탈 위험이 큰 0.9%를 버리는 대신 얻는 안전 마진이 큼.
+  </div>
+
+  <h3>게이트 3종</h3>
+  <table>
+    <thead><tr><th>게이트</th><th>확정값</th><th>근거</th></tr></thead>
+    <tbody>
+    <tr><td><strong>최소 간격</strong></td><td>60초</td><td>메타 권장 &mdash; &ldquo;최상의 사용자 경험을 위해 최소 60초 간격&rdquo;</td></tr>
+    <tr><td><strong>세션 게이트</strong></td><td>2세션 이상</td><td>메타 권장 &mdash; 첫 세션은 전면 광고 대상에서 제외</td></tr>
+    <tr><td><strong>일 상한</strong></td><td>8회 / 일</td><td>메타 미제시 항목. 목표 노출량 2.6회/DAU의 약 3배를 안전핀으로 둠 &mdash; 정상 운영에서는 걸리지 않고 곡선 오설정 때만 작동</td></tr>
+    </tbody>
+  </table>
+
+  <h3>예외 &mdash; 그럼 이때는?</h3>
+  <table>
+    <thead><tr><th>상황</th><th>동작</th></tr></thead>
+    <tbody>
+    <tr><td>판정 직전에 레벨업해 구간이 바뀜</td><td><strong>판정 시점의 레벨</strong>로 구간을 정함. 판 시작 시점 레벨이 아님</td></tr>
+    <tr><td>같은 판 종료 화면에서 보상형 영상도 뜰 수 있음</td><td><strong>보상형 영상 우선</strong>. 유저가 보상형을 보면 그 판의 전면 판정은 건너뜀 &mdash; 한 판에 광고 2회는 금지</td></tr>
+    <tr><td>확률에 당첨됐는데 프리로드가 안 돼 있음</td><td>노출 시도하지 않고 <strong>조용히 통과</strong>. 일 상한도 차감하지 않음. 실패 로그만 남김</td></tr>
+    <tr><td>긴급 킬로 <span class="sheet-var">in_use</span>를 FALSE로 바꿈</td><td><strong>다음 판정부터 즉시 0%</strong>. 이미 재생 중인 광고는 그대로 두고, 진행 중 세션도 다음 판부터 미노출. 클라 재시작 불필요</td></tr>
+    <tr><td>튜토리얼 진행 중</td><td>구간 1(0%)에 자연히 포함되지만, <strong>튜토리얼 플래그가 있으면 확률과 무관하게 차단</strong>. 이중 방어</td></tr>
+    <tr><td>세션 게이트에 걸린 1세션 유저</td><td>확률 판정 자체를 하지 않음. 일 상한·간격도 갱신하지 않음</td></tr>
+    <tr><td>일 상한에 도달한 뒤 날짜가 바뀜</td><td><strong>UTC 0시</strong>에 카운터 리셋 &mdash; 기존 데일리 리셋 축과 동일</td></tr>
+    </tbody>
+  </table>
+
+  <h3>KPI</h3>
+  <table>
+    <thead><tr><th>지표</th><th>As-Is</th><th>To-Be</th><th>판정</th></tr></thead>
+    <tbody>
+    <tr><td>전면 노출 / DAU</td><td><strong style="color:var(--red)">0</strong></td><td><strong>2.6</strong></td><td>4000 로그 &divide; DAU</td></tr>
+    <tr><td>전면 임프레션율</td><td>&mdash;</td><td>메타 기준 <strong>안드로이드 58% · iOS 60% · 데스크톱 72%</strong></td><td>4010 &divide; 4000</td></tr>
+    <tr><td>프리로드 낭비</td><td>53,338건 전량 낭비</td><td>노출로 회수</td><td>4080 대비 4000 비율</td></tr>
+    <tr><td><strong>D1 리텐션</strong></td><td>현행</td><td><strong>유지</strong> &mdash; 상승 목표 아님</td><td>가드레일. 유의하게 하락 시 롤백</td></tr>
+    <tr><td><strong>판수 / 유저-일</strong></td><td>현행</td><td><strong>유지</strong></td><td>가드레일</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-yellow">
+    <strong>이 스펙의 성공은 수익 상승이 아니라 &ldquo;리텐션을 안 깎고 채널을 되살린 것&rdquo;임.</strong> 전후 판정은 절대 수치 컷이 아니라 z검정으로 하고, 효과 없음과 검출력 부족을 반드시 구분함.
+  </div>
+</section>
+
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">&#9313;</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+    </div>
+  </div>
+
+  <h3>용어 &mdash; 세 층을 다른 단어로 부름</h3>
+  <table>
+    <thead><tr><th>용어</th><th>뜻</th><th>혼동 주의</th></tr></thead>
+    <tbody>
+    <tr><td><strong>판</strong></td><td>레벨 1회 플레이. 판정 단위</td><td>&ldquo;라운드&rdquo;로 부르지 않음</td></tr>
+    <tr><td><strong>세션</strong></td><td>로그인 1회. 세션 게이트의 단위</td><td>플레이 세션 시간과 다름</td></tr>
+    <tr><td><strong>간격</strong></td><td>직전 전면 광고 노출 이후 경과 시간</td><td>쿨다운이라 부르지 않음 &mdash; 다른 스펙의 쿨다운과 구분</td></tr>
+    <tr><td><strong>일</strong></td><td>UTC 0시 기준 하루. 일 상한의 단위</td><td>세션과 무관 &mdash; 세션이 여러 개여도 같은 날이면 누적</td></tr>
+    </tbody>
+  </table>
+
+  <h3>ⓐ 서버가 기억해야 하는 값</h3>
+  <p>전면 광고 판정 자체는 클라가 수행함. 서버는 <strong>판정에 필요한 입력값만 제공</strong>하며 광고 상태를 따로 관리하지 않음.</p>
+  <table>
+    <thead><tr><th>값</th><th>누가 보관</th><th>언제 갱신</th><th>비고</th></tr></thead>
+    <tbody>
+    <tr><td><span class="sheet-var">userLevel</span></td><td><strong>서버</strong></td><td>레벨 클리어 시</td><td>기존 값 재사용 &mdash; 신규 필드 아님</td></tr>
+    <tr><td><span class="sheet-var">loginCountTotal</span></td><td><strong>서버</strong></td><td>로그인 시</td><td>기존 값 재사용. 세션 게이트 입력</td></tr>
+    <tr><td><span class="sheet-var">itShownToday</span></td><td><strong>서버</strong></td><td>전면 노출 성공 시 +1 · UTC 0시 리셋</td><td><strong>신규</strong>. 클라 보관 시 재접속으로 초기화돼 상한이 무력화됨</td></tr>
+    <tr><td><span class="sheet-var">lastItShownAt</span></td><td>클라(세션 메모리)</td><td>전면 노출 성공 시</td><td>세션 종료 시 소멸해도 무방 &mdash; 재접속 직후엔 어차피 판이 없음</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-purple">
+    <strong>서버에 신규로 필요한 것은 <span class="sheet-var">itShownToday</span> 하나뿐임.</strong> 나머지는 이미 서버가 갖고 있는 값이라 프로토콜 확장 범위가 작음. 일 상한을 포기하면 서버 변경 없이도 구현 가능하지만, 그 경우 곡선 오설정에 대한 안전핀이 사라짐.
+  </div>
+
+  <h3>ⓑ 판정 순서</h3>
+  <p>승리 결과 화면을 닫는 시점에 아래 순서로 판정함. <strong>먼저 걸리는 게이트에서 즉시 종료</strong>하고 이후 단계를 평가하지 않음.</p>
+  <table>
+    <thead><tr><th>순서</th><th>검사</th><th>불통과 시</th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td><span class="sheet-var">in_use</span>가 TRUE인가</td><td>종료 &mdash; 로그 없음</td></tr>
+    <tr><td>2</td><td>튜토리얼 진행 중이 아닌가</td><td>종료 &mdash; 로그 없음</td></tr>
+    <tr><td>3</td><td>승리로 끝난 판인가</td><td>종료 &mdash; 로그 없음</td></tr>
+    <tr><td>4</td><td><span class="sheet-var">loginCountTotal</span> &ge; 세션 게이트</td><td>종료 &mdash; 로그 없음</td></tr>
+    <tr><td>5</td><td><span class="sheet-var">itShownToday</span> &lt; 일 상한</td><td>종료 &mdash; <span class="sheet-var">skip_reason=daily_cap</span> 로그</td></tr>
+    <tr><td>6</td><td>직전 노출 이후 최소 간격 경과</td><td>종료 &mdash; <span class="sheet-var">skip_reason=interval</span> 로그</td></tr>
+    <tr><td>7</td><td>레벨 구간 확률 롤 당첨</td><td>종료 &mdash; <span class="sheet-var">skip_reason=roll</span> 로그</td></tr>
+    <tr><td>8</td><td>프리로드 완료 상태인가</td><td>종료 &mdash; <span class="sheet-var">skip_reason=not_ready</span> 로그 · <strong>상한 차감 없음</strong></td></tr>
+    <tr><td>9</td><td colspan="2"><strong>노출</strong> &rarr; <span class="sheet-var">4000</span> 발화 · <span class="sheet-var">itShownToday</span> +1 · <span class="sheet-var">lastItShownAt</span> 갱신</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <strong>확률 롤을 8번(프리로드 확인)보다 앞에 둔 이유.</strong> 프리로드 실패로 못 띄운 건과 확률에서 떨어진 건을 로그에서 분리해야 함. 순서를 바꾸면 두 원인이 <span class="sheet-var">not_ready</span> 하나로 뭉쳐져 <strong>재고 문제인지 곡선 문제인지 판별이 불가능</strong>해짐.
+  </div>
+
+  <h3>시트 &mdash; 신규 상수 5개</h3>
+  <p><span class="sheet-var">const</span> 탭에 추가함. 곡선 구간은 값이 4쌍이라 상수로 풀면 8행이 되므로 <strong>구간 표를 별도 탭으로 두는 안</strong>과 <strong>구분자 문자열 1행으로 두는 안</strong>이 있음.</p>
+  <table>
+    <thead><tr><th>const_name</th><th>초기값</th><th>타입</th><th>설명</th></tr></thead>
+    <tbody>
+    <tr><td><span class="sheet-var">interstitial_in_use</span></td><td>FALSE</td><td>bool</td><td>전면 광고 전체 on/off. <strong>배포 시 FALSE로 넣고 별도 시점에 켬</strong></td></tr>
+    <tr><td><span class="sheet-var">interstitial_min_interval_sec</span></td><td>60</td><td>int</td><td>최소 간격(초)</td></tr>
+    <tr><td><span class="sheet-var">interstitial_session_gate</span></td><td>2</td><td>int</td><td>이 세션 수 이상부터 노출</td></tr>
+    <tr><td><span class="sheet-var">interstitial_daily_cap</span></td><td>8</td><td>int</td><td>일 상한. 0이면 무제한</td></tr>
+    <tr><td><span class="sheet-var">interstitial_rate_table</span></td><td>5:0,10:2000,20:5000,0:7500</td><td>str</td><td>구간 곡선. <span class="sheet-var">최대레벨:확률</span> 쌍을 쉼표로 구분하며 <strong>마지막 쌍의 최대레벨 0 = 상한 없음</strong>. 확률은 분모 10000</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-yellow">
+    <strong>&#9888; 확정 필요 &mdash; 두 가지.</strong><br>
+    ① <span class="sheet-var">key_number</span> 대역: <span class="sheet-var">const</span> 탭 최신 최대값을 <span class="sheet-var">tool</span> 탭에서 확인 후 부여해야 함. 이 문서에서 임의 지정하지 않음.<br>
+    ② 곡선 저장 형태: 위 표는 <strong>문자열 1행</strong> 안임. 시트 가독성과 검증 편의를 위해 <strong>별도 탭 4행</strong>으로 가는 편이 낫다면 그쪽으로 전환 가능하며, 그 경우 컬럼은 <span class="sheet-var">level_max</span> · <span class="sheet-var">rate</span> 2개면 충분함. <strong>개발이 임의로 고르지 말고 확정 후 진행</strong>.
+  </div>
+
+  <h3>클라</h3>
+  <ul>
+    <li>판정 로직은 승리 결과 화면 <strong>닫기 직후</strong> 1회만 실행. 결과 화면 위에 겹쳐 띄우지 않음</li>
+    <li>확률 롤은 <strong>판마다 독립</strong>. 직전 결과를 누적하거나 보정하지 않음(의사 난수 보정 없음)</li>
+    <li>보상형 영상을 시청한 판은 전면 판정을 건너뜀 &mdash; 판정 진입 전에 해당 판의 보상형 시청 여부를 확인</li>
+    <li><span class="sheet-var">interstitial_rate_table</span> 파싱 실패 시 <strong>전 구간 0%로 동작</strong>(안전 기본값). 예외를 던져 크래시내지 않음</li>
+    <li>프리로드 정책은 기존 유지. 다만 <span class="sheet-var">in_use</span>가 FALSE면 <strong>프리로드도 중단</strong>해 현재의 낭비를 없앰</li>
+  </ul>
+  <div class="callout callout-purple">
+    마지막 항목은 이 스펙에서 <strong>지금 바로 얻는 유일한 이득</strong>임. 광고를 켜지 않더라도 <span class="sheet-var">in_use=FALSE</span>일 때 프리로드를 멈추는 것만으로 14일 <strong>7만여 건</strong>의 무의미한 요청이 사라짐.
+  </div>
+</section>
+
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">&#9314;</div>
+    <div class="section-meta">
+      <div class="section-title">로깅 · 검증 · 롤백</div>
+    </div>
+  </div>
+
+  <h3>로그 &mdash; 기존 코드 재사용 + data 필드 확장</h3>
+  <p>신규 로그 코드를 만들지 않음. 기존 <span class="sheet-var">4000_INTERSTITIAL_AD_START</span> · <span class="sheet-var">4010_INTERSTITIAL_AD_FINISH</span>에 판정 맥락을 <span class="sheet-var">data</span>로 실음. 게이트에서 걸러진 건은 <span class="sheet-var">4000</span>을 발화하지 않고 별도 스킵 로그로 남김.</p>
+  <table>
+    <thead><tr><th>필드</th><th>값</th><th>출처</th></tr></thead>
+    <tbody>
+    <tr><td><span class="sheet-var">level_at_show</span></td><td>판정 시점 유저 레벨</td><td><strong>서버 응답</strong>(기존 유저 데이터)</td></tr>
+    <tr><td><span class="sheet-var">bucket</span></td><td>적용된 구간 번호 1~4</td><td><strong>클라</strong> &mdash; 시트 곡선을 레벨에 대입해 산출</td></tr>
+    <tr><td><span class="sheet-var">rate</span></td><td>그 구간의 확률(분모 10000)</td><td><strong>시트 상수</strong></td></tr>
+    <tr><td><span class="sheet-var">session_index</span></td><td>누적 로그인 횟수</td><td><strong>서버 응답</strong>(<span class="sheet-var">loginCountTotal</span>)</td></tr>
+    <tr><td><span class="sheet-var">shown_today</span></td><td>노출 직전 당일 누적</td><td><strong>서버 응답</strong> &mdash; 클라 자체 카운터를 쓰면 재접속으로 어긋남</td></tr>
+    <tr><td><span class="sheet-var">since_last_sec</span></td><td>직전 노출 이후 경과 초</td><td><strong>클라</strong>(세션 메모리). 세션 첫 노출이면 <span class="sheet-var">null</span></td></tr>
+    <tr><td><span class="sheet-var">skip_reason</span></td><td><span class="sheet-var">daily_cap</span> / <span class="sheet-var">interval</span> / <span class="sheet-var">roll</span> / <span class="sheet-var">not_ready</span></td><td><strong>클라</strong> &mdash; 스킵 로그 전용, 노출 시엔 없음</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <span class="sheet-var">shown_today</span>를 서버 응답으로 못 받는다면 <strong>일 상한 자체를 빼는 것이 맞음</strong>. 클라 카운터로 상한을 두면 재접속마다 초기화돼 상한이 있다고 착각하게 만드는 쪽이 없는 것보다 위험함.
+  </div>
+
+  <h3>검증 게이트 &mdash; 순서대로</h3>
+  <table>
+    <thead><tr><th>단계</th><th>확인</th><th>통과 조건</th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td><span class="sheet-var">in_use=FALSE</span> 상태 배포</td><td>노출 0 유지 · <strong>프리로드도 0으로 떨어짐</strong></td></tr>
+    <tr><td>2</td><td>내부 계정으로 <span class="sheet-var">in_use=TRUE</span></td><td>구간별 확률이 로그의 <span class="sheet-var">bucket</span> · <span class="sheet-var">rate</span>와 일치</td></tr>
+    <tr><td>3</td><td>게이트 동작 확인</td><td>1세션 유저 노출 0건 · 60초 내 연속 노출 0건 · 일 9회차 이상 0건</td></tr>
+    <tr><td>4</td><td>소규모 오픈</td><td>노출/DAU가 목표 2.6 근방 · 임프레션율이 메타 기준 근방</td></tr>
+    <tr><td>5</td><td>가드레일 판정</td><td><strong>D1 리텐션·판수 유의 하락 없음</strong>(z검정). 하락 시 즉시 6단계</td></tr>
+    <tr><td>6</td><td>롤백</td><td><span class="sheet-var">in_use=FALSE</span> &mdash; 빌드 없이 즉시</td></tr>
+    </tbody>
+  </table>
+
+  <h3>롤백</h3>
+  <ul>
+    <li><strong>전체 차단</strong>은 <span class="sheet-var">interstitial_in_use=FALSE</span> 하나로 끝남. 다음 판정부터 즉시 반영되고 클라 재시작이 필요 없음</li>
+    <li><strong>부분 완화</strong>가 필요하면 곡선 값을 낮추거나 최소 간격을 늘림. 이 경우도 시트만 만짐</li>
+    <li>이미 재생 중인 광고는 중단하지 않음 &mdash; 재생 중 강제 종료는 수익 정산 문제를 만들 수 있음</li>
+  </ul>
+
+  <h3>타임존</h3>
+  <p>이 스펙에서 타임존이 걸리는 값은 <strong>일 상한 리셋 하나뿐</strong>임. 최소 간격과 세션 게이트는 상대 시간·횟수라 타임존과 무관함.</p>
+  <table>
+    <thead><tr><th>플랫폼</th><th>기준</th><th>비고</th></tr></thead>
+    <tbody>
+    <tr><td><strong>페이스북</strong></td><td><strong>UTC 0시</strong></td><td>기존 데일리 리셋·이벤트와 동일 축</td></tr>
+    <tr><td>토스</td><td>해당 없음</td><td>전면 광고 대상 아님. 추후 적용 시 <strong>KST</strong> 기준</td></tr>
+    </tbody>
+  </table>
+
+  <h3>연관</h3>
+  <ul>
+    <li>근거 문서 &mdash; 메타 Play 이벤트 정리(2026-07-28) · 메타 벤치마크 갭 분석</li>
+    <li>선행 이력 &mdash; <span class="sheet-var">#361</span>에서 <span class="sheet-var">game_quit</span> 전면 지면 제거로 노출 0이 됨</li>
+    <li>후속 &mdash; IAP 확장 계획(별도 문서). 합산 ARPDAU 부족분의 주된 몫은 그쪽에서 회수함</li>
+  </ul>
+</section>
+
+
+
+</div>
+
+<script>
+// ── 메타 배지 드롭다운 (index.html과 localStorage 공유) ──────────────
+(function () {
+  const SPEC_ID = 'spec-035';
+
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',    cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',  cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',    cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',   cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',  cls: 'badge-yellow' },
+    etc:     { label: '📌 기타',    cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL  = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS  = { tag: 'balance', priority: 'high', status: 'open' };
+  let ddField = null;
+
+  // ── 드롭다운 HTML (body에 append) ──
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+
+  function applyBadge(el, info) {
+    el.className = 'badge ' + info.cls;
+    el.textContent = info.label;
+    el.style.cursor = 'pointer';
+  }
+
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o =>
+        `<div class="dd-itm${o.val === cur ? ' active' : ''}" data-val="${o.val}">${o.label}</div>`
+      ).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    const fieldMap = { 'hero-tag': 'tag', 'hero-priority': 'priority', 'hero-status': 'status' };
+    Object.keys(fieldMap).forEach(elId => {
+      document.getElementById(elId).addEventListener('click', e => openDropdown(e, fieldMap[elId]));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none';
+      ddField = null;
+      updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
+
+  // ── 사이드바 네비 ──
+  var links    = document.querySelectorAll('.nav-sidebar a');
+  var sections = document.querySelectorAll('section[id]');
+  function activate() {
+    var scrollY = window.pageYOffset + 120;
+    sections.forEach(function (s) {
+      if (s.offsetTop <= scrollY && s.offsetTop + s.offsetHeight > scrollY) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = document.querySelector('.nav-sidebar a[href="#' + s.id + '"]');
+        if (a) a.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', activate);
+  activate();
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.nav-sidebar') && !e.target.closest('.nav-toggle'))
+      document.querySelector('.nav-sidebar').classList.remove('open');
+  });
+})();
+</script>
+<script src="memo.js"></script>
+</body>
+</html>
