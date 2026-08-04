@@ -157,8 +157,8 @@ const SPECS = [
   },
   {
     id: 'spec-028', file: 'spec-028-event-boost-pack.html',
-    title: '[수익화-오퍼] 이벤트 부스트 팩 (주말 이벤트 연동)',
-    tags: ['monetize'], priority: 'high', status: 'wip', date: '2026. 7. 26.', dueDate: null, relatedTo: ['spec-007'],
+    title: '[수익화-오퍼] 이벤트 부스트 팩 (주말 이벤트 연동) — ⏸ 준비 완료 · 8/12 이후 배포 대기',
+    tags: ['monetize'], priority: 'high', status: 'hold', date: '2026. 7. 26.', dueDate: null, relatedTo: ['spec-007', 'spec-027'],
   },
   {
     id: 'spec-029', file: 'spec-029-level-default-tier-ramp.html',
