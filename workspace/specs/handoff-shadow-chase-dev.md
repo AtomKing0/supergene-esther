@@ -207,6 +207,44 @@
 
 ---
 
+## 7-B. 사운드 연결 (클라)
+
+**신규 4종은 이미 클라 번들에 반영 완료.** 개발이 할 일은 **프리로드 등록 + 호출부 작성**임.
+
+### 반영 완료된 신규 클립 (`assets/bundles/sound/`)
+
+| 클립명 | 길이 | 지점 |
+|---|---|---|
+| `FX_EVENT_SHADOW_GRAB` | 0.58s | ② 열쇠 강탈 — 앞발이 채가는 순간 |
+| `FX_EVENT_SHADOW_STEP_01` | 0.54s | ④ 도주 트레일 (3종 랜덤) · ⑤ 마킹 착지 |
+| `FX_EVENT_SHADOW_STEP_02` | 0.54s | 〃 |
+| `FX_EVENT_SHADOW_STEP_03` | 0.60s | 〃 |
+
+- 규격 = 기존 SFX와 동일 (**mp3 · mono · 22050Hz · 128k**), 음량 정규화 완료(STEP 3종 상호 편차 0.0dB)
+- 출처 = 원본 이벤트(CCS "Catch the Troll")의 실제 사운드. 사내 오디오 라이브러리 `assets/audio/event_feature/368~371_CTT_*`
+- ⚠ **`.meta`가 아직 없음** — Cocos 에디터에서 임포트하면 생성됨. 커밋 시 `.meta` 4개 포함할 것
+- 원본 WAV는 `solitaire-esther-1/audio_sets/rec/`에 보존. 번들은 기존 관례대로 **mp3만** 둠(같은 이름의 wav/mp3 공존 시 에셋명 충돌)
+
+### 체크리스트
+
+- [ ] **프리로드 등록** — `ResourcePreloader.preloadForLobby()`에 신규 4종 + 재사용분 추가. **누락 시 최초 1회 무음 + 1초 지연**(`GameSound.download()`의 `setTimeout 1000`). 저사양 기기(`quality.isLowDevice`)는 프리로드 자체가 스킵되므로 이 경로에서도 무음이 안 나는지 확인
+- [ ] **② 강탈** — `PopupEventShadowChase.showStolenCut()`(`PopupEventShadowChase.ts:46`)에서 `GameSound.play('FX_EVENT_SHADOW_GRAB', this.node)`. `alarmPopAnim.play()`와 같은 자리
+- [ ] **④ 도주 / ⑤ 마킹** — 자국 스프라이트가 하나 찍힐 때마다 `FX_EVENT_SHADOW_STEP_0{1~3}` 중 랜덤 1개. 기존 랜덤 재생 문법 재활용(`StageView.ts:2821`의 `` `FX_CARD_TAPPED_0${idx}` `` 패턴)
+- [ ] **재사용 클립 연결** — 기획서 §2 사운드 명세표대로. ⑦-2 `FX_GIMMICK_KEY_ACTIVATE`, ⑦-3 `FX_REWARD_BIG_BOX_OPEN`·`FX_REWARD_ITEM_FLIES`, ⑥-B `FX_REWARD_GAUGE_FILL`, ⑥-C `FX_STREAK_COMPLETED`, ① 6슬롯 `FX_STREAK_SLOT_FILLED_01~06`(슬롯 순서대로)
+- [ ] **팝업 연출 사운드는 `*_show.anim`의 `PlaySound` 이벤트로** — 이 프로젝트 표준(`PopupBase.playPopupOpenSound()`는 no-op이고 서브클래스 8곳이 override로 죽여놨음). 대상 노드에 `EffectSound` 컴포넌트 필요. **`PopupRewardClaim_ShadowChase.prefab`에는 이미 부착돼 있음**
+- [ ] **루프 사운드 사용 시** `playLoop` ↔ `onHideStart`의 `stopSFXByName` 페어 필수 (`PopupCompleteLevel.ts:259-260` ↔ `224-225`)
+
+### 넣지 않는 것 (기획 확정 — 임의 추가 금지)
+
+- **⑧ 타이머 말풍선 전 구간 무음** — 등장음·경고음·연장 성공음 전부 없음
+- **실패(타이머 만료) 무음** — 실패에 알림을 붙이지 않는다는 기획과 일관
+- **팝업 오픈/클로즈 공통음** — 게임 전역에 미도입 상태이므로 이번 이벤트만 넣지 않음
+- **이벤트 전용 BGM** — `BGM_LOBBY` 유지
+
+> ⚠ **사운드 이름에 상수/enum이 없음.** 전부 문자열 리터럴이라 **오타가 컴파일에 안 걸리고 런타임에 조용히 무음**이 됨. 클립명은 위 표에서 복사해 쓸 것.
+
+---
+
 ## 8. 미결 — 개발 확인 5건
 
 | # | 항목 | 내용 |
