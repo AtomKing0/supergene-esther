@@ -175,7 +175,7 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="badge badge-green">2026. 8. 4.</span>
     </div>
     <h1>전면 광고 빈도 곡선<br><span>Interstitial Frequency Ramp</span></h1>
-    <p class="hero-sub">전면 광고는 <span class="sheet-var">#361</span> 이후 <strong>노출 0</strong>인데 프리로드만 14일 <strong>53,338회</strong> 돌고 있어 수익 없이 대역폭만 쓰는 중임. 재개 시점에 맞춰 메타가 제시한 <strong>레벨 구간별 노출 확률 곡선</strong>과 <strong>최소 간격 · 세션 게이트</strong>를 시트로 제어 가능한 형태로 신설함. 값은 전부 시트에 두어 <strong>빌드 없이 0%로 되돌릴 수 있게</strong> 함.</p>
+    <p class="hero-sub">전면 광고는 <span class="sheet-var">#361</span> 이후 <strong>노출 0</strong>인데 프리로드만 14일 <strong>53,338회</strong> 돌고 있어 수익 없이 대역폭만 쓰는 중임. 라이브 시트에 이미 <span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079, 현재 0)이 있으므로 <strong>신규 방식을 만들지 않고 그 간격 방식을 레벨 구간별로 확장</strong>함. 값은 전부 시트에 두어 <strong>빌드 없이 0으로 되돌릴 수 있게</strong> 함.</p>
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">현재 전면 광고 노출</div>
@@ -236,18 +236,24 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
 
   <h3>확정 곡선 &mdash; 이 표가 유일한 SSOT</h3>
-  <p>메타가 2026-07-28 Play 이벤트에서 제시한 권장 곡선을 그대로 초기값으로 채택함. 자체 근거로 만든 값이 아니라 <strong>플랫폼 권장치라 최초 기준선으로 삼고, 이후 실측으로만 조정</strong>함.</p>
+  <p>라이브 구현은 <strong>확률이 아니라 결정적 간격</strong>임 &mdash; <span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079)의 정의가 <strong>&ldquo;N값 &rarr; N회 클리어마다 1회 노출, 0=노출 안 함&rdquo;</strong>임. 따라서 메타 권장 확률을 <strong>간격으로 환산</strong>해 기존 방식을 그대로 쓰고, 레벨 구간별로만 값을 나눔.</p>
   <table>
-    <thead><tr><th>구간</th><th>유저 레벨</th><th>노출 확률</th><th>의도</th></tr></thead>
+    <thead><tr><th>구간</th><th>유저 레벨</th><th>클리어 간격</th><th>환산 노출률</th><th>메타 권장</th></tr></thead>
     <tbody>
-    <tr><td>1</td><td>1 ~ 5</td><td><strong style="color:var(--green)">0%</strong></td><td>첫 경험 완전 보호 &mdash; 튜토리얼 구간 포함</td></tr>
-    <tr><td>2</td><td>6 ~ 10</td><td><strong>20%</strong></td><td>광고 존재를 인지시키는 최소 노출</td></tr>
-    <tr><td>3</td><td>11 ~ 20</td><td><strong>50%</strong></td><td>습관 형성 이후 본격 노출</td></tr>
-    <tr><td>4</td><td>21 이상</td><td><strong style="color:var(--yellow)">75%</strong></td><td>정착 유저 대상 정상 강도</td></tr>
+    <tr><td>1</td><td>1 ~ 5</td><td><strong style="color:var(--green)">0</strong>(노출 없음)</td><td><strong>0%</strong></td><td>0% &mdash; 동일</td></tr>
+    <tr><td>2</td><td>6 ~ 10</td><td><strong>5판마다 1회</strong></td><td><strong>20%</strong></td><td>20% &mdash; 동일</td></tr>
+    <tr><td>3</td><td>11 ~ 20</td><td><strong>3판마다 1회</strong></td><td><strong>33%</strong></td><td>50% &mdash; <span style="color:var(--yellow)">보수적</span></td></tr>
+    <tr><td>4</td><td>21 이상</td><td><strong>2판마다 1회</strong></td><td><strong>50%</strong></td><td>75% &mdash; <span style="color:var(--yellow)">보수적</span></td></tr>
     </tbody>
   </table>
+  <div class="callout callout-yellow">
+    <strong>구간 3·4를 메타 권장보다 낮게 잡은 이유 세 가지.</strong><br>
+    &#9312; <strong>정수 간격으로 75%를 표현할 수 없음.</strong> 75%는 1.33판마다 1회라 결정적 간격 방식과 맞지 않음. 확률 방식으로 바꾸면 기존 필드 의미를 갈아엎어야 함.<br>
+    &#9313; <strong>결정적 간격은 최악 케이스가 없음.</strong> 확률 50%는 운이 나쁘면 3판 연속 광고가 나오지만, 간격 2는 반드시 한 판 걸러 나옴. 같은 노출률이어도 체감이 다름.<br>
+    &#9314; <strong>지금은 콜드스타트 리텐션 보호 구간임.</strong> 꺼져 있던 채널을 켜는 첫 배포라 권장치 상단부터 시작할 이유가 없음. 가드레일이 안정되면 3&rarr;2, 2&rarr;1 순으로 시트에서 올림.
+  </div>
   <div class="callout callout-blue">
-    이 표의 수치를 <strong>다른 섹션에 다시 적지 않음</strong>. 개발·QA·시트 어디서든 값이 필요하면 이 표를 참조함. 시트 반영 후에는 <strong>시트 값이 최종</strong>이고 이 표는 초기값 기록으로 남음.
+    이 표의 값을 <strong>다른 섹션에 다시 적지 않음</strong>. 시트 반영 후에는 <strong>시트 값이 최종</strong>이고 이 표는 초기값 기록으로 남음.
   </div>
 
   <h3>노출 지면 &mdash; 승리 직후 한 곳으로 한정</h3>
@@ -271,11 +277,11 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>상황</th><th>동작</th></tr></thead>
     <tbody>
     <tr><td>판정 직전에 레벨업해 구간이 바뀜</td><td><strong>판정 시점의 레벨</strong>로 구간을 정함. 판 시작 시점 레벨이 아님</td></tr>
-    <tr><td>같은 판 종료 화면에서 보상형 영상도 뜰 수 있음</td><td><strong>보상형 영상 우선</strong>. 유저가 보상형을 보면 그 판의 전면 판정은 건너뜀 &mdash; 한 판에 광고 2회는 금지</td></tr>
+    <tr><td>같은 판 종료 화면에서 보상형 영상도 뜰 수 있음</td><td><strong>보상형 영상 우선</strong>. 유저가 보상형을 보면 그 판의 전면 판정은 건너뜀(클리어 카운터는 +1 함) &mdash; 한 판에 광고 2회는 금지</td></tr>
     <tr><td>확률에 당첨됐는데 프리로드가 안 돼 있음</td><td>노출 시도하지 않고 <strong>조용히 통과</strong>. 일 상한도 차감하지 않음. 실패 로그만 남김</td></tr>
-    <tr><td>긴급 킬로 <span class="sheet-var">in_use</span>를 FALSE로 바꿈</td><td><strong>다음 판정부터 즉시 0%</strong>. 이미 재생 중인 광고는 그대로 두고, 진행 중 세션도 다음 판부터 미노출. 클라 재시작 불필요</td></tr>
-    <tr><td>튜토리얼 진행 중</td><td>구간 1(0%)에 자연히 포함되지만, <strong>튜토리얼 플래그가 있으면 확률과 무관하게 차단</strong>. 이중 방어</td></tr>
-    <tr><td>세션 게이트에 걸린 1세션 유저</td><td>확률 판정 자체를 하지 않음. 일 상한·간격도 갱신하지 않음</td></tr>
+    <tr><td>긴급 킬로 <span class="sheet-var">is_interstitial_ad_open</span>을 0으로 바꿈</td><td><strong>다음 판정부터 즉시 0%</strong>. 이미 재생 중인 광고는 그대로 두고, 진행 중 세션도 다음 판부터 미노출. 클라 재시작 불필요</td></tr>
+    <tr><td>튜토리얼 진행 중</td><td>구간 1(간격 0)에 자연히 포함되지만, <strong>튜토리얼 플래그가 있으면 간격과 무관하게 차단</strong>. 이중 방어</td></tr>
+    <tr><td>세션 게이트에 걸린 1세션 유저</td><td>판정 자체를 하지 않음. 클리어 카운터·일 상한도 갱신하지 않음</td></tr>
     <tr><td>일 상한에 도달한 뒤 날짜가 바뀜</td><td><strong>UTC 0시</strong>에 카운터 리셋 &mdash; 기존 데일리 리셋 축과 동일</td></tr>
     </tbody>
   </table>
@@ -323,11 +329,12 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td><span class="sheet-var">userLevel</span></td><td><strong>서버</strong></td><td>레벨 클리어 시</td><td>기존 값 재사용 &mdash; 신규 필드 아님</td></tr>
     <tr><td><span class="sheet-var">loginCountTotal</span></td><td><strong>서버</strong></td><td>로그인 시</td><td>기존 값 재사용. 세션 게이트 입력</td></tr>
     <tr><td><span class="sheet-var">itShownToday</span></td><td><strong>서버</strong></td><td>전면 노출 성공 시 +1 · UTC 0시 리셋</td><td><strong>신규</strong>. 클라 보관 시 재접속으로 초기화돼 상한이 무력화됨</td></tr>
+    <tr><td><span class="sheet-var">clearCountSinceAd</span></td><td><strong>서버</strong></td><td>승리 판정 시 +1 · 노출 시 0으로 리셋</td><td><strong>신규</strong>. 클라 보관 시 재접속으로 초기화돼 간격이 늘 처음부터 다시 시작됨</td></tr>
     <tr><td><span class="sheet-var">lastItShownAt</span></td><td>클라(세션 메모리)</td><td>전면 노출 성공 시</td><td>세션 종료 시 소멸해도 무방 &mdash; 재접속 직후엔 어차피 판이 없음</td></tr>
     </tbody>
   </table>
   <div class="callout callout-purple">
-    <strong>서버에 신규로 필요한 것은 <span class="sheet-var">itShownToday</span> 하나뿐임.</strong> 나머지는 이미 서버가 갖고 있는 값이라 프로토콜 확장 범위가 작음. 일 상한을 포기하면 서버 변경 없이도 구현 가능하지만, 그 경우 곡선 오설정에 대한 안전핀이 사라짐.
+    <strong>서버에 신규로 필요한 것은 <span class="sheet-var">itShownToday</span>와 <span class="sheet-var">clearCountSinceAd</span> 두 개임.</strong> 나머지는 이미 서버가 갖고 있는 값이라 프로토콜 확장 범위가 작음. 둘 다 클라 보관이 불가능한 이유가 같음 &mdash; <strong>재접속으로 초기화되면 설정한 노출률이 실제로 지켜지지 않음</strong>.
   </div>
 
   <h3>ⓑ 판정 순서</h3>
@@ -335,49 +342,72 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>순서</th><th>검사</th><th>불통과 시</th></tr></thead>
     <tbody>
-    <tr><td>1</td><td><span class="sheet-var">in_use</span>가 TRUE인가</td><td>종료 &mdash; 로그 없음</td></tr>
+    <tr><td>1</td><td><span class="sheet-var">is_interstitial_ad_open</span>이 1인가</td><td>종료 &mdash; 로그 없음</td></tr>
     <tr><td>2</td><td>튜토리얼 진행 중이 아닌가</td><td>종료 &mdash; 로그 없음</td></tr>
-    <tr><td>3</td><td>승리로 끝난 판인가</td><td>종료 &mdash; 로그 없음</td></tr>
-    <tr><td>4</td><td><span class="sheet-var">loginCountTotal</span> &ge; 세션 게이트</td><td>종료 &mdash; 로그 없음</td></tr>
-    <tr><td>5</td><td><span class="sheet-var">itShownToday</span> &lt; 일 상한</td><td>종료 &mdash; <span class="sheet-var">skip_reason=daily_cap</span> 로그</td></tr>
-    <tr><td>6</td><td>직전 노출 이후 최소 간격 경과</td><td>종료 &mdash; <span class="sheet-var">skip_reason=interval</span> 로그</td></tr>
-    <tr><td>7</td><td>레벨 구간 확률 롤 당첨</td><td>종료 &mdash; <span class="sheet-var">skip_reason=roll</span> 로그</td></tr>
-    <tr><td>8</td><td>프리로드 완료 상태인가</td><td>종료 &mdash; <span class="sheet-var">skip_reason=not_ready</span> 로그 · <strong>상한 차감 없음</strong></td></tr>
-    <tr><td>9</td><td colspan="2"><strong>노출</strong> &rarr; <span class="sheet-var">4000</span> 발화 · <span class="sheet-var">itShownToday</span> +1 · <span class="sheet-var">lastItShownAt</span> 갱신</td></tr>
+    <tr><td>3</td><td>승리로 끝난 판인가</td><td>종료 &mdash; 로그 없음. <strong>클리어 카운터도 올리지 않음</strong></td></tr>
+    <tr><td>4</td><td>레벨 구간의 <span class="sheet-var">clear_interval</span>이 0보다 큰가</td><td>종료 &mdash; 구간 1(1~5레벨)이 여기서 걸림</td></tr>
+    <tr><td>5</td><td><span class="sheet-var">loginCountTotal</span> &ge; <span class="sheet-var">interstitial_ad_session_gate</span></td><td>종료 &mdash; 로그 없음</td></tr>
+    <tr><td>6</td><td><span class="sheet-var">clearCountSinceAd</span> + 1 &ge; <span class="sheet-var">clear_interval</span></td><td>카운터만 +1 하고 종료 &mdash; <span class="sheet-var">skip_reason=interval_not_met</span></td></tr>
+    <tr><td>7</td><td><span class="sheet-var">itShownToday</span> &lt; <span class="sheet-var">interstitial_ad_daily_limit</span></td><td>종료 &mdash; <span class="sheet-var">skip_reason=daily_cap</span>. <strong>카운터 유지</strong>(다음 판에 재시도)</td></tr>
+    <tr><td>8</td><td>직전 노출 이후 <span class="sheet-var">interstitial_ad_min_interval_sec</span> 경과</td><td>종료 &mdash; <span class="sheet-var">skip_reason=too_soon</span>. <strong>카운터 유지</strong></td></tr>
+    <tr><td>9</td><td>프리로드 완료 상태인가</td><td>종료 &mdash; <span class="sheet-var">skip_reason=not_ready</span>. <strong>카운터 유지</strong></td></tr>
+    <tr><td>10</td><td colspan="2"><strong>노출</strong> &rarr; <span class="sheet-var">4000</span> 발화 · <span class="sheet-var">clearCountSinceAd</span> 0으로 리셋 · <span class="sheet-var">itShownToday</span> +1 · <span class="sheet-var">lastItShownAt</span> 갱신</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <strong>확률 롤을 8번(프리로드 확인)보다 앞에 둔 이유.</strong> 프리로드 실패로 못 띄운 건과 확률에서 떨어진 건을 로그에서 분리해야 함. 순서를 바꾸면 두 원인이 <span class="sheet-var">not_ready</span> 하나로 뭉쳐져 <strong>재고 문제인지 곡선 문제인지 판별이 불가능</strong>해짐.
+    <strong>6번에서만 카운터를 소모하고 7~9번에서는 유지하는 것이 핵심임.</strong> 간격 조건을 채웠는데 상한·시간·재고 때문에 못 띄운 경우, 카운터를 리셋해 버리면 그 유저는 다시 N판을 채워야 해서 <strong>실질 노출률이 설정값보다 계속 낮아짐</strong>. 카운터를 유지하면 조건이 풀리는 즉시 다음 판에 노출됨.
   </div>
 
-  <h3>시트 &mdash; 신규 상수 5개</h3>
-  <p><span class="sheet-var">const</span> 탭에 추가함. 곡선 구간은 값이 4쌍이라 상수로 풀면 8행이 되므로 <strong>구간 표를 별도 탭으로 두는 안</strong>과 <strong>구분자 문자열 1행으로 두는 안</strong>이 있음.</p>
+  <h3>시트 &mdash; 신규 탭 1개 + 상수 4개</h3>
+
+  <p><strong>① 신규 탭 <span class="sheet-var">interstitial_tier</span></strong> &mdash; 구조는 기존 <span class="sheet-var">level_entry_tier</span>를 그대로 따름. <span class="sheet-var">tool</span> 탭 현재 최대 대역이 <strong>250001</strong>(<span class="sheet-var">event_shadow_chest</span>)이므로 신규 대역은 <strong>260001</strong>이고, <span class="sheet-var">tool</span> 탭에 행 추가가 함께 필요함.</p>
   <table>
-    <thead><tr><th>const_name</th><th>초기값</th><th>타입</th><th>설명</th></tr></thead>
+    <thead><tr><th>key_number</th><th>level_min</th><th>level_max</th><th>clear_interval</th></tr></thead>
     <tbody>
-    <tr><td><span class="sheet-var">interstitial_in_use</span></td><td>FALSE</td><td>bool</td><td>전면 광고 전체 on/off. <strong>배포 시 FALSE로 넣고 별도 시점에 켬</strong></td></tr>
-    <tr><td><span class="sheet-var">interstitial_min_interval_sec</span></td><td>60</td><td>int</td><td>최소 간격(초)</td></tr>
-    <tr><td><span class="sheet-var">interstitial_session_gate</span></td><td>2</td><td>int</td><td>이 세션 수 이상부터 노출</td></tr>
-    <tr><td><span class="sheet-var">interstitial_daily_cap</span></td><td>8</td><td>int</td><td>일 상한. 0이면 무제한</td></tr>
-    <tr><td><span class="sheet-var">interstitial_rate_table</span></td><td>5:0,10:2000,20:5000,0:7500</td><td>str</td><td>구간 곡선. <span class="sheet-var">최대레벨:확률</span> 쌍을 쉼표로 구분하며 <strong>마지막 쌍의 최대레벨 0 = 상한 없음</strong>. 확률은 분모 10000</td></tr>
+    <tr><td>260001</td><td>1</td><td>5</td><td><strong>0</strong></td></tr>
+    <tr><td>260002</td><td>6</td><td>10</td><td><strong>5</strong></td></tr>
+    <tr><td>260003</td><td>11</td><td>20</td><td><strong>3</strong></td></tr>
+    <tr><td>260004</td><td>21</td><td>99999</td><td><strong>2</strong></td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>② <span class="sheet-var">const</span> 탭 신규 4행</strong> &mdash; 현재 최대 <span class="sheet-var">key_number</span>가 <strong>10100</strong>이므로 <strong>10101</strong>부터 부여함.</p>
+  <table>
+    <thead><tr><th>key_number</th><th>const_name</th><th>초기값</th><th>설명</th></tr></thead>
+    <tbody>
+    <tr><td>10101</td><td><span class="sheet-var">is_interstitial_ad_open</span></td><td><strong>0</strong></td><td>전면 광고 마스터 스위치. 0=미노출, 1=노출. <strong>배포 시 0으로 넣고 별도 시점에 켬</strong></td></tr>
+    <tr><td>10102</td><td><span class="sheet-var">interstitial_ad_min_interval_sec</span></td><td>60</td><td>직전 전면 광고 노출 이후 최소 경과 시간 (초)</td></tr>
+    <tr><td>10103</td><td><span class="sheet-var">interstitial_ad_session_gate</span></td><td>2</td><td>누적 로그인 횟수가 이 값 이상인 유저부터 노출</td></tr>
+    <tr><td>10104</td><td><span class="sheet-var">interstitial_ad_daily_limit</span></td><td>8</td><td>일 노출 상한 (UTC0 기준 리셋). 0=무제한</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-purple">
+    이름은 시트 관례를 따랐음 &mdash; 불리언은 <span class="sheet-var">is_○○_open</span>(10061·10083·10089 선례), 횟수 상한은 <span class="sheet-var">○○_limit</span>(10027·10057·10063·10076 선례), 초 단위는 <span class="sheet-var">○○_sec</span>(10072 선례). UTC0 리셋 명시도 기존 <span class="sheet-var">free_gold_limit</span> 계열 서술과 동일하게 맞춤.
+  </div>
+
+  <h3>기존 10079는 어떻게 하나</h3>
+  <table>
+    <thead><tr><th>항목</th><th>처리</th></tr></thead>
+    <tbody>
+    <tr><td><span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079)</td><td><strong>폴백 기본값으로 유지</strong>. 현재값 0 그대로 둠</td></tr>
+    <tr><td>티어 탭을 못 읽었을 때</td><td>10079 값을 전 레벨에 적용 &mdash; <strong>0이므로 노출되지 않음</strong>(안전 기본값)</td></tr>
+    <tr><td>티어 탭을 정상적으로 읽었을 때</td><td>티어 값이 <strong>10079를 덮어씀</strong></td></tr>
     </tbody>
   </table>
   <div class="callout callout-yellow">
-    <strong>&#9888; 확정 필요 &mdash; 두 가지.</strong><br>
-    ① <span class="sheet-var">key_number</span> 대역: <span class="sheet-var">const</span> 탭 최신 최대값을 <span class="sheet-var">tool</span> 탭에서 확인 후 부여해야 함. 이 문서에서 임의 지정하지 않음.<br>
-    ② 곡선 저장 형태: 위 표는 <strong>문자열 1행</strong> 안임. 시트 가독성과 검증 편의를 위해 <strong>별도 탭 4행</strong>으로 가는 편이 낫다면 그쪽으로 전환 가능하며, 그 경우 컬럼은 <span class="sheet-var">level_max</span> · <span class="sheet-var">rate</span> 2개면 충분함. <strong>개발이 임의로 고르지 말고 확정 후 진행</strong>.
+    <strong>&#9888; 확정 필요 &mdash; 10079를 남길지 없앨지.</strong> 위 표는 <strong>폴백으로 남기는 안</strong>임. 값이 두 곳에 존재하는 것이 혼란스럽다면 10079를 폐기하고 티어 탭 단일 소스로 가도 됨. 다만 그 경우 <strong>티어 탭 로드 실패 시의 기본 동작을 클라 하드코딩 0으로 보장</strong>해야 함. <strong>개발이 임의로 고르지 말고 확정 후 진행.</strong>
   </div>
 
   <h3>클라</h3>
   <ul>
     <li>판정 로직은 승리 결과 화면 <strong>닫기 직후</strong> 1회만 실행. 결과 화면 위에 겹쳐 띄우지 않음</li>
-    <li>확률 롤은 <strong>판마다 독립</strong>. 직전 결과를 누적하거나 보정하지 않음(의사 난수 보정 없음)</li>
+    <li>난수를 쓰지 않음 &mdash; 간격 카운터만으로 결정됨. 같은 조건이면 항상 같은 시점에 노출됨</li>
     <li>보상형 영상을 시청한 판은 전면 판정을 건너뜀 &mdash; 판정 진입 전에 해당 판의 보상형 시청 여부를 확인</li>
-    <li><span class="sheet-var">interstitial_rate_table</span> 파싱 실패 시 <strong>전 구간 0%로 동작</strong>(안전 기본값). 예외를 던져 크래시내지 않음</li>
-    <li>프리로드 정책은 기존 유지. 다만 <span class="sheet-var">in_use</span>가 FALSE면 <strong>프리로드도 중단</strong>해 현재의 낭비를 없앰</li>
+    <li><span class="sheet-var">interstitial_tier</span> 로드 실패 시 <strong>10079 값(현재 0)으로 폴백</strong>. 예외를 던져 크래시내지 않음</li>
+    <li>프리로드 정책은 기존 유지. 다만 <span class="sheet-var">is_interstitial_ad_open</span>이 0이면 <strong>프리로드도 중단</strong>해 현재의 낭비를 없앰</li>
   </ul>
   <div class="callout callout-purple">
-    마지막 항목은 이 스펙에서 <strong>지금 바로 얻는 유일한 이득</strong>임. 광고를 켜지 않더라도 <span class="sheet-var">in_use=FALSE</span>일 때 프리로드를 멈추는 것만으로 14일 <strong>7만여 건</strong>의 무의미한 요청이 사라짐.
+    마지막 항목은 이 스펙에서 <strong>지금 바로 얻는 유일한 이득</strong>임. 광고를 켜지 않더라도 <span class="sheet-var">is_interstitial_ad_open=0</span>일 때 프리로드를 멈추는 것만으로 14일 <strong>7만여 건</strong>의 무의미한 요청이 사라짐.
   </div>
 </section>
 
@@ -395,12 +425,13 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>필드</th><th>값</th><th>출처</th></tr></thead>
     <tbody>
     <tr><td><span class="sheet-var">level_at_show</span></td><td>판정 시점 유저 레벨</td><td><strong>서버 응답</strong>(기존 유저 데이터)</td></tr>
-    <tr><td><span class="sheet-var">bucket</span></td><td>적용된 구간 번호 1~4</td><td><strong>클라</strong> &mdash; 시트 곡선을 레벨에 대입해 산출</td></tr>
-    <tr><td><span class="sheet-var">rate</span></td><td>그 구간의 확률(분모 10000)</td><td><strong>시트 상수</strong></td></tr>
+    <tr><td><span class="sheet-var">tier_key</span></td><td>적용된 티어 <span class="sheet-var">key_number</span>(260001~260004)</td><td><strong>클라</strong> &mdash; 레벨을 티어 탭에 대입해 산출</td></tr>
+    <tr><td><span class="sheet-var">clear_interval</span></td><td>그 티어의 간격값</td><td><strong>시트</strong>(<span class="sheet-var">interstitial_tier</span> 탭)</td></tr>
+    <tr><td><span class="sheet-var">clear_count</span></td><td>노출 직전 누적 클리어 수</td><td><strong>서버 응답</strong>(<span class="sheet-var">clearCountSinceAd</span>)</td></tr>
     <tr><td><span class="sheet-var">session_index</span></td><td>누적 로그인 횟수</td><td><strong>서버 응답</strong>(<span class="sheet-var">loginCountTotal</span>)</td></tr>
     <tr><td><span class="sheet-var">shown_today</span></td><td>노출 직전 당일 누적</td><td><strong>서버 응답</strong> &mdash; 클라 자체 카운터를 쓰면 재접속으로 어긋남</td></tr>
     <tr><td><span class="sheet-var">since_last_sec</span></td><td>직전 노출 이후 경과 초</td><td><strong>클라</strong>(세션 메모리). 세션 첫 노출이면 <span class="sheet-var">null</span></td></tr>
-    <tr><td><span class="sheet-var">skip_reason</span></td><td><span class="sheet-var">daily_cap</span> / <span class="sheet-var">interval</span> / <span class="sheet-var">roll</span> / <span class="sheet-var">not_ready</span></td><td><strong>클라</strong> &mdash; 스킵 로그 전용, 노출 시엔 없음</td></tr>
+    <tr><td><span class="sheet-var">skip_reason</span></td><td><span class="sheet-var">interval_not_met</span> / <span class="sheet-var">daily_cap</span> / <span class="sheet-var">too_soon</span> / <span class="sheet-var">not_ready</span></td><td><strong>클라</strong> &mdash; 스킵 로그 전용, 노출 시엔 없음</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
@@ -411,19 +442,19 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>단계</th><th>확인</th><th>통과 조건</th></tr></thead>
     <tbody>
-    <tr><td>1</td><td><span class="sheet-var">in_use=FALSE</span> 상태 배포</td><td>노출 0 유지 · <strong>프리로드도 0으로 떨어짐</strong></td></tr>
-    <tr><td>2</td><td>내부 계정으로 <span class="sheet-var">in_use=TRUE</span></td><td>구간별 확률이 로그의 <span class="sheet-var">bucket</span> · <span class="sheet-var">rate</span>와 일치</td></tr>
-    <tr><td>3</td><td>게이트 동작 확인</td><td>1세션 유저 노출 0건 · 60초 내 연속 노출 0건 · 일 9회차 이상 0건</td></tr>
+    <tr><td>1</td><td><span class="sheet-var">is_interstitial_ad_open=0</span> 상태 배포</td><td>노출 0 유지 · <strong>프리로드도 0으로 떨어짐</strong></td></tr>
+    <tr><td>2</td><td>내부 계정으로 <span class="sheet-var">is_interstitial_ad_open=1</span></td><td>구간별 간격이 로그의 <span class="sheet-var">tier_key</span> · <span class="sheet-var">clear_interval</span>과 일치</td></tr>
+    <tr><td>3</td><td>게이트 동작 확인</td><td>1세션 유저 노출 0건 · 60초 내 연속 노출 0건 · 일 9회차 이상 0건 · 간격 미달 판 0건</td></tr>
     <tr><td>4</td><td>소규모 오픈</td><td>노출/DAU가 목표 2.6 근방 · 임프레션율이 메타 기준 근방</td></tr>
     <tr><td>5</td><td>가드레일 판정</td><td><strong>D1 리텐션·판수 유의 하락 없음</strong>(z검정). 하락 시 즉시 6단계</td></tr>
-    <tr><td>6</td><td>롤백</td><td><span class="sheet-var">in_use=FALSE</span> &mdash; 빌드 없이 즉시</td></tr>
+    <tr><td>6</td><td>롤백</td><td><span class="sheet-var">is_interstitial_ad_open=0</span> &mdash; 빌드 없이 즉시</td></tr>
     </tbody>
   </table>
 
   <h3>롤백</h3>
   <ul>
-    <li><strong>전체 차단</strong>은 <span class="sheet-var">interstitial_in_use=FALSE</span> 하나로 끝남. 다음 판정부터 즉시 반영되고 클라 재시작이 필요 없음</li>
-    <li><strong>부분 완화</strong>가 필요하면 곡선 값을 낮추거나 최소 간격을 늘림. 이 경우도 시트만 만짐</li>
+    <li><strong>전체 차단</strong>은 <span class="sheet-var">is_interstitial_ad_open=0</span> 하나로 끝남. 다음 판정부터 즉시 반영되고 클라 재시작이 필요 없음</li>
+    <li><strong>부분 완화</strong>가 필요하면 티어의 <span class="sheet-var">clear_interval</span>을 키우거나 최소 간격·일 상한을 조임. 이 경우도 시트만 만짐</li>
     <li>이미 재생 중인 광고는 중단하지 않음 &mdash; 재생 중 강제 종료는 수익 정산 문제를 만들 수 있음</li>
   </ul>
 
