@@ -221,7 +221,6 @@
 | `FX_EVENT_SHADOW_STEP_03` | 0.26s | 〃 |
 
 - 규격 = 기존 SFX와 동일 (**mp3 · mono · 22050Hz · 128k**), 음량 정규화 완료(강탈 mean −17.5dB / 발자국 mean −29.6dB · **STEP 3종 상호 편차 0.1dB**)
-- ⚠ **4종 모두 0.26~0.34s로 짧음** — 연출 타이밍을 여기에 맞출 것. 특히 ②강탈은 앞발이 들어와 채고 빠지는 동작이 0.34s를 넘으면 소리가 먼저 끝남
 - ⚠ **`.meta`가 아직 없음** — Cocos 에디터에서 임포트하면 생성됨. 커밋 시 `.meta` 4개 포함할 것
 - 원본 WAV는 `solitaire-esther-1/audio_sets/rec/`에 보존. 번들은 기존 관례대로 **mp3만** 둠(같은 이름의 wav/mp3 공존 시 에셋명 충돌)
 
@@ -230,13 +229,13 @@
 - [ ] **프리로드 등록** — `ResourcePreloader.preloadForLobby()`에 신규 4종 + 재사용분 추가. **누락 시 최초 1회 무음 + 1초 지연**(`GameSound.download()`의 `setTimeout 1000`). 저사양 기기(`quality.isLowDevice`)는 프리로드 자체가 스킵되므로 이 경로에서도 무음이 안 나는지 확인
 - [ ] **② 강탈** — `PopupEventShadowChase.showStolenCut()`(`PopupEventShadowChase.ts:46`)에서 `GameSound.play('FX_EVENT_SHADOW_GRAB', this.node)`. `alarmPopAnim.play()`와 같은 자리
 - [ ] **④ 도주 / ⑤ 마킹** — 자국 스프라이트가 하나 찍힐 때마다 `FX_EVENT_SHADOW_STEP_0{1~3}` 중 랜덤 1개. 기존 랜덤 재생 문법 재활용(`StageView.ts:2821`의 `` `FX_CARD_TAPPED_0${idx}` `` 패턴)
-- [ ] **재사용 클립 연결** — ⑥-B `FX_REWARD_GAUGE_FILL` · ⑦-1 `FX_UI_BTN_TAP`(ClickSound 기본) · ⑦-2 `FX_GIMMICK_KEY_ACTIVATE` · ⑦-3 `FX_REWARD_BIG_BOX_OPEN`·`FX_REWARD_ITEM_FLIES`
+- [ ] **재사용 클립 연결** — ⑦-1 `FX_UI_BTN_TAP`(ClickSound 기본) · ⑦-2 `FX_GIMMICK_KEY_ACTIVATE` · ⑦-3 `FX_REWARD_BIG_BOX_OPEN`·`FX_REWARD_ITEM_FLIES`
 - [ ] **팝업 연출 사운드는 `*_show.anim`의 `PlaySound` 이벤트로** — 이 프로젝트 표준(`PopupBase.playPopupOpenSound()`는 no-op이고 서브클래스 8곳이 override로 죽여놨음). 대상 노드에 `EffectSound` 컴포넌트 필요. **`PopupRewardClaim_ShadowChase.prefab`에는 이미 부착돼 있음**
 - [ ] **루프 사운드 사용 시** `playLoop` ↔ `onHideStart`의 `stopSFXByName` 페어 필수 (`PopupCompleteLevel.ts:259-260` ↔ `224-225`)
 
 ### 무음 지점 (기획 확정 — 임의 추가 금지)
 
-- **① 발견 풀스크린 등장 · ① 보상 6슬롯 순차 공개 · ③ 루나 등장 · ⑥ 행잉 태그 등장 · ⑥-C 8/8 만충** — 전부 사운드 없음
+- **① 발견 풀스크린 등장 · ① 보상 6슬롯 순차 공개 · ③ 루나 등장 · ⑥ 행잉 태그 등장 · ⑥-B 게이지 n/8 갱신 · ⑥-C 8/8 만충** — 전부 사운드 없음
 - **⑧ 타이머 말풍선 전 구간 무음** — 등장음·경고음·연장 성공음 전부 없음
 - **실패(타이머 만료) 무음** — 실패에 알림을 붙이지 않는다는 기획과 일관
 - **팝업 오픈/클로즈 공통음** — 게임 전역에 미도입 상태이므로 이번 이벤트만 넣지 않음
