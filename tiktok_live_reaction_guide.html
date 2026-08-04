@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>틱톡 라이브 리액션 운영 가이드 · 곰인형 마스코트 시스템</title>
+<style>
+  :root{
+    --bg:#0b1020; --card:#121931; --card2:#0e1530;
+    --ink:#eef2ff; --sub:#9fb0d8; --line:#26304f;
+    --a:#5b8cff; --b:#36d39a; --c:#ffb454; --d:#ff6b8b; --e:#a78bfa;
+    --grad:linear-gradient(135deg,#5b8cff,#36d39a);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#05080f;color:var(--ink);
+    font-family:"Pretendard","Apple SD Gothic Neo",-apple-system,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .deck{display:flex;flex-direction:column;align-items:center;gap:28px;padding:40px 16px 80px}
+
+  .card{
+    width:min(1280px,96vw); aspect-ratio:16/9; position:relative;
+    background:radial-gradient(120% 140% at 0% 0%,#16203f 0%,var(--card) 42%,var(--card2) 100%);
+    border:1px solid var(--line); border-radius:22px; overflow:hidden;
+    box-shadow:0 30px 70px -30px rgba(0,0,0,.8);
+    padding:clamp(24px,3.4vw,56px); display:flex; flex-direction:column;
+  }
+  .card.tall{aspect-ratio:auto;min-height:min(720px,96vw*.5625);height:auto}
+  .card::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(90% 60% at 100% 110%,rgba(91,140,255,.12),transparent 60%)}
+  .tag{display:inline-flex;align-items:center;gap:8px;font-size:clamp(11px,1vw,13px);
+    letter-spacing:.18em;color:var(--sub);text-transform:uppercase;font-weight:700}
+  .tag .dot{width:8px;height:8px;border-radius:50%;background:var(--grad)}
+  h1{font-size:clamp(30px,4.4vw,62px);line-height:1.05;font-weight:800;letter-spacing:-.02em}
+  h2{font-size:clamp(22px,2.9vw,40px);font-weight:800;letter-spacing:-.02em}
+  .sub{color:var(--sub);font-size:clamp(13px,1.25vw,18px);line-height:1.6}
+  .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .foot{position:absolute;left:clamp(24px,3.4vw,56px);bottom:18px;font-size:11px;color:#64718f;letter-spacing:.08em}
+  .pageno{position:absolute;right:clamp(24px,3.4vw,56px);bottom:18px;font-size:11px;color:#64718f}
+
+  .cover{justify-content:center;gap:22px}
+  .cover .big{font-size:clamp(34px,5.2vw,76px)}
+  .cover .row{display:flex;gap:40px;flex-wrap:wrap;margin-top:14px}
+  .cover .row .kv b{display:block;font-size:clamp(26px,3vw,40px);font-weight:800}
+  .cover .row .kv span{color:var(--sub);font-size:13px;letter-spacing:.05em}
+
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,1.4vw,20px);margin-top:auto;margin-bottom:auto}
+  .kpi{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:16px;
+    padding:clamp(16px,1.8vw,26px);display:flex;flex-direction:column;gap:6px}
+  .kpi .n{font-size:clamp(22px,2.7vw,38px);font-weight:800;letter-spacing:-.02em}
+  .kpi .l{color:var(--sub);font-size:clamp(11px,1vw,14px);line-height:1.4}
+  .kpi.a .n{color:var(--a)} .kpi.b .n{color:var(--b)} .kpi.c .n{color:var(--c)} .kpi.d .n{color:var(--e)}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,2.6vw,44px);flex:1;align-items:center}
+
+  /* bullet list — 모든 설명 텍스트는 이 스타일로 통일 */
+  .bl{list-style:none;display:flex;flex-direction:column;gap:7px;margin-top:8px}
+  .bl li{position:relative;padding-left:16px;line-height:1.45;font-size:clamp(12.5px,1.1vw,15.5px);color:var(--ink)}
+  .bl li::before{content:"";position:absolute;left:0;top:.5em;width:5px;height:5px;border-radius:50%;background:var(--grad)}
+  .bl.sm li{font-size:clamp(11.5px,1.02vw,14.5px);color:var(--sub)}
+  .bl.tier-bl{margin-top:8px;gap:6px}
+  .bl.tier-bl li{font-size:clamp(12px,1.05vw,15px)}
+  .bl b{color:var(--ink)}
+
+  .ins{display:flex;flex-direction:column;gap:clamp(10px,1.2vw,14px);margin-top:10px;flex:1;justify-content:center}
+  .ins .it{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;
+    background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:clamp(12px,1.3vw,17px)}
+  .ins .ic{width:clamp(32px,3.2vw,44px);height:clamp(32px,3.2vw,44px);border-radius:12px;display:grid;place-items:center;font-size:clamp(16px,1.7vw,22px);background:rgba(91,140,255,.14);flex:none}
+  .ins .tt{font-weight:800;font-size:clamp(13.5px,1.25vw,17px);margin-bottom:2px}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:rgba(54,211,154,.16);color:var(--b);margin-left:6px}
+  .pill.warn{background:rgba(255,180,84,.16);color:var(--c)}
+  .pill.info{background:rgba(91,140,255,.16);color:var(--a)}
+
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .chip{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:9px 13px;font-size:12.5px;color:var(--sub)}
+  .chip b{color:var(--ink)}
+
+  .tiers{display:flex;flex-direction:column;gap:9px;margin-top:12px;flex:1;justify-content:center}
+  .tier{display:grid;grid-template-columns:148px 1fr;gap:14px;align-items:start;
+    background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:clamp(11px,1.2vw,16px)}
+  .tier .lv{font-weight:800;font-size:clamp(13px,1.15vw,16px)}
+  .tier .price{color:var(--sub);font-size:10.5px;margin-top:3px;line-height:1.45}
+  .tier .price b{color:var(--ink);display:block;font-size:11.5px;margin-bottom:1px}
+  .tier.t1{border-left:4px solid var(--a)} .tier.t2{border-left:4px solid var(--b)}
+  .tier.t3{border-left:4px solid var(--c)} .tier.t4{border-left:4px solid var(--d)}
+
+  table.cmp{width:100%;border-collapse:collapse;margin-top:16px;font-size:clamp(11.5px,1vw,14px)}
+  table.cmp th{text-align:left;color:var(--sub);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--line);font-size:.9em}
+  table.cmp td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--ink);line-height:1.45;vertical-align:top}
+  table.cmp tr td:first-child{color:var(--sub);white-space:nowrap;font-weight:700}
+
+  input.fillinput{width:100%;background:rgba(255,255,255,.035);border:1px dashed var(--line);border-radius:8px;padding:7px 10px;font-size:.95em;color:var(--ink);font-family:inherit;transition:border-color .15s,background .15s}
+  input.fillinput:focus{outline:none;border:1px solid var(--a);background:rgba(91,140,255,.08)}
+  input.fillinput::placeholder{color:#54607e}
+  input.fillinput.saved{border-style:solid;border-color:var(--b)}
+  .sheet-tools{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .sheet-tools .savemsg{font-size:11.5px;color:var(--b);opacity:0;transition:opacity .3s}
+  .sheet-tools .savemsg.show{opacity:1}
+  .btn-reset{font-size:11.5px;font-weight:700;color:var(--sub);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+  .btn-reset:hover{color:var(--d);border-color:var(--d)}
+
+  .league-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;
+    background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+  .league-bar label{font-size:11.5px;color:var(--sub);font-weight:700;letter-spacing:.04em}
+  select.leaguesel{background:#0e1530;color:var(--ink);border:1px solid var(--line);border-radius:8px;
+    padding:6px 10px;font-size:13px;font-family:inherit;font-weight:700}
+  .league-summary{font-size:12px;color:var(--sub);line-height:1.5}
+  .league-summary b{color:var(--ink)}
+
+  .note{margin-top:12px;font-size:clamp(11px,1vw,13px);color:#64718f;line-height:1.55;border-top:1px solid var(--line);padding-top:10px}
+  .callout{margin-top:14px;display:flex;gap:12px;align-items:flex-start;background:rgba(255,180,84,.10);
+    border:1px solid rgba(255,180,84,.4);border-left:5px solid var(--c);border-radius:12px;padding:clamp(12px,1.3vw,17px)}
+  .callout .ic{font-size:clamp(18px,1.9vw,26px);flex:none;line-height:1}
+  .callout .tx{font-size:clamp(13px,1.2vw,16.5px);font-weight:800;color:var(--ink);line-height:1.45}
+  .callout .tx span{display:block;margin-top:3px;font-size:.82em;font-weight:600;color:var(--c)}
+  .callout.info{background:rgba(91,140,255,.10);border-color:rgba(91,140,255,.4);border-left-color:var(--a)}
+  .callout.info .tx span{color:var(--a)}
+
+  @media print{
+    html,body{background:#fff}
+    .deck{gap:0;padding:0}
+    .card{page-break-after:always;box-shadow:none;width:100%;border-radius:0;border:none}
+  }
+  .hint{position:fixed;right:14px;bottom:12px;font-size:11px;color:#64718f;background:#0e1530cc;border:1px solid var(--line);padding:6px 11px;border-radius:999px;backdrop-filter:blur(6px)}
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 1. COVER -->
+  <section class="card cover">
+    <div class="tag"><span class="dot"></span> Live Operation Guide</div>
+    <h1 class="big">북미·유럽 싱잉 방송<br><span class="grad">리액션 운영 가이드</span></h1>
+    <div class="sub">매일 KST 07:00~14:00 · 싱잉 + 배틀 호스트 · 곰인형 마스코트 기반 4단계 반응 체계</div>
+    <div class="row">
+      <div class="kv"><b>7h</b><span>매일 방송 길이</span></div>
+      <div class="kv"><b>4단계</b><span>고정 반응 체계</span></div>
+      <div class="kv"><b>1자리</b><span>명찰 주인공 슬롯</span></div>
+    </div>
+    <div class="foot">현재 C1 단계 · 지금 규모에 맞게 단순하게, 커지면 그대로 반복</div>
+    <div class="pageno">01</div>
+  </section>
+
+  <!-- 2. 왜 이렇게 하는가 -->
+  <section class="card tall">
+    <div class="tag"><span class="dot"></span> 01 · 왜 이렇게 하는가</div>
+    <h2 style="margin-top:8px">반복되는 반응이 시청자의 학습이 된다</h2>
+    <div class="ins" style="margin-top:12px">
+      <div class="it">
+        <div class="ic">🎯</div>
+        <div>
+          <div class="tt">티어별 반응, 이미 검증된 방식</div>
+          <ul class="bl sm">
+            <li>틱톡도 선물을 4단계(저가·중가·고가·최고가)로 나눈다</li>
+            <li>저가 선물이 전체의 <b>82%</b>, 최고가는 <b>3%</b>뿐 — 반응 강도도 그만큼 차등화해야 함</li>
+            <li>최고가(웨일) 선물은 <b>$430~560</b>대 — 화면 전체 이펙트가 자동 재생</li>
+          </ul>
+        </div>
+      </div>
+      <div class="it">
+        <div class="ic">🔁</div>
+        <div>
+          <div class="tt">창의성보다 반복이 이긴다</div>
+          <ul class="bl sm">
+            <li>같은 선물엔 같은 반응만 반복</li>
+            <li>반복돼야 시청자가 패턴을 학습</li>
+            <li>PK 배틀 중 반응 하나로 기프트가 <b>평시 대비 3~5배</b>(최대 8배) 뛴다는 게 업계 공통 데이터</li>
+          </ul>
+        </div>
+      </div>
+      <div class="it">
+        <div class="ic">⏰</div>
+        <div>
+          <div class="tt">지금 방송 패턴 = 이미 상위권 형태</div>
+          <ul class="bl sm">
+            <li>하루 4~8시간 방송은 상위 랭커의 표준 패턴 — 지금 7시간과 일치</li>
+            <li>상위 배틀 크리에이터는 세션당 <b>$500~5,000+</b></li>
+            <li>미국 크리에이터 <b>6만명+</b>가 기프팅만으로 파트타임 중위소득 이상(Ipsos 2025)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:0">StreamWrapped · ttsvibes · Tubefilter(Ipsos, 2025) 등 교차 확인 수치</div>
+    <div class="foot">C1 단계에서는 체계를 늘리기보다 지금의 4단계를 고정·반복</div>
+    <div class="pageno">02</div>
+  </section>
+
+  <!-- 3. 곰인형 마스코트 컨셉 -->
+  <section class="card tall">
+    <div class="tag"><span class="dot"></span> 02 · 핵심 컨셉</div>
+    <h2 style="margin-top:8px">호스트가 안아주는 건 곰인형, 그 안엔 <span class="grad">당신</span></h2>
+    <div class="two">
+      <div>
+        <ul class="bl">
+          <li>곰인형 하나를 상시 배치</li>
+          <li><b>곰인형 = 시청자 자신</b>, 곰인형 ≠ 선물 받는 대상</li>
+          <li>호스트가 곰인형을 안아주는 것 = 그 시청자를 안아주는 것</li>
+          <li>선물 등급이 오를수록 "나"를 대하는 행동이 커진다</li>
+          <li>명찰은 "지금 이 곰인형이 당신"이라는 표식</li>
+          <li>반복해도 질리지 않고 애착만 쌓인다</li>
+        </ul>
+        <div class="chips">
+          <div class="chip">곰인형에 <b>이름</b> 붙이기</div>
+          <div class="chip">무대 등급 이상은 <b>마카 명찰</b> 부착</div>
+        </div>
+      </div>
+      <div class="ins" style="margin-top:0">
+        <div class="it">
+          <div class="ic">🎮</div>
+          <div>
+            <div class="tt">게임 비유: 아바타 빙의</div>
+            <ul class="bl sm">
+              <li>인형은 시청자를 대신하는 아바타</li>
+              <li>아바타가 받는 케어 = 내가 받는 케어로 체감</li>
+            </ul>
+          </div>
+        </div>
+        <div class="it">
+          <div class="ic">🏷️</div>
+          <div>
+            <div class="tt">명찰 = "지금 이 인형은 당신"</div>
+            <ul class="bl sm">
+              <li>이름을 붙이는 순간 인형이 그 사람이 된다</li>
+              <li>왕관 같은 상징물보다 훨씬 직접적인 동일시</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">Mascot-mediated Reaction Concept</div>
+    <div class="pageno">03</div>
+  </section>
+
+  <!-- 4. 4단계 반응 설계 -->
+  <section class="card tall">
+    <div class="tag"><span class="dot"></span> 03 · 반응 설계</div>
+    <h2 style="margin-top:8px">4단계 반응 설계 — 곰인형 기준</h2>
+    <div class="tiers">
+      <div class="tier t1">
+        <div><div class="lv">👋 인사</div><div class="price"><b>100코인 미만</b>Rose 등 · 전체의 82%</div></div>
+        <ul class="bl tier-bl">
+          <li>행동: 톡톡 두드리기(pat) 1회</li>
+          <li>멘트: 짧은 감사 1문장, 항상 동일</li>
+          <li>소요: 3초 이내 — 흐름 유지</li>
+        </ul>
+      </div>
+      <div class="tier t2">
+        <div><div class="lv">🤗 포옹</div><div class="price"><b>100~999코인</b>Hand Heart·Corgi 등</div></div>
+        <ul class="bl tier-bl">
+          <li>행동: 살짝 안아 올리기(hug)</li>
+          <li>멘트: 이름 호명 + 고정 문장 1개</li>
+          <li>소요: 5초 내외</li>
+        </ul>
+      </div>
+      <div class="tier t3">
+        <div><div class="lv">🎤 무대</div><div class="price"><b>1,000~19,999코인</b>Galaxy·Rocket 등</div></div>
+        <ul class="bl tier-bl">
+          <li>행동: 곰인형 들고 소절·댄스 헌정 + 명찰 부착</li>
+          <li>동작은 매번 완전히 동일</li>
+          <li>소요: 5~8초(명찰 교체 포함)</li>
+        </ul>
+      </div>
+      <div class="tier t4">
+        <div><div class="lv">👑 주인공</div><div class="price"><b>20,000코인 이상</b>Lion·Universe 등</div></div>
+        <ul class="bl tier-bl">
+          <li>행동: 명찰 교체(틱톡 닉네임 기입)</li>
+          <li>멘트: 하이라이트 멘트 1개</li>
+          <li>소요: 이펙트 지속 시간(플랫폼 자동 연출)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="ic">📌</div>
+      <div class="tx">명찰은 무대 등급(1,000코인) 이상부터 적용<span>그 아래는 물리적으로 손대지 않는다 — 저가·중가는 절대 명찰 교체 없이 몸짓·멘트로만 끝낸다</span></div>
+    </div>
+    <div class="note">
+      <ul class="bl sm" style="margin-top:0">
+        <li>코인 구간 = 실제 틱톡 기프트 가격 기준 벤치마크(joinotto·growthscribe·ttsvibes 교차 확인)</li>
+        <li>매번 똑같이 반복한다 · 등급은 4개로 고정한다 · 쪼갤수록 학습 효과가 떨어진다</li>
+      </ul>
+    </div>
+    <div class="foot">Tier-fixed Mascot Reaction Recipe</div>
+    <div class="pageno">04</div>
+  </section>
+
+  <!-- 5. 리그 등급별 재조정 -->
+  <section class="card tall">
+    <div class="tag"><span class="dot"></span> 04 · 리그 등급별 재조정</div>
+    <h2 style="margin-top:8px">리그가 오르면 기준도 같이 올린다</h2>
+    <div class="ins" style="margin-top:10px">
+      <div class="it">
+        <div class="ic">🏅</div>
+        <div>
+          <div class="tt">C1 = 틱톡 크리에이터 리그의 코퍼 최상위</div>
+          <ul class="bl sm">
+            <li>틱톡 리그는 브론즈(D)→코퍼(C)→실버(B)→골드(A) 4개 디비전</li>
+            <li>C1은 코퍼 최상위 — 실버 승급 바로 직전 단계</li>
+            <li>최근 30일 다이아몬드 수령액 기준으로 배치·승급</li>
+          </ul>
+        </div>
+      </div>
+      <div class="it">
+        <div class="ic">⚔️</div>
+        <div>
+          <div class="tt">배틀 매칭이 오르면 선물 규모도 오른다</div>
+          <ul class="bl sm">
+            <li>PK 배틀은 팔로워·시청자 규모 비슷한 상대끼리 매칭</li>
+            <li>배틀 중 선물은 평시 대비 <b>3~8배</b>로 커진다</li>
+            <li>리그가 오를수록 오가는 선물의 절대 액수 자체가 커짐</li>
+          </ul>
+        </div>
+      </div>
+      <div class="it">
+        <div class="ic">🔒</div>
+        <div>
+          <div class="tt">틱톡 가격표는 고정, 우리 기준선은 조정 대상</div>
+          <ul class="bl sm">
+            <li>틱톡 기프트 가격(Rose 1코인, Galaxy 1,000코인 등)은 전 세계 공통 고정</li>
+            <li>등급 이름(인사·포옹·무대·주인공)과 곰인형 행동·멘트도 절대 안 바뀜</li>
+            <li>바뀌는 건 딱 하나 — "몇 코인부터 무대급인가" 하는 우리 팀 내부 기준선</li>
+          </ul>
+        </div>
+      </div>
+      <div class="it">
+        <div class="ic">🔧</div>
+        <div>
+          <div class="tt">재조정은 디비전을 넘을 때만</div>
+          <ul class="bl sm">
+            <li>서브 등급(C5→C4 등)마다 바꾸면 기준만 흔들린다</li>
+            <li>코퍼→실버, 실버→골드처럼 디비전을 넘을 때만 점검</li>
+            <li>실버 진입 시 4단계 기준선을 한 단계씩 상향(예: 인사 100→300코인)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="callout info">
+      <div class="ic">📊</div>
+      <div class="tx">애널리틱스 데이터를 주시면 디비전 단위 대신 데이터 기반 재조정도 가능<span>예: "최근 30일 평균 기프트 수령액" 실측치를 전달해주면, 디비전 승급을 기다리지 않고 실제 수치 변화에 맞춰 기준선을 더 정밀하게 조정할 수 있음</span></div>
+    </div>
+    <div class="note">재조정 주기·기준은 확인된 업계 표준이 아니라 팀 판단 제안 — 실버 승급 시점에 다시 점검할 것. C1 명칭은 rtfm.media·black-ads.agency 등에서 확인, 틱톡 1차 공식 문서로는 미확증</div>
+    <div class="foot">League-based Threshold Recalibration</div>
+    <div class="pageno">05</div>
+  </section>
+
+  <!-- 6. 명찰 주인공 자리 -->
+  <section class="card tall">
+    <div class="tag"><span class="dot"></span> 05 · 명찰 운영 규칙</div>
+    <h2 style="margin-top:8px">"오늘의 주인공 자리" 운영법</h2>
+    <div class="ins" style="margin-top:10px">
+      <div class="it">
+        <div class="ic">1️⃣</div>
+        <div>
+          <div class="tt">한 자리만 유지</div>
+          <ul class="bl sm">
+            <li>명찰은 하나만 부착</li>
+            <li>새 무대 등급(1,000코인) 이상이 나오면 즉시 교체</li>
+            <li>여러 명 붙이면 특별함이 옅어짐</li>
+          </ul>
+        </div>
+      </div>
+      <div class="it">
+        <div class="ic">2️⃣</div>
+        <div>
+          <div class="tt">경쟁 유인은 저절로 생긴다</div>
+          <ul class="bl sm">
+            <li>"오늘의 주인공 자리"라는 배타적 타이틀</li>
+            <li>다음 무대 등급 이상 후원자가 그 자리를 뺏고 싶어함</li>
+            <li>호스트가 따로 부추길 필요 없음</li>
+          </ul>
+        </div>
+      </div>
+      <div class="it">
+        <div class="ic">3️⃣</div>
+        <div>
+          <div class="tt">매일 리셋</div>
+          <ul class="bl sm">
+            <li>방송 시작 시 명찰 제거</li>
+            <li>"오늘은 누가 주인공?" 매일 반복</li>
+          </ul>
+        </div>
+      </div>
+      <div class="it">
+        <div class="ic">🧰</div>
+        <div>
+          <div class="tt">소재 준비 &amp; 표기</div>
+          <ul class="bl sm">
+            <li>라미네이팅 명찰 + 벨크로로 즉시 교체</li>
+            <li>이름은 실명 대신 틱톡 닉네임</li>
+            <li>채팅명과 일치해야 바로 알아본다</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="foot">Champion Nametag Operating Rule</div>
+    <div class="pageno">06</div>
+  </section>
+
+  <!-- 7. 배틀 응원화 + 운영 3원칙 -->
+  <section class="card tall">
+    <div class="tag"><span class="dot"></span> 06 · 배틀 연동 &amp; 운영</div>
+    <h2 style="margin-top:8px">배틀 응원화 + 품 줄이는 3원칙</h2>
+    <div class="two">
+      <div class="it" style="margin-top:0">
+        <div class="ic">⚡</div>
+        <div>
+          <div class="tt">배틀 중엔 곰인형 = 팀 마스코트</div>
+          <ul class="bl sm">
+            <li>포옹 등급 이상 선물 = 응원 신호</li>
+            <li>곰인형 들어올리기 + 파워업 효과음</li>
+            <li>승패와 무관해도 "내가 기여했다"는 체감</li>
+          </ul>
+        </div>
+      </div>
+      <div class="ins" style="margin-top:0">
+        <div class="it">
+          <div class="ic">🔊</div>
+          <div>
+            <div class="tt">① 사운드는 미리 녹음 + 핫키</div>
+            <ul class="bl sm">
+              <li>라이브로 매번 만들지 않는다</li>
+              <li>목 관리 + 항상 일정한 타이밍</li>
+            </ul>
+          </div>
+        </div>
+        <div class="it">
+          <div class="ic">🗣️</div>
+          <div>
+            <div class="tt">② 고정 멘트·동작은 바꾸지 않기</div>
+            <ul class="bl sm">
+              <li>"이번엔 다르게"가 품을 늘린다</li>
+              <li>리액션은 고정, 콘텐츠만 바꾼다</li>
+            </ul>
+          </div>
+        </div>
+        <div class="it">
+          <div class="ic">📌</div>
+          <div>
+            <div class="tt">③ 오프닝 리마인드 + 채팅 고정</div>
+            <ul class="bl sm">
+              <li>중간 유입이 많은 방송 특성</li>
+              <li>매번 말로 설명 안 해도 되게</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="ic">⏸️</div>
+      <div class="tx">배틀 중 주인공 등급이 오면, 명찰은 배틀 끝난 직후<span>그 순간엔 곰인형 들어올리기 + 응원 사운드로만 반응(플랫폼 자동 이펙트가 이미 각인시켜 줌) · 배틀이 끝나자마자 제일 먼저 명찰 교체 + 하이라이트 멘트 진행</span></div>
+    </div>
+    <div class="foot">Low-effort, Long-term Routine</div>
+    <div class="pageno">07</div>
+  </section>
+
+  <!-- 8. 방송용 치트시트 -->
+  <section class="card tall">
+    <div class="tag"><span class="dot"></span> 07 · 방송용 치트시트</div>
+    <h2 style="margin-top:8px">등급별 즉시 대응표 <span style="font-size:.5em;color:var(--sub);font-weight:700">— 한 번 채우고 그 뒤로 고정</span></h2>
+    <div class="league-bar">
+      <label for="leagueSelect">현재 리그</label>
+      <select class="leaguesel" id="leagueSelect">
+        <option value="D">브론즈(D)</option>
+        <option value="C" selected>코퍼(C) — 현재</option>
+        <option value="B">실버(B)</option>
+        <option value="A">골드(A)</option>
+      </select>
+      <span class="league-summary" id="leagueSummary"></span>
+    </div>
+    <table class="cmp" id="cheatTable">
+      <tr><th>등급</th><th>기프트 기준</th><th>곰인형 행동</th><th>고정 멘트</th><th>소요시간</th></tr>
+      <tr><td>👋 인사</td><td id="thresh-t1">100코인 미만<br><span style="color:#64718f">Rose 등</span></td><td><input class="fillinput" data-key="t1-action" placeholder="예: 톡톡 두드리기"></td><td><input class="fillinput" data-key="t1-line" placeholder="예: Thank youuu!"></td><td>~3초</td></tr>
+      <tr><td>🤗 포옹</td><td id="thresh-t2">100~999코인<br><span style="color:#64718f">Hand Heart 등</span></td><td><input class="fillinput" data-key="t2-action" placeholder="예: 살짝 안아 올리기"></td><td><input class="fillinput" data-key="t2-line" placeholder="예: [이름]! Let's gooo~"></td><td>~5초</td></tr>
+      <tr><td>🎤 무대</td><td id="thresh-t3">1,000~19,999코인<br><span style="color:#64718f">Galaxy·Rocket 등</span></td><td><input class="fillinput" data-key="t3-action" placeholder="예: 소절/댄스 헌정 + 명찰 부착"></td><td><input class="fillinput" data-key="t3-line" placeholder="예: 정해진 애드립 한 줄"></td><td>5~8초</td></tr>
+      <tr><td>👑 주인공</td><td id="thresh-t4">20,000코인 이상<br><span style="color:#64718f">Lion·Universe 등</span></td><td><input class="fillinput" data-key="t4-action" placeholder="닉네임 명찰 교체"></td><td><input class="fillinput" data-key="t4-line" placeholder="예: 하이라이트 멘트 한 줄"></td><td>이펙트 길이</td></tr>
+      <tr><td>⚔️ 배틀 중(포옹+)</td><td id="thresh-tb">100코인 이상<br><span style="color:#64718f">배틀 진행 중일 때만</span></td><td><input class="fillinput" data-key="tb-action" placeholder="곰인형 들어올리기"></td><td><input class="fillinput" data-key="tb-line" placeholder="응원 사운드 핫키 이름"></td><td>즉시</td></tr>
+    </table>
+    <div class="note" style="margin-top:8px">등급 이름·곰인형 행동·멘트·소요시간은 리그가 바뀌어도 고정 — <b style="color:var(--ink)">기프트 기준(코인 구간)만</b> 리그에 맞춰 바뀝니다</div>
+    <div class="sheet-tools">
+      <button class="btn-reset" id="cheatReset" type="button">전체 지우기</button>
+      <span class="savemsg" id="cheatSaved">저장됨 ✓ (이 브라우저에 자동 보관)</span>
+    </div>
+    <div class="chips">
+      <div class="chip">🔁 반복 &gt; 창의성</div>
+      <div class="chip">🔊 사운드는 핫키로</div>
+      <div class="chip">📌 4단계 이상 늘리지 않기</div>
+      <div class="chip">🏷️ 명찰은 한 자리만, 매일 리셋</div>
+    </div>
+    <div class="foot">Cheat Sheet · 입력값은 이 브라우저에 자동 저장 · 세컨 모니터에 띄워두고 사용</div>
+    <div class="pageno">08</div>
+  </section>
+
+  <!-- 9. 부록: 리그별 기준 비교표 -->
+  <section class="card tall">
+    <div class="tag"><span class="dot"></span> 부록 · 리그별 기준 비교표</div>
+    <h2 style="margin-top:8px">디비전별 기프트 기준선 한눈에 보기</h2>
+    <table class="cmp">
+      <tr><th>디비전</th><th>👋 인사</th><th>🤗 포옹</th><th>🎤 무대</th><th>👑 주인공</th></tr>
+      <tr><td>브론즈(D)</td><td>100코인 미만</td><td>100~999코인</td><td>1,000~19,999코인</td><td>20,000코인 이상</td></tr>
+      <tr><td>코퍼(C) — 현재</td><td>100코인 미만</td><td>100~999코인</td><td>1,000~19,999코인</td><td>20,000코인 이상</td></tr>
+      <tr><td>실버(B)</td><td>300코인 미만</td><td>300~2,999코인</td><td>3,000~59,999코인</td><td>60,000코인 이상</td></tr>
+      <tr><td>골드(A)</td><td>1,000코인 미만</td><td>1,000~9,999코인</td><td>10,000~199,999코인</td><td>200,000코인 이상</td></tr>
+    </table>
+    <div class="note">등급 이름·곰인형 행동·멘트·소요시간은 4개 디비전 전부 동일 — 오직 코인 기준선만 리그마다 위로 이동합니다(약 3배씩). 이 표는 치트시트(카드 08) 리그 드롭다운이 참조하는 것과 같은 기준표입니다. 코퍼(C) 구간은 틱톡 실제 기프트 가격표와 일치하는 값이고, 실버·골드 구간의 배율(약 3배)은 확인된 업계 표준이 아니라 팀 판단 제안 — 실버 승급 시점에 다시 점검할 것</div>
+    <div class="foot">Appendix · League-based Threshold Reference</div>
+    <div class="pageno">09</div>
+  </section>
+
+</div>
+<div class="hint">← → 방향키 이동 · 인쇄 시 슬라이드 분할 · 16:9</div>
+<script>
+  const cards=[...document.querySelectorAll('.card')];let i=0;
+  function go(n){i=Math.max(0,Math.min(cards.length-1,n));cards[i].scrollIntoView({behavior:'smooth',block:'center'})}
+  addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();go(i+1)}
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();go(i-1)}
+  });
+  const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting)i=cards.indexOf(en.target)}),{threshold:.6});
+  cards.forEach(c=>io.observe(c));
+
+  // 치트시트 인풋 저장(로컬 브라우저 저장 · 서버 전송 없음)
+  const CHEAT_KEY='tiktok_reaction_cheatsheet_v1';
+  const cheatInputs=[...document.querySelectorAll('#cheatTable input.fillinput')];
+  const savedMsg=document.getElementById('cheatSaved');
+  let saveTimer=null;
+  function loadCheat(){
+    try{
+      const data=JSON.parse(localStorage.getItem(CHEAT_KEY)||'{}');
+      cheatInputs.forEach(inp=>{ if(data[inp.dataset.key]!==undefined) inp.value=data[inp.dataset.key]; });
+    }catch(e){}
+  }
+  function saveCheat(){
+    const data={};
+    cheatInputs.forEach(inp=>{ data[inp.dataset.key]=inp.value; });
+    localStorage.setItem(CHEAT_KEY, JSON.stringify(data));
+    if(savedMsg){
+      savedMsg.classList.add('show');
+      clearTimeout(saveTimer);
+      saveTimer=setTimeout(()=>savedMsg.classList.remove('show'),1600);
+    }
+  }
+  cheatInputs.forEach(inp=>{
+    inp.addEventListener('input',()=>{ inp.classList.toggle('saved', inp.value.trim().length>0); saveCheat(); });
+  });
+  loadCheat();
+  cheatInputs.forEach(inp=>inp.classList.toggle('saved', inp.value.trim().length>0));
+  const resetBtn=document.getElementById('cheatReset');
+  if(resetBtn){
+    resetBtn.addEventListener('click',()=>{
+      if(!confirm('입력한 내용을 전부 지울까요?')) return;
+      cheatInputs.forEach(inp=>{ inp.value=''; inp.classList.remove('saved'); });
+      localStorage.removeItem(CHEAT_KEY);
+    });
+  }
+
+  // 리그 디비전별 기프트 기준(코인 구간)만 전환 — 등급 이름·행동·멘트·소요시간은 절대 안 바뀜
+  const LEAGUE_KEY='tiktok_reaction_league_v1';
+  const EX='color:#64718f';
+  const LEAGUE_RULES={
+    D:{label:'브론즈(D)',
+      t1:`100코인 미만<br><span style="${EX}">Rose 등</span>`,
+      t2:`100~999코인<br><span style="${EX}">Hand Heart 등</span>`,
+      t3:`1,000~19,999코인<br><span style="${EX}">Galaxy·Rocket 등</span>`,
+      t4:`20,000코인 이상<br><span style="${EX}">Lion·Universe 등</span>`,
+      tb:`100코인 이상<br><span style="${EX}">배틀 진행 중일 때만</span>`},
+    C:{label:'코퍼(C) — 현재',
+      t1:`100코인 미만<br><span style="${EX}">Rose 등</span>`,
+      t2:`100~999코인<br><span style="${EX}">Hand Heart 등</span>`,
+      t3:`1,000~19,999코인<br><span style="${EX}">Galaxy·Rocket 등</span>`,
+      t4:`20,000코인 이상<br><span style="${EX}">Lion·Universe 등</span>`,
+      tb:`100코인 이상<br><span style="${EX}">배틀 진행 중일 때만</span>`},
+    B:{label:'실버(B)',
+      t1:`300코인 미만<br><span style="${EX}">팀 제안 기준선</span>`,
+      t2:`300~2,999코인<br><span style="${EX}">팀 제안 기준선</span>`,
+      t3:`3,000~59,999코인<br><span style="${EX}">팀 제안 기준선</span>`,
+      t4:`60,000코인 이상<br><span style="${EX}">팀 제안 기준선</span>`,
+      tb:`300코인 이상<br><span style="${EX}">배틀 진행 중일 때만</span>`},
+    A:{label:'골드(A)',
+      t1:`1,000코인 미만<br><span style="${EX}">팀 제안 기준선</span>`,
+      t2:`1,000~9,999코인<br><span style="${EX}">팀 제안 기준선</span>`,
+      t3:`10,000~199,999코인<br><span style="${EX}">팀 제안 기준선</span>`,
+      t4:`200,000코인 이상<br><span style="${EX}">팀 제안 기준선</span>`,
+      tb:`1,000코인 이상<br><span style="${EX}">배틀 진행 중일 때만</span>`}
+  };
+  const leagueSelect=document.getElementById('leagueSelect');
+  const leagueSummary=document.getElementById('leagueSummary');
+  function applyLeague(key){
+    const rule=LEAGUE_RULES[key]||LEAGUE_RULES.C;
+    ['t1','t2','t3','t4','tb'].forEach(t=>{
+      const cell=document.getElementById('thresh-'+t);
+      if(cell) cell.innerHTML=rule[t];
+    });
+    if(leagueSummary) leagueSummary.innerHTML=`<b>${rule.label}</b> 기준 적용 중 — 등급·행동·멘트는 그대로, 기프트 기준선만 바뀜`;
+  }
+  if(leagueSelect){
+    let savedLeague='C';
+    try{ savedLeague=localStorage.getItem(LEAGUE_KEY)||'C'; }catch(e){}
+    leagueSelect.value=savedLeague;
+    applyLeague(savedLeague);
+    leagueSelect.addEventListener('change',()=>{
+      applyLeague(leagueSelect.value);
+      try{ localStorage.setItem(LEAGUE_KEY, leagueSelect.value); }catch(e){}
+    });
+  }
+</script>
+</body>
+</html>
