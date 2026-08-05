@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>로드맵 캘린더 — Solitaire City Journey</title>
 <style>
-  :root{--ink:#1F2233;--sub:#5B6478;--mut:#9AA0B8;--line:#E6E9F0;--bg:#F6F7FA;--acc:#4F8EF7;}
+  :root{--ink:#1F2233;--sub:#5B6478;--mut:#9AA0B8;--line:#E6E9F0;--bg:#F6F7FA;--acc:#4F8EF7;
+        --red:#DC2626;--amb:#D97706;--grn:#059669;}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
        font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif;
@@ -15,9 +16,13 @@
   .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
   h1{font-size:20px;margin:0;letter-spacing:-0.4px}
   h1 span{font-size:12px;font-weight:600;color:var(--mut);margin-left:8px}
+  .topr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .tgl{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--sub);cursor:pointer;
        background:#fff;border:1px solid var(--line);border-radius:9px;padding:7px 13px}
   .tgl input{margin:0;accent-color:var(--acc)}
+  .btn{font-family:inherit;font-size:12px;font-weight:700;border:1px solid var(--line);background:#fff;
+       color:var(--sub);border-radius:9px;padding:7px 13px;cursor:pointer}
+  .btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
 
   .panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
   .ph{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;flex-wrap:wrap}
@@ -27,6 +32,34 @@
   .nav button{width:29px;height:29px;border:1px solid var(--line);background:#fff;border-radius:8px;
               cursor:pointer;font-size:14px;color:var(--sub);line-height:1}
   .nav .today{width:auto;padding:0 12px;font-size:12px;font-weight:700}
+
+  /* 누락 방지 패널 */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .tile{border:1px solid var(--line);border-radius:11px;padding:9px 11px;cursor:pointer;background:#FCFDFE;
+        text-align:left;font-family:inherit}
+  .tile b{display:block;font-size:21px;line-height:1.15;letter-spacing:-0.5px}
+  .tile span{font-size:11px;font-weight:700;color:var(--sub)}
+  .tile small{display:block;font-size:10px;color:var(--mut);font-weight:600;margin-top:1px}
+  .tile.on{box-shadow:0 0 0 2px var(--acc) inset;border-color:var(--acc)}
+  .tile.z b{color:var(--mut)}
+  .tile.late b{color:var(--red)} .tile.late.z b{color:var(--mut)}
+  .tile.tdy b{color:var(--acc)} .tile.tdy.z b{color:var(--mut)}
+  .tile.soon b{color:var(--amb)} .tile.soon.z b{color:var(--mut)}
+  .tile.stall b{color:#7C3AED} .tile.stall.z b{color:var(--mut)}
+  .arow{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);
+        border-radius:10px;margin-bottom:6px;cursor:pointer;background:#FCFDFE}
+  .arow:hover{background:#F0F6FF;border-color:#BBD6FF}
+  .arow .dot{flex:0 0 8px;height:8px;border-radius:50%;margin-top:5px}
+  .arow .nm{font-size:12.5px;font-weight:700;line-height:1.45}
+  .arow .mt{font-size:10.5px;color:var(--mut);font-weight:600;margin-top:2px}
+  .flag{display:inline-block;font-size:9.5px;font-weight:800;border-radius:5px;padding:1px 7px;
+        margin-left:5px;vertical-align:middle;border:1px solid}
+  .f-late{background:#FEF2F2;color:#991B1B;border-color:#FECACA}
+  .f-tdy{background:#EFF6FF;color:#1E40AF;border-color:#BFDBFE}
+  .f-soon{background:#FFFBEB;color:#92400E;border-color:#FDE68A}
+  .f-stall{background:#F5F3FF;color:#6D28D9;border-color:#DDD6FE}
+  .f-ck{background:#F8FAFC;color:#475569;border-color:#E2E8F0}
+  .clear{text-align:center;color:var(--mut);font-size:12.5px;padding:16px 0}
 
   /* 월 */
   table.m{width:100%;border-collapse:collapse;table-layout:fixed}
@@ -52,6 +85,8 @@
   .lane.solo{border-radius:8px;margin:0 0 2px}
   .lane.gap{background:none!important;color:transparent}
   .more{font-size:9.5px;color:var(--mut);font-weight:700;padding-left:3px}
+  .done{opacity:.4;text-decoration:line-through}
+  .late{box-shadow:0 0 0 1.5px var(--red) inset}
 
   /* 주 */
   .wk{display:grid;gap:0}
@@ -76,6 +111,8 @@
   /* 일 */
   .task{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);
         border-radius:11px;margin-bottom:8px}
+  .task.isdone{background:#FAFBFC}
+  .task.islate{border-color:#FECACA;background:#FFFCFC}
   .dot{flex:0 0 9px;height:9px;border-radius:50%;margin-top:5px}
   .task h4{margin:0 0 3px;font-size:13.5px;letter-spacing:-0.2px}
   .task p{margin:0;font-size:12px;color:var(--sub);line-height:1.65}
@@ -90,6 +127,8 @@
   .st-dev{background:#FEF3C7;color:#92400E;border-color:#FCD34D}
   .st-qa{background:#FCE7F3;color:#9D174D;border-color:#FBCFE8}
   .st-mon{background:#DCFCE7;color:#166534;border-color:#86EFAC}
+  .st-done{background:#F1F5F9;color:#334155;border-color:#CBD5E1}
+  .st-hold{background:#FFF7ED;color:#9A3412;border-color:#FED7AA}
   .links{margin-top:7px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
   .links a,.links button{font-size:10.5px;font-weight:700;text-decoration:none;border-radius:6px;
       padding:3px 9px;border:1px solid var(--line);background:#F8FAFC;color:var(--sub);
@@ -98,6 +137,21 @@
   .links a.slack{background:#F0FDF4;color:#166534;border-color:#86EFAC}
   .links select{font-family:inherit;font-size:10.5px;font-weight:700;border:1px solid var(--line);
       border-radius:6px;padding:3px 6px;color:var(--sub);background:#fff;cursor:pointer}
+  /* 체크리스트 */
+  .ck{margin-top:9px;border-top:1px dashed var(--line);padding-top:8px}
+  .ckh{font-size:10.5px;font-weight:800;color:var(--mut);margin-bottom:5px;letter-spacing:.2px}
+  .ckh b{color:var(--sub)}
+  .cki{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--ink);
+       padding:2px 0;line-height:1.55}
+  .cki input{margin:3px 0 0;accent-color:var(--grn);cursor:pointer;flex:0 0 auto}
+  .cki.on span{color:var(--mut);text-decoration:line-through}
+  .cki button{margin-left:auto;border:none;background:none;color:var(--mut);cursor:pointer;
+      font-size:12px;font-family:inherit;line-height:1;padding:2px 4px}
+  .ckadd{display:flex;gap:6px;margin-top:6px}
+  .ckadd input[type=text]{flex:1;font-family:inherit;font-size:11.5px;border:1px solid var(--line);
+      border-radius:7px;padding:5px 9px;color:var(--ink)}
+  .ckadd button{font-family:inherit;font-size:11px;font-weight:700;border:1px solid var(--line);
+      background:#F8FAFC;color:var(--sub);border-radius:7px;padding:5px 11px;cursor:pointer}
   .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;
        font-size:11.5px;color:var(--mut)}
   .chip{cursor:grab}
@@ -110,11 +164,24 @@
   .bar button{font-family:inherit;font-size:11px;font-weight:700;border:1px solid var(--line);
        background:#fff;color:var(--sub);border-radius:7px;padding:5px 11px;cursor:pointer}
 
+  /* 편집 폼 */
+  .form{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+  .fld{display:flex;flex-direction:column;gap:4px}
+  .fld.w2{grid-column:span 2} .fld.w4{grid-column:span 4}
+  .fld label{font-size:10.5px;font-weight:800;color:var(--mut);letter-spacing:.2px}
+  .fld input,.fld select,.fld textarea{font-family:inherit;font-size:12.5px;color:var(--ink);
+      border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:#fff;width:100%}
+  .fld textarea{resize:vertical;min-height:62px;line-height:1.6}
+  .fact{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap;align-items:center}
+  .fact .del{margin-left:auto;color:var(--red);border-color:#FECACA;background:#FEF2F2}
+
   .legend{display:flex;gap:13px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);align-items:center}
   .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
   .foot{margin-top:16px;font-size:11.5px;color:var(--mut);line-height:1.8}
   .foot a{color:var(--acc);text-decoration:none;font-weight:700}
-  @media (max-width:760px){ table.m td{height:66px} .wk{grid-template-columns:1fr!important} .wcol{min-height:0} }
+  @media (max-width:760px){ table.m td{height:66px} .wk{grid-template-columns:1fr!important} .wcol{min-height:0}
+    .tiles{grid-template-columns:repeat(2,1fr)} .form{grid-template-columns:repeat(2,1fr)}
+    .fld.w4{grid-column:span 2} }
 </style>
 </head>
 <body>
@@ -122,7 +189,42 @@
 
 <div class="top">
   <h1>로드맵 캘린더 <span>Solitaire City Journey</span></h1>
-  <label class="tgl"><input type="checkbox" id="hw" onchange="toggleWeekend()"> 주말 숨기기</label>
+  <div class="topr">
+    <label class="tgl"><input type="checkbox" id="hw" onchange="toggleWeekend()"> 주말 숨기기</label>
+    <label class="tgl"><input type="checkbox" id="hd" onchange="toggleDone()"> 완료 숨기기</label>
+    <button class="btn pri" onclick="openForm(null)">＋ 일정 추가</button>
+  </div>
+</div>
+
+<!-- 편집 폼 -->
+<div class="panel" id="fPanel" style="display:none">
+  <div class="ph"><div><div class="lab" id="fLab">NEW</div><div class="ttl" id="fTtl">일정 추가</div></div></div>
+  <div class="form">
+    <div class="fld w4"><label>일정 이름</label><input type="text" id="f_t" placeholder="예) SPEC-036 [콘텐츠] 시즌 패스 2차"></div>
+    <div class="fld"><label>분류</label><select id="f_cat"></select></div>
+    <div class="fld"><label>상태</label><select id="f_st"></select></div>
+    <div class="fld"><label>시작일</label><input type="date" id="f_s"></div>
+    <div class="fld"><label>종료일 <span style="font-weight:600">(비우면 하루짜리)</span></label><input type="date" id="f_e"></div>
+    <div class="fld w4"><label>내용</label><textarea id="f_d" placeholder="무엇을 왜 하는지, 판단 기준은 무엇인지"></textarea></div>
+    <div class="fld w2"><label>기획서 파일명 <span style="font-weight:600">(workspace/specs/ 아래, 확장자 제외)</span></label><input type="text" id="f_spec" placeholder="spec-036-season-pass-2"></div>
+    <div class="fld w2"><label>슬랙 스레드 링크</label><input type="text" id="f_slack" placeholder="https://..."></div>
+    <div class="fld w4"><label>체크리스트 <span style="font-weight:600">(줄바꿈으로 구분)</span></label><textarea id="f_ck" placeholder="시트 값 반영&#10;전후 비교 확인"></textarea></div>
+  </div>
+  <div class="fact">
+    <button class="btn pri" onclick="saveForm()">저장</button>
+    <button class="btn" onclick="closeForm()">취소</button>
+    <button class="btn del" id="fDel" onclick="delForm()">삭제</button>
+  </div>
+</div>
+
+<!-- 누락 방지 -->
+<div class="panel">
+  <div class="ph">
+    <div><div class="lab">TRACKING</div><div class="ttl">놓친 일 점검 <span id="aSub" style="font-size:11.5px;font-weight:600;color:var(--mut)"></span></div></div>
+    <div class="nav"><button class="today" onclick="setFilter('')">전체</button></div>
+  </div>
+  <div class="tiles" id="tiles"></div>
+  <div id="aList"></div>
 </div>
 
 <!-- 월 -->
@@ -153,7 +255,7 @@
 </div>
 
 <!-- 일 -->
-<div class="panel">
+<div class="panel" id="dPanel">
   <div class="ph">
     <div><div class="lab">DAY</div><div class="ttl" id="dTtl"></div></div>
     <div class="nav">
@@ -161,7 +263,7 @@
     </div>
   </div>
   <div class="bar">
-    <span>일정을 끌어다 다른 날짜에 놓으면 옮겨집니다. 상태·링크·이동 결과는 이 브라우저에만 저장됩니다.</span>
+    <span>일정을 끌어다 다른 날짜에 놓으면 옮겨집니다. 상태·체크리스트·링크·추가한 일정은 이 브라우저에만 저장됩니다.</span>
     <button onclick="exportState()">상태 내보내기</button>
     <button onclick="importState()">상태 불러오기</button>
     <button onclick="resetState()">초기화</button>
@@ -171,7 +273,9 @@
 
 <div class="foot">
   일정 근거와 산출 상세 — <a href="35_marketing_start_timing.html" target="_blank">마케팅 개시 시점 산정 →</a><br>
-  주말은 회색 처리하며 일정을 두지 않습니다. 기간 항목은 시작일에만 이름이 표시되고 이후에는 얇은 막대로 이어집니다.<br>상태는 <b>기획중 → 전파 완료 → 개발중 → QA중 → 모니터링중</b> 5단계이며, 일 뷰에서 변경합니다.
+  주말은 회색 처리하며 일정을 두지 않습니다. 기간 항목은 시작일에만 이름이 표시되고 이후에는 얇은 막대로 이어집니다.<br>
+  상태는 <b>기획중 → 전파 완료 → 개발중 → QA중 → 모니터링중 → 완료</b>이며 <b>보류</b>로 빼둘 수 있습니다. 완료·보류는 놓친 일 점검에서 제외됩니다.<br>
+  점검 기준 — <b>지연</b>: 마감일이 지났는데 완료·보류가 아님 · <b>오늘</b>: 오늘 날짜에 걸린 일 · <b>임박</b>: 마감 3일 이내 · <b>정체</b>: 시작일이 지났는데 아직 기획중이거나 상태가 10일 넘게 그대로.
 </div>
 
 </div>
@@ -181,125 +285,283 @@ const CAT={dev:{name:'개발·배포',color:'#7C3AED'},mon:{name:'수익화',col
            cnt:{name:'콘텐츠',color:'#2563EB'},mkt:{name:'마케팅',color:'#059669'},
            ops:{name:'운영·판정',color:'#D97706'},ext:{name:'외부·협업',color:'#0891B2'}};
 
-const TASKS=[
- {s:'2026-08-05',e:'2026-08-31',cat:'mon',t:'SPEC-035 [수익화-광고] 전면 광고 빈도 곡선',spec:'spec-035-interstitial-frequency',st:'dev',
+const BASE=[
+ {id:'t01',s:'2026-08-05',e:'2026-08-31',cat:'mon',t:'SPEC-035 [수익화-광고] 전면 광고 빈도 곡선',spec:'spec-035-interstitial-frequency',st:'dev',
+  ck:['시트 값 라이브 반영 확인','노출량 6.6회/DAU 실측 대조','D1 리텐션 가드레일 확인','유의 하락 시 되돌림 판단'],
   d:'8/5 A/B 배포 후 8월 내내 곡선 최적화. 레벨 구간별 노출 곡선(0/20/33/50%) + 게이트 3종(최소 간격 60초·2세션 이상·일 상한 8회). 값이 전부 시트에 있어 빌드 없이 상·하향 가능하며 목표는 롤백이 아니라 최적화. 산출 노출량 6.6회/DAU는 코지 정착기 7.44와 같은 구간이고, 판당 전면 0.50은 코지 0.53과 동일 강도. 가드레일 = D1 리텐션 유지, 유의 하락 시에만 되돌림.'},
- {s:'2026-08-10',cat:'cnt',t:'SPEC-027 [콘텐츠-이벤트] 그림자 냥이 추격전 — 배포',spec:'spec-027-shadow-chase',st:'dev',
+ {id:'t02',s:'2026-08-10',cat:'cnt',t:'SPEC-027 [콘텐츠-이벤트] 그림자 냥이 추격전 — 배포',spec:'spec-027-shadow-chase',st:'dev',
+  ck:['킬스위치 해제(isInUse) 확인','사운드 4종 프리로드·호출부 확인','cycle_id 개발 확인 1건','인게임 이벤트 동시 진행 확인','배포 후 판수 전후비교'],
   d:'그림자 냥이 추격전 배포 + 인게임 이벤트 동시 진행. 판수 증대·세션 횟수 증대를 겨냥. 판수가 전면 광고 노출을 결정하므로 회수액을 직접 끌어올리는 축. 현재 판수 13.2판/DAU(코지 정착기 14.1).'},
- {s:'2026-08-19',e:'2026-08-31',cat:'mkt',t:'C2P 마케팅 집행',st:'plan',
+ {id:'t03',s:'2026-08-19',e:'2026-08-31',cat:'mkt',t:'C2P 마케팅 집행',st:'plan',
+  ck:['입찰 상한 $0.25 설정','예산·타겟 지오 확정','일 단위 회수액 모니터링','종료일 확정'],
   d:'마케팅 측 준비 기간 2주를 반영해 8/19 개시(종료일 미정). 입찰 상한 $0.25부터. 유입 1명당 회수액 $0.460(현재) → $0.811(전면 광고 적용 후 예측).'},
- {s:'2026-08-12',cat:'ops',t:'콜드스타트 종료 · 티어 최초 동결',st:'mon',
+ {id:'t04',s:'2026-08-12',cat:'ops',t:'콜드스타트 종료 · 티어 최초 동결',st:'mon',
+  ck:['티어 스냅샷 캡처','북미 DAU 300 게이트 달성 여부 확인','재평가 주기 Alex에게 확인'],
   d:'Meta 티어가 처음 동결되는 날. 재평가 주기는 미확정. C2P 유입은 티어 평가에서 제외되므로 마케팅은 이전 개시해도 무관.'},
- {s:'2026-08-12',cat:'ops',t:'컨텍스트 전환 통합 후 재확인',spec:'spec-030-context-switch-expansion',st:'mon',
+ {id:'t05',s:'2026-08-12',cat:'ops',t:'컨텍스트 전환 통합 후 재확인',spec:'spec-030-context-switch-expansion',st:'mon',
+  ck:['판수·RV·토너먼트 유입 재검정','보류 4종(세션당 RV·판당 RV·토너먼트 유입·300초 도달) 판정','흔들리면 ctx_popup_per_session 4~5로 조정'],
   d:'8/4 A/B 결론(#416 통합)은 서구권 하루 890명 기준이라 유저 단위 검정이 유의하지 않았음("떨어지지 않았다"까지). 표본이 8일치 쌓인 시점에서 판수·RV·토너먼트 유입이 그대로인지 재확인. 보류로 남은 항목 = 세션당 RV·판당 RV·토너먼트 유입·300초 도달. 흔들리면 ctx_popup_per_session(현재 0=무제한)을 4~5로 조이는 게 1차 대응 — 시트 값이라 클라 재배포 불필요. 리포트 = 34_sol_ctx_switch_watch.html (매시 자동 갱신).'},
- {s:'2026-08-12',e:'2026-08-28',cat:'cnt',t:'데이터 기반 추가 콘텐츠 기획',st:'plan',
+ {id:'t06',s:'2026-08-12',e:'2026-08-28',cat:'cnt',t:'데이터 기반 추가 콘텐츠 기획',st:'plan',
+  ck:['판수형·세션형 중 병목 판정','기획서 초안 작성','개발 가능 일정 확인(8/28 마감)'],
   d:'지표를 보고 판수형·세션형 중 필요한 쪽을 정해 투입. 판수는 전면 노출을, 세션은 재방문·보상형을 올림. 어느 쪽이 병목인지 확인 후 결정.'},
- {s:'2026-08-18',cat:'ops',t:'지불 가능 CPI 확정',st:'plan',
+ {id:'t07',s:'2026-08-18',cat:'ops',t:'지불 가능 CPI 확정',st:'plan',
+  ck:['서구권 D7 실측 갱신','목표 CPI 산출(D7 × 5.50 ÷ 1.5)','매체 CPI 대조 후 집행·보류 판단'],
   d:'마케팅 개시 직전 확정. 서구권 D7 실측 × 5.50일 ÷ 1.5 = 목표 CPI. 매체 CPI가 그 아래면 집행, 위면 보류. CPI는 우리가 정하는 값이 아니며 통제 대상은 입찰 상한·예산·타겟뿐.'},
- {s:'2026-08-24',cat:'ext',t:'크로스프로모 재조정 실행',st:'plan',
+ {id:'t08',s:'2026-08-24',cat:'ext',t:'크로스프로모 재조정 실행',st:'plan',
+  ck:['Peter와 재연결 대상 게임 확정','설정 변경 적용','되돌림 기준 사전 합의'],
   d:'현재 솔리테어로 몰아주는 상태를 적정 게임으로 재연결(Peter 요청). 그 전까지 유지하는 이유 = 북미 DAU의 60.4%가 크로스 유입이라 빼면 업데이트 효과와 유입 감소가 섞임. 마케팅 개시가 8/19로 밀려 C2P 대체 여부는 5일치만 보고 판단하게 되나, 8/24 실행 유지로 확정. 9월로 미루면 개발 대응이 불가해지고, 크로스 조정 자체는 설정 변경이라 즉시 되돌릴 수 있음.'},
- {s:'2026-08-24',e:'2026-08-28',cat:'ext',t:'크로스 조정 후 관측',st:'plan',
+ {id:'t09',s:'2026-08-24',e:'2026-08-28',cat:'ext',t:'크로스 조정 후 관측',st:'plan',
+  ck:['북미 DAU 추적','유입 믹스 확인','회수액 확인','흔들리면 되돌림'],
   d:'감시 지표 = 북미 DAU · 유입 믹스 · 회수액. 흔들리면 되돌림(설정 변경이라 즉시 가능). 개발 인력 잔류 안에서 대응 가능한 마지막 주.'},
- {s:'2026-08-28',cat:'ops',t:'개발 인력 잔류 종료 (~8/29)',st:'plan',
+ {id:'t10',s:'2026-08-28',cat:'ops',t:'개발 인력 잔류 종료 (~8/29)',st:'plan',
+  ck:['잔여 클라이언트 작업 마감','이후 시트 전용으로 대응 가능한 항목 정리'],
   d:'이후로는 시트·크로스 설정 조정만 가능. 결제 상품 추가·클라이언트 수정은 불가. 실제 종료는 8/29(토)이나 평일 기준 마지막 날은 8/28.'},
 ];
 
 const ST={plan:{n:'기획중',c:'st-plan'},share:{n:'전파 완료',c:'st-share'},
-          dev:{n:'개발중',c:'st-dev'},qa:{n:'QA중',c:'st-qa'},mon:{n:'모니터링중',c:'st-mon'}};
+          dev:{n:'개발중',c:'st-dev'},qa:{n:'QA중',c:'st-qa'},mon:{n:'모니터링중',c:'st-mon'},
+          done:{n:'완료',c:'st-done'},hold:{n:'보류',c:'st-hold'}};
+const CLOSED=['done','hold'];   // 점검 대상에서 빠지는 상태
+const STALL_DAYS=10;
 const SPEC_BASE='workspace/specs/';
-// 상태·슬랙 링크는 브라우저에 저장됨(localStorage). 공유하려면 하단 '상태 내보내기' 사용.
-const KEY='scj_roadmap_v1';
-let SAVE=JSON.parse(localStorage.getItem(KEY)||'{}');
-function keyOf(t){return t.t;}
-function effS(t){return (SAVE[keyOf(t)]||{}).s || t.s;}
-function effE(t){const o=SAVE[keyOf(t)]||{}; return t.e ? (o.e||t.e) : null;}
-function isMoved(t){return !!(SAVE[keyOf(t)]||{}).s;}
-function shiftISO(k,n){const d=pdISO(k);return iso(addD(d,n));}
-function pdISO(k){const[a,b,c]=k.split('-').map(Number);return new Date(a,b-1,c);}
-function nextWeekday(d,dir){let x=new Date(d);while(isWE(x))x=addD(x,dir>=0?1:-1);return x;}
-// 드래그로 일정 이동 — 기간 항목은 시작·종료가 함께 밀림
-let DRAG=null;
-function dragStart(ev,idx,fromK){DRAG={idx,fromK};ev.dataTransfer.effectAllowed='move';
-  try{ev.dataTransfer.setData('text/plain',String(idx));}catch(e){}
-  ev.currentTarget.classList.add('drag');}
-function dragEnd(ev){ev.currentTarget.classList.remove('drag');DRAG=null;
-  document.querySelectorAll('.drop').forEach(e=>e.classList.remove('drop'));}
-function dragOver(ev,toK){if(!DRAG)return;const d=pdISO(toK);if(isWE(d))return;
-  ev.preventDefault();ev.dataTransfer.dropEffect='move';ev.currentTarget.classList.add('drop');}
-function dragLeave(ev){ev.currentTarget.classList.remove('drop');}
-function drop(ev,toK){
-  ev.preventDefault();ev.currentTarget.classList.remove('drop');
-  if(!DRAG)return;
-  const t=TASKS[DRAG.idx];
-  const delta=Math.round((pdISO(toK)-pdISO(DRAG.fromK))/86400000);
-  if(!delta){DRAG=null;return;}
-  let ns=nextWeekday(pdISO(shiftISO(effS(t),delta)),delta);
-  const rec=Object.assign({},SAVE[keyOf(t)],{s:iso(ns)});
-  if(effE(t)){
-    const span=Math.round((pdISO(effE(t))-pdISO(effS(t)))/86400000);
-    rec.e=iso(addD(ns,span));
-  }
-  SAVE[keyOf(t)]=rec;localStorage.setItem(KEY,JSON.stringify(SAVE));
-  DRAG=null;renderAll();
-}
-function stOf(t){return (SAVE[keyOf(t)]||{}).st || t.st || 'plan';}
-function slackOf(t){return (SAVE[keyOf(t)]||{}).slack || t.slack || '';}
-function setSt(k,v){SAVE[k]=Object.assign({},SAVE[k],{st:v});localStorage.setItem(KEY,JSON.stringify(SAVE));renderAll();}
-function setSlack(k){
-  const cur=(SAVE[k]||{}).slack||'';
-  const v=prompt('슬랙 스레드 링크를 붙여넣으세요 (지우려면 비우고 확인)',cur);
-  if(v===null)return;
-  SAVE[k]=Object.assign({},SAVE[k],{slack:v.trim()});localStorage.setItem(KEY,JSON.stringify(SAVE));renderAll();
-}
-function exportState(){
-  const t=JSON.stringify(SAVE,null,1);
-  navigator.clipboard.writeText(t).then(()=>alert('상태를 클립보드에 복사했습니다.\n다른 사람에게 전달해 "상태 불러오기"로 붙여넣으면 동일하게 보입니다.'))
-   .catch(()=>prompt('아래 내용을 복사하세요',t));
-}
-function importState(){
-  const v=prompt('전달받은 상태 JSON을 붙여넣으세요');
-  if(!v)return;
-  try{SAVE=JSON.parse(v);localStorage.setItem(KEY,JSON.stringify(SAVE));renderAll();}
-  catch(e){alert('형식이 올바르지 않습니다.');}
-}
-function resetDate(k){const r=Object.assign({},SAVE[k]);delete r.s;delete r.e;
-  SAVE[k]=r;localStorage.setItem(KEY,JSON.stringify(SAVE));renderAll();}
-function resetState(){if(confirm('저장된 상태를 모두 지웁니다.')){SAVE={};localStorage.removeItem(KEY);renderAll();}}
 
-const TODAY=new Date(2026,7,5);
-let MCUR=new Date(2026,7,1);          // 표시 중인 월
-let WSEL=startOfWeek(new Date(TODAY)); // 선택한 주(일요일)
-let DSEL=new Date(TODAY);              // 선택한 날
-let HIDEWE=false;
+/* ── 저장 (localStorage) ───────────────────────────────────────
+   DB = {rec:{id:{s,e,st,stAt,slack,ck,t,d,cat,hidden}}, custom:[task...], seq:n}   */
+const KEY='scj_roadmap_v2', OLDKEY='scj_roadmap_v1';
+let DB={rec:{},custom:[],seq:1};
+(function load(){
+  const raw=localStorage.getItem(KEY);
+  if(raw){try{DB=Object.assign({rec:{},custom:[],seq:1},JSON.parse(raw));}catch(e){}return;}
+  const old=localStorage.getItem(OLDKEY);       // v1은 제목이 키였음 → id로 옮김
+  if(old){try{const o=JSON.parse(old);
+    Object.entries(o).forEach(([title,r])=>{const b=BASE.find(x=>x.t===title);if(b)DB.rec[b.id]=r;});
+    save();}catch(e){}}
+})();
+function save(){localStorage.setItem(KEY,JSON.stringify(DB));}
+
+function all(){return BASE.concat(DB.custom||[]).filter(t=>!rec(t.id).hidden);}
+function byId(id){return all().find(t=>t.id===id);}
+function rec(id){return DB.rec[id]||{};}
+function setRec(id,patch){DB.rec[id]=Object.assign({},DB.rec[id],patch);save();}
+function effS(t){return rec(t.id).s||t.s;}
+function effE(t){const o=rec(t.id);
+  return Object.prototype.hasOwnProperty.call(o,'e') ? (o.e||null) : (t.e||null);}
+function isMoved(t){return !!rec(t.id).s;}
+function T(t){return rec(t.id).t||t.t;}
+function Dsc(t){return rec(t.id).d!==undefined?rec(t.id).d:t.d;}
+function Ct(t){return rec(t.id).cat||t.cat;}
+function stOf(t){return rec(t.id).st||t.st||'plan';}
+function slackOf(t){return rec(t.id).slack!==undefined?rec(t.id).slack:(t.slack||'');}
+function ckOf(t){const r=rec(t.id);return r.ck?r.ck:(t.ck||[]).map(n=>({n,d:false}));}
+function ckLeft(t){return ckOf(t).filter(c=>!c.d).length;}
+function isOpen(t){return CLOSED.indexOf(stOf(t))<0;}
+function dueOf(t){return effE(t)||effS(t);}
+
+/* ── 날짜 ───────────────────────────────────────────────────── */
+const _n=new Date(); const TODAY=new Date(_n.getFullYear(),_n.getMonth(),_n.getDate());
+let MCUR=new Date(TODAY.getFullYear(),TODAY.getMonth(),1);
+let WSEL=startOfWeek(new Date(TODAY));
+let DSEL=new Date(TODAY);
+let HIDEWE=false, HIDEDONE=false, FILTER='';
 const WD=['일','월','화','수','목','금','토'];
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const same=(a,b)=>iso(a)===iso(b);
 const isWE=d=>d.getDay()===0||d.getDay()===6;
 function startOfWeek(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay());}
 function addD(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);}
+function pdISO(k){const[a,b,c]=k.split('-').map(Number);return new Date(a,b-1,c);}
+function shiftISO(k,n){return iso(addD(pdISO(k),n));}
+function nextWeekday(d,dir){let x=new Date(d);while(isWE(x))x=addD(x,dir>=0?1:-1);return x;}
+function dTo(k){return Math.round((pdISO(k)-TODAY)/86400000);}
+const TK=iso(TODAY);
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+/* ── 누락 방지 판정 ─────────────────────────────────────────── */
+function flags(t){
+  if(!isOpen(t)) return [];
+  const f=[], s=effS(t), e=dueOf(t), r=rec(t.id);
+  if(dTo(e)<0) f.push('late');
+  if(TK>=s&&TK<=e) f.push('today');
+  if(dTo(e)>0&&dTo(e)<=3) f.push('soon');
+  const stale=r.stAt?dTo(r.stAt)<=-STALL_DAYS:false;
+  if((dTo(s)<0&&stOf(t)==='plan')||stale) f.push('stall');
+  return f;
+}
+const FL={late:{n:'지연',c:'f-late'},today:{n:'오늘',c:'f-tdy'},soon:{n:'임박',c:'f-soon'},stall:{n:'정체',c:'f-stall'}};
+function buckets(){
+  const b={late:[],today:[],soon:[],stall:[]};
+  all().forEach(t=>flags(t).forEach(f=>b[f].push(t)));
+  return b;
+}
+function setFilter(f){FILTER=(FILTER===f)?'':f;renderAlerts();}
+function renderAlerts(){
+  const b=buckets(), TILE=[['late','지연','마감 지났는데 안 끝남'],['today','오늘','오늘 걸린 일'],
+                          ['soon','임박','마감 3일 이내'],['stall','정체','시작했는데 안 움직임']];
+  document.getElementById('tiles').innerHTML=TILE.map(([k,n,sub])=>
+    `<button class="tile ${k==='late'?'late':k==='today'?'tdy':k==='soon'?'soon':'stall'} ${b[k].length?'':'z'} ${FILTER===k?'on':''}"
+      onclick="setFilter('${k}')"><b>${b[k].length}</b><span>${n}</span><small>${sub}</small></button>`).join('');
+  let list = FILTER ? b[FILTER].map(t=>({t,f:FILTER}))
+                    : ['late','today','soon','stall'].flatMap(k=>b[k].filter(t=>flags(t)[0]===k).map(t=>({t,f:k})));
+  document.getElementById('aSub').textContent =
+    FILTER ? `· ${FL[FILTER].n}만 보는 중` : `· 오늘 ${TODAY.getMonth()+1}/${TODAY.getDate()} 기준`;
+  if(!list.length){
+    document.getElementById('aList').innerHTML='<div class="clear">놓친 일 없습니다. 지연·임박·정체 모두 0건.</div>';return;}
+  document.getElementById('aList').innerHTML=list.map(({t,f})=>{
+    const c=CAT[Ct(t)].color, e=dueOf(t), d=dTo(e), left=ckLeft(t), fs=flags(t);
+    const when = d<0?`마감 ${-d}일 지남`: d===0?'오늘 마감': d===1?'내일 마감':`마감 ${d}일 남음`;
+    const span = effE(t)?`${effS(t).slice(5).replace('-','/')}~${e.slice(5).replace('-','/')}`:e.slice(5).replace('-','/');
+    return `<div class="arow" onclick="jump('${effS(t)}','${t.id}')">
+      <span class="dot" style="background:${c}"></span>
+      <div style="flex:1"><div class="nm">${esc(T(t))}
+        ${fs.map(x=>`<span class="flag ${FL[x].c}">${FL[x].n}</span>`).join('')}
+        ${left?`<span class="flag f-ck">체크 ${left}건 남음</span>`:''}</div>
+        <div class="mt">${span} · ${when} · ${ST[stOf(t)].n} · ${CAT[Ct(t)].name}</div></div></div>`;
+  }).join('');
+}
+function jump(k,id){const d=pdISO(k);DSEL=isWE(d)?nextWeekday(d,1):d;
+  WSEL=startOfWeek(new Date(DSEL));MCUR=new Date(DSEL.getFullYear(),DSEL.getMonth(),1);
+  renderAll();document.getElementById('dPanel').scrollIntoView({behavior:'smooth',block:'start'});}
+
+/* ── 드래그 이동 ───────────────────────────────────────────── */
+let DRAG=null;
+function dragStart(ev,id,fromK){DRAG={id,fromK};ev.dataTransfer.effectAllowed='move';
+  try{ev.dataTransfer.setData('text/plain',id);}catch(e){}
+  ev.currentTarget.classList.add('drag');ev.stopPropagation();}
+function dragEnd(ev){ev.currentTarget.classList.remove('drag');DRAG=null;
+  document.querySelectorAll('.drop').forEach(e=>e.classList.remove('drop'));}
+function dragOver(ev,toK){if(!DRAG)return;if(isWE(pdISO(toK)))return;
+  ev.preventDefault();ev.dataTransfer.dropEffect='move';ev.currentTarget.classList.add('drop');}
+function dragLeave(ev){ev.currentTarget.classList.remove('drop');}
+function drop(ev,toK){
+  ev.preventDefault();ev.currentTarget.classList.remove('drop');
+  if(!DRAG)return;
+  const t=byId(DRAG.id); if(!t){DRAG=null;return;}
+  const delta=Math.round((pdISO(toK)-pdISO(DRAG.fromK))/86400000);
+  if(!delta){DRAG=null;return;}
+  const ns=nextWeekday(pdISO(shiftISO(effS(t),delta)),delta);
+  const patch={s:iso(ns)};
+  if(effE(t)){const span=Math.round((pdISO(effE(t))-pdISO(effS(t)))/86400000);patch.e=iso(addD(ns,span));}
+  setRec(t.id,patch);DRAG=null;renderAll();
+}
+
+/* ── 상태·체크리스트·링크 ──────────────────────────────────── */
+function setSt(id,v){setRec(id,{st:v,stAt:TK});renderAll();}
+function setSlack(id){
+  const cur=slackOf(byId(id));
+  const v=prompt('슬랙 스레드 링크를 붙여넣으세요 (지우려면 비우고 확인)',cur);
+  if(v===null)return;
+  setRec(id,{slack:v.trim()});renderAll();
+}
+function ckToggle(id,i){const t=byId(id),l=ckOf(t).map(c=>({n:c.n,d:c.d}));
+  l[i].d=!l[i].d;setRec(id,{ck:l});renderAll();}
+function ckDel(id,i){const t=byId(id),l=ckOf(t).map(c=>({n:c.n,d:c.d}));
+  l.splice(i,1);setRec(id,{ck:l});renderAll();}
+function ckAdd(id){
+  const el=document.getElementById('ci_'+id), v=(el.value||'').trim();
+  if(!v)return;
+  const t=byId(id),l=ckOf(t).map(c=>({n:c.n,d:c.d}));
+  l.push({n:v,d:false});setRec(id,{ck:l});renderAll();
+}
+function ckKey(ev,id){if(ev.key==='Enter'){ev.preventDefault();ckAdd(id);}}
+function resetDate(id){const r=Object.assign({},DB.rec[id]);delete r.s;delete r.e;
+  DB.rec[id]=r;save();renderAll();}
+
+/* ── 일정 추가·수정 ────────────────────────────────────────── */
+let FID=null;
+function openForm(id){
+  FID=id;const t=id?byId(id):null;
+  document.getElementById('fLab').textContent=id?'EDIT':'NEW';
+  document.getElementById('fTtl').textContent=id?'일정 수정':'일정 추가';
+  document.getElementById('f_cat').innerHTML=Object.entries(CAT).map(([k,c])=>
+    `<option value="${k}">${c.name}</option>`).join('');
+  document.getElementById('f_st').innerHTML=Object.entries(ST).map(([k,s])=>
+    `<option value="${k}">${s.n}</option>`).join('');
+  document.getElementById('f_t').value   = t?T(t):'';
+  document.getElementById('f_cat').value = t?Ct(t):'cnt';
+  document.getElementById('f_st').value  = t?stOf(t):'plan';
+  document.getElementById('f_s').value   = t?effS(t):iso(DSEL);
+  document.getElementById('f_e').value   = t&&effE(t)?effE(t):'';
+  document.getElementById('f_d').value   = t?(Dsc(t)||''):'';
+  document.getElementById('f_spec').value= t?(t.spec||''):'';
+  document.getElementById('f_slack').value=t?slackOf(t):'';
+  document.getElementById('f_ck').value  = t?ckOf(t).map(c=>c.n).join('\n'):'';
+  document.getElementById('fDel').style.display=id?'':'none';
+  const p=document.getElementById('fPanel');p.style.display='';p.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function closeForm(){document.getElementById('fPanel').style.display='none';FID=null;}
+function saveForm(){
+  const v=id=>document.getElementById(id).value.trim();
+  const t=v('f_t'); if(!t){alert('일정 이름을 입력하세요.');return;}
+  const s=v('f_s'); if(!s){alert('시작일을 입력하세요.');return;}
+  let e=v('f_e'); if(e&&e<s){alert('종료일이 시작일보다 빠릅니다.');return;}
+  const ckOld=FID?ckOf(byId(FID)):[];
+  const ck=v('f_ck').split('\n').map(x=>x.trim()).filter(Boolean)
+            .map(n=>({n,d:(ckOld.find(o=>o.n===n)||{}).d||false}));
+  if(FID){
+    const cur=byId(FID);
+    const patch={t,cat:v('f_cat'),st:v('f_st'),s,e:e||null,d:v('f_d'),
+                 slack:v('f_slack'),spec:v('f_spec'),ck};
+    if(patch.st!==stOf(cur))patch.stAt=TK;
+    setRec(FID,patch);
+  }else{
+    const id='u'+(DB.seq++);
+    DB.custom.push({id,s,e:e||undefined,cat:v('f_cat'),t,spec:v('f_spec')||'',st:v('f_st'),d:v('f_d'),ck:[]});
+    DB.rec[id]={ck,slack:v('f_slack'),stAt:TK};save();
+    DSEL=pdISO(s);WSEL=startOfWeek(new Date(DSEL));MCUR=new Date(DSEL.getFullYear(),DSEL.getMonth(),1);
+  }
+  closeForm();renderAll();
+}
+function delForm(){
+  if(!FID)return;
+  const isCustom=(DB.custom||[]).some(x=>x.id===FID);
+  if(!confirm(isCustom?'이 일정을 삭제합니다.':'기본 일정을 목록에서 숨깁니다. (초기화하면 되돌아옵니다)'))return;
+  if(isCustom){DB.custom=DB.custom.filter(x=>x.id!==FID);delete DB.rec[FID];}
+  else setRec(FID,{hidden:true});
+  save();closeForm();renderAll();
+}
+function specOf(t){const r=rec(t.id);return r.spec!==undefined?r.spec:(t.spec||'');}
+
+/* ── 내보내기·초기화 ───────────────────────────────────────── */
+function exportState(){
+  const t=JSON.stringify(DB,null,1);
+  navigator.clipboard.writeText(t).then(()=>alert('상태를 클립보드에 복사했습니다.\n다른 사람에게 전달해 "상태 불러오기"로 붙여넣으면 동일하게 보입니다.'))
+   .catch(()=>prompt('아래 내용을 복사하세요',t));
+}
+function importState(){
+  const v=prompt('전달받은 상태 JSON을 붙여넣으세요');
+  if(!v)return;
+  try{DB=Object.assign({rec:{},custom:[],seq:1},JSON.parse(v));save();renderAll();}
+  catch(e){alert('형식이 올바르지 않습니다.');}
+}
+function resetState(){if(confirm('저장된 상태(상태·체크리스트·이동·추가한 일정)를 모두 지웁니다.')){
+  DB={rec:{},custom:[],seq:1};localStorage.removeItem(KEY);localStorage.removeItem(OLDKEY);renderAll();}}
+
+/* ── 달력 ──────────────────────────────────────────────────── */
+function visible(t){return !(HIDEDONE&&stOf(t)==='done');}
 function tasksOn(d){
-  if(isWE(d)) return [];                      // 주말엔 일정 두지 않음
+  if(isWE(d))return [];
   const k=iso(d);
-  return TASKS.map((t,i)=>({t,i})).filter(({t})=>{
-      const a=effS(t), b=effE(t); return b ? (k>=a&&k<=b) : k===a; })
-    .map(({t,i})=>({...t,i,first:k===effS(t),span:!!effE(t),moved:isMoved(t)}));
+  return all().filter(visible).filter(t=>{const a=effS(t),b=effE(t);return b?(k>=a&&k<=b):k===a;})
+    .map(t=>({t,first:k===effS(t),span:!!effE(t)}));
 }
 function cols(){return HIDEWE?[1,2,3,4,5]:[0,1,2,3,4,5,6];}
 function toggleWeekend(){HIDEWE=document.getElementById('hw').checked;renderAll();}
+function toggleDone(){HIDEDONE=document.getElementById('hd').checked;renderAll();}
 function goToday(){MCUR=new Date(TODAY.getFullYear(),TODAY.getMonth(),1);WSEL=startOfWeek(new Date(TODAY));DSEL=new Date(TODAY);renderAll();}
 function moveM(n){MCUR=new Date(MCUR.getFullYear(),MCUR.getMonth()+n,1);renderMonth();}
 function moveW(n){WSEL=addD(WSEL,7*n);MCUR=new Date(WSEL.getFullYear(),WSEL.getMonth(),1);renderAll();}
-function moveD(n){let d=addD(DSEL,n);while(HIDEWE&&isWE(d))d=addD(d,n>0?1:-1);DSEL=d;WSEL=startOfWeek(new Date(DSEL));MCUR=new Date(DSEL.getFullYear(),DSEL.getMonth(),1);renderAll();}
-function pickWeek(k){WSEL=new Date(k);
-  // 주말엔 일정을 두지 않으므로 그 주의 첫 평일을 선택한다
+function moveD(n){let d=addD(DSEL,n);while(HIDEWE&&isWE(d))d=addD(d,n>0?1:-1);DSEL=d;
+  WSEL=startOfWeek(new Date(DSEL));MCUR=new Date(DSEL.getFullYear(),DSEL.getMonth(),1);renderAll();}
+function pickWeek(k){WSEL=pdISO(k);
   const wd=cols().map(c=>addD(WSEL,c)).filter(d=>!isWE(d));
-  DSEL=wd[0]||WSEL; renderAll();}
-function pickDay(k){const d=new Date(k);if(isWE(d))return;DSEL=d;renderWeek();renderDay();}
+  DSEL=wd[0]||WSEL;renderAll();}
+function pickDay(k){const d=pdISO(k);if(isWE(d))return;DSEL=d;renderWeek();renderDay();}
 
-const SPANS=TASKS.map((t,i)=>({t,i})).filter(({t})=>!!t.e);
+function spans(){return all().filter(visible).filter(t=>!!effE(t));}
+function laneCls(t){const s=stOf(t);return (s==='done'?' done':'')+(flags(t).indexOf('late')>=0?' late':'');}
+
 function renderMonth(){
-  const y=MCUR.getFullYear(),m=MCUR.getMonth();
+  const y=MCUR.getFullYear(),m=MCUR.getMonth(),SP=spans();
   document.getElementById('mTtl').textContent=`${y}년 ${m+1}월`;
   const start=addD(new Date(y,m,1),-new Date(y,m,1).getDay());
   let h='<table class="m"><tr>'+cols().map(c=>`<th class="${(c===0||c===6)?'we':''}">${WD[c]}</th>`).join('')+'</tr>';
@@ -309,22 +571,24 @@ function renderMonth(){
     const sel=same(wStart,WSEL);
     h+=`<tr class="wrow ${sel?'sel':''}" onclick="pickWeek('${iso(wStart)}')">`;
     cols().forEach(c=>{
-      const cur=addD(wStart,c), out=cur.getMonth()!==m, we=isWE(cur), ts=tasksOn(cur);
-      h+=`<td class="${out?'out':''} ${we?'we':''} ${same(cur,TODAY)?'today':''}"${we?'':` ondragover="dragOver(event,'${iso(cur)}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${iso(cur)}')"`}><div class="dn">${cur.getDate()}</div>`;
+      const cur=addD(wStart,c), out=cur.getMonth()!==m, we=isWE(cur), k=iso(cur);
+      h+=`<td class="${out?'out':''} ${we?'we':''} ${same(cur,TODAY)?'today':''}"${we?'':` ondragover="dragOver(event,'${k}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${k}')"`}><div class="dn">${cur.getDate()}</div>`;
       if(!we){
-        // 기간 항목은 TASKS 순서대로 고정 레인 — 없는 날은 빈 칸으로 자리를 지켜 막대가 어긋나지 않게 함
-        SPANS.forEach(sp=>{
-          const a=effS(sp.t), b=effE(sp.t), k=iso(cur);
+        // 기간 항목은 고정 레인 — 없는 날은 빈 칸으로 자리를 지켜 막대가 어긋나지 않게 함
+        SP.forEach(t=>{
+          const a=effS(t),b=effE(t);
           if(k<a||k>b){h+='<span class="lane gap"></span>';return;}
-          const head=(k===a), tail=(k===b);
+          const head=(k===a),tail=(k===b);
           const cls=head&&tail?'solo':head?'head':tail?'tail':'';
-          h+=`<span class="lane ${cls}" style="background:${CAT[sp.t.cat].color}" draggable="true"
-               ondragstart="dragStart(event,${sp.i},'${k}')" ondragend="dragEnd(event)">${head?sp.t.t:'&nbsp;'}</span>`;
+          h+=`<span class="lane ${cls}${laneCls(t)}" style="background:${CAT[Ct(t)].color}" draggable="true"
+               ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"
+               title="${esc(T(t))}">${head?esc(T(t)):'&nbsp;'}</span>`;
         });
-        const singles=ts.filter(t=>!t.span);
-        singles.slice(0,2).forEach(t=>{
-          h+=`<span class="chip" style="background:${CAT[t.cat].color}" draggable="true"
-               ondragstart="dragStart(event,${t.i},'${iso(cur)}')" ondragend="dragEnd(event)">${t.t}</span>`;
+        const singles=tasksOn(cur).filter(x=>!x.span);
+        singles.slice(0,2).forEach(({t})=>{
+          h+=`<span class="chip${laneCls(t)}" style="background:${CAT[Ct(t)].color}" draggable="true"
+               ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"
+               title="${esc(T(t))}">${esc(T(t))}</span>`;
         });
         if(singles.length>2) h+=`<span class="more">+${singles.length-2}</span>`;
       }
@@ -336,7 +600,7 @@ function renderMonth(){
 }
 
 function renderWeek(){
-  const list=cols().map(c=>addD(WSEL,c)).filter(d=>!(HIDEWE&&isWE(d)));
+  const list=cols().map(c=>addD(WSEL,c)).filter(d=>!(HIDEWE&&isWE(d))), SP=spans();
   const a=list[0], b=list[list.length-1];
   document.getElementById('wTtl').textContent=
     `${a.getMonth()+1}/${a.getDate()} ~ ${b.getMonth()+1}/${b.getDate()}`;
@@ -347,21 +611,20 @@ function renderWeek(){
          ${we?'':`onclick="pickDay('${k}')" ondragover="dragOver(event,'${k}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${k}')"`}>
         <div class="wh">${WD[cur.getDay()]}<small>${cur.getMonth()+1}/${cur.getDate()}</small></div>`;
     if(we){ h+='<div style="font-size:10px;color:#C3C9D6;text-align:center;padding-top:8px">주말</div></div>'; return; }
-    // 기간 항목 — 월 뷰와 동일하게 고정 레인으로 이어 그림
-    SPANS.forEach(sp=>{
-      const s0=effS(sp.t), e0=effE(sp.t);
+    SP.forEach(t=>{
+      const s0=effS(t), e0=effE(t);
       if(k<s0||k>e0){h+='<span class="wlane gap"></span>';return;}
       const head=(k===s0), tail=(k===e0);
       const cls=head&&tail?'solo':head?'head':tail?'tail':'';
-      h+=`<span class="wlane ${cls}" style="background:${CAT[sp.t.cat].color}" draggable="true"
-           ondragstart="dragStart(event,${sp.i},'${k}')" ondragend="dragEnd(event)"
-           title="${sp.t.t}">${head?sp.t.t:'&nbsp;'}</span>`;
+      h+=`<span class="wlane ${cls}${laneCls(t)}" style="background:${CAT[Ct(t)].color}" draggable="true"
+           ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"
+           title="${esc(T(t))}">${head?esc(T(t)):'&nbsp;'}</span>`;
     });
-    const singles=ts.filter(t=>!t.span);
-    singles.forEach(t=>{
-      h+=`<div class="witem" style="background:${CAT[t.cat].color}" draggable="true"
-           ondragstart="dragStart(event,${t.i},'${k}')" ondragend="dragEnd(event)">${t.t}
-           <span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}</span></div>`;
+    ts.filter(x=>!x.span).forEach(({t})=>{
+      const left=ckLeft(t);
+      h+=`<div class="witem${laneCls(t)}" style="background:${CAT[Ct(t)].color}" draggable="true"
+           ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)">${esc(T(t))}
+           <span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}${left?` · 체크 ${left}`:''}</span></div>`;
     });
     if(!ts.length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:6px">—</div>';
     h+='</div>';
@@ -375,27 +638,42 @@ function renderDay(){
   const ts=tasksOn(DSEL);
   if(isWE(DSEL)){document.getElementById('dView').innerHTML='<div class="empty">주말에는 일정을 두지 않습니다.</div>';return;}
   if(!ts.length){document.getElementById('dView').innerHTML='<div class="empty">이 날짜에 예정된 일정이 없습니다.</div>';return;}
-  document.getElementById('dView').innerHTML=ts.map(t=>{
-    const c=CAT[t.cat].color, k=keyOf(t), st=stOf(t), sl=slackOf(t);
+  document.getElementById('dView').innerHTML=ts.map(({t,first,span})=>{
+    const c=CAT[Ct(t)].color, id=t.id, st=stOf(t), sl=slackOf(t), sp=specOf(t), fs=flags(t), ck=ckOf(t);
+    const dn=ck.filter(x=>x.d).length;
     const opts=Object.entries(ST).map(([v,o])=>`<option value="${v}" ${v===st?'selected':''}>${o.n}</option>`).join('');
-    return `<div class="task"><span class="dot" style="background:${c}"></span>
-      <div style="flex:1"><h4>${t.t}<span class="tag" style="background:${c}">${CAT[t.cat].name}</span>
-      <span class="st ${ST[st].c}">${ST[st].n}</span>${t.moved?'<span class="moved">일정 이동됨</span>':''}
-      ${t.span?`<span class="tag" style="background:#94A3B8">${t.first?'시작':'진행 중'}</span>`:''}</h4>
-      <p>${t.d}</p>
+    return `<div class="task ${st==='done'?'isdone':''} ${fs.indexOf('late')>=0?'islate':''}">
+      <span class="dot" style="background:${c}"></span>
+      <div style="flex:1"><h4>${esc(T(t))}<span class="tag" style="background:${c}">${CAT[Ct(t)].name}</span>
+      <span class="st ${ST[st].c}">${ST[st].n}</span>${isMoved(t)?'<span class="moved">일정 이동됨</span>':''}
+      ${fs.map(x=>`<span class="flag ${FL[x].c}">${FL[x].n}</span>`).join('')}
+      ${span?`<span class="tag" style="background:#94A3B8">${first?'시작':'진행 중'}</span>`:''}</h4>
+      <p>${esc(Dsc(t)||'')}</p>
       <div class="links">
-        ${t.spec?`<a class="spec" href="${SPEC_BASE}${t.spec}.html" target="_blank">📄 기획서</a>`:''}
-        ${sl?`<a class="slack" href="${sl}" target="_blank">💬 슬랙</a>`:''}
-        <button onclick="setSlack('${k.replace(/'/g,"\\'")}')">${sl?'슬랙 링크 수정':'＋ 슬랙 링크'}</button>
-        <select onchange="setSt('${k.replace(/'/g,"\\'")}',this.value)">${opts}</select>${t.moved?`<button onclick="resetDate('${k.replace(/'/g,"\\'")}')">날짜 되돌리기</button>`:''}
-      </div></div></div>`;
+        ${sp?`<a class="spec" href="${SPEC_BASE}${esc(sp)}.html" target="_blank">📄 기획서</a>`:''}
+        ${sl?`<a class="slack" href="${esc(sl)}" target="_blank">💬 슬랙</a>`:''}
+        <button onclick="setSlack('${id}')">${sl?'슬랙 링크 수정':'＋ 슬랙 링크'}</button>
+        <select onchange="setSt('${id}',this.value)">${opts}</select>
+        <button onclick="openForm('${id}')">일정 수정</button>
+        ${isMoved(t)?`<button onclick="resetDate('${id}')">날짜 되돌리기</button>`:''}
+      </div>
+      <div class="ck">
+        <div class="ckh">체크리스트 <b>${dn}/${ck.length}</b>${ck.length&&dn===ck.length?' · 전부 완료':''}</div>
+        ${ck.map((x,i)=>`<label class="cki ${x.d?'on':''}"><input type="checkbox" ${x.d?'checked':''}
+            onchange="ckToggle('${id}',${i})"><span>${esc(x.n)}</span>
+            <button onclick="event.preventDefault();ckDel('${id}',${i})" title="삭제">✕</button></label>`).join('')
+          || '<div style="font-size:11.5px;color:var(--mut)">항목이 없습니다. 빠지면 안 되는 액션을 적어두세요.</div>'}
+        <div class="ckadd"><input type="text" id="ci_${id}" placeholder="빠지면 안 되는 액션 추가"
+            onkeydown="ckKey(event,'${id}')"><button onclick="ckAdd('${id}')">추가</button></div>
+      </div>
+      </div></div>`;
   }).join('');
 }
 
 function renderAll(){
   document.getElementById('legend').innerHTML=
     Object.values(CAT).map(c=>`<span><i style="background:${c.color}"></i>${c.name}</span>`).join('');
-  renderMonth();renderWeek();renderDay();
+  renderAlerts();renderMonth();renderWeek();renderDay();
 }
 renderAll();
 </script>
