@@ -330,7 +330,7 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
   <div class="callout callout-yellow">
-    <strong>이 스펙의 성공은 수익 상승이 아니라 &ldquo;리텐션을 안 깎고 채널을 되살린 것&rdquo;임.</strong> 전후 판정은 절대 수치 컷이 아니라 z검정으로 하고, 효과 없음과 검출력 부족을 반드시 구분함.
+    <strong>이 스펙의 성공은 수익 상승이 아니라 &ldquo;리텐션을 안 깎고 채널을 되살린 것&rdquo;임. <strong>판정은 전후 비교가 아니라 A/B</strong>임 &mdash; 우리 D1은 유입 믹스에 따라 통째로 흔들려서(2026-07-19 인게임 메뉴 개방 때 15.2&rarr;6.6) 전후로는 광고 탓인지 유입 탓인지 분리되지 않음. NRU 1,023명/일 기준 50/50이면 군당 512명/일이고, D1 17.5%에서 <strong>2%p 하락은 약 11일</strong>이면 검출됨(양측 &alpha;=.05 · 검정력 80%). 1%p는 44일이 필요한데 그 크기면 롤백 결정이 갈리지 않음.</strong> 전후 판정은 절대 수치 컷이 아니라 z검정으로 하고, 효과 없음과 검출력 부족을 반드시 구분함.
   </div>
 </section>
 
@@ -374,6 +374,7 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>순서</th><th>검사</th><th>불통과 시</th></tr></thead>
     <tbody>
+    <tr><td>0</td><td><span class="sheet-var">player_id % 10000</span> &lt; <span class="sheet-var">interstitial_ad_ab_ratio</span> (실험군인가)</td><td>종료 &mdash; 대조군. 로그 없음</td></tr>
     <tr><td>1</td><td><span class="sheet-var">is_interstitial_ad_open</span>이 1인가</td><td>종료 &mdash; 로그 없음</td></tr>
     <tr><td>2</td><td>튜토리얼 진행 중이 아닌가</td><td>종료 &mdash; 로그 없음</td></tr>
     <tr><td>2-1</td><td>(나가기 지면만) <span class="sheet-var">is_interstitial_ad_quit_open</span>이 1인가</td><td>종료 &mdash; 로그 없음</td></tr>
@@ -391,7 +392,7 @@ ul li strong,ol li strong { color:var(--text); }
     <strong>6번에서만 카운터를 소모하고 7~9번에서는 유지하는 것이 핵심임.</strong> 간격 조건을 채웠는데 상한·시간·재고 때문에 못 띄운 경우, 카운터를 리셋해 버리면 그 유저는 다시 N판을 채워야 해서 <strong>실질 노출률이 설정값보다 계속 낮아짐</strong>. 카운터를 유지하면 조건이 풀리는 즉시 다음 판에 노출됨.
   </div>
 
-  <h3>시트 &mdash; 신규 탭 1개 + 상수 5개</h3>
+  <h3>시트 &mdash; 신규 탭 1개 + 상수 6개</h3>
 
   <p><strong>① 신규 탭 <span class="sheet-var">interstitial_tier</span></strong> &mdash; 구조는 기존 <span class="sheet-var">level_entry_tier</span>를 그대로 따름. <span class="sheet-var">tool</span> 탭 현재 최대 대역이 <strong>250001</strong>(<span class="sheet-var">event_shadow_chest</span>)이므로 신규 대역은 <strong>260001</strong>이고, <span class="sheet-var">tool</span> 탭에 행 추가가 함께 필요함.</p>
   <table>
@@ -404,13 +405,14 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
 
-  <p><strong>② <span class="sheet-var">const</span> 탭 신규 5행</strong> &mdash; 현재 최대 <span class="sheet-var">key_number</span>가 <strong>10100</strong>이므로 <strong>10101</strong>부터 부여함.</p>
+  <p><strong>② <span class="sheet-var">const</span> 탭 신규 6행</strong> &mdash; 현재 최대 <span class="sheet-var">key_number</span>가 <strong>10100</strong>이므로 <strong>10101</strong>부터 부여함.</p>
   <table>
     <thead><tr><th>key_number</th><th>const_name</th><th>초기값</th><th>설명</th></tr></thead>
     <tbody>
     <tr><td>10101</td><td><span class="sheet-var">is_interstitial_ad_open</span></td><td><strong>1</strong></td><td>전면 광고 마스터 스위치. 0=미노출, 1=노출. <strong>개발 테스트를 위해 시트에 1로 넣어둠</strong> &mdash; 라이브 배포 시점엔 0으로 내렸다가 검증 게이트 순서대로 켬</td></tr>
     <tr><td>10102</td><td><span class="sheet-var">interstitial_ad_min_interval_sec</span></td><td><strong>0</strong></td><td>직전 전면 광고 노출 이후 최소 경과 시간 (초). <strong>0=미적용</strong> &mdash; 벤치에 없는 게이트</td></tr>
     <tr><td>10103</td><td><span class="sheet-var">interstitial_ad_session_gate</span></td><td><strong>1</strong></td><td>누적 로그인 횟수가 이 값 이상인 유저부터 노출. <strong>1=첫 세션부터</strong> &mdash; 벤치와 동일</td></tr>
+    <tr><td>10106</td><td><span class="sheet-var">interstitial_ad_ab_ratio</span></td><td><strong>5000</strong></td><td>A/B 실험군 비율 (1%=100). <span class="sheet-var">player_id % 10000 &lt; 값</span>이면 실험군. 5000=50%. <strong>0=전원 대조군</strong>(즉시 전체 롤백)</td></tr>
     <tr><td>10105</td><td><span class="sheet-var">is_interstitial_ad_quit_open</span></td><td><strong>1</strong></td><td>나가기 지면 단독 스위치. 0=나가기 지면만 끔, 1=노출. 승리 지면은 영향 없음</td></tr>
     <tr><td>10104</td><td><span class="sheet-var">interstitial_ad_daily_limit</span></td><td><strong>0</strong></td><td>일 노출 상한 (UTC0 기준 리셋). <strong>0=무제한</strong> &mdash; 벤치에 상한 없음</td></tr>
     </tbody>
@@ -461,6 +463,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>필드</th><th>값</th><th>출처</th></tr></thead>
     <tbody>
     <tr><td><span class="sheet-var">level_at_show</span></td><td>판정 시점 유저 레벨</td><td><strong>서버 응답</strong>(기존 유저 데이터)</td></tr>
+    <tr><td><span class="sheet-var">ab_group</span></td><td><span class="sheet-var">test</span> / <span class="sheet-var">control</span></td><td><strong>클라</strong> &mdash; <span class="sheet-var">player_id</span>로 산출. BQ에서 같은 식으로 재현되지만 비율을 바꾸면 소급 재현이 깨지므로 로그에 실어 둠</td></tr>
     <tr><td><span class="sheet-var">position</span></td><td><span class="sheet-var">game_over</span> / <span class="sheet-var">game_quit</span></td><td><strong>클라</strong> &mdash; 기존 필드 재사용. 플랫폼별로 <span class="sheet-var">position</span>·<span class="sheet-var">type</span> 키가 갈리므로 조회는 <span class="sheet-var">coalesce(data.type, data.position)</span></td></tr>
     <tr><td><span class="sheet-var">tier_key</span></td><td>적용된 티어 <span class="sheet-var">key_number</span>(260001~260004)</td><td><strong>클라</strong> &mdash; 레벨을 티어 탭에 대입해 산출</td></tr>
     <tr><td><span class="sheet-var">clear_interval</span></td><td>그 티어의 간격값</td><td><strong>시트</strong>(<span class="sheet-var">interstitial_tier</span> 탭)</td></tr>
@@ -483,14 +486,14 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>2</td><td>내부 계정으로 <span class="sheet-var">is_interstitial_ad_open=1</span></td><td>구간별 간격이 로그의 <span class="sheet-var">tier_key</span> · <span class="sheet-var">clear_interval</span>과 일치</td></tr>
     <tr><td>3</td><td>게이트 동작 확인</td><td>1세션 유저 노출 0건 · 60초 내 연속 노출 0건(지면 교차 포함) · 일 9회차 이상 0건 · 간격 미달 판 0건 · <span class="sheet-var">position</span>이 <span class="sheet-var">game_over</span>·<span class="sheet-var">game_quit</span> 두 값으로만 찍힘</td></tr>
     <tr><td>4</td><td>소규모 오픈</td><td>노출/DAU가 <strong>2.5~3.5 구간</strong>(산출 2.9) · <span class="sheet-var">position</span>이 <span class="sheet-var">game_over</span>·<span class="sheet-var">game_quit</span>인 건만 세어 판정(리워디드 인터스티셜 혼입 배제)</td></tr>
-    <tr><td>5</td><td>가드레일 판정</td><td><strong>D1 리텐션·판수 유의 하락 없음</strong>(z검정). 하락 시 즉시 6단계</td></tr>
+    <tr><td>5</td><td>가드레일 판정</td><td><strong>실험군 대 대조군 z검정</strong> &mdash; D1 리텐션·판수 유의 하락 없음. 하락 시 즉시 6단계</td></tr>
     <tr><td>6</td><td>롤백</td><td><span class="sheet-var">is_interstitial_ad_open=0</span> &mdash; 빌드 없이 즉시</td></tr>
     </tbody>
   </table>
 
   <h3>롤백</h3>
   <ul>
-    <li><strong>전체 차단</strong>은 <span class="sheet-var">is_interstitial_ad_open=0</span> 하나로 끝남. 다음 판정부터 즉시 반영되고 클라 재시작이 필요 없음</li>
+    <li><strong>전체 차단</strong>은 <span class="sheet-var">is_interstitial_ad_open=0</span> 또는 <span class="sheet-var">interstitial_ad_ab_ratio=0</span> 하나로 끝남. 다음 판정부터 즉시 반영되고 클라 재시작이 필요 없음</li>
     <li><strong>부분 완화</strong>가 필요하면 티어의 <span class="sheet-var">clear_interval</span>을 키우거나 최소 간격·일 상한을 조임. 이 경우도 시트만 만짐</li>
     <li>이미 재생 중인 광고는 중단하지 않음 &mdash; 재생 중 강제 종료는 수익 정산 문제를 만들 수 있음</li>
   </ul>
