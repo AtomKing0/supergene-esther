@@ -436,6 +436,28 @@ ul li strong,ol li strong { color:var(--text); }
     <strong>10079는 참조 제거 &mdash; 행만 값 0으로 남김.</strong> 노출 빈도의 소스는 <span class="sheet-var">interstitial_tier</span> 탭 하나임. 값이 두 곳에 존재하면 어느 쪽이 먹히는지 헷갈리므로 클라는 10079를 아예 읽지 않음. 시트에서 행을 지우지는 않는데, 현행 라이브 클라가 아직 이 키를 읽고 있어 신규 클라 배포 전에 지우면 없는 키를 읽게 되기 때문임. 값이 0이라 남겨도 라이브 영향은 없음.
   </div>
 
+  <h3>A/B 빌드별 시트 값 &mdash; A빌드 / B빌드</h3>
+  <p>A/B는 시트 분할이 아니라 <strong>빌드 2개를 페이스북 대시보드에서 롤아웃</strong>하는 방식임. 따라서 <strong>대조군 빌드가 바라볼 시트본이 따로 필요</strong>함. 파일명은 기존 플랫폼 변형 관례(<span class="sheet-var">_toss</span> · <span class="sheet-var">_toss_b</span>)를 따라 <span class="sheet-var">_b</span> 접미사를 붙임.</p>
+  <table>
+    <thead><tr><th>파일</th><th>key</th><th>A빌드 (노출)</th><th>B빌드 (대조군)</th></tr></thead>
+    <tbody>
+    <tr><td rowspan="6"><span class="sheet-var">const.json</span><br><span class="sheet-var">const_b.json</span></td><td>10101 <span class="sheet-var">is_interstitial_ad_open</span></td><td><strong style="color:var(--green)">1</strong></td><td><strong style="color:var(--red)">0</strong></td></tr>
+    <tr><td>10105 <span class="sheet-var">is_interstitial_ad_quit_open</span></td><td><strong style="color:var(--green)">1</strong></td><td><strong style="color:var(--red)">0</strong></td></tr>
+    <tr><td>10102 <span class="sheet-var">interstitial_ad_min_interval_sec</span></td><td>0</td><td>0 <span style="opacity:.6">(동일)</span></td></tr>
+    <tr><td>10103 <span class="sheet-var">interstitial_ad_session_gate</span></td><td>1</td><td>1 <span style="opacity:.6">(동일)</span></td></tr>
+    <tr><td>10104 <span class="sheet-var">interstitial_ad_daily_limit</span></td><td>0</td><td>0 <span style="opacity:.6">(동일)</span></td></tr>
+    <tr><td>10079 <span class="sheet-var">interstitial_ad_level_clear_interval</span></td><td>0</td><td>0 <span style="opacity:.6">(동일)</span></td></tr>
+    <tr><td rowspan="4"><span class="sheet-var">interstitial_tier.json</span><br><span class="sheet-var">interstitial_tier_b.json</span></td><td>260001 (1~5레벨)</td><td>0</td><td>0 <span style="opacity:.6">(동일)</span></td></tr>
+    <tr><td>260002 (6~10레벨)</td><td><strong style="color:var(--green)">2</strong></td><td><strong style="color:var(--red)">0</strong></td></tr>
+    <tr><td>260003 (11~20레벨)</td><td><strong style="color:var(--green)">2</strong></td><td><strong style="color:var(--red)">0</strong></td></tr>
+    <tr><td>260004 (21레벨~)</td><td><strong style="color:var(--green)">2</strong></td><td><strong style="color:var(--red)">0</strong></td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <strong>두 빌드의 차이는 위 6칸이 전부임.</strong> 기존 78행을 포함한 나머지 값은 <strong>100% 동일</strong>해야 함 &mdash; 다른 값이 같이 달라지면 지표 차이를 전면 광고에 귀속시킬 수 없음.<br>
+    마스터 스위치 하나(<span class="sheet-var">is_interstitial_ad_open=0</span>)만으로도 전 지면이 차단되지만, <strong>티어 값까지 0으로 둬서 어느 한쪽 로직이 누락돼도 노출이 새지 않게</strong> 이중으로 막음.
+  </div>
+
   <h3>클라</h3>
   <ul>
     <li>승리 지면은 결과 화면 <strong>닫기 직후</strong> 1회만 실행. 결과 화면 위에 겹쳐 띄우지 않음</li>
