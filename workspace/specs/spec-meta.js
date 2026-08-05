@@ -170,7 +170,7 @@ const SPECS = [
     id: 'spec-030', file: 'spec-030-context-switch-expansion.html',
     monitorGroup: 'sol-ctx-switch',
     title: '[소셜-바이럴] 컨텍스트 전환 노출 확대 A/B',
-    tags: ['social', 'feature'], priority: 'high', status: 'monitor', date: '2026. 7. 29.', dueDate: null, relatedTo: [],
+    tags: ['social', 'feature'], priority: 'high', status: 'done', date: '2026. 7. 29.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-031', file: 'spec-031-sh-rescue-activation.html',
@@ -231,7 +231,7 @@ const MONITOR_GROUPS = {
     specs: ['spec-029', 'spec-031'],
   },
   'sol-ctx-switch': {
-    label: '컨텍스트 전환 확대 A/B',
+    label: '컨텍스트 전환 확대 A/B — 결론 확정',
     since: '2026-08-03',
     url:   '../../34_sol_ctx_switch_watch.html',
     specs: ['spec-030'],
