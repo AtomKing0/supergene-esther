@@ -198,6 +198,11 @@ const SPECS = [
     title: '[수익화-광고] 전면 광고 빈도 곡선',
     tags: ['monetize', 'balance'], priority: 'high', status: 'open', date: '2026. 8. 4.', dueDate: null, relatedTo: [],
   },
+  {
+    id: 'spec-036', file: 'spec-036-retry-flow.html',
+    title: '[UX-플로우] 실패 후 재도전 흐름 단축',
+    tags: ['ux'], priority: 'high', status: 'open', date: '2026. 8. 5.', dueDate: null, relatedTo: ['spec-009b'],
+  },
 ];
 
 /* ── 어휘 ──────────────────────────────────────────────────────────────
