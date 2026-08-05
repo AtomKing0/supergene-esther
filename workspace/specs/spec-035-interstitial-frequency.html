@@ -185,8 +185,8 @@ ul li strong,ol li strong { color:var(--text); }
       </div>
       <div class="kpi-card">
         <div class="kpi-label">목표 노출량</div>
-        <div class="kpi-value" style="color:var(--green)">6.6</div>
-        <div class="kpi-sub">DAU당 · 확정 곡선 &times; 레벨 분포 실측(2026-08-04)<br>코지 5.67 · 퍼블마 3.94</div>
+        <div class="kpi-value" style="color:var(--green)">2.9</div>
+        <div class="kpi-sub">DAU당 · 확정 곡선 &times; 판수 실측<br>벤치 코지 6.51 · 마종 6.24</div>
         <div class="kpi-trend trend-up">&#9650; 신규</div>
       </div>
       <div class="kpi-card">
@@ -230,27 +230,25 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>1</td><td>노출 강도 기준 부재</td><td>유저 진행 레벨 구간별 <strong>노출 확률 곡선</strong>을 시트 값으로 신설</td></tr>
     <tr><td>2</td><td>연속 노출 방지 장치 부재</td><td><strong>최소 간격</strong>(마지막 노출 이후 경과 시간) 게이트 추가</td></tr>
     <tr><td>3</td><td>신규 유저 보호 장치 부재</td><td><strong>세션 게이트</strong>(2세션 이상부터) 추가</td></tr>
-    <tr><td>4</td><td>과다 노출 상한 부재</td><td><strong>일 상한</strong> 추가 &mdash; 곡선 오설정 시의 안전핀</td></tr>
+    <tr><td>4</td><td>과다 노출 상한 부재</td><td><strong>일 상한</strong> 키를 만들되 <strong>초기값 0(무제한)</strong> &mdash; 벤치에 없는 게이트라 손잡이만 남김</td></tr>
     <tr><td>5</td><td>즉시 되돌릴 수단 부재</td><td><span class="sheet-var">in_use</span> 단독 플래그로 <strong>빌드 없이 전 구간 차단</strong></td></tr>
     </tbody>
   </table>
 
   <h3>확정 곡선 &mdash; 이 표가 유일한 SSOT</h3>
-  <p>라이브 구현은 <strong>확률이 아니라 결정적 간격</strong>임 &mdash; <span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079)의 정의가 <strong>&ldquo;N값 &rarr; N회 클리어마다 1회 노출, 0=노출 안 함&rdquo;</strong>임. 따라서 메타 권장 확률을 <strong>간격으로 환산</strong>해 기존 방식을 그대로 쓰고, 레벨 구간별로만 값을 나눔.</p>
+  <p>라이브 구현은 <strong>확률이 아니라 결정적 간격</strong>임 &mdash; <span class="sheet-var">clear_interval</span>의 정의가 <strong>&ldquo;N값 &rarr; N회 클리어마다 1회 노출, 0=노출 안 함&rdquo;</strong>임. 값은 메타 권장 확률이 아니라 <strong>코지·마종 실측</strong>에 맞춤(14일, dev 제외).</p>
   <table>
-    <thead><tr><th>구간</th><th>유저 레벨</th><th>클리어 간격</th><th>환산 노출률</th><th>메타 권장</th></tr></thead>
+    <thead><tr><th>구간</th><th>유저 레벨</th><th>클리어 간격</th><th>환산 노출률</th><th>벤치 실측</th></tr></thead>
     <tbody>
-    <tr><td>1</td><td>1 ~ 5</td><td><strong style="color:var(--green)">0</strong>(노출 없음)</td><td><strong>0%</strong></td><td>0% &mdash; 동일</td></tr>
-    <tr><td>2</td><td>6 ~ 10</td><td><strong>5판마다 1회</strong></td><td><strong>20%</strong></td><td>20% &mdash; 동일</td></tr>
-    <tr><td>3</td><td>11 ~ 20</td><td><strong>3판마다 1회</strong></td><td><strong>33%</strong></td><td>50% &mdash; <span style="color:var(--yellow)">보수적</span></td></tr>
-    <tr><td>4</td><td>21 이상</td><td><strong>2판마다 1회</strong></td><td><strong>50%</strong></td><td>75% &mdash; <span style="color:var(--yellow)">보수적</span></td></tr>
+    <tr><td>1</td><td>1 ~ 5</td><td><strong style="color:var(--green)">0</strong>(노출 없음)</td><td><strong>0%</strong></td><td>신규 유저 첫 노출 &mdash; 마종 5~6판째 · 코지 3판째</td></tr>
+    <tr><td>2</td><td>6 ~ 10</td><td><strong>2판마다 1회</strong></td><td><strong>50%</strong></td><td rowspan="3" style="vertical-align:middle">판당 노출률 &mdash; 마종 <strong>75.4%</strong> · 코지 <strong>72.9%</strong><br>승리 지면 단독으로는 마종 <span class="sheet-var">stage_clear</span> <strong>58.0%</strong><br>정수 간격으로 표현 가능한 최근접값이 <strong>2(50%)</strong></td></tr>
+    <tr><td>3</td><td>11 ~ 20</td><td><strong>2판마다 1회</strong></td><td><strong>50%</strong></td></tr>
+    <tr><td>4</td><td>21 이상</td><td><strong>2판마다 1회</strong></td><td><strong>50%</strong></td></tr>
     </tbody>
   </table>
   <div class="callout callout-yellow">
-    <strong>구간 3·4를 메타 권장보다 낮게 잡은 이유 세 가지.</strong><br>
-    &#9312; <strong>정수 간격으로 75%를 표현할 수 없음.</strong> 75%는 1.33판마다 1회라 결정적 간격 방식과 맞지 않음. 확률 방식으로 바꾸면 기존 필드 의미를 갈아엎어야 함.<br>
-    &#9313; <strong>결정적 간격은 최악 케이스가 없음.</strong> 확률 50%는 운이 나쁘면 3판 연속 광고가 나오지만, 간격 2는 반드시 한 판 걸러 나옴. 같은 노출률이어도 체감이 다름.<br>
-    &#9314; <strong>지금은 콜드스타트 리텐션 보호 구간임.</strong> 꺼져 있던 채널을 켜는 첫 배포라 권장치 상단부터 시작할 이유가 없음. 가드레일이 안정되면 3&rarr;2, 2&rarr;1 순으로 시트에서 올림.
+    <strong>전 구간 동일값인데 왜 표를 4행으로 두는가.</strong> 마종·코지는 레벨 구간별 차등이 없고 사실상 균일 노출임. 그래서 초기값도 균일하게 맞췄는데, <strong>구간을 나눠 두면 나중에 특정 구간만 빌드 없이 조일 수 있음</strong>. 가드레일에 문제가 생겼을 때 전체를 끄는 대신 저레벨만 3~5로 늘리는 식의 대응이 가능함.<br>
+    간격 1(매 판 100%)로 가지 않은 이유는 <strong>승리 지면 단독 벤치가 58%</strong>이기 때문임. 코지·마종의 70%대는 판 시작·재도전까지 합친 수치라 우리 지면 구성과 직접 비교되지 않음.
   </div>
   <div class="callout callout-blue">
     이 표의 값을 <strong>다른 섹션에 다시 적지 않음</strong>. 시트 반영 후에는 <strong>시트 값이 최종</strong>이고 이 표는 초기값 기록으로 남음.
@@ -268,34 +266,36 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <strong>나가기 지면은 물량이 아니라 회수 목적임.</strong> 실측 14일 기준 <span class="sheet-var">2222_GAMEPLAY_END_SURE_YES</span>는 <strong>6,050건 · 유저-일당 0.19회</strong>임. 승리 지면(곡선상 최대 8회)에 비하면 <strong>3% 미만</strong>이라 노출량을 늘리는 효과는 거의 없고, 최소 간격·일 상한에 걸리면 더 줄어듦. 대신 <strong>판을 포기하고 나가는 순간</strong>이라 그 판의 보상 기대가 이미 없는 자리임.<br>패배 직후(<span class="sheet-var">game_over</span>의 실패 케이스)는 여전히 제외함 &mdash; 실패율 <strong>0.9%</strong>라 물량이 없는데 이탈 위험만 큼.
+    <strong>나가기는 판당 3.5%짜리 실물 지면임.</strong> 실측 14일 <span class="sheet-var">2222_GAMEPLAY_END_SURE_YES</span> <strong>6,050건</strong> &divide; 판 시작 170,522건 = <strong>3.5%</strong>, 유저-일당 0.19회임. 참고로 코지의 같은 지면(<span class="sheet-var">stage_exit</span>)은 판당 0.026%인데, 코지 로그엔 나가기 액션 이벤트가 없어 <strong>유저가 안 버리는 것인지 지면을 잠근 것인지 구분되지 않음</strong> &mdash; 그래서 코지 수치를 근거로 쓰지 않음.<br>패배 직후(<span class="sheet-var">game_over</span>의 실패 케이스)는 여전히 제외함 &mdash; 실패율 <strong>0.9%</strong>라 물량이 없는데 이탈 위험만 큼.
   </div>
 
-  <h3>게이트 3종 &mdash; 두 지면이 공유함</h3>
-  <p>아래 세 게이트와 일 상한 카운터는 <span class="sheet-var">game_over</span>·<span class="sheet-var">game_quit</span>이 <strong>함께 씀</strong>. 승리 직후 광고를 본 유저가 60초 안에 나가기를 눌러도 다시 뜨지 않고, 일 8회도 두 지면 합산임.</p>
+  <h3>게이트 3종 &mdash; 전부 미적용으로 시작</h3>
+  <p>세 게이트는 <strong>값만 시트에 두고 초기값은 전부 꺼 둠</strong>. 코지·마종 실측에서 셋 다 존재하지 않기 때문임(14일, dev 제외).</p>
   <table>
-    <thead><tr><th>게이트</th><th>확정값</th><th>근거</th></tr></thead>
+    <thead><tr><th>게이트</th><th>확정값</th><th>벤치 실측</th></tr></thead>
     <tbody>
-    <tr><td><strong>최소 간격</strong></td><td>60초</td><td>메타 권장 &mdash; &ldquo;최상의 사용자 경험을 위해 최소 60초 간격&rdquo;</td></tr>
-    <tr><td><strong>세션 게이트</strong></td><td>2세션 이상</td><td>메타 권장 &mdash; 첫 세션은 전면 광고 대상에서 제외</td></tr>
-    <tr><td><strong>일 상한</strong></td><td>8회 / 일</td><td>메타 미제시 항목. <strong>레벨 21 이상 유저에게는 상시 작동함</strong> &mdash; 해당 구간이 유저-일의 79%이고 판수가 20.8판이라 곡선상 8.89회가 나오기 때문임. 따라서 이 값은 안전핀이 아니라 <strong>헤비 구간의 실질 노출 상한</strong>이며, 벤치(코지 5.67회) 수준을 유지하도록 잡은 값임. 곡선을 올리기 전에 이 상한부터 재검토할 것</td></tr>
+    <tr><td><strong>최소 간격</strong></td><td><strong>0</strong> (미적용)</td><td>연속 노출 간격 p50 코지 106초 · 마종 135초인데, <strong>60초 미만이 코지 12.9% · 마종 10.4%</strong>. 마종은 p01이 <strong>2초</strong>라 간격 게이트 자체가 없음</td></tr>
+    <tr><td><strong>세션 게이트</strong></td><td><strong>1</strong> (첫 세션부터)</td><td>두 게임 모두 <strong>첫 세션(로그인 1회차)에 노출함</strong> &mdash; 전체 노출의 3.1%가 1회차 세션에서 발생</td></tr>
+    <tr><td><strong>일 상한</strong></td><td><strong>0</strong> (무제한)</td><td>유저-일당 노출 p99가 코지 <strong>101회</strong> · 마종 <strong>77회</strong>, 최대 <strong>596회</strong> · <strong>485회</strong>. 어떤 상한도 걸려 있지 않음</td></tr>
     </tbody>
   </table>
-
+  <div class="callout callout-yellow">
+    <strong>왜 값을 지우지 않고 0으로 두는가.</strong> 게이트를 아예 안 만들면 나중에 필요할 때 <strong>클라 빌드가 필요해짐</strong>. 키만 만들어 두고 0(미적용)으로 시작하면, 가드레일에 문제가 생겼을 때 시트에서 60초·2세션·8회를 넣는 것만으로 즉시 조일 수 있음. <strong>초기값은 벤치와 같게, 손잡이는 남기게</strong>가 이 절의 결론임.
+  </div>
   <h3>예외 &mdash; 그럼 이때는?</h3>
   <table>
     <thead><tr><th>상황</th><th>동작</th></tr></thead>
     <tbody>
     <tr><td>판정 직전에 레벨업해 구간이 바뀜</td><td><strong>판정 시점의 레벨</strong>로 구간을 정함. 판 시작 시점 레벨이 아님</td></tr>
     <tr><td>같은 판 종료 화면에서 보상형 영상도 뜰 수 있음</td><td><strong>보상형 영상 우선</strong>. 유저가 보상형을 보면 그 판의 전면 판정은 건너뜀(클리어 카운터는 +1 함) &mdash; 한 판에 광고 2회는 금지</td></tr>
-    <tr><td>확률에 당첨됐는데 프리로드가 안 돼 있음</td><td>노출 시도하지 않고 <strong>조용히 통과</strong>. 일 상한도 차감하지 않음. 실패 로그만 남김</td></tr>
+    <tr><td>간격 조건은 찼는데 프리로드가 안 돼 있음</td><td>노출 시도하지 않고 <strong>조용히 통과</strong>. 일 노출수도 올리지 않음. 실패 로그만 남김</td></tr>
     <tr><td>긴급 킬로 <span class="sheet-var">is_interstitial_ad_open</span>을 0으로 바꿈</td><td><strong>다음 판정부터 즉시 0%</strong>. 이미 재생 중인 광고는 그대로 두고, 진행 중 세션도 다음 판부터 미노출. 클라 재시작 불필요</td></tr>
     <tr><td>튜토리얼 진행 중</td><td>구간 1(간격 0)에 자연히 포함되지만, <strong>튜토리얼 플래그가 있으면 간격과 무관하게 차단</strong>. 이중 방어</td></tr>
-    <tr><td>세션 게이트에 걸린 1세션 유저</td><td>판정 자체를 하지 않음. 클리어 카운터·일 상한도 갱신하지 않음</td></tr>
-    <tr><td>승리 광고를 본 직후 나가기를 누름</td><td>최소 간격 60초에 걸려 <strong>미노출</strong>. 두 지면이 같은 <span class="sheet-var">lastItShownAt</span>을 봄</td></tr>
+    <tr><td>세션 게이트를 켰을 때 걸린 유저</td><td>판정 자체를 하지 않음. 클리어 카운터·일 노출수도 갱신하지 않음. <strong>초기값 1에서는 아무도 안 걸림</strong></td></tr>
+    <tr><td>승리 광고를 본 직후 나가기를 누름</td><td>초기값(최소 간격 0)에서는 <strong>연달아 노출됨</strong> &mdash; 벤치와 동일한 동작. 막으려면 <span class="sheet-var">interstitial_ad_min_interval_sec</span>에 60을 넣으면 두 지면이 같은 <span class="sheet-var">last_ad_time</span>을 보고 차단함</td></tr>
     <tr><td>1~5레벨 유저가 나가기를 누름</td><td><strong>미노출</strong>. 구간 1은 나가기 지면도 차단함 &mdash; 초반 보호는 지면과 무관하게 적용</td></tr>
     <tr><td>나가기 광고가 늦게 닫힘</td><td>광고 결과와 무관하게 <strong>나가기는 반드시 진행</strong>. 기존 타임아웃 처리를 그대로 유지해 유저가 갇히지 않게 함</td></tr>
-    <tr><td>일 상한에 도달한 뒤 날짜가 바뀜</td><td><strong>UTC 0시</strong>에 카운터 리셋 &mdash; 기존 데일리 리셋 축과 동일</td></tr>
+    <tr><td>일 상한을 켠 뒤 날짜가 바뀜</td><td><strong>UTC 0시</strong>에 <span class="sheet-var">it_today</span> 리셋 &mdash; 기존 데일리 리셋 축과 동일</td></tr>
     </tbody>
   </table>
 
@@ -303,7 +303,7 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>지표</th><th>As-Is</th><th>To-Be</th><th>판정</th></tr></thead>
     <tbody>
-    <tr><td>전면 노출 / DAU</td><td><strong style="color:var(--red)">0</strong></td><td><strong>6.8</strong> <span style="font-weight:400">(승리 6.6 + 나가기 0.19 · 코지 5.67 구간)</span></td><td>4000 로그 &divide; DAU</td></tr>
+    <tr><td>전면 노출 / DAU</td><td><strong style="color:var(--red)">0</strong></td><td><strong>2.9</strong> <span style="font-weight:400">(승리 2.7 + 나가기 0.19)</span></td><td>4000 로그 &divide; DAU</td></tr>
     <tr><td>전면 임프레션율</td><td>&mdash;</td><td>메타 기준 <strong>안드로이드 58% · iOS 60% · 데스크톱 72%</strong></td><td>4010 &divide; 4000</td></tr>
     <tr><td>프리로드 낭비</td><td>53,338건 전량 낭비</td><td>노출로 회수</td><td>4080 대비 4000 비율</td></tr>
     <tr><td><strong>D1 리텐션</strong></td><td>현행</td><td><strong>유지</strong> &mdash; 상승 목표 아님</td><td>가드레일. 유의하게 하락 시 롤백</td></tr>
@@ -341,13 +341,13 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td><span class="sheet-var">userLevel</span></td><td><strong>서버</strong></td><td>레벨 클리어 시</td><td>기존 값 재사용 &mdash; 신규 필드 아님</td></tr>
     <tr><td><span class="sheet-var">loginCountTotal</span></td><td><strong>서버</strong></td><td>로그인 시</td><td>기존 값 재사용. 세션 게이트 입력</td></tr>
-    <tr><td><span class="sheet-var">itShownToday</span></td><td><strong>서버</strong></td><td>전면 노출 성공 시 +1 · UTC 0시 리셋</td><td><strong>신규</strong>. 클라 보관 시 재접속으로 초기화돼 상한이 무력화됨</td></tr>
+    <tr><td><span class="sheet-var">it_today</span></td><td><strong>서버</strong></td><td>전면 노출 성공 시 +1 · UTC 0시 리셋</td><td><strong>기존 값 재사용</strong> &mdash; 로그 스키마에 이미 있고 실제로 채워짐(<span class="sheet-var">it_total</span> 최대 54 · <span class="sheet-var">rv_today</span> 최대 275)</td></tr>
     <tr><td><span class="sheet-var">clearCountSinceAd</span></td><td><strong>서버</strong></td><td>승리 판정 시 +1 · 노출 시 0으로 리셋</td><td><strong>신규</strong>. 클라 보관 시 재접속으로 초기화돼 간격이 늘 처음부터 다시 시작됨</td></tr>
-    <tr><td><span class="sheet-var">lastItShownAt</span></td><td>클라(세션 메모리)</td><td>전면 노출 성공 시</td><td>세션 종료 시 소멸해도 무방 &mdash; 재접속 직후엔 어차피 판이 없음</td></tr>
+    <tr><td><span class="sheet-var">last_ad_time</span></td><td><strong>서버</strong></td><td>광고 노출 시</td><td><strong>기존 값 재사용</strong> &mdash; 로그 스키마에 이미 있음. 최소 간격을 나중에 켤 때 그대로 씀</td></tr>
     </tbody>
   </table>
   <div class="callout callout-purple">
-    <strong>서버에 신규로 필요한 것은 <span class="sheet-var">itShownToday</span>와 <span class="sheet-var">clearCountSinceAd</span> 두 개임.</strong> 나머지는 이미 서버가 갖고 있는 값이라 프로토콜 확장 범위가 작음. 둘 다 클라 보관이 불가능한 이유가 같음 &mdash; <strong>재접속으로 초기화되면 설정한 노출률이 실제로 지켜지지 않음</strong>.
+    <strong>서버에 신규로 필요한 것은 <span class="sheet-var">clearCountSinceAd</span> 하나뿐임.</strong> 일 노출수(<span class="sheet-var">it_today</span>)와 마지막 광고 시각(<span class="sheet-var">last_ad_time</span>)은 로그 스키마에 이미 있는 값이라 재사용하면 됨. 클리어 카운터만 클라 보관이 불가능함 &mdash; <strong>재접속으로 초기화되면 설정한 노출률이 실제로 지켜지지 않음</strong>.
   </div>
 
   <h3>ⓑ 판정 순서</h3>
@@ -362,10 +362,10 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>4</td><td>레벨 구간의 <span class="sheet-var">clear_interval</span>이 0보다 큰가</td><td>종료 &mdash; 구간 1(1~5레벨)이 여기서 걸림. <strong>나가기 지면에도 동일 적용</strong>(초반 보호)</td></tr>
     <tr><td>5</td><td><span class="sheet-var">loginCountTotal</span> &ge; <span class="sheet-var">interstitial_ad_session_gate</span></td><td>종료 &mdash; 로그 없음</td></tr>
     <tr><td>6</td><td>(승리 지면만) <span class="sheet-var">clearCountSinceAd</span> + 1 &ge; <span class="sheet-var">clear_interval</span></td><td>카운터만 +1 하고 종료 &mdash; <span class="sheet-var">skip_reason=interval_not_met</span>. <strong>나가기 지면은 이 단계를 건너뜀</strong>(레벨 클리어 기반 카운터라 무관)</td></tr>
-    <tr><td>7</td><td><span class="sheet-var">itShownToday</span> &lt; <span class="sheet-var">interstitial_ad_daily_limit</span></td><td>종료 &mdash; <span class="sheet-var">skip_reason=daily_cap</span>. <strong>카운터 유지</strong>(다음 판에 재시도)</td></tr>
-    <tr><td>8</td><td>직전 노출 이후 <span class="sheet-var">interstitial_ad_min_interval_sec</span> 경과</td><td>종료 &mdash; <span class="sheet-var">skip_reason=too_soon</span>. <strong>카운터 유지</strong></td></tr>
+    <tr><td>7</td><td><span class="sheet-var">it_today</span> &lt; <span class="sheet-var">interstitial_ad_daily_limit</span></td><td>종료 &mdash; <span class="sheet-var">skip_reason=daily_cap</span>. <strong>카운터 유지</strong>(다음 판에 재시도). <strong>값이 0이면 검사 자체를 건너뜀</strong></td></tr>
+    <tr><td>8</td><td>직전 노출 이후 <span class="sheet-var">interstitial_ad_min_interval_sec</span> 경과</td><td>종료 &mdash; <span class="sheet-var">skip_reason=too_soon</span>. <strong>카운터 유지</strong>. <strong>값이 0이면 검사 자체를 건너뜀</strong></td></tr>
     <tr><td>9</td><td>프리로드 완료 상태인가</td><td>종료 &mdash; <span class="sheet-var">skip_reason=not_ready</span>. <strong>카운터 유지</strong></td></tr>
-    <tr><td>10</td><td colspan="2"><strong>노출</strong> &rarr; <span class="sheet-var">4000</span> 발화(<span class="sheet-var">position</span>에 지면) · <span class="sheet-var">clearCountSinceAd</span> 0으로 리셋 · <span class="sheet-var">itShownToday</span> +1 · <span class="sheet-var">lastItShownAt</span> 갱신</td></tr>
+    <tr><td>10</td><td colspan="2"><strong>노출</strong> &rarr; <span class="sheet-var">4000</span> 발화(<span class="sheet-var">position</span>에 지면) · <span class="sheet-var">clearCountSinceAd</span> 0으로 리셋 · <span class="sheet-var">it_today</span> +1 · <span class="sheet-var">last_ad_time</span> 갱신</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
@@ -390,10 +390,10 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>key_number</th><th>const_name</th><th>초기값</th><th>설명</th></tr></thead>
     <tbody>
     <tr><td>10101</td><td><span class="sheet-var">is_interstitial_ad_open</span></td><td><strong>1</strong></td><td>전면 광고 마스터 스위치. 0=미노출, 1=노출. <strong>개발 테스트를 위해 시트에 1로 넣어둠</strong> &mdash; 라이브 배포 시점엔 0으로 내렸다가 검증 게이트 순서대로 켬</td></tr>
-    <tr><td>10102</td><td><span class="sheet-var">interstitial_ad_min_interval_sec</span></td><td>60</td><td>직전 전면 광고 노출 이후 최소 경과 시간 (초)</td></tr>
-    <tr><td>10103</td><td><span class="sheet-var">interstitial_ad_session_gate</span></td><td>2</td><td>누적 로그인 횟수가 이 값 이상인 유저부터 노출</td></tr>
+    <tr><td>10102</td><td><span class="sheet-var">interstitial_ad_min_interval_sec</span></td><td><strong>0</strong></td><td>직전 전면 광고 노출 이후 최소 경과 시간 (초). <strong>0=미적용</strong> &mdash; 벤치에 없는 게이트</td></tr>
+    <tr><td>10103</td><td><span class="sheet-var">interstitial_ad_session_gate</span></td><td><strong>1</strong></td><td>누적 로그인 횟수가 이 값 이상인 유저부터 노출. <strong>1=첫 세션부터</strong> &mdash; 벤치와 동일</td></tr>
     <tr><td>10105</td><td><span class="sheet-var">is_interstitial_ad_quit_open</span></td><td><strong>1</strong></td><td>나가기 지면 단독 스위치. 0=나가기 지면만 끔, 1=노출. 승리 지면은 영향 없음</td></tr>
-    <tr><td>10104</td><td><span class="sheet-var">interstitial_ad_daily_limit</span></td><td>8</td><td>일 노출 상한 (UTC0 기준 리셋). 0=무제한</td></tr>
+    <tr><td>10104</td><td><span class="sheet-var">interstitial_ad_daily_limit</span></td><td><strong>0</strong></td><td>일 노출 상한 (UTC0 기준 리셋). <strong>0=무제한</strong> &mdash; 벤치에 상한 없음</td></tr>
     </tbody>
   </table>
   <div class="callout callout-purple">
@@ -453,7 +453,7 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <span class="sheet-var">shown_today</span>를 서버 응답으로 못 받는다면 <strong>일 상한 자체를 빼는 것이 맞음</strong>. 클라 카운터로 상한을 두면 재접속마다 초기화돼 상한이 있다고 착각하게 만드는 쪽이 없는 것보다 위험함.
+    <span class="sheet-var">shown_today</span>는 서버가 이미 <span class="sheet-var">it_today</span>로 갖고 있으므로 그대로 실으면 됨. <strong>클라 자체 카운터로 대체하지 말 것</strong> &mdash; 재접속마다 초기화돼 나중에 일 상한을 켰을 때 상한이 있다고 착각하게 만듦.
   </div>
 
   <h3>검증 게이트 &mdash; 순서대로</h3>
@@ -463,7 +463,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>1</td><td><span class="sheet-var">is_interstitial_ad_open=0</span> 상태 배포</td><td>노출 0 유지 · <strong>프리로드도 0으로 떨어짐</strong></td></tr>
     <tr><td>2</td><td>내부 계정으로 <span class="sheet-var">is_interstitial_ad_open=1</span></td><td>구간별 간격이 로그의 <span class="sheet-var">tier_key</span> · <span class="sheet-var">clear_interval</span>과 일치</td></tr>
     <tr><td>3</td><td>게이트 동작 확인</td><td>1세션 유저 노출 0건 · 60초 내 연속 노출 0건(지면 교차 포함) · 일 9회차 이상 0건 · 간격 미달 판 0건 · <span class="sheet-var">position</span>이 <span class="sheet-var">game_over</span>·<span class="sheet-var">game_quit</span> 두 값으로만 찍힘</td></tr>
-    <tr><td>4</td><td>소규모 오픈</td><td>노출/DAU가 <strong>5~7 구간</strong>(산출 6.6) · 임프레션율이 메타 기준 근방</td></tr>
+    <tr><td>4</td><td>소규모 오픈</td><td>노출/DAU가 <strong>2.5~3.5 구간</strong>(산출 2.9) · <span class="sheet-var">position</span>이 <span class="sheet-var">game_over</span>·<span class="sheet-var">game_quit</span>인 건만 세어 판정(리워디드 인터스티셜 혼입 배제)</td></tr>
     <tr><td>5</td><td>가드레일 판정</td><td><strong>D1 리텐션·판수 유의 하락 없음</strong>(z검정). 하락 시 즉시 6단계</td></tr>
     <tr><td>6</td><td>롤백</td><td><span class="sheet-var">is_interstitial_ad_open=0</span> &mdash; 빌드 없이 즉시</td></tr>
     </tbody>
@@ -477,7 +477,7 @@ ul li strong,ol li strong { color:var(--text); }
   </ul>
 
   <h3>타임존</h3>
-  <p>이 스펙에서 타임존이 걸리는 값은 <strong>일 상한 리셋 하나뿐</strong>임. 최소 간격과 세션 게이트는 상대 시간·횟수라 타임존과 무관함.</p>
+  <p>이 스펙에서 타임존이 걸리는 값은 <strong>일 상한 리셋 하나뿐</strong>이고, 그 상한은 초기값이 0(무제한)이라 <strong>현재는 타임존 의존이 없음</strong>. 나중에 상한을 켤 때 아래 축을 따름. 최소 간격과 세션 게이트는 상대 시간·횟수라 타임존과 무관함.</p>
   <table>
     <thead><tr><th>플랫폼</th><th>기준</th><th>비고</th></tr></thead>
     <tbody>
