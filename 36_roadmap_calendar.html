@@ -183,7 +183,10 @@ function goToday(){MCUR=new Date(TODAY.getFullYear(),TODAY.getMonth(),1);WSEL=st
 function moveM(n){MCUR=new Date(MCUR.getFullYear(),MCUR.getMonth()+n,1);renderMonth();}
 function moveW(n){WSEL=addD(WSEL,7*n);MCUR=new Date(WSEL.getFullYear(),WSEL.getMonth(),1);renderAll();}
 function moveD(n){let d=addD(DSEL,n);while(HIDEWE&&isWE(d))d=addD(d,n>0?1:-1);DSEL=d;WSEL=startOfWeek(new Date(DSEL));MCUR=new Date(DSEL.getFullYear(),DSEL.getMonth(),1);renderAll();}
-function pickWeek(k){WSEL=new Date(k);const f=cols().map(c=>addD(WSEL,c)).find(d=>!isWE(d)||!HIDEWE);DSEL=f||WSEL;renderAll();}
+function pickWeek(k){WSEL=new Date(k);
+  // 주말엔 일정을 두지 않으므로 그 주의 첫 평일을 선택한다
+  const wd=cols().map(c=>addD(WSEL,c)).filter(d=>!isWE(d));
+  DSEL=wd[0]||WSEL; renderAll();}
 function pickDay(k){const d=new Date(k);if(isWE(d))return;DSEL=d;renderWeek();renderDay();}
 
 function renderMonth(){
