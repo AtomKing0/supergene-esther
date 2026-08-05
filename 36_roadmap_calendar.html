@@ -5,89 +5,75 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>로드맵 캘린더 — Solitaire City Journey</title>
 <style>
-  :root{
-    --ink:#1F2233;--sub:#5B6478;--mut:#9AA0B8;--line:#E6E9F0;--bg:#F6F7FA;--card:#fff;
-    --acc:#4F8EF7;
-    --c-dev:#7C3AED;--c-mkt:#059669;--c-mon:#DC2626;--c-cnt:#2563EB;--c-ops:#D97706;--c-ext:#0891B2;
-  }
+  :root{--ink:#1F2233;--sub:#5B6478;--mut:#9AA0B8;--line:#E6E9F0;--bg:#F6F7FA;--acc:#4F8EF7;}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);
        font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif;
        font-size:14px;-webkit-font-smoothing:antialiased}
-  .app{max-width:1180px;margin:0 auto;padding:22px 18px 70px}
+  .app{max-width:1080px;margin:0 auto;padding:22px 18px 70px}
 
-  /* 헤더 */
-  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
   h1{font-size:20px;margin:0;letter-spacing:-0.4px}
   h1 span{font-size:12px;font-weight:600;color:var(--mut);margin-left:8px}
-  .seg{display:flex;background:#EDEFF5;border-radius:9px;padding:3px;gap:2px}
-  .seg button{border:none;background:none;font-family:inherit;font-size:12.5px;font-weight:700;
-              color:var(--sub);padding:6px 16px;border-radius:7px;cursor:pointer}
-  .seg button.on{background:#fff;color:var(--acc);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-  .nav{display:flex;align-items:center;gap:8px}
-  .nav button{width:30px;height:30px;border:1px solid var(--line);background:#fff;border-radius:8px;
+  .tgl{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--sub);cursor:pointer;
+       background:#fff;border:1px solid var(--line);border-radius:9px;padding:7px 13px}
+  .tgl input{margin:0;accent-color:var(--acc)}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+  .ph{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;flex-wrap:wrap}
+  .ph .lab{font-size:11px;font-weight:800;color:var(--mut);letter-spacing:.4px}
+  .ph .ttl{font-size:15px;font-weight:800}
+  .nav{display:flex;gap:6px}
+  .nav button{width:29px;height:29px;border:1px solid var(--line);background:#fff;border-radius:8px;
               cursor:pointer;font-size:14px;color:var(--sub);line-height:1}
   .nav .today{width:auto;padding:0 12px;font-size:12px;font-weight:700}
-  .period{font-size:15px;font-weight:800;min-width:150px;text-align:center}
-
-  /* 카드 */
-  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
 
   /* 월 */
   table.m{width:100%;border-collapse:separate;border-spacing:3px;table-layout:fixed}
   table.m th{font-size:11px;font-weight:700;color:var(--mut);padding:2px 0 6px;text-align:center}
-  table.m th.sun{color:#DC2626}
-  table.m td{height:104px;vertical-align:top;border:1px solid var(--line);border-radius:9px;padding:5px;
-             background:#FCFDFE;overflow:hidden}
-  table.m td.out{background:#F8F9FB;opacity:.5}
+  table.m th.we{color:#C3C9D6}
+  table.m tr.wrow{cursor:pointer}
+  table.m td{height:92px;vertical-align:top;border:1px solid var(--line);border-radius:9px;padding:5px;background:#FCFDFE;overflow:hidden}
+  table.m td.out{background:#F8F9FB;opacity:.45}
+  table.m td.we{background:#F4F5F8;color:#C3C9D6}
   table.m td.today{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+  tr.sel td{background:#F0F6FF;border-color:#BBD6FF}
+  tr.sel td.we{background:#EAEFF6}
   .dn{font-size:11.5px;font-weight:800;color:var(--sub);margin-bottom:3px}
+  td.we .dn{color:#C3C9D6}
   td.today .dn{color:var(--acc)}
-  .chip{display:block;font-size:9.5px;font-weight:700;color:#fff;border-radius:4px;
-        padding:2px 5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
-  .chip.span{border-radius:3px;opacity:.9}
+  .chip{display:block;font-size:9.5px;font-weight:700;color:#fff;border-radius:4px;padding:2px 5px;margin-bottom:2px;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chip.sp{height:5px;padding:0;opacity:.75}
   .more{font-size:9.5px;color:var(--mut);font-weight:700;padding-left:3px}
 
   /* 주 */
-  .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-  .wkcol{border:1px solid var(--line);border-radius:10px;background:#FCFDFE;min-height:230px;padding:7px}
-  .wkcol.today{border-color:var(--acc);background:#F5F9FF}
-  .wkh{font-size:11px;font-weight:800;color:var(--sub);margin-bottom:6px;text-align:center}
-  .wkh small{display:block;font-weight:600;color:var(--mut);font-size:10px}
-  .wkcol.today .wkh{color:var(--acc)}
-  .wkitem{font-size:10.5px;font-weight:700;color:#fff;border-radius:6px;padding:4px 6px;margin-bottom:4px;
-          line-height:1.4;cursor:pointer}
+  .wk{display:grid;gap:6px}
+  .wcol{border:1px solid var(--line);border-radius:10px;background:#FCFDFE;min-height:150px;padding:8px;cursor:pointer}
+  .wcol.we{background:#F4F5F8;cursor:default}
+  .wcol.today{border-color:var(--acc)}
+  .wcol.sel{background:#F0F6FF;border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+  .wh{font-size:11.5px;font-weight:800;color:var(--sub);margin-bottom:7px;text-align:center}
+  .wh small{display:block;font-weight:600;color:var(--mut);font-size:10.5px}
+  .wcol.we .wh{color:#C3C9D6}
+  .witem{font-size:10.5px;font-weight:700;color:#fff;border-radius:6px;padding:4px 6px;margin-bottom:4px;line-height:1.4}
+  .witem.sp{opacity:.5}
 
   /* 일 */
-  .dayhead{font-size:16px;font-weight:800;margin-bottom:12px}
-  .dayhead small{font-size:12px;font-weight:600;color:var(--mut);margin-left:8px}
   .task{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);
-        border-radius:11px;margin-bottom:8px;background:#fff}
+        border-radius:11px;margin-bottom:8px}
   .dot{flex:0 0 9px;height:9px;border-radius:50%;margin-top:5px}
   .task h4{margin:0 0 3px;font-size:13.5px;letter-spacing:-0.2px}
-  .task p{margin:0;font-size:12px;color:var(--sub);line-height:1.6}
+  .task p{margin:0;font-size:12px;color:var(--sub);line-height:1.65}
   .tag{display:inline-block;font-size:9.5px;font-weight:800;border-radius:5px;padding:1px 7px;margin-left:6px;
        vertical-align:middle;color:#fff}
-  .empty{text-align:center;color:var(--mut);font-size:12.5px;padding:34px 0}
+  .empty{text-align:center;color:var(--mut);font-size:12.5px;padding:26px 0}
 
-  /* 범례 */
-  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);align-items:center}
+  .legend{display:flex;gap:13px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);align-items:center}
   .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
-  .foot{margin-top:20px;font-size:11.5px;color:var(--mut);line-height:1.8}
+  .foot{margin-top:16px;font-size:11.5px;color:var(--mut);line-height:1.8}
   .foot a{color:var(--acc);text-decoration:none;font-weight:700}
-
-  /* 상세 */
-  .sheet{position:fixed;inset:0;background:rgba(20,22,34,.42);display:none;align-items:center;justify-content:center;z-index:99;padding:20px}
-  .sheet.on{display:flex}
-  .sheetbox{background:#fff;border-radius:16px;max-width:460px;width:100%;padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
-  .sheetbox h3{margin:0 0 4px;font-size:16px;letter-spacing:-0.3px}
-  .sheetbox .when{font-size:12px;color:var(--mut);font-weight:700;margin-bottom:11px}
-  .sheetbox p{margin:0 0 10px;font-size:13px;line-height:1.75;color:var(--sub)}
-  .sheetbox button{border:none;background:#EDEFF5;color:var(--sub);font-family:inherit;font-size:12.5px;
-                   font-weight:700;padding:8px 16px;border-radius:8px;cursor:pointer;float:right}
-  @media (max-width:760px){
-    table.m td{height:78px} .wk{grid-template-columns:1fr;gap:4px} .wkcol{min-height:0}
-  }
+  @media (max-width:760px){ table.m td{height:66px} .wk{grid-template-columns:1fr!important} .wcol{min-height:0} }
 </style>
 </head>
 <body>
@@ -95,187 +81,181 @@
 
 <div class="top">
   <h1>로드맵 캘린더 <span>Solitaire City Journey</span></h1>
-  <div class="seg">
-    <button id="v-month" class="on" onclick="setView('month')">월</button>
-    <button id="v-week" onclick="setView('week')">주</button>
-    <button id="v-day" onclick="setView('day')">일</button>
-  </div>
+  <label class="tgl"><input type="checkbox" id="hw" onchange="toggleWeekend()"> 주말 숨기기</label>
 </div>
 
+<!-- 월 -->
 <div class="panel">
-  <div class="nav" style="justify-content:space-between;margin-bottom:12px">
-    <div class="nav">
-      <button onclick="move(-1)">‹</button>
-      <button class="today" onclick="goToday()">오늘</button>
-      <button onclick="move(1)">›</button>
-    </div>
-    <div class="period" id="period"></div>
+  <div class="ph">
+    <div><div class="lab">MONTH</div><div class="ttl" id="mTtl"></div></div>
     <div class="legend" id="legend"></div>
+    <div class="nav">
+      <button onclick="moveM(-1)">‹</button>
+      <button class="today" onclick="goToday()">오늘</button>
+      <button onclick="moveM(1)">›</button>
+    </div>
   </div>
-  <div id="view"></div>
+  <div id="mView"></div>
+  <div style="font-size:11px;color:var(--mut);margin-top:8px">주를 누르면 아래에 해당 주가 펼쳐집니다.</div>
+</div>
+
+<!-- 주 -->
+<div class="panel">
+  <div class="ph">
+    <div><div class="lab">WEEK</div><div class="ttl" id="wTtl"></div></div>
+    <div class="nav">
+      <button onclick="moveW(-1)">‹</button><button onclick="moveW(1)">›</button>
+    </div>
+  </div>
+  <div id="wView"></div>
+  <div style="font-size:11px;color:var(--mut);margin-top:8px">날짜를 누르면 아래에 상세가 펼쳐집니다.</div>
+</div>
+
+<!-- 일 -->
+<div class="panel">
+  <div class="ph">
+    <div><div class="lab">DAY</div><div class="ttl" id="dTtl"></div></div>
+    <div class="nav">
+      <button onclick="moveD(-1)">‹</button><button onclick="moveD(1)">›</button>
+    </div>
+  </div>
+  <div id="dView"></div>
 </div>
 
 <div class="foot">
   일정 근거와 산출 상세 — <a href="35_marketing_start_timing.html" target="_blank">마케팅 개시 시점 산정 →</a><br>
-  기간 항목은 시작일에 이름이 표시되고 이후 날짜에는 얇은 막대로 이어집니다. 항목을 누르면 상세가 열립니다.
+  주말은 회색 처리하며 일정을 두지 않습니다. 기간 항목은 시작일에만 이름이 표시되고 이후에는 얇은 막대로 이어집니다.
 </div>
 
-</div>
-
-<div class="sheet" id="sheet" onclick="if(event.target.id==='sheet')closeSheet()">
-  <div class="sheetbox">
-    <h3 id="s-title"></h3>
-    <div class="when" id="s-when"></div>
-    <p id="s-desc"></p>
-    <button onclick="closeSheet()">닫기</button>
-    <div style="clear:both"></div>
-  </div>
 </div>
 
 <script>
-const CAT = {
-  dev:  {name:'개발·배포',   color:'#7C3AED'},
-  mon:  {name:'수익화',      color:'#DC2626'},
-  cnt:  {name:'콘텐츠',      color:'#2563EB'},
-  mkt:  {name:'마케팅',      color:'#059669'},
-  ops:  {name:'운영·판정',   color:'#D97706'},
-  ext:  {name:'외부·협업',   color:'#0891B2'},
-};
+const CAT={dev:{name:'개발·배포',color:'#7C3AED'},mon:{name:'수익화',color:'#DC2626'},
+           cnt:{name:'콘텐츠',color:'#2563EB'},mkt:{name:'마케팅',color:'#059669'},
+           ops:{name:'운영·판정',color:'#D97706'},ext:{name:'외부·협업',color:'#0891B2'}};
 
-// start / end(없으면 단일일) / cat / title / desc
-const TASKS = [
-  {s:'2026-08-05', cat:'dev', t:'SPEC-035 기획서 전파',
-   d:'전면 광고 빈도 곡선 기획서를 개발·QA에 전파. 레벨 구간별 노출 곡선(0/20/33/50%)과 게이트 3종(최소 간격 60초·2세션 이상·일 상한 8회).'},
-  {s:'2026-08-06', cat:'mon', t:'전면 광고 A/B 배포',
-   d:'SPEC-035 A/B 배포. 값이 전부 시트에 있어 빌드 없이 상·하향 가능. 목표는 롤백이 아니라 곡선 최적화. 가드레일 = D1 리텐션 유지.'},
-  {s:'2026-08-06', e:'2026-08-31', cat:'mon', t:'전면 광고 곡선 최적화',
-   d:'A/B 결과를 보며 시트 값을 조정. 산출 노출량 6.6회/DAU는 코지 정착기 7.44와 같은 구간이고, 판당 전면 0.50은 코지 0.53과 동일 강도.'},
-  {s:'2026-08-10', cat:'cnt', t:'메이저 콘텐츠 + 인게임 이벤트 배포',
-   d:'판수 증대·세션 횟수 증대를 겨냥. 판수가 전면 광고 노출을 결정하므로 회수액을 직접 끌어올리는 축. 현재 판수 13.2판/DAU(코지 정착기 14.1).'},
-  {s:'2026-08-10', e:'2026-08-31', cat:'mkt', t:'C2P 마케팅 집행',
-   d:'준비되는 대로 개시(며칠 밀려도 무관) · 종료일 미정. 입찰 상한 $0.25부터. 유입 1명당 회수액 $0.460(현재) → $0.811(전면 광고 적용 후 예측).'},
-  {s:'2026-08-12', cat:'ops', t:'콜드스타트 종료 · 티어 최초 동결',
-   d:'Meta 티어가 처음 동결되는 날. 재평가 주기는 미확정. C2P 유입은 티어 평가에서 제외되므로 마케팅은 이전 개시해도 무관.'},
-  {s:'2026-08-12', e:'2026-08-28', cat:'cnt', t:'데이터 기반 추가 콘텐츠 기획',
-   d:'지표를 보고 판수형·세션형 중 필요한 쪽을 정해 투입. 판수는 전면 노출을, 세션은 재방문·보상형을 올림. 어느 쪽이 병목인지 확인 후 결정.'},
-  {s:'2026-08-19', cat:'ops', t:'지불 가능 CPI 재산정',
-   d:'서구권 D7 실측 × 5.50일 ÷ 1.5 = 목표 CPI. 매체 CPI가 그 아래면 집행, 위면 보류. CPI는 우리가 정하는 값이 아니며 통제 대상은 입찰 상한·예산·타겟뿐.'},
-  {s:'2026-08-24', cat:'ext', t:'크로스프로모 재조정 실행',
-   d:'현재 솔리테어로 몰아주는 상태를 적정 게임으로 재연결(Peter 요청). 그 전까지 유지하는 이유 = 북미 DAU의 60.4%가 크로스 유입이라 빼면 업데이트 효과와 유입 감소가 섞임.'},
-  {s:'2026-08-24', e:'2026-08-28', cat:'ext', t:'크로스 조정 후 관측',
-   d:'감시 지표 = 북미 DAU · 유입 믹스 · 회수액. 흔들리면 되돌림(설정 변경이라 즉시 가능). 개발 인력 잔류 안에서 대응 가능한 마지막 주.'},
-  {s:'2026-08-29', cat:'ops', t:'개발 인력 잔류 종료',
-   d:'이후로는 시트·크로스 설정 조정만 가능. 결제 상품 추가·클라이언트 수정은 불가.'},
+const TASKS=[
+ {s:'2026-08-05',cat:'dev',t:'SPEC-035 기획서 전파',
+  d:'전면 광고 빈도 곡선 기획서를 개발·QA에 전파. 레벨 구간별 노출 곡선(0/20/33/50%)과 게이트 3종(최소 간격 60초·2세션 이상·일 상한 8회).'},
+ {s:'2026-08-06',cat:'mon',t:'전면 광고 A/B 배포',
+  d:'SPEC-035 A/B 배포. 값이 전부 시트에 있어 빌드 없이 상·하향 가능. 목표는 롤백이 아니라 곡선 최적화. 가드레일 = D1 리텐션 유지.'},
+ {s:'2026-08-06',e:'2026-08-31',cat:'mon',t:'전면 광고 곡선 최적화',
+  d:'A/B 결과를 보며 시트 값을 조정. 산출 노출량 6.6회/DAU는 코지 정착기 7.44와 같은 구간이고, 판당 전면 0.50은 코지 0.53과 동일 강도.'},
+ {s:'2026-08-10',cat:'cnt',t:'메이저 콘텐츠 + 인게임 이벤트 배포',
+  d:'판수 증대·세션 횟수 증대를 겨냥. 판수가 전면 광고 노출을 결정하므로 회수액을 직접 끌어올리는 축. 현재 판수 13.2판/DAU(코지 정착기 14.1).'},
+ {s:'2026-08-10',e:'2026-08-31',cat:'mkt',t:'C2P 마케팅 집행',
+  d:'준비되는 대로 개시(며칠 밀려도 무관) · 종료일 미정. 입찰 상한 $0.25부터. 유입 1명당 회수액 $0.460(현재) → $0.811(전면 광고 적용 후 예측).'},
+ {s:'2026-08-12',cat:'ops',t:'콜드스타트 종료 · 티어 최초 동결',
+  d:'Meta 티어가 처음 동결되는 날. 재평가 주기는 미확정. C2P 유입은 티어 평가에서 제외되므로 마케팅은 이전 개시해도 무관.'},
+ {s:'2026-08-12',e:'2026-08-28',cat:'cnt',t:'데이터 기반 추가 콘텐츠 기획',
+  d:'지표를 보고 판수형·세션형 중 필요한 쪽을 정해 투입. 판수는 전면 노출을, 세션은 재방문·보상형을 올림. 어느 쪽이 병목인지 확인 후 결정.'},
+ {s:'2026-08-19',cat:'ops',t:'지불 가능 CPI 재산정',
+  d:'서구권 D7 실측 × 5.50일 ÷ 1.5 = 목표 CPI. 매체 CPI가 그 아래면 집행, 위면 보류. CPI는 우리가 정하는 값이 아니며 통제 대상은 입찰 상한·예산·타겟뿐.'},
+ {s:'2026-08-24',cat:'ext',t:'크로스프로모 재조정 실행',
+  d:'현재 솔리테어로 몰아주는 상태를 적정 게임으로 재연결(Peter 요청). 그 전까지 유지하는 이유 = 북미 DAU의 60.4%가 크로스 유입이라 빼면 업데이트 효과와 유입 감소가 섞임.'},
+ {s:'2026-08-24',e:'2026-08-28',cat:'ext',t:'크로스 조정 후 관측',
+  d:'감시 지표 = 북미 DAU · 유입 믹스 · 회수액. 흔들리면 되돌림(설정 변경이라 즉시 가능). 개발 인력 잔류 안에서 대응 가능한 마지막 주.'},
+ {s:'2026-08-28',cat:'ops',t:'개발 인력 잔류 종료 (~8/29)',
+  d:'이후로는 시트·크로스 설정 조정만 가능. 결제 상품 추가·클라이언트 수정은 불가. 실제 종료는 8/29(토)이나 평일 기준 마지막 날은 8/28.'},
 ];
 
-let VIEW='month', CUR=new Date(2026,7,4);
 const TODAY=new Date(2026,7,5);
-const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const pd=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c);};
-const same=(a,b)=>iso(a)===iso(b);
+let MCUR=new Date(2026,7,1);          // 표시 중인 월
+let WSEL=startOfWeek(new Date(TODAY)); // 선택한 주(일요일)
+let DSEL=new Date(TODAY);              // 선택한 날
+let HIDEWE=false;
 const WD=['일','월','화','수','목','금','토'];
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const same=(a,b)=>iso(a)===iso(b);
+const isWE=d=>d.getDay()===0||d.getDay()===6;
+function startOfWeek(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay());}
+function addD(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);}
 
 function tasksOn(d){
+  if(isWE(d)) return [];                      // 주말엔 일정 두지 않음
   const k=iso(d);
-  return TASKS.filter(t=> t.e ? (k>=t.s&&k<=t.e) : k===t.s)
-              .map(t=>({...t, first: k===t.s, span: !!t.e}));
+  return TASKS.map((t,i)=>({t,i})).filter(({t})=> t.e ? (k>=t.s&&k<=t.e) : k===t.s)
+              .map(({t,i})=>({...t,i,first:k===t.s,span:!!t.e}));
 }
-function open_(i){
-  const t=TASKS[i];
-  document.getElementById('s-title').textContent=t.t;
-  document.getElementById('s-when').textContent =
-    (t.e? `${t.s} ~ ${t.e}` : t.s) + ' · ' + CAT[t.cat].name;
-  document.getElementById('s-desc').textContent=t.d;
-  document.getElementById('sheet').classList.add('on');
-}
-function closeSheet(){document.getElementById('sheet').classList.remove('on');}
-function idxOf(t){return TASKS.findIndex(x=>x.t===t.t&&x.s===t.s);}
-
-function setView(v){
-  VIEW=v;['month','week','day'].forEach(x=>document.getElementById('v-'+x).classList.toggle('on',x===v));
-  render();
-}
-function move(n){
-  if(VIEW==='month') CUR=new Date(CUR.getFullYear(),CUR.getMonth()+n,1);
-  else CUR=new Date(CUR.getFullYear(),CUR.getMonth(),CUR.getDate()+(VIEW==='week'?7*n:n));
-  render();
-}
-function goToday(){CUR=new Date(TODAY);render();}
-
-function render(){
-  document.getElementById('legend').innerHTML =
-    Object.values(CAT).map(c=>`<span><i style="background:${c.color}"></i>${c.name}</span>`).join('');
-  if(VIEW==='month') renderMonth();
-  else if(VIEW==='week') renderWeek();
-  else renderDay();
-}
+function cols(){return HIDEWE?[1,2,3,4,5]:[0,1,2,3,4,5,6];}
+function toggleWeekend(){HIDEWE=document.getElementById('hw').checked;renderAll();}
+function goToday(){MCUR=new Date(TODAY.getFullYear(),TODAY.getMonth(),1);WSEL=startOfWeek(new Date(TODAY));DSEL=new Date(TODAY);renderAll();}
+function moveM(n){MCUR=new Date(MCUR.getFullYear(),MCUR.getMonth()+n,1);renderMonth();}
+function moveW(n){WSEL=addD(WSEL,7*n);MCUR=new Date(WSEL.getFullYear(),WSEL.getMonth(),1);renderAll();}
+function moveD(n){let d=addD(DSEL,n);while(HIDEWE&&isWE(d))d=addD(d,n>0?1:-1);DSEL=d;WSEL=startOfWeek(new Date(DSEL));MCUR=new Date(DSEL.getFullYear(),DSEL.getMonth(),1);renderAll();}
+function pickWeek(k){WSEL=new Date(k);const f=cols().map(c=>addD(WSEL,c)).find(d=>!isWE(d)||!HIDEWE);DSEL=f||WSEL;renderAll();}
+function pickDay(k){const d=new Date(k);if(isWE(d))return;DSEL=d;renderWeek();renderDay();}
 
 function renderMonth(){
-  const y=CUR.getFullYear(), m=CUR.getMonth();
-  document.getElementById('period').textContent=`${y}년 ${m+1}월`;
-  const first=new Date(y,m,1), start=new Date(y,m,1-first.getDay());
-  let h='<table class="m"><tr>'+WD.map((w,i)=>`<th class="${i===0?'sun':''}">${w}</th>`).join('')+'</tr>';
+  const y=MCUR.getFullYear(),m=MCUR.getMonth();
+  document.getElementById('mTtl').textContent=`${y}년 ${m+1}월`;
+  const start=addD(new Date(y,m,1),-new Date(y,m,1).getDay());
+  let h='<table class="m"><tr>'+cols().map(c=>`<th class="${(c===0||c===6)?'we':''}">${WD[c]}</th>`).join('')+'</tr>';
   for(let w=0;w<6;w++){
-    h+='<tr>';
-    for(let d=0;d<7;d++){
-      const cur=new Date(start.getFullYear(),start.getMonth(),start.getDate()+w*7+d);
-      const out=cur.getMonth()!==m, ts=tasksOn(cur);
-      h+=`<td class="${out?'out':''} ${same(cur,TODAY)?'today':''}"><div class="dn">${cur.getDate()}</div>`;
-      ts.slice(0,3).forEach(t=>{
-        const c=CAT[t.cat].color;
-        h+= t.span&&!t.first
-          ? `<span class="chip span" style="background:${c};height:5px;padding:0" onclick="open_(${idxOf(t)})"></span>`
-          : `<span class="chip" style="background:${c}" onclick="open_(${idxOf(t)})">${t.t}</span>`;
-      });
-      if(ts.length>3) h+=`<span class="more">+${ts.length-3}</span>`;
+    const wStart=addD(start,w*7);
+    if(wStart.getMonth()!==m && addD(wStart,6).getMonth()!==m) continue;
+    const sel=same(wStart,WSEL);
+    h+=`<tr class="wrow ${sel?'sel':''}" onclick="pickWeek('${iso(wStart)}')">`;
+    cols().forEach(c=>{
+      const cur=addD(wStart,c), out=cur.getMonth()!==m, we=isWE(cur), ts=tasksOn(cur);
+      h+=`<td class="${out?'out':''} ${we?'we':''} ${same(cur,TODAY)?'today':''}"><div class="dn">${cur.getDate()}</div>`;
+      if(!we){
+        ts.slice(0,3).forEach(t=>{
+          const col=CAT[t.cat].color;
+          h+= (t.span&&!t.first) ? `<span class="chip sp" style="background:${col}"></span>`
+                                 : `<span class="chip" style="background:${col}">${t.t}</span>`;
+        });
+        if(ts.length>3) h+=`<span class="more">+${ts.length-3}</span>`;
+      }
       h+='</td>';
-    }
+    });
     h+='</tr>';
   }
-  document.getElementById('view').innerHTML=h+'</table>';
+  document.getElementById('mView').innerHTML=h+'</table>';
 }
 
 function renderWeek(){
-  const start=new Date(CUR.getFullYear(),CUR.getMonth(),CUR.getDate()-CUR.getDay());
-  const end=new Date(start.getFullYear(),start.getMonth(),start.getDate()+6);
-  document.getElementById('period').textContent=
-    `${start.getMonth()+1}/${start.getDate()} ~ ${end.getMonth()+1}/${end.getDate()}`;
-  let h='<div class="wk">';
-  for(let d=0;d<7;d++){
-    const cur=new Date(start.getFullYear(),start.getMonth(),start.getDate()+d);
-    const ts=tasksOn(cur);
-    h+=`<div class="wkcol ${same(cur,TODAY)?'today':''}">
-        <div class="wkh">${WD[d]}<small>${cur.getMonth()+1}/${cur.getDate()}</small></div>`;
-    ts.forEach(t=>{
-      const c=CAT[t.cat].color;
-      h+=`<div class="wkitem" style="background:${c};${t.span&&!t.first?'opacity:.55':''}"
-           onclick="open_(${idxOf(t)})">${t.first?t.t:'⋯ 진행 중'}</div>`;
+  const list=cols().map(c=>addD(WSEL,c)).filter(d=>!(HIDEWE&&isWE(d)));
+  const a=list[0], b=list[list.length-1];
+  document.getElementById('wTtl').textContent=
+    `${a.getMonth()+1}/${a.getDate()} ~ ${b.getMonth()+1}/${b.getDate()}`;
+  let h=`<div class="wk" style="grid-template-columns:repeat(${list.length},1fr)">`;
+  list.forEach(cur=>{
+    const we=isWE(cur), ts=tasksOn(cur);
+    h+=`<div class="wcol ${we?'we':''} ${same(cur,TODAY)?'today':''} ${same(cur,DSEL)?'sel':''}"
+         ${we?'':`onclick="pickDay('${iso(cur)}')"`}>
+        <div class="wh">${WD[cur.getDay()]}<small>${cur.getMonth()+1}/${cur.getDate()}</small></div>`;
+    if(we) h+='<div style="font-size:10px;color:#C3C9D6;text-align:center;padding-top:8px">주말</div>';
+    else if(!ts.length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:8px">—</div>';
+    else ts.forEach(t=>{
+      h+=`<div class="witem ${t.span&&!t.first?'sp':''}" style="background:${CAT[t.cat].color}">${t.first?t.t:'⋯ 진행 중'}</div>`;
     });
-    if(!ts.length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:10px">—</div>';
     h+='</div>';
-  }
-  document.getElementById('view').innerHTML=h+'</div>';
+  });
+  document.getElementById('wView').innerHTML=h+'</div>';
 }
 
 function renderDay(){
-  document.getElementById('period').textContent=
-    `${CUR.getMonth()+1}월 ${CUR.getDate()}일 (${WD[CUR.getDay()]})`;
-  const ts=tasksOn(CUR);
-  let h=`<div class="dayhead">${CUR.getFullYear()}년 ${CUR.getMonth()+1}월 ${CUR.getDate()}일
-         <small>${same(CUR,TODAY)?'오늘':WD[CUR.getDay()]+'요일'} · ${ts.length}건</small></div>`;
-  if(!ts.length) h+='<div class="empty">이 날짜에 예정된 일정이 없습니다.</div>';
-  ts.forEach(t=>{
+  document.getElementById('dTtl').textContent=
+    `${DSEL.getMonth()+1}월 ${DSEL.getDate()}일 (${WD[DSEL.getDay()]})${same(DSEL,TODAY)?' · 오늘':''}`;
+  const ts=tasksOn(DSEL);
+  if(isWE(DSEL)){document.getElementById('dView').innerHTML='<div class="empty">주말에는 일정을 두지 않습니다.</div>';return;}
+  if(!ts.length){document.getElementById('dView').innerHTML='<div class="empty">이 날짜에 예정된 일정이 없습니다.</div>';return;}
+  document.getElementById('dView').innerHTML=ts.map(t=>{
     const c=CAT[t.cat].color;
-    h+=`<div class="task" onclick="open_(${idxOf(t)})" style="cursor:pointer">
-      <span class="dot" style="background:${c}"></span>
+    return `<div class="task"><span class="dot" style="background:${c}"></span>
       <div><h4>${t.t}<span class="tag" style="background:${c}">${CAT[t.cat].name}</span>
-        ${t.span?`<span class="tag" style="background:#94A3B8">${t.first?'시작':'진행 중'}</span>`:''}</h4>
-        <p>${t.d}</p></div></div>`;
-  });
-  document.getElementById('view').innerHTML=h;
+      ${t.span?`<span class="tag" style="background:#94A3B8">${t.first?'시작':'진행 중'}</span>`:''}</h4>
+      <p>${t.d}</p></div></div>`;
+  }).join('');
 }
 
-render();
+function renderAll(){
+  document.getElementById('legend').innerHTML=
+    Object.values(CAT).map(c=>`<span><i style="background:${c.color}"></i>${c.name}</span>`).join('');
+  renderMonth();renderWeek();renderDay();
+}
+renderAll();
 </script>
 </body>
 </html>
