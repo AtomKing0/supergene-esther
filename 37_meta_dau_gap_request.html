@@ -1,0 +1,238 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>메타 DAU 기준으로 루커 지표를 맞출 방법이 있을지 검토 요청</title>
+<style>
+  :root{ --bg:#0e1116; --panel:#161b22; --panel2:#1c232c; --line:#2a323d;
+    --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92;
+    --ac:#4da3ff; --ok:#37d6a4; --warn:#ffb454; --bad:#ff6b6b;
+    --purple:#b18cf0; --purple-bg:rgba(177,140,240,.10); --purple-br:rgba(177,140,240,.32); }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f8fa; --panel:#fff; --panel2:#f0f3f7; --line:#dfe5ec;
+           --tx:#1a2029; --tx2:#4d5b6b; --tx3:#7a8798; --ac:#0b62d0; --ok:#0f9c74;
+           --purple:#7c3aed; --purple-bg:rgba(124,58,237,.07); --purple-br:rgba(124,58,237,.22); } }
+  :root[data-theme="dark"]{ --bg:#0e1116; --panel:#161b22; --panel2:#1c232c; --line:#2a323d;
+    --tx:#e6edf3; --tx2:#9fb0c3; --tx3:#6e7f92; --ac:#4da3ff; --ok:#37d6a4;
+    --purple:#b18cf0; --purple-bg:rgba(177,140,240,.10); --purple-br:rgba(177,140,240,.32); }
+  :root[data-theme="light"]{ --bg:#f6f8fa; --panel:#fff; --panel2:#f0f3f7; --line:#dfe5ec;
+    --tx:#1a2029; --tx2:#4d5b6b; --tx3:#7a8798; --ac:#0b62d0; --ok:#0f9c74;
+    --purple:#7c3aed; --purple-bg:rgba(124,58,237,.07); --purple-br:rgba(124,58,237,.22); }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);
+       font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",system-ui,sans-serif;
+       line-height:1.72;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:38px 20px 90px}
+  header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:26px}
+  h1{font-size:23px;margin:0 0 10px;letter-spacing:-.02em;line-height:1.45}
+  .meta{color:var(--tx2);font-size:13px}
+  .meta b{color:var(--tx)}
+  h2{font-size:18px;margin:38px 0 12px;padding-left:11px;border-left:4px solid var(--ac)}
+  h3{font-size:14.5px;margin:22px 0 8px;color:var(--ok)}
+  p{margin:10px 0} ul,ol{margin:8px 0 8px 2px;padding-left:20px} li{margin:6px 0}
+  small{color:var(--tx3)}
+  code{background:var(--panel2);padding:1px 6px;border-radius:5px;font-size:12.5px;
+       font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  pre{background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+      padding:13px 15px;overflow-x:auto;font-size:12.5px;line-height:1.55;margin:12px 0}
+  pre code{background:none;padding:0}
+  .neg{color:var(--bad);font-weight:700} .okt{color:var(--ok);font-weight:700}
+  .tw{overflow-x:auto;margin:13px 0;border:1px solid var(--line);border-radius:11px}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:480px}
+  th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--panel2);font-weight:600;color:var(--tx2);white-space:nowrap}
+  tr:last-child td{border-bottom:none} td b{color:var(--tx)}
+  td.r,th.r{text-align:right}
+  .sum{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:17px 20px;margin:14px 0}
+  .sum ol{margin:4px 0 0;padding-left:20px} .sum li{margin:7px 0}
+  .note{background:var(--panel2);border-left:3px solid var(--warn);border-radius:0 8px 8px 0;
+        padding:12px 16px;margin:13px 0;font-size:13.5px;color:var(--tx2)} .note b{color:var(--tx)}
+  h2.ai{border-left-color:var(--purple)}
+  h2.why{border-left-color:var(--warn)}
+  .ai-box{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--purple);
+          border-radius:0 12px 12px 0;padding:6px 20px 18px;margin:13px 0}
+  .ai-box h3{margin-top:20px}
+  .ai-tag{background:var(--purple-bg);border:1px solid var(--purple-br);border-radius:8px;
+          padding:9px 13px;margin:16px 0 4px;font-size:12.5px;color:var(--tx2);line-height:1.6}
+  .lnk{display:inline-block;background:var(--panel);border:1px solid var(--line);
+       border-radius:8px;padding:8px 14px;color:var(--ac);text-decoration:none;font-size:13.5px;font-weight:600}
+  .lnk:hover{border-color:var(--ac)}
+  table.sheet{font-size:12.5px;min-width:660px}
+  table.sheet td,table.sheet th{padding:6px 11px}
+  table.sheet td.d{white-space:nowrap;color:var(--tx2)}
+  table.sheet .em{color:var(--tx3);opacity:.4}
+  footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);color:var(--tx3);font-size:12.5px}
+</style>
+
+<div class="wrap">
+
+<header>
+  <h1>메타 DAU 기준으로 루커 지표를 맞출 방법이 있을지 검토 요청</h1>
+  <div class="meta">
+    작성일 <b>2026-08-05</b> · 요청 대상 <b>서버 · 클라</b><br>
+    비교 자료 = 메타 대시보드 국가별 접속자 수 내보내기 vs BigQuery 실측 (2026-07-21 ~ 08-04, 15일)<br>
+    원본 시트 · <a href="https://docs.google.com/spreadsheets/d/16GqY6w0QPZG63lhnIu3VRK1TEd7_ZyvsMBd_w_W6AGg/edit?gid=1494310847#gid=1494310847" target="_blank" rel="noopener" style="color:var(--ac)">SCJ_DAU</a>
+  </div>
+</header>
+
+<h2>요청 배경</h2>
+
+<p>게임 노출 등급이 메타가 집계하는 DAU를 기준으로 정해집니다. 그런데 저희 루커 대시보드 수치와 메타 수치가 국가에 따라 크게 어긋나는 것을 확인했습니다.</p>
+
+<p>어느 쪽이 맞고 틀리다기보다, <b>메타 기준을 따라가려면 저희 집계에서 무엇을 보완해야 하는지</b> 판단이 필요한 상황입니다. 원인 파악과 개선 방향에 대해 의견 부탁드립니다.</p>
+
+<div class="sum">
+  <b>확인된 내용 요약</b>
+  <ol>
+    <li>미국은 메타 대비 <b class="okt">0.97배</b>로 거의 일치하나, 필리핀·브라질·인도·남아공·수단은 <b class="neg">0.32~0.54배</b>로 절반 이하만 집계됩니다.</li>
+    <li>유입 단계를 따라가 보면 <b>첫 로그가 아예 남지 않는 구간</b>과 <b>로그인 완료까지 도달하지 못하는 구간</b> 두 곳에서 수치가 줄어듭니다.</li>
+    <li>미국과 프랑스는 로그인 완료율이 85~86%인 반면, 수단은 50.7%로 절반 수준입니다.</li>
+  </ol>
+</div>
+
+<h2>어디서 차이가 생기나</h2>
+
+<p>메타가 수치를 제공한 날짜만 골라 합산 비교했습니다. 메타는 일정 규모 미만인 국가와 날짜는 표시하지 않아 국가별 비교 일수가 다릅니다.</p>
+
+<div class="tw"><table>
+  <tr><th>국가</th><th class="r">비교 일수</th><th class="r">메타 집계</th><th class="r">루커 집계</th><th class="r">비율</th></tr>
+  <tr><td><b>미국</b></td><td class="r">15</td><td class="r">5,198</td><td class="r">5,047</td><td class="r"><b class="okt">0.97배</b></td></tr>
+  <tr><td>필리핀</td><td class="r">10</td><td class="r">3,022</td><td class="r">1,637</td><td class="r"><b class="neg">0.54배</b></td></tr>
+  <tr><td>브라질</td><td class="r">6</td><td class="r">1,535</td><td class="r">687</td><td class="r"><b class="neg">0.45배</b></td></tr>
+  <tr><td>인도</td><td class="r">6</td><td class="r">1,032</td><td class="r">473</td><td class="r"><b class="neg">0.46배</b></td></tr>
+  <tr><td>남아공</td><td class="r">6</td><td class="r">770</td><td class="r">316</td><td class="r"><b class="neg">0.41배</b></td></tr>
+  <tr><td>수단</td><td class="r">5</td><td class="r">971</td><td class="r">314</td><td class="r"><b class="neg">0.32배</b></td></tr>
+</table></div>
+
+<p>미국은 15일 내내 일별로도 0.77~1.23 범위 안에 들어옵니다. 특정 날짜만 튀는 것이 아니라 꾸준히 일치합니다. <b>집계 정의 자체가 다르다면 미국도 함께 어긋나야 하는데 그렇지 않다는 점</b>이 판단의 출발점이었습니다.</p>
+
+<h2>어느 단계에서 빠지나</h2>
+
+<p>유저가 게임에 진입하는 순서대로 로그를 따라갔습니다. 수치가 줄어드는 지점이 두 곳으로 나뉩니다.</p>
+
+<div class="tw"><table>
+  <tr><th>국가</th><th class="r">첫 로그 / 메타</th><th class="r">최종 집계 / 메타</th><th class="r">첫 로그 → 로그인 완료</th></tr>
+  <tr><td><b>미국</b></td><td class="r">1.19배</td><td class="r">0.97배</td><td class="r"><b class="okt">85.1%</b></td></tr>
+  <tr><td><b>프랑스</b></td><td class="r">—</td><td class="r">—</td><td class="r"><b class="okt">86.1%</b></td></tr>
+  <tr><td>필리핀</td><td class="r">0.87배</td><td class="r">0.54배</td><td class="r">62.1%</td></tr>
+  <tr><td>브라질</td><td class="r">0.70배</td><td class="r">0.45배</td><td class="r">62.1%</td></tr>
+  <tr><td>인도</td><td class="r">0.75배</td><td class="r">0.46배</td><td class="r">60.4%</td></tr>
+  <tr><td>남아공</td><td class="r">0.73배</td><td class="r">0.41배</td><td class="r">55.2%</td></tr>
+  <tr><td>수단</td><td class="r">0.62배</td><td class="r">0.32배</td><td class="r"><b class="neg">50.7%</b></td></tr>
+</table></div>
+
+<ul>
+  <li><b>1단계 · 첫 로그 미도달</b> — 메타는 접속으로 집계하는데 저희는 <code>INTRO_FB_START_FINISH</code>조차 수신하지 못한 건이 있습니다. 미국 기준선으로 환산하면 필리핀 27%, 브라질 41%, 남아공 39%, 수단 48% 규모입니다.</li>
+  <li><b>2단계 · 로그인 미완료</b> — 첫 로그는 남았으나 <code>1000_LOGIN_COMPLETE</code>까지 도달하지 못한 건입니다. 미국·프랑스 85~86% 대비 수단 50.7%, 남아공 55.2%입니다.</li>
+</ul>
+
+<div class="note">
+  <b>미국의 첫 로그가 1.19배로 1을 넘는 점은 감안해서 봐야 합니다.</b> 저희 첫 로그의 고유 유저 수가 메타 집계보다 많다는 뜻이라, 두 지표의 유저 판정 기준이 완전히 동일하지는 않은 것으로 보입니다. 따라서 절대 배수보다 <b>국가 간 상대 격차</b>를 기준으로 봐주시면 좋겠습니다.
+</div>
+
+<h2 class="ai">클로드 의견</h2>
+
+<div class="ai-box">
+  <div class="ai-tag">아래 내용은 클로드가 데이터를 보고 추정한 것으로, 검증된 사실이 아닙니다. 해당 없는 항목은 아니라고 회신 주시면 후보에서 제외하겠습니다.</div>
+
+  <h3>원인으로 볼 만한 것</h3>
+  <div class="tw"><table>
+    <tr><th>구분</th><th>확인 요청 사항</th></tr>
+    <tr><td rowspan="4"><b>1단계</b><br>첫 로그 미도달</td>
+        <td>로그 전송 실패 시 <b>재시도 또는 큐잉 처리</b>가 있는지</td></tr>
+    <tr><td>페이지 이탈 시점 전송에 <b><code>sendBeacon</code> 계열을 사용하는지</b>. 일반 요청이면 언로드 중 취소될 수 있습니다</td></tr>
+    <tr><td>로그 수집 엔드포인트가 <b>단일 지역</b>인지. 남아시아·아프리카에서 왕복 지연으로 시간 초과가 발생할 여지가 있는지</td></tr>
+    <tr><td>수집 서버에서 <b>드롭·레이트리밋 등으로 폐기되는 건</b>이 있는지, 지역별 수신 실패 건수를 조회할 수 있는지</td></tr>
+    <tr><td><b>1단계 개선안</b></td>
+        <td>첫 로그 발화 시점이 초기화 완료 이후라면, 그 전에 이탈한 유저는 구조적으로 집계가 불가합니다. <b>진입 직후 경량 로그를 한 번 발화</b>하도록 앞당기는 것이 가능한지</td></tr>
+    <tr><td><b>2단계</b><br>로그인 미완료</td>
+        <td>중간 실패로 종료된 세션에 <b>실패 단계와 사유가 기록되는지</b>. 현재는 별도 기록 없이 종료되어 원인 파악이 어렵습니다</td></tr>
+  </table></div>
+
+  <h3>보정할 방법이 있을지</h3>
+  <p>원인 수정이 우선이나 일정이 소요될 경우, 그동안 <b>지표만이라도 메타 기준에 근사시킬 수 있는지</b> 함께 검토 부탁드립니다.</p>
+  <div class="tw"><table>
+    <tr><th>방안</th><th>내용</th><th>한계</th></tr>
+    <tr><td><b>국가별 보정 계수</b></td>
+        <td>미국 0.97, 필리핀 0.54처럼 배수가 비교적 일정하므로 루커 표기에 계수를 적용</td>
+        <td>임시방편이며 원인이 변하면 계수도 무효화됩니다</td></tr>
+    <tr><td><b>정기 대조표 운영</b></td>
+        <td>메타 수치를 주기적으로 확보해 국가별 격차 추이를 관리</td>
+        <td>현재는 단발성 추출이라 변화 시점 추적이 불가합니다</td></tr>
+    <tr><td><b>메타 수치 자동 수집</b></td>
+        <td>국가별 접속자 수를 자동으로 가져올 수 있는 경로가 있는지 확인</td>
+        <td>수동 내보내기 의존을 줄이기 위함이며, 가능 여부 확인이 필요합니다</td></tr>
+  </table></div>
+</div>
+
+<h2 class="why">왜 확인이 필요한지</h2>
+<ul>
+  <li><b>노출 등급 판정 기준이 메타 수치입니다.</b> 저희 대시보드로 판단하면 어긋날 수 있습니다. 다만 미국은 0.97배로 일치하므로 <b>북미 판단에는 현재 수치를 그대로 사용해도 무방</b>합니다.</li>
+  <li><b>유입 성과가 실제보다 낮게 보입니다.</b> 확보한 유저가 저희 지표에 잡히기 전에 사라지므로 채널 효율이 저평가됩니다.</li>
+  <li><b>수익화 분석 해석이 달라집니다.</b> 특정 지역 유저의 광고 시청이 저조한 것으로 보였으나, 상당수는 플레이에 도달하지 못한 건일 가능성이 있습니다.</li>
+</ul>
+
+<h2>원본 자료</h2>
+
+<p>메타 대시보드에서 내보낸 국가별 접속자 수입니다. 아래 시트에서 동일한 내용을 확인하실 수 있습니다.</p>
+
+<p><a class="lnk" href="https://docs.google.com/spreadsheets/d/16GqY6w0QPZG63lhnIu3VRK1TEd7_ZyvsMBd_w_W6AGg/edit?gid=1494310847#gid=1494310847" target="_blank" rel="noopener">메타 DAU 원본 시트 열기</a></p>
+
+<h3>메타 대시보드 국가별 접속자 수 (2026-07-21 ~ 08-04)</h3>
+<div class="tw"><table class="sheet">
+  <tr><th>날짜</th><th class="r">미국</th><th class="r">필리핀</th><th class="r">브라질</th><th class="r">인도</th><th class="r">남아프리카공화국</th><th class="r">수단</th><th class="r">방글라데시</th><th class="r">프랑스</th></tr>
+  <tr><td class="d">2026-07-21</td><td class="r">385</td><td class="r">122</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-07-22</td><td class="r">407</td><td class="r">412</td><td class="r">272</td><td class="r">127</td><td class="r">145</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-07-23</td><td class="r">403</td><td class="r">439</td><td class="r">271</td><td class="r">150</td><td class="r">153</td><td class="r">162</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-07-24</td><td class="r">299</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-07-25</td><td class="r">360</td><td class="r">340</td><td class="r">250</td><td class="r">139</td><td class="r">123</td><td class="r">163</td><td class="r">103</td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-07-26</td><td class="r">362</td><td class="r">455</td><td class="r">256</td><td class="r">161</td><td class="r">116</td><td class="r">162</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-07-27</td><td class="r">307</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-07-28</td><td class="r">286</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-07-29</td><td class="r">402</td><td class="r">473</td><td class="r">264</td><td class="r">176</td><td class="r">115</td><td class="r">231</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-07-30</td><td class="r">365</td><td class="r">436</td><td class="r">222</td><td class="r">279</td><td class="r">118</td><td class="r">253</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-07-31</td><td class="r">271</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-08-01</td><td class="r">323</td><td class="r">102</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-08-02</td><td class="r">359</td><td class="r">100</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-08-03</td><td class="r">357</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+  <tr><td class="d">2026-08-04</td><td class="r">312</td><td class="r">143</td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td><td class="r"><span class="em">·</span></td></tr>
+</table></div>
+<p><small>· 표시는 메타가 수치를 제공하지 않은 칸입니다. 일정 규모 미만인 국가·날짜는 대시보드에 노출되지 않아 해당 칸은 비교에서 제외했습니다. 프랑스는 기간 내 표시된 수치가 없어 로그인 완료율 비교에만 사용했습니다.</small></p>
+
+<p><small>신규 사용자 <code>APPLICATION,IMPRESSION,NEW_USERS</code> 누계 = <b>21,718</b></small></p>
+
+<h2>참고 쿼리</h2>
+
+<h3>국가별 접속자 수</h3>
+<pre><code>SELECT log_date, country, SUM(log_count) dau
+FROM `game-log-359704.stat.solitaire_city_journey`
+WHERE log_date BETWEEN '2026-07-21' AND '2026-08-04'
+  AND stat_name = 'DAU'
+  AND player_type = 'ALL'
+  AND country IN ('US','PH','BR','IN','ZA','SD')
+GROUP BY 1, 2 ORDER BY 1, 2</code></pre>
+
+<h3>진입 단계별 도달률</h3>
+<pre><code>SELECT country,
+  SUM(IF(stat_name='INTRO_FB_START_FINISH', player_count, 0)) intro,
+  SUM(IF(stat_name='ALL_LOAD_FB',           player_count, 0)) load_fb,
+  SUM(IF(stat_name='1000_LOGIN_COMPLETE',   player_count, 0)) login,
+  SUM(IF(stat_name='DAU',                   log_count,    0)) dau,
+  ROUND(100 * SAFE_DIVIDE(
+    SUM(IF(stat_name='1000_LOGIN_COMPLETE', player_count, 0)),
+    SUM(IF(stat_name='INTRO_FB_START_FINISH', player_count, 0))), 1) login_rate
+FROM `game-log-359704.stat.solitaire_city_journey`
+WHERE log_date BETWEEN '2026-07-21' AND '2026-08-04'
+  AND player_type = 'ALL'
+  AND country IN ('US','FR','PH','BR','IN','ZA','SD')
+  AND stat_name IN ('INTRO_FB_START_FINISH','ALL_LOAD_FB','1000_LOGIN_COMPLETE','DAU')
+GROUP BY 1 ORDER BY dau DESC</code></pre>
+
+<div class="note">
+  <b><code>player_type = 'ALL'</code> 조건이 필요합니다.</b> 해당 테이블은 <code>ALL</code> / <code>NRU</code> / <code>RU</code> 세 종류가 함께 적재되어 있고 <code>ALL = NRU + RU</code> 관계라, 조건 없이 합산하면 정확히 2배가 됩니다. 집계값이 모두 짝수로 나오면 이 경우에 해당합니다.
+</div>
+
+<footer>
+  자료: 메타 대시보드 국가별 접속자 수 내보내기(<code>SCJ_DAU</code>, 2026-08-05 추출) · BigQuery <code>game-log-359704.stat.solitaire_city_journey</code><br>
+  비교 기간 2026-07-21 ~ 08-04. 메타가 수치를 제공하지 않은 국가·날짜는 비교에서 제외했습니다.
+</footer>
+
+</div>
