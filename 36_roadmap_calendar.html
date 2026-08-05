@@ -93,11 +93,11 @@
         white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   /* 기간 막대 — 셀 경계를 넘어 이어지도록 좌우로 빼고 각을 없앰 */
   .lane{display:block;height:15px;line-height:15px;font-size:9.5px;font-weight:700;color:#fff;
-        margin:0 -5px 2px;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .lane.head{border-radius:8px 0 0 8px;margin-left:0;padding-left:7px}
+        margin:0 -6px 2px;padding:0 7px;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lane.head{border-radius:8px 0 0 8px;margin-left:0;padding-left:6px}
   .lane.tail{border-radius:0 8px 8px 0;margin-right:0;padding-right:7px}
   .lane.solo{border-radius:8px;margin:0 0 2px}
-  .lane.gap{background:none!important;color:transparent}
+  .lane.gap{background:none!important;color:transparent;box-shadow:none!important}
   .more{font-size:9.5px;color:var(--mut);font-weight:700;padding-left:3px}
   .done{opacity:.4;text-decoration:line-through}
   .late{box-shadow:0 0 0 1.5px var(--red) inset}
@@ -116,11 +116,11 @@
   .witem{font-size:10.5px;font-weight:700;color:#fff;border-radius:6px;padding:4px 6px;margin-bottom:4px;line-height:1.4}
   /* 주 뷰 기간 막대 — 컬럼 경계를 넘어 이어짐 */
   .wlane{display:block;height:24px;line-height:24px;font-size:10px;font-weight:700;color:#fff;
-         margin:0 -9px 4px;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .wlane.head{border-radius:9px 0 0 9px;margin-left:0;padding-left:9px}
+         margin:0 -10px 4px;padding:0 9px;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wlane.head{border-radius:9px 0 0 9px;margin-left:0;padding-left:8px}
   .wlane.tail{border-radius:0 9px 9px 0;margin-right:0;padding-right:9px}
   .wlane.solo{border-radius:9px;margin:0 0 4px}
-  .wlane.gap{background:none!important}
+  .wlane.gap{background:none!important;box-shadow:none!important}
 
   /* 일 */
   .task{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);
@@ -292,7 +292,7 @@
 
 <div class="foot">
   일정 근거와 산출 상세 — <a href="35_marketing_start_timing.html" target="_blank">마케팅 개시 시점 산정 →</a><br>
-  주말은 회색 처리하며 일정을 두지 않습니다. 기간 항목은 시작일에만 이름이 표시되고 이후에는 얇은 막대로 이어집니다.<br>
+  주말은 회색 처리하며 단일 일정을 두지 않습니다. 다만 기간 항목은 주말과 주 경계를 넘어 끊기지 않고 이어지며, 주말 구간만 같은 색 계열의 연한 톤으로 표시됩니다. 기간 항목의 이름은 시작일에만 붙습니다.<br>
   상태는 <b>기획중 → 전파 완료 → 개발중 → QA중 → 모니터링중 → 완료</b>이며 <b>보류</b>로 빼둘 수 있습니다. 완료·보류는 놓친 일 점검에서 제외됩니다.<br>
   점검 기준 — <b>지연</b>: 마감일이 지났는데 완료·보류가 아님 · <b>미배포</b>: 배포가 필요한 일감인데 배포 기록이 없음 · <b>오늘</b>: 오늘 날짜에 걸린 일 · <b>임박</b>: 마감 3일 이내 · <b>정체</b>: 시작일이 지났는데 아직 기획중이거나 상태가 10일 넘게 그대로.<br>
   달력에서 <b>물빠진 색 막대는 모니터링중</b>인 기간이고, 진한 원색은 아직 손이 가야 하는 기간입니다.
@@ -398,10 +398,12 @@ function depOf(t){const r=rec(t.id);
 // 모니터링중은 원색 대신 물빠진색 — 끝난 축과 진행 중인 축을 눈으로 가름
 function pale(hex,r){const n=parseInt(hex.slice(1),16),R=n>>16,G=(n>>8)&255,B=n&255;
   const m=v=>Math.round(v+(255-v)*r);return `rgb(${m(R)},${m(G)},${m(B)})`;}
-function barStyle(t){const c=CAT[Ct(t)].color;
-  return stOf(t)==='mon'
-    ? `background:${pale(c,.80)};color:${c};box-shadow:inset 0 0 0 1px ${pale(c,.42)}`
-    : `background:${c}`;}
+function barStyle(t,we){
+  const c=CAT[Ct(t)].color, mon=stOf(t)==='mon';
+  // 주말은 같은 색 계열의 더 연한 톤 — 끊긴 게 아니라 이어진 기간으로 읽히게
+  if(we) return `background:${pale(c,mon?.88:.62)};color:transparent`;
+  return mon ? `background:${pale(c,.80)};color:${c};box-shadow:inset 0 0 0 1px ${pale(c,.42)}`
+             : `background:${c}`;}
 function dueOf(t){return effE(t)||effS(t);}
 
 /* ── 날짜 ───────────────────────────────────────────────────── */
@@ -638,17 +640,17 @@ function renderMonth(){
     cols().forEach(c=>{
       const cur=addD(wStart,c), out=cur.getMonth()!==m, we=isWE(cur), k=iso(cur);
       h+=`<td class="${out?'out':''} ${we?'we':''} ${same(cur,TODAY)?'today':''}"${we?'':` ondragover="dragOver(event,'${k}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${k}')"`}><div class="dn">${cur.getDate()}</div>`;
+      // 기간 막대는 주말 칸에서도 끊지 않고 이어 그림 — 고정 레인이라 위아래로 어긋나지 않음
+      SP.forEach(t=>{
+        const a=effS(t),b=effE(t);
+        if(k<a||k>b){h+='<span class="lane gap"></span>';return;}
+        const head=(k===a),tail=(k===b);
+        const cls=head&&tail?'solo':head?'head':tail?'tail':'';
+        h+=`<span class="lane ${cls}${laneCls(t)}" style="${barStyle(t,we)}" ${we?'':`draggable="true"
+             ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"`}
+             title="${esc(T(t))}">${head&&!we?esc(T(t)):'&nbsp;'}</span>`;
+      });
       if(!we){
-        // 기간 항목은 고정 레인 — 없는 날은 빈 칸으로 자리를 지켜 막대가 어긋나지 않게 함
-        SP.forEach(t=>{
-          const a=effS(t),b=effE(t);
-          if(k<a||k>b){h+='<span class="lane gap"></span>';return;}
-          const head=(k===a),tail=(k===b);
-          const cls=head&&tail?'solo':head?'head':tail?'tail':'';
-          h+=`<span class="lane ${cls}${laneCls(t)}" style="${barStyle(t)}" draggable="true"
-               ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"
-               title="${esc(T(t))}">${head?esc(T(t)):'&nbsp;'}</span>`;
-        });
         const singles=tasksOn(cur).filter(x=>!x.span);
         singles.slice(0,2).forEach(({t})=>{
           h+=`<span class="chip${laneCls(t)}" style="${barStyle(t)}" draggable="true"
@@ -675,16 +677,16 @@ function renderWeek(){
     h+=`<div class="wcol ${we?'we':''} ${same(cur,TODAY)?'today':''} ${same(cur,DSEL)?'sel':''}"
          ${we?'':`onclick="pickDay('${k}')" ondragover="dragOver(event,'${k}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${k}')"`}>
         <div class="wh">${WD[cur.getDay()]}<small>${cur.getMonth()+1}/${cur.getDate()}</small></div>`;
-    if(we){ h+='<div style="font-size:10px;color:#C3C9D6;text-align:center;padding-top:8px">주말</div></div>'; return; }
     SP.forEach(t=>{
       const s0=effS(t), e0=effE(t);
       if(k<s0||k>e0){h+='<span class="wlane gap"></span>';return;}
       const head=(k===s0), tail=(k===e0);
       const cls=head&&tail?'solo':head?'head':tail?'tail':'';
-      h+=`<span class="wlane ${cls}${laneCls(t)}" style="${barStyle(t)}" draggable="true"
-           ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"
-           title="${esc(T(t))}">${head?esc(T(t)):'&nbsp;'}</span>`;
+      h+=`<span class="wlane ${cls}${laneCls(t)}" style="${barStyle(t,we)}" ${we?'':`draggable="true"
+           ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"`}
+           title="${esc(T(t))}">${head&&!we?esc(T(t)):'&nbsp;'}</span>`;
     });
+    if(we){ h+='<div style="font-size:10px;color:#C3C9D6;text-align:center;padding-top:6px">주말</div></div>'; return; }
     ts.filter(x=>!x.span).forEach(({t})=>{
       const left=ckLeft(t);
       h+=`<div class="witem${laneCls(t)}" style="${barStyle(t)}" draggable="true"
