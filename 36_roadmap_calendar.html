@@ -86,6 +86,13 @@
       border-radius:6px;padding:3px 6px;color:var(--sub);background:#fff;cursor:pointer}
   .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;
        font-size:11.5px;color:var(--mut)}
+  .chip{cursor:grab}
+  .witem{cursor:grab}
+  .chip.drag,.witem.drag{opacity:.35}
+  td.drop{background:#EAF3FF!important;border-color:var(--acc)!important;border-style:dashed!important}
+  .wcol.drop{background:#EAF3FF;border-color:var(--acc);border-style:dashed}
+  .moved{display:inline-block;font-size:9px;font-weight:800;color:#92400E;background:#FEF3C7;
+         border:1px solid #FCD34D;border-radius:4px;padding:0 5px;margin-left:5px;vertical-align:middle}
   .bar button{font-family:inherit;font-size:11px;font-weight:700;border:1px solid var(--line);
        background:#fff;color:var(--sub);border-radius:7px;padding:5px 11px;cursor:pointer}
 
@@ -140,7 +147,7 @@
     </div>
   </div>
   <div class="bar">
-    <span>상태·슬랙 링크는 이 브라우저에만 저장됩니다.</span>
+    <span>일정을 끌어다 다른 날짜에 놓으면 옮겨집니다. 상태·링크·이동 결과는 이 브라우저에만 저장됩니다.</span>
     <button onclick="exportState()">상태 내보내기</button>
     <button onclick="importState()">상태 불러오기</button>
     <button onclick="resetState()">초기화</button>
@@ -194,6 +201,37 @@ const SPEC_BASE='workspace/specs/';
 const KEY='scj_roadmap_v1';
 let SAVE=JSON.parse(localStorage.getItem(KEY)||'{}');
 function keyOf(t){return t.t;}
+function effS(t){return (SAVE[keyOf(t)]||{}).s || t.s;}
+function effE(t){const o=SAVE[keyOf(t)]||{}; return t.e ? (o.e||t.e) : null;}
+function isMoved(t){return !!(SAVE[keyOf(t)]||{}).s;}
+function shiftISO(k,n){const d=pdISO(k);return iso(addD(d,n));}
+function pdISO(k){const[a,b,c]=k.split('-').map(Number);return new Date(a,b-1,c);}
+function nextWeekday(d,dir){let x=new Date(d);while(isWE(x))x=addD(x,dir>=0?1:-1);return x;}
+// 드래그로 일정 이동 — 기간 항목은 시작·종료가 함께 밀림
+let DRAG=null;
+function dragStart(ev,idx,fromK){DRAG={idx,fromK};ev.dataTransfer.effectAllowed='move';
+  try{ev.dataTransfer.setData('text/plain',String(idx));}catch(e){}
+  ev.currentTarget.classList.add('drag');}
+function dragEnd(ev){ev.currentTarget.classList.remove('drag');DRAG=null;
+  document.querySelectorAll('.drop').forEach(e=>e.classList.remove('drop'));}
+function dragOver(ev,toK){if(!DRAG)return;const d=pdISO(toK);if(isWE(d))return;
+  ev.preventDefault();ev.dataTransfer.dropEffect='move';ev.currentTarget.classList.add('drop');}
+function dragLeave(ev){ev.currentTarget.classList.remove('drop');}
+function drop(ev,toK){
+  ev.preventDefault();ev.currentTarget.classList.remove('drop');
+  if(!DRAG)return;
+  const t=TASKS[DRAG.idx];
+  const delta=Math.round((pdISO(toK)-pdISO(DRAG.fromK))/86400000);
+  if(!delta){DRAG=null;return;}
+  let ns=nextWeekday(pdISO(shiftISO(effS(t),delta)),delta);
+  const rec=Object.assign({},SAVE[keyOf(t)],{s:iso(ns)});
+  if(effE(t)){
+    const span=Math.round((pdISO(effE(t))-pdISO(effS(t)))/86400000);
+    rec.e=iso(addD(ns,span));
+  }
+  SAVE[keyOf(t)]=rec;localStorage.setItem(KEY,JSON.stringify(SAVE));
+  DRAG=null;renderAll();
+}
 function stOf(t){return (SAVE[keyOf(t)]||{}).st || t.st || 'plan';}
 function slackOf(t){return (SAVE[keyOf(t)]||{}).slack || t.slack || '';}
 function setSt(k,v){SAVE[k]=Object.assign({},SAVE[k],{st:v});localStorage.setItem(KEY,JSON.stringify(SAVE));renderAll();}
@@ -214,6 +252,8 @@ function importState(){
   try{SAVE=JSON.parse(v);localStorage.setItem(KEY,JSON.stringify(SAVE));renderAll();}
   catch(e){alert('형식이 올바르지 않습니다.');}
 }
+function resetDate(k){const r=Object.assign({},SAVE[k]);delete r.s;delete r.e;
+  SAVE[k]=r;localStorage.setItem(KEY,JSON.stringify(SAVE));renderAll();}
 function resetState(){if(confirm('저장된 상태를 모두 지웁니다.')){SAVE={};localStorage.removeItem(KEY);renderAll();}}
 
 const TODAY=new Date(2026,7,5);
@@ -231,8 +271,9 @@ function addD(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);}
 function tasksOn(d){
   if(isWE(d)) return [];                      // 주말엔 일정 두지 않음
   const k=iso(d);
-  return TASKS.map((t,i)=>({t,i})).filter(({t})=> t.e ? (k>=t.s&&k<=t.e) : k===t.s)
-              .map(({t,i})=>({...t,i,first:k===t.s,span:!!t.e}));
+  return TASKS.map((t,i)=>({t,i})).filter(({t})=>{
+      const a=effS(t), b=effE(t); return b ? (k>=a&&k<=b) : k===a; })
+    .map(({t,i})=>({...t,i,first:k===effS(t),span:!!effE(t),moved:isMoved(t)}));
 }
 function cols(){return HIDEWE?[1,2,3,4,5]:[0,1,2,3,4,5,6];}
 function toggleWeekend(){HIDEWE=document.getElementById('hw').checked;renderAll();}
@@ -258,12 +299,13 @@ function renderMonth(){
     h+=`<tr class="wrow ${sel?'sel':''}" onclick="pickWeek('${iso(wStart)}')">`;
     cols().forEach(c=>{
       const cur=addD(wStart,c), out=cur.getMonth()!==m, we=isWE(cur), ts=tasksOn(cur);
-      h+=`<td class="${out?'out':''} ${we?'we':''} ${same(cur,TODAY)?'today':''}"><div class="dn">${cur.getDate()}</div>`;
+      h+=`<td class="${out?'out':''} ${we?'we':''} ${same(cur,TODAY)?'today':''}"${we?'':` ondragover="dragOver(event,'${iso(cur)}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${iso(cur)}')"`}><div class="dn">${cur.getDate()}</div>`;
       if(!we){
         ts.slice(0,3).forEach(t=>{
           const col=CAT[t.cat].color;
-          h+= (t.span&&!t.first) ? `<span class="chip sp" style="background:${col}"></span>`
-                                 : `<span class="chip" style="background:${col}">${t.t}</span>`;
+          const dg=` draggable="true" ondragstart="dragStart(event,${t.i},'${iso(cur)}')" ondragend="dragEnd(event)"`;
+          h+= (t.span&&!t.first) ? `<span class="chip sp" style="background:${col}"${dg}></span>`
+                                 : `<span class="chip" style="background:${col}"${dg}>${t.t}</span>`;
         });
         if(ts.length>3) h+=`<span class="more">+${ts.length-3}</span>`;
       }
@@ -283,12 +325,12 @@ function renderWeek(){
   list.forEach(cur=>{
     const we=isWE(cur), ts=tasksOn(cur);
     h+=`<div class="wcol ${we?'we':''} ${same(cur,TODAY)?'today':''} ${same(cur,DSEL)?'sel':''}"
-         ${we?'':`onclick="pickDay('${iso(cur)}')"`}>
+         ${we?'':`onclick="pickDay('${iso(cur)}')" ondragover="dragOver(event,'${iso(cur)}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${iso(cur)}')"`}>
         <div class="wh">${WD[cur.getDay()]}<small>${cur.getMonth()+1}/${cur.getDate()}</small></div>`;
     if(we) h+='<div style="font-size:10px;color:#C3C9D6;text-align:center;padding-top:8px">주말</div>';
     else if(!ts.length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:8px">—</div>';
     else ts.forEach(t=>{
-      h+=`<div class="witem ${t.span&&!t.first?'sp':''}" style="background:${CAT[t.cat].color}">${t.first?t.t:'⋯ 진행 중'}${t.first?`<span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}</span>`:''}</div>`;
+      h+=`<div class="witem ${t.span&&!t.first?'sp':''}" style="background:${CAT[t.cat].color}" draggable="true" ondragstart="dragStart(event,${t.i},'${iso(cur)}')" ondragend="dragEnd(event)">${t.first?t.t:'⋯ 진행 중'}${t.first?`<span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}</span>`:''}</div>`;
     });
     h+='</div>';
   });
@@ -306,14 +348,14 @@ function renderDay(){
     const opts=Object.entries(ST).map(([v,o])=>`<option value="${v}" ${v===st?'selected':''}>${o.n}</option>`).join('');
     return `<div class="task"><span class="dot" style="background:${c}"></span>
       <div style="flex:1"><h4>${t.t}<span class="tag" style="background:${c}">${CAT[t.cat].name}</span>
-      <span class="st ${ST[st].c}">${ST[st].n}</span>
+      <span class="st ${ST[st].c}">${ST[st].n}</span>${t.moved?'<span class="moved">일정 이동됨</span>':''}
       ${t.span?`<span class="tag" style="background:#94A3B8">${t.first?'시작':'진행 중'}</span>`:''}</h4>
       <p>${t.d}</p>
       <div class="links">
         ${t.spec?`<a class="spec" href="${SPEC_BASE}${t.spec}.html" target="_blank">📄 기획서</a>`:''}
         ${sl?`<a class="slack" href="${sl}" target="_blank">💬 슬랙</a>`:''}
         <button onclick="setSlack('${k.replace(/'/g,"\\'")}')">${sl?'슬랙 링크 수정':'＋ 슬랙 링크'}</button>
-        <select onchange="setSt('${k.replace(/'/g,"\\'")}',this.value)">${opts}</select>
+        <select onchange="setSt('${k.replace(/'/g,"\\'")}',this.value)">${opts}</select>${t.moved?`<button onclick="resetDate('${k.replace(/'/g,"\\'")}')">날짜 되돌리기</button>`:''}
       </div></div></div>`;
   }).join('');
 }
