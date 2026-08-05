@@ -68,6 +68,26 @@
   .tag{display:inline-block;font-size:9.5px;font-weight:800;border-radius:5px;padding:1px 7px;margin-left:6px;
        vertical-align:middle;color:#fff}
   .empty{text-align:center;color:var(--mut);font-size:12.5px;padding:26px 0}
+  /* 상태·링크 */
+  .st{display:inline-block;font-size:9.5px;font-weight:800;border-radius:5px;padding:1px 8px;margin-left:6px;
+      vertical-align:middle;border:1px solid}
+  .st-plan{background:#F5F3FF;color:#6D28D9;border-color:#DDD6FE}
+  .st-share{background:#EFF6FF;color:#1E40AF;border-color:#BFDBFE}
+  .st-dev{background:#FEF3C7;color:#92400E;border-color:#FCD34D}
+  .st-qa{background:#FCE7F3;color:#9D174D;border-color:#FBCFE8}
+  .st-mon{background:#DCFCE7;color:#166534;border-color:#86EFAC}
+  .links{margin-top:7px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .links a,.links button{font-size:10.5px;font-weight:700;text-decoration:none;border-radius:6px;
+      padding:3px 9px;border:1px solid var(--line);background:#F8FAFC;color:var(--sub);
+      font-family:inherit;cursor:pointer;line-height:1.6}
+  .links a.spec{background:#F5F3FF;color:#6D28D9;border-color:#DDD6FE}
+  .links a.slack{background:#F0FDF4;color:#166534;border-color:#86EFAC}
+  .links select{font-family:inherit;font-size:10.5px;font-weight:700;border:1px solid var(--line);
+      border-radius:6px;padding:3px 6px;color:var(--sub);background:#fff;cursor:pointer}
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;
+       font-size:11.5px;color:var(--mut)}
+  .bar button{font-family:inherit;font-size:11px;font-weight:700;border:1px solid var(--line);
+       background:#fff;color:var(--sub);border-radius:7px;padding:5px 11px;cursor:pointer}
 
   .legend{display:flex;gap:13px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);align-items:center}
   .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
@@ -119,12 +139,18 @@
       <button onclick="moveD(-1)">‹</button><button onclick="moveD(1)">›</button>
     </div>
   </div>
+  <div class="bar">
+    <span>상태·슬랙 링크는 이 브라우저에만 저장됩니다.</span>
+    <button onclick="exportState()">상태 내보내기</button>
+    <button onclick="importState()">상태 불러오기</button>
+    <button onclick="resetState()">초기화</button>
+  </div>
   <div id="dView"></div>
 </div>
 
 <div class="foot">
   일정 근거와 산출 상세 — <a href="35_marketing_start_timing.html" target="_blank">마케팅 개시 시점 산정 →</a><br>
-  주말은 회색 처리하며 일정을 두지 않습니다. 기간 항목은 시작일에만 이름이 표시되고 이후에는 얇은 막대로 이어집니다.
+  주말은 회색 처리하며 일정을 두지 않습니다. 기간 항목은 시작일에만 이름이 표시되고 이후에는 얇은 막대로 이어집니다.<br>상태는 <b>기획중 → 전파 완료 → 개발중 → QA중 → 모니터링중</b> 5단계이며, 일 뷰에서 변경합니다.
 </div>
 
 </div>
@@ -135,29 +161,58 @@ const CAT={dev:{name:'개발·배포',color:'#7C3AED'},mon:{name:'수익화',col
            ops:{name:'운영·판정',color:'#D97706'},ext:{name:'외부·협업',color:'#0891B2'}};
 
 const TASKS=[
- {s:'2026-08-05',cat:'dev',t:'SPEC-035 기획서 전파',
+ {s:'2026-08-05',cat:'dev',t:'SPEC-035 기획서 전파',spec:'spec-035-interstitial-frequency',st:'share',
   d:'전면 광고 빈도 곡선 기획서를 개발·QA에 전파. 레벨 구간별 노출 곡선(0/20/33/50%)과 게이트 3종(최소 간격 60초·2세션 이상·일 상한 8회).'},
- {s:'2026-08-06',cat:'mon',t:'전면 광고 A/B 배포',
+ {s:'2026-08-06',cat:'mon',t:'전면 광고 A/B 배포',spec:'spec-035-interstitial-frequency',st:'dev',
   d:'SPEC-035 A/B 배포. 값이 전부 시트에 있어 빌드 없이 상·하향 가능. 목표는 롤백이 아니라 곡선 최적화. 가드레일 = D1 리텐션 유지.'},
- {s:'2026-08-06',e:'2026-08-31',cat:'mon',t:'전면 광고 곡선 최적화',
+ {s:'2026-08-06',e:'2026-08-31',cat:'mon',t:'전면 광고 곡선 최적화',spec:'spec-035-interstitial-frequency',st:'plan',
   d:'A/B 결과를 보며 시트 값을 조정. 산출 노출량 6.6회/DAU는 코지 정착기 7.44와 같은 구간이고, 판당 전면 0.50은 코지 0.53과 동일 강도.'},
- {s:'2026-08-10',cat:'cnt',t:'메이저 콘텐츠 + 인게임 이벤트 배포',
+ {s:'2026-08-10',cat:'cnt',t:'메이저 콘텐츠 + 인게임 이벤트 배포',spec:'spec-027-shadow-chase',st:'dev',
   d:'판수 증대·세션 횟수 증대를 겨냥. 판수가 전면 광고 노출을 결정하므로 회수액을 직접 끌어올리는 축. 현재 판수 13.2판/DAU(코지 정착기 14.1).'},
- {s:'2026-08-10',e:'2026-08-31',cat:'mkt',t:'C2P 마케팅 집행',
+ {s:'2026-08-10',e:'2026-08-31',cat:'mkt',t:'C2P 마케팅 집행',st:'plan',
   d:'준비되는 대로 개시(며칠 밀려도 무관) · 종료일 미정. 입찰 상한 $0.25부터. 유입 1명당 회수액 $0.460(현재) → $0.811(전면 광고 적용 후 예측).'},
- {s:'2026-08-12',cat:'ops',t:'콜드스타트 종료 · 티어 최초 동결',
+ {s:'2026-08-12',cat:'ops',t:'콜드스타트 종료 · 티어 최초 동결',st:'mon',
   d:'Meta 티어가 처음 동결되는 날. 재평가 주기는 미확정. C2P 유입은 티어 평가에서 제외되므로 마케팅은 이전 개시해도 무관.'},
- {s:'2026-08-12',e:'2026-08-28',cat:'cnt',t:'데이터 기반 추가 콘텐츠 기획',
+ {s:'2026-08-12',e:'2026-08-28',cat:'cnt',t:'데이터 기반 추가 콘텐츠 기획',st:'plan',
   d:'지표를 보고 판수형·세션형 중 필요한 쪽을 정해 투입. 판수는 전면 노출을, 세션은 재방문·보상형을 올림. 어느 쪽이 병목인지 확인 후 결정.'},
- {s:'2026-08-19',cat:'ops',t:'지불 가능 CPI 재산정',
+ {s:'2026-08-19',cat:'ops',t:'지불 가능 CPI 재산정',st:'plan',
   d:'서구권 D7 실측 × 5.50일 ÷ 1.5 = 목표 CPI. 매체 CPI가 그 아래면 집행, 위면 보류. CPI는 우리가 정하는 값이 아니며 통제 대상은 입찰 상한·예산·타겟뿐.'},
- {s:'2026-08-24',cat:'ext',t:'크로스프로모 재조정 실행',
+ {s:'2026-08-24',cat:'ext',t:'크로스프로모 재조정 실행',st:'plan',
   d:'현재 솔리테어로 몰아주는 상태를 적정 게임으로 재연결(Peter 요청). 그 전까지 유지하는 이유 = 북미 DAU의 60.4%가 크로스 유입이라 빼면 업데이트 효과와 유입 감소가 섞임.'},
- {s:'2026-08-24',e:'2026-08-28',cat:'ext',t:'크로스 조정 후 관측',
+ {s:'2026-08-24',e:'2026-08-28',cat:'ext',t:'크로스 조정 후 관측',st:'plan',
   d:'감시 지표 = 북미 DAU · 유입 믹스 · 회수액. 흔들리면 되돌림(설정 변경이라 즉시 가능). 개발 인력 잔류 안에서 대응 가능한 마지막 주.'},
- {s:'2026-08-28',cat:'ops',t:'개발 인력 잔류 종료 (~8/29)',
+ {s:'2026-08-28',cat:'ops',t:'개발 인력 잔류 종료 (~8/29)',st:'plan',
   d:'이후로는 시트·크로스 설정 조정만 가능. 결제 상품 추가·클라이언트 수정은 불가. 실제 종료는 8/29(토)이나 평일 기준 마지막 날은 8/28.'},
 ];
+
+const ST={plan:{n:'기획중',c:'st-plan'},share:{n:'전파 완료',c:'st-share'},
+          dev:{n:'개발중',c:'st-dev'},qa:{n:'QA중',c:'st-qa'},mon:{n:'모니터링중',c:'st-mon'}};
+const SPEC_BASE='workspace/specs/';
+// 상태·슬랙 링크는 브라우저에 저장됨(localStorage). 공유하려면 하단 '상태 내보내기' 사용.
+const KEY='scj_roadmap_v1';
+let SAVE=JSON.parse(localStorage.getItem(KEY)||'{}');
+function keyOf(t){return t.t;}
+function stOf(t){return (SAVE[keyOf(t)]||{}).st || t.st || 'plan';}
+function slackOf(t){return (SAVE[keyOf(t)]||{}).slack || t.slack || '';}
+function setSt(k,v){SAVE[k]=Object.assign({},SAVE[k],{st:v});localStorage.setItem(KEY,JSON.stringify(SAVE));renderAll();}
+function setSlack(k){
+  const cur=(SAVE[k]||{}).slack||'';
+  const v=prompt('슬랙 스레드 링크를 붙여넣으세요 (지우려면 비우고 확인)',cur);
+  if(v===null)return;
+  SAVE[k]=Object.assign({},SAVE[k],{slack:v.trim()});localStorage.setItem(KEY,JSON.stringify(SAVE));renderAll();
+}
+function exportState(){
+  const t=JSON.stringify(SAVE,null,1);
+  navigator.clipboard.writeText(t).then(()=>alert('상태를 클립보드에 복사했습니다.\n다른 사람에게 전달해 "상태 불러오기"로 붙여넣으면 동일하게 보입니다.'))
+   .catch(()=>prompt('아래 내용을 복사하세요',t));
+}
+function importState(){
+  const v=prompt('전달받은 상태 JSON을 붙여넣으세요');
+  if(!v)return;
+  try{SAVE=JSON.parse(v);localStorage.setItem(KEY,JSON.stringify(SAVE));renderAll();}
+  catch(e){alert('형식이 올바르지 않습니다.');}
+}
+function resetState(){if(confirm('저장된 상태를 모두 지웁니다.')){SAVE={};localStorage.removeItem(KEY);renderAll();}}
 
 const TODAY=new Date(2026,7,5);
 let MCUR=new Date(2026,7,1);          // 표시 중인 월
@@ -231,7 +286,7 @@ function renderWeek(){
     if(we) h+='<div style="font-size:10px;color:#C3C9D6;text-align:center;padding-top:8px">주말</div>';
     else if(!ts.length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:8px">—</div>';
     else ts.forEach(t=>{
-      h+=`<div class="witem ${t.span&&!t.first?'sp':''}" style="background:${CAT[t.cat].color}">${t.first?t.t:'⋯ 진행 중'}</div>`;
+      h+=`<div class="witem ${t.span&&!t.first?'sp':''}" style="background:${CAT[t.cat].color}">${t.first?t.t:'⋯ 진행 중'}${t.first?`<span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}</span>`:''}</div>`;
     });
     h+='</div>';
   });
@@ -245,11 +300,19 @@ function renderDay(){
   if(isWE(DSEL)){document.getElementById('dView').innerHTML='<div class="empty">주말에는 일정을 두지 않습니다.</div>';return;}
   if(!ts.length){document.getElementById('dView').innerHTML='<div class="empty">이 날짜에 예정된 일정이 없습니다.</div>';return;}
   document.getElementById('dView').innerHTML=ts.map(t=>{
-    const c=CAT[t.cat].color;
+    const c=CAT[t.cat].color, k=keyOf(t), st=stOf(t), sl=slackOf(t);
+    const opts=Object.entries(ST).map(([v,o])=>`<option value="${v}" ${v===st?'selected':''}>${o.n}</option>`).join('');
     return `<div class="task"><span class="dot" style="background:${c}"></span>
-      <div><h4>${t.t}<span class="tag" style="background:${c}">${CAT[t.cat].name}</span>
+      <div style="flex:1"><h4>${t.t}<span class="tag" style="background:${c}">${CAT[t.cat].name}</span>
+      <span class="st ${ST[st].c}">${ST[st].n}</span>
       ${t.span?`<span class="tag" style="background:#94A3B8">${t.first?'시작':'진행 중'}</span>`:''}</h4>
-      <p>${t.d}</p></div></div>`;
+      <p>${t.d}</p>
+      <div class="links">
+        ${t.spec?`<a class="spec" href="${SPEC_BASE}${t.spec}.html" target="_blank">📄 기획서</a>`:''}
+        ${sl?`<a class="slack" href="${sl}" target="_blank">💬 슬랙</a>`:''}
+        <button onclick="setSlack('${k.replace(/'/g,"\\'")}')">${sl?'슬랙 링크 수정':'＋ 슬랙 링크'}</button>
+        <select onchange="setSt('${k.replace(/'/g,"\\'")}',this.value)">${opts}</select>
+      </div></div></div>`;
   }).join('');
 }
 
