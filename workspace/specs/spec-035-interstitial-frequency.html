@@ -235,6 +235,25 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
 
+  <h3>후속 후보 &mdash; 판 시작 지면(<span class="sheet-var">game_play</span>)</h3>
+  <p>코지는 판 시작에, 마종은 승리 후에 붙임. <strong>같은 벤치인데 선택이 갈리므로 어느 쪽이 맞는지는 실측으로만 가려짐</strong>. 이번 배포는 마종 쪽 구성을 따르고, 판 시작은 가드레일 통과 후 A/B 후보로 남김.</p>
+  <table>
+    <thead><tr><th>지면</th><th>게임</th><th>발화</th><th>임프레션율</th></tr></thead>
+    <tbody>
+    <tr><td><span class="sheet-var">stage_clear</span> (승리 후)</td><td>마종</td><td>2,019,144</td><td><strong>76.9%</strong></td></tr>
+    <tr><td><span class="sheet-var">stage_start</span> (판 시작)</td><td>코지</td><td>1,941,028</td><td><strong>73.5%</strong></td></tr>
+    <tr><td><span class="sheet-var">switch_success</span> (전환 성공)</td><td>마종</td><td>188,196</td><td><strong style="color:var(--red)">27.1%</strong></td></tr>
+    <tr><td><span class="sheet-var">switch_cancel</span> (전환 취소)</td><td>마종</td><td>87,657</td><td><strong style="color:var(--red)">23.4%</strong></td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <strong>지금 판 시작을 열지 않는 이유 세 가지.</strong><br>
+    &#9312; <strong>완주율이 낮음.</strong> 승리 후 76.9% 대 판 시작 73.5%임. 그리고 전환 순간에 얹은 마종 지면은 23~27%까지 떨어짐 &mdash; 화면을 떠나려는 순간이라 광고가 끝까지 안 돌아감.<br>
+    &#9313; <strong>SPEC-030 컨텍스트 전환과 같은 자리임.</strong> 코지는 전환(판수의 48.7%)과 판 시작 광고(54.7%)를 <strong>합치면 판수를 넘길 만큼</strong> 병행하고 있어 불가능하진 않지만, 우리는 팝업+광고 2연타가 됨.<br>
+    &#9314; <strong>물량 이득이 없음.</strong> 실패율 0.9%라 판 시작 대상과 승리 후 대상의 판수가 사실상 같음. 같은 간격이면 노출량도 같음.<br>
+    되살리는 비용은 작음 &mdash; <span class="sheet-var">PopupGameEntry</span>의 <strong>주석 처리된 호출부를 푸는 것</strong>이 전부임. 가드레일이 통과되면 지면 단독 스위치를 하나 더 만들어 A/B로 검증함.
+  </div>
+
   <h3>확정 곡선 &mdash; 이 표가 유일한 SSOT</h3>
   <p>라이브 구현은 <strong>확률이 아니라 결정적 간격</strong>임 &mdash; <span class="sheet-var">clear_interval</span>의 정의가 <strong>&ldquo;N값 &rarr; N회 클리어마다 1회 노출, 0=노출 안 함&rdquo;</strong>임. 값은 메타 권장 확률이 아니라 <strong>코지·마종 실측</strong>에 맞춤(14일, dev 제외).</p>
   <table>
