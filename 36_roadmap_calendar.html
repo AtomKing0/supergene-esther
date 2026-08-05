@@ -333,6 +333,20 @@ const BASE=[
  {id:'t09',s:'2026-08-24',e:'2026-08-28',cat:'ext',t:'크로스 조정 후 관측',st:'plan',
   ck:['북미 DAU 추적','유입 믹스 확인','회수액 확인','흔들리면 되돌림'],
   d:'감시 지표 = 북미 DAU · 유입 믹스 · 회수액. 흔들리면 되돌림(설정 변경이라 즉시 가능). 개발 인력 잔류 안에서 대응 가능한 마지막 주.'},
+ {id:'t11',s:'2026-08-03',cat:'dev',t:'컨텍스트 전환 A/B 배포 · 인게임 체감 개선',spec:'spec-030-context-switch-expansion',st:'done',
+  dep:true,depAt:'2026-08-03',depB:'#415(A) · #416(B)',
+  ck:[{n:'DEV 테스트빌드 #412·#413 확인',d:true},{n:'밸런스 시트 선배포 — 라이브 영향 없음 확인',d:true},
+      {n:'#414 컨텍스트 노출 조건 5판으로 수정',d:true},{n:'NRU·RU 테스트',d:true},
+      {n:'PROD A/B 릴리즈',d:true},{n:'센트리 확인',d:true}],
+  d:'8/3 저녁 PROD 릴리즈. #415 = 컨텍스트 전환 지면 확대 OFF(A), #416 = ON(B), 50:50. 같은 빌드에 인게임 체감 개선 2건 동봉 — undo 시 pity_trigger_count는 보정에 성공한 카드에 한해 롤백, 보정된 카드의 공간 편향 보정 추가. 그림자 냥이 추격전 이벤트 데이터와 팝업 호출부는 시트에서 주석 처리한 상태로 나감. 페이스북은 A/B 빌드 두 개를 올려 빌드마다 바라보는 시트를 고정하는 방식이며, 이번에는 시트를 분리하지 않고 값이 다른 A/B가 필요할 때 세팅하기로 함. 배포 전 확인된 3120_TOURNAMENT_CREATE_FAIL의 USER_INPUT은 유저가 다이얼로그를 닫은 경우로, 거절 상한·거절 카운트 초기화는 정상 동작. 센트리 특이사항 없음.'},
+ {id:'t12',s:'2026-08-04',cat:'ops',t:'컨텍스트 전환 A/B 중간 공유',st:'done',
+  ck:[{n:'서구권(NA+EU) 기준으로 지표 확인',d:true},{n:'부분일 데이터라 판정 보류 명시',d:true}],
+  d:'서구권 기준 예상보다 하락이 적음 — 판 시작률 변화 없음(±0%), 완료 판수 +2.8%. 노출은 의도대로 세션당 0.05회 → 3.1회로 증가. 부분일 데이터라 결론을 내리지 않고 첫 온전한 하루를 기준으로 판정하기로 함. 관측 페이지 = 34_sol_ctx_switch_watch.html.'},
+ {id:'t13',s:'2026-08-05',cat:'ops',t:'컨텍스트 전환 A/B 결론 — #416으로 통합',spec:'spec-030-context-switch-expansion',st:'done',
+  dep:true,depAt:'2026-08-05',depB:'#416 통합',
+  ck:[{n:'서구권 기준 활동성 지표 판정',d:true},{n:'노출 상한(per_session) 적용 여부 결정 — 미적용',d:true},
+      {n:'개발에 통합 요청',d:true},{n:'통합 완료 확인',d:true}],
+  d:'활동성 저하 거의 없음 — 완료 판수 중앙값 3→3, 절사평균 7.27→7.25, 평균 11.74→12.06. 세션당 판 시작 +3.6%, 60초 도달 +3.1%, 300초 도달 +8.1%. 오히려 개선된 지표 = 결과화면 2배 보상 성공 +16.3%(유의), 세션당 RV 완료 +9.2%, 유저당 RV 절사평균 +17.4%, 토너먼트 유입 1,000세션당 26→55로 자체 바이럴 효과 확인. 한계 = 유저 단위 검정이 아직 유의하지 않아(p=0.85·0.76) "상승"이 아니라 "하락하지 않았다"까지가 결론이나 통합 판단에는 충분. 크리티컬한 하락 시 고려하려던 노출 상한(ctx_popup_per_session)은 적용하지 않는 방향으로 결정했고, 값은 남겨둬 필요 시 조정 가능. 8/5 Parker가 #416으로 통합 완료.'},
  {id:'t10',s:'2026-08-28',cat:'ops',t:'개발 인력 잔류 종료 (~8/29)',st:'plan',
   ck:['잔여 클라이언트 작업 마감','이후 시트 전용으로 대응 가능한 항목 정리'],
   d:'이후로는 시트·크로스 설정 조정만 가능. 결제 상품 추가·클라이언트 수정은 불가. 실제 종료는 8/29(토)이나 평일 기준 마지막 날은 8/28.'},
@@ -372,11 +386,15 @@ function Dsc(t){return rec(t.id).d!==undefined?rec(t.id).d:t.d;}
 function Ct(t){return rec(t.id).cat||t.cat;}
 function stOf(t){return rec(t.id).st||t.st||'plan';}
 function slackOf(t){return rec(t.id).slack!==undefined?rec(t.id).slack:(t.slack||'');}
-function ckOf(t){const r=rec(t.id);return r.ck?r.ck:(t.ck||[]).map(n=>({n,d:false}));}
+function ckOf(t){const r=rec(t.id);return r.ck?r.ck
+  :(t.ck||[]).map(x=>typeof x==='string'?{n:x,d:false}:{n:x.n,d:!!x.d});}
 function ckLeft(t){return ckOf(t).filter(c=>!c.d).length;}
 function isOpen(t){return CLOSED.indexOf(stOf(t))<0;}
 function needsDep(t){const r=rec(t.id);return r.dep!==undefined?!!r.dep:!!t.dep;}
-function depOf(t){const r=rec(t.id);return r.depAt?{at:r.depAt,b:r.depB||''}:null;}
+function depOf(t){const r=rec(t.id);
+  if(r.depAt)return{at:r.depAt,b:r.depB||''};
+  if(r.depAt===null)return null;
+  return t.depAt?{at:t.depAt,b:t.depB||''}:null;}
 // 모니터링중은 원색 대신 물빠진색 — 끝난 축과 진행 중인 축을 눈으로 가름
 function pale(hex,r){const n=parseInt(hex.slice(1),16),R=n>>16,G=(n>>8)&255,B=n&255;
   const m=v=>Math.round(v+(255-v)*r);return `rgb(${m(R)},${m(G)},${m(B)})`;}
@@ -507,7 +525,7 @@ function depSave(id){
   const b=document.getElementById('dp_b_'+id).value.trim();
   setRec(id,{depAt:at,depB:b});DEPID=null;renderAll();
 }
-function depClear(id){const r=Object.assign({},DB.rec[id]);delete r.depAt;delete r.depB;
+function depClear(id){const r=Object.assign({},DB.rec[id]);r.depAt=null;delete r.depB;
   DB.rec[id]=r;save();DEPID=null;renderAll();}
 function resetDate(id){const r=Object.assign({},DB.rec[id]);delete r.s;delete r.e;
   DB.rec[id]=r;save();renderAll();}
