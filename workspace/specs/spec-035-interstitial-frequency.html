@@ -295,7 +295,7 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>게이트</th><th>확정값</th><th>벤치 실측</th></tr></thead>
     <tbody>
-    <tr><td><strong>최소 간격</strong></td><td><strong>0</strong> (미적용)</td><td>연속 노출 간격 p50 코지 106초 · 마종 135초인데, <strong>60초 미만이 코지 12.9% · 마종 10.4%</strong>. 마종은 p01이 <strong>2초</strong>라 간격 게이트 자체가 없음</td></tr>
+    <tr><td><strong>최소 간격</strong></td><td>시트값 <strong>0</strong> + 클라 하드코딩 <strong>30초</strong></td><td>연속 노출 간격 p50 코지 106초 · 마종 135초인데, <strong>60초 미만이 코지 12.9% · 마종 10.4%</strong>. 마종은 p01이 <strong>2초</strong>라 시트 게이트는 불필요. 다만 <strong>클라에 플랫폼 정책용 30초 하드코딩이 이미 있고 이를 유지함</strong>(2026-08-05 Parker 확인) &mdash; 실효 최소 간격은 <strong>둘 중 큰 값</strong>임</td></tr>
     <tr><td><strong>세션 게이트</strong></td><td><strong>1</strong> (첫 세션부터)</td><td>두 게임 모두 <strong>첫 세션(로그인 1회차)에 노출함</strong> &mdash; 전체 노출의 3.1%가 1회차 세션에서 발생</td></tr>
     <tr><td><strong>일 상한</strong></td><td><strong>0</strong> (무제한)</td><td>유저-일당 노출 p99가 코지 <strong>101회</strong> · 마종 <strong>77회</strong>, 최대 <strong>596회</strong> · <strong>485회</strong>. 어떤 상한도 걸려 있지 않음</td></tr>
     </tbody>
@@ -313,7 +313,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>긴급 킬로 <span class="sheet-var">is_interstitial_ad_open</span>을 0으로 바꿈</td><td><strong>다음 판정부터 즉시 0%</strong>. 이미 재생 중인 광고는 그대로 두고, 진행 중 세션도 다음 판부터 미노출. 클라 재시작 불필요</td></tr>
     <tr><td>튜토리얼 진행 중</td><td>구간 1(간격 0)에 자연히 포함되지만, <strong>튜토리얼 플래그가 있으면 간격과 무관하게 차단</strong>. 이중 방어</td></tr>
     <tr><td>세션 게이트를 켰을 때 걸린 유저</td><td>판정 자체를 하지 않음. 클리어 카운터·일 노출수도 갱신하지 않음. <strong>초기값 1에서는 아무도 안 걸림</strong></td></tr>
-    <tr><td>승리 광고를 본 직후 나가기를 누름</td><td>초기값(최소 간격 0)에서는 <strong>연달아 노출됨</strong> &mdash; 벤치와 동일한 동작. 막으려면 <span class="sheet-var">interstitial_ad_min_interval_sec</span>에 60을 넣으면 두 지면이 같은 <span class="sheet-var">last_ad_time</span>을 보고 차단함</td></tr>
+    <tr><td>승리 광고를 본 직후 나가기를 누름</td><td><strong>30초 안이면 미노출</strong> &mdash; 클라 하드코딩 30초가 걸림. 그 이상이면 노출됨. 더 길게 막으려면 <span class="sheet-var">interstitial_ad_min_interval_sec</span>에 60을 넣음</td></tr>
     <tr><td>1~5레벨 유저가 나가기를 누름</td><td><strong>미노출</strong>. 구간 1은 나가기 지면도 차단함 &mdash; 초반 보호는 지면과 무관하게 적용</td></tr>
     <tr><td>나가기 광고가 늦게 닫힘</td><td>광고 결과와 무관하게 <strong>나가기는 반드시 진행</strong>. 기존 타임아웃 처리를 그대로 유지해 유저가 갇히지 않게 함</td></tr>
     <tr><td>일 상한을 켠 뒤 날짜가 바뀜</td><td><strong>UTC 0시</strong>에 <span class="sheet-var">it_today</span> 리셋 &mdash; 기존 데일리 리셋 축과 동일</td></tr>
@@ -386,7 +386,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>5</td><td><span class="sheet-var">loginCountTotal</span> &ge; <span class="sheet-var">interstitial_ad_session_gate</span></td><td>종료 &mdash; 로그 없음</td></tr>
     <tr><td>6</td><td>(승리 지면만) <span class="sheet-var">clearCountSinceAd</span> + 1 &ge; <span class="sheet-var">clear_interval</span></td><td>카운터만 +1 하고 종료 &mdash; <span class="sheet-var">skip_reason=interval_not_met</span>. <strong>나가기 지면은 이 단계를 건너뜀</strong>(레벨 클리어 기반 카운터라 무관)</td></tr>
     <tr><td>7</td><td><span class="sheet-var">it_today</span> &lt; <span class="sheet-var">interstitial_ad_daily_limit</span></td><td>종료 &mdash; <span class="sheet-var">skip_reason=daily_cap</span>. <strong>카운터 유지</strong>(다음 판에 재시도). <strong>값이 0이면 검사 자체를 건너뜀</strong></td></tr>
-    <tr><td>8</td><td>직전 노출 이후 <span class="sheet-var">interstitial_ad_min_interval_sec</span> 경과</td><td>종료 &mdash; <span class="sheet-var">skip_reason=too_soon</span>. <strong>카운터 유지</strong>. <strong>값이 0이면 검사 자체를 건너뜀</strong></td></tr>
+    <tr><td>8</td><td>직전 노출 이후 <span class="sheet-var">interstitial_ad_min_interval_sec</span> 경과 <strong>+ 클라 하드코딩 30초</strong></td><td>종료 &mdash; <span class="sheet-var">skip_reason=too_soon</span>. <strong>카운터 유지</strong>. 시트값이 0이어도 <strong>하드코딩 30초는 항상 적용</strong>(이중 보정) &mdash; 플랫폼 정책용이라 유지함</td></tr>
     <tr><td>9</td><td>프리로드 완료 상태인가</td><td>종료 &mdash; <span class="sheet-var">skip_reason=not_ready</span>. <strong>카운터 유지</strong></td></tr>
     <tr><td>10</td><td colspan="2"><strong>노출</strong> &rarr; <span class="sheet-var">4000</span> 발화(<span class="sheet-var">position</span>에 지면) · <span class="sheet-var">clearCountSinceAd</span> 0으로 리셋 · <span class="sheet-var">it_today</span> +1 · <span class="sheet-var">last_ad_time</span> 갱신</td></tr>
     </tbody>
@@ -466,6 +466,7 @@ ul li strong,ol li strong { color:var(--text); }
     <li>난수를 쓰지 않음 &mdash; 간격 카운터만으로 결정됨. 같은 조건이면 항상 같은 시점에 노출됨</li>
     <li>보상형 영상을 시청한 판은 전면 판정을 건너뜀 &mdash; 판정 진입 전에 해당 판의 보상형 시청 여부를 확인</li>
     <li><span class="sheet-var">interstitial_tier</span> 로드 실패 시 <strong>하드코딩 0으로 폴백</strong>(노출 안 함). 예외를 던져 크래시내지 않음. <span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079)은 참조하지 않음</li>
+    <li>기존 <strong>IT 최소 간격 30초 하드코딩은 그대로 유지</strong>. 시트값과 <strong>이중 보정</strong>이며, 여러 게임 빌드를 함께 관리하는 사정과 플랫폼 정책 때문에 남겨 둔 코드임</li>
     <li>프리로드 정책은 기존 유지. 다만 <span class="sheet-var">is_interstitial_ad_open</span>이 0이면 <strong>프리로드도 중단</strong>해 현재의 낭비를 없앰</li>
   </ul>
   <div class="callout callout-purple">
