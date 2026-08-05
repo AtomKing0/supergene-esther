@@ -34,7 +34,7 @@
   .nav .today{width:auto;padding:0 12px;font-size:12px;font-weight:700}
 
   /* 누락 방지 패널 */
-  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
   .tile{border:1px solid var(--line);border-radius:11px;padding:9px 11px;cursor:pointer;background:#FCFDFE;
         text-align:left;font-family:inherit}
   .tile b{display:block;font-size:21px;line-height:1.15;letter-spacing:-0.5px}
@@ -46,6 +46,20 @@
   .tile.tdy b{color:var(--acc)} .tile.tdy.z b{color:var(--mut)}
   .tile.soon b{color:var(--amb)} .tile.soon.z b{color:var(--mut)}
   .tile.stall b{color:#7C3AED} .tile.stall.z b{color:var(--mut)}
+  .tile.dep b{color:#0891B2} .tile.dep.z b{color:var(--mut)}
+  .f-dep{background:#ECFEFF;color:#155E75;border-color:#A5F3FC}
+  .depb{display:inline-block;font-size:9.5px;font-weight:800;border-radius:5px;padding:1px 8px;
+        margin-left:6px;vertical-align:middle;background:#ECFEFF;color:#155E75;border:1px solid #A5F3FC}
+  .depform{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:7px;padding:8px 10px;
+        border:1px dashed #A5F3FC;border-radius:9px;background:#F6FEFF}
+  .depform label{font-size:10.5px;font-weight:800;color:#155E75}
+  .depform input{font-family:inherit;font-size:11.5px;border:1px solid var(--line);border-radius:7px;
+        padding:4px 8px;color:var(--ink);background:#fff}
+  .depform input.b{width:190px}
+  .depform button{font-family:inherit;font-size:11px;font-weight:700;border:1px solid var(--line);
+        background:#fff;color:var(--sub);border-radius:7px;padding:4px 10px;cursor:pointer}
+  .depform button.ok{background:#0891B2;border-color:#0891B2;color:#fff}
+  .links a.deployed{background:#ECFEFF;color:#155E75;border-color:#A5F3FC}
   .arow{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);
         border-radius:10px;margin-bottom:6px;cursor:pointer;background:#FCFDFE}
   .arow:hover{background:#F0F6FF;border-color:#BBD6FF}
@@ -208,6 +222,11 @@
     <div class="fld w4"><label>내용</label><textarea id="f_d" placeholder="무엇을 왜 하는지, 판단 기준은 무엇인지"></textarea></div>
     <div class="fld w2"><label>기획서 파일명 <span style="font-weight:600">(workspace/specs/ 아래, 확장자 제외)</span></label><input type="text" id="f_spec" placeholder="spec-036-season-pass-2"></div>
     <div class="fld w2"><label>슬랙 스레드 링크</label><input type="text" id="f_slack" placeholder="https://..."></div>
+    <div class="fld w4"><label>배포</label>
+      <label style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--sub);
+                    border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer">
+        <input type="checkbox" id="f_dep" style="width:auto;accent-color:#0891B2;margin:0">
+        빌드·시트 배포가 필요한 일감 (배포 기록 버튼이 생기고, 기록이 없으면 미배포로 잡힙니다)</label></div>
     <div class="fld w4"><label>체크리스트 <span style="font-weight:600">(줄바꿈으로 구분)</span></label><textarea id="f_ck" placeholder="시트 값 반영&#10;전후 비교 확인"></textarea></div>
   </div>
   <div class="fact">
@@ -275,7 +294,8 @@
   일정 근거와 산출 상세 — <a href="35_marketing_start_timing.html" target="_blank">마케팅 개시 시점 산정 →</a><br>
   주말은 회색 처리하며 일정을 두지 않습니다. 기간 항목은 시작일에만 이름이 표시되고 이후에는 얇은 막대로 이어집니다.<br>
   상태는 <b>기획중 → 전파 완료 → 개발중 → QA중 → 모니터링중 → 완료</b>이며 <b>보류</b>로 빼둘 수 있습니다. 완료·보류는 놓친 일 점검에서 제외됩니다.<br>
-  점검 기준 — <b>지연</b>: 마감일이 지났는데 완료·보류가 아님 · <b>오늘</b>: 오늘 날짜에 걸린 일 · <b>임박</b>: 마감 3일 이내 · <b>정체</b>: 시작일이 지났는데 아직 기획중이거나 상태가 10일 넘게 그대로.
+  점검 기준 — <b>지연</b>: 마감일이 지났는데 완료·보류가 아님 · <b>미배포</b>: 배포가 필요한 일감인데 배포 기록이 없음 · <b>오늘</b>: 오늘 날짜에 걸린 일 · <b>임박</b>: 마감 3일 이내 · <b>정체</b>: 시작일이 지났는데 아직 기획중이거나 상태가 10일 넘게 그대로.<br>
+  달력에서 <b>물빠진 색 막대는 모니터링중</b>인 기간이고, 진한 원색은 아직 손이 가야 하는 기간입니다.
 </div>
 
 </div>
@@ -286,10 +306,10 @@ const CAT={dev:{name:'개발·배포',color:'#7C3AED'},mon:{name:'수익화',col
            ops:{name:'운영·판정',color:'#D97706'},ext:{name:'외부·협업',color:'#0891B2'}};
 
 const BASE=[
- {id:'t01',s:'2026-08-05',e:'2026-08-31',cat:'mon',t:'SPEC-035 [수익화-광고] 전면 광고 빈도 곡선',spec:'spec-035-interstitial-frequency',st:'dev',
+ {id:'t01',s:'2026-08-05',e:'2026-08-31',cat:'mon',t:'SPEC-035 [수익화-광고] 전면 광고 빈도 곡선',spec:'spec-035-interstitial-frequency',st:'dev',dep:true,
   ck:['시트 값 라이브 반영 확인','노출량 6.6회/DAU 실측 대조','D1 리텐션 가드레일 확인','유의 하락 시 되돌림 판단'],
   d:'8/5 A/B 배포 후 8월 내내 곡선 최적화. 레벨 구간별 노출 곡선(0/20/33/50%) + 게이트 3종(최소 간격 60초·2세션 이상·일 상한 8회). 값이 전부 시트에 있어 빌드 없이 상·하향 가능하며 목표는 롤백이 아니라 최적화. 산출 노출량 6.6회/DAU는 코지 정착기 7.44와 같은 구간이고, 판당 전면 0.50은 코지 0.53과 동일 강도. 가드레일 = D1 리텐션 유지, 유의 하락 시에만 되돌림.'},
- {id:'t02',s:'2026-08-10',cat:'cnt',t:'SPEC-027 [콘텐츠-이벤트] 그림자 냥이 추격전 — 배포',spec:'spec-027-shadow-chase',st:'dev',
+ {id:'t02',s:'2026-08-10',cat:'cnt',t:'SPEC-027 [콘텐츠-이벤트] 그림자 냥이 추격전 — 배포',spec:'spec-027-shadow-chase',st:'dev',dep:true,
   ck:['킬스위치 해제(isInUse) 확인','사운드 4종 프리로드·호출부 확인','cycle_id 개발 확인 1건','인게임 이벤트 동시 진행 확인','배포 후 판수 전후비교'],
   d:'그림자 냥이 추격전 배포 + 인게임 이벤트 동시 진행. 판수 증대·세션 횟수 증대를 겨냥. 판수가 전면 광고 노출을 결정하므로 회수액을 직접 끌어올리는 축. 현재 판수 13.2판/DAU(코지 정착기 14.1).'},
  {id:'t03',s:'2026-08-19',e:'2026-08-31',cat:'mkt',t:'C2P 마케팅 집행',st:'plan',
@@ -298,16 +318,16 @@ const BASE=[
  {id:'t04',s:'2026-08-12',cat:'ops',t:'콜드스타트 종료 · 티어 최초 동결',st:'mon',
   ck:['티어 스냅샷 캡처','북미 DAU 300 게이트 달성 여부 확인','재평가 주기 Alex에게 확인'],
   d:'Meta 티어가 처음 동결되는 날. 재평가 주기는 미확정. C2P 유입은 티어 평가에서 제외되므로 마케팅은 이전 개시해도 무관.'},
- {id:'t05',s:'2026-08-12',cat:'ops',t:'컨텍스트 전환 통합 후 재확인',spec:'spec-030-context-switch-expansion',st:'mon',
+ {id:'t05',s:'2026-08-12',cat:'ops',t:'컨텍스트 전환 통합 후 재확인',spec:'spec-030-context-switch-expansion',st:'mon',dep:true,
   ck:['판수·RV·토너먼트 유입 재검정','보류 4종(세션당 RV·판당 RV·토너먼트 유입·300초 도달) 판정','흔들리면 ctx_popup_per_session 4~5로 조정'],
   d:'8/4 A/B 결론(#416 통합)은 서구권 하루 890명 기준이라 유저 단위 검정이 유의하지 않았음("떨어지지 않았다"까지). 표본이 8일치 쌓인 시점에서 판수·RV·토너먼트 유입이 그대로인지 재확인. 보류로 남은 항목 = 세션당 RV·판당 RV·토너먼트 유입·300초 도달. 흔들리면 ctx_popup_per_session(현재 0=무제한)을 4~5로 조이는 게 1차 대응 — 시트 값이라 클라 재배포 불필요. 리포트 = 34_sol_ctx_switch_watch.html (매시 자동 갱신).'},
- {id:'t06',s:'2026-08-12',e:'2026-08-28',cat:'cnt',t:'데이터 기반 추가 콘텐츠 기획',st:'plan',
+ {id:'t06',s:'2026-08-12',e:'2026-08-28',cat:'cnt',t:'데이터 기반 추가 콘텐츠 기획',st:'plan',dep:true,
   ck:['판수형·세션형 중 병목 판정','기획서 초안 작성','개발 가능 일정 확인(8/28 마감)'],
   d:'지표를 보고 판수형·세션형 중 필요한 쪽을 정해 투입. 판수는 전면 노출을, 세션은 재방문·보상형을 올림. 어느 쪽이 병목인지 확인 후 결정.'},
  {id:'t07',s:'2026-08-18',cat:'ops',t:'지불 가능 CPI 확정',st:'plan',
   ck:['서구권 D7 실측 갱신','목표 CPI 산출(D7 × 5.50 ÷ 1.5)','매체 CPI 대조 후 집행·보류 판단'],
   d:'마케팅 개시 직전 확정. 서구권 D7 실측 × 5.50일 ÷ 1.5 = 목표 CPI. 매체 CPI가 그 아래면 집행, 위면 보류. CPI는 우리가 정하는 값이 아니며 통제 대상은 입찰 상한·예산·타겟뿐.'},
- {id:'t08',s:'2026-08-24',cat:'ext',t:'크로스프로모 재조정 실행',st:'plan',
+ {id:'t08',s:'2026-08-24',cat:'ext',t:'크로스프로모 재조정 실행',st:'plan',dep:true,
   ck:['Peter와 재연결 대상 게임 확정','설정 변경 적용','되돌림 기준 사전 합의'],
   d:'현재 솔리테어로 몰아주는 상태를 적정 게임으로 재연결(Peter 요청). 그 전까지 유지하는 이유 = 북미 DAU의 60.4%가 크로스 유입이라 빼면 업데이트 효과와 유입 감소가 섞임. 마케팅 개시가 8/19로 밀려 C2P 대체 여부는 5일치만 보고 판단하게 되나, 8/24 실행 유지로 확정. 9월로 미루면 개발 대응이 불가해지고, 크로스 조정 자체는 설정 변경이라 즉시 되돌릴 수 있음.'},
  {id:'t09',s:'2026-08-24',e:'2026-08-28',cat:'ext',t:'크로스 조정 후 관측',st:'plan',
@@ -355,6 +375,15 @@ function slackOf(t){return rec(t.id).slack!==undefined?rec(t.id).slack:(t.slack|
 function ckOf(t){const r=rec(t.id);return r.ck?r.ck:(t.ck||[]).map(n=>({n,d:false}));}
 function ckLeft(t){return ckOf(t).filter(c=>!c.d).length;}
 function isOpen(t){return CLOSED.indexOf(stOf(t))<0;}
+function needsDep(t){const r=rec(t.id);return r.dep!==undefined?!!r.dep:!!t.dep;}
+function depOf(t){const r=rec(t.id);return r.depAt?{at:r.depAt,b:r.depB||''}:null;}
+// 모니터링중은 원색 대신 물빠진색 — 끝난 축과 진행 중인 축을 눈으로 가름
+function pale(hex,r){const n=parseInt(hex.slice(1),16),R=n>>16,G=(n>>8)&255,B=n&255;
+  const m=v=>Math.round(v+(255-v)*r);return `rgb(${m(R)},${m(G)},${m(B)})`;}
+function barStyle(t){const c=CAT[Ct(t)].color;
+  return stOf(t)==='mon'
+    ? `background:${pale(c,.80)};color:${c};box-shadow:inset 0 0 0 1px ${pale(c,.42)}`
+    : `background:${c}`;}
 function dueOf(t){return effE(t)||effS(t);}
 
 /* ── 날짜 ───────────────────────────────────────────────────── */
@@ -378,34 +407,41 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 /* ── 누락 방지 판정 ─────────────────────────────────────────── */
 function flags(t){
-  if(!isOpen(t)) return [];
-  const f=[], s=effS(t), e=dueOf(t), r=rec(t.id);
-  if(dTo(e)<0) f.push('late');
+  const f=[], s=effS(t), e=dueOf(t), r=rec(t.id), open=isOpen(t);
+  if(open&&dTo(e)<0) f.push('late');
+  // 배포가 필요한데 기록이 없음 — 완료 처리했어도 잡아냄
+  if(needsDep(t)&&!depOf(t)&&(dTo(s)<=0||stOf(t)==='done')) f.push('nodep');
+  if(!open) return f;
   if(TK>=s&&TK<=e) f.push('today');
   if(dTo(e)>0&&dTo(e)<=3) f.push('soon');
   const stale=r.stAt?dTo(r.stAt)<=-STALL_DAYS:false;
   if((dTo(s)<0&&stOf(t)==='plan')||stale) f.push('stall');
   return f;
 }
-const FL={late:{n:'지연',c:'f-late'},today:{n:'오늘',c:'f-tdy'},soon:{n:'임박',c:'f-soon'},stall:{n:'정체',c:'f-stall'}};
+const FL={late:{n:'지연',c:'f-late'},nodep:{n:'미배포',c:'f-dep'},today:{n:'오늘',c:'f-tdy'},
+          soon:{n:'임박',c:'f-soon'},stall:{n:'정체',c:'f-stall'}};
+const FORDER=['late','nodep','today','soon','stall'];
 function buckets(){
-  const b={late:[],today:[],soon:[],stall:[]};
+  const b={late:[],nodep:[],today:[],soon:[],stall:[]};
   all().forEach(t=>flags(t).forEach(f=>b[f].push(t)));
   return b;
 }
 function setFilter(f){FILTER=(FILTER===f)?'':f;renderAlerts();}
 function renderAlerts(){
-  const b=buckets(), TILE=[['late','지연','마감 지났는데 안 끝남'],['today','오늘','오늘 걸린 일'],
-                          ['soon','임박','마감 3일 이내'],['stall','정체','시작했는데 안 움직임']];
-  document.getElementById('tiles').innerHTML=TILE.map(([k,n,sub])=>
-    `<button class="tile ${k==='late'?'late':k==='today'?'tdy':k==='soon'?'soon':'stall'} ${b[k].length?'':'z'} ${FILTER===k?'on':''}"
+  const b=buckets(), TILE=[['late','late','지연','마감 지났는데 안 끝남'],
+                          ['nodep','dep','미배포','배포 필요한데 기록 없음'],
+                          ['today','tdy','오늘','오늘 걸린 일'],
+                          ['soon','soon','임박','마감 3일 이내'],
+                          ['stall','stall','정체','시작했는데 안 움직임']];
+  document.getElementById('tiles').innerHTML=TILE.map(([k,cls,n,sub])=>
+    `<button class="tile ${cls} ${b[k].length?'':'z'} ${FILTER===k?'on':''}"
       onclick="setFilter('${k}')"><b>${b[k].length}</b><span>${n}</span><small>${sub}</small></button>`).join('');
   let list = FILTER ? b[FILTER].map(t=>({t,f:FILTER}))
-                    : ['late','today','soon','stall'].flatMap(k=>b[k].filter(t=>flags(t)[0]===k).map(t=>({t,f:k})));
+                    : FORDER.flatMap(k=>b[k].filter(t=>flags(t)[0]===k).map(t=>({t,f:k})));
   document.getElementById('aSub').textContent =
     FILTER ? `· ${FL[FILTER].n}만 보는 중` : `· 오늘 ${TODAY.getMonth()+1}/${TODAY.getDate()} 기준`;
   if(!list.length){
-    document.getElementById('aList').innerHTML='<div class="clear">놓친 일 없습니다. 지연·임박·정체 모두 0건.</div>';return;}
+    document.getElementById('aList').innerHTML='<div class="clear">놓친 일 없습니다. 지연·미배포·임박·정체 모두 0건.</div>';return;}
   document.getElementById('aList').innerHTML=list.map(({t,f})=>{
     const c=CAT[Ct(t)].color, e=dueOf(t), d=dTo(e), left=ckLeft(t), fs=flags(t);
     const when = d<0?`마감 ${-d}일 지남`: d===0?'오늘 마감': d===1?'내일 마감':`마감 ${d}일 남음`;
@@ -463,6 +499,16 @@ function ckAdd(id){
   l.push({n:v,d:false});setRec(id,{ck:l});renderAll();
 }
 function ckKey(ev,id){if(ev.key==='Enter'){ev.preventDefault();ckAdd(id);}}
+let DEPID=null;
+function depOpen(id){DEPID=(DEPID===id)?null:id;renderDay();}
+function depCancel(){DEPID=null;renderDay();}
+function depSave(id){
+  const at=document.getElementById('dp_at_'+id).value||TK;
+  const b=document.getElementById('dp_b_'+id).value.trim();
+  setRec(id,{depAt:at,depB:b});DEPID=null;renderAll();
+}
+function depClear(id){const r=Object.assign({},DB.rec[id]);delete r.depAt;delete r.depB;
+  DB.rec[id]=r;save();DEPID=null;renderAll();}
 function resetDate(id){const r=Object.assign({},DB.rec[id]);delete r.s;delete r.e;
   DB.rec[id]=r;save();renderAll();}
 
@@ -485,6 +531,7 @@ function openForm(id){
   document.getElementById('f_spec').value= t?(t.spec||''):'';
   document.getElementById('f_slack').value=t?slackOf(t):'';
   document.getElementById('f_ck').value  = t?ckOf(t).map(c=>c.n).join('\n'):'';
+  document.getElementById('f_dep').checked = t?needsDep(t):false;
   document.getElementById('fDel').style.display=id?'':'none';
   const p=document.getElementById('fPanel');p.style.display='';p.scrollIntoView({behavior:'smooth',block:'center'});
 }
@@ -500,13 +547,13 @@ function saveForm(){
   if(FID){
     const cur=byId(FID);
     const patch={t,cat:v('f_cat'),st:v('f_st'),s,e:e||null,d:v('f_d'),
-                 slack:v('f_slack'),spec:v('f_spec'),ck};
+                 slack:v('f_slack'),spec:v('f_spec'),ck,dep:document.getElementById('f_dep').checked};
     if(patch.st!==stOf(cur))patch.stAt=TK;
     setRec(FID,patch);
   }else{
     const id='u'+(DB.seq++);
     DB.custom.push({id,s,e:e||undefined,cat:v('f_cat'),t,spec:v('f_spec')||'',st:v('f_st'),d:v('f_d'),ck:[]});
-    DB.rec[id]={ck,slack:v('f_slack'),stAt:TK};save();
+    DB.rec[id]={ck,slack:v('f_slack'),stAt:TK,dep:document.getElementById('f_dep').checked};save();
     DSEL=pdISO(s);WSEL=startOfWeek(new Date(DSEL));MCUR=new Date(DSEL.getFullYear(),DSEL.getMonth(),1);
   }
   closeForm();renderAll();
@@ -580,13 +627,13 @@ function renderMonth(){
           if(k<a||k>b){h+='<span class="lane gap"></span>';return;}
           const head=(k===a),tail=(k===b);
           const cls=head&&tail?'solo':head?'head':tail?'tail':'';
-          h+=`<span class="lane ${cls}${laneCls(t)}" style="background:${CAT[Ct(t)].color}" draggable="true"
+          h+=`<span class="lane ${cls}${laneCls(t)}" style="${barStyle(t)}" draggable="true"
                ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"
                title="${esc(T(t))}">${head?esc(T(t)):'&nbsp;'}</span>`;
         });
         const singles=tasksOn(cur).filter(x=>!x.span);
         singles.slice(0,2).forEach(({t})=>{
-          h+=`<span class="chip${laneCls(t)}" style="background:${CAT[Ct(t)].color}" draggable="true"
+          h+=`<span class="chip${laneCls(t)}" style="${barStyle(t)}" draggable="true"
                ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"
                title="${esc(T(t))}">${esc(T(t))}</span>`;
         });
@@ -616,13 +663,13 @@ function renderWeek(){
       if(k<s0||k>e0){h+='<span class="wlane gap"></span>';return;}
       const head=(k===s0), tail=(k===e0);
       const cls=head&&tail?'solo':head?'head':tail?'tail':'';
-      h+=`<span class="wlane ${cls}${laneCls(t)}" style="background:${CAT[Ct(t)].color}" draggable="true"
+      h+=`<span class="wlane ${cls}${laneCls(t)}" style="${barStyle(t)}" draggable="true"
            ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"
            title="${esc(T(t))}">${head?esc(T(t)):'&nbsp;'}</span>`;
     });
     ts.filter(x=>!x.span).forEach(({t})=>{
       const left=ckLeft(t);
-      h+=`<div class="witem${laneCls(t)}" style="background:${CAT[Ct(t)].color}" draggable="true"
+      h+=`<div class="witem${laneCls(t)}" style="${barStyle(t)}" draggable="true"
            ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)">${esc(T(t))}
            <span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}${left?` · 체크 ${left}`:''}</span></div>`;
     });
@@ -640,12 +687,14 @@ function renderDay(){
   if(!ts.length){document.getElementById('dView').innerHTML='<div class="empty">이 날짜에 예정된 일정이 없습니다.</div>';return;}
   document.getElementById('dView').innerHTML=ts.map(({t,first,span})=>{
     const c=CAT[Ct(t)].color, id=t.id, st=stOf(t), sl=slackOf(t), sp=specOf(t), fs=flags(t), ck=ckOf(t);
+    const dp=depOf(t), md=d=>d.slice(5).replace('-','/');
     const dn=ck.filter(x=>x.d).length;
     const opts=Object.entries(ST).map(([v,o])=>`<option value="${v}" ${v===st?'selected':''}>${o.n}</option>`).join('');
     return `<div class="task ${st==='done'?'isdone':''} ${fs.indexOf('late')>=0?'islate':''}">
       <span class="dot" style="background:${c}"></span>
       <div style="flex:1"><h4>${esc(T(t))}<span class="tag" style="background:${c}">${CAT[Ct(t)].name}</span>
       <span class="st ${ST[st].c}">${ST[st].n}</span>${isMoved(t)?'<span class="moved">일정 이동됨</span>':''}
+      ${dp?`<span class="depb">🚀 ${esc(dp.b||'배포')} · ${md(dp.at)}</span>`:''}
       ${fs.map(x=>`<span class="flag ${FL[x].c}">${FL[x].n}</span>`).join('')}
       ${span?`<span class="tag" style="background:#94A3B8">${first?'시작':'진행 중'}</span>`:''}</h4>
       <p>${esc(Dsc(t)||'')}</p>
@@ -654,9 +703,17 @@ function renderDay(){
         ${sl?`<a class="slack" href="${esc(sl)}" target="_blank">💬 슬랙</a>`:''}
         <button onclick="setSlack('${id}')">${sl?'슬랙 링크 수정':'＋ 슬랙 링크'}</button>
         <select onchange="setSt('${id}',this.value)">${opts}</select>
+        ${needsDep(t)?`<button class="${dp?'deployed':''}" onclick="depOpen('${id}')">🚀 ${dp?'배포 기록 수정':'배포 기록'}</button>`:''}
         <button onclick="openForm('${id}')">일정 수정</button>
         ${isMoved(t)?`<button onclick="resetDate('${id}')">날짜 되돌리기</button>`:''}
       </div>
+      ${DEPID===id?`<div class="depform">
+        <label>배포일</label><input type="date" id="dp_at_${id}" value="${dp?dp.at:TK}">
+        <label>빌드·버전</label><input class="b" type="text" id="dp_b_${id}" value="${dp?esc(dp.b):''}" placeholder="예) #416 · 시트 반영">
+        <button class="ok" onclick="depSave('${id}')">기록</button>
+        <button onclick="depCancel()">취소</button>
+        ${dp?`<button onclick="depClear('${id}')">기록 삭제</button>`:''}
+      </div>`:''}
       <div class="ck">
         <div class="ckh">체크리스트 <b>${dn}/${ck.length}</b>${ck.length&&dn===ck.length?' · 전부 완료':''}</div>
         ${ck.map((x,i)=>`<label class="cki ${x.d?'on':''}"><input type="checkbox" ${x.d?'checked':''}
