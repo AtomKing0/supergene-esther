@@ -54,8 +54,10 @@
   .more{font-size:9.5px;color:var(--mut);font-weight:700;padding-left:3px}
 
   /* 주 */
-  .wk{display:grid;gap:6px}
-  .wcol{border:1px solid var(--line);border-radius:10px;background:#FCFDFE;min-height:150px;padding:8px;cursor:pointer}
+  .wk{display:grid;gap:0}
+  .wcol{border:1px solid var(--line);border-left:none;background:#FCFDFE;min-height:150px;padding:8px;cursor:pointer}
+  .wcol:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px}
+  .wcol:last-child{border-radius:0 10px 10px 0}
   .wcol.we{background:#F4F5F8;cursor:default}
   .wcol.today{border-color:var(--acc)}
   .wcol.sel{background:#F0F6FF;border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
@@ -63,7 +65,13 @@
   .wh small{display:block;font-weight:600;color:var(--mut);font-size:10.5px}
   .wcol.we .wh{color:#C3C9D6}
   .witem{font-size:10.5px;font-weight:700;color:#fff;border-radius:6px;padding:4px 6px;margin-bottom:4px;line-height:1.4}
-  .witem.sp{opacity:.5}
+  /* 주 뷰 기간 막대 — 컬럼 경계를 넘어 이어짐 */
+  .wlane{display:block;height:24px;line-height:24px;font-size:10px;font-weight:700;color:#fff;
+         margin:0 -9px 4px;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wlane.head{border-radius:9px 0 0 9px;margin-left:0;padding-left:9px}
+  .wlane.tail{border-radius:0 9px 9px 0;margin-right:0;padding-right:9px}
+  .wlane.solo{border-radius:9px;margin:0 0 4px}
+  .wlane.gap{background:none!important}
 
   /* 일 */
   .task{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);
@@ -334,15 +342,28 @@ function renderWeek(){
     `${a.getMonth()+1}/${a.getDate()} ~ ${b.getMonth()+1}/${b.getDate()}`;
   let h=`<div class="wk" style="grid-template-columns:repeat(${list.length},1fr)">`;
   list.forEach(cur=>{
-    const we=isWE(cur), ts=tasksOn(cur);
+    const we=isWE(cur), k=iso(cur), ts=tasksOn(cur);
     h+=`<div class="wcol ${we?'we':''} ${same(cur,TODAY)?'today':''} ${same(cur,DSEL)?'sel':''}"
-         ${we?'':`onclick="pickDay('${iso(cur)}')" ondragover="dragOver(event,'${iso(cur)}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${iso(cur)}')"`}>
+         ${we?'':`onclick="pickDay('${k}')" ondragover="dragOver(event,'${k}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${k}')"`}>
         <div class="wh">${WD[cur.getDay()]}<small>${cur.getMonth()+1}/${cur.getDate()}</small></div>`;
-    if(we) h+='<div style="font-size:10px;color:#C3C9D6;text-align:center;padding-top:8px">주말</div>';
-    else if(!ts.length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:8px">—</div>';
-    else ts.forEach(t=>{
-      h+=`<div class="witem ${t.span&&!t.first?'sp':''}" style="background:${CAT[t.cat].color}" draggable="true" ondragstart="dragStart(event,${t.i},'${iso(cur)}')" ondragend="dragEnd(event)">${t.first?t.t:'⋯ '+t.t+' 진행 중'}${t.first?`<span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}</span>`:''}</div>`;
+    if(we){ h+='<div style="font-size:10px;color:#C3C9D6;text-align:center;padding-top:8px">주말</div></div>'; return; }
+    // 기간 항목 — 월 뷰와 동일하게 고정 레인으로 이어 그림
+    SPANS.forEach(sp=>{
+      const s0=effS(sp.t), e0=effE(sp.t);
+      if(k<s0||k>e0){h+='<span class="wlane gap"></span>';return;}
+      const head=(k===s0), tail=(k===e0);
+      const cls=head&&tail?'solo':head?'head':tail?'tail':'';
+      h+=`<span class="wlane ${cls}" style="background:${CAT[sp.t.cat].color}" draggable="true"
+           ondragstart="dragStart(event,${sp.i},'${k}')" ondragend="dragEnd(event)"
+           title="${sp.t.t}">${head?sp.t.t:'&nbsp;'}</span>`;
     });
+    const singles=ts.filter(t=>!t.span);
+    singles.forEach(t=>{
+      h+=`<div class="witem" style="background:${CAT[t.cat].color}" draggable="true"
+           ondragstart="dragStart(event,${t.i},'${k}')" ondragend="dragEnd(event)">${t.t}
+           <span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}</span></div>`;
+    });
+    if(!ts.length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:6px">—</div>';
     h+='</div>';
   });
   document.getElementById('wView').innerHTML=h+'</div>';
