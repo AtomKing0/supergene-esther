@@ -29,11 +29,11 @@
   .nav .today{width:auto;padding:0 12px;font-size:12px;font-weight:700}
 
   /* 월 */
-  table.m{width:100%;border-collapse:separate;border-spacing:3px;table-layout:fixed}
-  table.m th{font-size:11px;font-weight:700;color:var(--mut);padding:2px 0 6px;text-align:center}
+  table.m{width:100%;border-collapse:collapse;table-layout:fixed}
+  table.m th{font-size:11px;font-weight:700;color:var(--mut);padding:2px 0 6px;text-align:center;border:none}
   table.m th.we{color:#C3C9D6}
   table.m tr.wrow{cursor:pointer}
-  table.m td{height:92px;vertical-align:top;border:1px solid var(--line);border-radius:9px;padding:5px;background:#FCFDFE;overflow:hidden}
+  table.m td{height:96px;vertical-align:top;border:1px solid var(--line);padding:4px 4px 5px;background:#FCFDFE;overflow:hidden}
   table.m td.out{background:#F8F9FB;opacity:.45}
   table.m td.we{background:#F4F5F8;color:#C3C9D6}
   table.m td.today{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
@@ -44,7 +44,13 @@
   td.today .dn{color:var(--acc)}
   .chip{display:block;font-size:9.5px;font-weight:700;color:#fff;border-radius:4px;padding:2px 5px;margin-bottom:2px;
         white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .chip.sp{height:5px;padding:0;opacity:.75}
+  /* 기간 막대 — 셀 경계를 넘어 이어지도록 좌우로 빼고 각을 없앰 */
+  .lane{display:block;height:15px;line-height:15px;font-size:9.5px;font-weight:700;color:#fff;
+        margin:0 -5px 2px;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lane.head{border-radius:8px 0 0 8px;margin-left:0;padding-left:7px}
+  .lane.tail{border-radius:0 8px 8px 0;margin-right:0;padding-right:7px}
+  .lane.solo{border-radius:8px;margin:0 0 2px}
+  .lane.gap{background:none!important;color:transparent}
   .more{font-size:9.5px;color:var(--mut);font-weight:700;padding-left:3px}
 
   /* 주 */
@@ -287,6 +293,7 @@ function pickWeek(k){WSEL=new Date(k);
   DSEL=wd[0]||WSEL; renderAll();}
 function pickDay(k){const d=new Date(k);if(isWE(d))return;DSEL=d;renderWeek();renderDay();}
 
+const SPANS=TASKS.map((t,i)=>({t,i})).filter(({t})=>!!t.e);
 function renderMonth(){
   const y=MCUR.getFullYear(),m=MCUR.getMonth();
   document.getElementById('mTtl').textContent=`${y}년 ${m+1}월`;
@@ -301,13 +308,21 @@ function renderMonth(){
       const cur=addD(wStart,c), out=cur.getMonth()!==m, we=isWE(cur), ts=tasksOn(cur);
       h+=`<td class="${out?'out':''} ${we?'we':''} ${same(cur,TODAY)?'today':''}"${we?'':` ondragover="dragOver(event,'${iso(cur)}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${iso(cur)}')"`}><div class="dn">${cur.getDate()}</div>`;
       if(!we){
-        ts.slice(0,3).forEach(t=>{
-          const col=CAT[t.cat].color;
-          const dg=` draggable="true" ondragstart="dragStart(event,${t.i},'${iso(cur)}')" ondragend="dragEnd(event)"`;
-          h+= (t.span&&!t.first) ? `<span class="chip sp" style="background:${col}"${dg}></span>`
-                                 : `<span class="chip" style="background:${col}"${dg}>${t.t}</span>`;
+        // 기간 항목은 TASKS 순서대로 고정 레인 — 없는 날은 빈 칸으로 자리를 지켜 막대가 어긋나지 않게 함
+        SPANS.forEach(sp=>{
+          const a=effS(sp.t), b=effE(sp.t), k=iso(cur);
+          if(k<a||k>b){h+='<span class="lane gap"></span>';return;}
+          const head=(k===a), tail=(k===b);
+          const cls=head&&tail?'solo':head?'head':tail?'tail':'';
+          h+=`<span class="lane ${cls}" style="background:${CAT[sp.t.cat].color}" draggable="true"
+               ondragstart="dragStart(event,${sp.i},'${k}')" ondragend="dragEnd(event)">${head?sp.t.t:'&nbsp;'}</span>`;
         });
-        if(ts.length>3) h+=`<span class="more">+${ts.length-3}</span>`;
+        const singles=ts.filter(t=>!t.span);
+        singles.slice(0,2).forEach(t=>{
+          h+=`<span class="chip" style="background:${CAT[t.cat].color}" draggable="true"
+               ondragstart="dragStart(event,${t.i},'${iso(cur)}')" ondragend="dragEnd(event)">${t.t}</span>`;
+        });
+        if(singles.length>2) h+=`<span class="more">+${singles.length-2}</span>`;
       }
       h+='</td>';
     });
@@ -330,7 +345,7 @@ function renderWeek(){
     if(we) h+='<div style="font-size:10px;color:#C3C9D6;text-align:center;padding-top:8px">주말</div>';
     else if(!ts.length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:8px">—</div>';
     else ts.forEach(t=>{
-      h+=`<div class="witem ${t.span&&!t.first?'sp':''}" style="background:${CAT[t.cat].color}" draggable="true" ondragstart="dragStart(event,${t.i},'${iso(cur)}')" ondragend="dragEnd(event)">${t.first?t.t:'⋯ 진행 중'}${t.first?`<span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}</span>`:''}</div>`;
+      h+=`<div class="witem ${t.span&&!t.first?'sp':''}" style="background:${CAT[t.cat].color}" draggable="true" ondragstart="dragStart(event,${t.i},'${iso(cur)}')" ondragend="dragEnd(event)">${t.first?t.t:'⋯ '+t.t+' 진행 중'}${t.first?`<span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}</span>`:''}</div>`;
     });
     h+='</div>';
   });
