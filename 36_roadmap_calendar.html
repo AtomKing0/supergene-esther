@@ -60,6 +60,11 @@
         background:#fff;color:var(--sub);border-radius:7px;padding:4px 10px;cursor:pointer}
   .depform button.ok{background:#0891B2;border-color:#0891B2;color:#fff}
   .links a.deployed{background:#ECFEFF;color:#155E75;border-color:#A5F3FC}
+  .depb.plan{background:#fff;color:#0E7490;border-style:dashed}
+  .depform .sep{width:1px;height:20px;background:#A5F3FC;margin:0 3px}
+  .dmark{display:block;font-size:9px;font-weight:800;border-radius:4px;padding:1px 5px;margin-bottom:2px;
+        border:1px dashed;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+  .dmark.on{border-style:solid}
   .arow{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);
         border-radius:10px;margin-bottom:6px;cursor:pointer;background:#FCFDFE}
   .arow:hover{background:#F0F6FF;border-color:#BBD6FF}
@@ -227,6 +232,7 @@
                     border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer">
         <input type="checkbox" id="f_dep" style="width:auto;accent-color:#0891B2;margin:0">
         빌드·시트 배포가 필요한 일감 (배포 기록 버튼이 생기고, 기록이 없으면 미배포로 잡힙니다)</label></div>
+    <div class="fld w2"><label>배포 예정일 <span style="font-weight:600">(비워도 됨)</span></label><input type="date" id="f_dpl"></div>
     <div class="fld w4"><label>체크리스트 <span style="font-weight:600">(줄바꿈으로 구분)</span></label><textarea id="f_ck" placeholder="시트 값 반영&#10;전후 비교 확인"></textarea></div>
   </div>
   <div class="fact">
@@ -294,7 +300,8 @@
   일정 근거와 산출 상세 — <a href="35_marketing_start_timing.html" target="_blank">마케팅 개시 시점 산정 →</a><br>
   주말은 회색 처리하며 단일 일정을 두지 않습니다. 다만 기간 항목은 주말과 주 경계를 넘어 끊기지 않고 이어지며, 주말 구간만 같은 색 계열의 연한 톤으로 표시됩니다. 기간 항목의 이름은 시작일에만 붙습니다.<br>
   상태는 <b>기획중 → 전파 완료 → 개발중 → QA중 → 모니터링중 → 완료</b>이며 <b>보류</b>로 빼둘 수 있습니다. 완료·보류는 놓친 일 점검에서 제외됩니다.<br>
-  점검 기준 — <b>지연</b>: 마감일이 지났는데 완료·보류가 아님 · <b>미배포</b>: 배포가 필요한 일감인데 배포 기록이 없음 · <b>오늘</b>: 오늘 날짜에 걸린 일 · <b>임박</b>: 마감 3일 이내 · <b>정체</b>: 시작일이 지났는데 아직 기획중이거나 상태가 10일 넘게 그대로.<br>
+  배포가 필요한 일감은 <b>배포 예정일</b>을 미리 잡아둘 수 있고, 예정일에 달력 마커(점선)가 뜹니다. 실제 배포를 기록하면 실선으로 바뀌고, 예정보다 늦었으면 며칠 늦었는지 붙습니다.<br>
+  점검 기준 — <b>지연</b>: 마감일이 지났는데 완료·보류가 아님 · <b>미배포</b>: 배포 예정일(없으면 시작일)이 지났는데 배포 기록이 없음 · <b>오늘</b>: 오늘 날짜에 걸린 일 · <b>임박</b>: 마감 또는 배포 예정일이 3일 이내 · <b>정체</b>: 시작일이 지났는데 아직 기획중이거나 상태가 10일 넘게 그대로.<br>
   달력에서 <b>물빠진 색 막대는 모니터링중</b>인 기간이고, 진한 원색은 아직 손이 가야 하는 기간입니다.
 </div>
 
@@ -306,10 +313,10 @@ const CAT={dev:{name:'개발·배포',color:'#7C3AED'},mon:{name:'수익화',col
            ops:{name:'운영·판정',color:'#D97706'},ext:{name:'외부·협업',color:'#0891B2'}};
 
 const BASE=[
- {id:'t01',s:'2026-08-05',e:'2026-08-31',cat:'mon',t:'SPEC-035 [수익화-광고] 전면 광고 빈도 곡선',spec:'spec-035-interstitial-frequency',st:'dev',dep:true,
+ {id:'t01',s:'2026-08-05',e:'2026-08-31',cat:'mon',t:'SPEC-035 [수익화-광고] 전면 광고 빈도 곡선',spec:'spec-035-interstitial-frequency',st:'dev',dep:true,depPlan:'2026-08-05',
   ck:['시트 값 라이브 반영 확인','노출량 6.6회/DAU 실측 대조','D1 리텐션 가드레일 확인','유의 하락 시 되돌림 판단'],
   d:'8/5 A/B 배포 후 8월 내내 곡선 최적화. 레벨 구간별 노출 곡선(0/20/33/50%) + 게이트 3종(최소 간격 60초·2세션 이상·일 상한 8회). 값이 전부 시트에 있어 빌드 없이 상·하향 가능하며 목표는 롤백이 아니라 최적화. 산출 노출량 6.6회/DAU는 코지 정착기 7.44와 같은 구간이고, 판당 전면 0.50은 코지 0.53과 동일 강도. 가드레일 = D1 리텐션 유지, 유의 하락 시에만 되돌림.'},
- {id:'t02',s:'2026-08-10',cat:'cnt',t:'SPEC-027 [콘텐츠-이벤트] 그림자 냥이 추격전 — 배포',spec:'spec-027-shadow-chase',st:'dev',dep:true,
+ {id:'t02',s:'2026-08-10',cat:'cnt',t:'SPEC-027 [콘텐츠-이벤트] 그림자 냥이 추격전 — 배포',spec:'spec-027-shadow-chase',st:'dev',dep:true,depPlan:'2026-08-10',
   ck:['킬스위치 해제(isInUse) 확인','사운드 4종 프리로드·호출부 확인','cycle_id 개발 확인 1건','인게임 이벤트 동시 진행 확인','배포 후 판수 전후비교'],
   d:'그림자 냥이 추격전 배포 + 인게임 이벤트 동시 진행. 판수 증대·세션 횟수 증대를 겨냥. 판수가 전면 광고 노출을 결정하므로 회수액을 직접 끌어올리는 축. 현재 판수 13.2판/DAU(코지 정착기 14.1).'},
  {id:'t03',s:'2026-08-19',e:'2026-08-31',cat:'mkt',t:'C2P 마케팅 집행',st:'plan',
@@ -327,7 +334,7 @@ const BASE=[
  {id:'t07',s:'2026-08-18',cat:'ops',t:'지불 가능 CPI 확정',st:'plan',
   ck:['서구권 D7 실측 갱신','목표 CPI 산출(D7 × 5.50 ÷ 1.5)','매체 CPI 대조 후 집행·보류 판단'],
   d:'마케팅 개시 직전 확정. 서구권 D7 실측 × 5.50일 ÷ 1.5 = 목표 CPI. 매체 CPI가 그 아래면 집행, 위면 보류. CPI는 우리가 정하는 값이 아니며 통제 대상은 입찰 상한·예산·타겟뿐.'},
- {id:'t08',s:'2026-08-24',cat:'ext',t:'크로스프로모 재조정 실행',st:'plan',dep:true,
+ {id:'t08',s:'2026-08-24',cat:'ext',t:'크로스프로모 재조정 실행',st:'plan',dep:true,depPlan:'2026-08-24',
   ck:['Peter와 재연결 대상 게임 확정','설정 변경 적용','되돌림 기준 사전 합의'],
   d:'현재 솔리테어로 몰아주는 상태를 적정 게임으로 재연결(Peter 요청). 그 전까지 유지하는 이유 = 북미 DAU의 60.4%가 크로스 유입이라 빼면 업데이트 효과와 유입 감소가 섞임. 마케팅 개시가 8/19로 밀려 C2P 대체 여부는 5일치만 보고 판단하게 되나, 8/24 실행 유지로 확정. 9월로 미루면 개발 대응이 불가해지고, 크로스 조정 자체는 설정 변경이라 즉시 되돌릴 수 있음.'},
  {id:'t09',s:'2026-08-24',e:'2026-08-28',cat:'ext',t:'크로스 조정 후 관측',st:'plan',
@@ -391,6 +398,13 @@ function ckOf(t){const r=rec(t.id);return r.ck?r.ck
 function ckLeft(t){return ckOf(t).filter(c=>!c.d).length;}
 function isOpen(t){return CLOSED.indexOf(stOf(t))<0;}
 function needsDep(t){const r=rec(t.id);return r.dep!==undefined?!!r.dep:!!t.dep;}
+function depPlanOf(t){const r=rec(t.id);
+  if(r.depPlan)return r.depPlan;
+  if(r.depPlan===null)return null;
+  return t.depPlan||null;}
+function depDue(t){return depPlanOf(t)||effS(t);}   // 예정일이 있으면 그 날이 배포 기준일
+function depLate(t){const d=depOf(t),pl=depPlanOf(t);
+  return (d&&pl&&d.at>pl) ? Math.round((pdISO(d.at)-pdISO(pl))/86400000) : 0;}
 function depOf(t){const r=rec(t.id);
   if(r.depAt)return{at:r.depAt,b:r.depB||''};
   if(r.depAt===null)return null;
@@ -429,11 +443,14 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function flags(t){
   const f=[], s=effS(t), e=dueOf(t), r=rec(t.id), open=isOpen(t);
   if(open&&dTo(e)<0) f.push('late');
-  // 배포가 필요한데 기록이 없음 — 완료 처리했어도 잡아냄
-  if(needsDep(t)&&!depOf(t)&&(dTo(s)<=0||stOf(t)==='done')) f.push('nodep');
+  // 배포가 필요한데 기록이 없음 — 예정일이 있으면 그 날 기준, 완료 처리했어도 잡아냄
+  const pl=depPlanOf(t), noDep=needsDep(t)&&!depOf(t);
+  if(noDep&&(dTo(depDue(t))<=0||stOf(t)==='done')) f.push('nodep');
   if(!open) return f;
   if(TK>=s&&TK<=e) f.push('today');
   if(dTo(e)>0&&dTo(e)<=3) f.push('soon');
+  // 배포 예정일이 사흘 안으로 다가온 것도 임박으로 올림
+  if(noDep&&pl&&dTo(pl)>0&&dTo(pl)<=3&&f.indexOf('soon')<0) f.push('soon');
   const stale=r.stAt?dTo(r.stAt)<=-STALL_DAYS:false;
   if((dTo(s)<0&&stOf(t)==='plan')||stale) f.push('stall');
   return f;
@@ -451,7 +468,7 @@ function renderAlerts(){
   const b=buckets(), TILE=[['late','late','지연','마감 지났는데 안 끝남'],
                           ['nodep','dep','미배포','배포 필요한데 기록 없음'],
                           ['today','tdy','오늘','오늘 걸린 일'],
-                          ['soon','soon','임박','마감 3일 이내'],
+                          ['soon','soon','임박','마감·배포 예정 3일 이내'],
                           ['stall','stall','정체','시작했는데 안 움직임']];
   document.getElementById('tiles').innerHTML=TILE.map(([k,cls,n,sub])=>
     `<button class="tile ${cls} ${b[k].length?'':'z'} ${FILTER===k?'on':''}"
@@ -465,13 +482,17 @@ function renderAlerts(){
   document.getElementById('aList').innerHTML=list.map(({t,f})=>{
     const c=CAT[Ct(t)].color, e=dueOf(t), d=dTo(e), left=ckLeft(t), fs=flags(t);
     const when = d<0?`마감 ${-d}일 지남`: d===0?'오늘 마감': d===1?'내일 마감':`마감 ${d}일 남음`;
+    const dp=depOf(t), pl=depPlanOf(t);
+    const dtxt = dp ? `배포 ${dp.at.slice(5).replace('-','/')}${esc(dp.b)?' '+esc(dp.b):''}`
+              : pl ? `배포 예정 ${pl.slice(5).replace('-','/')}${dTo(pl)>0?` (D-${dTo(pl)})`:dTo(pl)===0?' (오늘)':` (${-dTo(pl)}일 지남)`}`
+              : needsDep(t) ? '배포 예정일 미정' : '';
     const span = effE(t)?`${effS(t).slice(5).replace('-','/')}~${e.slice(5).replace('-','/')}`:e.slice(5).replace('-','/');
     return `<div class="arow" onclick="jump('${effS(t)}','${t.id}')">
       <span class="dot" style="background:${c}"></span>
       <div style="flex:1"><div class="nm">${esc(T(t))}
         ${fs.map(x=>`<span class="flag ${FL[x].c}">${FL[x].n}</span>`).join('')}
         ${left?`<span class="flag f-ck">체크 ${left}건 남음</span>`:''}</div>
-        <div class="mt">${span} · ${when} · ${ST[stOf(t)].n} · ${CAT[Ct(t)].name}</div></div></div>`;
+        <div class="mt">${span} · ${when} · ${ST[stOf(t)].n} · ${CAT[Ct(t)].name}${dtxt?' · '+dtxt:''}</div></div></div>`;
   }).join('');
 }
 function jump(k,id){const d=pdISO(k);DSEL=isWE(d)?nextWeekday(d,1):d;
@@ -523,9 +544,15 @@ let DEPID=null;
 function depOpen(id){DEPID=(DEPID===id)?null:id;renderDay();}
 function depCancel(){DEPID=null;renderDay();}
 function depSave(id){
-  const at=document.getElementById('dp_at_'+id).value||TK;
+  const at=document.getElementById('dp_at_'+id).value||null;
   const b=document.getElementById('dp_b_'+id).value.trim();
-  setRec(id,{depAt:at,depB:b});DEPID=null;renderAll();
+  const pl=document.getElementById('dp_pl_'+id).value||null;
+  setRec(id,{depAt:at,depB:at?b:'',depPlan:pl});DEPID=null;renderAll();
+}
+function depPlanOnly(id){   // 예정일만 잡고 실제 배포는 아직
+  const pl=document.getElementById('dp_pl_'+id).value;
+  if(!pl){alert('배포 예정일을 입력하세요.');return;}
+  setRec(id,{depPlan:pl,depAt:null,depB:''});DEPID=null;renderAll();
 }
 function depClear(id){const r=Object.assign({},DB.rec[id]);r.depAt=null;delete r.depB;
   DB.rec[id]=r;save();DEPID=null;renderAll();}
@@ -552,6 +579,7 @@ function openForm(id){
   document.getElementById('f_slack').value=t?slackOf(t):'';
   document.getElementById('f_ck').value  = t?ckOf(t).map(c=>c.n).join('\n'):'';
   document.getElementById('f_dep').checked = t?needsDep(t):false;
+  document.getElementById('f_dpl').value = t?(depPlanOf(t)||''):'';
   document.getElementById('fDel').style.display=id?'':'none';
   const p=document.getElementById('fPanel');p.style.display='';p.scrollIntoView({behavior:'smooth',block:'center'});
 }
@@ -567,13 +595,15 @@ function saveForm(){
   if(FID){
     const cur=byId(FID);
     const patch={t,cat:v('f_cat'),st:v('f_st'),s,e:e||null,d:v('f_d'),
-                 slack:v('f_slack'),spec:v('f_spec'),ck,dep:document.getElementById('f_dep').checked};
+                 slack:v('f_slack'),spec:v('f_spec'),ck,dep:document.getElementById('f_dep').checked,
+                 depPlan:v('f_dpl')||null};
     if(patch.st!==stOf(cur))patch.stAt=TK;
     setRec(FID,patch);
   }else{
     const id='u'+(DB.seq++);
     DB.custom.push({id,s,e:e||undefined,cat:v('f_cat'),t,spec:v('f_spec')||'',st:v('f_st'),d:v('f_d'),ck:[]});
-    DB.rec[id]={ck,slack:v('f_slack'),stAt:TK,dep:document.getElementById('f_dep').checked};save();
+    DB.rec[id]={ck,slack:v('f_slack'),stAt:TK,dep:document.getElementById('f_dep').checked,
+                depPlan:v('f_dpl')||null};save();
     DSEL=pdISO(s);WSEL=startOfWeek(new Date(DSEL));MCUR=new Date(DSEL.getFullYear(),DSEL.getMonth(),1);
   }
   closeForm();renderAll();
@@ -625,6 +655,14 @@ function pickWeek(k){WSEL=pdISO(k);
 function pickDay(k){const d=pdISO(k);if(isWE(d))return;DSEL=d;renderWeek();renderDay();}
 
 function spans(){return all().filter(visible).filter(t=>!!effE(t));}
+function depMarks(k){   // 그 날짜에 잡힌 배포 예정·배포 완료 마커
+  return all().filter(visible).filter(t=>needsDep(t)).filter(t=>{
+    const d=depOf(t); return d ? d.at===k : depPlanOf(t)===k; });}
+function markHtml(t){
+  const c=CAT[Ct(t)].color, d=depOf(t), late=!d&&dTo(depPlanOf(t))<0;
+  return `<span class="dmark ${d?'on':''}" title="${esc(T(t))} — ${d?`배포 ${d.at}${d.b?' '+esc(d.b):''}`:'배포 예정'}"
+    style="background:${pale(c,d?.80:.90)};color:${c};border-color:${pale(c,d?.35:.55)}${late?';border-color:#DC2626;color:#B91C1C':''}"
+    >🚀 ${d?esc(d.b||'배포'):'배포 예정'} · ${esc(T(t))}</span>`;}
 function laneCls(t){const s=stOf(t);return (s==='done'?' done':'')+(flags(t).indexOf('late')>=0?' late':'');}
 
 function renderMonth(){
@@ -650,6 +688,7 @@ function renderMonth(){
              ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"`}
              title="${esc(T(t))}">${head&&!we?esc(T(t)):'&nbsp;'}</span>`;
       });
+      depMarks(k).forEach(t=>{h+=markHtml(t);});
       if(!we){
         const singles=tasksOn(cur).filter(x=>!x.span);
         singles.slice(0,2).forEach(({t})=>{
@@ -686,6 +725,7 @@ function renderWeek(){
            ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"`}
            title="${esc(T(t))}">${head&&!we?esc(T(t)):'&nbsp;'}</span>`;
     });
+    depMarks(k).forEach(t=>{h+=markHtml(t);});
     if(we){ h+='<div style="font-size:10px;color:#C3C9D6;text-align:center;padding-top:6px">주말</div></div>'; return; }
     ts.filter(x=>!x.span).forEach(({t})=>{
       const left=ckLeft(t);
@@ -693,7 +733,7 @@ function renderWeek(){
            ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)">${esc(T(t))}
            <span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}${left?` · 체크 ${left}`:''}</span></div>`;
     });
-    if(!ts.length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:6px">—</div>';
+    if(!ts.length&&!depMarks(k).length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:6px">—</div>';
     h+='</div>';
   });
   document.getElementById('wView').innerHTML=h+'</div>';
@@ -707,14 +747,15 @@ function renderDay(){
   if(!ts.length){document.getElementById('dView').innerHTML='<div class="empty">이 날짜에 예정된 일정이 없습니다.</div>';return;}
   document.getElementById('dView').innerHTML=ts.map(({t,first,span})=>{
     const c=CAT[Ct(t)].color, id=t.id, st=stOf(t), sl=slackOf(t), sp=specOf(t), fs=flags(t), ck=ckOf(t);
-    const dp=depOf(t), md=d=>d.slice(5).replace('-','/');
+    const dp=depOf(t), pl=depPlanOf(t), dl=depLate(t), md=d=>d.slice(5).replace('-','/');
     const dn=ck.filter(x=>x.d).length;
     const opts=Object.entries(ST).map(([v,o])=>`<option value="${v}" ${v===st?'selected':''}>${o.n}</option>`).join('');
     return `<div class="task ${st==='done'?'isdone':''} ${fs.indexOf('late')>=0?'islate':''}">
       <span class="dot" style="background:${c}"></span>
       <div style="flex:1"><h4>${esc(T(t))}<span class="tag" style="background:${c}">${CAT[Ct(t)].name}</span>
       <span class="st ${ST[st].c}">${ST[st].n}</span>${isMoved(t)?'<span class="moved">일정 이동됨</span>':''}
-      ${dp?`<span class="depb">🚀 ${esc(dp.b||'배포')} · ${md(dp.at)}</span>`:''}
+      ${dp?`<span class="depb">🚀 ${esc(dp.b||'배포')} · ${md(dp.at)}${dl?` · 예정보다 ${dl}일 늦음`:''}</span>`
+          :(pl?`<span class="depb plan">🚀 배포 예정 ${md(pl)}${dTo(pl)>0?` · D-${dTo(pl)}`:dTo(pl)===0?' · 오늘':''}</span>`:'')}
       ${fs.map(x=>`<span class="flag ${FL[x].c}">${FL[x].n}</span>`).join('')}
       ${span?`<span class="tag" style="background:#94A3B8">${first?'시작':'진행 중'}</span>`:''}</h4>
       <p>${esc(Dsc(t)||'')}</p>
@@ -723,14 +764,17 @@ function renderDay(){
         ${sl?`<a class="slack" href="${esc(sl)}" target="_blank">💬 슬랙</a>`:''}
         <button onclick="setSlack('${id}')">${sl?'슬랙 링크 수정':'＋ 슬랙 링크'}</button>
         <select onchange="setSt('${id}',this.value)">${opts}</select>
-        ${needsDep(t)?`<button class="${dp?'deployed':''}" onclick="depOpen('${id}')">🚀 ${dp?'배포 기록 수정':'배포 기록'}</button>`:''}
+        ${needsDep(t)?`<button class="${dp?'deployed':''}" onclick="depOpen('${id}')">🚀 ${dp?'배포 기록 수정':(pl?'배포 예정일 수정 · 기록':'배포 예정일 · 기록')}</button>`:''}
         <button onclick="openForm('${id}')">일정 수정</button>
         ${isMoved(t)?`<button onclick="resetDate('${id}')">날짜 되돌리기</button>`:''}
       </div>
       ${DEPID===id?`<div class="depform">
-        <label>배포일</label><input type="date" id="dp_at_${id}" value="${dp?dp.at:TK}">
+        <label>배포 예정일</label><input type="date" id="dp_pl_${id}" value="${pl||''}">
+        <button onclick="depPlanOnly('${id}')">예정일만 잡기</button>
+        <span class="sep"></span>
+        <label>실제 배포일</label><input type="date" id="dp_at_${id}" value="${dp?dp.at:TK}">
         <label>빌드·버전</label><input class="b" type="text" id="dp_b_${id}" value="${dp?esc(dp.b):''}" placeholder="예) #416 · 시트 반영">
-        <button class="ok" onclick="depSave('${id}')">기록</button>
+        <button class="ok" onclick="depSave('${id}')">배포 기록</button>
         <button onclick="depCancel()">취소</button>
         ${dp?`<button onclick="depClear('${id}')">기록 삭제</button>`:''}
       </div>`:''}
