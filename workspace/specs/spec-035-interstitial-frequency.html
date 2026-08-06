@@ -187,7 +187,7 @@ ul li strong,ol li strong { color:var(--text); }
       </div>
       <div class="kpi-card">
         <div class="kpi-label">목표 노출량</div>
-        <div class="kpi-value" style="color:var(--green)">2.9</div>
+        <div class="kpi-value" style="color:var(--green)">2.8</div>
         <div class="kpi-sub">DAU당 · 확정 곡선 &times; 판수 실측<br>벤치 코지 6.51 · 마종 6.24</div>
         <div class="kpi-trend trend-up">&#9650; 신규</div>
       </div>
@@ -257,19 +257,24 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>확정 곡선 &mdash; 이 표가 유일한 SSOT</h3>
-  <p>라이브 구현은 <strong>확률이 아니라 결정적 간격</strong>임 &mdash; <span class="sheet-var">clear_interval</span>의 정의가 <strong>&ldquo;N값 &rarr; N회 클리어마다 1회 노출, 0=노출 안 함&rdquo;</strong>임. 값은 메타 권장 확률이 아니라 <strong>코지·마종 실측</strong>에 맞춤(14일, dev 제외).</p>
+  <p>라이브 구현은 <strong>확률이 아니라 결정적 간격</strong>임 &mdash; <span class="sheet-var">clear_interval</span>의 정의가 <strong>&ldquo;N값 &rarr; N회 클리어마다 1회 노출, 0=노출 안 함&rdquo;</strong>임. 따라서 <strong>메타 권장 확률을 간격으로 환산</strong>해 레벨 구간별로 값을 나눔.</p>
   <table>
-    <thead><tr><th>구간</th><th>유저 레벨</th><th>클리어 간격</th><th>환산 노출률</th><th>벤치 실측</th></tr></thead>
+    <thead><tr><th>구간</th><th>유저 레벨</th><th>클리어 간격</th><th>환산 노출률</th><th>메타 권장</th></tr></thead>
     <tbody>
-    <tr><td>1</td><td>1 ~ 5</td><td><strong style="color:var(--green)">0</strong>(노출 없음)</td><td><strong>0%</strong></td><td>신규 유저 첫 노출 &mdash; 마종 5~6판째 · 코지 3판째</td></tr>
-    <tr><td>2</td><td>6 ~ 10</td><td><strong>2판마다 1회</strong></td><td><strong>50%</strong></td><td rowspan="3" style="vertical-align:middle">판당 노출률 &mdash; 마종 <strong>75.4%</strong> · 코지 <strong>72.9%</strong><br>승리 지면 단독으로는 마종 <span class="sheet-var">stage_clear</span> <strong>58.0%</strong><br>정수 간격으로 표현 가능한 최근접값이 <strong>2(50%)</strong></td></tr>
-    <tr><td>3</td><td>11 ~ 20</td><td><strong>2판마다 1회</strong></td><td><strong>50%</strong></td></tr>
-    <tr><td>4</td><td>21 이상</td><td><strong>2판마다 1회</strong></td><td><strong>50%</strong></td></tr>
+    <tr><td>1</td><td>1 ~ 5</td><td><strong style="color:var(--green)">0</strong>(노출 없음)</td><td><strong>0%</strong></td><td>0% &mdash; 동일</td></tr>
+    <tr><td>2</td><td>6 ~ 10</td><td><strong>5판마다 1회</strong></td><td><strong>20%</strong></td><td>20% &mdash; 동일</td></tr>
+    <tr><td>3</td><td>11 ~ 20</td><td><strong>3판마다 1회</strong></td><td><strong>33%</strong></td><td>50% &mdash; <span style="color:var(--yellow)">보수적</span></td></tr>
+    <tr><td>4</td><td>21 이상</td><td><strong>2판마다 1회</strong></td><td><strong>50%</strong></td><td>75% &mdash; <span style="color:var(--yellow)">보수적</span></td></tr>
     </tbody>
   </table>
   <div class="callout callout-yellow">
-    <strong>전 구간 동일값인데 왜 표를 4행으로 두는가.</strong> 마종·코지는 레벨 구간별 차등이 없고 사실상 균일 노출임. 그래서 초기값도 균일하게 맞췄는데, <strong>구간을 나눠 두면 나중에 특정 구간만 빌드 없이 조일 수 있음</strong>. 가드레일에 문제가 생겼을 때 전체를 끄는 대신 저레벨만 3~5로 늘리는 식의 대응이 가능함.<br>
-    간격 1(매 판 100%)로 가지 않은 이유는 <strong>승리 지면 단독 벤치가 58%</strong>이기 때문임. 코지·마종의 70%대는 판 시작·재도전까지 합친 수치라 우리 지면 구성과 직접 비교되지 않음.
+    <strong>구간 3·4를 메타 권장보다 낮게 잡은 이유 세 가지.</strong><br>
+    &#9312; <strong>정수 간격으로 75%를 표현할 수 없음.</strong> 75%는 1.33판마다 1회라 결정적 간격 방식과 맞지 않음. 확률 방식으로 바꾸면 기존 필드 의미를 갈아엎어야 함.<br>
+    &#9313; <strong>결정적 간격은 최악 케이스가 없음.</strong> 확률 50%는 운이 나쁘면 3판 연속 광고가 나오지만, 간격 2는 반드시 한 판 걸러 나옴. 같은 노출률이어도 체감이 다름.<br>
+    &#9314; <strong>지금은 콜드스타트 리텐션 보호 구간임.</strong> 꺼져 있던 채널을 켜는 첫 배포라 권장치 상단부터 시작할 이유가 없음. 가드레일이 안정되면 3&rarr;2, 2&rarr;1 순으로 시트에서 올림.
+  </div>
+  <div class="callout callout-blue">
+    <strong>벤치와의 거리.</strong> 코지·마종의 판당 노출률은 <strong>72.9% · 75.4%</strong>이고 승리 지면 단독(마종 <span class="sheet-var">stage_clear</span>)으로도 <strong>58.0%</strong>임. 위 곡선은 최고 구간이 50%라 <strong>벤치보다 낮게 시작</strong>하는 것이고, 그 차이는 의도된 것임 &mdash; 올릴 여지는 남기고 시작함.
   </div>
   <div class="callout callout-blue">
     이 표의 값을 <strong>다른 섹션에 다시 적지 않음</strong>. 시트 반영 후에는 <strong>시트 값이 최종</strong>이고 이 표는 초기값 기록으로 남음.
@@ -324,7 +329,7 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>지표</th><th>As-Is</th><th>To-Be</th><th>판정</th></tr></thead>
     <tbody>
-    <tr><td>전면 노출 / DAU</td><td><strong style="color:var(--red)">0</strong></td><td><strong>2.9</strong> <span style="font-weight:400">(승리 2.7 + 나가기 0.19)</span></td><td>4000 로그 &divide; DAU</td></tr>
+    <tr><td>전면 노출 / DAU</td><td><strong style="color:var(--red)">0</strong></td><td><strong>2.8</strong> <span style="font-weight:400">(승리 2.6 + 나가기 0.19)</span></td><td>4000 로그 &divide; DAU</td></tr>
     <tr><td>전면 임프레션율</td><td>&mdash;</td><td>메타 기준 <strong>안드로이드 58% · iOS 60% · 데스크톱 72%</strong></td><td>4010 &divide; 4000</td></tr>
     <tr><td>프리로드 낭비</td><td>26,669건 전량 낭비</td><td>노출로 회수</td><td>4080 대비 4000 비율</td></tr>
     <tr><td><strong>D1 리텐션</strong></td><td>현행</td><td><strong>유지</strong> &mdash; 상승 목표 아님</td><td>가드레일. 유의하게 하락 시 롤백</td></tr>
@@ -448,8 +453,8 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>10104 <span class="sheet-var">interstitial_ad_daily_limit</span></td><td>0</td><td>0 <span style="opacity:.6">(동일)</span></td></tr>
     <tr><td>10079 <span class="sheet-var">interstitial_ad_level_clear_interval</span></td><td>0</td><td>0 <span style="opacity:.6">(동일)</span></td></tr>
     <tr><td rowspan="4"><span class="sheet-var">interstitial_tier.json</span><br><span class="sheet-var">interstitial_tier_b.json</span></td><td>260001 (1~5레벨)</td><td>0</td><td>0 <span style="opacity:.6">(동일)</span></td></tr>
-    <tr><td>260002 (6~10레벨)</td><td><strong style="color:var(--green)">2</strong></td><td><strong style="color:var(--red)">0</strong></td></tr>
-    <tr><td>260003 (11~20레벨)</td><td><strong style="color:var(--green)">2</strong></td><td><strong style="color:var(--red)">0</strong></td></tr>
+    <tr><td>260002 (6~10레벨)</td><td><strong style="color:var(--green)">5</strong></td><td><strong style="color:var(--red)">0</strong></td></tr>
+    <tr><td>260003 (11~20레벨)</td><td><strong style="color:var(--green)">3</strong></td><td><strong style="color:var(--red)">0</strong></td></tr>
     <tr><td>260004 (21레벨~)</td><td><strong style="color:var(--green)">2</strong></td><td><strong style="color:var(--red)">0</strong></td></tr>
     </tbody>
   </table>
@@ -509,7 +514,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>1</td><td><span class="sheet-var">is_interstitial_ad_open=0</span> 상태 배포</td><td>노출 0 유지 · <strong>프리로드도 0으로 떨어짐</strong></td></tr>
     <tr><td>2</td><td>내부 계정으로 <span class="sheet-var">is_interstitial_ad_open=1</span></td><td>구간별 간격이 로그의 <span class="sheet-var">tier_key</span> · <span class="sheet-var">clear_interval</span>과 일치</td></tr>
     <tr><td>3</td><td>게이트 동작 확인</td><td>1세션 유저 노출 0건 · 60초 내 연속 노출 0건(지면 교차 포함) · 일 9회차 이상 0건 · 간격 미달 판 0건 · <span class="sheet-var">position</span>이 <span class="sheet-var">game_over</span>·<span class="sheet-var">game_quit</span> 두 값으로만 찍힘</td></tr>
-    <tr><td>4</td><td>소규모 오픈</td><td>노출/DAU가 <strong>2.5~3.5 구간</strong>(산출 2.9) · <span class="sheet-var">position</span>이 <span class="sheet-var">game_over</span>·<span class="sheet-var">game_quit</span>인 건만 세어 판정(리워디드 인터스티셜 혼입 배제)</td></tr>
+    <tr><td>4</td><td>소규모 오픈</td><td>노출/DAU가 <strong>2.4~3.4 구간</strong>(산출 2.8) · <span class="sheet-var">position</span>이 <span class="sheet-var">game_over</span>·<span class="sheet-var">game_quit</span>인 건만 세어 판정(리워디드 인터스티셜 혼입 배제)</td></tr>
     <tr><td>5</td><td>가드레일 판정</td><td><strong>빌드 2개를 <span class="sheet-var">client_version</span>으로 갈라 비교</strong>. D1 리텐션·판수 유의 하락 없음(z검정). 하락 시 즉시 6단계</td></tr>
     <tr><td>6</td><td>롤백</td><td><span class="sheet-var">is_interstitial_ad_open=0</span> &mdash; 빌드 없이 즉시</td></tr>
     </tbody>
