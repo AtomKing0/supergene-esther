@@ -320,6 +320,9 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>세션 게이트를 켰을 때 걸린 유저</td><td>판정 자체를 하지 않음. 클리어 카운터·일 노출수도 갱신하지 않음. <strong>초기값 1에서는 아무도 안 걸림</strong></td></tr>
     <tr><td>승리 광고를 본 직후 나가기를 누름</td><td><strong>30초 안이면 미노출</strong> &mdash; 클라 하드코딩 30초가 걸림. 그 이상이면 노출됨. 더 길게 막으려면 <span class="sheet-var">interstitial_ad_min_interval_sec</span>에 60을 넣음</td></tr>
     <tr><td>1~5레벨 유저가 나가기를 누름</td><td><strong>미노출</strong>. 구간 1은 나가기 지면도 차단함 &mdash; 초반 보호는 지면과 무관하게 적용</td></tr>
+    <tr><td>나가기로 판이 끝남</td><td><span class="sheet-var">clearCountSinceAd</span>를 <strong>+1 하지 않음</strong>. 클리어 카운터는 <strong>승리 판정에서만</strong> 올라감 &mdash; 패배로 끝난 판과 동일 취급</td></tr>
+    <tr><td>나가기 지면에서 광고가 노출됨</td><td><span class="sheet-var">clearCountSinceAd</span>를 <strong>리셋하지 않음</strong>. 나가기 노출은 승리 곡선과 독립임 &mdash; 리셋하면 나가기가 잦은 유저일수록 승리 지면 노출이 설정값보다 계속 낮아짐. 공유하는 것은 <span class="sheet-var">it_today</span>·<span class="sheet-var">last_ad_time</span>뿐</td></tr>
+    <tr><td>나가기 팝업을 열었다가 취소하고 계속 플레이해서 승리함</td><td><strong>정상 판정</strong>. 팝업을 여는 것만으로는 아무 카운터도 움직이지 않고, 나가기를 <strong>확정</strong>했을 때만 나가기 지면 판정이 돌아감</td></tr>
     <tr><td>나가기 광고가 늦게 닫힘</td><td>광고 결과와 무관하게 <strong>나가기는 반드시 진행</strong>. 기존 타임아웃 처리를 그대로 유지해 유저가 갇히지 않게 함</td></tr>
     <tr><td>일 상한을 켠 뒤 날짜가 바뀜</td><td><strong>UTC 0시</strong>에 <span class="sheet-var">it_today</span> 리셋 &mdash; 기존 데일리 리셋 축과 동일</td></tr>
     </tbody>
@@ -393,11 +396,11 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>7</td><td><span class="sheet-var">it_today</span> &lt; <span class="sheet-var">interstitial_ad_daily_limit</span></td><td>종료 &mdash; <span class="sheet-var">skip_reason=daily_cap</span>. <strong>카운터 유지</strong>(다음 판에 재시도). <strong>값이 0이면 검사 자체를 건너뜀</strong></td></tr>
     <tr><td>8</td><td>직전 노출 이후 <span class="sheet-var">interstitial_ad_min_interval_sec</span> 경과 <strong>+ 클라 하드코딩 30초</strong></td><td>종료 &mdash; <span class="sheet-var">skip_reason=too_soon</span>. <strong>카운터 유지</strong>. 시트값이 0이어도 <strong>하드코딩 30초는 항상 적용</strong>(이중 보정) &mdash; 플랫폼 정책용이라 유지함</td></tr>
     <tr><td>9</td><td>프리로드 완료 상태인가</td><td>종료 &mdash; <span class="sheet-var">skip_reason=not_ready</span>. <strong>카운터 유지</strong></td></tr>
-    <tr><td>10</td><td colspan="2"><strong>노출</strong> &rarr; <span class="sheet-var">4000</span> 발화(<span class="sheet-var">position</span>에 지면) · <span class="sheet-var">clearCountSinceAd</span> 0으로 리셋 · <span class="sheet-var">it_today</span> +1 · <span class="sheet-var">last_ad_time</span> 갱신</td></tr>
+    <tr><td>10</td><td colspan="2"><strong>노출</strong> &rarr; <span class="sheet-var">4000</span> 발화(<span class="sheet-var">position</span>에 지면) · <span class="sheet-var">it_today</span> +1 · <span class="sheet-var">last_ad_time</span> 갱신<br><span style="color:var(--accent)">&#9642;</span> <strong>승리 지면</strong>이면 <span class="sheet-var">clearCountSinceAd</span>를 <strong>0으로 리셋</strong><br><span style="color:var(--accent)">&#9642;</span> <strong>나가기 지면</strong>이면 <span class="sheet-var">clearCountSinceAd</span>를 <strong>건드리지 않음</strong></td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <strong>6번에서만 카운터를 소모하고 7~9번에서는 유지하는 것이 핵심임.</strong> 간격 조건을 채웠는데 상한·시간·재고 때문에 못 띄운 경우, 카운터를 리셋해 버리면 그 유저는 다시 N판을 채워야 해서 <strong>실질 노출률이 설정값보다 계속 낮아짐</strong>. 카운터를 유지하면 조건이 풀리는 즉시 다음 판에 노출됨.
+    <strong>클리어 카운터를 움직이는 것은 승리뿐임.</strong> 올리는 것도 승리 판정, 리셋하는 것도 승리 지면 노출뿐이고, 나가기·패배는 카운터를 건드리지 않음. 두 지면이 공유하는 것은 <span class="sheet-var">it_today</span>와 <span class="sheet-var">last_ad_time</span>뿐임.<br><br><strong>6번에서만 카운터를 소모하고 7~9번에서는 유지하는 것이 핵심임.</strong> 간격 조건을 채웠는데 상한·시간·재고 때문에 못 띄운 경우, 카운터를 리셋해 버리면 그 유저는 다시 N판을 채워야 해서 <strong>실질 노출률이 설정값보다 계속 낮아짐</strong>. 카운터를 유지하면 조건이 풀리는 즉시 다음 판에 노출됨.
   </div>
 
   <h3>시트 &mdash; 신규 탭 1개 + 상수 5개</h3>
