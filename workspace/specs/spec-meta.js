@@ -195,8 +195,9 @@ const SPECS = [
   },
   {
     id: 'spec-035', file: 'spec-035-interstitial-frequency.html',
+    monitorGroup: 'sol-it-freq',
     title: '[수익화-광고] 전면 광고 빈도 곡선',
-    tags: ['monetize', 'balance'], priority: 'high', status: 'open', date: '2026. 8. 4.', dueDate: null, relatedTo: [],
+    tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-036', file: 'spec-036-retry-flow.html',
@@ -234,6 +235,12 @@ const MONITOR_GROUPS = {
     since: '2026-08-01',
     url:   '../../32_sol_diff_watch.html',
     specs: ['spec-029', 'spec-031'],
+  },
+  'sol-it-freq': {
+    label: '전면광고(IT) 빈도 곡선 A/B',
+    since: '2026-08-06',
+    url:   '../../37_sol_it_watch.html',
+    specs: ['spec-035'],
   },
   'sol-ctx-switch': {
     label: '컨텍스트 전환 확대 A/B — 결론 확정',

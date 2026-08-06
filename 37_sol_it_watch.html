@@ -1,0 +1,497 @@
+<title>SPEC-035 전면광고(IT) 빈도 곡선 — 배포 관측</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#f4f5f3;--surface:#fff;--surface2:#eceeea;--ink:#151c18;--muted:#68756d;--line:#dee2dc;
+--felt:#1e6b4c;--felt-soft:rgba(30,107,76,.11);--felt-line:rgba(30,107,76,.3);
+--alarm:#ab3a30;--alarm-soft:rgba(171,58,48,.11);--alarm-line:rgba(171,58,48,.3);
+--warn:#946313;--warn-soft:rgba(148,99,19,.13);--warn-line:rgba(148,99,19,.32);
+--blue:#2a5c8a;--blue-soft:rgba(42,92,138,.12);--blue-line:rgba(42,92,138,.3);
+--shadow:0 1px 2px rgba(20,28,24,.05),0 8px 24px -16px rgba(20,28,24,.35)}
+@media(prefers-color-scheme:dark){:root{--bg:#0c1210;--surface:#131b17;--surface2:#18211d;--ink:#e4ebe6;
+--muted:#8a9a91;--line:#24302a;--felt:#54ab82;--felt-soft:rgba(84,171,130,.14);--felt-line:rgba(84,171,130,.34);
+--alarm:#e0695d;--alarm-soft:rgba(224,105,93,.14);--alarm-line:rgba(224,105,93,.34);
+--warn:#d3a34a;--warn-soft:rgba(211,163,74,.15);--warn-line:rgba(211,163,74,.34);
+--blue:#7aa8d0;--blue-soft:rgba(122,168,208,.14);--blue-line:rgba(122,168,208,.34);
+--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.8)}}
+:root[data-theme=light]{--bg:#f4f5f3;--surface:#fff;--surface2:#eceeea;--ink:#151c18;--muted:#68756d;--line:#dee2dc;
+--felt:#1e6b4c;--alarm:#ab3a30;--warn:#946313;--blue:#2a5c8a}
+:root[data-theme=dark]{--bg:#0c1210;--surface:#131b17;--surface2:#18211d;--ink:#e4ebe6;--muted:#8a9a91;--line:#24302a;
+--felt:#54ab82;--alarm:#e0695d;--warn:#d3a34a;--blue:#7aa8d0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.7;font-size:16px;-webkit-font-smoothing:antialiased;
+font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px 80px}
+#nav{position:fixed;left:0;top:0;bottom:0;width:232px;overflow-y:auto;z-index:60;
+background:var(--surface);border-right:1px solid var(--line);padding:26px 0 40px}
+#nav .nt{font-size:.63rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--felt);padding:0 20px 12px}
+#nav a{display:block;padding:8px 20px;font-size:.83rem;font-weight:600;color:var(--muted);
+text-decoration:none;border-left:3px solid transparent;line-height:1.4;transition:all .15s}
+#nav a:hover{color:var(--ink);background:var(--surface2)}
+#nav a.on{color:var(--felt);border-left-color:var(--felt);background:var(--felt-soft)}
+#nav a .sub2{display:block;font-size:.72rem;font-weight:500;opacity:.75;margin-top:1px}
+#nav .foot{padding:16px 20px 0;margin-top:14px;border-top:1px solid var(--line);font-size:.7rem;color:var(--muted);line-height:1.5}
+#navtog{display:none;position:fixed;left:14px;top:14px;z-index:70;width:38px;height:38px;
+border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:16px;cursor:pointer;box-shadow:var(--shadow)}
+@media(min-width:1180px){.wrap{margin-left:232px;max-width:900px}}
+@media(max-width:1179px){#nav{transform:translateX(-100%);transition:transform .2s;box-shadow:var(--shadow)}
+ #nav.open{transform:none}#navtog{display:block}header{padding-top:64px}}
+header{padding:48px 0 26px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--felt);margin:0 0 11px}
+h1{font-size:1.8rem;font-weight:800;letter-spacing:-.025em;margin:0 0 12px;line-height:1.25}
+.lede{font-size:.95rem;color:var(--muted);margin:0;max-width:64ch}
+.lede b{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}
+.chip{font-size:.74rem;font-weight:600;padding:4px 12px;border-radius:20px;background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+section{padding:38px 0;border-bottom:1px solid var(--line);scroll-margin-top:20px}
+section:last-of-type{border-bottom:none}
+h2{font-size:1.14rem;font-weight:800;letter-spacing:-.015em;margin:0 0 6px}
+.sub{color:var(--muted);font-size:.89rem;margin:0 0 20px;max-width:66ch}
+h3{font-size:.92rem;font-weight:700;margin:26px 0 10px}
+p{margin:0 0 12px;font-size:.89rem;color:var(--muted);max-width:66ch}
+p b{color:var(--ink)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;background:var(--surface2);
+border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.wstamp{font-size:.74rem;font-weight:600;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.wbadge{font-size:.68rem;font-weight:800;padding:2px 9px;border-radius:12px;white-space:nowrap}
+.wbadge.ok{background:var(--felt-soft);color:var(--felt)}
+.wbadge.warn{background:var(--warn-soft);color:var(--warn)}
+.wbadge.crit{background:var(--alarm-soft);color:var(--alarm)}
+.wbadge.info{background:var(--surface2);color:var(--muted)}
+.watch{display:grid;gap:7px;margin-top:8px}
+.wrow{display:grid;grid-template-columns:200px 92px 1fr 58px;gap:14px;align-items:center;
+background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:11px 15px;font-size:.85rem}
+.wrow.crit{border-left:3px solid var(--alarm)}
+.wrow.warn{border-left:3px solid var(--warn)}
+.wrow.ok{border-left:3px solid var(--felt-line)}
+.wrow.info{border-left:3px solid var(--line)}
+.wl{color:var(--ink);font-weight:600;line-height:1.35}
+.wl em{font-style:normal;font-weight:500;color:var(--muted);font-size:.9em;margin-left:4px}
+.wv{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;
+font-weight:800;color:var(--ink);text-align:right;white-space:nowrap}
+.wt{color:var(--muted);font-size:.8rem}
+.wt b{color:var(--ink)}
+.wact{display:block;color:var(--alarm);font-weight:700;font-size:.78rem;margin-top:2px}
+.wrow .wbadge{text-align:center;justify-self:end}
+@media(max-width:900px){.wrow{grid-template-columns:1fr auto;row-gap:5px;gap:10px}
+ .wrow .wv{grid-column:1;text-align:left}.wt{grid-column:1/-1}.wrow .wbadge{grid-row:1;grid-column:2}}
+.callout{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--warn);
+border-radius:9px;padding:15px 18px;margin:16px 0}
+.callout.crit{border-left-color:var(--alarm)}
+.callout.ok{border-left-color:var(--felt)}
+.callout p{margin:0 0 8px}.callout p:last-child{margin:0}
+.callout ul{margin:8px 0 0;padding-left:1.15em;font-size:.85rem;color:var(--muted)}
+.callout li{margin-bottom:5px}.callout li b{color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:10px}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line);
+font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+th{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;
+font-family:inherit;background:var(--surface2)}
+td:first-child,th:first-child{text-align:left}
+tr.cut td{border-top:2px solid var(--felt);font-weight:800}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* 1:1 비교표 */
+table.cmp{margin-top:12px;font-size:.82rem}
+table.cmp td,table.cmp th{padding:9px 11px;white-space:nowrap}
+table.cmp td.mn{text-align:left;font-family:inherit;font-weight:700;color:var(--ink);line-height:1.3}
+table.cmp td.mn .ms{display:block;font-size:.68rem;font-weight:500;color:var(--muted);
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin-top:1px}
+table.cmp td.win{background:var(--felt-soft);color:var(--felt);font-weight:800;
+  box-shadow:inset 3px 0 0 var(--felt)}
+table.cmp td.lose{background:var(--alarm-soft);color:var(--alarm);font-weight:700}
+table.cmp td.dpos{color:var(--felt);font-weight:700}
+table.cmp td.dneg{color:var(--alarm);font-weight:700}
+table.cmp td.dnt{color:var(--muted);font-weight:700}
+table.cmp td.vw{color:var(--felt);font-weight:800;font-family:inherit}
+table.cmp td.vl{color:var(--alarm);font-weight:800;font-family:inherit}
+table.cmp td.vt{color:var(--muted);font-family:inherit}
+table.cmp td.vx{color:#fff;background:var(--alarm);font-weight:800;font-family:inherit}
+table.cmp td.smp{color:var(--muted);font-size:.74rem}
+table.cmp td.smp.few{color:var(--warn);font-weight:700}
+table.cmp tr.hit td{background:var(--felt-soft)}
+.geobar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:22px 0 0;
+  padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  position:sticky;top:0;z-index:40;box-shadow:var(--shadow)}
+.geobar .gl{font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.geobar .gn{font-size:.74rem;color:var(--muted);margin-left:auto}
+.gb{font-size:.8rem;font-weight:700;padding:5px 13px;border-radius:8px;cursor:pointer;
+  border:1px solid var(--line);background:var(--bg);color:var(--muted)}
+.gb:hover{color:var(--ink)}
+.gb.on{background:var(--felt);border-color:var(--felt);color:#fff}
+.geo[hidden]{display:none}
+table.cmp td.st{text-align:left;font-family:inherit;font-size:.78rem;color:var(--muted)}
+.vbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:20px 22px;margin:26px 0 0;box-shadow:var(--shadow)}
+.vbox h3{margin:0 0 12px;font-size:.72rem;font-weight:800;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--felt)}
+.vbox ul{margin:0 0 14px;padding-left:1.15em;font-size:.86rem;color:var(--muted)}
+.vbox li{margin-bottom:6px}.vbox li b{color:var(--ink)}
+.vbox .grp{font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 6px}
+.vbox .ok2{color:var(--felt)}.vbox .hold{color:var(--warn)}.vbox .bad{color:var(--alarm)}
+p.lg{font-size:.78rem;margin:14px 0 0}
+p.lg .lgw{color:var(--felt);font-weight:800}
+p.lg .lgl{color:var(--alarm);font-weight:800}
+pre.sql{background:var(--surface2);border:1px solid var(--line);border-radius:9px;
+  padding:14px 16px;overflow-x:auto;font-size:.74rem;line-height:1.55;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);white-space:pre}
+.tl{display:grid;gap:12px;margin-top:6px}
+@media(min-width:700px){.tl{grid-template-columns:repeat(4,1fr)}}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:16px 17px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.tcard .when{font-size:.68rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--felt);margin-bottom:7px}
+.tcard .what{font-weight:700;font-size:.92rem;margin-bottom:8px;letter-spacing:-.01em}
+.tcard p{font-size:.81rem;margin:0;flex:1}
+</style>
+
+<button id="navtog" aria-label="목차">☰</button>
+<nav id="nav">
+  <div class="nt">SPEC-035 관측</div>
+  <a href="#sec1">1 · 무엇을 배포했나<span class="sub2">변경점과 판정 프레임</span></a>
+  <a href="#sec2">2 · 계측 점검<span class="sub2">판정이 가능한 상태인가</span></a>
+  <a href="#sec25">2.5 · 고래 보정<span class="sub2">분포로 먼저 거른다</span></a>
+  <a href="#sec3">3 · 가드레일<span class="sub2">리텐션·판수를 깎았나</span></a>
+  <a href="#sec4">4 · 수익 잠식<span class="sub2">RV를 갈아먹지 않았나</span></a>
+  <a href="#sec5">5 · 노출량<span class="sub2">목표 구간에 들어왔나</span></a>
+  <a href="#sec55">5.5 · 곡선 검증<span class="sub2">시트대로 도는가</span></a>
+  <a href="#sec6">6 · 판정 일정<span class="sub2">언제 무엇을 본다</span></a>
+  <a href="#sec7">7 · 허용 손실 한도<span class="sub2">못 가는 조건</span></a>
+  <a href="#sec8">8 · 일자별 원표<span class="sub2">전 구간 실측</span></a>
+  <a href="#sec9">9 · 부록 · 쿼리<span class="sub2">검증용 원본 SQL</span></a>
+  <div class="foot">자동 갱신<br><span class="wstamp">2026-08-06 14:05 KST</span></div>
+</nav>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Solitaire City Journey · 배포 관측</p>
+  <h1>SPEC-035 전면광고(IT) 빈도 곡선</h1>
+  <p class="lede">#361 이후 <b>노출 0인 채로 프리로드만 돌던</b> 전면광고를 되살리는 변경임.
+  목적은 수익 극대화가 아니라 <b>리텐션을 안 깎고 꺼져 있던 채널을 켜는 것</b>이므로,
+  이 페이지의 1차 질문은 "얼마나 벌었나"가 아니라 <b>"얼마나 깎였나"</b>다.</p>
+  <div class="chips">
+    <span class="chip">실험 #431 vs 대조 #432</span>
+    <span class="chip">관측 5일</span>
+    <span class="chip">자동 갱신 2026-08-06 14:05 KST</span>
+  </div>
+</header>
+
+<div class="vbox"><h3>지금 말할 수 있는 것</h3><ul></ul><p style="font-size:.83rem;margin:0">이 배포의 성공은 <b>노출을 늘린 것이 아니라 리텐션·판수를 안 깎은 것</b>이다. 노출량은 목표 구간에 들어왔는지만 확인하고, 판정은 가드레일로 한다.</p></div>
+
+<div class="geobar">
+  <span class="gl">권역</span>
+  <button type="button" class="gb on" data-g="all">전체</button>
+  <button type="button" class="gb" data-g="west">서구권 NA+EU</button>
+  <button type="button" class="gb" data-g="row">그 외</button>
+  <span class="gn">기본 = 전체. IT는 전 지역에 동일하게 걸리므로 전체가 판정 기준이며 모든 비교표에 동시 적용됨</span>
+</div>
+
+<section id="sec1">
+  <h2>1 · 무엇을 배포했나</h2>
+  <p class="sub">신규 탭 <code>interstitial_tier</code> 1개 + <code>const</code> 5행. 값은 전부 시트에 있어 빌드 없이 되돌릴 수 있다.</p>
+
+  <h3>노출 곡선 — <code>interstitial_tier</code></h3>
+  <div class="watch">
+    <div class="wrow info"><div class="wl">1 ~ 5 레벨<em>260001</em></div><div class="wv">0</div>
+      <div class="wt">노출 없음. 메타 권장 0%와 동일하고, <code>ADPlayer</code>의 레벨 6 미만 하드 차단과 이중으로 막힘</div><span class="wbadge info">확정</span></div>
+    <div class="wrow info"><div class="wl">6 ~ 10 레벨<em>260002</em></div><div class="wv">5판</div>
+      <div class="wt">5판마다 1회 = 20%. 메타 권장 20%와 동일</div><span class="wbadge info">확정</span></div>
+    <div class="wrow info"><div class="wl">11 ~ 20 레벨<em>260003</em></div><div class="wv">3판</div>
+      <div class="wt">3판마다 1회 = 33%. 메타 권장 50%보다 보수적</div><span class="wbadge info">확정</span></div>
+    <div class="wrow info"><div class="wl">21 레벨 ~<em>260004</em></div><div class="wv">2판</div>
+      <div class="wt">2판마다 1회 = 50%. 메타 권장 75%는 1.33판이라 정수 간격으로 표현 불가</div><span class="wbadge info">확정</span></div>
+  </div>
+
+  <h3>게이트 — <code>const</code></h3>
+  <div class="watch">
+    <div class="wrow info"><div class="wl">is_interstitial_ad_open<em>10101</em></div><div class="wv">1</div>
+      <div class="wt">마스터 스위치. 0이면 판정과 <b>프리로드까지</b> 중단 — 롤백은 이 값 하나로 끝남</div><span class="wbadge info">확정</span></div>
+    <div class="wrow info"><div class="wl">is_interstitial_ad_quit_open<em>10105</em></div><div class="wv">1</div>
+      <div class="wt">나가기 지면 단독 스위치. 승리 지면은 건드리지 않고 나가기만 끌 수 있음</div><span class="wbadge info">확정</span></div>
+    <div class="wrow info"><div class="wl">interstitial_ad_min_interval_sec<em>10102</em></div><div class="wv">0</div>
+      <div class="wt">시트 게이트는 미적용. 단 <b>클라에 30초 하드코딩이 별도로 있고 유지</b>함(플랫폼 정책) — 실효 최소 간격은 둘 중 큰 값</div><span class="wbadge info">확정</span></div>
+    <div class="wrow info"><div class="wl">interstitial_ad_session_gate<em>10103</em></div><div class="wv">1</div>
+      <div class="wt">첫 세션부터 노출. 코지·마종 모두 첫 세션에 노출함(전체 노출의 3.1%)</div><span class="wbadge info">확정</span></div>
+    <div class="wrow info"><div class="wl">interstitial_ad_daily_limit<em>10104</em></div><div class="wv">0</div>
+      <div class="wt">일 상한 무제한. 코지 p99 101회·마종 77회로 <b>두 게임 다 상한이 없음</b> — 키만 만들어 두고 필요할 때 조임</div><span class="wbadge info">확정</span></div>
+  </div>
+
+  <h3>실험 설계</h3>
+  <div class="watch">
+    <div class="wrow info"><div class="wl">#432 · 대조군<em>IT OFF</em></div><div class="wv">미노출</div>
+      <div class="wt">전면광고를 보지 않는 빌드. QA 확인 항목에 <b>it광고 미노출 확인</b>이 들어 있음</div><span class="wbadge info">기준</span></div>
+    <div class="wrow ok"><div class="wl">#431 · 실험군<em>IT ON</em></div><div class="wv">곡선 적용</div>
+      <div class="wt">위 곡선대로 노출. QA에서 1~5 미노출 · 6~10 5회 · 11~20 3회 · 21~ 2회 누적 시 출력 확인됨</div><span class="wbadge ok">처치</span></div>
+  </div>
+  <p>두 빌드를 <b>동시 롤아웃</b>한다. 시트에 A/B 분할 값을 두지 않고 페이스북 대시보드가 군을 가른다.
+  같은 기간·같은 유입 아래서 갈리므로 요일과 유입 믹스 영향이 양쪽에 똑같이 걸린다.</p>
+
+  <h3>판정 프레임</h3>
+  <p><span class="wbadge ok">A/B 모드</span> IT 적용 빌드 <b>#431</b> vs 미적용 빌드 <b>#432</b>를 동시 롤아웃. 시트에 분할 값을 두지 않고 <b>빌드로 군을 가른다</b>. 유저-일 단위로 빌드를 확정해 귀속함.</p>
+  <div class="callout">
+    <p><b>왜 전후 비교가 아니라 A/B인가</b> — 솔리테어 D1은 유입 믹스에 따라 통째로 흔들린 전례가 있다.
+    2026-07-19 인게임 메뉴 개방 때 전체 D1이 15.2 → 6.6으로 반토막 났고 그건 광고와 무관한 변화였다.
+    전후로 재면 <b>광고 탓인지 유입 탓인지 영원히 못 가른다</b>.</p>
+    <p><b>노출량은 목표가 아니라 확인 항목</b>이다. 산출 목표는 DAU당 2.8회이며,
+    벤치(코지 6.51 · 마종 6.24)보다 낮은 것은 값을 낮게 잡아서가 아니라
+    <b>지면 수가 다르기 때문</b>이다 — 코지·마종은 판 시작·재도전까지 3곳, 우리는 승리·나가기 2곳이다.</p>
+  </div>
+  <div class="callout crit">
+    <p><b>4000 전량을 세면 안 된다</b></p>
+    <p><code>4000_INTERSTITIAL_AD_START</code>에는 <b>리워디드 인터스티셜이 섞여</b> 들어온다.
+    코지·마종에서 RV 지면(<code>item_*</code>·<code>reward_double</code> 등)에 4000이 RV 대비 10~14% 비율로 붙는다.</p>
+    <p>이 페이지의 IT 수치는 전부 지면이 <code>game_over</code>·<code>game_quit</code>인 건만 센 값이다.
+    다른 대시보드와 숫자가 안 맞으면 <b>이 필터부터 맞출 것</b>.</p>
+  </div>
+</section>
+
+<section id="sec2">
+  <h2>2 · 계측 점검</h2>
+  <p class="sub">지표를 보기 전에, 판정이 가능한 상태인지부터 본다. 여기가 빨간색이면 아래 숫자는 해석하지 말 것.</p>
+  <div class="watch">
+<div class="wrow ok"><div class="wl">실험군 구분 <em>client_version</em></div><div class="wv">431 vs 432</div><div class="wt">실험 14세션 · 대조 18세션 <b>(오늘 진행분)</b></div><span class="wbadge ok">정상</span></div>
+<div class="wrow ok"><div class="wl">배정 균형 <em>유저 기준 SRM</em></div><div class="wv">36.4%</div><div class="wt">기대 50.0% · 허용폭 ±26.1%p (유저 33명, 오늘 진행분)</div><span class="wbadge ok">정상</span></div>
+<div class="wrow ok"><div class="wl">대조군 IT 누수 <em>#432</em></div><div class="wv">0건</div><div class="wt">대조 빌드에서 IT 노출 0건 — 의도대로 꺼져 있음</div><span class="wbadge ok">정상</span></div>
+<div class="wrow ok"><div class="wl">IT 노출 로그 <em>4000 · 지면 필터</em></div><div class="wv">4</div><div class="wt">승리 4 · 나가기 0 · 완주 3(75.0%) · 에러 0 · 오늘 4건</div><span class="wbadge ok">정상</span></div>
+<div class="wrow warn"><div class="wl">프리로드 회수율 <em>4000 ÷ 4080</em></div><div class="wv">0.1%</div><div class="wt">프리로드 성공 7,872 · 실패 3,461. 이 값이 0에 가까우면 <b>대역폭만 쓰고 노출은 없다</b>는 뜻 — 배포 전 상태가 정확히 그랬음</div><span class="wbadge warn">주의</span></div>
+<div class="wrow info"><div class="wl">판정 가능 일수 <em>완료된 날짜</em></div><div class="wv">0일</div><div class="wt">부분일(오늘)은 비율이 왜곡되므로 판정에서 제외함. <b>롤아웃이 하루 중간에 시작된 날은 제외</b></div><span class="wbadge info">관찰</span></div>
+  </div>
+  <div class="callout">
+    <p><b>대조군 IT 누수가 이 실험의 전제</b> — #432에서 IT가 한 건이라도 잡히면
+    빌드가 시트를 잘못 보고 있다는 뜻이고, 그 상태의 비교는 효과를 과소평가한다.</p>
+    <p><b>프리로드 회수율</b>은 이 배포가 지금 당장 얻는 유일한 이득이다.
+    배포 전에는 프리로드만 14일 53,338회 돌고 노출은 0이었다. 회수율이 0에 가까우면 그 상태가 그대로라는 뜻이다.</p>
+  </div>
+</section>
+
+<section id="sec25">
+  <h2>2.5 · 유저 단위 분포 — 고래 보정</h2>
+  <p class="sub">아래 표들은 이벤트 합계를 세션·DAU로 나눈 값이다.
+  그 방식은 <b>한 유저가 수십 건을 만드는 지표에서 무너진다</b>. 여기서 먼저 걸러낸다.</p>
+<p class="lg"><b>왜 보나</b> — IT·RV·판수는 <b>중앙값이 0~3인데 최대가 세 자리</b>다. 고래 몇 명이 arm 평균을 통째로 흔들 수 있어, 합계만 보면 배정 운을 효과로 착각한다. <b>중앙값·절사평균·평균 중 둘 이상이 같은 방향</b>일 때만 우세로 인정한다.</p><div class="geo geo-all"><div class="scroll"><table class="cmp"><thead><tr><th>지표</th><th>통계</th><th>#432 대조</th><th>#431 실험</th><th>차이</th><th>판정</th></tr></thead><tbody><tr><td class="mn" rowspan="3">IT 노출<span class="ms">유저 13 vs 9명 · 최대 0 vs 2</span></td><td class="st">중앙값</td><td>0</td><td>0</td><td class="dneg">—</td><td class="vt" rowspan="3">노출량 · 승패 없음</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>0.0</td><td>0.25</td><td class="dneg">—</td></tr><tr><td class="st">평균</td><td>0.0</td><td>0.44</td><td class="dneg">—</td></tr><tr><td class="mn" rowspan="3">완료 판수<span class="ms">유저 13 vs 9명 · 최대 5 vs 13</span></td><td class="st">중앙값</td><td>1</td><td>2</td><td class="dpos">+100.0%</td><td class="vw" rowspan="3">실험 우세</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>0.92</td><td>3.0</td><td class="dpos">+227.2%</td></tr><tr><td class="st">평균</td><td>1.23</td><td>4.11</td><td class="dpos">+234.0%</td></tr><tr><td class="mn" rowspan="3">RV 완료<span class="ms">유저 13 vs 9명 · 최대 2 vs 3</span></td><td class="st">중앙값</td><td>0</td><td>0</td><td class="dneg">—</td><td class="vx" rowspan="3">근거 부족 · 보류</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>0.0</td><td>0.25</td><td class="dneg">—</td></tr><tr><td class="st">평균</td><td>0.15</td><td>0.56</td><td class="dpos">+261.0%</td></tr><tr><td class="mn" rowspan="3">60초 도달<span class="ms">유저 13 vs 9명 · 최대 1 vs 3</span></td><td class="st">중앙값</td><td>1</td><td>1</td><td class="dneg">+0.0%</td><td class="vw" rowspan="3">실험 우세</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>0.54</td><td>0.75</td><td class="dpos">+39.4%</td></tr><tr><td class="st">평균</td><td>0.54</td><td>1.0</td><td class="dpos">+85.9%</td></tr></tbody></table></div></div><div class="geo geo-west" hidden><div class="scroll"><table class="cmp"><thead><tr><th>지표</th><th>통계</th><th>#432 대조</th><th>#431 실험</th><th>차이</th><th>판정</th></tr></thead><tbody><tr><td class="mn" rowspan="3">IT 노출<span class="ms">유저 9 vs 7명 · 최대 0 vs 1</span></td><td class="st">중앙값</td><td>0</td><td>0</td><td class="dneg">—</td><td class="vt" rowspan="3">노출량 · 승패 없음</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>0.0</td><td>0.29</td><td class="dneg">—</td></tr><tr><td class="st">평균</td><td>0.0</td><td>0.29</td><td class="dneg">—</td></tr><tr><td class="mn" rowspan="3">완료 판수<span class="ms">유저 9 vs 7명 · 최대 5 vs 10</span></td><td class="st">중앙값</td><td>1</td><td>2</td><td class="dpos">+100.0%</td><td class="vw" rowspan="3">실험 우세</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>1.25</td><td>2.33</td><td class="dpos">+86.6%</td></tr><tr><td class="st">평균</td><td>1.67</td><td>3.43</td><td class="dpos">+105.7%</td></tr><tr><td class="mn" rowspan="3">RV 완료<span class="ms">유저 9 vs 7명 · 최대 2 vs 2</span></td><td class="st">중앙값</td><td>0</td><td>0</td><td class="dneg">—</td><td class="vx" rowspan="3">근거 부족 · 보류</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>0.0</td><td>0.0</td><td class="dneg">—</td></tr><tr><td class="st">평균</td><td>0.22</td><td>0.29</td><td class="dpos">+28.8%</td></tr><tr><td class="mn" rowspan="3">60초 도달<span class="ms">유저 9 vs 7명 · 최대 1 vs 3</span></td><td class="st">중앙값</td><td>1</td><td>1</td><td class="dneg">+0.0%</td><td class="vx" rowspan="3">근거 부족 · 보류</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>0.67</td><td>0.67</td><td class="dneg">+0.0%</td></tr><tr><td class="st">평균</td><td>0.67</td><td>1.0</td><td class="dpos">+49.9%</td></tr></tbody></table></div></div><div class="geo geo-row" hidden><div class="scroll"><table class="cmp"><thead><tr><th>지표</th><th>통계</th><th>#432 대조</th><th>#431 실험</th><th>차이</th><th>판정</th></tr></thead><tbody><tr><td class="mn" rowspan="3">IT 노출<span class="ms">유저 4 vs 2명 · 최대 0 vs 2</span></td><td class="st">중앙값</td><td>0</td><td>0</td><td class="dneg">—</td><td class="vt" rowspan="3">노출량 · 승패 없음</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>0.0</td><td>0.0</td><td class="dneg">—</td></tr><tr><td class="st">평균</td><td>0.0</td><td>1.0</td><td class="dneg">—</td></tr><tr><td class="mn" rowspan="3">완료 판수<span class="ms">유저 4 vs 2명 · 최대 1 vs 13</span></td><td class="st">중앙값</td><td>0</td><td>0</td><td class="dneg">—</td><td class="vx" rowspan="3">근거 부족 · 보류</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>0.0</td><td>0.0</td><td class="dneg">—</td></tr><tr><td class="st">평균</td><td>0.25</td><td>6.5</td><td class="dpos">+2500.0%</td></tr><tr><td class="mn" rowspan="3">RV 완료<span class="ms">유저 4 vs 2명 · 최대 0 vs 3</span></td><td class="st">중앙값</td><td>0</td><td>0</td><td class="dneg">—</td><td class="vx" rowspan="3">근거 부족 · 보류</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>0.0</td><td>0.0</td><td class="dneg">—</td></tr><tr><td class="st">평균</td><td>0.0</td><td>1.5</td><td class="dneg">—</td></tr><tr><td class="mn" rowspan="3">60초 도달<span class="ms">유저 4 vs 2명 · 최대 1 vs 1</span></td><td class="st">중앙값</td><td>0</td><td>1</td><td class="dneg">—</td><td class="vx" rowspan="3">근거 부족 · 보류</td></tr><tr><td class="st">절사평균 상위5%↓</td><td>0.0</td><td>1.0</td><td class="dneg">—</td></tr><tr><td class="st">평균</td><td>0.25</td><td>1.0</td><td class="dpos">+300.0%</td></tr></tbody></table></div></div>
+</section>
+
+<section id="sec3">
+  <h2>3 · 가드레일 — 활동성</h2>
+  <p class="sub">이 배포의 성공 조건은 <b>안 깎이는 것</b>이다.
+  대조 빌드 대비 <b>−10%</b>가 허용 손실 한도이며, 걸리면 시트 값 하나로 즉시 되돌린다.</p>
+<div class="callout crit"><p><b>아직 판정하지 않음</b> — 실험 빌드가 로그에 잡히지 않았다. 아래 값은 <b>배포 전 참고선</b>일 뿐이다. 배포가 나가면 자동으로 A/B 비교로 바뀐다.</p></div>
+
+  <div class="callout">
+    <p><b>리텐션은 여기에 없다</b> — D1·D7은 코호트가 익어야 나오므로 일별 감시 대상이 아니다.
+    D+7 체크포인트에서 <code>stat.solitaire_city_journey_nru_retention3</code>로 따로 본다.
+    그 집계는 <code>client_version</code>을 갖고 있어 <b>빌드별로 그대로 가를 수 있다</b>.</p>
+    <p><b>중도 이탈(2222)은 양면</b>이다 — 나가기 지면의 모수이므로 오르면 노출이 늘지만,
+    광고 때문에 판을 버리는 것이라면 그 자체가 손실이다. 판수와 같이 읽는다.</p>
+  </div>
+</section>
+
+<section id="sec4">
+  <h2>4 · 수익 잠식 — RV를 갈아먹었나</h2>
+  <p class="sub">전면광고를 켜서 광고 총량이 늘어도, 그만큼 보상형 영상이 줄면 <b>수익원이 갈아탄 것</b>일 뿐이다.
+  특히 결과화면 x2는 전면광고와 <b>같은 화면</b>이라 잠식이 가장 먼저 보일 자리다.</p>
+<div class="callout crit"><p><b>아직 판정하지 않음</b> — 실험 빌드가 로그에 잡히지 않았다. 아래 값은 <b>배포 전 참고선</b>일 뿐이다. 배포가 나가면 자동으로 A/B 비교로 바뀐다.</p></div>
+
+  <div class="callout">
+    <p><b>RV 지표 세 개의 분모가 다르다</b></p>
+    <ul>
+      <li><b>세션당 RV 완료</b> = <code>4210 ÷ 1000</code> — 세션 하나가 만드는 광고 수익 총량</li>
+      <li><b>판당 RV 완료</b> = <code>4210 ÷ 2300</code> — 판수 변화를 걷어낸 밀도.
+      세션당이 떨어졌을 때 "판을 덜 해서"인지 "판마다 광고를 덜 봐서"인지를 이 값이 가른다</li>
+      <li><b>RV 완료율</b> = <code>4210 ÷ 4200</code> — 승패 대상이 아니다. 요청량이 늘면 no-fill도 같이 는다</li>
+    </ul>
+    <p><b>IAP는 판정에 못 쓴다</b> — 결제 표본이 두 자릿수라 A/B로 가릴 수 없다. 수익성 판정은 <b>RV 중심</b>으로 한다.</p>
+  </div>
+</section>
+
+<section id="sec5">
+  <h2>5 · 노출량 — 목표 구간에 들어왔나</h2>
+  <p class="sub">가드레일을 확인한 뒤에 본다. 이쪽은 손실 한도가 없다 —
+  <b>의도한 만큼 노출됐는지</b>를 확인하는 자리이지 많을수록 좋은 값이 아니다.</p>
+<div class="callout crit"><p><b>아직 판정하지 않음</b> — 실험 빌드가 로그에 잡히지 않았다. 아래 값은 <b>배포 전 참고선</b>일 뿐이다. 배포가 나가면 자동으로 A/B 비교로 바뀐다.</p></div>
+
+<h3>오늘 진행분 — 참고</h3><p>실험 14세션 · 대조 18세션. 하루가 안 찼지만 <b>같은 날 안에서 두 군을 견주는 것</b>이라 시간대 편향이 양쪽에 똑같이 걸린다. 추세를 먼저 보는 용도이며 판정값은 아니다.</p><div class="geo geo-all"><p class="lg"><b>표 보는 법</b> — 이긴 값 <span class="lgw">초록</span> · 진 값 <span class="lgl">빨강</span> · 차이 ±3% 안쪽은 무승부. <b>표본</b>은 그 지표의 분자 원건수이며, 100건 미만이면 ⚠ 를 붙인다.</p><div class="scroll"><table class="cmp"><thead><tr><th>지표</th><th>#432 대조</th><th>#431 실험</th><th>차이</th><th>판정</th><th>표본 대조/실험 · 유의성</th></tr></thead><tbody><tr><td class="mn">DAU당 IT 노출<span class="ms">4000 ÷ DAU</span></td><td class="">0.0</td><td class="">0.33</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 4 · p=0.033</td></tr><tr><td class="mn">판당 IT 노출<span class="ms">4000 ÷ 2300</span></td><td class="">0.0%</td><td class="">10.8%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 4 · p=0.165</td></tr><tr><td class="mn">IT 임프레션율<span class="ms">4010 ÷ 4000</span></td><td class="">—</td><td class="">75.0%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 3</td></tr><tr><td class="mn">승리 지면 비중<span class="ms">game_over ÷ 4000</span></td><td class="">—</td><td class="">100.0%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 4</td></tr><tr><td class="mn">IT 에러율<span class="ms">4020 ÷ 4000 · 진단</span></td><td class="">—</td><td class="">0.0%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 0</td></tr><tr><td class="mn">프리로드 회수율<span class="ms">4000 ÷ 4080</span></td><td class="">0.0%</td><td class="">44.4%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 4 · p=0.032</td></tr></tbody></table></div></div><div class="geo geo-west" hidden><p class="lg"><b>표 보는 법</b> — 이긴 값 <span class="lgw">초록</span> · 진 값 <span class="lgl">빨강</span> · 차이 ±3% 안쪽은 무승부. <b>표본</b>은 그 지표의 분자 원건수이며, 100건 미만이면 ⚠ 를 붙인다.</p><div class="scroll"><table class="cmp"><thead><tr><th>지표</th><th>#432 대조</th><th>#431 실험</th><th>차이</th><th>판정</th><th>표본 대조/실험 · 유의성</th></tr></thead><tbody><tr><td class="mn">DAU당 IT 노출<span class="ms">4000 ÷ DAU</span></td><td class="">0.0</td><td class="">0.2</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 2 · p=0.288</td></tr><tr><td class="mn">판당 IT 노출<span class="ms">4000 ÷ 2300</span></td><td class="">0.0%</td><td class="">8.3%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 2 · p=0.358</td></tr><tr><td class="mn">IT 임프레션율<span class="ms">4010 ÷ 4000</span></td><td class="">—</td><td class="">100.0%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 2</td></tr><tr><td class="mn">승리 지면 비중<span class="ms">game_over ÷ 4000</span></td><td class="">—</td><td class="">100.0%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 2</td></tr><tr><td class="mn">IT 에러율<span class="ms">4020 ÷ 4000 · 진단</span></td><td class="">—</td><td class="">0.0%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 0</td></tr><tr><td class="mn">프리로드 회수율<span class="ms">4000 ÷ 4080</span></td><td class="">0.0%</td><td class="">28.6%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 2 · p=0.211</td></tr></tbody></table></div></div><div class="geo geo-row" hidden><p class="lg"><b>표 보는 법</b> — 이긴 값 <span class="lgw">초록</span> · 진 값 <span class="lgl">빨강</span> · 차이 ±3% 안쪽은 무승부. <b>표본</b>은 그 지표의 분자 원건수이며, 100건 미만이면 ⚠ 를 붙인다.</p><div class="scroll"><table class="cmp"><thead><tr><th>지표</th><th>#432 대조</th><th>#431 실험</th><th>차이</th><th>판정</th><th>표본 대조/실험 · 유의성</th></tr></thead><tbody><tr><td class="mn">DAU당 IT 노출<span class="ms">4000 ÷ DAU</span></td><td class="">0.0</td><td class="">1.0</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 2 · p=0.146</td></tr><tr><td class="mn">판당 IT 노출<span class="ms">4000 ÷ 2300</span></td><td class="">0.0%</td><td class="">15.4%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 2 · p=1.673</td></tr><tr><td class="mn">IT 임프레션율<span class="ms">4010 ÷ 4000</span></td><td class="">—</td><td class="">50.0%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 1</td></tr><tr><td class="mn">승리 지면 비중<span class="ms">game_over ÷ 4000</span></td><td class="">—</td><td class="">100.0%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 2</td></tr><tr><td class="mn">IT 에러율<span class="ms">4020 ÷ 4000 · 진단</span></td><td class="">—</td><td class="">0.0%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 0</td></tr><tr><td class="mn">프리로드 회수율<span class="ms">4000 ÷ 4080</span></td><td class="">0.0%</td><td class="">100.0%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 2 · p=0.480</td></tr></tbody></table></div></div><h3 style="margin-top:22px">오늘 진행분 — 가드레일</h3><div class="geo geo-all"><p class="lg"><b>표 보는 법</b> — 이긴 값 <span class="lgw">초록</span> · 진 값 <span class="lgl">빨강</span> · 차이 ±3% 안쪽은 무승부. <b>표본</b>은 그 지표의 분자 원건수이며, 100건 미만이면 ⚠ 를 붙인다.</p><div class="scroll"><table class="cmp"><thead><tr><th>지표</th><th>#432 대조</th><th>#431 실험</th><th>차이</th><th>판정</th><th>표본 대조/실험 · 유의성</th></tr></thead><tbody><tr><td class="mn">유저당 완료 판수<span class="ms">2300 ÷ DAU</span></td><td class="lose">1.57판</td><td class="win">3.08판</td><td class="dpos">+96.2%</td><td class="vw">실험 우세</td><td class="smp">33 / 37 · p=0.006</td></tr><tr><td class="mn">세션당 판 시작<span class="ms">2100 ÷ 로그인</span></td><td class="">2.22</td><td class="">3.0</td><td class="dpos">+35.1%</td><td class="vt">표본 부족</td><td class="smp few">40 / 42 · p=0.211 ⚠</td></tr><tr><td class="mn">60초 도달률<span class="ms">1130 ÷ 로그인</span></td><td class="win">83.3%</td><td class="lose">64.3%</td><td class="dneg">-22.8%</td><td class="vx">손실한도 초과</td><td class="smp few">15 / 9 · p=0.681 ⚠</td></tr><tr><td class="mn">300초 도달률<span class="ms">1170 ÷ 로그인</span></td><td class="win">38.9%</td><td class="lose">21.4%</td><td class="dneg">-45.0%</td><td class="vx">손실한도 초과</td><td class="smp few">7 / 3 · p=0.577 ⚠</td></tr><tr><td class="mn">세션당 로비 진입<span class="ms">5700 ÷ 로그인</span></td><td class="">1.83</td><td class="">2.29</td><td class="dpos">+25.1%</td><td class="vt">표본 부족</td><td class="smp few">33 / 32 · p=0.444 ⚠</td></tr><tr><td class="mn">세션당 중도 이탈<span class="ms">2222 ÷ 로그인 · 진단</span></td><td class="">0.111</td><td class="">0.0</td><td class="dnt">-100.0%</td><td class="vt">—</td><td class="smp few">2 / 0 · p=0.593 ⚠</td></tr></tbody></table></div></div><div class="geo geo-west" hidden><p class="lg"><b>표 보는 법</b> — 이긴 값 <span class="lgw">초록</span> · 진 값 <span class="lgl">빨강</span> · 차이 ±3% 안쪽은 무승부. <b>표본</b>은 그 지표의 분자 원건수이며, 100건 미만이면 ⚠ 를 붙인다.</p><div class="scroll"><table class="cmp"><thead><tr><th>지표</th><th>#432 대조</th><th>#431 실험</th><th>차이</th><th>판정</th><th>표본 대조/실험 · 유의성</th></tr></thead><tbody><tr><td class="mn">유저당 완료 판수<span class="ms">2300 ÷ DAU</span></td><td class="">2.0판</td><td class="">2.4판</td><td class="dpos">+20.0%</td><td class="vt">표본 부족</td><td class="smp few">32 / 24 · p=0.590 ⚠</td></tr><tr><td class="mn">세션당 판 시작<span class="ms">2100 ÷ 로그인</span></td><td class="">2.31</td><td class="">2.33</td><td class="dpos">+0.9%</td><td class="vt">무승부</td><td class="smp">37 / 28 · p=1.071</td></tr><tr><td class="mn">60초 도달률<span class="ms">1130 ÷ 로그인</span></td><td class="win">87.5%</td><td class="lose">58.3%</td><td class="dneg">-33.4%</td><td class="vx">손실한도 초과</td><td class="smp few">14 / 7 · p=0.508 ⚠</td></tr><tr><td class="mn">300초 도달률<span class="ms">1170 ÷ 로그인</span></td><td class="win">43.8%</td><td class="lose">16.7%</td><td class="dneg">-61.9%</td><td class="vx">손실한도 초과</td><td class="smp few">7 / 2 · p=0.361 ⚠</td></tr><tr><td class="mn">세션당 로비 진입<span class="ms">5700 ÷ 로그인</span></td><td class="">1.94</td><td class="">1.75</td><td class="dneg">-9.8%</td><td class="vt">표본 부족</td><td class="smp few">31 / 21 · p=0.826 ⚠</td></tr><tr><td class="mn">세션당 중도 이탈<span class="ms">2222 ÷ 로그인 · 진단</span></td><td class="">0.125</td><td class="">0.0</td><td class="dnt">-100.0%</td><td class="vt">—</td><td class="smp few">2 / 0 · p=0.610 ⚠</td></tr></tbody></table></div></div><div class="geo geo-row" hidden><p class="lg"><b>표 보는 법</b> — 이긴 값 <span class="lgw">초록</span> · 진 값 <span class="lgl">빨강</span> · 차이 ±3% 안쪽은 무승부. <b>표본</b>은 그 지표의 분자 원건수이며, 100건 미만이면 ⚠ 를 붙인다.</p><div class="scroll"><table class="cmp"><thead><tr><th>지표</th><th>#432 대조</th><th>#431 실험</th><th>차이</th><th>판정</th><th>표본 대조/실험 · 유의성</th></tr></thead><tbody><tr><td class="mn">유저당 완료 판수<span class="ms">2300 ÷ DAU</span></td><td class="lose">0.2판</td><td class="win">6.5판</td><td class="dpos">+3150.0%</td><td class="vw">실험 우세</td><td class="smp">1 / 13 · p=0.000</td></tr><tr><td class="mn">세션당 판 시작<span class="ms">2100 ÷ 로그인</span></td><td class="lose">1.5</td><td class="win">7.0</td><td class="dpos">+366.7%</td><td class="vw">실험 우세</td><td class="smp">3 / 14 · p=0.015</td></tr><tr><td class="mn">60초 도달률<span class="ms">1130 ÷ 로그인</span></td><td class="">50.0%</td><td class="">100.0%</td><td class="dpos">+100.0%</td><td class="vt">표본 부족</td><td class="smp few">1 / 2 · p=1.000 ⚠</td></tr><tr><td class="mn">300초 도달률<span class="ms">1170 ÷ 로그인</span></td><td class="">0.0%</td><td class="">50.0%</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 1 · p=1.000</td></tr><tr><td class="mn">세션당 로비 진입<span class="ms">5700 ÷ 로그인</span></td><td class="lose">1.0</td><td class="win">5.5</td><td class="dpos">+450.0%</td><td class="vw">실험 우세</td><td class="smp">2 / 11 · p=0.027</td></tr><tr><td class="mn">세션당 중도 이탈<span class="ms">2222 ÷ 로그인 · 진단</span></td><td class="">0.0</td><td class="">0.0</td><td class="dnt">—</td><td class="vt">—</td><td class="smp">0 / 0</td></tr></tbody></table></div></div>
+</section>
+
+<section id="sec55">
+  <h2>5.5 · 곡선 검증 — 시트대로 도는가</h2>
+  <p class="sub">레벨 구간별 실제 노출률이 시트에 넣은 간격과 맞는지 본다.
+  여기가 어긋나면 지표 해석 이전에 <b>구현이 곡선을 안 따르고 있다</b>는 뜻이다.</p>
+<p class="lg"><b>레벨은 유저-일 단위로 확정한다</b> — IT 로그에는 레벨이 없어서 <code>2100/2300</code>의 <code>data.user_level</code>로 그날의 레벨을 정하고, 같은 유저-일의 완료 판수와 IT 노출을 그 밴드에 귀속시킨다. 하루 안에서 밴드를 넘어간 유저가 섞이므로 <b>경계 구간은 ±20%까지 정상</b>으로 본다.</p><div class="scroll"><table class="cmp"><thead><tr><th>레벨 구간</th><th>기대 노출률</th><th>실측</th><th>편차</th><th>대조군</th><th>판정</th></tr></thead><tbody><tr><td class="mn">1~5 레벨<span class="ms">간격 0 · 유저-일 4</span></td><td>0.0%</td><td>0.0%</td><td class="dpos">—</td><td>0.0%</td><td>정상 — 노출 없음</td></tr><tr><td class="mn">6~10 레벨<span class="ms">간격 5 · 유저-일 2</span></td><td>20.0%</td><td>9.1%</td><td class="dneg">-55%</td><td>0%</td><td><b>기대치 이탈</b></td></tr><tr><td class="mn">11~20 레벨<span class="ms">간격 3 · 유저-일 2</span></td><td>33.3%</td><td>13.0%</td><td class="dneg">-61%</td><td>0%</td><td><b>기대치 이탈</b></td></tr><tr><td class="mn">21~ 레벨<span class="ms">간격 2 · 유저-일 0</span></td><td>50.0%</td><td>—</td><td class="dnt">—</td><td>0.0%</td><td>관측 없음</td></tr></tbody></table></div>
+</section>
+
+<section id="sec6">
+  <h2>6 · 판정 일정</h2>
+  <p class="sub">지표마다 익는 속도가 달라 한 번에 판정하지 않는다.</p>
+  <div class="tl">
+    <div class="tcard"><div class="when">D+0 · 당일</div><div class="what">계측만 본다</div>
+      <p>IT가 실제로 뜨는지, 대조군에서 새지 않는지, 곡선이 구간별로 맞는지. 지표 판정은 하지 않는다.</p></div>
+    <div class="tcard"><div class="when">D+1</div><div class="what">활동성 가드레일</div>
+      <p>유저당 완료 판수·60초 도달률. 광고가 다음 판을 끊는 효과는 즉시 나타난다. −10%면 바로 조인다.</p></div>
+    <div class="tcard"><div class="when">D+3</div><div class="what">수익 잠식</div>
+      <p>세션당·판당 RV와 결과화면 x2. RV는 판수를 따라가므로 활동성이 안정된 뒤에 봐야 읽힌다.</p></div>
+    <div class="tcard"><div class="when">D+7</div><div class="what">종합 판정</div>
+      <p>D1 리텐션을 <code>retention3</code>에서 빌드별로 가른 뒤 <b>비용 총액</b>을 확정하고 전면 적용 여부를 정한다.</p></div>
+  </div>
+</section>
+
+<section id="sec7">
+  <h2>7 · 허용 손실 한도</h2>
+  <p class="sub">이 배포는 <b>안 깎이면 통과</b>다. 아래는 그대로는 못 가는 선이며,
+  걸리면 전면 롤백 전에 <b>한 단계 조이기</b>를 먼저 쓴다.</p>
+  <div class="watch">
+    <div class="wrow crit"><div class="wl">유저당 완료 판수<em>플레이 총량</em></div><div class="wv">−10%</div>
+      <div class="wt">대조 빌드 대비<span class="wact">→ 티어 clear_interval 을 한 단계씩 올림</span></div>
+      <span class="wbadge crit">롤백선</span></div>
+    <div class="wrow crit"><div class="wl">60초 도달률<em>조기 이탈</em></div><div class="wv">−10%</div>
+      <div class="wt">신규가 광고에 막혀 나간다는 뜻<span class="wact">→ 구간 1의 상한 레벨을 올림</span></div>
+      <span class="wbadge crit">롤백선</span></div>
+    <div class="wrow crit"><div class="wl">세션당 RV 완료<em>수익 잠식</em></div><div class="wv">−10%</div>
+      <div class="wt">판당 RV도 같이 떨어졌다면 IT가 RV 지면을 밀어낸 것<span class="wact">→ 승리 지면 간격을 늘림</span></div>
+      <span class="wbadge crit">손실 한도</span></div>
+    <div class="wrow crit"><div class="wl">D1 리텐션<em>D+7 확인</em></div><div class="wv">유의 하락</div>
+      <div class="wt">z검정. 절대 %p 컷이 아니라 <b>유의성</b>으로 본다<span class="wact">→ is_interstitial_ad_open = 0</span></div>
+      <span class="wbadge crit">롤백선</span></div>
+    <div class="wrow warn"><div class="wl">IT 임프레션율<em>4010 ÷ 4000</em></div><div class="wv">40%↓</div>
+      <div class="wt">메타 기준 58~72%. 크게 밑돌면 노출 자리가 나쁘거나 공급이 안 붙는 것</div><span class="wbadge warn">경고선</span></div>
+    <div class="wrow info"><div class="wl">DAU당 IT 노출<em>얻는 것</em></div><div class="wv">해당 없음</div>
+      <div class="wt">올리려는 값이 아니라 <b>의도한 구간에 들어왔는지</b>만 확인. 한도 없음</div>
+      <span class="wbadge info">제외</span></div>
+    <div class="wrow info"><div class="wl">RV 완료율 하락<em>4210 ÷ 4200</em></div><div class="wv">해당 없음</div>
+      <div class="wt">요청량이 늘면 no-fill이 늘어 <b>비율은 떨어지는 게 정상</b>. 완료 건수로 볼 것</div>
+      <span class="wbadge info">제외</span></div>
+  </div>
+  <div class="callout">
+    <p><b>1차 대응은 원복이 아니라 조이기</b> — 티어의 <code>clear_interval</code>을 한 단계 올리거나,
+    <code>interstitial_ad_min_interval_sec</code>·<code>interstitial_ad_daily_limit</code>에 값을 넣으면
+    빈도만 줄고 실험은 유지된다. 전부 시트 값이라 클라 재배포가 필요 없다.
+    그래도 회복되지 않으면 <code>is_interstitial_ad_open = 0</code>으로 전 구간을 끈다.</p>
+  </div>
+</section>
+
+<section id="sec8">
+  <h2>8 · 일자별 원표</h2>
+  <div class="callout">
+    <p><b>DAU 정의</b> — <code>count(distinct player_id)</code>,
+    조건은 <code>is_dev is distinct from true and player_id &gt; 0</code>뿐이다.
+    즉 <b>그날 이벤트를 하나라도 남긴 유저</b>이며 로그인 완료를 조건으로 걸지 않는다.</p>
+    <p><b>IT</b>는 지면이 <code>game_over</code>·<code>game_quit</code>인 <code>4000</code>만 센 값이다.
+    <b>판/유저-일</b>의 분모는 날짜별 DAU를 더한 값이라 유니크 유저가 아니라 <b>유저-일</b>이다.</p>
+  </div>
+  <p class="sub">배포 경계 굵은 선. 전 구간 실측이며 가공하지 않았다.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>날짜</th><th>세션</th><th>DAU</th><th>IT 노출</th><th>IT/유저-일</th><th>판당 IT</th>
+      <th>임프레션율</th><th>완료판</th><th>판/유저-일</th><th>RV/세션</th><th>60초</th></tr></thead>
+    <tbody>
+<tr><td>2026-08-01</td><td>1,413</td><td>1,126</td><td>0</td><td>0.0</td><td>0.0%</td><td>—</td><td>11,476</td><td>10.19</td><td>3.11</td><td>77.6%</td></tr>
+<tr><td>2026-08-02</td><td>1,551</td><td>1,333</td><td>0</td><td>0.0</td><td>0.0%</td><td>—</td><td>12,674</td><td>9.51</td><td>2.9</td><td>77.1%</td></tr>
+<tr><td>2026-08-03</td><td>1,909</td><td>1,506</td><td>0</td><td>0.0</td><td>0.0%</td><td>—</td><td>13,511</td><td>8.97</td><td>2.25</td><td>71.0%</td></tr>
+<tr><td>2026-08-04</td><td>1,954</td><td>1,534</td><td>0</td><td>0.0</td><td>0.0%</td><td>—</td><td>13,118</td><td>8.55</td><td>2.01</td><td>69.4%</td></tr>
+<tr><td>2026-08-05</td><td>2,307</td><td>1,948</td><td>0</td><td>0.0</td><td>0.0%</td><td>—</td><td>11,939</td><td>6.13</td><td>1.69</td><td>63.0%</td></tr>
+<tr><td>2026-08-06</td><td>1,099</td><td>864</td><td>4</td><td>0.0</td><td>0.1%</td><td>75.0%</td><td>7,920</td><td>9.17</td><td>2.2</td><td>70.6%</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="sec9">
+  <h2>9 · 부록 · 사용한 쿼리</h2>
+  <p class="sub">이 페이지의 모든 수치는 아래 쿼리에서 나온다. 검증용으로 그대로 복사해 쓸 수 있다.
+  <code>&lt;날짜&gt;</code> 자리에 대상 일자를 넣으면 된다.</p>
+<h3>① 일자별 집계 — 표 전체의 원천</h3><p>하루 파티션 하나만 읽고 결과를 로컬에 누적한다. 과거 날짜는 다시 조회하지 않는다.</p><pre class="sql">with g as (
+  select log_date, event, player_id,
+    ifnull(client_version, 0) build,
+    if(country in ((54개국 목록 — tb_dim_country continent_name='Europe' + US·CA)), "west", "row") geo,
+    -- 지면 키가 플랫폼별로 갈린다(FB·토스=type, 그 외=position)
+    coalesce(json_value(data,"$.type"), json_value(data,"$.position")) pos
+  from `game-log-359704.raw.solitaire_city_journey`
+  where log_date in ("&lt;날짜&gt;")
+    and is_dev is distinct from true and player_id &gt; 0
+)
+select cast(log_date as string) d,
+  concat(ifnull(cast(build as string),"all"), "|", ifnull(geo,"all")) ab,
+  countif(event="1000_LOGIN_COMPLETE")                     sess,
+  count(distinct player_id)                                dau,
+  countif(event="2100_GAMEPLAY_START")                     start,
+  countif(event="2300_GAMEPLAY_FINISH")                    fin,
+  countif(event="1110_PLAYTIME_10S")                       p10,
+  countif(event="1130_PLAYTIME_60S")                       p60,
+  countif(event="1170_PLAYTIME_300S")                      p300,
+  -- IT는 지면 화이트리스트로 거른다. 리워디드 인터스티셜 혼입 배제.
+  countif(event="4000_INTERSTITIAL_AD_START" and pos in ("game_over","game_quit"))      it,
+  countif(event="4000_INTERSTITIAL_AD_START" and pos="game_over")    it_over,
+  countif(event="4000_INTERSTITIAL_AD_START" and pos="game_quit")    it_quit,
+  countif(event="4010_INTERSTITIAL_AD_FINISH" and pos in ("game_over","game_quit"))     it_fin,
+  countif(event="4020_INTERSTITIAL_AD_ERROR" and pos in ("game_over","game_quit"))      it_err,
+  countif(event="4080_INTERSTITIAL_AD_PRELOAD_FINISH")     it_pre_ok,
+  countif(event="4090_INTERSTITIAL_AD_PRELOAD_ERROR")      it_pre_err,
+  countif(event="4200_RV_START")                           rv_start,
+  countif(event="4210_RV_FINISH")                          rv_fin,
+  countif(event="4220_RV_ERROR")                           rv_err,
+  countif(event="2421_FINISH_RESULT_DOUBLE_CLAIM_SUCCESS") dbl_ok,
+  countif(event="5700_LOBBY")                              lobby,
+  countif(event="5000_SHOP")                               shop,
+  countif(event="2095_PRE_LEVEL_GOLD_SHORTAGE")            shortage,
+  countif(event="2222_GAMEPLAY_END_SURE_YES")              quit_yes
+from g
+group by grouping sets ((log_date, build, geo), (log_date, build), (log_date, geo), (log_date))</pre><h3>② 유저 단위 분포 — 고래 보정</h3><pre class="sql">with u0 as (
+  select player_id,
+    ifnull(any_value(client_version),0) b,
+    if(any_value(country) in ((54개국 목록 — tb_dim_country continent_name='Europe' + US·CA)), "west", "row") geo,
+    countif(event="4000_INTERSTITIAL_AD_START"
+            and coalesce(json_value(data,"$.type"),json_value(data,"$.position")) in ("game_over","game_quit")) m0,
+    countif(event="2300_GAMEPLAY_FINISH") m1,
+    countif(event="4210_RV_FINISH") m2,
+    countif(event="1130_PLAYTIME_60S") m3
+  from `game-log-359704.raw.solitaire_city_journey`
+  where log_date in ("&lt;날짜&gt;") and is_dev is distinct from true and player_id &gt; 0
+  group by player_id
+),
+u as (select player_id, b, x.g geo, m0, m1, m2, m3 from u0
+      cross join unnest([struct(geo as g), struct("all" as g)]) x),
+m as (select b, geo, x.k, x.v from u cross join unnest([
+        struct("IT 노출" as k, m0 as v), struct("완료 판수" as k, m1 as v),
+        struct("RV 완료" as k, m2 as v), struct("60초 도달" as k, m3 as v)]) x
+      where b in (431,432)),
+r as (select *, percent_rank() over (partition by b,geo,k order by v) pr from m)
+select k, cast(b as string) b, geo, count(*) users, round(avg(v),3) mean,
+  approx_quantiles(v,2)[offset(1)] med,
+  round(sum(if(pr&lt;0.95,v,0))/nullif(countif(pr&lt;0.95),0),3) trim95,
+  max(v) mx
+from r group by k,b,geo</pre><h3>③ 레벨 구간별 곡선 검증</h3><pre class="sql">with u as (
+  select player_id, log_date, ifnull(any_value(client_version),0) b,
+    max(safe_cast(json_value(data,"$.user_level") as int64)) lv,
+    countif(event="2300_GAMEPLAY_FINISH") fin,
+    countif(event="4000_INTERSTITIAL_AD_START"
+            and coalesce(json_value(data,"$.type"),json_value(data,"$.position")) in ("game_over","game_quit")) it,
+    countif(event="4000_INTERSTITIAL_AD_START"
+            and coalesce(json_value(data,"$.type"),json_value(data,"$.position"))="game_over") it_over
+  from `game-log-359704.raw.solitaire_city_journey`
+  where log_date in ("&lt;날짜&gt;") and is_dev is distinct from true and player_id &gt; 0
+  group by player_id, log_date
+)
+select case when lv&lt;=5 then "1~5" when lv&lt;=10 then "6~10"
+            when lv&lt;=20 then "11~20" else "21~" end band,
+  cast(b as string) b, count(*) userdays, sum(fin) fin, sum(it) it, sum(it_over) it_over,
+  round(sum(it)/nullif(sum(fin),0)*100,1) it_per_play,
+  round(sum(it)/count(*),2) it_per_ud
+from u where b in (431,432) and lv is not null
+group by band, b</pre>
+</section>
+
+</div>
+
+<script>
+const nav=document.getElementById('nav'),tog=document.getElementById('navtog');
+tog.onclick=()=>nav.classList.toggle('open');
+const links=[...nav.querySelectorAll('a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){
+  links.forEach(l=>l.classList.toggle('on',l.getAttribute('href')==='#'+e.target.id));}});},
+  {rootMargin:'-20% 0px -70% 0px'});
+secs.forEach(s=>io.observe(s));
+links.forEach(a=>a.onclick=()=>{if(window.innerWidth<1180)nav.classList.remove('open');});
+document.querySelectorAll('.gb').forEach(b=>b.onclick=()=>{
+  const g=b.dataset.g;
+  document.querySelectorAll('.gb').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.geo').forEach(d=>{d.hidden=!d.classList.contains('geo-'+g);});
+});
+</script>
