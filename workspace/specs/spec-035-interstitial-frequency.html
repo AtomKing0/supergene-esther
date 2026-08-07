@@ -493,7 +493,12 @@ ul li strong,ol li strong { color:var(--text); }
     <li>난수를 쓰지 않음 &mdash; 간격 카운터만으로 결정됨. 같은 조건이면 항상 같은 시점에 노출됨</li>
     <li>보상형 영상을 시청한 판은 전면 판정을 건너뜀 &mdash; 판정 진입 전에 해당 판의 보상형 시청 여부를 확인</li>
     <li><span class="sheet-var">interstitial_tier</span> 로드 실패 시 <strong>하드코딩 0으로 폴백</strong>(노출 안 함). 예외를 던져 크래시내지 않음. <span class="sheet-var">interstitial_ad_level_clear_interval</span>(10079)은 참조하지 않음</li>
-    <li>기존 <strong>IT 최소 간격 30초 하드코딩은 그대로 유지</strong>. 시트값과 <strong>이중 보정</strong>이며, 여러 게임 빌드를 함께 관리하는 사정과 플랫폼 정책 때문에 남겨 둔 코드임</li>
+    <li>기존 <strong>IT 최소 간격 30초 하드코딩은 그대로 유지</strong>(<span class="sheet-var">ADPlayer.ts</span> 8단계 &mdash; <span class="sheet-var">Math.max(시트값, AD_INTERVAL_DEFAULT)</span>).
+    시트값이 0이어도 30초가 항상 적용되는 <strong>이중 보정</strong>이며, 플랫폼 정책과 여러 게임 빌드를 함께 관리하는 사정 때문에 남겨 둔 코드임.
+    <strong>벤치 4종(코지·마종·퍼블마·코인매치)에는 이 게이트가 아예 없음</strong> &mdash; 우리만 있는 제약이라는 점은 알고 있어야 함</li>
+    <li>참고 &mdash; <span class="sheet-var">AD_INTERVAL_DEFAULT</span>는 <strong>토너먼트 생성 쿨다운</strong>(<span class="sheet-var">refreshTimerTournament</span>)에도 같이 쓰임.
+    광고 간격을 코드에서 만지면 토너먼트 다이얼로그 간격이 함께 바뀌므로 <strong>분리 필요</strong>. 다만 토너먼트 생성 시도는 유저-일당 6.14회로
+    마종(3.19회)의 2배라 <strong>쿨다운이 병목은 아님</strong> &mdash; 급한 항목은 아니다</li>
     <li>프리로드 정책은 기존 유지. 다만 <span class="sheet-var">is_interstitial_ad_open</span>이 0이면 <strong>프리로드도 중단</strong>해 현재의 낭비를 없앰</li>
   </ul>
   <div class="callout callout-purple">
@@ -527,6 +532,14 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
   <div class="callout callout-blue">
     <span class="sheet-var">shown_today</span>는 서버가 이미 <span class="sheet-var">it_today</span>로 갖고 있으므로 그대로 실으면 됨. <strong>클라 자체 카운터로 대체하지 말 것</strong> &mdash; 재접속마다 초기화돼 나중에 일 상한을 켰을 때 상한이 있다고 착각하게 만듦.
+  </div>
+
+  <div class="callout crit">
+    <p><b>&#9888; 스킵 로그가 실제로 들어오지 않고 있음 (2026-08-07 확인)</b></p>
+    <p>BQ에 <span class="sheet-var">4000</span>·<span class="sheet-var">4010</span>·<span class="sheet-var">4020</span>·<span class="sheet-var">4080</span>·<span class="sheet-var">4090</span>만 있고
+    <span class="sheet-var">skip_reason</span> 계열은 <b>0건</b>임. 그래서 <b>어느 게이트에서 몇 건이 빠지는지 볼 수 없다</b> &mdash;
+    30초 하드플로어와 프리로드 재고가 각각 얼마를 깎는지 측정 불가.</p>
+    <p>곡선이 의도대로 안 돌 때 원인을 가르는 유일한 계측이므로 <b>구현 요청 대상</b>임.</p>
   </div>
 
   <h3>검증 게이트 &mdash; 순서대로</h3>
