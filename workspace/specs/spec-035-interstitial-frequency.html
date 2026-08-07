@@ -257,24 +257,41 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>확정 곡선 &mdash; 이 표가 유일한 SSOT</h3>
-  <p>라이브 구현은 <strong>확률이 아니라 결정적 간격</strong>임 &mdash; <span class="sheet-var">clear_interval</span>의 정의가 <strong>&ldquo;N값 &rarr; N회 클리어마다 1회 노출, 0=노출 안 함&rdquo;</strong>임. 따라서 <strong>메타 권장 확률을 간격으로 환산</strong>해 레벨 구간별로 값을 나눔.</p>
+  <p>라이브 구현은 <strong>확률이 아니라 결정적 간격</strong>임 &mdash; <span class="sheet-var">clear_interval</span>의 정의가 <strong>&ldquo;N값 &rarr; N회 클리어마다 1회 노출, 0=노출 안 함&rdquo;</strong>임.
+  ★<strong>이 카운터는 세션마다 0으로 초기화된다</strong>(전 게임 공통 설계). 따라서 간격 N이 곧 노출률 1/N이 아니고,
+  아래 &ldquo;실효 노출률&rdquo;은 <strong>세션당 판수 분포와 보상형 스킵을 반영해 계산한 값</strong>임.</p>
   <table>
-    <thead><tr><th>구간</th><th>유저 레벨</th><th>클리어 간격</th><th>환산 노출률</th><th>메타 권장</th></tr></thead>
+    <thead><tr><th>구간</th><th>유저 레벨</th><th>클리어 간격</th><th>실효 노출률</th><th>메타 권장</th></tr></thead>
     <tbody>
     <tr><td>1</td><td>1 ~ 5</td><td><strong style="color:var(--green)">0</strong>(노출 없음)</td><td><strong>0%</strong></td><td>0% &mdash; 동일</td></tr>
-    <tr><td>2</td><td>6 ~ 10</td><td><strong>5판마다 1회</strong></td><td><strong>20%</strong></td><td>20% &mdash; 동일</td></tr>
-    <tr><td>3</td><td>11 ~ 20</td><td><strong>3판마다 1회</strong></td><td><strong>33%</strong></td><td>50% &mdash; <span style="color:var(--yellow)">보수적</span></td></tr>
-    <tr><td>4</td><td>21 이상</td><td><strong>2판마다 1회</strong></td><td><strong>50%</strong></td><td>75% &mdash; <span style="color:var(--yellow)">보수적</span></td></tr>
+    <tr><td>2</td><td>6 ~ 10</td><td><strong>4판마다 1회</strong></td><td><strong>18.1%</strong></td><td>20% &mdash; 근접</td></tr>
+    <tr><td>3</td><td>11 ~ 20</td><td><strong>2판마다 1회</strong></td><td><strong>39.3%</strong></td><td>50% &mdash; <span style="color:var(--yellow)">보수적</span></td></tr>
+    <tr><td>4</td><td>21 이상</td><td><strong>1판마다 1회</strong></td><td><strong>59.0%</strong></td><td>75% &mdash; <span style="color:var(--yellow)">보수적</span></td></tr>
     </tbody>
   </table>
   <div class="callout callout-yellow">
-    <strong>구간 3·4를 메타 권장보다 낮게 잡은 이유 세 가지.</strong><br>
-    &#9312; <strong>정수 간격으로 75%를 표현할 수 없음.</strong> 75%는 1.33판마다 1회라 결정적 간격 방식과 맞지 않음. 확률 방식으로 바꾸면 기존 필드 의미를 갈아엎어야 함.<br>
-    &#9313; <strong>결정적 간격은 최악 케이스가 없음.</strong> 확률 50%는 운이 나쁘면 3판 연속 광고가 나오지만, 간격 2는 반드시 한 판 걸러 나옴. 같은 노출률이어도 체감이 다름.<br>
-    &#9314; <strong>지금은 콜드스타트 리텐션 보호 구간임.</strong> 꺼져 있던 채널을 켜는 첫 배포라 권장치 상단부터 시작할 이유가 없음. 가드레일이 안정되면 3&rarr;2, 2&rarr;1 순으로 시트에서 올림.
+    <strong>&#9888; 간격 N은 노출률 1/N이 아님 &mdash; 카운터가 세션마다 리셋되기 때문.</strong><br>
+    간격을 채우기 전에 세션이 끝나면 그 판들은 버려진다. 그래서 <strong>세션당 판수가 적은 저레벨일수록 실효 노출률이 급격히 낮아진다</strong>.
+    아래는 IT 미노출 빌드(#416·#432) 3일치 세션 분포로 계산한 간격별 실효 노출률이며, 굵은 값이 채택한 간격임.
   </div>
+  <div class="scroll"><table>
+    <thead><tr><th>구간</th><th>판/세션</th><th>판당 RV</th><th>N=1</th><th>N=2</th><th>N=3</th><th>N=4</th><th>N=5</th><th>목표</th></tr></thead>
+    <tbody>
+    <tr><td>6~10</td><td>5.3</td><td>2.9%</td><td>97.1%</td><td>42.8%</td><td>25.8%</td><td><strong>18.1%</strong></td><td>12.5%</td><td>20%</td></tr>
+    <tr><td>11~20</td><td>7.7</td><td>15.0%</td><td>85.0%</td><td><strong>39.3%</strong></td><td>24.5%</td><td>17.0%</td><td>13.4%</td><td>33%</td></tr>
+    <tr><td>21~</td><td>12.3</td><td>41.0%</td><td><strong>59.0%</strong></td><td>28.3%</td><td>18.0%</td><td>13.1%</td><td>10.1%</td><td>50%</td></tr>
+    </tbody>
+  </table></div>
   <div class="callout callout-blue">
-    <strong>벤치와의 거리.</strong> 코지·마종의 판당 노출률은 <strong>72.9% · 75.4%</strong>이고 승리 지면 단독(마종 <span class="sheet-var">stage_clear</span>)으로도 <strong>58.0%</strong>임. 위 곡선은 최고 구간이 50%라 <strong>벤치보다 낮게 시작</strong>하는 것이고, 그 차이는 의도된 것임 &mdash; 올릴 여지는 남기고 시작함.
+    <strong>21레벨 이상이 간격 1(매 판)인 이유.</strong> 판당 보상형 시청이 <strong>41%</strong>이고 그 판은 전면 판정을 건너뛴다.
+    그래서 매 판 판정해도 실효 노출은 <strong>59%</strong>이며, 마종의 승리 지면 단독 실측 <strong>58.0%</strong>와 사실상 같다.
+    간격 2로 두면 <strong>28.3%</strong>로 목표의 절반이 된다.<br>
+    <strong>되돌리는 손잡이</strong> &mdash; 부담되면 21+를 2로 올리는 것만으로 즉시 절반이 되고 클라 재배포가 필요 없다.
+  </div>
+  <div class="callout callout-yellow">
+    <strong>최초값(5/3/2)에서 왜 바꿨나.</strong> 8/7 실측에서 구간별 판당 노출이 <strong>1.7% · 11.4% · 33.8%</strong>로
+    의도(20/33/50)의 절반 이하였다. 원인은 구현 결함이 아니라 <strong>세션 리셋을 계산에 넣지 않은 시트 값</strong>이었다.
+    노출 시점이 세션 시작 기준 짝수 판에 <strong>68.3%</strong> 몰린 것으로 리셋을 확인했다.
   </div>
   <div class="callout callout-blue">
     이 표의 값을 <strong>다른 섹션에 다시 적지 않음</strong>. 시트 반영 후에는 <strong>시트 값이 최종</strong>이고 이 표는 초기값 기록으로 남음.
