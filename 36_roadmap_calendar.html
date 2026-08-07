@@ -314,9 +314,14 @@ const CAT={dev:{name:'개발·배포',color:'#7C3AED'},mon:{name:'수익화',col
            ops:{name:'운영·판정',color:'#D97706'},ext:{name:'외부·협업',color:'#0891B2'}};
 
 const BASE=[
- {id:'t01',s:'2026-08-05',e:'2026-08-31',cat:'mon',t:'SPEC-035 [수익화-광고] 전면 광고 빈도 곡선',spec:'spec-035-interstitial-frequency',st:'dev',dep:true,depPlan:'2026-08-05',
-  ck:['시트 값 라이브 반영 확인','노출량 6.6회/DAU 실측 대조','D1 리텐션 가드레일 확인','유의 하락 시 되돌림 판단'],
-  d:'8/5 A/B 배포 후 8월 내내 곡선 최적화. 레벨 구간별 노출 곡선(0/20/33/50%) + 게이트 3종(최소 간격 60초·2세션 이상·일 상한 8회). 값이 전부 시트에 있어 빌드 없이 상·하향 가능하며 목표는 롤백이 아니라 최적화. 산출 노출량 6.6회/DAU는 코지 정착기 7.44와 같은 구간이고, 판당 전면 0.50은 코지 0.53과 동일 강도. 가드레일 = D1 리텐션 유지, 유의 하락 시에만 되돌림.'},
+ {id:'t01',s:'2026-08-05',e:'2026-08-31',cat:'mon',t:'SPEC-035 [수익화-광고] 전면 광고 빈도 곡선',spec:'spec-035-interstitial-frequency',st:'dev',
+  dep:true,depPlan:'2026-08-06',depTime:'16:00',
+  ck:[{n:'QA 노출 빌드 #431 — 1~5 미노출 · 6~10 5판 · 11~20 3판 · 21~ 2판 · 로비 이동 시 출력',d:true},
+      {n:'QA 미노출 빌드 #432 — 전면 광고 미노출 확인',d:true},
+      {n:'QA 공통 — NRU 20레벨 클리어 · RV 노출·보상 획득 · 토너먼트 · 도시 꾸미기',d:true},
+      '8/6 16:00 A/B 배포','노출량 실측 대조 — 목표 2.8회/DAU(승리 2.6 + 나가기 0.19)',
+      '임프레션율 확인 — 4010 ÷ 4000','D1 리텐션 가드레일 확인','유의 하락 시 in_use 단독으로 차단'],
+  d:'전면 광고는 #361 이후 노출 0인 채로 프리로드만 14일 26,669회 돌고 있어 비용만 나가는 상태였음. 이를 되살리는 배포이며 목적은 수익 극대화가 아니라 꺼진 채널을 안전한 기준값으로 복구하는 것. 확정 곡선은 메타 권장 원안 — 1~5레벨 미노출 · 6~10레벨 5판 간격 · 11~20레벨 3판 간격 · 21레벨~ 2판 간격. 지면은 승리 후와 나가기 두 곳이며 나가기는 판당 3.5%짜리 실물 지면(유저-일당 0.19회). 게이트 3종(최소 간격·세션·일 상한)은 값만 시트에 두고 전부 미적용으로 시작 — 코지·마종 실측에 셋 다 없기 때문. 다만 클라의 플랫폼 정책용 30초 하드코딩은 유지되므로 실효 최소 간격은 둘 중 큰 값. A/B는 빌드 두 개로 나가며 차이는 interstitial_tier 탭 6칸뿐 — #431 = 곡선 적용(노출), #432 = 전 구간 0(미노출). 나머지 값이 같이 달라지면 지표 차이를 전면 광고에 귀속시킬 수 없음. 목표 노출량 2.8회/DAU, 벤치 코지 6.51 · 마종 6.24보다 낮게 시작하는 것은 의도된 것이고 가드레일이 안정되면 3→2, 2→1 순으로 시트에서 올림. 값이 전부 시트에 있어 빌드 없이 되돌릴 수 있으며, 가드레일은 D1 리텐션 유지 — 유의 하락 시 in_use 단독으로 즉시 차단.'},
  {id:'t02',s:'2026-08-10',cat:'cnt',t:'SPEC-027 [콘텐츠-이벤트] 그림자 냥이 추격전 — 배포',spec:'spec-027-shadow-chase',st:'dev',dep:true,depPlan:'2026-08-10',
   ck:['킬스위치 해제(isInUse) 확인','사운드 4종 프리로드·호출부 확인','cycle_id 개발 확인 1건','인게임 이벤트 동시 진행 확인','배포 후 판수 전후비교'],
   d:'그림자 냥이 추격전 배포 + 인게임 이벤트 동시 진행. 판수 증대·세션 횟수 증대를 겨냥. 판수가 전면 광고 노출을 결정하므로 회수액을 직접 끌어올리는 축. 현재 판수 13.2판/DAU(코지 정착기 14.1).'},
@@ -409,7 +414,12 @@ function depTimeOf(t){const r=rec(t.id);
   return t.depTime||'';}
 function planTxt(t){const pl=depPlanOf(t);if(!pl)return '';
   const tm=depTimeOf(t);return pl.slice(5).replace('-','/')+(tm?' '+tm:'');}
-function depDue(t){return depPlanOf(t)||effS(t);}   // 예정일이 있으면 그 날이 배포 기준일
+function depDue(t){return depPlanOf(t)||effS(t);}
+function depDay(t){const d=depOf(t);return d?d.at:(depPlanOf(t)||null);}
+// 같은 일감은 하나의 선 — 일감 기간과 배포일을 합쳐 한 줄로 이음
+function dS(t){const a=effS(t),d=depDay(t);return (d&&d<a)?d:a;}
+function dE(t){const b=effE(t)||effS(t),d=depDay(t);return (d&&d>b)?d:b;}
+function isSpanT(t){return dE(t)>dS(t);}   // 예정일이 있으면 그 날이 배포 기준일
 function depLate(t){const d=depOf(t),pl=depPlanOf(t);
   return (d&&pl&&d.at>pl) ? Math.round((pdISO(d.at)-pdISO(pl))/86400000) : 0;}
 function depOf(t){const r=rec(t.id);
@@ -419,12 +429,21 @@ function depOf(t){const r=rec(t.id);
 // 모니터링중은 원색 대신 물빠진색 — 끝난 축과 진행 중인 축을 눈으로 가름
 function pale(hex,r){const n=parseInt(hex.slice(1),16),R=n>>16,G=(n>>8)&255,B=n&255;
   const m=v=>Math.round(v+(255-v)*r);return `rgb(${m(R)},${m(G)},${m(B)})`;}
-function barStyle(t,we){
-  const c=CAT[Ct(t)].color, mon=stOf(t)==='mon';
-  // 주말은 같은 색 계열의 더 연한 톤 — 끊긴 게 아니라 이어진 기간으로 읽히게
-  if(we) return `background:${pale(c,mon?.88:.62)};color:transparent`;
-  return mon ? `background:${pale(c,.80)};color:${c};box-shadow:inset 0 0 0 1px ${pale(c,.42)}`
-             : `background:${c}`;}
+function barStyle(t,we,k){
+  const c=CAT[Ct(t)].color, dd=depDay(t);
+  // 배포일 다음 날부터는 모니터링 구간 — 같은 계열 연한색
+  const post = stOf(t)==='mon' || (dd&&k&&k>dd);
+  if(we) return `background:${pale(c,post?.90:.62)};color:transparent`;
+  return post ? `background:${pale(c,.80)};color:${c};box-shadow:inset 0 0 0 1px ${pale(c,.42)}`
+              : `background:${c}`;}
+// 막대 위 라벨 — 시작일엔 이름, 배포일엔 로켓, 겹치면 한 줄에 같이
+function laneLabel(t,k){
+  const dd=depDay(t), d=depOf(t);
+  const dep = dd===k ? `🚀 ${d?esc(d.b||'배포'):('예정'+(depTimeOf(t)?' '+depTimeOf(t):''))}` : '';
+  const nm  = dS(t)===k ? esc(T(t)) : '';
+  return (dep&&nm) ? dep+' · '+nm : (dep||nm||'&nbsp;');}
+function depMiss(t,k){   // 예정일이 지났는데 기록 없음 — 그 칸만 빨갛게
+  return depDay(t)===k && !depOf(t) && dTo(k)<0 ? ';color:#B91C1C;box-shadow:inset 0 0 0 1px #FCA5A5' : '';}
 function dueOf(t){return effE(t)||effS(t);}
 
 /* ── 날짜 ───────────────────────────────────────────────────── */
@@ -648,8 +667,8 @@ function visible(t){return !(HIDEDONE&&stOf(t)==='done');}
 function tasksOn(d){
   if(isWE(d))return [];
   const k=iso(d);
-  return all().filter(visible).filter(t=>{const a=effS(t),b=effE(t);return b?(k>=a&&k<=b):k===a;})
-    .map(t=>({t,first:k===effS(t),span:!!effE(t)}));
+  return all().filter(visible).filter(t=>k>=dS(t)&&k<=dE(t))
+    .map(t=>({t,first:k===dS(t),span:isSpanT(t)}));
 }
 function cols(){return HIDEWE?[1,2,3,4,5]:[0,1,2,3,4,5,6];}
 function toggleWeekend(){HIDEWE=document.getElementById('hw').checked;renderAll();}
@@ -664,15 +683,7 @@ function pickWeek(k){WSEL=pdISO(k);
   DSEL=wd[0]||WSEL;renderAll();}
 function pickDay(k){const d=pdISO(k);if(isWE(d))return;DSEL=d;renderWeek();renderDay();}
 
-function spans(){return all().filter(visible).filter(t=>!!effE(t));}
-function depMarks(k){   // 그 날짜에 잡힌 배포 예정·배포 완료 마커
-  return all().filter(visible).filter(t=>needsDep(t)).filter(t=>{
-    const d=depOf(t); return d ? d.at===k : depPlanOf(t)===k; });}
-function markHtml(t){
-  const c=CAT[Ct(t)].color, d=depOf(t), late=!d&&dTo(depPlanOf(t))<0;
-  return `<span class="dmark ${d?'on':''}" title="${esc(T(t))} — ${d?`배포 ${d.at}${d.b?' '+esc(d.b):''}`:'배포 예정'}"
-    style="background:${pale(c,d?.80:.90)};color:${c};border-color:${pale(c,d?.35:.55)}${late?';border-color:#DC2626;color:#B91C1C':''}"
-    >🚀 ${d?esc(d.b||'배포'):('예정'+(depTimeOf(t)?' '+depTimeOf(t):''))} · ${esc(T(t))}</span>`;}
+function spans(){return all().filter(visible).filter(isSpanT);}
 function laneCls(t){const s=stOf(t);return (s==='done'?' done':'')+(flags(t).indexOf('late')>=0?' late':'');}
 
 function renderMonth(){
@@ -690,21 +701,20 @@ function renderMonth(){
       h+=`<td class="${out?'out':''} ${we?'we':''} ${same(cur,TODAY)?'today':''}"${we?'':` ondragover="dragOver(event,'${k}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${k}')"`}><div class="dn">${cur.getDate()}</div>`;
       // 기간 막대는 주말 칸에서도 끊지 않고 이어 그림 — 고정 레인이라 위아래로 어긋나지 않음
       SP.forEach(t=>{
-        const a=effS(t),b=effE(t);
+        const a=dS(t),b=dE(t);
         if(k<a||k>b){h+='<span class="lane gap"></span>';return;}
         const head=(k===a),tail=(k===b);
         const cls=head&&tail?'solo':head?'head':tail?'tail':'';
-        h+=`<span class="lane ${cls}${laneCls(t)}" style="${barStyle(t,we)}" ${we?'':`draggable="true"
+        h+=`<span class="lane ${cls}${laneCls(t)}" style="${barStyle(t,we,k)}${we?'':depMiss(t,k)}" ${we?'':`draggable="true"
              ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"`}
-             title="${esc(T(t))}">${head&&!we?esc(T(t)):'&nbsp;'}</span>`;
+             title="${esc(T(t))}">${we?'&nbsp;':laneLabel(t,k)}</span>`;
       });
-      depMarks(k).forEach(t=>{h+=markHtml(t);});
       if(!we){
         const singles=tasksOn(cur).filter(x=>!x.span);
         singles.slice(0,2).forEach(({t})=>{
-          h+=`<span class="chip${laneCls(t)}" style="${barStyle(t)}" draggable="true"
+          h+=`<span class="chip${laneCls(t)}" style="${barStyle(t,false,k)}${depMiss(t,k)}" draggable="true"
                ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"
-               title="${esc(T(t))}">${esc(T(t))}</span>`;
+               title="${esc(T(t))}">${laneLabel(t,k)}</span>`;
         });
         if(singles.length>2) h+=`<span class="more">+${singles.length-2}</span>`;
       }
@@ -727,23 +737,22 @@ function renderWeek(){
          ${we?'':`onclick="pickDay('${k}')" ondragover="dragOver(event,'${k}')" ondragleave="dragLeave(event)" ondrop="drop(event,'${k}')"`}>
         <div class="wh">${WD[cur.getDay()]}<small>${cur.getMonth()+1}/${cur.getDate()}</small></div>`;
     SP.forEach(t=>{
-      const s0=effS(t), e0=effE(t);
+      const s0=dS(t), e0=dE(t);
       if(k<s0||k>e0){h+='<span class="wlane gap"></span>';return;}
       const head=(k===s0), tail=(k===e0);
       const cls=head&&tail?'solo':head?'head':tail?'tail':'';
-      h+=`<span class="wlane ${cls}${laneCls(t)}" style="${barStyle(t,we)}" ${we?'':`draggable="true"
+      h+=`<span class="wlane ${cls}${laneCls(t)}" style="${barStyle(t,we,k)}${we?'':depMiss(t,k)}" ${we?'':`draggable="true"
            ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)"`}
-           title="${esc(T(t))}">${head&&!we?esc(T(t)):'&nbsp;'}</span>`;
+           title="${esc(T(t))}">${we?'&nbsp;':laneLabel(t,k)}</span>`;
     });
-    depMarks(k).forEach(t=>{h+=markHtml(t);});
     if(we){ h+='<div style="font-size:10px;color:#C3C9D6;text-align:center;padding-top:6px">주말</div></div>'; return; }
     ts.filter(x=>!x.span).forEach(({t})=>{
       const left=ckLeft(t);
-      h+=`<div class="witem${laneCls(t)}" style="${barStyle(t)}" draggable="true"
-           ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)">${esc(T(t))}
+      h+=`<div class="witem${laneCls(t)}" style="${barStyle(t,false,k)}${depMiss(t,k)}" draggable="true"
+           ondragstart="dragStart(event,'${t.id}','${k}')" ondragend="dragEnd(event)">${laneLabel(t,k)}
            <span style="display:block;font-weight:600;opacity:.85;font-size:9.5px;margin-top:2px">${ST[stOf(t)].n}${left?` · 체크 ${left}`:''}</span></div>`;
     });
-    if(!ts.length&&!depMarks(k).length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:6px">—</div>';
+    if(!ts.length) h+='<div style="font-size:10.5px;color:#C3C9D6;text-align:center;padding-top:6px">—</div>';
     h+='</div>';
   });
   document.getElementById('wView').innerHTML=h+'</div>';
