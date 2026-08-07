@@ -205,6 +205,11 @@ const SPECS = [
     tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
   },
   {
+    id: 'spec-037', file: 'spec-037-leaderboard-play-button.html',
+    title: '[소셜-바이럴] 리더보드 친구 플레이 버튼',
+    tags: ['social', 'feature'], priority: 'high', status: 'open', date: '2026. 8. 7.', dueDate: null, relatedTo: ['spec-030', 'spec-002'],
+  },
+  {
     id: 'spec-036', file: 'spec-036-retry-flow.html',
     title: '[UX-플로우] 실패 후 재도전 흐름 단축',
     tags: ['ux'], priority: 'high', status: 'open', date: '2026. 8. 5.', dueDate: null, relatedTo: ['spec-009b', 'spec-035'],
