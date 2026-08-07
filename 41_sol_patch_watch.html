@@ -41,6 +41,15 @@
   .banner{border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:13px;line-height:1.8}
   .b-wait{background:#FFFBEB;border:1.5px solid #FCD34D;color:#92400E}
   .b-live{background:#EFF6FF;border:1.5px solid #93C5FD;color:#1E40AF}
+  details.sq{border:1px solid var(--line);border-radius:9px;margin-bottom:8px;background:#FBFCFE}
+  details.sq>summary{cursor:pointer;padding:9px 12px;font-size:12.5px;font-weight:700;color:var(--ink);list-style:none}
+  details.sq>summary::-webkit-details-marker{display:none}
+  details.sq>summary:before{content:'▸ ';color:var(--acc)}
+  details.sq[open]>summary:before{content:'▾ '}
+  details.sq pre{margin:0;padding:10px 14px;border-top:1px solid var(--line);overflow-x:auto;
+                 font-size:11.5px;line-height:1.6;color:#243043;
+                 font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .bnote{font-size:11px;font-weight:600;color:var(--mut);margin-top:2px}
   .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--mut);line-height:1.85}
   .foot a{color:var(--acc);font-weight:700;text-decoration:none}
 </style>
@@ -52,7 +61,7 @@
   <b>①</b> 토너먼트 포스트를 공유 다이얼로그에서 분리(<code>postScoreAsync</code> 단독 호출) ·
   <b>②</b> 판 포기 시 토너먼트 생성 다이얼로그 호출 제거<br>
   <b>A/B</b> — IT 있는 버전 / 없는 버전으로 갈라 배포 · IT군엔 <b>취소 시 IT 노출 지면</b>이 추가됨<br>
-  서구권(NA+EU) · 빌드 번호로 arm 구분 · 갱신 <b id="upd"></b>
+  <b>글로벌</b>(권역 제한 없음) · 빌드 번호로 arm 구분 · 갱신 <b id="upd"></b>
 </div>
 
 <div id="banner"></div>
@@ -71,12 +80,18 @@
     비어 있으면 아직 안 붙은 것입니다.</div>
 </div>
 
+<h2>빌드 <span class="h2s">번호가 어떤 빌드인지</span></h2>
+<div class="card"><table id="tBuilds"></table></div>
+
 <div id="groups"></div>
 
 <div class="note" id="how"></div>
 
+<h2>참조 쿼리 <span class="h2s">이 페이지 수치를 그대로 재현하거나 더 파볼 때</span></h2>
+<div class="card" id="sqlbox"></div>
+
 <div class="foot">
-데이터 = raw 로그 직접 집계(서구권 NA+EU) · 신 빌드 vs 직전 빌드<br>
+데이터 = raw 로그 직접 집계(글로벌) · 신 빌드 vs 직전 빌드 · IT군 vs 비IT군<br>
 연관 — <a href="39_sol_viral_ad.html" target="_blank">바이럴·광고 게임 비교 →</a> ·
 <a href="40_sol_viral_diagnosis.html" target="_blank">바이럴 진단 →</a> ·
 <a href="34_sol_ctx_switch_watch.html" target="_blank">컨텍스트 전환 관측 →</a> ·
@@ -85,9 +100,12 @@
 
 </div>
 <script>
-const P = {"updated": "2026-08-07 17:49", "target": 1000, "n": 0, "pct": 0, "deployed": false, "ab": false, "arm_it": null, "arm_no": null, "prev_build": 432, "patch_min": 433, "live_pair": [432, 431], "new_label": "—", "base_from": "2026-08-03", "base_to": "2026-08-07", "n_it": 0, "n_no": 0, "metrics": [{"key": "post_acc", "name": "토너포스트 수락률", "unit": "%", "want": "up", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "3310 ÷ (3310+3320) — <b>이 패치의 핵심 지표</b>. 9%대 → 96~99% 기대", "prev": 10.112359550561797, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "post_split", "name": "포스트≠공유 분리", "unit": "ratio", "want": "up", "group": "판정", "kind": "none", "cmp": "prev", "desc": "3310 ÷ 3210. 지금은 두 값이 <b>완전히 같아</b> 1.00 — 1.00에서 벌어지면 분리가 먹힌 것", "prev": 1.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "post_vol", "name": "포스트 성공/유저-일", "unit": "%", "want": "up", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "계측 정정분. 실제 바이럴 증가가 아니라 숫자가 제자리를 찾는 것", "prev": 27.76769509981851, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "cr_vol", "name": "토너생성 시도/유저-일", "unit": "%", "want": "down", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "포기 경로 호출이 빠져 <b>−3% 안팎</b> 기대(전체 판의 96.9%가 클리어)", "prev": 601.2704174228676, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "cr_acc", "name": "토너생성 수락률", "unit": "%", "want": "flat", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "분모만 줄어드는 것이라 <b>거의 무변화</b>가 정상. 크게 오르면 제거 범위가 의도보다 넓은 것", "prev": 0.605060506050605, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "it_over", "name": "IT 노출(game_over)/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "전면광고 지면이 game_over·game_quit이라 <b>포기 경로를 건드리면 직격</b>. 8/6~7 IT의 91%가 game_over", "prev": 0.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "it_quit", "name": "IT 노출(game_quit)/유저-일", "unit": "%", "want": "watch", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "포기 지면 노출. ②가 포기 흐름을 건드리므로 <b>여기가 가장 먼저 흔들린다</b>", "prev": 0.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "it_fin", "name": "IT 완주/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "노출이 줄면 같이 준다. 노출 대비 완주율이 흔들리는지가 포인트", "prev": 0.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "rounds", "name": "판수/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·판종료", "desc": "②가 판 종료 흐름을 수정 — 판수 자체가 흔들리면 범위를 잘못 건드린 것", "prev": 1002.7223230490017, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "failrate", "name": "실패(포기) 비중", "unit": "%", "want": "flat", "group": "prop", "kind": "prev", "cmp": "부작용·판종료", "desc": "클리어/실패 구성(data.result). ②는 포기 <b>경로</b>만 손대므로 구성비는 그대로여야 함", "prev": 3.4570135746606336, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "rv_vol", "name": "RV 완료/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "판 종료 보상 흐름과 붙어 있어 같이 본다", "prev": 314.519056261343, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "sh_vol", "name": "토너공유 시도/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·공유", "desc": "①이 이 분기를 직접 건드림. 시도량은 그대로여야 함", "prev": 313.0671506352087, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "sh_acc", "name": "토너공유 수락률", "unit": "%", "want": "flat", "group": "prop", "kind": "prev", "cmp": "부작용·공유", "desc": "다이얼로그 수락률 자체는 안 바뀌어야 함. 바뀌면 분리 과정에서 호출 조건이 달라진 것", "prev": 10.112359550561797, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "ctx_acc", "name": "컨텍스트 전환 성공률", "unit": "%", "want": "flat", "group": "prop", "kind": "prev", "cmp": "부작용·공유", "desc": "공유 다이얼로그 호출 순서가 바뀌므로 전환 성사에 영향이 갈 수 있음", "prev": 74.08675799086758, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "msg_vol", "name": "메세지 성공/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·공유", "desc": "P2P 루프의 최종 산출. SPEC-030 상승 추세가 꺾이는지 확인", "prev": 34.48275862068966, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "login", "name": "로그인 완료/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·건전성", "desc": "빌드 배포 시 기본 확인. 떨어지면 로딩·초기화 회귀 의심", "prev": 146.27949183303087, "new": null, "it": null, "no": null, "delta": null, "z": null}], "builds": [{"build": 432, "users": 527, "ud": 551, "d0": "2026-08-06", "d1": "2026-08-07", "pos": []}, {"build": 431, "users": 539, "ud": 580, "d0": "2026-08-06", "d1": "2026-08-07", "pos": [{"pos": "game_over", "c": 1804}, {"pos": "game_quit", "c": 149}]}, {"build": 416, "users": 1405, "ud": 1764, "d0": "2026-08-03", "d1": "2026-08-07", "pos": []}, {"build": 415, "users": 691, "ud": 820, "d0": "2026-08-03", "d1": "2026-08-06", "pos": []}, {"build": 409, "users": 748, "ud": 657, "d0": "2026-08-03", "d1": "2026-08-06", "pos": []}]};
+const P = {"updated": "2026-08-07 18:00", "target": 1000, "n": 0, "pct": 0, "deployed": false, "ab": false, "arm_it": null, "arm_no": null, "prev_build": 432, "patch_min": 433, "live_pair": [432, 431], "notes": {"432": "8/6 IT 지급 A/B — 전면광고 없음", "431": "8/6 IT 지급 A/B — 전면광고 있음", "416": "SPEC-030 컨텍스트 전환 전면 통합(8/5 12:13)", "415": "구버전", "409": "구버전"}, "patch_note": "오늘 패치(① 포스트 분리 · ② 포기 시 생성 다이얼로그 제거)", "sql": [["빌드별 핵심 집계 (이 페이지의 표 원본)", "-- 글로벌 · 빌드(client_version)별\nwith ev as (\n  select log_date, player_id, event, data, ifnull(client_version,0) build,\n    max(if(event='1000_LOGIN_COMPLETE',1,0)) over(partition by log_date,player_id) has_login\n  from `game-log-359704.raw.solitaire_city_journey`\n  where log_date between '<시작>' and '<끝>'\n    and is_dev is distinct from true and player_id>0\n)\nselect build,\n  count(distinct player_id) users,\n  count(distinct if(has_login=1, concat(cast(log_date as string),'|',cast(player_id as string)), null)) ud,\n  countif(event='3100_TOURNAMENT_CREATE') cr_try, countif(event='3110_TOURNAMENT_CREATE_SUCCESS') cr_ok, countif(event='3120_TOURNAMENT_CREATE_FAIL') cr_fail,\n  countif(event='3200_TOURNAMENT_SHARE') sh_try, countif(event='3210_TOURNAMENT_SHARE_SUCCESS') sh_ok, countif(event='3220_TOURNAMENT_SHARE_FAIL') sh_fail,\n  countif(event='3300_TOURNAMENT_POST') po_try, countif(event='3310_TOURNAMENT_POST_SUCCESS') po_ok, countif(event='3320_TOURNAMENT_POST_FAIL') po_fail,\n  countif(event='2300_GAMEPLAY_FINISH') fin, countif(event='2300_GAMEPLAY_FINISH' and json_extract_scalar(data,'$.result')='clear') cl_clear, countif(event='2300_GAMEPLAY_FINISH' and json_extract_scalar(data,'$.result')='fail') cl_fail,\n  countif(event='4000_INTERSTITIAL_AD_START' and coalesce(json_extract_scalar(data,'$.position'),json_extract_scalar(data,'$.type'))='game_over') it_over, countif(event='4000_INTERSTITIAL_AD_START' and coalesce(json_extract_scalar(data,'$.position'),json_extract_scalar(data,'$.type'))='game_quit') it_quit, countif(event='4010_INTERSTITIAL_AD_FINISH') it_fin,\n  countif(event='3000_SWITCH_CONTEXT_START') ctx_try, countif(event='3010_SWITCH_CONTEXT_SUCCESS') ctx_ok, countif(event='3400_MSG_P2P') msg_try, countif(event='3410_MSG_P2P_SUCCESS') msg_ok,\n  countif(event='3500_FEED_SHARE') feed_try, countif(event='3510_FEED_SHARE_SUCCESS') feed_ok\nfrom ev group by build order by build desc"], ["IT 지면 분포 (신규 취소 지면 확인용)", "-- 지면 이름을 하드코딩하지 않고 그대로 나열\nselect ifnull(client_version,0) build,\n  ifnull(coalesce(json_extract_scalar(data,'$.position'),\n                  json_extract_scalar(data,'$.type')),'(없음)') pos,\n  count(*) c, count(distinct player_id) u\nfrom `game-log-359704.raw.solitaire_city_journey`\nwhere log_date between '<시작>' and '<끝>'\n  and is_dev is distinct from true and player_id>0\n  and event='4000_INTERSTITIAL_AD_START'\ngroup by 1,2 order by 1 desc, 3 desc"], ["① 포스트 분리 확인 — 3310과 3210이 갈라졌는지", "-- 두 값이 같으면 아직 분리 안 된 것(같은 결과를 두 번 로깅)\nselect log_date, ifnull(client_version,0) build,\n  countif(event='3210_TOURNAMENT_SHARE_SUCCESS') sh_ok,\n  countif(event='3310_TOURNAMENT_POST_SUCCESS')  po_ok,\n  countif(event='3220_TOURNAMENT_SHARE_FAIL')    sh_fail,\n  countif(event='3320_TOURNAMENT_POST_FAIL')     po_fail,\n  round(safe_divide(countif(event='3310_TOURNAMENT_POST_SUCCESS'),\n    countif(event='3310_TOURNAMENT_POST_SUCCESS')+countif(event='3320_TOURNAMENT_POST_FAIL'))*100,1) post_acc\nfrom `game-log-359704.raw.solitaire_city_journey`\nwhere log_date between '<시작>' and '<끝>'\n  and is_dev is distinct from true and player_id>0\ngroup by 1,2 order by 1,2"], ["② 포기 경로 제거 확인 — 판 결과별 토너 생성", "-- data.result = clear / fail. ②는 포기(fail) 쪽 호출만 제거한다\nselect ifnull(client_version,0) build,\n  countif(event='2300_GAMEPLAY_FINISH' and json_extract_scalar(data,'$.result')='clear') clear_n,\n  countif(event='2300_GAMEPLAY_FINISH' and json_extract_scalar(data,'$.result')='fail')  fail_n,\n  countif(event='3100_TOURNAMENT_CREATE') cr_try,\n  round(safe_divide(countif(event='3100_TOURNAMENT_CREATE'),\n                    countif(event='2300_GAMEPLAY_FINISH')),3) cr_per_game\nfrom `game-log-359704.raw.solitaire_city_journey`\nwhere log_date between '<시작>' and '<끝>'\n  and is_dev is distinct from true and player_id>0\ngroup by 1 order by 1 desc"], ["실패 사유 분해 (사이드 이펙트 추적)", "select event,\n  ifnull(json_extract_scalar(data,'$.error_code'),'(none)') ec,\n  count(*) c, count(distinct player_id) u\nfrom `game-log-359704.raw.solitaire_city_journey`\nwhere log_date between '<시작>' and '<끝>'\n  and is_dev is distinct from true and player_id>0\n  and regexp_contains(event, r'(TOURNAMENT_CREATE|TOURNAMENT_SHARE|TOURNAMENT_POST|MSG_P2P|FEED_SHARE)_FAIL$')\ngroup by 1,2 order by 1, c desc"]], "new_label": "—", "base_from": "2026-08-03", "base_to": "2026-08-07", "n_it": 0, "n_no": 0, "metrics": [{"key": "post_acc", "name": "토너포스트 수락률", "unit": "%", "want": "up", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "3310 ÷ (3310+3320) — <b>이 패치의 핵심 지표</b>. 9%대 → 96~99% 기대", "prev": 9.518413597733712, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "post_split", "name": "포스트≠공유 분리", "unit": "ratio", "want": "up", "group": "판정", "kind": "none", "cmp": "prev", "desc": "3310 ÷ 3210. 지금은 두 값이 <b>완전히 같아</b> 1.00 — 1.00에서 벌어지면 분리가 먹힌 것", "prev": 1.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "post_vol", "name": "포스트 성공/유저-일", "unit": "%", "want": "up", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "계측 정정분. 실제 바이럴 증가가 아니라 숫자가 제자리를 찾는 것", "prev": 16.045845272206304, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "cr_vol", "name": "토너생성 시도/유저-일", "unit": "%", "want": "down", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "포기 경로 호출이 빠져 <b>−3% 안팎</b> 기대(전체 판의 96.9%가 클리어)", "prev": 382.4259789875836, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "cr_acc", "name": "토너생성 수락률", "unit": "%", "want": "flat", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "분모만 줄어드는 것이라 <b>거의 무변화</b>가 정상. 크게 오르면 제거 범위가 의도보다 넓은 것", "prev": 0.5207154177043243, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "it_over", "name": "IT 노출(game_over)/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "전면광고 지면이 game_over·game_quit이라 <b>포기 경로를 건드리면 직격</b>. 8/6~7 IT의 91%가 game_over", "prev": 0.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "it_quit", "name": "IT 노출(game_quit)/유저-일", "unit": "%", "want": "watch", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "포기 지면 노출. ②가 포기 흐름을 건드리므로 <b>여기가 가장 먼저 흔들린다</b>", "prev": 0.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "it_fin", "name": "IT 완주/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "노출이 줄면 같이 준다. 노출 대비 완주율이 흔들리는지가 포인트", "prev": 0.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "rounds", "name": "판수/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·판종료", "desc": "②가 판 종료 흐름을 수정 — 판수 자체가 흔들리면 범위를 잘못 건드린 것", "prev": 639.7325692454633, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "failrate", "name": "실패(포기) 비중", "unit": "%", "want": "flat", "group": "prop", "kind": "prev", "cmp": "부작용·판종료", "desc": "클리어/실패 구성(data.result). ②는 포기 <b>경로</b>만 손대므로 구성비는 그대로여야 함", "prev": 3.613018811585548, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "rv_vol", "name": "RV 완료/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "판 종료 보상 흐름과 붙어 있어 같이 본다", "prev": 188.9207258834766, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "sh_vol", "name": "토너공유 시도/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·공유", "desc": "①이 이 분기를 직접 건드림. 시도량은 그대로여야 함", "prev": 195.3199617956065, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "sh_acc", "name": "토너공유 수락률", "unit": "%", "want": "flat", "group": "prop", "kind": "prev", "cmp": "부작용·공유", "desc": "다이얼로그 수락률 자체는 안 바뀌어야 함. 바뀌면 분리 과정에서 호출 조건이 달라진 것", "prev": 9.518413597733712, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "ctx_acc", "name": "컨텍스트 전환 성공률", "unit": "%", "want": "flat", "group": "prop", "kind": "prev", "cmp": "부작용·공유", "desc": "공유 다이얼로그 호출 순서가 바뀌므로 전환 성사에 영향이 갈 수 있음", "prev": 73.8654650788542, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "msg_vol", "name": "메세지 성공/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·공유", "desc": "P2P 루프의 최종 산출. SPEC-030 상승 추세가 꺾이는지 확인", "prev": 19.675262655205348, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "pu_cr", "name": "인당 토너 생성 시도", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "한 사람이 토너 생성 다이얼로그를 몇 번 만나는지 — ②로 줄어야 함", "prev": 3.195530726256983, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "pu_sh", "name": "인당 토너 공유 시도", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "공유 다이얼로그 노출 횟수", "prev": 1.6320830007980847, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "pu_po", "name": "인당 토너 포스트 성공", "unit": "회", "want": "up", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "①로 크게 오를 자리(계측 정정분 포함)", "prev": 0.1340782122905028, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "pu_feed", "name": "인당 피드 공유 성공", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "이번 패치와 무관 — 흔들리면 다른 원인", "prev": 0.060654429369513166, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "pu_shot", "name": "인당 스샷 공유 성공", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "이번 패치와 무관 — 흔들리면 다른 원인", "prev": 0.027932960893854747, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "pu_msg", "name": "인당 메세지 성공", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "SPEC-030 상승 추세가 이어지는지", "prev": 0.16440542697525937, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "pu_ctx", "name": "인당 컨텍스트 전환 성공", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "P2P 진입 횟수", "prev": 1.8316041500399043, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "pu_fin", "name": "인당 판수", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "활동성 — 패치로 줄면 안 됨", "prev": 5.345570630486832, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "pu_it", "name": "인당 IT 노출", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "arm", "desc": "IT군에만 도는 값. 취소 지면이 붙으면 여기서 늘어난다", "prev": 0.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "pu_rv", "name": "인당 RV 완료", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "arm", "desc": "보상 흐름", "prev": 1.578611332801277, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "login", "name": "로그인 완료/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·건전성", "desc": "빌드 배포 시 기본 확인. 떨어지면 로딩·초기화 회귀 의심", "prev": 130.85004775549186, "new": null, "it": null, "no": null, "delta": null, "z": null}], "builds": [{"build": 432, "users": 1253, "ud": 1047, "d0": "2026-08-06", "d1": "2026-08-07", "pos": []}, {"build": 431, "users": 1259, "ud": 1103, "d0": "2026-08-06", "d1": "2026-08-07", "pos": [{"pos": "game_over", "c": 2266}, {"pos": "game_quit", "c": 177}]}, {"build": 416, "users": 2653, "ud": 2770, "d0": "2026-08-03", "d1": "2026-08-07", "pos": []}, {"build": 415, "users": 1309, "ud": 1283, "d0": "2026-08-03", "d1": "2026-08-06", "pos": []}, {"build": 409, "users": 1255, "ud": 988, "d0": "2026-08-03", "d1": "2026-08-06", "pos": []}]};
 const num = n => n==null?'—':Math.round(n).toLocaleString();
-const f2 = (v,u) => v==null?'—':(u==='ratio'? v.toFixed(3) : (Math.abs(v)>=10?v.toFixed(1):v.toFixed(2))+'%');
+const f2 = (v,u) => v==null?'—':
+  u==='ratio' ? v.toFixed(3) :
+  u==='회'    ? v.toFixed(2)+'회' :
+  (Math.abs(v)>=10?v.toFixed(1):v.toFixed(2))+'%';
 const WANT = {up:['오를 것','p-up'], down:['내릴 것','p-down'],
               flat:['변화 없어야','p-flat'], watch:['감시','p-watch']};
 
@@ -107,11 +125,39 @@ document.getElementById('banner').innerHTML = !P.deployed
      배포되면 자동으로 신 빌드를 잡고, <b>전면광고가 실제로 도는 쪽</b>을 IT군으로 판별해 비교를 시작합니다.
      <span style="color:#B45309">패치 빌드 번호가 정해지면 생성기의 <code>PATCH_MIN_BUILD</code>를 그 값으로 맞춰주세요.</span></div>`
   : P.ab
-  ? `<div class="banner b-live">🔵 <b>A/B 감지</b> — IT군 <b>빌드 ${P.arm_it}</b>(${num(P.n_it)}명) ·
-     비IT군 <b>빌드 ${P.arm_no}</b>(${num(P.n_no)}명) · 직전 빌드 <b>${P.prev_build}</b>와도 비교 중.
+  ? `<div class="banner b-live">🔵 <b>A/B 감지</b> — IT군 <b>빌드 ${P.arm_it}</b>(${bnote(String(P.arm_it))} · ${num(P.n_it)}명) ·
+     비IT군 <b>빌드 ${P.arm_no}</b>(${bnote(String(P.arm_no))} · ${num(P.n_no)}명) ·
+     직전 빌드 <b>${P.prev_build}</b>(${bnote(String(P.prev_build))})와도 비교 중.
      ${P.n < P.target ? '아직 모수 미달이라 <b>관측 단계</b>입니다.' : '<b>모수 확보 완료.</b>'}</div>`
   : `<div class="banner b-wait">🟡 <b>단일 빌드만 감지</b>(${P.new_label}) — A/B 두 arm이 아직 다 안 잡혔습니다.
      ①② 판정은 직전 빌드 ${P.prev_build}와의 비교로 진행하고, <b>IT 관련 지표는 arm이 갈릴 때까지 보류</b>합니다.</div>`;
+
+// 빌드 번호 옆에 항상 설명을 붙인다 — 번호만 보고 무슨 빌드인지 매번 찾는 일을 없앤다.
+function bnote(b){
+  if(b==null||b==='—') return '';
+  if(P.notes && P.notes[b]) return P.notes[b];
+  if(Number(b) >= P.patch_min) return P.patch_note;
+  return '미기재';
+}
+const bl = b => b==null||b==='—' ? '—' : `${b}<div class="bnote">${bnote(b)}</div>`;
+
+document.getElementById('tBuilds').innerHTML =
+  `<thead><tr><th>빌드</th><th>설명</th><th>유저</th><th>유저-일</th><th>첫 로그</th><th>마지막</th><th>역할</th></tr></thead><tbody>`+
+  P.builds.map(b=>{
+    const role = b.build===P.arm_it ? '<span class="pill p-watch">IT군</span>'
+               : b.build===P.arm_no ? '<span class="pill p-flat">비IT군</span>'
+               : b.build===P.prev_build ? '<span class="pill p-down">직전(대조)</span>' : '';
+    return `<tr><td>${b.build}</td><td style="text-align:left;font-weight:600;color:var(--sub)">${bnote(String(b.build))}</td>
+      <td>${num(b.users)}</td><td>${num(b.ud)}</td>
+      <td style="color:var(--mut);font-weight:600">${b.d0}</td>
+      <td style="color:var(--mut);font-weight:600">${b.d1}</td><td>${role}</td></tr>`;}).join('')+
+  `</tbody>`;
+
+document.getElementById('sqlbox').innerHTML = (P.sql||[]).map(([t,q])=>
+  `<details class="sq"><summary>${t}</summary><pre>${q.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</pre></details>`
+).join('') + `<div class="note" style="margin-top:10px">
+  <code>&lt;시작&gt;</code>·<code>&lt;끝&gt;</code>에 날짜를 넣어 <code>bq query --nouse_legacy_sql --max_rows=100000</code>로 실행하세요.
+  <b>--max_rows를 빼면 100행에서 잘립니다.</b></div>`;
 
 // 판정 — 기대 방향과 실제 움직임이 맞는지. 모수 미달이면 무조건 보류.
 function verdict(m){
@@ -143,17 +189,18 @@ document.getElementById('groups').innerHTML = Object.keys(G).map(g=>{
       <td>${d}<div class="desc">${axis}</div></td>
       <td style="color:var(--mut);font-weight:600">${m.z==null?'—':m.z.toFixed(1)}</td>
       <td><span class="pill ${vc}">${vl}</span></td></tr>`;}).join('');
-  return `<h2>${g}<span class="h2s">${g==='판정'?'패치가 겨냥한 지표':'이 패치가 건드린 코드 경로에서 흔들릴 수 있는 지표'}</span></h2>
+  return `<h2>${g}<span class="h2s">${g==='판정'?'패치가 겨냥한 지표':g==='인당 볼륨'?'유저 1명당 몇 번 — 모수가 쌓이면서 절대량이 어떻게 늘어나는지':'이 패치가 건드린 코드 경로에서 흔들릴 수 있는 지표'}</span></h2>
     <div class="card"><table>
-      <thead><tr><th>지표</th><th>기대</th><th>구 ${P.prev_build}</th><th>비IT군 ${P.arm_no||'—'}</th>
-      <th style="color:#7C3AED">IT군 ${P.arm_it||'—'}</th><th>신 합산</th>
+      <thead><tr><th>지표</th><th>기대</th><th>구 ${bl(String(P.prev_build))}</th>
+      <th>비IT군 ${bl(P.arm_no==null?'—':String(P.arm_no))}</th>
+      <th style="color:#7C3AED">IT군 ${bl(P.arm_it==null?'—':String(P.arm_it))}</th><th>신 합산</th>
       <th>차이</th><th>z</th><th>판정</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }).join('');
 
 (function(){
   const bs = P.builds.filter(b=>b.pos && b.pos.length);
   const all = [...new Set(bs.flatMap(b=>b.pos.map(p=>p.pos)))];
-  const KNOWN = ['game_over','game_quit'];
+  const KNOWN = ['game_over','game_quit'];   // 기존 지면. 이 외의 값이 뜨면 신규 지면이다.
   document.getElementById('tPos').innerHTML = !bs.length
     ? `<tbody><tr><td style="color:var(--mut)">아직 전면광고 노출 로그가 없습니다</td></tr></tbody>`
     : `<thead><tr><th>지면</th>${bs.map(b=>`<th>빌드 ${b.build}</th>`).join('')}</tr></thead><tbody>`+
@@ -161,7 +208,13 @@ document.getElementById('groups').innerHTML = Object.keys(G).map(g=>{
         const isNew = !KNOWN.includes(pn);
         return `<tr><td>${pn}${isNew?' <span class="pill p-watch">신규 지면</span>':''}</td>`+
           bs.map(b=>{const f=b.pos.find(x=>x.pos===pn); return `<td>${f?num(f.c):'—'}</td>`;}).join('')+`</tr>`;
-      }).join('')+`</tbody>`;
+      }).join('')+
+      (all.every(p=>KNOWN.includes(p))
+        ? `<tr><td style="color:var(--mut)">취소 시 노출 지면 <span class="pill p-hold">배포 후 등장 예정</span>
+           <div class="bnote">IT군에 추가되는 신규 지면. 이름이 정해져 있지 않아 로그에 뜨는 값을 그대로 잡습니다 —
+           위 목록에 <b>game_over·game_quit 외의 값</b>이 나타나면 붙은 것입니다.</div></td>`+
+           bs.map(()=>`<td>—</td>`).join('')+`</tr>` : '')+
+      `</tbody>`;
 })();
 
 document.getElementById('how').innerHTML =
@@ -172,7 +225,10 @@ document.getElementById('how').innerHTML =
   `①②는 두 arm에 모두 들어가므로 arm끼리 비교하면 차이가 안 나옵니다(비교축은 차이 칸에 표시).<br>`+
   `<b>핵심 판정 지표는 「포스트≠공유 분리」</b>입니다. 지금은 3310과 3210이 완전히 같아 1.00인데, `+
   `이 값이 1.00에서 벌어져야 ①이 실제로 먹힌 것입니다. 수락률만 오르고 이 값이 1.00이면 다른 원인입니다.<br>`+
-  `비교는 <b>서구권(NA+EU)</b> 한정입니다 — 전체로 보면 아시아 유입에 묻혀 전후 차이가 흐려집니다.<br>`+
+  `집계는 <b>글로벌</b>입니다 — 모수를 빨리 채우기 위해 권역을 제한하지 않았습니다. `+
+  `<b>A/B(IT군 vs 비IT군)는 무작위 배정</b>이라 지오가 섞여도 양쪽에 똑같이 섞여 비교가 성립합니다. `+
+  `다만 <b>신 빌드 vs 직전 빌드는 시차 비교</b>라 그 사이 지오 믹스가 바뀌면 교란될 수 있습니다 — `+
+  `①② 판정에서 애매한 차이가 나오면 권역을 갈라 재확인하세요.<br>`+
   `창은 <b>${P.base_from}~${P.base_to}</b>이며 빌드별로 나눠 집계합니다. 배포 당일은 부분일이라 신 빌드 값이 하루 안에서도 움직입니다.`;
 </script>
 </body></html>
