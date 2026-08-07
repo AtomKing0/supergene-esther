@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>바이럴 · 광고 — 권역별 게임 비교</title>
+<style>
+  :root{--ink:#1B1F30;--sub:#5B6478;--mut:#9AA0B8;--line:#E4E8F0;--bg:#F5F7FA;--acc:#4F8EF7;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;
+       font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 20px 80px}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:-0.4px}
+  .sub{color:var(--mut);font-size:12.5px;margin-bottom:18px;line-height:1.75}
+  h2{font-size:15.5px;margin:26px 0 10px;padding-left:9px;border-left:4px solid var(--acc);letter-spacing:-0.2px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;margin-bottom:13px}
+  .bar{display:flex;gap:18px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--line);
+       border-radius:13px;padding:12px 16px;margin-bottom:14px}
+  .grp{display:flex;align-items:center;gap:7px}
+  .grp .lab{font-size:11px;font-weight:800;color:var(--mut)}
+  .grp button{font-size:11.5px;font-weight:700;padding:5px 13px;border-radius:16px;cursor:pointer;
+              border:1.5px solid var(--line);background:#fff;color:var(--mut);font-family:inherit}
+  .grp button.on{border-color:var(--acc);background:#EEF3FF;color:var(--acc)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:#F2F5F9;color:var(--sub);font-size:11.5px;font-weight:700;padding:8px 10px;
+     text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child{text-align:left}
+  td{padding:7px 10px;border-bottom:1px solid #F1F3F8;text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+  td:first-child{text-align:left;color:var(--sub);font-weight:600;cursor:help}
+  tr:last-child td{border-bottom:none}
+  .blk{font-size:12.5px;font-weight:800;color:var(--sub);margin-bottom:9px}
+  .cw{position:relative;height:250px;margin-top:6px}
+  .note{background:#F7F8FB;border:1px solid var(--line);border-radius:9px;padding:11px 14px;
+        font-size:11.5px;color:var(--sub);line-height:1.8;margin-top:12px}
+  .note code{background:#EDF0F6;border-radius:4px;padding:1px 5px;font-size:11px}
+  .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--mut);line-height:1.85}
+  .foot a{color:var(--acc);font-weight:700;text-decoration:none}
+  @media (max-width:860px){ .two{grid-template-columns:1fr} }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body><div class="wrap">
+
+<h1>바이럴 · 광고 — 권역별 게임 비교</h1>
+<div class="sub">분모 = <b>유저-일</b>(로그인한 날짜 × 유저 쌍 — 판수 정의와 같은 축) ·
+권역 복수선택 = <b>건수 합산 후 비율 산출</b> · 갱신 <b>2026-08-07</b></div>
+
+<div class="bar">
+  <div class="grp"><span class="lab">창</span><span id="winBtns"></span></div>
+  <div class="grp"><span class="lab">권역</span><span id="regBtns"></span></div>
+  <div style="margin-left:auto;font-size:11.5px;color:var(--mut)" id="winLbl"></div>
+</div>
+
+<div class="two">
+  <div class="card"><div class="blk">🔗 바이럴</div><table id="tViral"></table></div>
+  <div class="card"><div class="blk">📺 광고 <span style="font-weight:600;color:var(--mut)">IT=전면 · RV=리워드</span></div><table id="tAd"></table></div>
+</div>
+
+<h2>핵심 지표 비교</h2>
+<div class="card"><div class="two">
+  <div><div class="blk">바이럴 — 유저-일당 행동</div><div class="cw"><canvas id="cViral"></canvas></div></div>
+  <div><div class="blk">광고 — 유저-일당 시청 완료</div><div class="cw"><canvas id="cAd"></canvas></div></div>
+</div></div>
+
+<h2>권역별 분해 (솔리테어)</h2>
+<div class="card"><div class="cw"><canvas id="cReg"></canvas></div>
+  <div style="font-size:11px;color:var(--mut);margin-top:8px">권역 토글과 무관하게 항상 NA·EU·아시아를 나란히 보여줍니다.</div>
+</div>
+
+<div class="note" id="note"></div>
+
+<div class="foot">
+데이터 = FB 퍼널 대시보드 추출본의 <code>viral_ad</code> 블록(BigQuery 재조회 없음 — 대시보드와 값이 항상 일치)<br>
+연관 — <a href="20_fb_funnel_dashboard.html" target="_blank">FB 3게임 퍼널 대시보드 →</a> ·
+<a href="37_sol_it_watch.html" target="_blank">전면광고 빈도 관측 →</a>
+</div>
+
+</div>
+<script>
+const P = {"va": {"cozy": {"now": {"na": {"msg_try": 88435, "msg_ok": 88069, "feed_try": 1378, "feed_ok": 1080, "shot_try": 0, "shot_ok": 0, "trn_made": 4284, "trnsh_try": 137375, "trnsh_ok": 26970, "trnpost_try": 43374, "trnpost_ok": 42804, "it_start": 583494, "it_fin": 415363, "it_err": 146257, "rv_start": 177112, "rv_fin": 138839, "rv_err": 29613, "dau_ud": 61195, "rounds": 708406, "days": 7}, "asia": {"msg_try": 30458, "msg_ok": 30232, "feed_try": 581, "feed_ok": 310, "shot_try": 0, "shot_ok": 0, "trn_made": 783, "trnsh_try": 44144, "trnsh_ok": 12900, "trnpost_try": 12946, "trnpost_ok": 12792, "it_start": 171796, "it_fin": 130262, "it_err": 34988, "rv_start": 27521, "rv_fin": 20436, "rv_err": 5676, "dau_ud": 24224, "rounds": 199098, "days": 7}, "eu": {"msg_try": 47179, "msg_ok": 46988, "feed_try": 682, "feed_ok": 482, "shot_try": 0, "shot_ok": 0, "trn_made": 3167, "trnsh_try": 91750, "trnsh_ok": 17546, "trnpost_try": 29379, "trnpost_ok": 29036, "it_start": 386789, "it_fin": 253406, "it_err": 125395, "rv_start": 79184, "rv_fin": 55996, "rv_err": 19428, "dau_ud": 23130, "rounds": 441082, "days": 7}, "all": {"msg_try": 196771, "msg_ok": 195189, "feed_try": 3462, "feed_ok": 2363, "shot_try": 0, "shot_ok": 0, "trn_made": 16343, "trnsh_try": 318518, "trnsh_ok": 68230, "trnpost_try": 101521, "trnpost_ok": 100225, "it_start": 1333601, "it_fin": 919590, "it_err": 370483, "rv_start": 323280, "rv_fin": 240782, "rv_err": 66689, "dau_ud": 157960, "rounds": 1597186, "days": 7}}, "launch_same": {"all": {"msg_try": 68369, "msg_ok": 68009, "feed_try": 11547, "feed_ok": 6838, "shot_try": 0, "shot_ok": 0, "trn_made": 19813, "trnsh_try": 274485, "trnsh_ok": 60881, "trnpost_try": 241371, "trnpost_ok": 239263, "it_start": 1683696, "it_fin": 932431, "it_err": 716163, "rv_start": 298737, "rv_fin": 156102, "rv_err": 131471, "dau_ud": 194199, "rounds": 2652298, "days": 29}, "asia": {"msg_try": 18327, "msg_ok": 18223, "feed_try": 3516, "feed_ok": 1897, "shot_try": 0, "shot_ok": 0, "trn_made": 4084, "trnsh_try": 75760, "trnsh_ok": 21715, "trnpost_try": 70767, "trnpost_ok": 69395, "it_start": 502179, "it_fin": 276225, "it_err": 214774, "rv_start": 57631, "rv_fin": 25126, "rv_err": 30151, "dau_ud": 72422, "rounds": 824408, "days": 29}, "na": {"msg_try": 12932, "msg_ok": 12879, "feed_try": 2135, "feed_ok": 1359, "shot_try": 0, "shot_ok": 0, "trn_made": 6038, "trnsh_try": 48641, "trnsh_ok": 9868, "trnpost_try": 48107, "trnpost_ok": 47970, "it_start": 255833, "it_fin": 113748, "it_err": 135405, "rv_start": 70761, "rv_fin": 34476, "rv_err": 33234, "dau_ud": 25165, "rounds": 396502, "days": 29}, "eu": {"msg_try": 21460, "msg_ok": 21346, "feed_try": 2843, "feed_ok": 1922, "shot_try": 0, "shot_ok": 0, "trn_made": 3840, "trnsh_try": 96928, "trnsh_ok": 16620, "trnpost_try": 74494, "trnpost_ok": 74159, "it_start": 586484, "it_fin": 337339, "it_err": 240707, "rv_start": 89705, "rv_fin": 53418, "rv_err": 33809, "dau_ud": 38185, "rounds": 868447, "days": 29}}, "launch": "2026-01-04"}, "pbm": {"now": {"all": {"msg_try": 108841, "msg_ok": 107670, "feed_try": 3808, "feed_ok": 2212, "shot_try": 0, "shot_ok": 0, "trn_made": 1380, "trnsh_try": 191974, "trnsh_ok": 25399, "trnpost_try": 82162, "trnpost_ok": 78599, "it_start": 469813, "it_fin": 329276, "it_err": 117525, "rv_start": 229898, "rv_fin": 179074, "rv_err": 38267, "dau_ud": 83738, "rounds": 729468, "days": 7}, "eu": {"msg_try": 9903, "msg_ok": 9824, "feed_try": 490, "feed_ok": 274, "shot_try": 0, "shot_ok": 0, "trn_made": 197, "trnsh_try": 42837, "trnsh_ok": 5838, "trnpost_try": 17279, "trnpost_ok": 16711, "it_start": 95200, "it_fin": 63061, "it_err": 28893, "rv_start": 41150, "rv_fin": 31653, "rv_err": 7775, "dau_ud": 10954, "rounds": 143837, "days": 7}, "na": {"msg_try": 87819, "msg_ok": 86953, "feed_try": 2238, "feed_ok": 1361, "shot_try": 0, "shot_ok": 0, "trn_made": 982, "trnsh_try": 111368, "trnsh_ok": 11312, "trnpost_try": 46815, "trnpost_ok": 44961, "it_start": 298176, "it_fin": 213501, "it_err": 68542, "rv_start": 156443, "rv_fin": 123356, "rv_err": 24194, "dau_ud": 52765, "rounds": 466630, "days": 7}, "asia": {"msg_try": 3760, "msg_ok": 3643, "feed_try": 652, "feed_ok": 324, "shot_try": 0, "shot_ok": 0, "trn_made": 84, "trnsh_try": 12834, "trnsh_ok": 3452, "trnpost_try": 7075, "trnpost_ok": 6605, "it_start": 27340, "it_fin": 17239, "it_err": 8644, "rv_start": 9892, "rv_fin": 7258, "rv_err": 2093, "dau_ud": 9039, "rounds": 42591, "days": 7}}, "launch_same": {"asia": {"msg_try": 391, "msg_ok": 389, "feed_try": 1057, "feed_ok": 812, "shot_try": 0, "shot_ok": 0, "trn_made": 254, "trnsh_try": 42086, "trnsh_ok": 12534, "trnpost_try": 59161, "trnpost_ok": 57543, "it_start": 221937, "it_fin": 129323, "it_err": 85905, "rv_start": 60400, "rv_fin": 28836, "rv_err": 37405, "dau_ud": 58040, "rounds": 546394, "days": 29}, "na": {"msg_try": 294, "msg_ok": 291, "feed_try": 216, "feed_ok": 146, "shot_try": 0, "shot_ok": 0, "trn_made": 461, "trnsh_try": 39783, "trnsh_ok": 6536, "trnpost_try": 48660, "trnpost_ok": 47762, "it_start": 185371, "it_fin": 122739, "it_err": 57580, "rv_start": 54315, "rv_fin": 25696, "rv_err": 27198, "dau_ud": 28006, "rounds": 374453, "days": 29}, "eu": {"msg_try": 628, "msg_ok": 627, "feed_try": 447, "feed_ok": 349, "shot_try": 0, "shot_ok": 0, "trn_made": 901, "trnsh_try": 64581, "trnsh_ok": 7836, "trnpost_try": 77775, "trnpost_ok": 76199, "it_start": 358528, "it_fin": 193796, "it_err": 159006, "rv_start": 98242, "rv_fin": 49291, "rv_err": 48297, "dau_ud": 39607, "rounds": 709102, "days": 29}, "all": {"msg_try": 1650, "msg_ok": 1640, "feed_try": 2410, "feed_ok": 1752, "shot_try": 0, "shot_ok": 0, "trn_made": 2178, "trnsh_try": 190111, "trnsh_ok": 36922, "trnpost_try": 246502, "trnpost_ok": 240472, "it_start": 976128, "it_fin": 584098, "it_err": 367711, "rv_start": 286851, "rv_fin": 142840, "rv_err": 156706, "dau_ud": 172435, "rounds": 2107193, "days": 29}}, "launch": "2025-10-18"}, "sol": {"now": {"eu": {"msg_try": 312, "msg_ok": 311, "feed_try": 628, "feed_ok": 415, "shot_try": 299, "shot_ok": 129, "trn_made": 378, "trnsh_try": 3581, "trnsh_ok": 229, "trnpost_try": 3052, "trnpost_ok": 229, "it_start": 356, "it_fin": 356, "it_err": 1, "rv_start": 16876, "rv_fin": 14306, "rv_err": 2313, "dau_ud": 2581, "rounds": 42273, "days": 7}, "asia": {"msg_try": 6, "msg_ok": 6, "feed_try": 29, "feed_ok": 11, "shot_try": 6, "shot_ok": 3, "trn_made": 11, "trnsh_try": 434, "trnsh_ok": 51, "trnpost_try": 330, "trnpost_ok": 51, "it_start": 115, "it_fin": 111, "it_err": 4, "rv_start": 1658, "rv_fin": 1339, "rv_err": 284, "dau_ud": 1937, "rounds": 5141, "days": 7}, "all": {"msg_try": 634, "msg_ok": 632, "feed_try": 1103, "feed_ok": 687, "shot_try": 615, "shot_ok": 317, "trn_made": 1267, "trnsh_try": 9336, "trnsh_ok": 636, "trnpost_try": 7065, "trnpost_ok": 636, "it_start": 708, "it_fin": 654, "it_err": 50, "rv_start": 35616, "rv_fin": 28854, "rv_err": 5981, "dau_ud": 8900, "rounds": 87029, "days": 7}, "na": {"msg_try": 284, "msg_ok": 283, "feed_try": 406, "feed_ok": 235, "shot_try": 289, "shot_ok": 175, "trn_made": 822, "trnsh_try": 4528, "trnsh_ok": 330, "trnpost_try": 3238, "trnpost_ok": 330, "it_start": 174, "it_fin": 126, "it_err": 45, "rv_start": 14540, "rv_fin": 11153, "rv_err": 2965, "dau_ud": 2820, "rounds": 30194, "days": 7}}, "launch_same": {"eu": {"msg_try": 3074, "msg_ok": 593, "feed_try": 1495, "feed_ok": 1162, "shot_try": 560, "shot_ok": 313, "trn_made": 963, "trnsh_try": 21969, "trnsh_ok": 512, "trnpost_try": 15963, "trnpost_ok": 512, "it_start": 1081, "it_fin": 958, "it_err": 118, "rv_start": 55877, "rv_fin": 46460, "rv_err": 8456, "dau_ud": 9113, "rounds": 147422, "days": 26}, "all": {"msg_try": 5622, "msg_ok": 1476, "feed_try": 2978, "feed_ok": 2027, "shot_try": 1311, "shot_ok": 738, "trn_made": 2709, "trnsh_try": 38428, "trnsh_ok": 1214, "trnpost_try": 26974, "trnpost_ok": 1214, "it_start": 1974, "it_fin": 1732, "it_err": 217, "rv_start": 118010, "rv_fin": 93037, "rv_err": 22180, "dau_ud": 38996, "rounds": 297526, "days": 26}, "asia": {"msg_try": 332, "msg_ok": 88, "feed_try": 105, "feed_ok": 60, "shot_try": 17, "shot_ok": 13, "trn_made": 30, "trnsh_try": 1656, "trnsh_ok": 69, "trnpost_try": 1122, "trnpost_ok": 69, "it_start": 123, "it_fin": 118, "it_err": 4, "rv_start": 5753, "rv_fin": 4535, "rv_err": 1048, "dau_ud": 9328, "rounds": 19119, "days": 26}, "na": {"msg_try": 1780, "msg_ok": 651, "feed_try": 1093, "feed_ok": 590, "shot_try": 664, "shot_ok": 367, "trn_made": 1486, "trnsh_try": 11728, "trnsh_ok": 586, "trnpost_try": 7756, "trnpost_ok": 586, "it_start": 565, "it_fin": 459, "it_err": 90, "rv_start": 45732, "rv_fin": 33807, "rv_err": 10579, "dau_ud": 10352, "rounds": 97286, "days": 26}}, "launch": "2026-07-13"}, "mahjong": {"now": {"na": {"msg_try": 178318, "msg_ok": 177441, "feed_try": 8743, "feed_ok": 5776, "shot_try": 0, "shot_ok": 0, "trn_made": 0, "trnsh_try": 151410, "trnsh_ok": 44196, "trnpost_try": 20746, "trnpost_ok": 20587, "it_start": 713597, "it_fin": 488567, "it_err": 187854, "rv_start": 173416, "rv_fin": 107762, "rv_err": 49403, "dau_ud": 85091, "rounds": 791714, "days": 7}, "asia": {"msg_try": 19806, "msg_ok": 19549, "feed_try": 3456, "feed_ok": 2209, "shot_try": 0, "shot_ok": 0, "trn_made": 0, "trnsh_try": 21709, "trnsh_ok": 10073, "trnpost_try": 2950, "trnpost_ok": 2908, "it_start": 94326, "it_fin": 63867, "it_err": 25653, "rv_start": 19850, "rv_fin": 10911, "rv_err": 7072, "dau_ud": 15400, "rounds": 102728, "days": 7}, "eu": {"msg_try": 65418, "msg_ok": 64955, "feed_try": 5366, "feed_ok": 3040, "shot_try": 0, "shot_ok": 0, "trn_made": 0, "trnsh_try": 69289, "trnsh_ok": 19211, "trnpost_try": 12412, "trnpost_ok": 12321, "it_start": 375892, "it_fin": 227945, "it_err": 134373, "rv_start": 69358, "rv_fin": 41228, "rv_err": 22991, "dau_ud": 38080, "rounds": 388930, "days": 7}, "all": {"msg_try": 312983, "msg_ok": 310535, "feed_try": 23795, "feed_ok": 14255, "shot_try": 0, "shot_ok": 0, "trn_made": 0, "trnsh_try": 275534, "trnsh_ok": 84750, "trnpost_try": 40822, "trnpost_ok": 40449, "it_start": 1368814, "it_fin": 899608, "it_err": 405318, "rv_start": 308586, "rv_fin": 186030, "rv_err": 94987, "dau_ud": 190544, "rounds": 1528564, "days": 7}}, "launch_same": {"eu": {"msg_try": 6891, "msg_ok": 6855, "feed_try": 10912, "feed_ok": 9415, "shot_try": 0, "shot_ok": 0, "trn_made": 0, "trnsh_try": 24653, "trnsh_ok": 3955, "trnpost_try": 22703, "trnpost_ok": 22637, "it_start": 380441, "it_fin": 215143, "it_err": 157573, "rv_start": 47043, "rv_fin": 16236, "rv_err": 30762, "dau_ud": 28158, "rounds": 417171, "days": 29}, "all": {"msg_try": 24406, "msg_ok": 24227, "feed_try": 43839, "feed_ok": 37175, "shot_try": 0, "shot_ok": 0, "trn_made": 0, "trnsh_try": 78701, "trnsh_ok": 15995, "trnpost_try": 65933, "trnpost_ok": 65687, "it_start": 1045525, "it_fin": 611895, "it_err": 406687, "rv_start": 192306, "rv_fin": 43715, "rv_err": 156783, "dau_ud": 122204, "rounds": 1262248, "days": 29}, "na": {"msg_try": 7204, "msg_ok": 7143, "feed_try": 10213, "feed_ok": 8452, "shot_try": 0, "shot_ok": 0, "trn_made": 0, "trnsh_try": 24038, "trnsh_ok": 5566, "trnpost_try": 18746, "trnpost_ok": 18673, "it_start": 261750, "it_fin": 152673, "it_err": 100919, "rv_start": 56803, "rv_fin": 13215, "rv_err": 44270, "dau_ud": 25974, "rounds": 300982, "days": 29}, "asia": {"msg_try": 4255, "msg_ok": 4221, "feed_try": 12195, "feed_ok": 10464, "shot_try": 0, "shot_ok": 0, "trn_made": 0, "trnsh_try": 12588, "trnsh_ok": 3131, "trnpost_try": 9413, "trnpost_ok": 9366, "it_start": 169803, "it_fin": 96844, "it_err": 68580, "rv_start": 41216, "rv_fin": 5166, "rv_err": 39876, "dau_ud": 38298, "rounds": 257618, "days": 29}}, "launch": "2025-05-23"}, "_meta": {"recent_days": 7, "same_max": 28, "now_window": "최근 7일(어제까지) · 전 게임 동일 달력 창", "metrics": ["msg_try", "msg_ok", "feed_try", "feed_ok", "shot_try", "shot_ok", "trn_made", "trnsh_try", "trnsh_ok", "trnpost_try", "trnpost_ok", "it_start", "it_fin", "it_err", "rv_start", "rv_fin", "rv_err"]}}, "updated": "2026-08-07"}, VA = P.va, META = VA._meta || {};
+const GAMES = [['sol','솔리테어','#4F8EF7'],['cozy','코지','#2CB87A'],
+               ['pbm','퍼블마','#E8832A'],['mahjong','마종','#7C3AED']];
+const REGS = [['all','전체'],['na','북미'],['eu','유럽'],['asia','아시아']];
+let WIN='launch_same', SEL=[];       // SEL 비면 전체
+const num = n => n==null?'—':n.toLocaleString();
+const rate = (a,b) => b ? a/b*100 : null;                 // 분모 0이면 null — 0%와 구분
+const fmtP = v => v==null?'—':(v>=10?v.toFixed(1):v.toFixed(2))+'%';
+const fmtN = v => v==null?'—':num(v);
+
+// 권역 복수선택 = 건수 합산 후 비율(비율 평균 금지 — 큰 권역이 묻힌다)
+function agg(code){
+  const G=(VA[code]||{})[WIN]; if(!G) return null;
+  const keys = SEL.length ? SEL : ['all'];
+  const out={}; let hit=false;
+  keys.forEach(k=>{ const o=G[k]; if(!o) return; hit=true;
+    Object.keys(o).forEach(f=>{ out[f]=(out[f]||0)+(o[f]||0); }); });
+  return hit?out:null;
+}
+// 창 전체(all)에서 한 번도 안 찍혔으면 '미구현' — 0%로 찍으면 '있는데 안 씀'과 구분이 안 된다
+function has(code, fam){
+  const G=(VA[code]||{})[WIN]; if(!G) return false;
+  const a=G.all||{}; return fam.some(k=>(a[k]||0)>0);
+}
+
+const VIRAL_ROWS = [
+  ['메세지/유저-일',   ['msg_try','msg_ok'],       d=>fmtP(rate(d.msg_try,d.dau_ud)),      '메세지 발송 시도 ÷ 유저-일'],
+  ['메세지 성공률',    ['msg_try','msg_ok'],       d=>fmtP(rate(d.msg_ok,d.msg_try)),      '성공 ÷ 시도'],
+  ['피드공유/유저-일',  ['feed_try','feed_ok'],     d=>fmtP(rate(d.feed_ok,d.dau_ud)),      '피드 공유 성공 ÷ 유저-일'],
+  ['스샷공유/유저-일',  ['shot_try','shot_ok'],     d=>fmtP(rate(d.shot_ok,d.dau_ud)),      '스크린샷 공유 성공 ÷ 유저-일 — 솔리테어 전용'],
+  ['토너생성/유저-일',  ['trn_made'],               d=>fmtP(rate(d.trn_made,d.dau_ud)),     '토너먼트 생성 완료 ÷ 유저-일'],
+  ['토너공유/유저-일',  ['trnsh_try','trnsh_ok'],   d=>fmtP(rate(d.trnsh_ok,d.dau_ud)),     '토너먼트 공유 성공 ÷ 유저-일'],
+  ['토너 공유율',      ['trnsh_try','trnsh_ok'],   d=>fmtP(rate(d.trnsh_ok,d.trnsh_try)),  '공유 성공 ÷ 공유 시도'],
+  ['토너포스트/유저-일',['trnpost_try','trnpost_ok'],d=>fmtP(rate(d.trnpost_ok,d.dau_ud)),  '토너먼트 포스트 성공 ÷ 유저-일'],
+  ['유저-일 (분모)',   ['dau_ud'],                 d=>fmtN(d.dau_ud),                      '로그인한 (날짜,유저) 쌍 — 권역 합산 가능'],
+];
+const AD_ROWS = [
+  ['IT 시청완료', ['it_start','it_fin'], d=>fmtN(d.it_fin),                  '전면광고 완료 건수'],
+  ['IT/유저-일',  ['it_start','it_fin'], d=>fmtP(rate(d.it_fin,d.dau_ud)),   '전면광고 완료 ÷ 유저-일'],
+  ['IT 완주율',   ['it_start','it_fin'], d=>fmtP(rate(d.it_fin,d.it_start)), '완료 ÷ 시작'],
+  ['IT 에러율',   ['it_start','it_fin'], d=>fmtP(rate(d.it_err,d.it_start)), '에러 ÷ 시작'],
+  ['RV 시청완료', ['rv_start','rv_fin'], d=>fmtN(d.rv_fin),                  '리워드광고 완료 건수'],
+  ['RV/유저-일',  ['rv_start','rv_fin'], d=>fmtP(rate(d.rv_fin,d.dau_ud)),   '리워드광고 완료 ÷ 유저-일'],
+  ['RV/판수',     ['rv_start','rv_fin'], d=>fmtP(rate(d.rv_fin,d.rounds)),   '완료 ÷ 완료 판수'],
+  ['RV 완주율',   ['rv_start','rv_fin'], d=>fmtP(rate(d.rv_fin,d.rv_start)), '완료 ÷ 시작'],
+  ['RV 에러율',   ['rv_start','rv_fin'], d=>fmtP(rate(d.rv_err,d.rv_start)), '에러 ÷ 시작'],
+];
+
+let chViral, chAd, chReg;
+function render(){
+  document.getElementById('winBtns').innerHTML =
+    [['launch_same','런칭 동기간'],['now','최근 7일']].map(([k,l])=>
+      `<button class="${WIN===k?'on':''}" onclick="setWin('${k}')">${l}</button>`).join('');
+  document.getElementById('regBtns').innerHTML = REGS.map(([k,l])=>{
+    const on = k==='all' ? !SEL.length : SEL.includes(k);
+    return `<button class="${on?'on':''}" onclick="tog('${k}')">${l}</button>`;}).join('');
+  document.getElementById('winLbl').textContent =
+    WIN==='now' ? (META.now_window||'최근 7일') : `각 게임 자기 런칭 D+0~D+${META.same_max||''}`;
+
+  const D={}; GAMES.forEach(([c])=>D[c]=agg(c));
+  const live = GAMES.filter(([c])=>D[c]);
+  const table=(id,rows)=>{
+    let h=`<thead><tr><th>지표</th>${live.map(([,l,cl])=>`<th style="color:${cl}">${l}</th>`).join('')}</tr></thead><tbody>`;
+    if(!live.length) h+=`<tr><td colspan="2" style="color:#C3C9D6">데이터 없음</td></tr>`;
+    rows.forEach(([lab,fam,fn,tip])=>{
+      h+=`<tr><td title="${tip||''}">${lab}</td>`+live.map(([c,,cl])=>
+        has(c,fam)?`<td style="color:${cl}">${fn(D[c])}</td>`
+                  :`<td style="color:#C3C9D6;font-weight:600" title="이 게임엔 해당 이벤트가 없다(미구현)">미구현</td>`
+      ).join('')+`</tr>`;});
+    document.getElementById(id).innerHTML=h+`</tbody>`;
+  };
+  table('tViral', VIRAL_ROWS); table('tAd', AD_ROWS);
+
+  // 막대 — 유저-일당 핵심 행동
+  const mk=(ref,id,labels,pick)=>{
+    const ds=live.map(([c,l,cl])=>({label:l,data:labels.map(([,fam,f])=>has(c,fam)?(pick(D[c],f)??null):null),
+      backgroundColor:cl+'D0',borderColor:cl,borderWidth:1.5,borderRadius:4}));
+    if(ref) ref.destroy();
+    return new Chart(document.getElementById(id),{type:'bar',
+      data:{labels:labels.map(([l])=>l),datasets:ds},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'top',labels:{usePointStyle:true,pointStyleWidth:10,font:{size:10.5},padding:11}},
+          tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y==null?'—':c.parsed.y.toFixed(2)+'%'}`}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:10}}},
+          y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},callback:v=>v+'%'}}}}});
+  };
+  chViral = mk(chViral,'cViral',[
+    ['메세지',['msg_try','msg_ok'],d=>rate(d.msg_try,d.dau_ud)],
+    ['피드공유',['feed_try','feed_ok'],d=>rate(d.feed_ok,d.dau_ud)],
+    ['토너생성',['trn_made'],d=>rate(d.trn_made,d.dau_ud)],
+    ['토너공유',['trnsh_try','trnsh_ok'],d=>rate(d.trnsh_ok,d.dau_ud)],
+  ],(d,f)=>f(d));
+  chAd = mk(chAd,'cAd',[
+    ['IT/유저-일',['it_start','it_fin'],d=>rate(d.it_fin,d.dau_ud)],
+    ['RV/유저-일',['rv_start','rv_fin'],d=>rate(d.rv_fin,d.dau_ud)],
+    ['RV/판수',['rv_start','rv_fin'],d=>rate(d.rv_fin,d.rounds)],
+    ['RV 에러율',['rv_start','rv_fin'],d=>rate(d.rv_err,d.rv_start)],
+  ],(d,f)=>f(d));
+
+  // 솔리테어 권역 분해
+  const G=(VA.sol||{})[WIN]||{};
+  const rl=[['na','북미'],['eu','유럽'],['asia','아시아']].filter(([k])=>G[k]);
+  const met=[['메세지',d=>rate(d.msg_try,d.dau_ud)],['피드공유',d=>rate(d.feed_ok,d.dau_ud)],
+             ['토너공유',d=>rate(d.trnsh_ok,d.dau_ud)],['RV/유저-일',d=>rate(d.rv_fin,d.dau_ud)],
+             ['RV 에러율',d=>rate(d.rv_err,d.rv_start)]];
+  const RC={na:'#2563EB',eu:'#059669',asia:'#D97706'};
+  if(chReg) chReg.destroy();
+  chReg = new Chart(document.getElementById('cReg'),{type:'bar',
+    data:{labels:met.map(([l])=>l),datasets:rl.map(([k,l])=>({label:l,
+      data:met.map(([,f])=>f(G[k])??null),backgroundColor:RC[k]+'D0',borderColor:RC[k],borderWidth:1.5,borderRadius:4}))},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{usePointStyle:true,pointStyleWidth:10,font:{size:10.5},padding:11}},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y==null?'—':c.parsed.y.toFixed(2)+'%'}`}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10.5,weight:'700'}}},
+        y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},callback:v=>v+'%'}}}}});
+
+  const missing = GAMES.filter(([c])=>!D[c]).map(([,l])=>l);
+  document.getElementById('note').innerHTML =
+    `이벤트 코드는 숫자 접두가 게임마다 달라 <b>이름 접미</b>로 매칭합니다(예: <code>%RV_FINISH</code>). `+
+    `해당 행동을 구현하지 않은 게임은 0이 아니라 <b>미구현</b>으로 비웁니다.`+
+    (missing.length?` · 데이터 없음: <b>${missing.join('·')}</b>`:'')+
+    `<br>메세지·피드·토너 공유/포스트·IT·RV는 <b>4게임 공통</b> · <b>스샷 공유는 솔리테어 전용</b> · `+
+    `<b>토너 생성(AFTER_CREATE)은 마종에 없음</b>(2026-08-07 raw 실측)<br>`+
+    `<b>IT는 리워디드 인터스티셜이 섞여</b> 들어옵니다 — 절대량 비교 시 주의(37번 리포트 주석).`;
+}
+function setWin(w){ WIN=w; render(); }
+function tog(k){
+  if(k==='all'){ SEL=[]; }
+  else { const i=SEL.indexOf(k); if(i>=0) SEL.splice(i,1); else SEL.push(k); }
+  render();
+}
+render();
+</script>
+</body></html>
