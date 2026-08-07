@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>패치 관측 — 토너 포스트 분리 · 포기 시 생성 다이얼로그 제거</title>
+<style>
+  :root{--ink:#1B1F30;--sub:#5B6478;--mut:#9AA0B8;--line:#E4E8F0;--bg:#F5F7FA;--acc:#4F8EF7;
+        --bad:#DC2626;--warn:#D97706;--good:#059669;--vio:#7C3AED;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;
+       font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 20px 80px}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:-0.4px}
+  .sub{color:var(--mut);font-size:12.5px;margin-bottom:16px;line-height:1.75}
+  h2{font-size:15px;margin:26px 0 10px;padding-left:9px;border-left:4px solid var(--acc);letter-spacing:-0.2px}
+  h2 .h2s{font-size:11.5px;font-weight:600;color:var(--mut);margin-left:7px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;margin-bottom:13px}
+  .note{background:#F7F8FB;border:1px solid var(--line);border-radius:9px;padding:11px 14px;
+        font-size:11.5px;color:var(--sub);line-height:1.8;margin-top:12px}
+  .note code{background:#EDF0F6;border-radius:4px;padding:1px 5px;font-size:11px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:#F2F5F9;color:var(--sub);font-size:11.5px;font-weight:700;padding:8px 10px;
+     text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child{text-align:left}
+  td{padding:8px 10px;border-bottom:1px solid #F1F3F8;text-align:right;
+     font-variant-numeric:tabular-nums;font-weight:700}
+  td:first-child{text-align:left;color:var(--ink);font-weight:700}
+  tr:last-child td{border-bottom:none}
+  .desc{font-size:11px;font-weight:600;color:var(--mut);margin-top:3px;line-height:1.5}
+  .pill{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:11px}
+  .p-up{background:#D1FAE5;color:#065F46} .p-down{background:#DBEAFE;color:#1E40AF}
+  .p-flat{background:#F1F3F8;color:#5B6478} .p-watch{background:#FEF3C7;color:#92400E}
+  .p-hit{background:#D1FAE5;color:#065F46} .p-miss{background:#FEE2E2;color:#B91C1C}
+  .p-hold{background:#EDE9FE;color:#5B21B6}
+  /* 모수 진행 */
+  .prog{height:12px;border-radius:8px;background:#E9EDF5;overflow:hidden;margin:8px 0 4px}
+  .prog>i{display:block;height:100%;background:linear-gradient(90deg,#4F8EF7,#7C3AED)}
+  .big{font-size:30px;font-weight:800;letter-spacing:-1px}
+  .banner{border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:13px;line-height:1.8}
+  .b-wait{background:#FFFBEB;border:1.5px solid #FCD34D;color:#92400E}
+  .b-live{background:#EFF6FF;border:1.5px solid #93C5FD;color:#1E40AF}
+  .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--mut);line-height:1.85}
+  .foot a{color:var(--acc);font-weight:700;text-decoration:none}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>패치 관측 — 토너 포스트 분리 · 포기 시 생성 다이얼로그 제거</h1>
+<div class="sub">
+  <b>①</b> 토너먼트 포스트를 공유 다이얼로그에서 분리(<code>postScoreAsync</code> 단독 호출) ·
+  <b>②</b> 판 포기 시 토너먼트 생성 다이얼로그 호출 제거<br>
+  <b>A/B</b> — IT 있는 버전 / 없는 버전으로 갈라 배포 · IT군엔 <b>취소 시 IT 노출 지면</b>이 추가됨<br>
+  서구권(NA+EU) · 빌드 번호로 arm 구분 · 갱신 <b id="upd"></b>
+</div>
+
+<div id="banner"></div>
+
+<div class="card">
+  <div style="font-size:12.5px;font-weight:800;color:var(--sub);margin-bottom:6px">모수 진행 — 목표 <b id="tgt"></b>명</div>
+  <div class="big" id="nnow"></div>
+  <div class="prog"><i id="bar"></i></div>
+  <div style="font-size:11.5px;color:var(--mut)" id="progNote"></div>
+</div>
+
+<h2>IT 지면 분포 <span class="h2s">빌드별 · 지면 이름은 로그에서 그대로 읽습니다</span></h2>
+<div class="card"><table id="tPos"></table>
+  <div class="note">IT군에 <b>취소 시 노출 지면</b>이 새로 붙습니다. 지면 이름을 코드에 박아두지 않고
+    로그에 찍힌 값을 그대로 나열하므로, <b>새 지면이 뜨면 자동으로 한 줄이 늘어납니다</b> —
+    비어 있으면 아직 안 붙은 것입니다.</div>
+</div>
+
+<div id="groups"></div>
+
+<div class="note" id="how"></div>
+
+<div class="foot">
+데이터 = raw 로그 직접 집계(서구권 NA+EU) · 신 빌드 vs 직전 빌드<br>
+연관 — <a href="39_sol_viral_ad.html" target="_blank">바이럴·광고 게임 비교 →</a> ·
+<a href="40_sol_viral_diagnosis.html" target="_blank">바이럴 진단 →</a> ·
+<a href="34_sol_ctx_switch_watch.html" target="_blank">컨텍스트 전환 관측 →</a> ·
+<a href="37_sol_it_watch.html" target="_blank">전면광고 관측 →</a>
+</div>
+
+</div>
+<script>
+const P = {"updated": "2026-08-07 17:49", "target": 1000, "n": 0, "pct": 0, "deployed": false, "ab": false, "arm_it": null, "arm_no": null, "prev_build": 432, "patch_min": 433, "live_pair": [432, 431], "new_label": "—", "base_from": "2026-08-03", "base_to": "2026-08-07", "n_it": 0, "n_no": 0, "metrics": [{"key": "post_acc", "name": "토너포스트 수락률", "unit": "%", "want": "up", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "3310 ÷ (3310+3320) — <b>이 패치의 핵심 지표</b>. 9%대 → 96~99% 기대", "prev": 10.112359550561797, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "post_split", "name": "포스트≠공유 분리", "unit": "ratio", "want": "up", "group": "판정", "kind": "none", "cmp": "prev", "desc": "3310 ÷ 3210. 지금은 두 값이 <b>완전히 같아</b> 1.00 — 1.00에서 벌어지면 분리가 먹힌 것", "prev": 1.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "post_vol", "name": "포스트 성공/유저-일", "unit": "%", "want": "up", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "계측 정정분. 실제 바이럴 증가가 아니라 숫자가 제자리를 찾는 것", "prev": 27.76769509981851, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "cr_vol", "name": "토너생성 시도/유저-일", "unit": "%", "want": "down", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "포기 경로 호출이 빠져 <b>−3% 안팎</b> 기대(전체 판의 96.9%가 클리어)", "prev": 601.2704174228676, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "cr_acc", "name": "토너생성 수락률", "unit": "%", "want": "flat", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "분모만 줄어드는 것이라 <b>거의 무변화</b>가 정상. 크게 오르면 제거 범위가 의도보다 넓은 것", "prev": 0.605060506050605, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "it_over", "name": "IT 노출(game_over)/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "전면광고 지면이 game_over·game_quit이라 <b>포기 경로를 건드리면 직격</b>. 8/6~7 IT의 91%가 game_over", "prev": 0.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "it_quit", "name": "IT 노출(game_quit)/유저-일", "unit": "%", "want": "watch", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "포기 지면 노출. ②가 포기 흐름을 건드리므로 <b>여기가 가장 먼저 흔들린다</b>", "prev": 0.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "it_fin", "name": "IT 완주/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "노출이 줄면 같이 준다. 노출 대비 완주율이 흔들리는지가 포인트", "prev": 0.0, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "rounds", "name": "판수/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·판종료", "desc": "②가 판 종료 흐름을 수정 — 판수 자체가 흔들리면 범위를 잘못 건드린 것", "prev": 1002.7223230490017, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "failrate", "name": "실패(포기) 비중", "unit": "%", "want": "flat", "group": "prop", "kind": "prev", "cmp": "부작용·판종료", "desc": "클리어/실패 구성(data.result). ②는 포기 <b>경로</b>만 손대므로 구성비는 그대로여야 함", "prev": 3.4570135746606336, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "rv_vol", "name": "RV 완료/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "arm", "cmp": "부작용·판종료", "desc": "판 종료 보상 흐름과 붙어 있어 같이 본다", "prev": 314.519056261343, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "sh_vol", "name": "토너공유 시도/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·공유", "desc": "①이 이 분기를 직접 건드림. 시도량은 그대로여야 함", "prev": 313.0671506352087, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "sh_acc", "name": "토너공유 수락률", "unit": "%", "want": "flat", "group": "prop", "kind": "prev", "cmp": "부작용·공유", "desc": "다이얼로그 수락률 자체는 안 바뀌어야 함. 바뀌면 분리 과정에서 호출 조건이 달라진 것", "prev": 10.112359550561797, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "ctx_acc", "name": "컨텍스트 전환 성공률", "unit": "%", "want": "flat", "group": "prop", "kind": "prev", "cmp": "부작용·공유", "desc": "공유 다이얼로그 호출 순서가 바뀌므로 전환 성사에 영향이 갈 수 있음", "prev": 74.08675799086758, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "msg_vol", "name": "메세지 성공/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·공유", "desc": "P2P 루프의 최종 산출. SPEC-030 상승 추세가 꺾이는지 확인", "prev": 34.48275862068966, "new": null, "it": null, "no": null, "delta": null, "z": null}, {"key": "login", "name": "로그인 완료/유저-일", "unit": "%", "want": "flat", "group": "rate", "kind": "prev", "cmp": "부작용·건전성", "desc": "빌드 배포 시 기본 확인. 떨어지면 로딩·초기화 회귀 의심", "prev": 146.27949183303087, "new": null, "it": null, "no": null, "delta": null, "z": null}], "builds": [{"build": 432, "users": 527, "ud": 551, "d0": "2026-08-06", "d1": "2026-08-07", "pos": []}, {"build": 431, "users": 539, "ud": 580, "d0": "2026-08-06", "d1": "2026-08-07", "pos": [{"pos": "game_over", "c": 1804}, {"pos": "game_quit", "c": 149}]}, {"build": 416, "users": 1405, "ud": 1764, "d0": "2026-08-03", "d1": "2026-08-07", "pos": []}, {"build": 415, "users": 691, "ud": 820, "d0": "2026-08-03", "d1": "2026-08-06", "pos": []}, {"build": 409, "users": 748, "ud": 657, "d0": "2026-08-03", "d1": "2026-08-06", "pos": []}]};
+const num = n => n==null?'—':Math.round(n).toLocaleString();
+const f2 = (v,u) => v==null?'—':(u==='ratio'? v.toFixed(3) : (Math.abs(v)>=10?v.toFixed(1):v.toFixed(2))+'%');
+const WANT = {up:['오를 것','p-up'], down:['내릴 것','p-down'],
+              flat:['변화 없어야','p-flat'], watch:['감시','p-watch']};
+
+document.getElementById('upd').textContent = P.updated;
+document.getElementById('tgt').textContent = num(P.target);
+document.getElementById('nnow').innerHTML =
+  `${num(P.n)}<span style="font-size:15px;color:var(--mut);font-weight:700"> / ${num(P.target)}명 · ${P.pct}%</span>`;
+document.getElementById('bar').style.width = P.pct+'%';
+document.getElementById('progNote').innerHTML =
+  P.n >= P.target
+    ? `목표 모수 도달 — <b style="color:var(--good)">확정 판정 가능</b>`
+    : `목표까지 <b>${num(P.target-P.n)}명</b> 남음 — 그전 수치는 <b>방향만</b> 보고 확정 판정하지 않습니다`;
+
+document.getElementById('banner').innerHTML = !P.deployed
+  ? `<div class="banner b-wait">🟡 <b>패치 배포 대기</b> — 빌드 <b>${P.patch_min}</b> 이상이 아직 로그에 안 잡힙니다.
+     (현재 라이브: ${P.live_pair.join(' · ') || '—'} — 8/6 IT 지급 A/B이며 이번 패치와 별개입니다.)<br>
+     배포되면 자동으로 신 빌드를 잡고, <b>전면광고가 실제로 도는 쪽</b>을 IT군으로 판별해 비교를 시작합니다.
+     <span style="color:#B45309">패치 빌드 번호가 정해지면 생성기의 <code>PATCH_MIN_BUILD</code>를 그 값으로 맞춰주세요.</span></div>`
+  : P.ab
+  ? `<div class="banner b-live">🔵 <b>A/B 감지</b> — IT군 <b>빌드 ${P.arm_it}</b>(${num(P.n_it)}명) ·
+     비IT군 <b>빌드 ${P.arm_no}</b>(${num(P.n_no)}명) · 직전 빌드 <b>${P.prev_build}</b>와도 비교 중.
+     ${P.n < P.target ? '아직 모수 미달이라 <b>관측 단계</b>입니다.' : '<b>모수 확보 완료.</b>'}</div>`
+  : `<div class="banner b-wait">🟡 <b>단일 빌드만 감지</b>(${P.new_label}) — A/B 두 arm이 아직 다 안 잡혔습니다.
+     ①② 판정은 직전 빌드 ${P.prev_build}와의 비교로 진행하고, <b>IT 관련 지표는 arm이 갈릴 때까지 보류</b>합니다.</div>`;
+
+// 판정 — 기대 방향과 실제 움직임이 맞는지. 모수 미달이면 무조건 보류.
+function verdict(m){
+  if(m.cmp==='arm' && !P.ab) return ['A/B 대기','p-hold'];
+  if(P.n < P.target) return ['모수 부족','p-hold'];
+  if(m.delta==null)  return ['—','p-hold'];
+  const sig = (m.z!=null && Math.abs(m.z)>=1.96);
+  if(m.want==='up')   return m.delta>0 && sig ? ['기대대로','p-hit'] : ['미달','p-miss'];
+  if(m.want==='down') return m.delta<0 && sig ? ['기대대로','p-hit'] : ['미달','p-miss'];
+  // flat/watch: 유의하게 움직였으면 사이드 이펙트
+  return sig ? ['움직임 발생','p-miss'] : ['변화 없음','p-hit'];
+}
+
+const G = {};
+P.metrics.forEach(m => (G[m.group]=G[m.group]||[]).push(m));
+document.getElementById('groups').innerHTML = Object.keys(G).map(g=>{
+  const rows = G[g].map(m=>{
+    const [wl,wc] = WANT[m.want];
+    const [vl,vc] = verdict(m);
+    const d = m.delta==null ? '—'
+      : `<b style="color:${m.delta>0?'#059669':m.delta<0?'#DC2626':'#5B6478'}">${m.delta>0?'+':''}${f2(m.delta,m.unit)}</b>`;
+    const axis = m.cmp==='arm' ? 'IT군 − 비IT군' : '신 − 구';
+    return `<tr><td>${m.name}<div class="desc">${m.desc}</div></td>
+      <td><span class="pill ${wc}">${wl}</span></td>
+      <td>${f2(m.prev,m.unit)}</td>
+      <td>${f2(m.no,m.unit)}</td>
+      <td style="color:#7C3AED">${f2(m.it,m.unit)}</td>
+      <td style="color:#1D4ED8">${f2(m.new,m.unit)}</td>
+      <td>${d}<div class="desc">${axis}</div></td>
+      <td style="color:var(--mut);font-weight:600">${m.z==null?'—':m.z.toFixed(1)}</td>
+      <td><span class="pill ${vc}">${vl}</span></td></tr>`;}).join('');
+  return `<h2>${g}<span class="h2s">${g==='판정'?'패치가 겨냥한 지표':'이 패치가 건드린 코드 경로에서 흔들릴 수 있는 지표'}</span></h2>
+    <div class="card"><table>
+      <thead><tr><th>지표</th><th>기대</th><th>구 ${P.prev_build}</th><th>비IT군 ${P.arm_no||'—'}</th>
+      <th style="color:#7C3AED">IT군 ${P.arm_it||'—'}</th><th>신 합산</th>
+      <th>차이</th><th>z</th><th>판정</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}).join('');
+
+(function(){
+  const bs = P.builds.filter(b=>b.pos && b.pos.length);
+  const all = [...new Set(bs.flatMap(b=>b.pos.map(p=>p.pos)))];
+  const KNOWN = ['game_over','game_quit'];
+  document.getElementById('tPos').innerHTML = !bs.length
+    ? `<tbody><tr><td style="color:var(--mut)">아직 전면광고 노출 로그가 없습니다</td></tr></tbody>`
+    : `<thead><tr><th>지면</th>${bs.map(b=>`<th>빌드 ${b.build}</th>`).join('')}</tr></thead><tbody>`+
+      all.map(pn=>{
+        const isNew = !KNOWN.includes(pn);
+        return `<tr><td>${pn}${isNew?' <span class="pill p-watch">신규 지면</span>':''}</td>`+
+          bs.map(b=>{const f=b.pos.find(x=>x.pos===pn); return `<td>${f?num(f.c):'—'}</td>`;}).join('')+`</tr>`;
+      }).join('')+`</tbody>`;
+})();
+
+document.getElementById('how').innerHTML =
+  `<b>읽는 법</b> — <b>기대</b>가 '변화 없어야'인데 유의하게 움직였으면 그게 <b>사이드 이펙트</b>입니다. `+
+  `z는 두 비율 차의 검정통계량이고 <b>|z|≥1.96</b>이면 유의로 봅니다(분모 30 미만이면 계산하지 않음).<br>`+
+  `<b>모수 ${num(P.target)}명 전에는 전 지표가 '모수 부족'으로 보류</b>됩니다 — 초반 소표본에서 방향이 뒤집히는 일이 잦아 확정 판정을 막아둡니다.<br>`+
+  `<b>IT 관련 지표는 IT군 vs 비IT군</b>으로, <b>①② 지표는 신(두 arm 합산) vs 직전 빌드</b>로 비교합니다 — `+
+  `①②는 두 arm에 모두 들어가므로 arm끼리 비교하면 차이가 안 나옵니다(비교축은 차이 칸에 표시).<br>`+
+  `<b>핵심 판정 지표는 「포스트≠공유 분리」</b>입니다. 지금은 3310과 3210이 완전히 같아 1.00인데, `+
+  `이 값이 1.00에서 벌어져야 ①이 실제로 먹힌 것입니다. 수락률만 오르고 이 값이 1.00이면 다른 원인입니다.<br>`+
+  `비교는 <b>서구권(NA+EU)</b> 한정입니다 — 전체로 보면 아시아 유입에 묻혀 전후 차이가 흐려집니다.<br>`+
+  `창은 <b>${P.base_from}~${P.base_to}</b>이며 빌드별로 나눠 집계합니다. 배포 당일은 부분일이라 신 빌드 값이 하루 안에서도 움직입니다.`;
+</script>
+</body></html>
