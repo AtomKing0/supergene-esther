@@ -47,13 +47,13 @@ const SPECS = [
   },
   {
     id: 'spec-007', file: 'spec-007-season-pass.html',
-    title: '[리텐션-패스] 루나 시즌 패스 — ⏸ 보류 (이번 사이클 착수 보류 · 8/12 티어 동결 후 재검토)',
+    title: '[리텐션-패스] 루나 시즌 패스 — ⏸ 보류 (수익화 블록 · 8월 셋째~넷째주 재검토)',
     tags: ['feature', 'monetize'], priority: 'high', status: 'hold', date: '2026. 7. 28.', dueDate: null, relatedTo: ['spec-028'],
   },
   {
     id: 'spec-008', file: 'spec-008-share-reward-launch.html',
     title: '[운영-후처리] share_reward_in_use 런칭 후 ON',
-    tags: ['etc'], priority: 'high', status: 'hold', date: '2026. 4. 6.', dueDate: null, relatedTo: [],
+    tags: ['etc'], priority: 'high', status: 'done', date: '2026. 4. 6.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-009', file: 'spec-009-pre-level-popup-ab.html',
@@ -136,6 +136,11 @@ const SPECS = [
     tags: ['content'], priority: 'mid', status: 'open', date: '2026. 5. 28.', dueDate: null, relatedTo: ['spec-020'],
   },
   {
+    id: 'spec-023b', file: 'spec-023-city-easter-egg-decks.html',
+    title: '[콘텐츠-수집] 시티 꾸미기 덱 이스터에그 — 구판',
+    tags: ['content'], priority: 'low', status: 'archive', date: '2026. 5. 28.', dueDate: null, relatedTo: ['spec-023'],
+  },
+  {
     id: 'spec-024', file: 'spec-024-summer-beach-renovation.html',
     title: '[콘텐츠-이벤트] 여름 해변 꾸미기',
     tags: ['content', 'feature'], priority: 'high', status: 'open', date: '2026. 5. 28.', dueDate: null, relatedTo: [],
@@ -153,11 +158,11 @@ const SPECS = [
   {
     id: 'spec-027', file: 'spec-027-shadow-chase.html',
     title: '[콘텐츠-이벤트] 그림자 냥이 추격전',
-    tags: ['content', 'feature'], priority: 'mid', status: 'open', date: '2026. 7. 24.', dueDate: null, relatedTo: ['spec-020'],
+    tags: ['content', 'feature'], priority: 'high', status: 'wip', date: '2026. 7. 24.', dueDate: null, relatedTo: ['spec-020'],
   },
   {
     id: 'spec-028', file: 'spec-028-event-boost-pack.html',
-    title: '[수익화-오퍼] 이벤트 부스트 팩 (주말 이벤트 연동) — ⏸ 준비 완료 · 8/12 이후 배포 대기',
+    title: '[수익화-오퍼] 이벤트 부스트 팩 (주말 이벤트 연동) — ⏸ 준비 완료 · SPEC-027 측정 창 종료 후 배포',
     tags: ['monetize'], priority: 'high', status: 'hold', date: '2026. 7. 26.', dueDate: null, relatedTo: ['spec-007', 'spec-027'],
   },
   {
@@ -186,7 +191,7 @@ const SPECS = [
   {
     id: 'spec-033', file: 'spec-033-deck-counter.html',
     title: '[UX-인게임] 덱 잔여 수량 표시',
-    tags: ['ux'], priority: 'high', status: 'open', date: '2026. 7. 30.', dueDate: null, relatedTo: [],
+    tags: ['ux'], priority: 'high', status: 'wip', date: '2026. 7. 30.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-034', file: 'spec-034-ingame-booster-sale.html',
@@ -197,12 +202,12 @@ const SPECS = [
     id: 'spec-035', file: 'spec-035-interstitial-frequency.html',
     monitorGroup: 'sol-it-freq',
     title: '[수익화-광고] 전면 광고 빈도 곡선',
-    tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: [],
+    tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
   },
   {
     id: 'spec-036', file: 'spec-036-retry-flow.html',
     title: '[UX-플로우] 실패 후 재도전 흐름 단축',
-    tags: ['ux'], priority: 'high', status: 'open', date: '2026. 8. 5.', dueDate: null, relatedTo: ['spec-009b'],
+    tags: ['ux'], priority: 'high', status: 'open', date: '2026. 8. 5.', dueDate: null, relatedTo: ['spec-009b', 'spec-035'],
   },
 ];
 
@@ -236,17 +241,17 @@ const MONITOR_GROUPS = {
     url:   '../../32_sol_diff_watch.html',
     specs: ['spec-029', 'spec-031'],
   },
-  'sol-it-freq': {
-    label: '전면광고(IT) 빈도 곡선 A/B',
-    since: '2026-08-06',
-    url:   '../../37_sol_it_watch.html',
-    specs: ['spec-035'],
-  },
   'sol-ctx-switch': {
     label: '컨텍스트 전환 확대 A/B — 결론 확정',
     since: '2026-08-03',
     url:   '../../34_sol_ctx_switch_watch.html',
     specs: ['spec-030'],
+  },
+  'sol-it-freq': {
+    label: '전면 광고 빈도 곡선 — 배포 관측',
+    since: '2026-08-06',
+    url:   '../../37_sol_it_watch.html',
+    specs: ['spec-035'],
   },
 };
 
