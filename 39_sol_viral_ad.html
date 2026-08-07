@@ -151,6 +151,20 @@
 
 <div class="pane" id="pane-ad" hidden>
 <h2>광고 진단 <span class="h2s">IT=전면 · RV=리워드 · 노출은 정책, 완주·에러는 기술</span></h2>
+<div class="card" style="margin-bottom:14px">
+  <b>IT 단독으로 읽지 말 것 — 우리는 RV 편중형이다.</b>
+  <div class="note" style="margin-top:6px">
+  전면(IT)만 떼어 보면 솔리테어가 벤치의 절반 이하로 보인다. 그런데 <b>광고 총량(IT+RV)</b>으로 보면
+  마종·퍼블마와 같은 자리다(유저-일당 6.1 대 6.07 대 5.90 · 2026-08-06~07 NA+EU 실측).
+  낮은 것은 물량이 아니라 <b>IT 비중</b>이다 — 코지 76% · 마종 82%인데 솔리테어는 44%,
+  코인매치(43%)와 같은 RV 편중형이다.<br>
+  <b>그래서 IT를 올리는 것은 총량을 늘리는 일이 아니라 RV를 IT로 갈아타는 일이다.</b>
+  보상형 우선 규칙(한 판에 광고 2회 금지) 때문에 IT를 늘리면 그만큼 RV가 밀린다.
+  판단 기준은 물량이 아니라 <b>IT eCPM 대 RV eCPM</b>이다.<br>
+  판당으로 보면 솔리테어가 가장 낮다(0.59 대 벤치 0.68~0.73). 유저-일당 판수가 10.3판으로 많아서
+  같은 유저-일당 총량이어도 <b>판당 밀도는 낮게 나온다</b>. 아래 원자료의 ★ 3행에서 세 관점을 같이 볼 것.
+  </div>
+</div>
 <div id="adFixes"></div>
 
 <h2>갭 분해 <span class="h2s">노출 빈도 · 도달률 · 완주율 · 에러율</span></h2>
@@ -158,7 +172,7 @@
   <div class="note" id="adGapNote"></div>
 </div>
 
-<h2>원자료 <span class="h2s">광고 전체 지표</span></h2>
+<h2>원자료 <span class="h2s">광고 전체 지표 · ★ 합 기준 3행이 아래에 붙어 있습니다</span></h2>
 <div class="card"><table id="tAd"></table></div>
 <div class="card"><div class="two">
   <div><div class="blk">유저-일당 시청 완료</div><div class="cw"><canvas id="cAd"></canvas></div></div>
@@ -352,8 +366,9 @@ const VIRAL_ROWS = [
   ['유저-일 (분모)',   ['dau_ud'],               d=>fmtN(d.dau_ud),                                  '로그인한 (날짜,유저) 쌍 — 모든 비율의 분모'],
 ];
 const AD_ROWS = [
-  ['IT 시청완료', ['it_start','it_fin'], d=>fmtN(d.it_fin),                                    '전면광고 완료 건수', 'SPEC-035 배포 시 크게 증가 (①②와 무관)'],
+  ['IT 시청완료', ['it_start','it_fin'], d=>fmtN(d.it_fin),                                    '전면광고 완료 건수', '솔리테어는 #431 IT O · #432 IT X 두 빌드가 섞인 값 — IT O 단독 실측은 37번 관측 페이지'],
   ['IT/유저-일',  ['it_start','it_fin'], d=>withN(rate(d.it_fin,d.dau_ud), d.it_fin),          '전면광고 완료 ÷ 유저-일'],
+  ['IT/판수',     ['it_start','it_fin'], d=>withN(rate(d.it_fin,d.rounds), d.rounds),          '완료 ÷ 완료 판수 · 괄호=판수 — 판을 많이 하는 게임일수록 유저-일 기준보다 낮게 나온다'],
   ['IT 완주율',   ['it_start','it_fin'], d=>withN(rate(d.it_fin,d.it_start), d.it_start),      '완료 ÷ 시작 · 괄호=시작 건수'],
   ['IT 에러율',   ['it_start','it_fin'], d=>withN(rate(d.it_err,d.it_start), d.it_err),        '에러 ÷ 시작 · 괄호=에러 건수'],
   ['RV 시청완료', ['rv_start','rv_fin'], d=>fmtN(d.rv_fin),                                    '리워드광고 완료 건수'],
@@ -361,6 +376,9 @@ const AD_ROWS = [
   ['RV/판수',     ['rv_start','rv_fin'], d=>withN(rate(d.rv_fin,d.rounds), d.rounds),          '완료 ÷ 완료 판수 · 괄호=판수'],
   ['RV 완주율',   ['rv_start','rv_fin'], d=>withN(rate(d.rv_fin,d.rv_start), d.rv_start),      '완료 ÷ 시작 · 괄호=시작 건수'],
   ['RV 에러율',   ['rv_start','rv_fin'], d=>withN(rate(d.rv_err,d.rv_start), d.rv_err),        '에러 ÷ 시작 · 괄호=에러 건수'],
+  ['광고 합/유저-일', ['it_start','rv_start'], d=>withN(rate(d.it_fin+d.rv_fin, d.dau_ud), d.it_fin+d.rv_fin), '★(IT+RV) 완료 ÷ 유저-일 — IT만 보면 구성만 보이고 총량이 안 보인다'],
+  ['광고 합/판수',   ['it_start','rv_start'], d=>withN(rate(d.it_fin+d.rv_fin, d.rounds), d.rounds),        '★(IT+RV) 완료 ÷ 완료 판수'],
+  ['IT 비중',       ['it_start','rv_start'], d=>withN(rate(d.it_fin, d.it_fin+d.rv_fin), d.it_fin+d.rv_fin), '전면이 광고 총량에서 차지하는 비율 · 괄호=합 건수'],
 ];
 
 // ── 광고 진단 ────────────────────────────────────────────
