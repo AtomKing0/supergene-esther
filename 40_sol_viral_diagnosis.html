@@ -90,8 +90,10 @@ align-self:flex-start;background:var(--surface2);color:var(--muted)}
       <span>“게임이 안 도는 것”이 아니라 유저가 수락을 안 하는 상태임</span></li>
     <li>친구가 없어서가 아님 — 런칭 동기간엔 네 게임 모두 친구가 없었음
       <span>솔 평균 0.20명 · 마종 0.19명 · 퍼블마 0.27명 · 코지 0.39명. 차이가 없음</span></li>
-    <li>원인은 <b>메시지 발송 지점</b>임. 벤치는 판마다 보내고, 우리는 <b>이미 친구와 연결된 상태에서만</b> 보냄
-      <span>판당 메시지 — 마종 0.206 · 퍼블마 0.160 · 코지 0.119 · <b>솔리테어 0.012</b>(10~17배 차이)</span></li>
+    <li>원인은 <b>친구와 연결되는 입구가 하나뿐</b>이었던 것. 발송 조건 자체는 네 게임이 동일함
+      <span>코지·마종은 <b>친구 대전이 게임 모드</b>로 있고, 솔리테어는 팝업으로만 들어감</span></li>
+    <li><b>이미 조치했고 효과가 나오는 중임</b> — 8/3 컨텍스트 전환 확대 후 판당 메시지 <b>160배</b>
+      <span>0.0002 → 0.0319(8/7)로 5일째 상승 중. 벤치(0.119~0.206)까지 3.7배 남음</span></li>
   </ol>
 </div>
 
@@ -169,81 +171,96 @@ align-self:flex-start;background:var(--surface2);color:var(--muted)}
   <b>실제 바이럴이 느는 것이 아니라 숫자가 제자리를 찾는 것</b>입니다.</p>
 </div>
 
-<h2><span class="n">4</span>원인 — 메시지를 보내는 지점이 다름</h2>
-<p>친구 수도 같고 기능도 도는데 결과가 다릅니다. 로그의 발송 위치 필드를 까보니 답이 나왔습니다.</p>
+<h2><span class="n">4</span>원인 — 발송 조건은 같고, 들어가는 입구가 달랐음</h2>
+<p>네 게임의 클라이언트 소스를 모두 대조했습니다. <b>메시지 발송 조건은 동일합니다</b> —
+넷 다 “친구와 P2P로 연결된 판”에서만 보냅니다.</p>
 
 <div class="scroll">
 <table>
-<thead><tr><th>최근 7일 · NA+EU</th><th>메시지 발송 지점</th><th>판수</th><th>메시지</th><th>판당 메시지</th></tr></thead>
+<thead><tr><th>게임</th><th>메시지 발송 조건</th><th>P2P로 들어가는 입구</th></tr></thead>
 <tbody>
-<tr><td>마종</td><td style="text-align:left">판 결과 화면 <code>play_result</code> 100%</td>
-<td>1,136,173</td><td>234,566</td><td class="hi">0.206</td></tr>
-<tr><td>퍼블마</td><td style="text-align:left">—</td>
-<td>584,681</td><td>93,434</td><td class="hi">0.160</td></tr>
-<tr><td>코지</td><td style="text-align:left">판 플레이 <code>play</code> 99.5%</td>
-<td>1,100,747</td><td>130,532</td><td class="hi">0.119</td></tr>
-<tr class="sol"><td>솔리테어</td><td style="text-align:left"><b>P2P 컨텍스트일 때만</b></td>
-<td>69,927</td><td>809</td><td class="lo">0.012</td></tr>
+<tr><td>코지</td><td style="text-align:left">P2P 판 + 친구 목록에 상대 있음</td>
+<td style="text-align:left" class="hi">스테이지 타입 <code>P2P</code> — 친구 대전이 게임 모드</td></tr>
+<tr><td>마종</td><td style="text-align:left">P2P 판 + 친구 목록에 상대 있음</td>
+<td style="text-align:left" class="hi">스테이지 타입 <code>P2P</code> — 친구 대전이 게임 모드</td></tr>
+<tr><td>퍼블마</td><td style="text-align:left">P2P 컨텍스트</td>
+<td style="text-align:left">게임 컨텍스트 타입 <code>P2P</code></td></tr>
+<tr class="sol"><td>솔리테어</td><td style="text-align:left">P2P 컨텍스트</td>
+<td style="text-align:left" class="lo">컨텍스트 전환 팝업 · 친구 메시지 유입 <b>둘뿐</b></td></tr>
 </tbody></table></div>
+<p class="cap">코지 <code>ViewCozyTile.ts</code> · 마종 <code>ViewMahjong.ts</code> ·
+퍼블마 <code>ViewGame.ts</code> · 솔리테어 <code>FacebookPlatform.ts</code> 대조.</p>
 
 <div class="box bad">
-  <p class="t">벤치는 판마다 보내고, 우리는 친구가 이미 있을 때만 보냅니다</p>
-  <p>클라이언트 소스에서 확인했습니다. 솔리테어의 메시지 발송 호출부는
-  <code>handleFacebookShare</code>의 <code>case 'p2p'</code> 안에만 있고,
-  <b>이미 친구와 연결된 컨텍스트</b>(FB 컨텍스트가 THREAD이고 상대 플레이어가 잡혀 있을 때)에서만 발화합니다.</p>
-  <p style="margin-top:8px"><b>친구를 만들려고 보내는 메시지인데, 친구가 있어야 보내집니다.</b>
-  시작 자체가 안 되는 구조입니다. 코지·마종은 조건 없이 판마다 발송합니다.</p>
-  <p style="margin-top:8px">이번 창(최근 7일)에서는 <b>퍼블마도 0.160으로 우리보다 13배 높습니다.</b>
-  장르 특성으로 설명되지 않으며, 솔리테어만 낮은 것이 맞습니다.</p>
+  <p class="t">코지·마종은 친구 대전이 게임 모드입니다</p>
+  <p>로비에서 친구를 골라 대전 판을 시작하는 흐름이 있고, 그 판이 시작될 때 상대에게 메시지가 나갑니다.
+  상대가 그 메시지를 타고 들어오면 또 P2P 판이 되고, 다시 메시지가 나갑니다. <b>루프가 스스로 돕니다.</b></p>
+  <p style="margin-top:8px">솔리테어는 P2P로 들어가는 길이 <b>컨텍스트 전환 팝업 하나</b>였습니다.
+  그리고 그 팝업은 콜드스타트 기간 동안 <b>노출을 최소로 막아둔 상태</b>였습니다.
+  들어갈 입구를 우리가 닫아둔 셈이라 루프가 시작될 수 없었습니다.</p>
 </div>
 
-<h2><span class="n">5</span>개선 가능한가 — 이미 증명됨</h2>
-<p>컨텍스트 전환 노출을 벤치 수준으로 열었습니다. 8/3 A/B 배포 → 8/5 전면 통합.</p>
+<h2><span class="n">5</span>이미 조치했고, 효과가 나오는 중</h2>
+<p>8월 3일 컨텍스트 전환 노출을 벤치 수준으로 열었습니다(A/B 후 8/5 전면 통합).
+그 입구가 열리자 메시지가 따라 올라오고 있습니다.</p>
+
 <div class="scroll">
 <table>
-<thead><tr><th>지표</th><th>배포 전</th><th>현재</th><th>변화</th></tr></thead>
+<thead><tr><th>날짜</th><th>메시지</th><th>판수</th><th>판당 메시지</th><th></th></tr></thead>
 <tbody>
-<tr><td>토너먼트 유입 세션 (1천 세션당)</td><td>26</td><td class="hi">60</td><td class="hi">2.3배</td></tr>
-<tr><td>세션당 컨텍스트 전환 노출</td><td>0.05</td><td class="hi">2.9</td><td class="hi">58배</td></tr>
-<tr><td>유저당 완료 판수</td><td>11.74</td><td class="mid">12.10</td><td class="mid">유지</td></tr>
-<tr><td>60초 체류 도달률</td><td>73.6%</td><td class="mid">75.9%</td><td class="mid">유지</td></tr>
+<tr><td>7/28~8/2 평균</td><td>1건</td><td>9,715</td><td class="lo">0.0001</td><td style="text-align:left">사실상 0</td></tr>
+<tr><td>8/3</td><td>61</td><td>11,659</td><td>0.0052</td><td style="text-align:left">컨텍스트 전환 배포</td></tr>
+<tr><td>8/5</td><td>158</td><td>9,377</td><td>0.0168</td><td style="text-align:left">전면 통합</td></tr>
+<tr class="sol"><td>8/7</td><td>217</td><td>6,802</td><td class="hi">0.0319</td><td style="text-align:left" class="hi">160배 · 상승 지속</td></tr>
 </tbody></table></div>
-<p class="cap">A/B로 검증(서구권 · 배정 49.8%). <b>활동성 손실 없이</b> 유입만 증가했습니다.
-이 경로는 친구가 없어도 작동합니다 — 토너먼트 포스트가 피드에 노출되고 친구가 아닌 사람이 유입됩니다.</p>
+<p class="cap">벤치 판당 메시지 — 마종 0.206 · 퍼블마 0.160 · 코지 0.119. 현재 3.7~6.5배 남았습니다.</p>
 
-<h2><span class="n">6</span>어떻게 워킹하게 할 것인가</h2>
+<div class="box ok">
+  <p class="t">같은 조치로 유입도 늘었습니다</p>
+  <ul class="tight">
+    <li>토너먼트 유입 세션 <b>1천 세션당 26 → 60</b> (2.3배)</li>
+    <li>세션당 컨텍스트 전환 노출 <b>0.05 → 2.9</b></li>
+    <li>유저당 완료 판수 11.74 → 12.10 · 60초 체류 73.6% → 75.9% — <b>활동성 손실 없음</b></li>
+  </ul>
+  <p style="margin-top:8px">A/B로 검증했습니다(서구권 · 배정 49.8%).</p>
+</div>
+
+<h2><span class="n">6</span>남은 격차를 어떻게 좁힐 것인가</h2>
+<p>발송 조건은 이미 벤치와 같고 입구도 열었습니다. 남은 것은 추세 관찰과, 벤치가 가진 진입점을 만들지 여부입니다.</p>
 <div class="act">
   <div class="acard">
-    <div class="when">즉시</div>
+    <div class="when">완료</div>
     <div class="what">계측 정상화</div>
     <p>토너먼트 포스트 로깅을 공유 다이얼로그에서 분리. 유저 경험 변화 없이 지표만 제자리를 찾습니다.
-    포기 시 뜨는 생성 팝업도 함께 제거합니다.</p>
-    <div class="cost s">QA 전달 완료 · 공수 작음</div>
+    포기 시 뜨는 생성 팝업 제거도 함께 요청했습니다.</p>
+    <div class="cost s">QA 전달 완료</div>
   </div>
   <div class="acard">
-    <div class="when">1순위</div>
-    <div class="what">메시지 발송 지점 이동</div>
-    <p>P2P 컨텍스트 전용 조건을 풀고 <b>판 결과 화면</b>에서 발화하도록 옮깁니다(마종과 동일 위치).
-    기능·성공률은 이미 정상이라 신규 개발이 아니라 호출 위치 변경입니다.</p>
-    <div class="cost s">핵심 조치 · 공수 중간</div>
+    <div class="when">진행 중</div>
+    <div class="what">컨텍스트 전환 유지 · 관찰</div>
+    <p>8/5 통합 완료. 판당 메시지가 5일째 오르는 중이라 어디서 멈추는지 봐야 합니다.
+    노출 상한을 걸지 않고 그대로 두는 것이 현재 방침입니다.</p>
+    <div class="cost s">조치 완료 · 관찰 중</div>
   </div>
   <div class="acard">
-    <div class="when">다음</div>
-    <div class="what">지점 개방 계속</div>
-    <p>컨텍스트 전환에서 2.3배가 나온 축을 이어갑니다.
-    피드·토너먼트 노출을 벤치 수준으로 맞추는 방향이며 친구 그래프 없이 작동합니다.</p>
-    <div class="cost s">검증된 방향</div>
+    <div class="when">검토</div>
+    <div class="what">친구 대전 입구 신설</div>
+    <p>벤치와의 남은 3.7배는 <b>친구 대전이 게임 모드로 있는가</b>의 차이입니다.
+    로비에서 친구를 골라 대전을 거는 진입점을 만드는 안이며, 기획 판단이 필요합니다.</p>
+    <div class="cost">기획 결정 필요</div>
   </div>
 </div>
 
 <div class="box" style="margin-top:22px">
   <p class="t">정리</p>
   <p><b>코지·마종 수준에 못 미치는 것이 맞습니다.</b> 다만 원인은 유저가 소셜을 싫어해서도,
-  친구가 없어서도, 기능이 고장 나서도 아닙니다. <b>메시지를 보낼 수 있는 조건을 우리가 스스로 막아둔 것</b>입니다.</p>
-  <p>발송 지점을 마종과 같은 <b>판 결과 화면</b>으로 옮기면 조건 없이 발화합니다.
-  기능은 이미 있고(성공률 99~100%), 옮기는 작업이라 신규 개발이 아닙니다.</p>
-  <p>같은 방식으로 이미 성과를 냈습니다 — 컨텍스트 전환 노출을 벤치 수준으로 열자
-  <b>활동성 손실 없이 토너먼트 유입이 2.3배</b>가 됐습니다. 지점을 여는 것이 통한다는 증거입니다.</p>
+  친구가 없어서도, 기능이 고장 나서도 아닙니다. 발송 조건은 네 게임이 동일하고,
+  <b>친구와 연결되는 입구가 하나뿐이었으며 그마저 콜드스타트 동안 닫아둔 것</b>이 원인입니다.</p>
+  <p><b>그 입구는 8월 3일에 열었고 효과가 나오고 있습니다.</b>
+  판당 메시지가 0.0002 → 0.0319로 160배, 5일째 상승 중이며 아직 천장이 안 보입니다.
+  활동성 손실도 없었습니다.</p>
+  <p>벤치까지 남은 3.7배는 <b>친구 대전을 게임 모드로 갖고 있는지</b>의 차이입니다.
+  이건 버그가 아니라 콘텐츠 설계 항목이라, 지금 추세가 어디서 멈추는지 본 뒤 판단하는 것이 맞습니다.</p>
 </div>
 
 </div>
