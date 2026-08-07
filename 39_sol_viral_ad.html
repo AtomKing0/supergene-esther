@@ -34,6 +34,7 @@
   td.sol{background:#F5F9FF;font-size:15px;font-weight:800;color:#1D4ED8}
   td.sol .base{color:#6E9BE8}
   .base{font-weight:600;font-size:11px;color:var(--mut);margin-left:3px}
+  sup.fn{color:#7C3AED;font-weight:800;font-size:9.5px;margin-left:1px}
   tr:last-child td{border-bottom:none}
   .blk{font-size:12.5px;font-weight:800;color:var(--sub);margin-bottom:9px}
   .cw{position:relative;height:250px;margin-top:6px}
@@ -100,6 +101,22 @@
     산술 추정이라 행동 변화·계절성은 반영하지 않았고, 상한이 아니라 <b>방향과 규모</b>를 보는 값입니다.</div>
 </div>
 
+<h2>개발 요청분 · 수정 후 예상 <span class="h2s">계측 정정 — 실제 바이럴 증가가 아님</span></h2>
+<div class="card">
+  <div class="note" style="margin-top:0;background:#F5F3FF;border-color:#DDD6FE">
+    <b>요청한 수정 2건</b> — ① 토너먼트 포스트를 공유 다이얼로그에서 분리(<code>postScoreAsync</code> 단독 호출) ·
+    ② 판 포기 시 토너먼트 생성 다이얼로그 호출 제거<br>
+    <b style="color:#5B21B6">현재 코드는 공유 다이얼로그가 실패해도 그 분기 안에서 <code>postScoreAsync</code>를 이미 호출합니다.</b>
+    유저가 팝업을 닫아도 점수는 반영되고 로그만 실패로 찍힙니다 — 지금 격차의 대부분이 <b>로깅 오류</b>라는 뜻입니다.
+  </div>
+  <div style="font-size:11px;color:var(--mut);margin:2px 0 6px">「현재」는 <b>위에서 선택한 창·권역</b> 기준으로 함께 바뀝니다 — 예상 배수는 절대값이 아니라 비율입니다.</div>
+  <table id="tExpect"></table>
+  <div class="note"><b>검증 포인트</b> — 수정 후 첫 하루 데이터의 토너포스트 수락률을 봅니다.
+    <b style="color:#059669">96% 근처</b> → 예상대로, 계측만 정상화된 것 ·
+    <b style="color:#DC2626">60~70%대</b> → 그동안 조용히 실패하던 <code>postScoreAsync</code>가 드러난 것(별건으로 확인 필요).<br>
+    현재 실패 분기의 <code>postTournament()</code>는 결과를 로깅하지 않아 성공 여부를 로그로 알 수 없습니다.</div>
+</div>
+
 <h2>원자료 <span class="h2s">채널별 전체 지표</span></h2>
 <div class="two">
   <div class="card"><div class="blk">🔗 바이럴</div><table id="tViral"></table></div>
@@ -115,6 +132,16 @@
 <h2>권역별 분해 (솔리테어)</h2>
 <div class="card"><div class="cw"><canvas id="cReg"></canvas></div>
   <div style="font-size:11px;color:var(--mut);margin-top:8px">권역 토글과 무관하게 항상 NA·EU·아시아를 나란히 보여줍니다.</div>
+</div>
+
+<div class="note" id="fnote">
+  <b>각주</b><br>
+  <b><sup class="fn">1</sup> 메세지 수락률</b> — 런칭 동기간 창에서 솔리테어가 낮게 나오는 것은
+  <b>7/11~7/16 버그의 잔상</b>입니다. 해당 창 실패 4,751건 중 <b>4,750건</b>이
+  <code>User is not in a context, failed to send update</code>(SOLO 컨텍스트에서 <code>updateAsync</code> 호출)이고,
+  <b>7/17부터 100%</b>로 회복해 현재도 99~100%입니다 — <b>현재의 문제가 아닙니다</b>(2026-08-07 raw 실측).<br>
+  <b><sup class="fn">2</sup> 토너포스트 수락률</b> — 포스트 분리 수정 전까지 이 값은 실제로
+  <b>공유 다이얼로그 수락률</b>을 재고 있었습니다. <b>수정 전후 값을 직접 비교할 수 없습니다.</b>
 </div>
 
 <div class="note" id="note"></div>
@@ -170,7 +197,17 @@ const CH = [
   {key:'shot',  name:'스크린샷 공유', ok:'shot_ok',  fail:'shot_fail',  fam:['shot_try','shot_ok']},
   {key:'trncr', name:'토너먼트 생성', ok:'trncr_ok', fail:'trncr_fail', fam:['trncr_try','trncr_ok']},
   {key:'trnsh', name:'토너먼트 공유', ok:'trnsh_ok', fail:'trnsh_fail', fam:['trnsh_try','trnsh_ok']},
+  {key:'trnpost',name:'토너먼트 포스트',ok:'trnpost_ok',fail:'trnpost_fail',fam:['trnpost_try','trnpost_ok'], measure:true},
 ];
+// 계측 결함이 확인된 채널 — 갭의 대부분이 '실제 열세'가 아니라 '로깅 오류'다.
+// 이런 채널을 개선 순위에 올리면 고칠 필요 없는 곳에 자원을 쓰게 되므로 순위·기대효과에서 뺀다.
+const MEASURE_NOTE = {
+  trnpost: '공유 다이얼로그가 실패해도 <b>그 분기 안에서 postScoreAsync가 이미 호출</b>되고 있습니다. '+
+           '즉 유저가 팝업을 닫아도 점수는 반영되고 <b>로그만 실패로 찍히는</b> 상태라, 이 수치는 실제로는 '+
+           '<b>공유 다이얼로그 수락률</b>을 재고 있습니다. 포스트 시도량 자체는 오히려 벤치보다 활발합니다.',
+  trnsh:   '공유 다이얼로그 실패 분기에서 포스트가 이미 처리되고 있어, 이 수락률의 상당 부분이 '+
+           '<b>계측 문제와 겹칩니다</b>. 포스트 분리 수정 후 다시 판정해야 합니다.',
+};
 function stat(code, ch){
   if(!has(code, ch.fam)) return null;
   const d = agg(code); if(!d) return null;
@@ -187,7 +224,9 @@ function diagnose(ch){
   const rAcc = (bAcc && s.acc!=null) ? s.acc/bAcc : null;   // 1보다 작을수록 열세
   const rVol = (bVol && s.vol!=null) ? s.vol/bVol : null;
   let verdict, why;
-  if (rAcc!=null && rAcc<0.7 && rVol!=null && rVol<0.7) {
+  if (ch.measure) {
+    verdict='계측'; why=MEASURE_NOTE[ch.key]||'계측 결함이 섞여 있어 그대로 비교할 수 없습니다.';
+  } else if (rAcc!=null && rAcc<0.7 && rVol!=null && rVol<0.7) {
     verdict='양쪽'; why='노출도 적고 수락도 낮습니다. <b>수락률부터</b> 고쳐야 노출을 늘린 효과가 남습니다.';
   } else if (rVol!=null && rVol<0.5 && (rAcc==null || rAcc>=0.85)) {
     verdict='동선'; why='물었을 때 받아주는 비율은 벤치와 같습니다. 기능이 <b>덜 노출되거나 동선에 없다</b>는 뜻이라 노출 지점을 늘리는 게 답입니다.';
@@ -197,7 +236,7 @@ function diagnose(ch){
     verdict='정상'; why='벤치 대비 열세가 뚜렷하지 않습니다.';
   }
   return {ch, s, bench:{acc:bAcc, vol:bVol}, rAcc, rVol, verdict, why,
-          gain: (bAcc!=null && s.acc!=null && bAcc>s.acc) ? (bAcc-s.acc)/100*s.res : 0};
+          gain: (!ch.measure && bAcc!=null && s.acc!=null && bAcc>s.acc) ? (bAcc-s.acc)/100*s.res : 0};
 }
 // 지난 창의 갭이 '지금도 깨진 것'으로 읽히는 걸 막는다.
 // 예: 친구 메시지 수락률은 런칭창 26.6%인데 최근 7일은 99.7% — 이미 해소된 갭이다.
@@ -217,19 +256,21 @@ function staleNote(x){
 }
 
 const VERDICT_STYLE = {동선:['p-warn','#D97706'], 유인:['p-bad','#DC2626'],
-                       양쪽:['p-bad','#DC2626'], 정상:['p-ok','#059669'], 단독:['p-ok','#9AA0B8']};
+                       양쪽:['p-bad','#DC2626'], 정상:['p-ok','#059669'], 단독:['p-ok','#9AA0B8'],
+                       계측:['p-bug','#7C3AED']};
 // 처방 — 판정 + 실패 사유가 정해지면 다음 행동이 하나로 좁혀진다
 const ACTION = {
   msg:   '벤치는 메시지 발송이 <b>코어 루프</b>에 박혀 있습니다(친구에게 보내야 진행). 솔은 발송 지점이 사실상 없어 볼륨이 자릿수로 벌어집니다 — 판 종료·보상 수령 동선에 발송 지점을 넣는 게 1순위.',
   feed:  '수락률·볼륨 모두 벤치 수준입니다. 남은 손실은 <b>PENDING_REQUEST(중복 호출)</b>뿐이라 디바운스만 잡으면 됩니다.',
   shot:  '솔 전용이라 비교 대상이 없습니다. 실패가 거의 전부 <b>PENDING_REQUEST</b>이므로 디바운스가 곧 수락률 상승분입니다.',
   trncr: '생성 다이얼로그가 <b>같은 사람에게 반복 발화</b>되는지부터 확인해야 합니다(아래 회/명 참조). 반복이면 발화 조건을 조이는 게 먼저고, 생성 유인은 그 다음입니다.',
-  trnsh: '띄우는 횟수는 벤치와 비슷한데 수락만 낮습니다. 공유 보상이 피드·스크린샷에는 연결돼 있는데 <b>토너먼트 공유에도 연결돼 있는지</b> 확인이 필요합니다(미확인 가설).',
+  trnsh: '공유 다이얼로그 실패 분기에서 <b>포스트가 이미 처리되고 있어</b> 이 수락률은 실제 바이럴 손실을 과대평가합니다. 포스트를 <code>postScoreAsync</code> 단독 호출로 분리한 뒤 다시 판정해야 합니다.',
+  trnpost: '고칠 것은 <b>계측</b>입니다 — 포스트를 공유 다이얼로그에서 분리해 단독 호출로 바꾸면 수락률이 벤치 수준(96~99%)으로 정상화됩니다. 다만 이는 <b>로깅 정정이지 바이럴 총량 증가가 아닙니다</b>.',
 };
 
 const VIRAL_ROWS = [
   ['메세지/유저-일',   ['msg_try','msg_ok'],     d=>withN(rate(d.msg_ok,d.dau_ud), d.msg_ok),        '메세지 발송 성공 ÷ 유저-일 · 괄호=성공 건수'],
-  ['메세지 수락률',    ['msg_try','msg_ok'],     d=>withN(rate(d.msg_ok,(d.msg_ok||0)+(d.msg_fail||0)), (d.msg_ok||0)+(d.msg_fail||0)), '성공 ÷ (성공+실패) · 괄호=판정된 건수'],
+  ['메세지 수락률<sup class="fn">1</sup>', ['msg_try','msg_ok'],     d=>withN(rate(d.msg_ok,(d.msg_ok||0)+(d.msg_fail||0)), (d.msg_ok||0)+(d.msg_fail||0)), '성공 ÷ (성공+실패) · 괄호=판정된 건수'],
   ['피드공유/유저-일',  ['feed_try','feed_ok'],   d=>withN(rate(d.feed_ok,d.dau_ud), d.feed_ok),      '피드 공유 성공 ÷ 유저-일'],
   ['피드 수락률',      ['feed_try','feed_ok'],   d=>withN(rate(d.feed_ok,(d.feed_ok||0)+(d.feed_fail||0)), (d.feed_ok||0)+(d.feed_fail||0)), '성공 ÷ (성공+실패)'],
   ['스샷공유/유저-일',  ['shot_try','shot_ok'],   d=>withN(rate(d.shot_ok,d.dau_ud), d.shot_ok),      '스크린샷 공유 성공 ÷ 유저-일 — 솔리테어 전용'],
@@ -238,6 +279,8 @@ const VIRAL_ROWS = [
   ['토너생성 수락률',   ['trncr_try','trncr_ok'], d=>withN(rate(d.trncr_ok,(d.trncr_ok||0)+(d.trncr_fail||0)), (d.trncr_ok||0)+(d.trncr_fail||0)), '성공 ÷ (성공+실패)'],
   ['토너공유/유저-일',  ['trnsh_try','trnsh_ok'], d=>withN(rate(d.trnsh_ok,d.dau_ud), d.trnsh_ok),    '토너먼트 공유 성공 ÷ 유저-일'],
   ['토너공유 수락률',   ['trnsh_try','trnsh_ok'], d=>withN(rate(d.trnsh_ok,(d.trnsh_ok||0)+(d.trnsh_fail||0)), (d.trnsh_ok||0)+(d.trnsh_fail||0)), '성공 ÷ (성공+실패)'],
+  ['토너포스트/유저-일',['trnpost_try','trnpost_ok'], d=>withN(rate(d.trnpost_ok,d.dau_ud), d.trnpost_ok), '토너먼트 포스트 성공(3310) ÷ 유저-일'],
+  ['토너포스트 수락률<sup class="fn">2</sup>', ['trnpost_try','trnpost_ok'], d=>withN(rate(d.trnpost_ok,(d.trnpost_ok||0)+(d.trnpost_fail||0)), (d.trnpost_ok||0)+(d.trnpost_fail||0)), '성공 ÷ (성공+실패) — 3310 ÷ (3310+3320) · 이번 수정의 핵심 확인 지표'],
   ['유저-일 (분모)',   ['dau_ud'],               d=>fmtN(d.dau_ud),                                  '로그인한 (날짜,유저) 쌍 — 모든 비율의 분모'],
 ];
 const AD_ROWS = [
@@ -270,8 +313,9 @@ function render(){
   // 순위 = '볼륨 결손량'(건수). 비율만 보면 규모가 작은 채널이 위로 올라온다.
   const loss = x => (x.bench && x.bench.vol!=null && x.s.vol!=null)
                     ? Math.max(0,(x.bench.vol-x.s.vol))/100*(x.s.ud||0) : 0;
-  const ranked = dg.filter(x=>x.verdict!=='정상'&&x.verdict!=='단독').sort((a,b)=>loss(b)-loss(a));
+  const ranked = dg.filter(x=>x.verdict!=='정상'&&x.verdict!=='단독'&&x.verdict!=='계측').sort((a,b)=>loss(b)-loss(a));
   const okOnes = dg.filter(x=>x.verdict==='정상'||x.verdict==='단독');
+  const measured = dg.filter(x=>x.verdict==='계측');
   const mxCls = r => r==null?'':(r<0.5?'mx-bad':r<0.85?'mx-warn':'mx-ok');
   const mxTxt = r => r==null?'—':(r>=1 ? '벤치의 '+(r*100).toFixed(0)+'% · 우위' : '벤치의 '+(r*100).toFixed(0)+'%');
   const fixEl = document.getElementById('fixes');
@@ -342,7 +386,7 @@ function render(){
   const days = winDays();
   let nh = `<thead><tr><th>채널</th><th>판정</th><th>현재 성공</th>
             <th>① 수락률→벤치</th><th>② 볼륨→벤치</th><th>큰 레버</th><th>일평균 증분</th></tr></thead><tbody>`;
-  const rows2 = dg.filter(x=>x.bench).map(x=>({x, a:x.gain, b:loss(x)}))
+  const rows2 = dg.filter(x=>x.bench && x.verdict!=='계측').map(x=>({x, a:x.gain, b:loss(x)}))
                   .filter(r=>r.a>0||r.b>0)
                   .sort((p,q)=>Math.max(q.a,q.b)-Math.max(p.a,p.b));
   if(!rows2.length) nh += `<tr><td colspan="7" style="color:var(--mut)">벤치 대비 추가 여지 없음</td></tr>`;
@@ -357,6 +401,38 @@ function render(){
       <td style="font-weight:800">${big}</td>
       <td>+${num(Math.round(best/days))}/일</td></tr>`;});
   document.getElementById('tGain').innerHTML = nh+`</tbody>`;
+
+  // ── 계측 이슈 카드 — 개선 순위와 섞이면 '고칠 필요 없는 곳'에 자원이 간다
+  if(measured.length) fixEl.innerHTML +=
+    measured.map(x=>`<div class="fix" style="border-left-color:#7C3AED">
+      <div class="rank" style="color:#7C3AED">순위 외 · 계측 결함</div>
+      <div class="ttl">${x.ch.name}<span class="pill p-bug">계측 문제</span></div>
+      <div class="gap">수락률 <b>${fmtP(x.s.acc)}</b> vs 벤치 <b>${fmtP(x.bench&&x.bench.acc)}</b><br>${x.why}</div>
+      <div class="act">→ ${ACTION[x.ch.key]||''}</div></div>`).join('');
+
+  // ── 수정 후 예상 (현재값은 데이터에서, 예상값은 개발 요청 기준의 명시값) ──
+  const solNow = agg('sol') || {};
+  const cur = {
+    postAcc: rate(solNow.trnpost_ok, (solNow.trnpost_ok||0)+(solNow.trnpost_fail||0)),
+    postVol: rate(solNow.trnpost_ok, solNow.dau_ud),
+    crAcc:   rate(solNow.trncr_ok, (solNow.trncr_ok||0)+(solNow.trncr_fail||0)),
+    crVol:   rate(solNow.trncr_ok, solNow.dau_ud),
+    msgAcc:  rate(solNow.msg_ok, (solNow.msg_ok||0)+(solNow.msg_fail||0)),
+  };
+  const EXPECT = [
+    ['토너포스트 수락률', fmtP(cur.postAcc), '96~99%',      '벤치 수준으로 정상화', true],
+    ['토너포스트/유저-일', fmtP(cur.postVol), '약 11~12배',  '창에 따라 절대값이 다릅니다', true],
+    ['토너생성 수락률',   fmtP(cur.crAcc),   '거의 무변화',  '②는 볼륨을 3%만 줄입니다', false],
+    ['토너생성/유저-일',  fmtP(cur.crVol),   '거의 동일',    '', false],
+    ['메세지 수락률',     fmtP(cur.msgAcc),  '변화 없음',    '7/16 이전 버그 잔상 — 각주 1 참조', false],
+  ];
+  document.getElementById('tExpect').innerHTML =
+    `<thead><tr><th>지표</th><th>현재</th><th>수정 후 예상</th><th>비고</th></tr></thead><tbody>`+
+    EXPECT.map(([lab,now,exp,memo,hl])=>
+      `<tr><td>${lab}</td><td class="sol">${now}</td>
+        <td style="${hl?'color:#7C3AED;font-weight:800':'color:var(--mut)'}">${exp}</td>
+        <td style="text-align:left;font-weight:600;color:var(--mut)">${memo}</td></tr>`).join('')+
+    `</tbody>`;
 
   const D={}; GAMES.forEach(([c])=>D[c]=agg(c));
   const live = GAMES.filter(([c])=>D[c]);
