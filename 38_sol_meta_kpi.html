@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meta 기준 KPI — Solitaire City Journey</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{--ink:#1B1F30;--sub:#5B6478;--mut:#9AA0B8;--line:#E4E8F0;--bg:#F5F7FA;--acc:#2563EB;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;
+       font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 80px}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:-0.4px}
+  .sub{color:var(--mut);font-size:12.5px;margin-bottom:20px;line-height:1.7}
+  h2{font-size:15.5px;margin:30px 0 11px;padding-left:9px;border-left:4px solid var(--acc);letter-spacing:-0.2px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;margin-bottom:13px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:11px;margin-bottom:16px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 16px}
+  .kpi .l{font-size:11px;font-weight:700;color:var(--mut);margin-bottom:5px}
+  .kpi .v{font-size:25px;font-weight:800;letter-spacing:-0.8px;line-height:1.15}
+  .kpi .d{font-size:11px;font-weight:700;margin-top:4px}
+  .up{color:#059669}.dn{color:#DC2626}.flat{color:var(--mut)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:#F2F5F9;color:var(--sub);font-size:11.5px;font-weight:700;padding:8px 10px;
+     text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child{text-align:left}
+  td{padding:8px 10px;border-bottom:1px solid #F1F3F8;text-align:right;font-variant-numeric:tabular-nums}
+  td:first-child{text-align:left;font-weight:700}
+  tr:last-child td{border-bottom:none}
+  tfoot td{font-weight:800;background:#FAFBFD;border-top:2px solid var(--line)}
+  .bar{height:7px;border-radius:4px;background:#EDF0F6;overflow:hidden;margin-top:4px}
+  .bar>i{display:block;height:100%;border-radius:4px}
+  .cw{position:relative;height:290px}
+  .cw.sm{height:230px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  .note{background:#EEF4FF;border:1px solid #CFE0FF;border-left:4px solid var(--acc);
+        border-radius:0 8px 8px 0;padding:11px 15px;font-size:12.5px;color:#1E40AF;line-height:1.75;margin:12px 0}
+  .warn{background:#FFF7ED;border:1px solid #FCD9A6;border-left:4px solid #D97706;
+        border-radius:0 8px 8px 0;padding:11px 15px;font-size:12.5px;color:#92400E;line-height:1.75;margin:12px 0}
+  .pill{display:inline-block;font-size:10px;font-weight:800;border-radius:6px;padding:1px 8px;
+        color:#fff;vertical-align:middle}
+  .foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--mut);line-height:1.85}
+  .foot a{color:var(--acc);font-weight:700;text-decoration:none}
+  @media (max-width:820px){ .two{grid-template-columns:1fr} }
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>Meta 기준 KPI — DAU · NRU · 세션</h1>
+<div class="sub">Solitaire City Journey · <b>LA 시간축</b>(Meta 대시보드와 같은 일자 경계) ·
+최근 28일 · 갱신 <b>2026-08-07</b><br>
+Meta가 배포 티어를 판정할 때 쓰는 축입니다. 우리 퍼널 대시보드(KST 집계)와 같은 날짜라도 값이 다릅니다.</div>
+
+<div class="kpis" id="kpis"></div>
+
+<h2>추이</h2>
+<div class="card"><div class="cw"><canvas id="cTrend"></canvas></div></div>
+
+<h2>권역별</h2>
+<div class="card">
+  <div class="two">
+    <div><div style="font-size:12px;font-weight:800;color:var(--sub);margin-bottom:8px">권역별 DAU 추이</div>
+      <div class="cw sm"><canvas id="cRegTrend"></canvas></div></div>
+    <div><div style="font-size:12px;font-weight:800;color:var(--sub);margin-bottom:8px">권역 구성 (창 누적 DAU)</div>
+      <div class="cw sm"><canvas id="cRegMix"></canvas></div></div>
+  </div>
+</div>
+<div class="card"><table id="tReg"></table></div>
+
+<h2>권역 × OS</h2>
+<div class="card"><div class="cw"><canvas id="cRegOs"></canvas></div>
+  <div style="font-size:11px;color:var(--mut);margin-top:8px">OS가 <b>미확인</b>으로 적재되는 행이 상당수입니다 — 비율 해석 시 감안하세요.</div>
+</div>
+
+<h2>국가 Top 15</h2>
+<div class="card"><table id="tTop"></table></div>
+
+<h2>빌드별</h2>
+<div class="card"><table id="tBuild"></table></div>
+
+<div class="warn">
+<b>합산 방식 주의</b> — 적재 행이 <code>국가 × OS × 빌드 × player_type</code> 단위이고 총계 행이 없어
+합산이 유일한 방법입니다. 따라서 <b>하루 중 빌드를 업데이트한 유저는 두 번 세어질 수 있습니다.</b>
+데이터 스튜디오 KPI도 같은 방식이라 값은 서로 맞습니다.
+</div>
+
+<div class="foot">
+데이터 <code>stat.solitaire_city_journey</code> · <code>*-for-Meta</code>(DAU·NRU=player_count, 세션=log_count) ·
+권역 매핑 <code>analytics_common.tb_dim_country</code>(아메리카는 북미/중남미로 분리 — Meta Distribution status와 같은 단위)<br>
+연관 — <a href="20_fb_funnel_dashboard.html" target="_blank">FB 3게임 퍼널 대시보드(KST 기준) →</a>
+</div>
+
+</div>
+<script>
+const P = {"daily": [{"d": "2026-08-04", "dau": 2030, "nru": 1362, "sess": 2760}, {"d": "2026-08-05", "dau": 1436, "nru": 756, "sess": 2175}, {"d": "2026-08-06", "dau": 1823, "nru": 1186, "sess": 2420}], "regDaily": [{"d": "2026-08-04", "reg": "북미", "dau": 499, "nru": 222, "sess": 790}, {"d": "2026-08-04", "reg": "아시아", "dau": 708, "nru": 658, "sess": 780}, {"d": "2026-08-04", "reg": "아프리카", "dau": 169, "nru": 147, "sess": 192}, {"d": "2026-08-04", "reg": "오세아니아", "dau": 35, "nru": 23, "sess": 55}, {"d": "2026-08-04", "reg": "유럽", "dau": 425, "nru": 150, "sess": 709}, {"d": "2026-08-04", "reg": "중남미", "dau": 194, "nru": 162, "sess": 234}, {"d": "2026-08-05", "reg": "북미", "dau": 471, "nru": 198, "sess": 763}, {"d": "2026-08-05", "reg": "아시아", "dau": 380, "nru": 319, "sess": 467}, {"d": "2026-08-05", "reg": "아프리카", "dau": 60, "nru": 43, "sess": 72}, {"d": "2026-08-05", "reg": "오세아니아", "dau": 21, "nru": 11, "sess": 42}, {"d": "2026-08-05", "reg": "유럽", "dau": 421, "nru": 147, "sess": 720}, {"d": "2026-08-05", "reg": "중남미", "dau": 83, "nru": 38, "sess": 111}, {"d": "2026-08-06", "reg": "북미", "dau": 385, "nru": 133, "sess": 603}, {"d": "2026-08-06", "reg": "아시아", "dau": 649, "nru": 598, "sess": 741}, {"d": "2026-08-06", "reg": "아프리카", "dau": 196, "nru": 180, "sess": 206}, {"d": "2026-08-06", "reg": "오세아니아", "dau": 19, "nru": 13, "sess": 28}, {"d": "2026-08-06", "reg": "유럽", "dau": 428, "nru": 142, "sess": 672}, {"d": "2026-08-06", "reg": "중남미", "dau": 146, "nru": 120, "sess": 170}], "regSum": [{"reg": "아시아", "dau": 1737, "nru": 1575, "ru": 162, "sess": 1988, "countries": 41}, {"reg": "북미", "dau": 1355, "nru": 553, "ru": 802, "sess": 2156, "countries": 2}, {"reg": "유럽", "dau": 1274, "nru": 439, "ru": 835, "sess": 2101, "countries": 36}, {"reg": "아프리카", "dau": 425, "nru": 370, "ru": 55, "sess": 470, "countries": 44}, {"reg": "중남미", "dau": 423, "nru": 320, "ru": 103, "sess": 515, "countries": 27}, {"reg": "오세아니아", "dau": 75, "nru": 47, "ru": 28, "sess": 125, "countries": 7}], "topC": [{"cc": "US", "nm": "미국", "reg": "북미", "dau": 1081, "nru": 460, "sess": 1735}, {"cc": "PH", "nm": "필리핀", "reg": "아시아", "dau": 470, "nru": 440, "sess": 533}, {"cc": "FR", "nm": "프랑스", "reg": "유럽", "dau": 339, "nru": 133, "sess": 517}, {"cc": "CA", "nm": "캐나다", "reg": "북미", "dau": 274, "nru": 93, "sess": 421}, {"cc": "BD", "nm": "방글라데시", "reg": "아시아", "dau": 241, "nru": 238, "sess": 254}, {"cc": "DE", "nm": "독일", "reg": "유럽", "dau": 228, "nru": 83, "sess": 361}, {"cc": "GB", "nm": "영국", "reg": "유럽", "dau": 219, "nru": 95, "sess": 399}, {"cc": "BR", "nm": "브라질", "reg": "중남미", "dau": 170, "nru": 130, "sess": 214}, {"cc": "IN", "nm": "인도", "reg": "아시아", "dau": 163, "nru": 143, "sess": 181}, {"cc": "NP", "nm": "네팔", "reg": "아시아", "dau": 157, "nru": 147, "sess": 177}, {"cc": "ZA", "nm": "남아프리카 공화국", "reg": "아프리카", "dau": 96, "nru": 76, "sess": 106}, {"cc": "VN", "nm": "베트남", "reg": "아시아", "dau": 94, "nru": 75, "sess": 139}, {"cc": "PK", "nm": "파키스탄", "reg": "아시아", "dau": 84, "nru": 81, "sess": 94}, {"cc": "KH", "nm": "캄보디아", "reg": "아시아", "dau": 75, "nru": 69, "sess": 88}, {"cc": "IT", "nm": "이탈리아", "reg": "유럽", "dau": 62, "nru": 14, "sess": 106}], "regOs": [{"reg": "북미", "os": "미확인", "dau": 568}, {"reg": "북미", "os": "Android", "dau": 437}, {"reg": "북미", "os": "Windows", "dau": 260}, {"reg": "북미", "os": "iOS", "dau": 75}, {"reg": "북미", "os": "OS X", "dau": 14}, {"reg": "북미", "os": "Linux", "dau": 1}, {"reg": "아시아", "os": "미확인", "dau": 1575}, {"reg": "아시아", "os": "Android", "dau": 113}, {"reg": "아시아", "os": "Windows", "dau": 33}, {"reg": "아시아", "os": "iOS", "dau": 14}, {"reg": "아시아", "os": "OS X", "dau": 2}, {"reg": "아프리카", "os": "미확인", "dau": 370}, {"reg": "아프리카", "os": "Android", "dau": 47}, {"reg": "아프리카", "os": "Windows", "dau": 8}, {"reg": "오세아니아", "os": "미확인", "dau": 47}, {"reg": "오세아니아", "os": "Android", "dau": 15}, {"reg": "오세아니아", "os": "Windows", "dau": 11}, {"reg": "오세아니아", "os": "iOS", "dau": 2}, {"reg": "유럽", "os": "Windows", "dau": 502}, {"reg": "유럽", "os": "미확인", "dau": 452}, {"reg": "유럽", "os": "Android", "dau": 290}, {"reg": "유럽", "os": "iOS", "dau": 20}, {"reg": "유럽", "os": "OS X", "dau": 7}, {"reg": "유럽", "os": "Linux", "dau": 3}, {"reg": "중남미", "os": "미확인", "dau": 321}, {"reg": "중남미", "os": "Android", "dau": 62}, {"reg": "중남미", "os": "Windows", "dau": 40}], "builds": [{"cv": 416, "dau": 2494, "sess": 3589}, {"cv": 431, "dau": 955, "sess": 1328}, {"cv": 432, "dau": 947, "sess": 1245}, {"cv": 415, "dau": 890, "sess": 1190}, {"cv": 409, "dau": 3, "sess": 3}], "updated": "2026-08-07", "days": 28};
+const RCOL = {'북미':'#2563EB','유럽':'#059669','아시아':'#D97706','중남미':'#7C3AED',
+              '아프리카':'#DC2626','오세아니아':'#0891B2','기타':'#94A3B8'};
+const num = n => n==null?'—':n.toLocaleString();
+const pct = (a,b) => b? (a/b*100) : 0;
+const md  = s => s.slice(5).replace('-','/');
+
+// KPI 카드
+(function(){
+  const D=P.daily; if(!D.length) return;
+  const cur=D[D.length-1], prv=D.length>1?D[D.length-2]:null;
+  const delta=(a,b)=>{ if(!prv||!b) return '<span class="flat">— 전일 대비</span>';
+    const r=(a-b)/b*100, cls=r>0.5?'up':(r<-0.5?'dn':'flat');
+    return `<span class="${cls}">${r>0?'▲':(r<0?'▼':'－')} ${Math.abs(r).toFixed(1)}% 전일 대비</span>`; };
+  const spd = cur.dau? (cur.sess/cur.dau) : null;
+  const spdP = prv&&prv.dau? (prv.sess/prv.dau) : null;
+  document.getElementById('kpis').innerHTML = [
+    ['DAU', num(cur.dau), delta(cur.dau, prv&&prv.dau)],
+    ['NRU', num(cur.nru), delta(cur.nru, prv&&prv.nru)],
+    ['세션', num(cur.sess), delta(cur.sess, prv&&prv.sess)],
+    ['세션 / DAU', spd==null?'—':spd.toFixed(2), delta(spd, spdP)],
+    ['NRU 비중', cur.dau? (cur.nru/cur.dau*100).toFixed(1)+'%':'—',
+      `<span class="flat">${cur.d} 기준</span>`],
+  ].map(([l,v,d])=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join('');
+})();
+
+// 추이
+new Chart(document.getElementById('cTrend'),{type:'line',
+  data:{labels:P.daily.map(r=>md(r.d)),datasets:[
+    {label:'세션',data:P.daily.map(r=>r.sess),borderColor:'#0891B2',backgroundColor:'#0891B222',tension:.3,borderWidth:2.5,pointRadius:3,fill:true},
+    {label:'DAU', data:P.daily.map(r=>r.dau), borderColor:'#2563EB',backgroundColor:'#2563EB18',tension:.3,borderWidth:3,pointRadius:3.5,fill:true},
+    {label:'NRU', data:P.daily.map(r=>r.nru), borderColor:'#D97706',backgroundColor:'#D9770618',tension:.3,borderWidth:2.5,pointRadius:3,fill:true}]},
+  options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top',labels:{usePointStyle:true,pointStyleWidth:10,font:{size:11,weight:'600'},padding:14}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:10}}},
+      y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10},callback:v=>v.toLocaleString()}}}}});
+
+// 권역 × 일별 (DAU 스택)
+(function(){
+  const days=[...new Set(P.regDaily.map(r=>r.d))].sort();
+  const regs=[...new Set(P.regDaily.map(r=>r.reg))];
+  const m={}; P.regDaily.forEach(r=>{ (m[r.reg]=m[r.reg]||{})[r.d]=r.dau; });
+  const order=regs.sort((a,b)=>days.reduce((s,d)=>s+(m[b][d]||0),0)-days.reduce((s,d)=>s+(m[a][d]||0),0));
+  new Chart(document.getElementById('cRegTrend'),{type:'line',
+    data:{labels:days.map(md),datasets:order.map(r=>({label:r,data:days.map(d=>m[r][d]||0),
+      borderColor:RCOL[r]||'#94A3B8',backgroundColor:(RCOL[r]||'#94A3B8')+'33',
+      tension:.3,borderWidth:2,pointRadius:2,fill:true}))},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'top',labels:{usePointStyle:true,pointStyleWidth:9,font:{size:10},padding:10}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:9}}},
+        y:{stacked:true,beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:9}}}}}});
+})();
+
+// 권역 구성 도넛
+(function(){
+  const S=[...P.regSum].sort((a,b)=>b.dau-a.dau);
+  new Chart(document.getElementById('cRegMix'),{type:'doughnut',
+    data:{labels:S.map(r=>r.reg),datasets:[{data:S.map(r=>r.dau),
+      backgroundColor:S.map(r=>RCOL[r.reg]||'#94A3B8'),borderColor:'#fff',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      plugins:{legend:{position:'right',labels:{usePointStyle:true,pointStyleWidth:9,font:{size:10},padding:9}},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed.toLocaleString()} (${(c.parsed/S.reduce((s,x)=>s+x.dau,0)*100).toFixed(1)}%)`}}}}});
+})();
+
+// 권역 표
+(function(){
+  const S=[...P.regSum].sort((a,b)=>b.dau-a.dau);
+  const tot=S.reduce((s,r)=>s+r.dau,0);
+  document.getElementById('tReg').innerHTML =
+    `<thead><tr><th>권역</th><th>국가 수</th><th>DAU(누적)</th><th>비중</th><th>NRU</th><th>NRU 비중</th><th>세션</th><th>세션/DAU</th></tr></thead><tbody>`+
+    S.map(r=>`<tr><td><span class="pill" style="background:${RCOL[r.reg]||'#94A3B8'}">${r.reg}</span></td>
+      <td>${r.countries}</td><td><b>${num(r.dau)}</b><div class="bar"><i style="width:${pct(r.dau,tot).toFixed(1)}%;background:${RCOL[r.reg]||'#94A3B8'}"></i></div></td>
+      <td>${pct(r.dau,tot).toFixed(1)}%</td><td>${num(r.nru)}</td>
+      <td>${pct(r.nru,r.dau).toFixed(1)}%</td><td>${num(r.sess)}</td>
+      <td>${r.dau?(r.sess/r.dau).toFixed(2):'—'}</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td>합계</td><td>${S.reduce((s,r)=>s+r.countries,0)}</td><td>${num(tot)}</td><td>100%</td>
+      <td>${num(S.reduce((s,r)=>s+r.nru,0))}</td><td>${pct(S.reduce((s,r)=>s+r.nru,0),tot).toFixed(1)}%</td>
+      <td>${num(S.reduce((s,r)=>s+r.sess,0))}</td>
+      <td>${(S.reduce((s,r)=>s+r.sess,0)/tot).toFixed(2)}</td></tr></tfoot>`;
+})();
+
+// 권역 × OS 스택 막대
+(function(){
+  const regs=[...new Set(P.regOs.map(r=>r.reg))];
+  const oss=[...new Set(P.regOs.map(r=>r.os))];
+  const OCOL={'Android':'#3DDC84','iOS':'#111827','Windows':'#2563EB','OS X':'#7C3AED','Linux':'#D97706','미확인':'#CBD5E0'};
+  const m={}; P.regOs.forEach(r=>{ (m[r.os]=m[r.os]||{})[r.reg]=r.dau; });
+  const order=regs.sort((a,b)=>oss.reduce((s,o)=>s+((m[o]||{})[b]||0),0)-oss.reduce((s,o)=>s+((m[o]||{})[a]||0),0));
+  new Chart(document.getElementById('cRegOs'),{type:'bar',
+    data:{labels:order,datasets:oss.map(o=>({label:o,data:order.map(r=>(m[o]||{})[r]||0),
+      backgroundColor:OCOL[o]||'#94A3B8',borderRadius:3}))},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{usePointStyle:true,pointStyleWidth:10,font:{size:10.5},padding:12}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11,weight:'700'}}},
+        y:{stacked:true,beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10}}}}}});
+})();
+
+// 국가 Top
+(function(){
+  const T=P.topC, mx=Math.max(...T.map(r=>r.dau));
+  document.getElementById('tTop').innerHTML =
+    `<thead><tr><th>국가</th><th>권역</th><th>DAU(누적)</th><th>NRU</th><th>NRU 비중</th><th>세션</th><th>세션/DAU</th></tr></thead><tbody>`+
+    T.map(r=>`<tr><td>${r.nm} <span style="color:var(--mut);font-weight:600">${r.cc}</span></td>
+      <td style="text-align:left"><span class="pill" style="background:${RCOL[r.reg]||'#94A3B8'}">${r.reg}</span></td>
+      <td><b>${num(r.dau)}</b><div class="bar"><i style="width:${(r.dau/mx*100).toFixed(1)}%;background:${RCOL[r.reg]||'#94A3B8'}"></i></div></td>
+      <td>${num(r.nru)}</td><td>${pct(r.nru,r.dau).toFixed(1)}%</td>
+      <td>${num(r.sess)}</td><td>${r.dau?(r.sess/r.dau).toFixed(2):'—'}</td></tr>`).join('')+`</tbody>`;
+})();
+
+// 빌드
+(function(){
+  const B=P.builds, tot=B.reduce((s,r)=>s+r.dau,0);
+  document.getElementById('tBuild').innerHTML =
+    `<thead><tr><th>빌드</th><th>DAU(누적)</th><th>비중</th><th>세션</th><th>세션/DAU</th></tr></thead><tbody>`+
+    B.map(r=>`<tr><td>v${r.cv}</td><td><b>${num(r.dau)}</b>
+      <div class="bar"><i style="width:${pct(r.dau,tot).toFixed(1)}%;background:#2563EB"></i></div></td>
+      <td>${pct(r.dau,tot).toFixed(1)}%</td><td>${num(r.sess)}</td>
+      <td>${r.dau?(r.sess/r.dau).toFixed(2):'—'}</td></tr>`).join('')+`</tbody>`;
+})();
+</script>
+</body></html>
