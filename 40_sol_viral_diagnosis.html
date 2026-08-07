@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>솔리테어 바이럴 진단 — 왜 낮은가, 고칠 수 있는가</title>
+<style>
+:root{--bg:#f4f5f3;--surface:#fff;--surface2:#eceeea;--ink:#151c18;--muted:#68756d;--line:#dee2dc;
+--felt:#1e6b4c;--felt-soft:rgba(30,107,76,.11);--alarm:#ab3a30;--alarm-soft:rgba(171,58,48,.11);
+--warn:#946313;--warn-soft:rgba(148,99,19,.13);--blue:#2a5c8a;--blue-soft:rgba(42,92,138,.12);
+--shadow:0 1px 2px rgba(20,28,24,.05),0 8px 24px -16px rgba(20,28,24,.35)}
+@media(prefers-color-scheme:dark){:root{--bg:#0c1210;--surface:#131b17;--surface2:#18211d;--ink:#e4ebe6;
+--muted:#8a9a91;--line:#24302a;--felt:#54ab82;--felt-soft:rgba(84,171,130,.14);--alarm:#e0695d;
+--alarm-soft:rgba(224,105,93,.14);--warn:#d3a34a;--warn-soft:rgba(211,163,74,.15);--blue:#7aa8d0;
+--blue-soft:rgba(122,168,208,.14);--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.8)}}
+:root[data-theme=light]{--bg:#f4f5f3;--surface:#fff;--surface2:#eceeea;--ink:#151c18;--muted:#68756d;
+--line:#dee2dc;--felt:#1e6b4c;--alarm:#ab3a30;--warn:#946313;--blue:#2a5c8a}
+:root[data-theme=dark]{--bg:#0c1210;--surface:#131b17;--surface2:#18211d;--ink:#e4ebe6;--muted:#8a9a91;
+--line:#24302a;--felt:#54ab82;--alarm:#e0695d;--warn:#d3a34a;--blue:#7aa8d0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.7;font-size:15px;
+-webkit-font-smoothing:antialiased;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif}
+.wrap{max-width:940px;margin:0 auto;padding:38px 22px 70px}
+header{padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.eyebrow{font-size:.68rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--felt);margin:0 0 9px}
+h1{font-size:1.7rem;font-weight:800;letter-spacing:-.025em;margin:0 0 10px;line-height:1.25}
+.stamp{font-size:.78rem;color:var(--muted);margin:0}
+h2{font-size:1.06rem;font-weight:800;margin:34px 0 8px;letter-spacing:-.015em}
+h2 .n{display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;
+border-radius:6px;background:var(--felt-soft);color:var(--felt);font-size:.76rem;margin-right:8px}
+p{margin:0 0 12px;font-size:.9rem;color:var(--muted);max-width:74ch}
+p b{color:var(--ink)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;background:var(--surface2);
+border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.lead{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--felt);
+border-radius:11px;padding:18px 22px;margin:22px 0 6px;box-shadow:var(--shadow)}
+.lead ol{margin:0;padding-left:1.2em}
+.lead li{font-size:.95rem;margin-bottom:9px;color:var(--ink);font-weight:600}
+.lead li:last-child{margin-bottom:0}
+.lead li span{font-weight:400;color:var(--muted);font-size:.88rem;display:block;margin-top:2px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:.82rem;background:var(--surface);
+border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th{background:var(--surface2);color:var(--muted);font-size:.7rem;font-weight:700;padding:9px 11px;
+text-align:right;white-space:nowrap;letter-spacing:.03em}
+th:first-child{text-align:left}
+td{padding:8px 11px;text-align:right;border-top:1px solid var(--line);white-space:nowrap;
+font-variant-numeric:tabular-nums;font-weight:600}
+td:first-child{text-align:left;font-weight:700}
+tr.sol td{background:var(--blue-soft)}
+tr.sol td:first-child{color:var(--blue)}
+.hi{color:var(--felt);font-weight:800}
+.lo{color:var(--alarm);font-weight:800}
+.mid{color:var(--muted);font-weight:600}
+.cap{font-size:.76rem;color:var(--muted);margin:6px 0 0}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:15px 19px;
+margin:14px 0;box-shadow:var(--shadow)}
+.box.warn{border-left:3px solid var(--warn)}
+.box.ok{border-left:3px solid var(--felt)}
+.box.bad{border-left:3px solid var(--alarm)}
+.box p{margin:0 0 8px}.box p:last-child{margin:0}
+.box .t{font-weight:800;color:var(--ink);font-size:.9rem;margin-bottom:6px}
+ul.tight{margin:8px 0 0;padding-left:1.15em;font-size:.87rem;color:var(--muted)}
+ul.tight li{margin-bottom:5px}ul.tight li b{color:var(--ink)}
+.act{display:grid;gap:12px;margin-top:12px}
+@media(min-width:760px){.act{grid-template-columns:repeat(3,1fr)}}
+.acard{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:16px 18px;
+box-shadow:var(--shadow);display:flex;flex-direction:column}
+.acard .when{font-size:.66rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase;
+color:var(--felt);margin-bottom:6px}
+.acard .what{font-weight:800;font-size:.93rem;margin-bottom:7px;letter-spacing:-.01em;color:var(--ink)}
+.acard p{font-size:.83rem;margin:0;flex:1}
+.acard .cost{margin-top:10px;font-size:.74rem;font-weight:700;padding:3px 9px;border-radius:5px;
+align-self:flex-start;background:var(--surface2);color:var(--muted)}
+.acard .cost.s{background:var(--felt-soft);color:var(--felt)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Solitaire City Journey · FB Instant Games</p>
+  <h1>바이럴 지표 진단 — 왜 낮은가, 고칠 수 있는가</h1>
+  <p class="stamp">2026-08-07 · 권역 NA+EU · 출처 BigQuery 실측 + 클라이언트 소스 대조</p>
+</header>
+
+<div class="lead">
+  <ol>
+    <li>기능은 정상 동작함. 호출·다이얼로그·점수 반영 모두 확인됨
+      <span>“게임이 안 도는 것”이 아니라 유저가 수락을 안 하는 상태임</span></li>
+    <li>친구가 없어서가 아님 — 런칭 동기간엔 네 게임 모두 친구가 없었음
+      <span>솔 평균 0.20명 · 마종 0.19명 · 퍼블마 0.27명 · 코지 0.39명. 차이가 없음</span></li>
+    <li>진짜 차이는 <b>소셜이 게임 진행에 필수인가</b>임. 코지·마종은 필수, 솔·퍼블마는 선택
+      <span>같은 조건에서 퍼블마는 솔리테어보다 더 낮음 — “우리만 낮다”는 전제가 사실이 아님</span></li>
+  </ol>
+</div>
+
+<h2><span class="n">1</span>친구 그래프는 원인이 아님</h2>
+<p>최근 7일만 보면 솔리테어 평균 친구가 0.25명, 코지가 6.12명으로 24배 차이입니다.
+그런데 코지는 런칭 7개월째라 그래프가 쌓인 상태입니다.
+<b>각 게임의 런칭 동기간(D+0~D+28)으로 맞추면 차이가 사라집니다.</b></p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>런칭 동기간 D+0~D+28</th><th>유저-일</th><th>친구 0명</th><th>평균 친구</th>
+<th>메시지</th><th>피드공유</th><th>토너 생성</th><th>생성 수락률</th><th>토너 공유</th></tr></thead>
+<tbody>
+<tr class="sol"><td>솔리테어</td><td>22,106</td><td>85.8%</td><td>0.20명</td>
+<td class="lo">5.88%</td><td class="hi">8.12%</td><td>10.97%</td><td class="lo">1.2%</td><td>5.02%</td></tr>
+<tr><td>코지</td><td>67,685</td><td>75.5%</td><td>0.39명</td>
+<td class="hi">50.57%</td><td>4.85%</td><td class="hi">56.21%</td><td class="hi">13.8%</td><td class="hi">39.13%</td></tr>
+<tr><td>마종</td><td>56,515</td><td>87.3%</td><td>0.19명</td>
+<td class="hi">24.77%</td><td class="hi">31.61%</td><td class="hi">76.55%</td><td class="hi">19.1%</td><td>16.85%</td></tr>
+<tr><td>퍼블마</td><td>72,720</td><td>83.9%</td><td>0.27명</td>
+<td class="lo">1.26%</td><td class="lo">0.68%</td><td class="lo">1.87%</td><td class="lo">0.9%</td><td>19.76%</td></tr>
+</tbody></table></div>
+<p class="cap">모든 값은 유저-일당 성공 건수 비율. 생성 수락률 = 생성 성공 ÷ 생성 시도.</p>
+
+<div class="box bad">
+  <p class="t">여기서 두 가지가 드러납니다</p>
+  <ul class="tight">
+    <li><b>친구 수는 네 게임이 사실상 동일합니다</b> — 평균 0.19~0.39명, 친구 0명 비율 75~87%.
+    마종은 솔리테어보다 친구가 더 없는데도 토너먼트 생성이 7배입니다.</li>
+    <li><b>퍼블마는 솔리테어보다 낮습니다</b> — 메시지 1.26% · 생성 수락률 0.9%.
+    “다른 게임 대비 우리만 낮다”가 아니라 <b>코지·마종이 특별히 높은 구도</b>입니다.</li>
+  </ul>
+</div>
+
+<h2><span class="n">2</span>부스팅 30일 이후에도 구도가 같음</h2>
+<p>벤치 3종의 런칭 부스트가 끝난 정착기(D+30~D+59)입니다. 솔리테어는 아직 D+30 이전이라 비교 대상이 아닙니다.</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>부스팅 이후 D+30~D+59</th><th>유저-일</th><th>친구 0명</th><th>평균 친구</th>
+<th>메시지</th><th>피드공유</th><th>토너 생성</th><th>생성 수락률</th><th>토너 공유</th></tr></thead>
+<tbody>
+<tr><td>코지</td><td>152,773</td><td>71.0%</td><td>0.55명</td>
+<td class="hi">71.23%</td><td>3.22%</td><td class="hi">44.49%</td><td class="hi">15.0%</td><td class="hi">51.75%</td></tr>
+<tr><td>마종</td><td>147,364</td><td>73.4%</td><td>0.45명</td>
+<td class="hi">65.91%</td><td class="hi">21.39%</td><td class="hi">81.38%</td><td class="hi">21.3%</td><td class="hi">63.45%</td></tr>
+<tr><td>퍼블마</td><td>157,250</td><td>80.4%</td><td>0.31명</td>
+<td class="lo">8.20%</td><td class="lo">1.05%</td><td class="lo">1.02%</td><td class="lo">0.4%</td><td>11.55%</td></tr>
+<tr class="sol"><td>솔리테어 <span style="font-weight:400;color:var(--muted)">(참고 · 현재 누적)</span></td>
+<td>22,106</td><td>85.8%</td><td>0.20명</td>
+<td>5.88%</td><td>8.12%</td><td>10.97%</td><td>1.2%</td><td>5.02%</td></tr>
+</tbody></table></div>
+<p class="cap">30일이 지나도 평균 친구는 0.31~0.55명에 머뭅니다. <b>친구 수가 늘어서 바이럴이 오르는 구조가 아닙니다.</b>
+퍼블마는 정착기에도 생성 수락률 0.4%로 오히려 더 낮아집니다.</p>
+
+<h2><span class="n">3</span>기능은 도는가 — 돕니다</h2>
+<p>“그냥 워킹을 안 하는 것 아니냐”에 대한 답입니다. 네 가지로 확인했습니다.</p>
+<div class="box ok">
+  <ul class="tight">
+    <li><b>소셜 다이얼로그 노출 — 판당 0.93회.</b> 코지 0.46 · 마종 0.61보다 <b>더 많이</b> 띄우고 있습니다.
+    안 띄우는 게 아니라 두 배로 띄우는데 수락이 안 됩니다.</li>
+    <li><b>메시지 발송 성공률 99~100%.</b> 런칭 초기(7/11~7/16) 90% 실패는
+    SOLO 컨텍스트에서 호출하던 버그였고 7/17에 수정 완료됐습니다.</li>
+    <li><b>토너먼트 포스트 시도는 벤치보다 활발.</b> 포스트한 유저 비중 12.8%(코지 10.7% · 마종 6.8%),
+    1인당 10.5회(코지 7.4 · 마종 3.7).</li>
+    <li><b>친구 초대 동선도 살아 있음.</b> 판 입장 팝업·인박스 두 곳에 구현돼 있고
+    데일리 태스크 보상(150골드·250골드·엑스트라덱)도 활성 상태입니다.</li>
+  </ul>
+</div>
+
+<div class="box warn">
+  <p class="t">단, 지표 하나는 실제보다 나쁘게 찍히고 있습니다</p>
+  <p><b>토너먼트 포스트 성공률 8.5%(벤치 96~99%)는 로깅 오류입니다.</b>
+  공유 팝업을 닫아도 점수는 코드상 이미 반영되는데, 로그만 실패로 남고 있었습니다.
+  수정 요청은 QA에 전달 완료했고 반영되면 96%대로 정상화됩니다.
+  <b>실제 바이럴이 느는 것이 아니라 숫자가 제자리를 찾는 것</b>입니다.</p>
+</div>
+
+<h2><span class="n">4</span>그럼 무엇이 다른가</h2>
+<p>친구 수도 같고 기능도 도는데 결과가 다릅니다. 남는 설명은 <b>소셜 행동이 게임 진행에 얽혀 있는가</b>입니다.</p>
+<div class="box">
+  <ul class="tight">
+    <li><b>코지·마종</b> — 메시지가 유저-일당 0.5~0.7건입니다. 이 빈도는 선택적 기능에서 나오지 않습니다.
+    친구에게 보내야 진행되거나 보상이 걸린 구조로 보입니다.</li>
+    <li><b>솔리테어·퍼블마</b> — 유저-일당 0.01~0.06건. 눌러도 되고 안 눌러도 되는 버튼입니다.</li>
+  </ul>
+  <p style="margin-top:10px"><b>확인 한계</b> — 코지·마종은 클라이언트 소스가 사내에 없어 직접 대조하지 못했습니다.
+  위는 빈도·수락률 실측에서 나온 추정이며, 확정하려면 두 게임의 소셜 동선을 직접 확인해야 합니다.</p>
+</div>
+
+<h2><span class="n">5</span>개선 가능한가 — 이미 증명됨</h2>
+<p>컨텍스트 전환 노출을 벤치 수준으로 열었습니다. 8/3 A/B 배포 → 8/5 전면 통합.</p>
+<div class="scroll">
+<table>
+<thead><tr><th>지표</th><th>배포 전</th><th>현재</th><th>변화</th></tr></thead>
+<tbody>
+<tr><td>토너먼트 유입 세션 (1천 세션당)</td><td>26</td><td class="hi">60</td><td class="hi">2.3배</td></tr>
+<tr><td>세션당 컨텍스트 전환 노출</td><td>0.05</td><td class="hi">2.9</td><td class="hi">58배</td></tr>
+<tr><td>유저당 완료 판수</td><td>11.74</td><td class="mid">12.10</td><td class="mid">유지</td></tr>
+<tr><td>60초 체류 도달률</td><td>73.6%</td><td class="mid">75.9%</td><td class="mid">유지</td></tr>
+</tbody></table></div>
+<p class="cap">A/B로 검증(서구권 · 배정 49.8%). <b>활동성 손실 없이</b> 유입만 증가했습니다.
+이 경로는 친구가 없어도 작동합니다 — 토너먼트 포스트가 피드에 노출되고 친구가 아닌 사람이 유입됩니다.</p>
+
+<h2><span class="n">6</span>어떻게 워킹하게 할 것인가</h2>
+<div class="act">
+  <div class="acard">
+    <div class="when">즉시</div>
+    <div class="what">계측 정상화</div>
+    <p>토너먼트 포스트 로깅을 공유 다이얼로그에서 분리. 유저 경험 변화 없이 지표만 제자리를 찾습니다.
+    포기 시 뜨는 생성 팝업도 함께 제거합니다.</p>
+    <div class="cost s">QA 전달 완료 · 공수 작음</div>
+  </div>
+  <div class="acard">
+    <div class="when">단기</div>
+    <div class="what">친구 없이 도는 경로 확대</div>
+    <p>컨텍스트 전환에서 2.3배가 나온 축입니다. 피드 노출·토너먼트 개방을 더 여는 방향이며,
+    친구 그래프가 없어도 작동하는 것이 확인됐습니다.</p>
+    <div class="cost s">검증된 방향 · 공수 중간</div>
+  </div>
+  <div class="acard">
+    <div class="when">중기</div>
+    <div class="what">소셜을 루프에 넣기</div>
+    <p>코지·마종과의 격차를 실제로 좁히려면 여기까지 가야 합니다.
+    보내야 진행되거나 보상이 걸리는 지점을 만드는 설계 변경입니다.</p>
+    <div class="cost">기획 결정 필요 · 공수 큼</div>
+  </div>
+</div>
+
+<div class="box" style="margin-top:22px">
+  <p class="t">보고 시 같이 짚을 것</p>
+  <p><b>“다른 게임 대비 우리만 낮다”는 전제는 사실이 아닙니다.</b>
+  퍼블마는 런칭기·정착기 모두 솔리테어보다 낮습니다.
+  비교 대상을 코지·마종으로 잡으면 그 둘은 소셜이 코어 루프에 들어간 게임이라,
+  같은 수준을 목표로 하려면 <b>기능 수정이 아니라 게임 설계 변경</b>이 필요합니다.</p>
+  <p>즉시·단기 조치로 얻을 수 있는 것은 <b>지표 정상화와 유입 증가</b>까지이고,
+  코지 수준의 바이럴은 중기 과제로 분리해서 보는 것이 맞습니다.</p>
+</div>
+
+</div>
+</body>
+</html>
