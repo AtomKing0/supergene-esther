@@ -169,7 +169,7 @@ const SPECS = [
     id: 'spec-029', file: 'spec-029-level-default-tier-ramp.html',
     monitorGroup: 'sol-difficulty',
     title: '[밸런스-난이도] 레벨 기반 기본 난이도 승급',
-    tags: ['balance'], priority: 'high', status: 'monitor', date: '2026. 7. 28.', dueDate: null, relatedTo: ['spec-012'],
+    tags: ['balance'], priority: 'high', status: 'done', date: '2026. 7. 28.', dueDate: null, relatedTo: ['spec-012'],
   },
   {
     id: 'spec-030', file: 'spec-030-context-switch-expansion.html',
@@ -181,7 +181,7 @@ const SPECS = [
     id: 'spec-031', file: 'spec-031-sh-rescue-activation.html',
     monitorGroup: 'sol-difficulty',
     title: '[밸런스-난이도] Super Hard 구제장치 활성화',
-    tags: ['balance'], priority: 'mid', status: 'monitor', date: '2026. 7. 29.', dueDate: null, relatedTo: ['spec-029'],
+    tags: ['balance'], priority: 'mid', status: 'done', date: '2026. 7. 29.', dueDate: null, relatedTo: ['spec-029'],
   },
   {
     id: 'spec-032', file: 'spec-032-daily-first-play-free.html',
@@ -241,7 +241,7 @@ const PRI_INFO = {
 /* ── 관측 그룹 — 여러 스펙이 하나의 리포트를 공유할 때 ──────────────── */
 const MONITOR_GROUPS = {
   'sol-difficulty': {
-    label: '솔 난이도 튜닝',
+    label: '솔 난이도 튜닝 — 결론 확정',
     since: '2026-08-01',
     url:   '../../32_sol_diff_watch.html',
     specs: ['spec-029', 'spec-031'],
