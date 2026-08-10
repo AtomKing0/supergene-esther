@@ -202,7 +202,7 @@ const SPECS = [
     id: 'spec-035', file: 'spec-035-interstitial-frequency.html',
     monitorGroup: 'sol-it-freq',
     title: '[수익화-광고] 전면 광고 빈도 곡선',
-    tags: ['monetize', 'balance'], priority: 'high', status: 'done', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
+    tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
   },
   {
     id: 'spec-037', file: 'spec-037-leaderboard-play-button.html',
@@ -253,7 +253,7 @@ const MONITOR_GROUPS = {
     specs: ['spec-030'],
   },
   'sol-it-freq': {
-    label: '전면 광고 빈도 곡선 — A 통합 결론 확정',
+    label: '전면 광고 빈도 곡선 — A 통합 결론 · 최적화 관측중',
     since: '2026-08-06',
     url:   '../../37_sol_it_watch.html',
     specs: ['spec-035'],
