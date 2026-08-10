@@ -198,6 +198,23 @@ ul li strong,ol li strong { color:var(--text); }
 .gm-tg{width:56px;height:56px;border-radius:50%;background:linear-gradient(180deg,#6fd0ff,#0092ff);border:3px solid #fff8ec;box-shadow:0 3px 6px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:1.3rem}
 .gm-stack{display:flex;flex-direction:column;align-items:center;gap:10px}
 
+/* 실제 화면 플로우 */
+.vf{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin:20px 0}
+.vf-cap{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:14px}
+.vf-track{display:flex;align-items:flex-start;gap:10px;overflow-x:auto;padding-bottom:8px}
+.vf-step{flex:none;width:186px;display:flex;flex-direction:column}
+.vf-shot{width:186px;height:104px;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:#0a1420;display:flex;align-items:center;justify-content:center}
+.vf-shot img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.vf-step.on .vf-shot{border:2px solid var(--accent);box-shadow:0 0 0 3px var(--purple-bg)}
+.vf-step.ad .vf-shot{border:2px dashed var(--yellow);background:repeating-linear-gradient(135deg,rgba(251,191,36,.10) 0 9px,transparent 9px 18px);color:var(--yellow);font-size:.8rem;font-weight:800;flex-direction:column;gap:3px;text-align:center;line-height:1.3}
+.vf-step.drop .vf-shot{border:2px dashed var(--red);background:repeating-linear-gradient(135deg,rgba(248,113,113,.10) 0 9px,transparent 9px 18px);color:var(--red);font-size:.8rem;font-weight:800;flex-direction:column;gap:3px;text-align:center;line-height:1.3}
+.vf-lbl{font-size:.79rem;font-weight:800;color:var(--text);margin-top:7px;line-height:1.35}
+.vf-sub{font-size:.7rem;color:var(--text2);margin-top:2px;line-height:1.4}
+.vf-arw{flex:none;align-self:center;margin-top:-24px;color:var(--text-dim);font-weight:900;font-size:1.1rem}
+.vf-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.74rem;color:var(--text2);border-top:1px solid var(--border);margin-top:14px;padding-top:11px}
+.vf-legend span{display:flex;align-items:center;gap:6px}
+.vf-key{width:13px;height:13px;border-radius:3px;flex:none}
+
 /* 흐름 다이어그램 */
 .fl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
 .fl-box{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:8px 13px;font-size:.8rem;font-weight:700;color:var(--text)}
@@ -249,7 +266,7 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="badge badge-green">2026. 8. 5.</span>
     </div>
     <h1>실패 후 재도전 흐름 단축<br><span>Retry Flow</span></h1>
-    <p class="hero-sub">판에 실패하면 레벨이 오르지 않아 <strong>유저는 반드시 다시 플레이해야 함</strong>. 그런데 그만두기를 누르면 로비로 빠져나가고, 거기서 <strong>30.1%가 돌아오지 않음</strong>. 그만두기 팝업에서 곧바로 프리레벨 팝업을 띄워 로비 경유를 없앰. <strong>나가기 지면 전면 광고가 이미 켜져 있어 광고 분기 조정이 함께 필요함.</strong></p>
+    <p class="hero-sub">판에 실패하면 레벨이 오르지 않아 <strong>유저는 반드시 다시 플레이해야 함</strong>. 그런데 그만두기를 누르면 로비로 빠져나가고, 거기서 <strong>30.1%가 돌아오지 않음</strong>. 그만두기 팝업에서 곧바로 프리레벨 팝업을 띄워 로비 경유를 없앰. <strong>전면 광고는 두 경로 모두 그대로 재생하고, 광고가 끝난 뒤 떨어지는 곳만 바꿈.</strong></p>
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">실패 후 다음 판 진입</div>
@@ -343,7 +360,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>재도전 맵</td><td>새 맵 (기존 배정 로직)</td></tr>
       <tr><td>입장료</td><td>새 판 기준 정상 지불</td></tr>
       <tr><td>데일리 기프트 팝업</td><td>다시 하기 경로에서는 띄우지 않음</td></tr>
-      <tr><td>전면 광고</td><td>다시 하기는 미노출 &mdash; 광고 콜백 대기 최대 5초도 함께 사라짐. 로비로만 기존대로 노출</td></tr>
+      <tr><td>전면 광고</td><td><strong>다시 하기 · 로비로 두 경로 모두 기존대로 재생.</strong> 광고가 끝난 뒤 목적지만 갈림 &mdash; 광고 노출 수·매출 영향 없음</td></tr>
       <tr><td>문구</td><td>타이틀&middot;설명을 재도전 유도 문안으로 교체(키 재사용). 구 문안은 <code>_V1</code> 키로 보존</td></tr>
       <tr><td>노출 제어</td><td><code>const</code> 시트 <code>is_retry_flow_open</code> &mdash; 버튼과 문구를 함께 분기</td></tr>
       <tr><td>튜토리얼</td><td>다시 하기 미노출</td></tr>
@@ -376,23 +393,64 @@ ul li strong,ol li strong { color:var(--text); }
     <span class="fl-box hot">나가기 팝업</span>
   </div>
 
-  <h4>나가기 팝업 이후 &mdash; As-Is / To-Be</h4>
-  <div class="fl">
-    <span class="fl-tag">As-Is</span>
-    <span class="fl-box hot">나가기 팝업</span><span class="fl-arw">&rarr;</span>
-    <span class="fl-box">Quit</span><span class="fl-arw">&rarr;</span>
-    <span class="fl-box cold">전면 광고<small>최대 5초 대기</small></span><span class="fl-arw">&rarr;</span>
-    <span class="fl-box">로비<small>데일리 기프트 팝업</small></span><span class="fl-arw">&rarr;</span>
-    <span class="fl-box">플레이 버튼</span><span class="fl-arw">&rarr;</span>
-    <span class="fl-box">프리레벨 팝업</span>
+  <h3>화면 플로우 &mdash; 실제 화면으로</h3>
+  <p>실패한 판을 마치고 다음 판에 들어가기까지 유저가 실제로 보는 화면임. <strong>바뀌는 것은 광고 다음이 로비냐 프리레벨 팝업이냐 하나뿐</strong>임 &mdash; 전면 광고는 두 경로 모두 기존대로 재생됨.</p>
+
+  <div class="vf">
+    <div class="vf-cap">As-Is &mdash; 화면 6단계 &middot; 터치 4번</div>
+    <div class="vf-track">
+      <div class="vf-step"><div class="vf-shot"><img src="ref-036-ingame.png" alt="인게임"></div>
+        <div class="vf-lbl">인게임</div><div class="vf-sub">엔드레벨 버튼 터치</div></div>
+      <div class="vf-arw">&rarr;</div>
+      <div class="vf-step on"><div class="vf-shot"><img src="ref-036-current-quit.png" alt="나가기 팝업"></div>
+        <div class="vf-lbl">나가기 팝업</div><div class="vf-sub">Quit 터치</div></div>
+      <div class="vf-arw">&rarr;</div>
+      <div class="vf-step ad"><div class="vf-shot"><div>전면 광고</div><div style="font-weight:600;font-size:.68rem">콜백 대기 최대 5초</div></div>
+        <div class="vf-lbl">전면 광고</div><div class="vf-sub"><code>game_quit</code> 지면 &middot; 라이브 ON</div></div>
+      <div class="vf-arw">&rarr;</div>
+      <div class="vf-step drop"><div class="vf-shot"><div>로비</div><div style="font-weight:600;font-size:.68rem">데일리 기프트 팝업<br>전환 연출</div></div>
+        <div class="vf-lbl">로비</div><div class="vf-sub"><strong>여기서 30.1% 이탈</strong></div></div>
+      <div class="vf-arw">&rarr;</div>
+      <div class="vf-step"><div class="vf-shot"><div style="color:var(--text-dim);font-size:.78rem;font-weight:700">플레이 버튼</div></div>
+        <div class="vf-lbl">플레이 터치</div><div class="vf-sub">로비에서 다시 찾아야 함</div></div>
+      <div class="vf-arw">&rarr;</div>
+      <div class="vf-step"><div class="vf-shot"><img src="ref-036-prelevel.png" alt="프리레벨 팝업"></div>
+        <div class="vf-lbl">프리레벨 팝업</div><div class="vf-sub">배수&middot;부스터 선택 &rarr; Play</div></div>
+    </div>
   </div>
-  <div class="fl">
-    <span class="fl-tag">To-Be</span>
-    <span class="fl-box hot">나가기 팝업</span><span class="fl-arw">&rarr;</span>
-    <span class="fl-box hot">다시 하기</span><span class="fl-arw">&rarr;</span>
-    <span class="fl-box">프리레벨 팝업</span>
+
+  <div class="vf">
+    <div class="vf-cap">To-Be &mdash; 화면 4단계 &middot; 터치 2번 (다시 하기 경로)</div>
+    <div class="vf-track">
+      <div class="vf-step"><div class="vf-shot"><img src="ref-036-ingame.png" alt="인게임"></div>
+        <div class="vf-lbl">인게임</div><div class="vf-sub">엔드레벨 버튼 터치</div></div>
+      <div class="vf-arw">&rarr;</div>
+      <div class="vf-step on"><div class="vf-shot"><img src="ref-036-current-quit.png" alt="나가기 팝업"></div>
+        <div class="vf-lbl">나가기 팝업 <span style="color:var(--accent)">(개편)</span></div><div class="vf-sub"><strong>다시 하기</strong> 터치</div></div>
+      <div class="vf-arw">&rarr;</div>
+      <div class="vf-step ad"><div class="vf-shot"><div>전면 광고</div><div style="font-weight:600;font-size:.68rem">기존과 동일</div></div>
+        <div class="vf-lbl">전면 광고</div><div class="vf-sub">두 경로 모두 유지 &mdash; 매출 손실 없음</div></div>
+      <div class="vf-arw">&rarr;</div>
+      <div class="vf-step on"><div class="vf-shot"><img src="ref-036-prelevel.png" alt="프리레벨 팝업"></div>
+        <div class="vf-lbl">프리레벨 팝업</div><div class="vf-sub">광고가 끝나면 <strong>로비를 거치지 않고 바로</strong> 열림</div></div>
+    </div>
+    <div class="vf-legend">
+      <span><i class="vf-key" style="background:var(--accent)"></i> 이 기획이 바꾸는 화면</span>
+      <span><i class="vf-key" style="background:var(--yellow)"></i> 전면 광고 &mdash; 변경 없음</span>
+      <span><i class="vf-key" style="background:var(--red)"></i> 제거되는 단계</span>
+    </div>
   </div>
-  <p class="note">To-Be에서 사라지는 것은 로비 경유만이 아님. <strong>전면 광고 콜백 대기 최대 5초</strong>(<code>QUIT_AD_CALLBACK_TIMEOUT_MS</code>)와 <strong>데일리 기프트 팝업</strong>, <strong>로비 전환 연출</strong>까지 통째로 빠짐. 터치 6번이 2번이 됨.</p>
+
+  <p class="note">빠지는 것은 <strong>로비 화면 · 데일리 기프트 팝업 · 로비 전환 연출 · 플레이 버튼 터치</strong> 네 가지임. 전면 광고는 그대로 재생되므로 광고 노출 수와 매출은 영향을 받지 않음 &mdash; 광고가 끝난 뒤 <b>어디로 떨어지느냐</b>만 바뀜.</p>
+
+  <h4>로비로를 선택하면 &mdash; 기존과 완전히 동일</h4>
+  <div class="fl">
+    <span class="fl-tag">로비로</span>
+    <span class="fl-box hot">나가기 팝업</span><span class="fl-arw">&rarr;</span>
+    <span class="fl-box">로비로</span><span class="fl-arw">&rarr;</span>
+    <span class="fl-box">전면 광고</span><span class="fl-arw">&rarr;</span>
+    <span class="fl-box">로비<small>데일리 기프트 팝업</small></span>
+  </div>
 
   <h3>팝업 목업</h3>
   <p>아래는 클라 실측값으로 그린 목업임. 색은 실제 스프라이트 PNG에서 뽑았고(패널 <code>#fff8ec</code>, 녹색 <code>#00d900</code>, 오렌지 <code>#ffb600&rarr;#ff7800</code>, 블루 <code>#0097ff</code>), 텍스트 외곽선 색과 두께는 프리팹의 <code>cc.LabelOutline</code> 값 그대로임. 목업은 게임 화면 재현이라 문서 테마와 무관하게 고정 색을 씀.</p>
@@ -543,7 +601,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>튜토리얼 진행 중</td><td>노출</td><td>숨김</td><td>숨김 &rarr; 기존 레드 <b>Quit</b></td><td>튜토리얼은 실패로 끝나지 않음</td></tr>
       <tr><td>보유 골드 &lt; 입장료</td><td>노출</td><td>노출</td><td>노출</td><td>누르면 프리레벨 팝업의 기존 부족 처리(충전 안내). 취소 시 로비</td></tr>
       <tr><td>Quick Next Loop v2 켜짐</td><td>노출</td><td>노출</td><td>노출</td><td>다시 하기가 프리레벨 팝업을 건너뛰고 곧장 판 시작 &mdash; 아래 콜아웃</td></tr>
-      <tr><td>전면 광고</td><td>없음</td><td><strong>없음</strong></td><td>기존대로 노출</td><td><code>LogITPosition.game_quit</code>은 로비로 분기에만</td></tr>
+      <tr><td>전면 광고</td><td>없음</td><td><strong>기존대로 노출</strong></td><td>기존대로 노출</td><td>두 분기 모두 <code>LogITPosition.game_quit</code> 유지 &mdash; 광고 종료 후 목적지만 갈림</td></tr>
       <tr><td>일시정지 팝업 경유(경로 2)</td><td colspan="3" style="text-align:center">경로 1과 완전히 동일</td><td>호출부가 별도라 연결 누락 주의</td></tr>
     </tbody>
   </table>
@@ -640,12 +698,13 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>플랫폼이 토스면?</td><td>동일하게 동작함. 데일리 리셋 경계만 플랫폼 기준을 따름</td></tr>
       <tr><td>일시정지 팝업을 거쳐 들어왔으면?</td><td>동일하게 동작함. 나가기 팝업 호출부가 두 곳(<code>onClickEndLevel</code> / <code>onClickOption</code>)이라 <b>양쪽 모두에 다시 하기 콜백을 연결</b>해야 함</td></tr>
       <tr><td>Quick Next Loop v2가 켜져 있으면?</td><td>프리레벨 팝업이 존재하지 않으므로 <b>다시 하기가 곧장 판을 시작함</b>. 입장료도 v2 규칙(0)을 따름 &mdash; 아래 콜아웃</td></tr>
-      <tr><td>전면 광고가 나가기 지면에 붙어 있으면?</td><td><b>다시 하기 경로에서는 전면 광고를 노출하지 않음.</b> 로비로 경로에서만 기존대로 노출함</td></tr>
+      <tr><td>전면 광고가 나가기 지면에 붙어 있으면?</td><td><b>두 경로 모두 기존대로 재생함.</b> 광고 콜백이 끝난 뒤 다시 하기면 프리레벨 팝업, 로비로면 로비로 보냄</td></tr>
+      <tr><td>광고가 실패하거나 5초 안에 콜백이 안 오면?</td><td>기존 폴백을 그대로 씀 &mdash; <code>QUIT_AD_CALLBACK_TIMEOUT_MS</code> 타임아웃 후 <b>목적지 이동은 정상 수행</b>. 광고 실패가 재도전을 막지 않음</td></tr>
     </tbody>
   </table>
   <div class="callout callout-yellow">
-    <strong>SPEC-035와 같은 지면을 씀 &mdash; 이미 라이브에서 켜져 있음.</strong> 나가기 지면 스위치 <code>is_interstitial_ad_quit_open</code>이 <b>현재 라이브 값 1</b>이라, 지금도 나가기 확정 시 전면 광고가 호출되고 콜백을 최대 5초(<code>QUIT_AD_CALLBACK_TIMEOUT_MS</code>) 기다림. 이 기획은 바로 그 팝업에서 곧장 다음 판으로 보내는 것이라, 재도전 경로에 광고가 끼면 흐름 단축이 무의미해짐.<br>
-    <b>확정 &mdash; 다시 하기는 광고 없이 통과, 로비로는 기존대로 노출.</b> 나가기 지면의 예상 노출은 0.19회/DAU로 전체 2.9회 중 6.5%뿐이고 주력은 승리 지면(2.7회)이므로, 광고 손실보다 재도전 흐름을 지키는 쪽이 이득임. 구현은 <code>ADPlayer.tryShowInterstitialAD(LogITPosition.game_quit, ...)</code> 호출 자체를 <b>로비로 분기 안으로만</b> 옮기는 것 &mdash; 다시 하기는 광고 판정 함수를 부르지 않으므로 5초 대기도 발생하지 않음.
+    <strong>SPEC-035와 같은 지면을 씀 &mdash; 이미 라이브에서 켜져 있음.</strong> 나가기 지면 스위치 <code>is_interstitial_ad_quit_open</code>이 <b>현재 라이브 값 1</b>이라, 지금도 나가기 확정 시 전면 광고가 호출되고 콜백을 최대 5초(<code>QUIT_AD_CALLBACK_TIMEOUT_MS</code>) 기다림.<br>
+    <b>확정 &mdash; 광고는 두 경로 모두 그대로 둠.</b> <code>ADPlayer.tryShowInterstitialAD(LogITPosition.game_quit, ...)</code> 호출은 지금 위치에 그대로 두고, <b>콜백(<code>proceedQuit</code>) 안에서만</b> 다시 하기 / 로비로를 가름. 광고 노출 수·지면 분포·SPEC-035의 노출/DAU 목표가 전부 그대로 유지되므로 <b>두 스펙 사이에 조정할 것이 없음</b>.
   </div>
   <div class="callout callout-purple">
     <strong>Quick Next Loop(v2) A/B와의 관계 &mdash; 직접 팝업을 띄우지 말 것.</strong> 별도 A/B로 <b>프리레벨 팝업을 아예 건너뛰고 입장료를 0으로 두는 v2</b>가 존재함(<code>is_quick_next_loop_open</code> &middot; <code>is_prelevel_popup_open</code> &middot; <code>is_reward_on_result_open</code>). <b>현재 라이브 값은 셋 다 v1</b>(각각 0 / 1 / 0)이라 이 기획의 &ldquo;프리레벨 팝업 직행 &middot; 입장료 정상 지불&rdquo; 전제가 그대로 성립하지만, v2가 켜지면 전제가 깨짐.<br>
@@ -664,7 +723,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>프리레벨 팝업 호출</td><td><b>직접 열지 말고</b> <code>ViewCreator.showPopupGameEntry()</code>를 부를 것. 이 함수가 Quick Next Loop v1/v2를 내부에서 갈라줌</td></tr>
       <tr><td><code>ViewGame.ts</code> 전환 처리</td><td>다시 하기 경로에서는 <code>needShowDailyGift</code>를 설정하지 않음. 로비를 거치지 않으므로 데일리 기프트 팝업이 판 흐름을 끊지 않게 함. 덤불 전환(<code>showBushView</code>)도 생략</td></tr>
       <tr><td>콘텍스트 전환</td><td>다시 하기 경로에서도 <code>switchToContextSolo</code>를 동일하게 호출함</td></tr>
-      <tr><td>전면 광고 분기</td><td><code>ADPlayer.tryShowInterstitialAD(LogITPosition.game_quit, ...)</code> 호출을 <b>로비로 분기 안으로만</b> 옮김. 다시 하기 경로는 광고 판정 자체를 부르지 않음</td></tr>
+      <tr><td>전면 광고 분기</td><td><code>ADPlayer.tryShowInterstitialAD(LogITPosition.game_quit, ...)</code> 호출은 <b>현재 위치 그대로 유지</b>. 분기는 콜백 <code>proceedQuit</code> 안에서만 &mdash; 다시 하기면 프리레벨 팝업, 로비로면 <code>showViewLobby</code>. 타임아웃 폴백도 동일하게 두 갈래를 타야 함</td></tr>
       <tr><td>노출 제어</td><td><code>is_retry_flow_open</code>이 꺼져 있으면 다시 하기·로비로를 숨기고 <b>기존 레드 나가기 버튼을 되살려</b> 현행 2버튼 구성으로 동작. <code>paddingLeft</code> 보정으로 중앙 정렬 유지</td></tr>
     </tbody>
   </table>
@@ -738,7 +797,8 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>QA</td><td>다시 하기 경로에서 데일리 기프트 팝업 · 덤불 전환이 뜨지 않음</td></tr>
       <tr><td>QA</td><td>데일리 리셋 경계를 넘겨 다시 하기 시 정상 진행</td></tr>
       <tr><td>QA</td><td>팝업 노출 중 백그라운드 전환 후 복귀 시 중복 정산 없음</td></tr>
-      <tr><td>QA</td><td>다시 하기는 광고 없이 즉시 통과(5초 대기 없음) · 로비로만 전면 광고 노출</td></tr>
+      <tr><td>QA</td><td>다시 하기 · 로비로 <b>두 경로 모두 전면 광고가 정상 재생</b>되고, 광고 종료 후 목적지가 각각 프리레벨 팝업 / 로비</td></tr>
+      <tr><td>QA</td><td>광고 로드 실패 · 5초 타임아웃 상황에서도 다시 하기가 프리레벨 팝업으로 정상 진입</td></tr>
       <tr><td>QA</td><td><b>Quick Next Loop v2를 켠 상태</b>에서 다시 하기가 프리레벨 팝업 없이 곧장 판 시작 · 입장료 0</td></tr>
       <tr><td>QA</td><td><code>is_retry_flow_open</code> 해제 시 <b>버튼과 문구가 함께</b> 기존 2버튼 흐름으로 복귀 · 중앙 정렬 유지</td></tr>
       <tr><td>QA</td><td>튜토리얼 중에는 다시 하기가 뜨지 않음</td></tr>
