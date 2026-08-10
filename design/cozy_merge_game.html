@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/cozy-cottage-design-system-d8a5c001-32d2-4e8f-9c86-9441765e0481/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/cozy-cottage-design-system-d8a5c001-32d2-4e8f-9c86-9441765e0481/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/cozy-cottage-design-system-d8a5c001-32d2-4e8f-9c86-9441765e0481/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/cozy-cottage-design-system-d8a5c001-32d2-4e8f-9c86-9441765e0481/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/cozy-cottage-design-system-d8a5c001-32d2-4e8f-9c86-9441765e0481/tokens/effects.css">
+  <link rel="stylesheet" href="_ds/cozy-cottage-design-system-d8a5c001-32d2-4e8f-9c86-9441765e0481/tokens/base.css">
+  <link rel="stylesheet" href="_ds/cozy-cottage-design-system-d8a5c001-32d2-4e8f-9c86-9441765e0481/styles.css">
+  <script src="_ds/cozy-cottage-design-system-d8a5c001-32d2-4e8f-9c86-9441765e0481/_ds_bundle.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #EFE6D2; }
+    a { color: var(--coral-600); } a:hover { color: var(--coral-700); }
+    .cc-num { font-family: var(--font-display); font-weight: 800; -webkit-text-stroke: 0.6px rgba(94,66,34,0.28); text-shadow: 0 1.5px 0 rgba(94,66,34,0.22); font-variant-numeric: tabular-nums; }
+    .cc-scroll::-webkit-scrollbar { display: none; }
+    @keyframes ccPopA { 0% { transform: scale(0.2); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+    @keyframes ccPopB { 0% { transform: scale(0.2); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+    @keyframes ccSquash { 0% { transform: scale(0.55); } 55% { transform: scaleX(1.12) scaleY(0.88); } 100% { transform: scale(1); } }
+    @keyframes ccFlash { 0% { transform: translate(-50%,-50%) scale(0.2); opacity: 0.9; } 100% { transform: translate(-50%,-50%) scale(2.6); opacity: 0; } }
+    @keyframes ccShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-4px); } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
+    @keyframes ccToastIn { 0% { transform: translateY(-14px) scale(0.9); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+    @keyframes ccStar { 0% { transform: scale(0.3) rotate(0deg); opacity: 0; } 25% { opacity: 1; } 100% { transform: scale(1.25) rotate(150deg) translateY(-58px); opacity: 0; } }
+    @keyframes ccGenFloat { 0%,100% { transform: translateY(0) scale(1.04); } 50% { transform: translateY(-3px) scale(1.04); } }
+    @keyframes ccEnergyPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(222,95,102,0); } 50% { box-shadow: 0 0 0 5px rgba(222,95,102,0.45); } }
+    @keyframes ccEnergyFlash { 0%,100% { box-shadow: 0 0 0 0 rgba(222,95,102,0); } 50% { box-shadow: 0 0 0 7px rgba(222,95,102,0.6); } }
+    @keyframes ccRingPulse { 0%,100% { opacity: 0.55; transform: translateY(-50%) scale(1); } 50% { opacity: 0; transform: translateY(-50%) scale(1.7); } }
+    @keyframes ccTrayGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.14); } }
+    @keyframes ccBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes ccHi { 0%,100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.04); } }
+    @keyframes ccSparkle { 0%,100% { opacity: 0.5; transform: scale(0.85) rotate(-8deg); } 50% { opacity: 1; transform: scale(1.15) rotate(8deg); } }
+    @keyframes ccReady { 0%,100% { box-shadow: 0 0 0 0 rgba(93,127,69,0); } 50% { box-shadow: 0 0 0 4px rgba(93,127,69,0.4); } }
+    @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.001ms !important; } }
+  </style>
+</helmet>
+<div style="min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 20px 12px; background: #EFE6D2; font-family: var(--font-body); user-select: none; -webkit-user-select: none;">
+  <div ref="{{ frameRef }}" style="width: 430px; height: 932px; flex: none; position: relative; border-radius: 32px; overflow: hidden; box-shadow: var(--shadow-float); background: linear-gradient(180deg, #BFE3F0 0%, #CFEAE4 22%, #EFE0BE 44%, #F4D9A8 46%, #F4D9A8 100%); display: flex; flex-direction: column;">
+
+    <!-- ===== SHARED TOP HUD (matches Vintage Lane Hub) ===== -->
+    <div style="position: absolute; top: 12px; left: 10px; right: 10px; z-index: 30; display: flex; align-items: center; gap: 6px;">
+      <div aria-label="레벨 {{ level }}" style="position: relative; width: 52px; height: 52px; flex: none;">
+        <span style="position: absolute; inset: 0; border-radius: 16px; overflow: hidden; border: 3px solid var(--white); box-shadow: var(--shadow-float); background: var(--rose-100); display: block;">
+          <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="vl-avatar" shape="rect" placeholder="내 캐릭터" fit="cover" hint-size="46px,46px" style="width: 100%; height: 100%; display: block;"></x-import>
+        </span>
+        <span style="position: absolute; left: -6px; bottom: -6px; display: flex; align-items: center; gap: 2px; background: linear-gradient(180deg, #6FB8E0, #3E8FC7); border-radius: 999px; padding: 1px 7px 1px 4px; box-shadow: var(--sticker-ring);">
+          <span class="cc-icon" style="font-size: 13px; color: var(--gold-300);">star</span>
+          <span class="cc-num" style="font-size: 13px; color: var(--white);">{{ level }}</span>
+        </span>
+      </div>
+
+      <div ref="{{ energyRef }}" aria-label="기운 {{ energyCur }}" style="position: relative; height: 40px; width: 92px; flex: none; box-sizing: border-box; background: var(--white); border-radius: 999px; border: 2px solid var(--border-soft); box-shadow: var(--shadow-float); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 30px 0 22px; animation: {{ energyFlashAnim }};">
+        <span class="cc-icon" style="position: absolute; left: -9px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 50%; background: var(--gold-500); color: var(--white); font-size: 21px; display: flex; align-items: center; justify-content: center; box-shadow: var(--sticker-ring), 0 2px 3px rgba(94,66,34,0.3); filter: {{ energyIconFilter }};">bolt</span>
+        <span class="cc-num" style="font-size: 17px; color: var(--ink-900); line-height: 1;">{{ energyCur }}</span>
+        <span class="cc-num" style="font-size: 10px; color: var(--gold-600); line-height: 1.1;">{{ energyTimer }}</span>
+        <button onClick="{{ onPlus }}" aria-label="기운 충전" style="position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; border: none; background: var(--leaf-600); color: var(--white); font-size: 17px; font-weight: 800; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; z-index: 2;">+</button>
+        <sc-if value="{{ energyLow }}" hint-placeholder-val="{{ false }}">
+          <span style="position: absolute; inset: -2px; border-radius: 999px; animation: ccEnergyPulse 0.85s ease-in-out infinite; pointer-events: none;"></span>
+        </sc-if>
+      </div>
+
+      <div ref="{{ coinRef }}" aria-label="코인 {{ coinDisplay }}" style="position: relative; height: 40px; flex: 1; min-width: 0; box-sizing: border-box; background: var(--white); border-radius: 999px; border: 2px solid var(--border-soft); box-shadow: var(--shadow-float); display: flex; align-items: center; justify-content: center; padding: 0 14px 0 22px; animation: {{ coinBounce }};">
+        <span class="cc-icon" style="position: absolute; left: -9px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 50%; background: var(--gold-300); color: var(--gold-700); font-size: 20px; display: flex; align-items: center; justify-content: center; box-shadow: var(--sticker-ring), 0 2px 3px rgba(94,66,34,0.3);">paid</span>
+        <span class="cc-num" style="font-size: 16px; color: var(--ink-900);">{{ coinDisplay }}</span>
+      </div>
+
+      <div aria-label="젬 {{ gem }}" style="position: relative; height: 40px; flex: none; box-sizing: border-box; background: var(--white); border-radius: 999px; border: 2px solid var(--border-soft); box-shadow: var(--shadow-float); display: flex; align-items: center; justify-content: center; padding: 0 30px 0 22px;">
+        <span class="cc-icon" style="position: absolute; left: -9px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 50%; background: var(--lavender-300); color: var(--lavender-700); font-size: 20px; display: flex; align-items: center; justify-content: center; box-shadow: var(--sticker-ring), 0 2px 3px rgba(94,66,34,0.3);">diamond</span>
+        <span class="cc-num" style="font-size: 16px; color: var(--ink-900);">{{ gem }}</span>
+        <button onClick="{{ onPlus }}" aria-label="젬 상점" style="position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; border: none; background: var(--leaf-600); color: var(--white); font-size: 17px; font-weight: 800; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">+</button>
+      </div>
+
+      <button onClick="{{ onShop }}" aria-label="상점" style="flex: none; width: 44px; height: 44px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
+        <span class="cc-icon" style="font-size: 38px; color: var(--gold-600); filter: drop-shadow(0 1px 1px var(--white)) drop-shadow(0 2px 3px rgba(58,44,20,0.35));">shopping_cart</span>
+      </button>
+    </div>
+
+    <div style="position: absolute; top: 68px; right: 14px; z-index: 30; display: flex; gap: 10px;">
+      <button onClick="{{ onShop }}" aria-label="편지함" style="width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--white); background: linear-gradient(180deg, #6FB8E0, #3E8FC7); box-shadow: var(--shadow-float); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
+        <span class="cc-icon" style="font-size: 22px; color: var(--white);">mail</span>
+      </button>
+      <button onClick="{{ onShop }}" aria-label="설정" style="width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--white); background: linear-gradient(180deg, #A9BBC7, #7C93A3); box-shadow: var(--shadow-float); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
+        <span class="cc-icon" style="font-size: 24px; color: var(--white);">settings</span>
+      </button>
+    </div>
+
+    <!-- spacer to clear the shared HUD -->
+    <div style="height: 116px; flex: none;"></div>
+
+    <!-- ===== SECONDARY STRIP (smile gauge + booster) ===== -->
+    <div style="flex: none; padding: 0 12px 4px; display: flex; align-items: center; gap: 8px; z-index: 20;">
+      <div aria-label="스마일 게이지 {{ smile }} / {{ smileMax }}" style="display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.7); border-radius: 999px; padding: 2px 10px 2px 4px; box-shadow: var(--shadow-soft);">
+        <span class="cc-icon" style="width: 22px; height: 22px; border-radius: 50%; background: var(--coral-500); color: var(--white); font-size: 16px; display: flex; align-items: center; justify-content: center;">sentiment_very_satisfied</span>
+        <div style="width: 84px; height: 9px; border-radius: 999px; background: var(--rose-100); overflow: hidden;">
+          <div style="height: 100%; width: {{ smilePct }}%; background: linear-gradient(90deg, var(--coral-300), var(--coral-500)); border-radius: 999px; transition: width 220ms ease-out;"></div>
+        </div>
+        <span class="cc-num" style="font-size: 13px; color: var(--ink-700);">{{ smile }}/{{ smileMax }}</span>
+      </div>
+      <button onClick="{{ onBooster }}" aria-label="생성 부스터 {{ boosterLabel }}" style="margin-left: auto; display: flex; align-items: center; gap: 4px; background: var(--white); border: 2px solid var(--gold-300); border-radius: 999px; padding: 2px 12px 2px 6px; box-shadow: var(--shadow-soft); cursor: pointer;">
+        <span class="cc-icon" style="width: 22px; height: 22px; border-radius: 50%; background: var(--gold-500); color: var(--white); font-size: 16px; display: flex; align-items: center; justify-content: center;">upgrade</span>
+        <span class="cc-num" style="font-size: 15px; color: var(--gold-700);">{{ boosterLabel }}</span>
+      </button>
+    </div>
+
+    <!-- ===== COUNTER ZONE ===== -->
+    <div style="flex: none; position: relative; height: 130px; z-index: 10;">
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 18px; background: linear-gradient(180deg, #7FD0DC 0%, #4FB8C8 100%); box-shadow: 0 -2px 5px rgba(94,66,34,0.12), inset 0 2px 0 rgba(255,255,255,0.4); z-index: 2;"></div>
+      <div class="cc-scroll" style="position: absolute; inset: 0; overflow-x: auto; overflow-y: hidden; display: flex; gap: 6px; padding: 2px 12px 0 56px; touch-action: pan-x; scrollbar-width: none;">
+        <sc-for list="{{ orders }}" as="order" hint-placeholder-count="3">
+          <div style="flex: none; width: 148px; height: 100%; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; animation: {{ order.enter }};">
+            <div style="position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 74px; height: 78px; border-radius: 40px 40px 20px 20px; background: {{ order.avatarBg }}; overflow: hidden; box-shadow: inset 0 3px 0 rgba(255,255,255,0.35); z-index: 1; display: flex; align-items: flex-end; justify-content: center; animation: {{ order.bob }};">
+              <span class="cc-icon" style="font-size: 58px; color: rgba(62,49,38,0.72); margin-bottom: -6px;">{{ order.avatar }}</span>
+            </div>
+            <div style="position: absolute; top: 36px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 2px; z-index: 4;">
+              <span class="cc-icon" style="font-size: 16px; color: var(--gold-500); filter: drop-shadow(0 1px 1px var(--white));">paid</span>
+              <span class="cc-num" style="font-size: 14px; color: var(--gold-700); text-shadow: 0 1px 0 var(--white), 0 0 3px var(--white);">+{{ order.rewardCoin }}</span>
+            </div>
+            <div style="position: absolute; top: 2px; right: 8px; z-index: 5; display: flex; align-items: center; gap: 1px;">
+              <span style="font-size: 14px;">🔥</span>
+              <span class="cc-num" style="font-size: 13px; color: var(--coral-600); text-shadow: 0 1px 0 var(--white);">{{ order.flame }}</span>
+            </div>
+            <button ref="{{ order.trayRef }}" onClick="{{ order.deliver }}" aria-label="주문 납품, 코인 {{ order.rewardCoin }}, 경험치 {{ order.rewardXp }}" style="position: relative; z-index: 3; margin-bottom: 6px; width: 144px; min-height: 48px; border: none; cursor: pointer; background: linear-gradient(180deg, #FFFFFF, #F3E9D6); border-radius: 8px 8px 22px 22px / 8px 8px 30px 30px; box-shadow: 0 3px 5px rgba(94,66,34,0.2), inset 0 2px 0 rgba(255,255,255,0.7); padding: 5px 8px 8px; display: flex; align-items: center; justify-content: center; gap: 6px; animation: {{ order.trayGlow }};">
+              <sc-for list="{{ order.requires }}" as="req" hint-placeholder-count="2">
+                <span style="position: relative; display: flex; flex-direction: column; align-items: center;">
+                  <span style="font-size: 25px; line-height: 1; filter: drop-shadow(0 3px 2px rgba(94,66,34,0.28)); margin-top: -14px;">{{ req.emoji }}</span>
+                  <sc-if value="{{ req.showCount }}" hint-placeholder-val="{{ false }}">
+                    <span class="cc-num" style="font-size: 12px; color: {{ req.countColor }}; line-height: 1;">{{ req.have }}/{{ req.count }}</span>
+                  </sc-if>
+                  <sc-if value="{{ req.done }}" hint-placeholder-val="{{ false }}">
+                    <span class="cc-icon" style="position: absolute; top: -18px; right: -8px; font-size: 15px; color: var(--leaf-600); background: var(--white); border-radius: 50%;">check_circle</span>
+                  </sc-if>
+                </span>
+              </sc-for>
+            </button>
+          </div>
+        </sc-for>
+      </div>
+      <button onClick="{{ onTask }}" aria-label="할 일 목록" style="position: absolute; left: 10px; bottom: 28px; z-index: 6; width: 44px; height: 48px; border: none; background: transparent; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;">
+        <span class="cc-icon" style="font-size: 38px; color: var(--lavender-500); filter: drop-shadow(0 1px 1px var(--white)) drop-shadow(0 2px 2px rgba(94,66,34,0.25));">assignment</span>
+        <span class="cc-num" style="position: absolute; top: -3px; right: -2px; width: 18px; height: 18px; border-radius: 50%; background: var(--coral-500); color: var(--white); font-size: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--sticker-ring);">!</span>
+      </button>
+    </div>
+
+    <!-- ===== MERGE BOARD ===== -->
+    <div style="flex: none; display: flex; justify-content: center; padding: 2px 0 0; z-index: 5;">
+      <div style="background: #6FC3D6; border: 3px solid #4A97AE; border-radius: 8px; padding: 3px; box-shadow: 0 3px 8px rgba(94,66,34,0.2);">
+        <div ref="{{ boardRef }}" style="display: grid; grid-template-columns: repeat(7, 50px); grid-auto-rows: 50px; gap: 2px; touch-action: none;">
+          <sc-for list="{{ cells }}" as="cell" hint-placeholder-count="63">
+            <div data-cell-id="{{ cell.idStr }}" aria-label="{{ cell.aria }}" onPointerDown="{{ cell.pointerDown }}" style="position: relative; width: 50px; height: 50px; border-radius: 5px; background: {{ cell.bg }}; box-shadow: {{ cell.ring }}; display: flex; align-items: center; justify-content: center; touch-action: none; cursor: {{ cell.cursor }}; animation: {{ cell.cellAnim }};">
+              <sc-if value="{{ cell.matchRing }}" hint-placeholder-val="{{ false }}">
+                <span style="position: absolute; inset: -2px; border-radius: 7px; box-shadow: 0 0 0 3px var(--gold-500), 0 0 8px 1px rgba(229,166,46,0.55); animation: ccHi 800ms ease-in-out infinite; pointer-events: none; z-index: 4;"></span>
+              </sc-if>
+              <sc-if value="{{ cell.deco }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size: 18px; opacity: 0.5; filter: saturate(0.7);">{{ cell.decoEmoji }}</span>
+              </sc-if>
+              <sc-if value="{{ cell.dashed }}" hint-placeholder-val="{{ false }}">
+                <span style="position: absolute; inset: 4px; border-radius: 4px; border: 2px dashed rgba(74,63,53,0.5); pointer-events: none; z-index: 2;"></span>
+              </sc-if>
+              <sc-if value="{{ cell.has }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size: 32px; line-height: 1; opacity: {{ cell.opacity }}; transform: {{ cell.tileTransform }}; filter: {{ cell.tileFilter }}; animation: {{ cell.anim }};">{{ cell.emoji }}</span>
+                <sc-if value="{{ cell.genLightning }}" hint-placeholder-val="{{ false }}">
+                  <span class="cc-icon" style="position: absolute; right: -2px; bottom: -2px; width: 18px; height: 18px; border-radius: 50%; background: var(--gold-500); color: var(--white); font-size: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--sticker-ring); z-index: 3;">bolt</span>
+                </sc-if>
+                <sc-if value="{{ cell.clock }}" hint-placeholder-val="{{ false }}">
+                  <span class="cc-icon" style="position: absolute; right: -3px; top: -3px; width: 18px; height: 18px; border-radius: 50%; background: {{ cell.clockBg }}; color: var(--white); font-size: 12px; display: flex; align-items: center; justify-content: center; box-shadow: var(--sticker-ring); z-index: 3; animation: {{ cell.clockAnim }};">schedule</span>
+                </sc-if>
+                <sc-if value="{{ cell.remainingShow }}" hint-placeholder-val="{{ false }}">
+                  <span class="cc-num" style="position: absolute; left: -4px; top: -4px; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 999px; background: var(--ink-700); color: var(--white); font-size: 10px; display: flex; align-items: center; justify-content: center; box-shadow: var(--sticker-ring); z-index: 3;">{{ cell.remaining }}</span>
+                </sc-if>
+                <sc-if value="{{ cell.crown }}" hint-placeholder-val="{{ false }}">
+                  <span style="position: absolute; left: -4px; bottom: -4px; font-size: 15px; z-index: 3; filter: drop-shadow(0 0 1.5px var(--white));">👑</span>
+                </sc-if>
+                <sc-if value="{{ cell.needed }}" hint-placeholder-val="{{ false }}">
+                  <span class="cc-icon" style="position: absolute; right: -3px; bottom: -3px; width: 17px; height: 17px; border-radius: 50%; background: var(--leaf-600); color: var(--white); font-size: 13px; display: flex; align-items: center; justify-content: center; box-shadow: var(--sticker-ring); z-index: 3;">check</span>
+                </sc-if>
+                <sc-if value="{{ cell.sparkle }}" hint-placeholder-val="{{ false }}">
+                  <span class="cc-icon" style="position: absolute; right: -4px; top: -4px; font-size: 17px; color: var(--gold-500); z-index: 3; filter: drop-shadow(0 0 2px var(--white)); animation: ccSparkle 900ms ease-in-out infinite;">auto_awesome</span>
+                </sc-if>
+                <sc-if value="{{ cell.web }}" hint-placeholder-val="{{ false }}">
+                  <span style="position: absolute; inset: 0; display: flex; align-items: flex-start; justify-content: flex-start; font-size: 40px; line-height: 0.8; opacity: 0.62; pointer-events: none; z-index: 4; overflow: hidden;">🕸️</span>
+                </sc-if>
+                <sc-if value="{{ cell.cooling }}" hint-placeholder-val="{{ false }}">
+                  <div style="position: absolute; inset: 0; border-radius: 5px; background: rgba(255,251,242,0.55); display: flex; align-items: center; justify-content: center; z-index: 4;">
+                    <div style="width: 22px; height: 22px; border-radius: 50%; background: conic-gradient(var(--gold-500) {{ cell.coolPct }}%, var(--gold-100) 0); box-shadow: var(--sticker-ring);"></div>
+                  </div>
+                </sc-if>
+              </sc-if>
+              <sc-if value="{{ cell.previewGhost }}" hint-placeholder-val="{{ false }}">
+                <span style="position: absolute; font-size: 30px; opacity: 0.32; pointer-events: none; z-index: 2;">{{ cell.previewEmoji }}</span>
+              </sc-if>
+              <sc-if value="{{ cell.previewMerge }}" hint-placeholder-val="{{ false }}">
+                <span class="cc-icon" style="position: absolute; top: -6px; right: -6px; font-size: 18px; color: var(--leaf-600); background: var(--white); border-radius: 50%; z-index: 6; box-shadow: var(--sticker-ring);">add_circle</span>
+              </sc-if>
+              <sc-if value="{{ cell.previewSwap }}" hint-placeholder-val="{{ false }}">
+                <span class="cc-icon" style="position: absolute; font-size: 22px; color: var(--coral-600); z-index: 6; text-shadow: 0 0 3px var(--white), 0 0 3px var(--white);">swap_horiz</span>
+              </sc-if>
+              <sc-if value="{{ cell.previewX }}" hint-placeholder-val="{{ false }}">
+                <span class="cc-icon" style="position: absolute; font-size: 26px; color: var(--coral-600); z-index: 6; text-shadow: 0 0 3px var(--white), 0 0 3px var(--white);">cancel</span>
+              </sc-if>
+              <sc-if value="{{ cell.flash }}" hint-placeholder-val="{{ false }}">
+                <span style="position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.95), rgba(255,255,255,0)); z-index: 7; pointer-events: none; animation: ccFlash 220ms ease-out forwards;"></span>
+              </sc-if>
+              <sc-if value="{{ cell.selected }}" hint-placeholder-val="{{ false }}">
+                <span style="position: absolute; left: -3px; top: -3px; width: 13px; height: 13px; border-top: 3px solid #4FB8C8; border-left: 3px solid #4FB8C8; border-radius: 4px 0 0 0; z-index: 5;"></span>
+                <span style="position: absolute; right: -3px; top: -3px; width: 13px; height: 13px; border-top: 3px solid #4FB8C8; border-right: 3px solid #4FB8C8; border-radius: 0 4px 0 0; z-index: 5;"></span>
+                <span style="position: absolute; left: -3px; bottom: -3px; width: 13px; height: 13px; border-bottom: 3px solid #4FB8C8; border-left: 3px solid #4FB8C8; border-radius: 0 0 0 4px; z-index: 5;"></span>
+                <span style="position: absolute; right: -3px; bottom: -3px; width: 13px; height: 13px; border-bottom: 3px solid #4FB8C8; border-right: 3px solid #4FB8C8; border-radius: 0 0 4px 0; z-index: 5;"></span>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1; min-height: 6px;"></div>
+
+    <!-- ===== BOTTOM BAR ===== -->
+    <div style="flex: none; position: relative; padding: 0 8px 14px; display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; z-index: 15;">
+      <button onClick="{{ onChest }}" aria-label="보물 상자" style="width: 56px; height: 56px; flex: none; border: 2px solid var(--border-soft); border-radius: 16px; background: linear-gradient(180deg, var(--white), var(--cream-100)); box-shadow: 0 4px 0 var(--edge-neutral), var(--shadow-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
+        <span class="cc-icon" style="font-size: 32px; color: var(--gold-600);">card_giftcard</span>
+      </button>
+      <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}">
+        <div style="flex: 1; max-width: 252px; position: relative; background: var(--white); border: 2px solid var(--border-soft); border-radius: 16px; box-shadow: var(--shadow-card); padding: 9px 10px 9px; margin-top: 6px; overflow: visible;">
+          <div style="position: absolute; left: 10px; top: -11px; right: 36px; height: 24px; background: linear-gradient(180deg, #7FD0DC, #4FB8C8); border-radius: 999px; box-shadow: var(--sticker-ring), 0 2px 3px rgba(94,66,34,0.2); display: flex; align-items: center; gap: 5px; padding: 0 12px;">
+            <span style="font-family: var(--font-display); font-weight: 800; font-size: 14px; color: var(--white); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 1px rgba(30,90,85,0.5);">{{ selName }}</span>
+            <span style="font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.92); flex: none;">({{ selLevel }}레벨)</span>
+          </div>
+          <button onClick="{{ onInfo }}" aria-label="자세히" style="position: absolute; right: 6px; top: -12px; width: 26px; height: 26px; border-radius: 50%; border: none; background: linear-gradient(180deg, #7FD0DC, #4FB8C8); color: var(--white); font-family: var(--font-display); font-weight: 800; font-size: 15px; font-style: italic; cursor: pointer; box-shadow: var(--sticker-ring); display: flex; align-items: center; justify-content: center; padding: 0;">i</button>
+          <div style="display: flex; align-items: center; gap: 8px; padding-top: 9px;">
+            <span style="flex: 1; font-size: 12.5px; font-weight: 700; color: var(--ink-700); line-height: 1.35;">{{ selDesc }}</span>
+            <sc-if value="{{ selCanTrash }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ onTrash }}" aria-label="아이템 정리" style="flex: none; width: 42px; height: 42px; border-radius: 12px; border: none; background: var(--coral-500); color: var(--white); box-shadow: 0 3px 0 var(--edge-coral); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">
+                <span class="cc-icon" style="font-size: 22px;">delete</span>
+              </button>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+      <a href="vintage_lane_hub.html" aria-label="마을로 나가기" style="text-decoration: none; width: 56px; height: 56px; flex: none; border: 2px solid var(--white); border-radius: 16px; background: linear-gradient(180deg, var(--leaf-600), #4b6b3a); box-shadow: 0 4px 0 var(--edge-leaf), var(--shadow-soft); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0;">
+        <span class="cc-icon" style="font-size: 26px; color: var(--white); line-height: 1;">cottage</span>
+        <span style="font-family: var(--font-display); font-weight: 800; font-size: 10px; color: var(--white); line-height: 1;">마을로</span>
+      </a>
+    </div>
+
+    <!-- ===== TOASTS ===== -->
+    <div style="position: absolute; top: 120px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 100; pointer-events: none;">
+      <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0">
+        <div style="display: flex; align-items: center; gap: 8px; background: var(--white); border: 2px solid var(--border-soft); border-radius: 999px; padding: 8px 16px; box-shadow: var(--sticker-ring), var(--shadow-float); animation: ccToastIn 220ms cubic-bezier(0.34,1.3,0.64,1); max-width: 340px;">
+          <span class="cc-icon" style="font-size: 20px; color: {{ t.color }}; flex: none;">{{ t.icon }}</span>
+          <span style="font-size: 15px; font-weight: 800; color: var(--ink-900);">{{ t.text }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- ===== STAR BURSTS ===== -->
+    <sc-for list="{{ stars }}" as="s" hint-placeholder-count="0">
+      <span class="cc-icon" style="position: absolute; left: {{ s.left }}; top: {{ s.top }}; color: {{ s.color }}; font-size: {{ s.size }}px; z-index: 70; pointer-events: none; animation: ccStar 760ms ease-out forwards; animation-delay: {{ s.delay }}; opacity: 0; text-shadow: 0 0 6px rgba(255,255,255,0.9);">{{ s.icon }}</span>
+    </sc-for>
+
+    <!-- ===== FLYERS ===== -->
+    <sc-for list="{{ flyers }}" as="f" hint-placeholder-count="0">
+      <div ref="{{ f.ref }}" style="position: fixed; left: {{ f.x0 }}px; top: {{ f.y0 }}px; transform: translate(-50%,-50%); z-index: 80; pointer-events: none; font-size: {{ f.size }}px; line-height: 1; will-change: transform; filter: drop-shadow(0 4px 4px rgba(94,66,34,0.35));">
+        <sc-if value="{{ f.isCoin }}" hint-placeholder-val="{{ false }}">
+          <span class="cc-icon" style="color: var(--gold-500);">paid</span>
+        </sc-if>
+        <sc-if value="{{ f.isEmoji }}" hint-placeholder-val="{{ false }}">
+          <span>{{ f.emoji }}</span>
+        </sc-if>
+      </div>
+    </sc-for>
+
+    <!-- ===== DRAG GHOST ===== -->
+    <sc-if value="{{ ghostShow }}" hint-placeholder-val="{{ false }}">
+      <div style="position: fixed; left: 0; top: 0; transform: translate3d({{ ghostX }}px, {{ ghostY }}px, 0) translate(-50%, -70%) scale(1.12) rotate({{ ghostRot }}deg); transition: transform 70ms linear; pointer-events: none; z-index: 90; font-size: 36px; opacity: {{ ghostOpacity }}; filter: drop-shadow(0 10px 18px rgba(94,66,34,0.45)); will-change: transform;">{{ ghostEmoji }}</div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:900},&quot;energyRecoverSec&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:120,&quot;min&quot;:2,&quot;max&quot;:120,&quot;step&quot;:1,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;게임 설정&quot;},&quot;genCooldownSec&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:2,&quot;min&quot;:1,&quot;max&quot;:10,&quot;step&quot;:0.5,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;게임 설정&quot;}}">
+const COLS = 7, ROWS = 9, CELLS = COLS * ROWS;
+
+const CHAINS = {
+  grocery: ["101","102","103","104","105","106","107","108","109","110","111"],
+  bread:   ["201","202","203","204","205","206","207","208","209","210","211","212","213","214","215"],
+  potato:  ["301","302","303","304","305","306","307"],
+  orange:  ["401","402","403"],
+};
+
+const ITEM_NAME = {
+  101:"빈 종이봉투",102:"종이봉투",103:"쇼핑백",104:"가득 찬 쇼핑백",105:"바구니",106:"묵직한 바구니",107:"바퀴 달린 바구니",108:"카트",109:"풍성한 카트",110:"꽉 찬 카트",111:"호화 2단 쇼핑 카트",
+  201:"밀가루 한 포대",202:"밀가루 반죽",203:"초보자가 만든 빵",204:"샤워도우 빵",205:"자른 식빵",206:"버터 잼 토스트",207:"젤리 샌드위치",208:"베이컨 샌드위치",209:"베이컨 치즈 샌드위치",210:"베이글",211:"베이글 샌드위치",212:"베이컨 치즈 크로와상",213:"딥치즈햄버거",214:"치즈버거 앤 프라이즈",215:"치즈버거 디럭스 세트",
+  301:"생감자",302:"썬 감자",303:"감자튀김",304:"케첩 감자튀김",305:"감자튀김 세트",306:"더블 감자튀김 세트",307:"치킨 한 버켓",
+  401:"오렌지",402:"오렌지 주스",403:"오렌지 에이드",
+  410:"오렌지 나무",510:"감자 자루",
+};
+
+const ITEM_EMOJI = {
+  101:"📄",102:"🥡",103:"🛍️",104:"👜",105:"🧺",106:"🎒",107:"🧳",108:"🛒",109:"🚛",110:"📦",111:"🏪",
+  201:"🌾",202:"🥣",203:"🍞",204:"🥖",205:"🥨",206:"🧈",207:"🥪",208:"🥓",209:"🧀",210:"🥯",211:"🥙",212:"🥐",213:"🍔",214:"🍱",215:"🍽️",
+  301:"🥔",302:"🔪",303:"🍟",304:"🥫",305:"🥤",306:"🧆",307:"🍗",
+  401:"🍊",402:"🧃",403:"🍹",410:"🌳",510:"👝",
+};
+
+// klass: A = energy-per-tap + soft (heat) cooldown; B = timer, 0 energy, auto-spawn (Orange Tree);
+//        C = consumable, finite total then vanishes.
+const GENERATORS = {
+  "104": { klass: "A", produce: [["201", 100]] },
+  "105": { klass: "A", produce: [["201", 35], ["202", 2], ["301", 5]] },
+  "410": { klass: "B", produce: [["401", 100]], intervalSec: 8 },
+  "510": { klass: "C", produce: [["301", 100]], total: 8, cost: 1 },
+};
+
+const ENERGY = { max: 100, recoverSec: 120 };
+const LEVEL = { baseXp: 30, stepXp: 15, levelUpCoin: 50, levelUpEnergy: 20 };
+const ORDER = { slots: 3, countWeight: { 1: 60, 2: 20, 3: 20 } };
+const SMILE_MAX = 12;
+const AVATARS = [
+  { icon: "face_3", bg: "var(--rose-200)" }, { icon: "face_4", bg: "var(--sage-200)" },
+  { icon: "face_6", bg: "var(--lavender-300)" }, { icon: "face", bg: "var(--butter-200)" },
+  { icon: "face_2", bg: "var(--gold-300)" }, { icon: "face_5", bg: "var(--coral-300)" },
+];
+const DECO = ["🐚", "🪨", "🪵", "🦪"];
+const OPEN_PATTERN = [
+  0,1,1,0,0,0,0, 1,1,1,1,0,0,0, 1,1,1,1,1,0,0, 1,1,1,1,1,1,0,
+  1,1,1,1,1,1,0, 1,1,1,1,1,0,0, 1,1,1,1,1,0,0, 0,1,1,1,0,0,0, 0,0,0,0,0,0,0,
+];
+
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function weightedPick(pairs) { const total = pairs.reduce((s, p) => s + p[1], 0); let r = Math.random() * total; for (const [v, w] of pairs) { r -= w; if (r < 0) return v; } return pairs[pairs.length - 1][0]; }
+
+class Component extends DCLogic {
+  frameRef = React.createRef();
+  boardRef = React.createRef();
+  energyRef = React.createRef();
+  coinRef = React.createRef();
+  _flyerRefs = new Map();
+  _started = new Set();
+  _reduced = false;
+  state = this.buildInitialState();
+
+  recSec() { return Math.max(2, Number(this.props.energyRecoverSec ?? ENERGY.recoverSec)); }
+  genCoolBase() { return Math.max(0.5, Number(this.props.genCooldownSec ?? 2)); }
+  xpMax(level) { return LEVEL.baseXp + LEVEL.stepXp * (level - 1); }
+  stageIdx(id) { for (const k in CHAINS) { const i = CHAINS[k].indexOf(id); if (i >= 0) return i; } return 0; }
+  nextItem(id) { for (const k in CHAINS) { const i = CHAINS[k].indexOf(id); if (i >= 0) return i + 1 < CHAINS[k].length ? CHAINS[k][i + 1] : null; } return null; }
+  isGen(id) { return !!(id && GENERATORS[id]); }
+  genCost(id) { const g = GENERATORS[id]; if (!g || g.klass === "B") return 0; if (g.cost != null) return g.cost; return Math.max(1, this.stageIdx(id) - 2); }
+  makeGen(id, now) { const g = GENERATORS[id]; if (!g) return null; if (g.klass === "B") return { klass: "B", readyAt: now + g.intervalSec * 1000 }; if (g.klass === "C") return { klass: "C", remaining: g.total, cooldownEndsAt: 0 }; return { klass: "A", heat: 0, lastUse: 0, cooldownEndsAt: 0 }; }
+  haptic(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
+
+  buildInitialState() {
+    const now = Date.now();
+    const board = Array.from({ length: CELLS }, (_, i) => ({
+      id: i, itemId: null, gen: null, open: !!OPEN_PATTERN[i], web: false, isNew: false, reserved: false,
+      deco: !OPEN_PATTERN[i] && Math.random() < 0.5 ? DECO[Math.floor(Math.random() * DECO.length)] : null,
+    }));
+    const openIdx = board.filter((c) => c.open).map((c) => c.id);
+    const startItems = ["104","104","105","410","510","210","210","210","204","204","203","203","202","205","301","301","302","303"];
+    const spots = shuffle(openIdx).slice(0, startItems.length);
+    startItems.forEach((it, i) => { const c = board[spots[i]]; c.itemId = it; if (GENERATORS[it]) c.gen = this.makeGen(it, now); });
+    shuffle(spots.filter((idx) => board[idx].itemId && !GENERATORS[board[idx].itemId])).slice(0, 8).forEach((idx) => { board[idx].web = true; });
+    const orders = [this.generateOrder(1), this.generateOrder(1), this.generateOrder(1)];
+    return {
+      board, orders, coin: 500, coinDisplay: 500, gem: 20, level: 1, xp: 0, smile: 0, booster: 1,
+      energy: { cur: 100, max: ENERGY.max, lastTick: now },
+      toasts: [], stars: [], flyers: [], drag: null, selected: null,
+      mergeFx: null, shakeCell: null, energyFlash: 0, coinBounceAt: 0, levelPunchAt: 0, now,
+    };
+  }
+
+  componentDidMount() {
+    try { this._reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    this._timer = setInterval(this.tick, 250);
+    window.addEventListener("pointermove", this.onMove);
+    window.addEventListener("pointerup", this.onUp);
+    window.addEventListener("pointercancel", this.onCancel);
+  }
+  componentWillUnmount() {
+    clearInterval(this._timer);
+    window.removeEventListener("pointermove", this.onMove);
+    window.removeEventListener("pointerup", this.onUp);
+    window.removeEventListener("pointercancel", this.onCancel);
+  }
+  componentDidUpdate() {
+    if (this._reduced) return;
+    for (const f of this.state.flyers) {
+      if (this._started.has(f.id)) continue;
+      const node = this._flyerRefs.get(f.id);
+      if (!node) continue;
+      this._started.add(f.id);
+      node.animate([
+        { transform: "translate(-50%,-50%) scale(1)", opacity: 1, offset: 0 },
+        { transform: "translate(calc(-50% + " + (f.dx / 2) + "px), calc(-50% + " + (f.dy / 2 - f.peak) + "px)) scale(1.06)", opacity: 1, offset: 0.5 },
+        { transform: "translate(calc(-50% + " + f.dx + "px), calc(-50% + " + f.dy + "px)) scale(" + f.endScale + ")", opacity: f.endOpacity, offset: 1 },
+      ], { duration: f.dur, easing: "cubic-bezier(.4,0,.5,1)", fill: "forwards" });
+    }
+  }
+
+  tick = () => {
+    const now = Date.now();
+    this.setState((s) => {
+      const st = { now };
+      const rec = this.recSec();
+      const e = { ...s.energy };
+      if (e.cur >= e.max) e.lastTick = now;
+      else { const g = Math.floor((now - e.lastTick) / (rec * 1000)); if (g > 0) { e.cur = Math.min(e.max, e.cur + g); e.lastTick = e.cur >= e.max ? now : e.lastTick + g * rec * 1000; } }
+      st.energy = e;
+      // Class B (Orange Tree) auto-harvest
+      let board = null;
+      s.board.forEach((c, i) => {
+        if (c.itemId && GENERATORS[c.itemId] && GENERATORS[c.itemId].klass === "B" && c.gen && now >= c.gen.readyAt) {
+          const empty = this.adjacentEmpty(i, board || s.board);
+          if (empty != null) {
+            if (!board) board = s.board.map((x) => ({ ...x }));
+            board[empty].itemId = weightedPick(GENERATORS[c.itemId].produce); board[empty].isNew = true; board[empty].gen = null; board[empty].web = false;
+            board[i].gen = { klass: "B", readyAt: now + GENERATORS[c.itemId].intervalSec * 1000 };
+          }
+        }
+      });
+      if (board) st.board = board;
+      if (s.coinDisplay !== s.coin) { const d = s.coin - s.coinDisplay; st.coinDisplay = Math.abs(d) <= 3 ? s.coin : s.coinDisplay + Math.ceil(d / 4); }
+      if (s.toasts.length) st.toasts = s.toasts.filter((t) => now - t.at < 2600);
+      if (s.stars.length) st.stars = s.stars.filter((t) => now - t.at < 1100);
+      return st;
+    });
+  };
+
+  toast(text, icon, color) {
+    const t = { id: Math.random().toString(36).slice(2), text, icon: icon || "info", color: color || "var(--coral-600)", at: Date.now() };
+    this.setState((s) => ({ toasts: [...s.toasts.slice(-2), t] }));
+  }
+  addStars(list) { this.setState((s) => ({ stars: [...s.stars, ...list].slice(-60) })); }
+
+  addFlyer(f) {
+    this.setState((s) => ({ flyers: [...s.flyers, f] }));
+    setTimeout(() => { this._started.delete(f.id); this._flyerRefs.delete(f.id); this.setState((s) => ({ flyers: s.flyers.filter((x) => x.id !== f.id) })); }, f.dur + 80);
+  }
+  cellCenter(idx) { const el = document.querySelector('[data-cell-id="' + idx + '"]'); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
+
+  cellDown(idx, e) {
+    e.preventDefault();
+    const cell = this.state.board[idx];
+    if (!cell.open || !cell.itemId) { this.setState({ selected: null }); return; }
+    if (cell.web) {
+      const sel = this.state.selected;
+      if (sel != null && sel !== idx) { const f = this.state.board[sel]; if (f && f.itemId === cell.itemId && !f.web && this.nextItem(cell.itemId)) { this.merge(sel, idx); return; } }
+      this.setState({ selected: idx });
+      return;
+    }
+    try { if (e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId); } catch (er) {}
+    this.haptic(8);
+    this.setState({ drag: { from: idx, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, px: e.clientX, moved: false, over: null, rot: 0 } });
+  }
+  onMove = (e) => {
+    const d = this.state.drag;
+    if (!d) return;
+    const moved = d.moved || Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 6;
+    let over = d.over, rot = d.rot;
+    if (moved) {
+      rot = Math.max(-10, Math.min(10, (e.clientX - d.px) * 0.6)) || (d.rot * 0.7);
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const host = el && el.closest ? el.closest("[data-cell-id]") : null;
+      over = host ? Number(host.getAttribute("data-cell-id")) : null;
+    }
+    this.setState({ drag: { ...d, x: e.clientX, y: e.clientY, px: e.clientX, moved, over, rot } });
+  };
+  onUp = () => {
+    const d = this.state.drag;
+    if (!d) return;
+    this.setState({ drag: null });
+    if (!d.moved) { this.tapCell(d.from); return; }
+    const to = d.over, s = this.state, from = s.board[d.from];
+    if (to == null || to === d.from) { this.reject(d.from); return; }
+    const b = s.board[to];
+    if (!b.open) { this.reject(d.from); return; }
+    if (b.web) { if (b.itemId === from.itemId && this.nextItem(from.itemId)) this.merge(d.from, to); else this.reject(d.from); return; }
+    if (!b.itemId) { this.moveTo(d.from, to); return; }
+    if (b.itemId === from.itemId) { if (this.nextItem(from.itemId)) this.merge(d.from, to); else { this.reject(d.from); this.toast("최고 단계예요 — 더 합칠 수 없어요", "auto_awesome", "var(--gold-600)"); } return; }
+    this.swap(d.from, to);
+  };
+  onCancel = () => { if (this.state.drag) this.setState({ drag: null }); };
+  reject(from) { this.setState({ shakeCell: { idx: from, at: Date.now() } }); this.haptic([12, 40, 12]); }
+
+  tapCell(idx) {
+    const s = this.state, cell = s.board[idx];
+    if (!cell.itemId) return;
+    if (cell.isNew) { const board = s.board.map((c) => ({ ...c })); board[idx].isNew = false; this.setState({ board }); }
+    if (GENERATORS[cell.itemId]) { this.setState({ selected: idx }); this.produce(idx); return; }
+    if (s.selected != null && s.selected !== idx) {
+      const from = s.board[s.selected];
+      if (from.itemId === cell.itemId && this.nextItem(cell.itemId)) { if (!from.web) { this.merge(s.selected, idx); return; } else { this.merge(idx, s.selected); return; } }
+    }
+    this.setState({ selected: idx });
+  }
+
+  trashSel() {
+    const s = this.state; if (s.selected == null) return;
+    const cell = s.board[s.selected];
+    if (!cell.itemId || cell.web || GENERATORS[cell.itemId]) return;
+    const board = s.board.map((c) => ({ ...c }));
+    board[s.selected].itemId = null; board[s.selected].gen = null;
+    if (!this._reduced) this.addStars(this.starsAtCell(s.selected, 4, Date.now(), "cleaning_services", "var(--ink-300)"));
+    this.setState({ board, selected: null });
+    this.haptic(12); this.toast("아이템을 정리했어요", "delete", "var(--ink-500)");
+  }
+
+  moveTo(from, to) {
+    const board = this.state.board.map((c) => ({ ...c }));
+    board[to].itemId = board[from].itemId; board[to].gen = board[from].gen; board[from].itemId = null; board[from].gen = null;
+    this.setState({ board, selected: to, mergeFx: { cell: to, key: Math.random(), at: Date.now(), type: "move" } });
+    this.haptic(10);
+  }
+  swap(from, to) {
+    const board = this.state.board.map((c) => ({ ...c }));
+    const t = { itemId: board[from].itemId, gen: board[from].gen };
+    board[from].itemId = board[to].itemId; board[from].gen = board[to].gen; board[to].itemId = t.itemId; board[to].gen = t.gen;
+    this.setState({ board, selected: to, mergeFx: { cell: to, key: Math.random(), at: Date.now(), type: "move" } });
+    this.haptic(10);
+  }
+  merge(from, to) {
+    const s = this.state, nxt = this.nextItem(s.board[from].itemId);
+    if (!nxt) return;
+    const board = s.board.map((c) => ({ ...c }));
+    board[to].itemId = nxt; board[to].gen = GENERATORS[nxt] ? this.makeGen(nxt, Date.now()) : null; board[to].isNew = false; board[to].web = false;
+    board[from].itemId = null; board[from].gen = null;
+    const now = Date.now(), top = !this.nextItem(nxt);
+    this.setState({ board, selected: to, mergeFx: { cell: to, key: Math.random(), at: now, type: "merge" } });
+    if (!this._reduced) this.addStars(this.starsAtCell(to, top ? 12 : 7, now, "star", top ? "var(--gold-500)" : "var(--coral-400)"));
+    this.haptic(top ? [15, 30, 30] : 18);
+  }
+
+  // ---------- generators ----------
+  boostTier(id) {
+    // Generator Booster ×N produces an item up to (N-1) tiers higher (never a generator, never past chain end).
+    let out = id;
+    for (let k = 1; k < this.state.booster; k++) { const nx = this.nextItem(out); if (nx && !GENERATORS[nx]) out = nx; else break; }
+    return out;
+  }
+  produce(idx) {
+    const s = this.state, cell = s.board[idx], spec = GENERATORS[cell.itemId], now = Date.now();
+    if (!spec) return;
+    if (spec.klass === "B") { this.harvestTree(idx, true); return; }
+    const gen = cell.gen || this.makeGen(cell.itemId, now);
+    if (gen.cooldownEndsAt && now < gen.cooldownEndsAt) return;
+    const cost = this.genCost(cell.itemId);
+    if (s.energy.cur < cost) { this.blockGen(idx, "energy"); return; }
+    if (spec.klass === "C" && gen.remaining <= 0) return;
+    const empties = this.nearestEmpties(idx, s.board, 1);
+    if (empties.length === 0) { this.blockGen(idx, "full"); return; }
+    const n = empties.length;
+    const items = empties.map(() => this.boostTier(weightedPick(spec.produce)));
+    const board = s.board.map((c) => ({ ...c }));
+    if (spec.klass === "A") {
+      let heat = gen.heat || 0;
+      heat = Math.max(0, heat - (now - (gen.lastUse || 0)) / (this.genCoolBase() * 2000));
+      heat = Math.min(6, heat + 1);
+      const cool = heat <= 2 ? 0.3 : this.genCoolBase() * (heat - 1);
+      board[idx].gen = { klass: "A", heat, lastUse: now, cooldownEndsAt: now + cool * 1000 };
+    } else {
+      board[idx].gen = { klass: "C", remaining: gen.remaining - n, cooldownEndsAt: 0 };
+    }
+    empties.forEach((d) => { board[d].reserved = true; });
+    const energy = { ...s.energy, cur: s.energy.cur - cost };
+    if (s.energy.cur === s.energy.max) energy.lastTick = now;
+    this.setState({ board, energy });
+    this.haptic(12);
+    empties.forEach((dest, i) => { this.spawnItem(idx, items[i], dest, i === n - 1 ? () => this.maybeRemoveConsumable(idx) : null); });
+  }
+  harvestTree(idx, force) {
+    const s = this.state, cell = s.board[idx], now = Date.now();
+    const empty = this.nearestEmpty(idx, s.board);
+    if (empty == null) { if (force) this.blockGen(idx, "full"); return; }
+    const it = weightedPick(GENERATORS[cell.itemId].produce);
+    const board = s.board.map((c) => ({ ...c }));
+    board[idx].gen = { klass: "B", readyAt: now + GENERATORS[cell.itemId].intervalSec * 1000 };
+    board[empty].reserved = true;
+    this.setState({ board });
+    this.haptic(10);
+    this.spawnItem(idx, it, empty, null);
+  }
+  spawnItem(fromIdx, itemId, dest, onLand) {
+    if (this._reduced) { this.landSpawn(itemId, dest); if (onLand) onLand(); return; }
+    const g = this.cellCenter(fromIdx), t = this.cellCenter(dest);
+    if (g && t) {
+      this.addFlyer({ id: "s" + Math.random().toString(36).slice(2), x0: g.x, y0: g.y, dx: t.x - g.x, dy: t.y - g.y, peak: 54, dur: 350, endScale: 1, endOpacity: 1, size: 30, isEmoji: true, emoji: ITEM_EMOJI[itemId] || "📦" });
+      setTimeout(() => { this.landSpawn(itemId, dest); if (onLand) onLand(); }, 340);
+    } else { this.landSpawn(itemId, dest); if (onLand) onLand(); }
+  }
+  landSpawn(itemId, prefer) {
+    const board = this.state.board.map((c) => ({ ...c }));
+    let dest = prefer != null && board[prefer] && board[prefer].open && !board[prefer].itemId ? prefer : this.nearestEmpty(0, board);
+    if (prefer != null && board[prefer]) board[prefer].reserved = false;
+    if (dest == null) { this.setState({ board }); this.toast("보드가 가득 찼어요 — 먼저 합쳐 주세요", "grid_view"); return; }
+    board[dest].reserved = false; board[dest].itemId = itemId; board[dest].isNew = true;
+    board[dest].gen = GENERATORS[itemId] ? this.makeGen(itemId, Date.now()) : null;
+    this.setState({ board, mergeFx: { cell: dest, key: Math.random(), at: Date.now(), type: "spawn" } });
+    if (!this._reduced) this.addStars(this.starsAtCell(dest, 4, Date.now(), "auto_awesome", "var(--gold-300)"));
+  }
+  maybeRemoveConsumable(idx) {
+    const cell = this.state.board[idx];
+    if (cell && cell.itemId && GENERATORS[cell.itemId] && GENERATORS[cell.itemId].klass === "C" && cell.gen && cell.gen.remaining <= 0) {
+      const board = this.state.board.map((c) => ({ ...c }));
+      board[idx].itemId = null; board[idx].gen = null;
+      this.setState({ board, selected: this.state.selected === idx ? null : this.state.selected });
+      this.toast("재료를 다 써서 사라졌어요", "inventory_2", "var(--ink-500)");
+    }
+  }
+  blockGen(idx, reason) {
+    this.setState((s) => ({ shakeCell: { idx, at: Date.now() }, energyFlash: reason === "energy" ? Date.now() : s.energyFlash }));
+    this.haptic([12, 40, 12]);
+    if (reason === "energy") { this.toast("기운이 부족해요 — 잠시 쉬어가요", "bolt", "var(--gold-600)"); setTimeout(() => this.setState({ energyFlash: 0 }), 950); }
+    else this.toast("보드가 가득 찼어요 — 먼저 합쳐 주세요", "grid_view");
+  }
+  nearestEmpty(idx, board) { const r = this.nearestEmpties(idx, board, 1); return r.length ? r[0] : null; }
+  adjacentEmpty(idx, board) {
+    // Orange Tree auto-drop: only into an OPEN empty cell within the 3×3 neighborhood.
+    const c0 = idx % COLS, r0 = Math.floor(idx / COLS), cands = [];
+    for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+      if (!dr && !dc) continue;
+      const r = r0 + dr, c = c0 + dc;
+      if (r < 0 || r >= ROWS || c < 0 || c >= COLS) continue;
+      const cell = board[r * COLS + c];
+      if (cell && cell.open && !cell.itemId && !cell.reserved) cands.push(r * COLS + c);
+    }
+    return cands.length ? cands[Math.floor(Math.random() * cands.length)] : null;
+  }
+  nearestEmpties(idx, board, k) {
+    const c0 = idx % COLS, r0 = Math.floor(idx / COLS), arr = [];
+    board.forEach((c, i) => { if (!c.open || c.itemId || c.reserved) return; arr.push({ i, d: Math.abs(i % COLS - c0) + Math.abs(Math.floor(i / COLS) - r0) }); });
+    arr.sort((a, b) => a.d - b.d);
+    return arr.slice(0, k).map((x) => x.i);
+  }
+
+  cycleBooster() { this.setState((s) => ({ booster: s.booster % 3 + 1 }), () => { const b = this.state.booster; this.toast(b > 1 ? ("생성 부스터 ×" + b + " — 최대 " + (b - 1) + "단계 높은 아이템 생성!") : "생성 부스터 ×1 — 기본 단계 생성", "upgrade", "var(--gold-600)"); }); }
+
+  generateOrder(level) {
+    const species = Number(weightedPick([["1", ORDER.countWeight[1]], ["2", ORDER.countWeight[2]], ["3", ORDER.countWeight[3]]]));
+    const cand = [];
+    const add = (chain, minIdx) => { const maxIdx = Math.min(chain.length - 1, 2 + level); for (let i = minIdx; i <= maxIdx; i++) cand.push(chain[i]); };
+    add(CHAINS.bread, 2); add(CHAINS.potato, 2); add(CHAINS.grocery, 5); add(CHAINS.orange, 1);
+    const picks = shuffle(cand).slice(0, Math.min(species, cand.length));
+    const requires = picks.map((id) => ({ itemId: id, count: 1 + Math.floor(Math.random() * 2) }));
+    const rewardCoin = requires.reduce((sum, r) => sum + this.stageIdx(r.itemId) * 8 * r.count, 0);
+    const rewardXp = requires.reduce((sum, r) => sum + (this.stageIdx(r.itemId) + 1) * 2 * r.count, 0) + 4;
+    return { id: "o" + Math.random().toString(36).slice(2), avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)], requires, rewardCoin, rewardXp };
+  }
+
+  deliver(id, e) {
+    const s = this.state, o = s.orders.find((x) => x.id === id);
+    if (!o) return;
+    const counts = {};
+    s.board.forEach((c) => { if (c.itemId && !c.web) counts[c.itemId] = (counts[c.itemId] || 0) + 1; });
+    if (!o.requires.every((r) => (counts[r.itemId] || 0) >= r.count)) { this.toast("아직 재료가 부족해요, dear", "pending"); this.haptic([12, 40, 12]); return; }
+    const board = s.board.map((c) => ({ ...c }));
+    o.requires.forEach((r) => { let need = r.count; for (const c of board) { if (need > 0 && c.itemId === r.itemId && !c.web) { c.itemId = null; c.gen = null; need--; } } });
+    let level = s.level, xp = s.xp + o.rewardXp, coin = s.coin + o.rewardCoin, eCur = s.energy.cur, leveled = false;
+    while (xp >= this.xpMax(level)) { xp -= this.xpMax(level); level++; coin += LEVEL.levelUpCoin; eCur = Math.min(s.energy.max, eCur + LEVEL.levelUpEnergy); leveled = true; }
+    let smile = s.smile + o.requires.length, gem = s.gem, smileReward = false;
+    if (smile >= SMILE_MAX) { smile -= SMILE_MAX; gem += 5; smileReward = true; }
+    const now = Date.now();
+    const orders = s.orders.map((x) => (x.id === id ? { ...this.generateOrder(level), _enter: now } : x));
+    this.setState({ board, coin, xp, level, orders, gem, smile, energy: { ...s.energy, cur: eCur }, coinBounceAt: now, levelPunchAt: leveled ? now : s.levelPunchAt });
+    if (!this._reduced) this.addStars(this.makeStars(12, now, "star", "var(--gold-500)"));
+    if (!this._reduced && e && e.currentTarget && this.coinRef.current) {
+      const br = e.currentTarget.getBoundingClientRect(), cr = this.coinRef.current.getBoundingClientRect();
+      const tx = cr.left + cr.width / 2, ty = cr.top + cr.height / 2;
+      for (let i = 0; i < 3; i++) { const x0 = br.left + br.width / 2 + (i - 1) * 12, y0 = br.top + 6; setTimeout(() => this.addFlyer({ id: "c" + Math.random().toString(36).slice(2) + i, x0, y0, dx: tx - x0, dy: ty - y0, peak: 46, dur: 520, endScale: 0.5, endOpacity: 0.2, size: 22, isCoin: true }), i * 70); }
+    }
+    this.haptic([15, 30, 30]);
+    this.toast("정말 훌륭해요! 코인 " + o.rewardCoin + " 획득!", "emoji_events", "var(--gold-600)");
+    if (smileReward) setTimeout(() => this.toast("스마일 가득! 젬 5 보너스", "sentiment_very_satisfied", "var(--coral-500)"), 380);
+    if (leveled) { const lv = level; setTimeout(() => this.toast("레벨 업! 레벨 " + lv + " — 코인 50, 기운 20", "military_tech", "var(--leaf-600)"), 460); }
+  }
+
+  frameScale() { const f = this.frameRef.current; if (!f) return null; const r = f.getBoundingClientRect(); return { rect: r, k: r.width ? 430 / r.width : 1 }; }
+  makeStars(n, now, icon, color) {
+    const fs = this.frameScale(); let cx = 196, cy = 420; const b = this.boardRef.current;
+    if (fs && b) { const br = b.getBoundingClientRect(); cx = (br.left - fs.rect.left + br.width / 2) * fs.k; cy = (br.top - fs.rect.top + br.height / 2) * fs.k; }
+    return Array.from({ length: n }, (_, i) => ({ id: Math.random().toString(36).slice(2), left: Math.round(cx + (Math.random() - 0.5) * 250) + "px", top: Math.round(cy + (Math.random() - 0.5) * 300) + "px", size: Math.round(16 + Math.random() * 18), delay: i * 45 + "ms", at: now, icon: icon || "star", color: color || "var(--gold-500)" }));
+  }
+  starsAtCell(idx, n, now, icon, color) {
+    const fs = this.frameScale(); const el = document.querySelector('[data-cell-id="' + idx + '"]');
+    if (!fs || !el) return [];
+    const r = el.getBoundingClientRect();
+    const cx = (r.left - fs.rect.left + r.width / 2) * fs.k, cy = (r.top - fs.rect.top + r.height / 2) * fs.k;
+    return Array.from({ length: n }, (_, i) => ({ id: Math.random().toString(36).slice(2), left: Math.round(cx + (Math.random() - 0.5) * 46) + "px", top: Math.round(cy + (Math.random() - 0.5) * 46) + "px", size: Math.round(11 + Math.random() * 9), delay: i * 40 + "ms", at: now, icon: icon || "star", color: color || "var(--gold-500)" }));
+  }
+
+  placeholder = () => this.toast("곧 만나요, dear! (준비 중)", "auto_awesome", "var(--lavender-500)");
+
+  renderVals() {
+    const s = this.state, now = s.now || Date.now();
+    const drag = s.drag, dragging = !!(drag && drag.moved), dragItem = drag ? s.board[drag.from].itemId : null;
+    let overInvalid = false;
+    if (dragging) {
+      const to = drag.over;
+      if (to == null || to === drag.from) overInvalid = true;
+      else { const b = s.board[to]; const canMerge = b.open && b.itemId === dragItem && !!this.nextItem(dragItem); if (canMerge) overInvalid = false; else if (!b.open || b.web) overInvalid = true; else if (b.itemId && b.itemId === dragItem && !this.nextItem(dragItem)) overInvalid = true; }
+    }
+
+    // items still needed by any active order
+    const counts = {}, needed = {};
+    s.board.forEach((c) => { if (c.itemId && !c.web) counts[c.itemId] = (counts[c.itemId] || 0) + 1; });
+    s.orders.forEach((o) => o.requires.forEach((r) => { if ((counts[r.itemId] || 0) < r.count) needed[r.itemId] = true; }));
+
+    const cells = s.board.map((c, idx) => {
+      const item = c.itemId, gen = item && GENERATORS[item] ? GENERATORS[item] : null, klass = gen ? gen.klass : null;
+      const isFrom = dragging && drag.from === idx;
+      const isOver = dragging && drag.over === idx && idx !== drag.from;
+      const canMergeHere = c.open && item && dragItem === item && !!this.nextItem(item);
+      const mergeable = isOver && canMergeHere;
+      const moveable = isOver && c.open && !item && !c.web;
+      const swapping = isOver && c.open && item && dragItem !== item && !c.web;
+      const invalidOver = isOver && !mergeable && !moveable && !swapping;
+      const matchRing = dragging && !isFrom && !isOver && canMergeHere;
+      const selected = s.selected === idx;
+      const coolLeft = gen && (klass === "A") && c.gen ? Math.max(0, c.gen.cooldownEndsAt - now) : 0;
+      const cooling = coolLeft > 0;
+      const coolFull = c.gen && c.gen.cooldownEndsAt && c.gen.lastUse != null ? (c.gen.cooldownEndsAt - c.gen.lastUse) : 1;
+      const coolPct = cooling ? Math.round(100 - (coolLeft / Math.max(1, coolFull)) * 100) : 100;
+      const treeReady = gen && klass === "B" && c.gen && now >= c.gen.readyAt;
+      let bg = !c.open ? "linear-gradient(150deg, #F6DCA0, #EBC77E)" : "rgba(255,255,255,0.32)";
+      if (mergeable) bg = "var(--sage-200)"; else if (moveable) bg = "rgba(255,255,255,0.6)"; else if (swapping) bg = "var(--rose-100)"; else if (invalidOver) bg = "rgba(222,95,102,0.18)";
+      let ring = "none";
+      if (mergeable) ring = "0 0 0 4px var(--gold-500), 0 0 12px 2px rgba(229,166,46,0.65)";
+      else if (moveable) ring = "0 0 0 3px var(--leaf-600)";
+      else if (swapping) ring = "0 0 0 3px var(--coral-400)";
+      const fx = s.mergeFx && s.mergeFx.cell === idx && now - s.mergeFx.at < 480 ? s.mergeFx : null;
+      let anim = "none";
+      if (fx) anim = fx.type === "merge" ? ("ccPop" + (Math.round(fx.at) % 2 ? "A" : "B") + " 360ms cubic-bezier(0.34,1.56,0.64,1)") : "ccSquash 220ms ease-out";
+      else if (gen && !cooling) anim = "ccGenFloat 2.4s ease-in-out infinite";
+      const shaking = s.shakeCell && s.shakeCell.idx === idx && now - s.shakeCell.at < 240;
+      const isMax = item && !gen && !this.nextItem(item);
+      return {
+        idStr: String(idx),
+        aria: !c.open ? "모래 칸" : item ? ITEM_NAME[item] + (c.web ? " (거미줄)" : "") : "빈 칸",
+        has: !!item, emoji: item ? ITEM_EMOJI[item] || "📦" : "",
+        deco: !c.open && !!c.deco, decoEmoji: c.deco || "",
+        genLightning: !!gen && (klass === "A" || klass === "C") && !cooling,
+        clock: !!gen && klass === "B" && !c.isNew,
+        clockBg: treeReady ? "var(--leaf-600)" : "var(--lavender-500)",
+        clockAnim: treeReady ? "ccReady 1s ease-in-out infinite" : "none",
+        remainingShow: !!gen && klass === "C", remaining: gen && klass === "C" && c.gen ? c.gen.remaining : 0,
+        crown: !!isMax, needed: !!(item && !gen && needed[item]),
+        sparkle: !!c.isNew, web: !!c.web, cooling, coolPct, selected,
+        tileFilter: "drop-shadow(0 3px 2px rgba(94,66,34,0.3))",
+        bg, ring, opacity: isFrom ? 0.25 : 1, tileTransform: isFrom ? "scale(0.92)" : "none", anim,
+        dashed: isFrom, cellAnim: shaking ? "ccShake 0.22s ease-in-out" : "none",
+        cursor: c.open && item && !c.web ? "grab" : "default",
+        matchRing,
+        previewGhost: moveable, previewEmoji: dragItem ? ITEM_EMOJI[dragItem] || "📦" : "",
+        previewMerge: mergeable, previewSwap: swapping, previewX: invalidOver,
+        flash: !!(fx && fx.type === "merge"),
+        pointerDown: (ev) => this.cellDown(idx, ev),
+      };
+    });
+
+    const orders = s.orders.map((o) => {
+      const requires = o.requires.map((r) => { const have = Math.min(r.count, counts[r.itemId] || 0); const done = have >= r.count; return { emoji: ITEM_EMOJI[r.itemId] || "📦", have, count: r.count, showCount: r.count > 1 || !done, done, countColor: done ? "var(--leaf-600)" : "var(--ink-500)" }; });
+      const ready = requires.every((x) => x.done);
+      const flame = o.requires.reduce((n, r) => n + r.count, 0);
+      return {
+        id: o.id, avatar: o.avatar.icon, avatarBg: o.avatar.bg, rewardCoin: o.rewardCoin, rewardXp: o.rewardXp, requires, flame,
+        bob: ready ? "ccBob 0.6s ease-in-out infinite" : "none",
+        trayGlow: ready ? "ccTrayGlow 1.4s ease-in-out infinite" : "none",
+        enter: o._enter && now - o._enter < 400 ? "ccPopA 300ms cubic-bezier(0.34,1.56,0.64,1)" : "none",
+        trayRef: React.createRef(),
+        deliver: (e) => this.deliver(o.id, e),
+      };
+    });
+
+    const rec = this.recSec();
+    let energyTimer = "가득";
+    if (s.energy.cur < s.energy.max) { const left = Math.max(0, Math.ceil((rec * 1000 - (now - s.energy.lastTick)) / 1000)); const m = Math.floor(left / 60), sec = left % 60; energyTimer = m + ":" + (sec < 10 ? "0" : "") + sec; }
+
+    const sel = s.selected != null ? s.board[s.selected] : null;
+    const selItem = sel && sel.itemId ? sel.itemId : null;
+    const selGen = selItem ? GENERATORS[selItem] : null;
+    let selName = "", selLevel = 1, selDesc = "", selCanTrash = false;
+    if (selItem) {
+      selName = ITEM_NAME[selItem]; selLevel = this.stageIdx(selItem) + 1;
+      if (sel.web) selDesc = "거미줄에 덮여 있어요. 같은 아이템을 위로 합쳐 풀어 주세요.";
+      else if (selGen && selGen.klass === "B") selDesc = "주변 빈 칸에 열매가 열려요. 막히면 탭해서 수확하세요 (기운 0).";
+      else if (selGen && selGen.klass === "C") selDesc = "탭하면 재료를 만들어요. 앞으로 " + (sel.gen ? sel.gen.remaining : selGen.total) + "개 만들면 사라져요.";
+      else if (selGen) selDesc = "탭하면 기운 " + this.genCost(selItem) + "을 써서 재료를 만들어요.";
+      else if (!this.nextItem(selItem)) selDesc = "최고 단계 아이템이에요. 주문 납품 전용이에요.";
+      else selDesc = "같은 아이템을 합성해 레벨업할 수 있어요.";
+      selCanTrash = !selGen && !sel.web;
+    }
+
+    const flyers = s.flyers.map((f) => ({ ...f, ref: (n) => { if (n) this._flyerRefs.set(f.id, n); else this._flyerRefs.delete(f.id); } }));
+
+    return {
+      frameRef: this.frameRef, boardRef: this.boardRef, energyRef: this.energyRef, coinRef: this.coinRef,
+      level: s.level, xp: s.xp, xpMaxVal: this.xpMax(s.level),
+      xpFillArc: Math.max(0, Math.min(180, (s.xp / this.xpMax(s.level)) * 180)).toFixed(1) + "deg",
+      levelPunch: now - s.levelPunchAt < 320 ? "ccPopA 300ms cubic-bezier(0.34,1.56,0.64,1)" : "none",
+      coinDisplay: s.coinDisplay, coinBounce: now - s.coinBounceAt < 320 ? "ccPopA 300ms cubic-bezier(0.34,1.56,0.64,1)" : "none",
+      gem: s.gem, energyCur: s.energy.cur, energyMax: s.energy.max, energyTimer, energyLow: s.energy.cur <= 0,
+      energyFlashAnim: now - s.energyFlash < 950 ? "ccEnergyFlash 0.3s ease-in-out 3" : "none",
+      energyIconFilter: s.energy.cur <= 0 ? "grayscale(1)" : "none",
+      smile: s.smile, smileMax: SMILE_MAX, smilePct: Math.round((s.smile / SMILE_MAX) * 100),
+      booster: s.booster, boosterLabel: "×" + s.booster,
+      cells, orders, toasts: s.toasts, stars: s.stars, flyers,
+      hasSelection: !!selItem, selName, selLevel, selDesc, selCanTrash,
+      onPlus: this.placeholder, onShop: this.placeholder, onTask: this.placeholder, onChest: this.placeholder, onTool: this.placeholder,
+      onBooster: () => this.cycleBooster(), onTrash: () => this.trashSel(),
+      onInfo: () => { if (selItem) this.toast(selName + " · " + selLevel + "레벨", "info", "var(--coral-600)"); },
+      ghostShow: dragging, ghostX: drag ? drag.x : 0, ghostY: drag ? drag.y : 0, ghostRot: drag ? Math.round(drag.rot || 0) : 0,
+      ghostOpacity: overInvalid ? 0.6 : 0.92, ghostEmoji: dragItem ? ITEM_EMOJI[dragItem] || "📦" : "",
+    };
+  }
+}
+</script>
+</body>
+</html>
