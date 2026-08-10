@@ -195,7 +195,7 @@ const SPECS = [
   },
   {
     id: 'spec-034', file: 'spec-034-ingame-booster-sale.html',
-    title: '[수익화-부스터] 파이어웍스 인게임 아이템 확장',
+    title: '[수익화-부스터] 파이어웍스 인게임 아이템 확장 — 밸런스 재검토 필요',
     tags: ['monetize'], priority: 'mid', status: 'planned', date: '2026. 7. 30.', dueDate: null, relatedTo: ['spec-032'],
   },
   {
