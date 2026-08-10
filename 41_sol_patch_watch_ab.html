@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[아카이브] 패치 관측 — 토너먼트 등록 로그 분리 · 포기 시 생성 다이얼로그 제거</title>
+<style>
+  :root{--ink:#1B1F30;--sub:#5B6478;--mut:#9AA0B8;--line:#E4E8F0;--bg:#F5F7FA;--acc:#4F8EF7;
+        --bad:#DC2626;--warn:#D97706;--good:#059669;--vio:#7C3AED;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;
+       font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 80px}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:-0.4px}
+  .sub{color:var(--mut);font-size:12.5px;margin-bottom:16px;line-height:1.75}
+  h2{font-size:15px;margin:26px 0 10px;padding-left:9px;border-left:4px solid var(--acc);letter-spacing:-0.2px}
+  h2 .h2s{font-size:11.5px;font-weight:600;color:var(--mut);margin-left:7px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px 18px;margin-bottom:13px}
+  /* 권역 필터 상단 고정 — 28·39번(.rgnbar)과 같은 방식: 카드가 아니라 반투명 납작 바.
+     페이지가 길어 스크롤 도중 지금 어느 권역을 보는지 놓치기 쉽다. */
+  .sticky{position:sticky;top:0;z-index:40;margin:0 -20px 14px;padding:9px 20px;
+          background:rgba(245,247,250,.94);backdrop-filter:blur(8px);
+          border-bottom:1px solid var(--line);
+          display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .grp{display:flex;align-items:center;gap:6px}
+  .grp .lab{font-size:11px;font-weight:800;color:var(--mut)}
+  .grp button{font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:16px;cursor:pointer;
+              border:1.5px solid var(--line);background:#fff;color:var(--mut);font-family:inherit}
+  .grp button.on{border-color:var(--acc);background:#EEF3FF;color:var(--acc)}
+  .sticky .sep{width:1px;align-self:stretch;background:var(--line)}
+  .geonote{font-size:11.5px;color:var(--sub);font-weight:600}
+  .stamp{margin-left:auto;font-size:11px;color:var(--mut);font-weight:600;white-space:nowrap}
+  @media (max-width:860px){ .sticky{position:static;backdrop-filter:none} }
+  .note{background:#F7F8FB;border:1px solid var(--line);border-radius:9px;padding:11px 14px;
+        font-size:11.5px;color:var(--sub);line-height:1.8;margin-top:12px}
+  .note code{background:#EDF0F6;border-radius:4px;padding:1px 5px;font-size:11px}
+  /* 지표 표 — 첫 열(지표명+설명)만 넓게, 숫자·배지 열은 줄바꿈 금지.
+     기본 auto 레이아웃이면 긴 설명이 첫 열을 밀어내 '차이/판정' 같은 짧은 칸이 세로로 쪼개진다. */
+  table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+  .tscroll{overflow-x:auto}
+  /* 지표 블록 — 설명을 표 안의 좁은 열에 가두면 줄바꿈이 심해 읽기 어렵다.
+     설명은 전체 폭으로 한 줄 쓰고, 값 비교는 그 아래 스트립으로 내린다. */
+  .mrow{padding:15px 0;border-bottom:1px solid #EEF1F6}
+  .mrow:last-child{border-bottom:none;padding-bottom:2px}
+  .mrow:first-child{padding-top:2px}
+  /* 벤치 수준에 도달한 항목 = 안정권. 남은 볼 곳에 눈이 가도록 흐리게 처리한다.
+     ★hover로 풀지 않는다 — 훑어볼 때 의도치 않게 다시 진해져 시선이 끌린다.
+     상단 고정바의 토글로만 켜고 끈다. */
+  /* ★부모에 opacity를 주면 자식에서 되돌릴 수 없다 — 딤드 대상만 개별 지정한다.
+     결과(우측 .reswrap)는 딤드에서 제외해 항상 또렷하게 남긴다. */
+  .dimon .met-ok .mname,
+  .dimon .met-ok .mhead .pill.exp,
+  .dimon .met-ok .mdesc,
+  .dimon .met-ok .mchg,
+  .dimon .met-ok .stats{opacity:.4}
+  /* 결과(우측) — 기대 칩(둥근 알약)과 구분되게 각진 태그 + 좌측 컬러바 */
+  .reswrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .res{display:inline-block;font-size:11px;font-weight:800;padding:4px 10px 4px 9px;
+       border-radius:5px;border:1px solid;border-left-width:4px;white-space:nowrap;background:#fff}
+  .res.p-hit{border-color:#86EFAC;border-left-color:#16A34A;color:#15803D}
+  .res.p-miss{border-color:#FCA5A5;border-left-color:#DC2626;color:#B91C1C}
+  .res.p-hold{border-color:#DDD6FE;border-left-color:#7C3AED;color:#5B21B6}
+  .res.r-stable{border-color:#A7E3C4;border-left-color:#18794E;color:#18794E}
+  .res.r-defdiff{border-color:#FDE68A;border-left-color:#D97706;color:#92400E}
+  .mhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+  .mname{font-size:14.5px;font-weight:800;letter-spacing:-0.2px}
+  .mhead .sp{margin-left:auto}
+  .mdesc{font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:4px}
+  .mchg{font-size:11.5px;line-height:1.7;color:#92400E;background:#FFFBEB;
+        border:1px solid #FDE68A;border-radius:7px;padding:6px 10px;margin:6px 0 2px}
+  .stats{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:9px;
+         overflow:hidden;margin-top:9px;background:#fff}
+  .st{flex:1 1 0;min-width:104px;padding:7px 11px;border-right:1px solid var(--line)}
+  .st:last-child{border-right:none}
+  .st .k{font-size:10.5px;font-weight:700;color:#858CA2;line-height:1.4}
+  .st .k b{font-weight:800;color:var(--sub)}
+  .st .v{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:3px;white-space:nowrap}
+  .base{font-size:10.5px;font-weight:700;color:#A8AEC0;margin-left:3px}
+  .st.noit .base{color:#7C9AD6} .st.dim .base{color:#C3C7D3} .st.bench .base{color:#8DC4A8}
+  /* 바이럴 판정 기준은 IT 간섭이 없는 비IT군이다 — 그쪽을 먼저 읽히게 하고 IT군은 죽인다. */
+  .st.noit{background:#EEF4FF;box-shadow:inset 3px 0 0 #4F8EF7}
+  .st.noit .k{color:#4F72B8} .st.noit .k b{color:#1D4ED8}
+  .st.noit .v{color:#1D4ED8;font-size:17px}
+  /* 한눈에 보기 — 신호등 카드 */
+  .sumgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:16px}
+  .sumcard{background:#fff;border:1px solid var(--line);border-left-width:5px;border-radius:12px;padding:12px 14px}
+  .sumcard.s-ok{border-left-color:#16A34A}
+  .sumcard.s-warn{border-left-color:#D97706}
+  .sumcard.s-neutral{border-left-color:#4F8EF7}
+  .s-t{font-size:11px;font-weight:800;color:var(--mut);letter-spacing:.02em}
+  .s-v{font-size:27px;font-weight:800;letter-spacing:-1px;margin:4px 0 2px;line-height:1.1}
+  .s-l{font-size:11px;font-weight:700;color:var(--mut);margin-left:7px;letter-spacing:0}
+  .s-s{font-size:11px;color:var(--sub);font-weight:600;line-height:1.5}
+  .s-bar{height:7px;border-radius:5px;background:#E9EDF5;overflow:hidden;margin:5px 0 5px}
+  .s-bar>i{display:block;height:100%;background:#16A34A}
+  /* 인트로 단계 — 빌드당 한 줄 타임라인(구간 소요시간) */
+  .lane{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #F3F5F9}
+  .lane:last-child{border-bottom:none}
+  .lanelab{flex:0 0 210px;font-size:12.5px;line-height:1.4}
+  .lanebar{flex:1;display:flex;height:26px;border-radius:6px;overflow:hidden;background:#F1F3F8;min-width:0}
+  .lanebar i{display:flex;align-items:center;justify-content:center;font-style:normal;font-size:9.5px;
+             font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;border-right:1px solid rgba(255,255,255,.5)}
+  .lanetot{flex:0 0 132px;text-align:right;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+  @media (max-width:860px){ .lanelab{flex:0 0 130px} .lanetot{flex:0 0 100px} }
+  /* 인트로는 광고 켜짐/꺼짐 계열로 묶어서 각각 자기 전후를 본다 */
+  .ipair{border:1px solid var(--line);border-radius:9px;margin-top:9px;overflow:hidden;background:#fff}
+  .ipairhd{display:flex;align-items:baseline;gap:8px;padding:6px 11px;font-size:11.5px;font-weight:800;
+           border-bottom:1px solid var(--line)}
+  .ipairhd .sub{font-weight:700;font-size:10.5px;color:#98A0B4}
+  .ipairhd .dlt{margin-left:auto;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+  .ipair.on  .ipairhd{background:#FFF4E8;color:#B4530C}
+  .ipair.off .ipairhd{background:#EEF4FF;color:#1D4ED8}
+  .ipair .lane{padding:9px 11px}
+  .ipair .lane:last-child{border-bottom:none}
+  /* ★2행 헤더에서는 기본 th:first-child 규칙이 어긋난다(2행의 첫 칸이 '단계'가 아닌데 왼쪽 정렬됨).
+     인트로 상세표는 정렬을 직접 못박는다 — 단계=왼쪽 / 빌드 값=오른쪽 / 계열 헤더=가운데. */
+  table.itbl th, table.itbl td{text-align:right}
+  table.itbl th.stepcol, table.itbl td.stepcol{text-align:left}
+  table.itbl th.grphd{text-align:center}
+  table.itbl th.bcol{font-size:11.5px}
+  table.itbl th.bcol b{font-weight:800;color:var(--ink)}
+  .vs{display:inline-block;margin-left:5px;font-size:10.5px;font-weight:800;
+      font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .idx{display:inline-block;min-width:19px;margin-right:7px;font-size:10px;font-weight:800;
+       color:#A8AEC0;font-family:ui-monospace,Menlo,monospace}
+  .grphd{background:#F7F9FC;font-size:10.5px;font-weight:800;letter-spacing:.02em;
+         border-left:1px solid var(--line)}
+  .grphd:first-of-type{border-left:none}
+  .grphd.on{color:#B4530C;background:#FFF7EF} .grphd.off{color:#1D4ED8;background:#F3F7FF}
+  table.itbl td.gsep, table.itbl th.gsep{border-left:1px solid var(--line)}
+  .rch{font-size:10.5px;font-weight:700;color:#A8AEC0;margin-left:3px}
+  /* ★네이티브 title은 뜨는 데 1초 이상 걸리고 줄바꿈이 플랫폼마다 달라 안 뜨는 것처럼 보인다.
+     hover 즉시 뜨는 커스텀 말풍선으로 대체한다. */
+  #tip{position:fixed;z-index:999;pointer-events:none;display:none;max-width:340px;
+       background:#1F2533;color:#fff;border-radius:8px;padding:9px 11px;font-size:11.5px;
+       line-height:1.55;font-weight:600;box-shadow:0 6px 20px rgba(20,25,40,.28);white-space:pre-line}
+  #tip b{color:#FFD9A8;font-weight:800}
+  [data-tip]{cursor:help}
+  [data-tip]:hover{filter:brightness(1.06)}
+  td[data-tip]:hover{background:#F5F8FF}
+  /* RV 잠식 — 누적 막대 */
+  .rvrow{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid #F3F5F9}
+  .rvrow:last-of-type{border-bottom:none}
+  .rvlab{flex:0 0 220px;font-size:12.5px;line-height:1.4}
+  .rvsub{display:block;font-size:10.5px;color:var(--mut);font-weight:600}
+  .rvbar{flex:1;display:flex;height:22px;background:#F1F3F8;border-radius:6px;overflow:hidden}
+  .rvbar i{display:flex;align-items:center;justify-content:center;font-style:normal;
+           font-size:10.5px;font-weight:800;color:#fff;white-space:nowrap}
+  .seg-rv{background:#4F8EF7} .seg-it{background:#9B87E0}
+  .rvtot{flex:0 0 96px;text-align:right;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+  .rvn{display:block;font-size:10.5px;color:var(--mut);font-weight:600}
+  .rvlegend{display:flex;gap:14px;align-items:center;margin:10px 0 4px;font-size:11px;font-weight:700;color:var(--sub)}
+  .rvlegend .k{display:flex;align-items:center;gap:5px}
+  .rvlegend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  @media (max-width:860px){ .rvlab{flex:0 0 140px} }
+  .st.dim{background:#FAFAFB} .st.dim .k{color:#B6BBC9} .st.dim .v{color:#9AA0B8;font-weight:700}
+  .st.new{background:#F7F9FC} .st.new .v{color:#5B6478}
+  .st.bench{background:#F4FBF7} .st.bench .v{color:#2CB87A}
+  .st.diff{background:#FAFBFD}
+  th{background:#F2F5F9;color:var(--sub);font-size:11.5px;font-weight:700;padding:8px 10px;
+     text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child{text-align:left}
+  td{padding:8px 10px;border-bottom:1px solid #F1F3F8;text-align:right;
+     font-variant-numeric:tabular-nums;font-weight:700}
+  td:first-child{text-align:left;color:var(--ink);font-weight:700}
+  tr:last-child td{border-bottom:none}
+  .desc{font-size:11px;font-weight:600;color:var(--mut);margin-top:3px;line-height:1.5;white-space:normal;word-break:keep-all}
+  .pill{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:11px;white-space:nowrap}
+  .p-up{background:#D1FAE5;color:#065F46} .p-down{background:#DBEAFE;color:#1E40AF}
+  .p-flat{background:#F1F3F8;color:#5B6478} .p-watch{background:#FEF3C7;color:#92400E}
+  .p-hit{background:#D1FAE5;color:#065F46} .p-miss{background:#FEE2E2;color:#B91C1C}
+  .p-hold{background:#EDE9FE;color:#5B21B6}
+  /* 모수 진행 */
+  .prog{height:12px;border-radius:8px;background:#E9EDF5;overflow:hidden;margin:8px 0 4px}
+  .prog>i{display:block;height:100%;background:linear-gradient(90deg,#4F8EF7,#7C3AED)}
+  .big{font-size:30px;font-weight:800;letter-spacing:-1px}
+  .banner{border-radius:12px;padding:14px 18px;margin-bottom:14px;font-size:13px;line-height:1.8}
+  .b-wait{background:#FFFBEB;border:1.5px solid #FCD34D;color:#92400E}
+  .b-live{background:#EFF6FF;border:1.5px solid #93C5FD;color:#1E40AF}
+  details.sq{border:1px solid var(--line);border-radius:9px;margin-bottom:8px;background:#FBFCFE}
+  details.sq>summary{cursor:pointer;padding:9px 12px;font-size:12.5px;font-weight:700;color:var(--ink);list-style:none}
+  details.sq>summary::-webkit-details-marker{display:none}
+  details.sq>summary:before{content:'▸ ';color:var(--acc)}
+  details.sq[open]>summary:before{content:'▾ '}
+  details.sq pre{margin:0;padding:10px 14px;border-top:1px solid var(--line);overflow-x:auto;
+                 font-size:11.5px;line-height:1.6;color:#243043;
+                 font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .bnote{font-size:11px;font-weight:600;color:var(--mut);margin-top:2px}
+  .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--mut);line-height:1.85}
+  .foot a{color:var(--acc);font-weight:700;text-decoration:none}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>패치 관측 — 토너먼트 등록 로그 분리 · 포기 시 생성 다이얼로그 제거</h1>
+
+<div class="mchg" style="border-left:4px solid #6B7280;background:#F3F4F6;margin:12px 0 2px;padding:11px 14px">
+  📁 <b>A/B 관측 아카이브 — 갱신 중단 (최종 데이터 8/10 · 30,840판)</b><br>
+  8/10 A(#438 · 광고 ON) 통합 확정으로 A/B 관측을 종결한 시점의 스냅샷임. 이후 갱신되지 않음.
+  통합 빌드의 벤치 팔로업은 <a href="41_sol_patch_watch.html"><b>본 페이지</b></a>에서 계속됨.
+</div>
+
+<div class="mchg" style="border-left:4px solid #16A34A;background:#F0FAF4;margin:12px 0 14px;padding:12px 14px">
+  <b style="font-size:15px">🏁 A/B 결론 — A(#438 · 광고 ON) 통합 확정 (8/10 · 30,840판)</b><br>
+  광고를 켜도 <b>잃는 지표가 없음</b> — 인당 판수 8.78 vs 7.78(광고군이 +13%, z 10.6) ·
+  판당 RV 0.342 vs 0.358(잠식 −4%, z −2.3 미미) · 실패(포기) 비중 2.60% vs 3.93%(광고군이 오히려 낮음, z −6.6).
+  IT 매출은 순증.<br>
+  <b>벤치(코지·마종) 대비 수익화 위치</b> — 판당 RV 완료 <b>3.7~8.8배 우위</b> ·
+  판당 IT 노출은 59% 수준(노출 곡선 설정값, 의도된 수준).<br>
+  <b>통합 후 최적화</b> — IT 프리로드 에러율 50%(벤치 19~22%) 개선을 선결하고,
+  <b>RV 잠식이 발생하지 않는 선에서</b> 노출 곡선 단계 상향 검토. 잠식 신호는 이 페이지에서 계속 감시.
+</div>
+<div class="sub">
+  <b>#438 A(실험군)</b> = 토너먼트·컨텍스트 전환·로그·로딩 개선 + <b>IT 광고 곡선 로직</b> ·
+  <b>#440 B(대조군)</b> = 동일하되 IT 광고 미노출 <span style="color:#B6BBC9">(#439는 재확인으로 폐기)</span><br>
+  주요 변경 — 토너 생성 팝업 <b>클리어 직후 즉시 노출</b>·<b>3회 거절 시 세션 내 중단</b>·30초 쿨다운 제거·<b>판 포기 시 미노출</b> ·
+  전환 팝업 <b>거절 제한 제거</b>·추천 후보 세션당 1회·<b>30초 자동닫힘 제거</b> ·
+  로딩 <b>인트로403 지연(최대 8초) 제거</b><br>
+  <b style="color:#B45309">⚠️ 로그 정의가 바뀌는 지표가 있습니다</b> — 3110·3200·3300계열. 전후 직접 비교가 성립하지 않아 표에 따로 표시합니다.<br>
+  <b>글로벌</b>(권역 제한 없음, 상단 토글로 서구권 전환) · 실험군/대조군은 <b>광고 발화 여부</b>로 자동 판별
+</div>
+
+<div class="sticky">
+  <div class="grp"><span class="lab">권역</span><span id="geoBtns"></span></div>
+  <div class="sep"></div>
+  <div class="grp"><span class="lab">벤치 안정권</span><span id="dimBtns"></span></div>
+  <div class="sep"></div>
+  <span class="geonote" id="geoNote"></span>
+  <span class="stamp" id="stamp"></span>
+</div>
+
+<div id="banner"></div>
+
+<div id="summary"></div>
+
+<div class="card">
+  <div style="font-size:12.5px;font-weight:800;color:var(--sub);margin-bottom:6px">관측 진행 — <b id="tgt"></b>판까지 지켜봅니다 (완료 판수 기준)</div>
+  <div class="big" id="nnow"></div>
+  <div class="prog"><i id="bar"></i></div>
+  <div style="font-size:11.5px;color:var(--mut)" id="progNote"></div>
+</div>
+
+<h2>IT 지면 분포 <span class="h2s">빌드별 · 지면 이름은 로그에서 그대로 읽습니다</span></h2>
+<div class="card"><div id="tPos"></div>
+  <div class="note">IT군에 <b>취소 시 노출 지면</b>이 새로 붙습니다. 지면 이름을 코드에 박아두지 않고
+    로그에 찍힌 값을 그대로 나열하므로, <b>새 지면이 뜨면 자동으로 한 줄이 늘어납니다</b> —
+    비어 있으면 아직 안 붙은 것입니다.</div>
+</div>
+
+<h2>빌드 <span class="h2s">번호가 어떤 빌드인지</span></h2>
+<div id="tip"></div>
+<div class="card"><div class="tscroll"><table id="tBuilds"></table></div></div>
+
+<h2>RV 잠식 추적 <span class="h2s">전면광고가 리워드광고를 잡아먹는가 · 배포 후 계속 추적</span></h2>
+<div class="card"><div id="rvw"></div>
+  <div class="note">
+    리워드광고(RV)는 <b>두 빌드 모두에 들어가 있습니다.</b> 그래서 IT 간섭이 없는 <b>비IT군이 순수값</b>이고,
+    IT군이 그보다 낮으면 전면광고가 리워드광고를 <b>잠식</b>하는 것입니다.
+    솔은 판당 RV 의존도가 4게임 중 가장 높아 수익에 직결됩니다.<br>
+    <b>서구권(NA+EU)을 따로 보는 이유</b> — A/B는 무작위 배정이라 권역이 양쪽에 고르게 섞이지만,
+    권역마다 광고 반응이 달라 <b>같은 방향인지</b>는 확인할 값어치가 있습니다.
+    다만 서구권은 표본이 훨씬 작으니 <b>유저 수를 먼저 보세요</b>.
+  </div>
+</div>
+
+<h2>IT 간섭 점검 <span class="h2s">바이럴 지표를 합산해도 되는가 — 데이터가 답한다</span></h2>
+<div class="card"><div id="mix"></div>
+  <div class="note">
+    바이럴 변경은 <b>A/B 양쪽에 동일하게</b> 들어갔으므로 합산하면 모수가 2배가 됩니다.
+    다만 그 전제는 <b>IT가 바이럴 행동에 간섭하지 않을 것</b>입니다 —
+    전면광고 지면이 <code>game_over</code>·<code>game_quit</code>이고 <b>토너 생성 팝업도 판 종료 직후</b>에 떠
+    <b>같은 자리를 다툽니다</b>.<br>
+    그래서 합산 타당성을 가정하지 않고, 바이럴 지표마다 <b>IT군 vs 비IT군</b>을 따로 검정합니다.
+    <b>유의차가 없으면 합산이 타당</b>(모수 2배 이득)하고,
+    <b>있으면 합산이 두 값을 섞어 가리므로</b> 바이럴 판정은 <b>비IT군 단독</b>으로 봐야 합니다
+    (IT 간섭 없는 순수 값).
+  </div>
+</div>
+
+<div id="groups"></div>
+
+<h2>인트로·로딩 단계 <span class="h2s">서구권 신규 · ALL_LOAD_FB 기준 경과초 p50 · 431·432·438·440 한정</span></h2>
+<div class="card"><div id="tIntro"></div>
+  <div class="note" id="introNote"></div>
+</div>
+
+<div class="note" id="how"></div>
+
+<h2>참조 쿼리 <span class="h2s">이 페이지 수치를 그대로 재현하거나 더 파볼 때</span></h2>
+<div class="card" id="sqlbox"></div>
+
+<div class="foot">
+데이터 = raw 로그 직접 집계(글로벌) · 신 빌드 vs 직전 빌드 · IT군 vs 비IT군<br>
+연관 — <a href="39_sol_viral_ad.html" target="_blank">바이럴·광고 게임 비교 →</a> ·
+<a href="40_sol_viral_diagnosis.html" target="_blank">바이럴 진단 →</a> ·
+<a href="34_sol_ctx_switch_watch.html" target="_blank">컨텍스트 전환 관측 →</a> ·
+<a href="37_sol_it_watch.html" target="_blank">전면광고 관측 →</a>
+</div>
+
+</div>
+<script>
+const P = {"updated": "2026-08-10 10:16", "target": 1000, "n": 31086, "n_users": 3760, "pct": 100, "sessions": 9001, "sess_it": 4676, "sess_no": 4325, "deployed": true, "comparable": true, "ab": true, "it_seen": true, "min_u": 30, "first_seen": "2026-08-07", "arm_it": 438, "arm_no": 440, "prev_build": 432, "prev_it_build": 431, "prev_no_build": 432, "prev_all_label": "431+432", "patch_min": 438, "live_pair": [440, 438], "notes": {"440": "오늘 패치 B(대조군) — 동일하되 IT 광고 미노출", "438": "오늘 패치 A(실험군) — 토너/전환/로그/로딩 개선 + IT 광고 곡선 로직", "432": "8/6 IT 지급 A/B — 전면광고 없음", "431": "8/6 IT 지급 A/B — 전면광고 있음", "416": "SPEC-030 컨텍스트 전환 전면 통합(8/5 12:13)", "415": "구버전", "409": "구버전"}, "bench": {"cozy": {"name": "코지", "window": "2026-01-04 +24~28일", "users": 28372, "ud": 37036}, "mahjong": {"name": "마종", "window": "2025-05-23 +24~28일", "users": 18791, "ud": 27685}}, "sol_dn": [24, 28], "sol_launch": "2026-07-13", "pu_dn": [60, 63], "sp_dn": [24, 27], "days_new": 4, "prev_it": 431, "prev_no": 432, "hub_cmp": {"cozy": {"users": 2323, "ud": 4563, "fin": 100096, "msg_try": 846, "msg_ok": 834, "msg_senders": 98, "cr_try": 18644}, "mahjong": {"users": 3849, "ud": 7427, "fin": 105506, "msg_try": 929, "msg_ok": 925, "msg_senders": 180, "cr_try": 27859}, "sol": {"users": 442, "ud": 891, "fin": 17591, "msg_try": 89, "msg_ok": 88, "msg_senders": 22, "cr_try": 7495}}, "rv_watch": {"row": {"440": {"users": 906, "fin": 1902, "rv": 576, "it": 0}, "438": {"users": 933, "fin": 2664, "rv": 366, "it": 1690}}, "west": {"440": {"users": 947, "fin": 12578, "rv": 4590, "it": 15}, "438": {"users": 974, "fin": 13942, "rv": 5332, "it": 7397}}, "all": {"440": {"users": 1853, "fin": 14480, "rv": 5166, "it": 15}, "438": {"users": 1907, "fin": 16606, "rv": 5698, "it": 9087}}}, "rv_bench": {"cozy": {"name": "코지", "pu_rv": 1.5642182433385028, "pg_rv": 0.09277861283639564, "pu_it": 14.413752995911462, "pg_it": 0.8549241862011151, "users": 28372}, "mahjong": {"name": "마종", "pu_rv": 0.625086477569049, "pg_rv": 0.03909299980363639, "pu_it": 13.808099622159544, "pg_it": 0.8635605715179573, "users": 18791}}, "rv_bench_west": {"cozy": {"name": "코지", "pu_rv": 3.360832894043226, "pg_rv": 0.10063612829902766, "pu_it": 29.845940959409592, "pg_it": 0.8937010670539209, "users": 7588}, "mahjong": {"name": "마종", "pu_rv": 0.994604963433641, "pg_rv": 0.04458321465614067, "pu_it": 20.232346241457858, "pg_it": 0.9069158798144874, "users": 8341}}, "intro": {"440": {"ALL_LOAD_FB": {"n": 422, "p50": 0.0, "p90": 0.0}, "INTRO_FB_ENTRY_POINT_FINISH": {"n": 413, "p50": 1.8, "p90": 7.95}, "INTRO_GAME_DATA_FINISH": {"n": 413, "p50": 1.81, "p90": 9.58}, "INTRO_LOGIN": {"n": 411, "p50": 2.21, "p90": 10.19}, "INTRO_FB_FRIEND_FINISH": {"n": 411, "p50": 1.7, "p90": 7.51}, "INTRO_BUNDLE": {"n": 413, "p50": 1.08, "p90": 6.27}, "ALL_LOAD_INTRO_START": {"n": 418, "p50": 0.85, "p90": 5.64}, "INTRO_OBJECT_POOL_FINISH": {"n": 320, "p50": 1.69, "p90": 7.79}, "ALL_INTRO_DEBUG_ERROR_98": {"n": 26, "p50": 13.41, "p90": 44.56}, "1000_LOGIN_COMPLETE": {"n": 411, "p50": 2.92, "p90": 12.89}, "INTRO_OBJECT_POOL": {"n": 410, "p50": 1.55, "p90": 8.2}, "1010_LOAD_COMPLETE": {"n": 396, "p50": 4.35, "p90": 15.03}, "INTRO_BUNDLE_FINISH": {"n": 409, "p50": 1.61, "p90": 8.96}, "INTRO_SIGNED_PLAYER_INFO_FINISH": {"n": 413, "p50": 1.38, "p90": 6.77}, "ALL_LOAD_INTRO_FINISH": {"n": 418, "p50": 0.97, "p90": 5.92}, "INTRO_FB_SUBSCRIBE_BOT_FINISH": {"n": 413, "p50": 1.53, "p90": 7.12}}, "438": {"ALL_LOAD_INTRO_FINISH": {"n": 411, "p50": 0.82, "p90": 4.16}, "INTRO_LOGIN": {"n": 410, "p50": 1.94, "p90": 8.63}, "INTRO_FB_ENTRY_POINT_FINISH": {"n": 410, "p50": 1.65, "p90": 6.54}, "INTRO_OBJECT_POOL": {"n": 409, "p50": 1.45, "p90": 6.75}, "INTRO_BUNDLE_FINISH": {"n": 405, "p50": 1.52, "p90": 6.72}, "1000_LOGIN_COMPLETE": {"n": 410, "p50": 2.59, "p90": 10.42}, "INTRO_FB_FRIEND_FINISH": {"n": 410, "p50": 1.57, "p90": 6.19}, "1010_LOAD_COMPLETE": {"n": 402, "p50": 3.83, "p90": 12.96}, "INTRO_FB_SUBSCRIBE_BOT_FINISH": {"n": 410, "p50": 1.43, "p90": 5.7}, "ALL_LOAD_INTRO_START": {"n": 411, "p50": 0.72, "p90": 4.09}, "INTRO_OBJECT_POOL_FINISH": {"n": 346, "p50": 1.71, "p90": 7.19}, "ALL_LOAD_FB": {"n": 413, "p50": 0.0, "p90": 0.0}, "INTRO_SIGNED_PLAYER_INFO_FINISH": {"n": 410, "p50": 1.31, "p90": 5.7}, "INTRO_BUNDLE": {"n": 408, "p50": 0.96, "p90": 5.16}, "INTRO_GAME_DATA_FINISH": {"n": 410, "p50": 1.68, "p90": 7.08}, "ALL_INTRO_DEBUG_ERROR_98": {"n": 12, "p50": 11.06, "p90": 20.26}}, "431": {"ALL_LOAD_INTRO_START": {"n": 191, "p50": 0.95, "p90": 3.83}, "INTRO_OBJECT_POOL_FINISH": {"n": 151, "p50": 1.88, "p90": 7.58}, "INTRO_SIGNED_PLAYER_INFO_FINISH": {"n": 188, "p50": 1.56, "p90": 5.9}, "INTRO_FB_SUBSCRIBE_BOT_FINISH": {"n": 189, "p50": 1.71, "p90": 7.64}, "ALL_LOAD_INTRO_FINISH": {"n": 191, "p50": 1.03, "p90": 4.05}, "1010_LOAD_COMPLETE": {"n": 174, "p50": 4.55, "p90": 18.28}, "INTRO_LOGIN": {"n": 186, "p50": 2.31, "p90": 9.13}, "INTRO_OBJECT_POOL": {"n": 187, "p50": 1.79, "p90": 7.58}, "INTRO_GAME_DATA_FINISH": {"n": 186, "p50": 1.98, "p90": 8.39}, "ALL_INTRO_DEBUG_ERROR_98": {"n": 14, "p50": 13.4, "p90": 23.43}, "INTRO_BUNDLE_FINISH": {"n": 185, "p50": 1.81, "p90": 7.65}, "INTRO_FB_FRIEND_FINISH": {"n": 188, "p50": 1.83, "p90": 6.71}, "INTRO_BUNDLE": {"n": 188, "p50": 1.26, "p90": 5.72}, "ALL_LOAD_FB": {"n": 193, "p50": 0.0, "p90": 0.0}, "1000_LOGIN_COMPLETE": {"n": 186, "p50": 3.02, "p90": 10.81}, "INTRO_FB_ENTRY_POINT_FINISH": {"n": 187, "p50": 1.91, "p90": 7.65}}, "432": {"ALL_LOAD_FB": {"n": 189, "p50": 0.0, "p90": 0.0}, "ALL_LOAD_INTRO_START": {"n": 188, "p50": 0.9, "p90": 4.73}, "ALL_LOAD_INTRO_FINISH": {"n": 188, "p50": 1.01, "p90": 5.05}, "1000_LOGIN_COMPLETE": {"n": 188, "p50": 3.53, "p90": 13.35}, "INTRO_SIGNED_PLAYER_INFO_FINISH": {"n": 188, "p50": 1.55, "p90": 6.7}, "INTRO_LOGIN": {"n": 188, "p50": 2.57, "p90": 11.6}, "INTRO_OBJECT_POOL": {"n": 185, "p50": 1.81, "p90": 7.43}, "INTRO_BUNDLE": {"n": 187, "p50": 1.22, "p90": 6.19}, "1010_LOAD_COMPLETE": {"n": 185, "p50": 5.58, "p90": 18.59}, "INTRO_BUNDLE_FINISH": {"n": 184, "p50": 1.83, "p90": 7.68}, "INTRO_FB_SUBSCRIBE_BOT_FINISH": {"n": 187, "p50": 1.73, "p90": 7.21}, "INTRO_FB_FRIEND_FINISH": {"n": 188, "p50": 1.84, "p90": 8.55}, "INTRO_FB_ENTRY_POINT_FINISH": {"n": 188, "p50": 1.96, "p90": 7.47}, "INTRO_OBJECT_POOL_FINISH": {"n": 152, "p50": 1.8, "p90": 7.44}, "INTRO_GAME_DATA_FINISH": {"n": 187, "p50": 2.3, "p90": 10.84}, "ALL_INTRO_DEBUG_ERROR_98": {"n": 20, "p50": 10.22, "p90": 14.54}}}, "intro_steps": ["ALL_LOAD_FB", "ALL_LOAD_INTRO_START", "INTRO_FB_ENTRY_POINT_FINISH", "INTRO_SIGNED_PLAYER_INFO_FINISH", "INTRO_FB_FRIEND_FINISH", "INTRO_BUNDLE", "INTRO_BUNDLE_FINISH", "INTRO_OBJECT_POOL", "INTRO_OBJECT_POOL_FINISH", "INTRO_LOGIN", "INTRO_GAME_DATA_FINISH", "INTRO_FB_SUBSCRIBE_BOT_FINISH", "INTRO_COUNTRY_DATA_FINISH", "ALL_LOAD_INTRO_FINISH", "1000_LOGIN_COMPLETE", "1010_LOAD_COMPLETE", "ALL_INTRO_DEBUG_ERROR_98"], "intro_builds": [431, 432, 438, 440], "intro_day": "2026-08-06~오늘", "patch_note": "오늘 패치(#438 A / #440 B)", "sql": [["빌드별 핵심 집계 (이 페이지의 표 원본)", "-- 글로벌 · 빌드(client_version)별\nwith ev as (\n  select log_date, player_id, event, data, ifnull(client_version,0) build,\n    max(if(event='1000_LOGIN_COMPLETE',1,0)) over(partition by log_date,player_id) has_login\n  from `game-log-359704.raw.solitaire_city_journey`\n  where log_date between '<시작>' and '<끝>'\n    and is_dev is distinct from true and player_id>0\n)\nselect build,\n  count(distinct player_id) users,\n  count(distinct if(has_login=1, concat(cast(log_date as string),'|',cast(player_id as string)), null)) ud,\n  countif(event='3100_TOURNAMENT_CREATE') cr_try, countif(event='3110_TOURNAMENT_CREATE_SUCCESS') cr_ok, countif(event='3120_TOURNAMENT_CREATE_FAIL') cr_fail,\n  countif(event='3200_TOURNAMENT_SHARE') sh_try, countif(event='3210_TOURNAMENT_SHARE_SUCCESS') sh_ok, countif(event='3220_TOURNAMENT_SHARE_FAIL') sh_fail,\n  countif(event='3300_TOURNAMENT_POST') po_try, countif(event='3310_TOURNAMENT_POST_SUCCESS') po_ok, countif(event='3320_TOURNAMENT_POST_FAIL') po_fail,\n  countif(event='2300_GAMEPLAY_FINISH') fin, countif(event='2300_GAMEPLAY_FINISH' and json_extract_scalar(data,'$.result')='clear') cl_clear, countif(event='2300_GAMEPLAY_FINISH' and json_extract_scalar(data,'$.result')='fail') cl_fail,\n  countif(event='4000_INTERSTITIAL_AD_START' and coalesce(json_extract_scalar(data,'$.position'),json_extract_scalar(data,'$.type'))='game_over') it_over, countif(event='4000_INTERSTITIAL_AD_START' and coalesce(json_extract_scalar(data,'$.position'),json_extract_scalar(data,'$.type'))='game_quit') it_quit, countif(event='4010_INTERSTITIAL_AD_FINISH') it_fin,\n  countif(event='3000_SWITCH_CONTEXT_START') ctx_try, countif(event='3010_SWITCH_CONTEXT_SUCCESS') ctx_ok, countif(event='3400_MSG_P2P') msg_try, countif(event='3410_MSG_P2P_SUCCESS') msg_ok,\n  countif(event='3500_FEED_SHARE') feed_try, countif(event='3510_FEED_SHARE_SUCCESS') feed_ok\nfrom ev group by build order by build desc"], ["IT 지면 분포 (신규 취소 지면 확인용)", "-- 지면 이름을 하드코딩하지 않고 그대로 나열\nselect ifnull(client_version,0) build,\n  ifnull(coalesce(json_extract_scalar(data,'$.position'),\n                  json_extract_scalar(data,'$.type')),'(없음)') pos,\n  count(*) c, count(distinct player_id) u\nfrom `game-log-359704.raw.solitaire_city_journey`\nwhere log_date between '<시작>' and '<끝>'\n  and is_dev is distinct from true and player_id>0\n  and event='4000_INTERSTITIAL_AD_START'\ngroup by 1,2 order by 1 desc, 3 desc"], ["① 토너먼트 등록 분리 확인 — 3320과 3220이 갈라졌는지", "-- 분리 전에는 두 값이 같았다(공유 실패를 등록 실패로 복제) · 분리 후 3320은 0에 수렴\nselect log_date, ifnull(client_version,0) build,\n  countif(event='3210_TOURNAMENT_SHARE_SUCCESS') sh_ok,\n  countif(event='3310_TOURNAMENT_POST_SUCCESS')  po_ok,\n  countif(event='3220_TOURNAMENT_SHARE_FAIL')    sh_fail,\n  countif(event='3320_TOURNAMENT_POST_FAIL')     po_fail,\n  round(safe_divide(countif(event='3310_TOURNAMENT_POST_SUCCESS'),\n    countif(event='3310_TOURNAMENT_POST_SUCCESS')+countif(event='3320_TOURNAMENT_POST_FAIL'))*100,1) post_acc\nfrom `game-log-359704.raw.solitaire_city_journey`\nwhere log_date between '<시작>' and '<끝>'\n  and is_dev is distinct from true and player_id>0\ngroup by 1,2 order by 1,2"], ["② 포기 경로 제거 확인 — 판 결과별 토너 생성", "-- data.result = clear / fail. ②는 포기(fail) 쪽 호출만 제거한다\nselect ifnull(client_version,0) build,\n  countif(event='2300_GAMEPLAY_FINISH' and json_extract_scalar(data,'$.result')='clear') clear_n,\n  countif(event='2300_GAMEPLAY_FINISH' and json_extract_scalar(data,'$.result')='fail')  fail_n,\n  countif(event='3100_TOURNAMENT_CREATE') cr_try,\n  round(safe_divide(countif(event='3100_TOURNAMENT_CREATE'),\n                    countif(event='2300_GAMEPLAY_FINISH')),3) cr_per_game\nfrom `game-log-359704.raw.solitaire_city_journey`\nwhere log_date between '<시작>' and '<끝>'\n  and is_dev is distinct from true and player_id>0\ngroup by 1 order by 1 desc"], ["인트로·로딩 단계별 소요시간 (서구권 신규 · 대상 빌드)", "-- ALL_LOAD_FB 최초 시각을 t0로 두고 각 단계까지 걸린 초\n-- ★서구권(NA+EU) 고정: 로딩은 권역 편차가 빌드 차이보다 커서 지오를 묶어야 빌드 비교가 성립한다\n-- ★대상 빌드만: 옛 빌드가 섞이면 단계별 p50이 그쪽에 끌려간다\nwith pd as (\n  select log_date, player_id, event, client_version, min(log_time) t\n  from `game-log-359704.raw.solitaire_city_journey`\n  where log_date = '<날짜>' and is_dev is distinct from true and player_id > 0\n    and logincount_total <= 1\n    and country in ('US','CA', <EU 국가들>)\n    and ifnull(client_version,0) in (431,432,438,440)\n  group by 1,2,3,4),\nbase as (\n  select log_date, player_id, min(t) t0,\n    array_agg(client_version order by t limit 1)[offset(0)] client_version\n  from pd where event = 'ALL_LOAD_FB' group by 1,2),\nok as (select distinct log_date, player_id from pd where event = '1000_LOGIN_COMPLETE')\nselect base.client_version, pd.event, count(*) n,\n  avg(datetime_diff(pd.t, base.t0, millisecond)/1000) avg_sec,\n  approx_quantiles(datetime_diff(pd.t, base.t0, millisecond)/1000, 100)[offset(50)] p50_sec,\n  approx_quantiles(datetime_diff(pd.t, base.t0, millisecond)/1000, 100)[offset(90)] p90_sec\nfrom pd join base using (log_date, player_id) join ok using (log_date, player_id)\nwhere pd.event in ('ALL_LOAD_FB','ALL_LOAD_INTRO_START','INTRO_FB_ENTRY_POINT_FINISH','INTRO_SIGNED_PLAYER_INFO_FINISH','INTRO_FB_FRIEND_FINISH','INTRO_BUNDLE','INTRO_BUNDLE_FINISH','INTRO_OBJECT_POOL','INTRO_OBJECT_POOL_FINISH','INTRO_LOGIN','INTRO_GAME_DATA_FINISH','INTRO_FB_SUBSCRIBE_BOT_FINISH','INTRO_COUNTRY_DATA_FINISH','ALL_LOAD_INTRO_FINISH','1000_LOGIN_COMPLETE','1010_LOAD_COMPLETE','ALL_INTRO_DEBUG_ERROR_98')\n  and datetime_diff(pd.t, base.t0, second) between 0 and 600\ngroup by 1,2 order by 1, 4"], ["신규 유저 보호 검증 — 누적 5판 미만에게 생성 팝업이 안 뜨는지", "-- 패치의 '신규 유저 보호(누적 5판 미만 미노출) 유지' 확인용 1회성 쿼리\n-- cnt5_pop이 0이어야 정상(누적 5판 미만인데 3100이 발화한 유저)\nwith u as (\n  select player_id,\n    countif(event='2300_GAMEPLAY_FINISH') fin,\n    min(if(event='3100_TOURNAMENT_CREATE', log_time, null)) first_pop\n  from `game-log-359704.raw.solitaire_city_journey`\n  where log_date >= '<패치일>' and is_dev is distinct from true and player_id>0\n    and ifnull(client_version,0) >= 438\n    and player_id in (select player_id from `game-log-359704.raw.solitaire_city_journey`\n                      where log_date >= '<패치일>' and event='1000_LOGIN_COMPLETE' and logincount_total=1)\n  group by 1)\nselect countif(first_pop is not null and fin < 5) cnt5_pop, count(*) nru from u"], ["실패 사유 분해 (사이드 이펙트 추적)", "select event,\n  ifnull(json_extract_scalar(data,'$.error_code'),'(none)') ec,\n  count(*) c, count(distinct player_id) u\nfrom `game-log-359704.raw.solitaire_city_journey`\nwhere log_date between '<시작>' and '<끝>'\n  and is_dev is distinct from true and player_id>0\n  and regexp_contains(event, r'(TOURNAMENT_CREATE|TOURNAMENT_SHARE|TOURNAMENT_POST|MSG_P2P|FEED_SHARE)_FAIL$')\ngroup by 1,2 order by 1, c desc"]], "new_label": "438+440", "base_from": "2026-08-06", "base_to": "2026-08-10", "n_it": 1907, "n_no": 1853, "leak": {"n": 15, "users": 2}, "fin_it": 16606, "fin_no": 14480, "groups": ["판정", "인당 볼륨", "판당 볼륨", "부작용·판종료", "부작용·공유", "부작용·건전성"], "builds": [{"build": 440, "users": 1853, "ud": 1898, "sessions": 4325, "fin": 14480, "d0": "2026-08-07", "d1": "2026-08-10", "pos": [{"pos": "game_over", "c": 9}, {"pos": "game_quit", "c": 4}, {"pos": "switch_cancel", "c": 2}]}, {"build": 438, "users": 1907, "ud": 1982, "sessions": 4676, "fin": 16606, "d0": "2026-08-07", "d1": "2026-08-10", "pos": [{"pos": "game_over", "c": 8082}, {"pos": "switch_cancel", "c": 684}, {"pos": "game_quit", "c": 321}]}, {"build": 432, "users": 1304, "ud": 1104, "sessions": 2602, "fin": 7294, "d0": "2026-08-06", "d1": "2026-08-08", "pos": []}, {"build": 431, "users": 1310, "ud": 1150, "sessions": 2705, "fin": 8616, "d0": "2026-08-06", "d1": "2026-08-08", "pos": [{"pos": "game_over", "c": 2589}, {"pos": "game_quit", "c": 191}]}, {"build": 416, "users": 843, "ud": 748, "sessions": 1887, "fin": 8005, "d0": "2026-08-06", "d1": "2026-08-09", "pos": []}, {"build": 415, "users": 3, "ud": 2, "sessions": 4, "fin": 33, "d0": "2026-08-06", "d1": "2026-08-06", "pos": []}, {"build": 409, "users": 1, "ud": 1, "sessions": 4, "fin": 24, "d0": "2026-08-06", "d1": "2026-08-06", "pos": []}], "builds_west": [{"build": 440, "users": 947, "ud": 1217, "sessions": 2833, "fin": 12578, "d0": "2026-08-07", "d1": "2026-08-10", "pos": [{"pos": "game_over", "c": 9}, {"pos": "game_quit", "c": 4}, {"pos": "switch_cancel", "c": 2}]}, {"build": 438, "users": 974, "ud": 1274, "sessions": 3130, "fin": 13942, "d0": "2026-08-07", "d1": "2026-08-10", "pos": [{"pos": "game_over", "c": 6485}, {"pos": "switch_cancel", "c": 622}, {"pos": "game_quit", "c": 290}]}, {"build": 432, "users": 543, "ud": 576, "sessions": 1447, "fin": 6085, "d0": "2026-08-06", "d1": "2026-08-08", "pos": []}, {"build": 431, "users": 554, "ud": 604, "sessions": 1511, "fin": 6983, "d0": "2026-08-06", "d1": "2026-08-07", "pos": [{"pos": "game_over", "c": 2137}, {"pos": "game_quit", "c": 165}]}, {"build": 416, "users": 618, "ud": 570, "sessions": 1487, "fin": 6729, "d0": "2026-08-06", "d1": "2026-08-09", "pos": []}, {"build": 415, "users": 2, "ud": 1, "sessions": 3, "fin": 29, "d0": "2026-08-06", "d1": "2026-08-06", "pos": []}, {"build": 409, "users": 1, "ud": 1, "sessions": 4, "fin": 24, "d0": "2026-08-06", "d1": "2026-08-06", "pos": []}], "metrics": [{"key": "cr_rate_lk", "name": "토너 생성률 (루커)", "unit": "%", "want": "watch", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "3110 ÷ 3100 — <b>루커 「토너 생성률」과 같은 식</b>(토너생성성공 ÷ 토너생성시도)", "defchg": "3110이 서버 점수 등록 완료인 경우에만 기록되도록 좁아져 <b>내려가는 게 정상</b>", "prev": 0.3323639385126714, "new": 3.45832523800272, "it": 4.344482891195693, "no": 2.553024351924588, "delta": 3.1259612994900485, "z": 15.294228516557178, "arm_delta": 1.7914585392711055, "arm_z": 3.516727535033027, "base_label": "431+432", "bench": {"cozy": 14.276451259583789, "mahjong": 19.067677618646446}, "n": {"prev": 9628, "no": 2546, "it": 2601, "new": 5147, "b_cozy": 114125, "b_mahjong": 96147}}, {"key": "sh_rate_lk", "name": "토너 공유율 (루커)", "unit": "%", "want": "watch", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "3210 ÷ 3200 — <b>루커 「토너 공유율」과 같은 식</b>(토너공유성공 ÷ 토너공유시도)", "defchg": "3200이 실제 다이얼로그 발사 시점만 기록하도록 좁아져 분모가 바뀜", "prev": 5.5614745365437885, "new": 7.034467808367656, "it": 7.666268418956592, "no": 6.279733587059944, "delta": 1.4729932718238672, "z": 3.3234881129493448, "arm_delta": 1.3865348318966477, "arm_z": 2.5936846020579316, "base_label": "431+432", "bench": {"cozy": 19.74021691338121, "mahjong": 20.556163606145365}, "n": {"prev": 4693, "no": 4204, "it": 5022, "new": 9226, "b_cozy": 54584, "b_mahjong": 49338}}, {"key": "post_acc", "name": "토너먼트 등록 성공률", "unit": "%", "want": "up", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "3310 ÷ (3310+3320). 로그 정의서상 <b>3300=토너먼트 등록 시도 · 3310=등록 성공 · 3320=등록 실패</b>입니다(‘포스트’가 아니라 <b>등록</b>). <b>루커 보드엔 없는 지표</b> — 루커는 생성(3100)·공유(3200)만 봅니다. <b>이 패치의 핵심 지표</b>, 9%대 → 96~99% 기대. 루커엔 3300계열 카드가 없어 대응 지표가 없고, 가장 가까운 건 위 「토너 공유율」입니다 — 분모가 <b>시도(3200)</b>냐 <b>판정된 건(성공+실패)</b>이냐가 달라 값이 갈립니다(응답 없이 끝난 건이 시도에는 들어가고 성공+실패에는 안 들어감)", "defchg": "3300계열이 실제 postScoreAsync 결과 기준으로 분리(실패 시 3회 재시도) — <b>이 변화가 패치 목적</b>", "prev": 6.2982625482625485, "new": 97.25116602163342, "it": 98.03071364046974, "no": 96.30118890356671, "delta": 90.95290347337088, "z": 108.3402662567775, "arm_delta": 1.7295247369030307, "arm_z": 5.28350183310402, "base_label": "431+432", "bench": {"cozy": 99.11328871892925, "mahjong": 99.6406944898113}, "n": {"prev": 4144, "no": 4542, "it": 5535, "new": 10077, "b_cozy": 41840, "b_mahjong": 39799}}, {"key": "post_split", "name": "토너먼트 등록 분리 여부", "unit": "ratio", "want": "down", "group": "판정", "kind": "none", "cmp": "prev", "desc": "<b>등록 실패(3320) ÷ 공유 실패(3220)</b>. 분리 전에는 공유 실패를 포스트 실패로 그대로 복제해 찍어 <b>정확히 1.000</b>이었습니다 — <b>0에 가까워지면 분리가 먹힌 것</b>(등록은 실패할 이유가 거의 없음). ※이전 정의(3310÷3210)는 분리된 뒤 <b>상한 없는 배수</b>가 되어 크기를 해석할 수 없었습니다", "defchg": "3300계열 분리 — 1.000에서 0으로 떨어지는 게 성공 신호", "prev": 0.9997425334706488, "new": 0.03279270747010773, "it": 0.02385642372510396, "no": 0.04332129963898917, "delta": -0.966949826000541, "z": null, "arm_delta": -0.019464875913885207, "arm_z": null, "base_label": "431+432", "bench": {"cozy": 0.00900922778047596, "mahjong": 0.0038064310051107325}, "n": {"prev": 3884, "no": 3878, "it": 4569, "new": 8447, "b_cozy": 41180, "b_mahjong": 37568}}, {"key": "post_vol", "name": "토너먼트등록성공 / 유저-일", "unit": "회", "want": "up", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "계측 정정분. 실제 바이럴 증가가 아니라 숫자가 제자리를 찾는 것", "defchg": "3300계열 정의 변경분 포함", "prev": 0.1157941437444543, "new": 2.5257731958762886, "it": 2.737638748738648, "no": 2.304531085353003, "delta": 2.4099790521318343, "z": 49.14894327800334, "arm_delta": 0.43310766338564477, "arm_z": 8.47512652235735, "base_label": "431+432", "bench": {"cozy": 1.1196943514418403, "mahjong": 1.4324002167238576}, "n": {"prev": 2254, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "cr_vol", "name": "토너생성시도 / 유저-일", "unit": "회", "want": "watch", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "올리는 변경(클리어 직후 즉시 노출·30초 쿨다운 제거)과 내리는 변경(3회 거절 중단·포기 시 미노출)이 <b>동시에</b> 들어가 방향이 미정 — 순효과를 본다", "defchg": "", "prev": 4.271517302573203, "new": 1.3265463917525773, "it": 1.312310797174571, "no": 1.3414120126448894, "delta": -2.9449709108206257, "z": -67.72372599619042, "arm_delta": -0.029101215470318298, "arm_z": -0.7867291977457179, "base_label": "431+432", "bench": {"cozy": 3.0814612809158657, "mahjong": 3.472891457467943}, "n": {"prev": 2254, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "cr_acc", "name": "토너생성 성공률 (성공+실패 기준)", "unit": "%", "want": "watch", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "3110 정의가 좁아져 <b>내려가는 게 정상</b>. 전후 비교로 회귀 판정하지 말 것", "defchg": "3110이 <b>서버 점수 등록 완료</b>인 경우에만 기록되도록 좁아짐 — 수락률이 <b>내려가는 게 정상</b>", "prev": 0.3119820610314907, "new": 3.508771929824561, "it": 4.410616705698673, "no": 2.5886101154918357, "delta": 3.1967898687930707, "z": 16.02294100224314, "arm_delta": 1.8220065902068372, "arm_z": 3.526216266252708, "base_label": "431+432", "bench": {"cozy": 13.1768150167005, "mahjong": 19.686020166009857}, "n": {"prev": 10257, "no": 2511, "it": 2562, "new": 5073, "b_cozy": 123649, "b_mahjong": 93127}}, {"key": "cr_rej", "name": "유저-일당 생성 팝업 거절", "unit": "회", "want": "down", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "3120 중 USER_INPUT ÷ 유저-일 — <b>「연속 3회 거절 시 세션 내 중단」의 직접 검증</b>. 실측: 거절 유저의 평균 거절 구 12.7~16.2회(최대 183) → 신 2.6회(최대 5~6)로 상한이 실제로 걸림. ※3120의 에러 필드는 <code>error_code</code>(스네이크), 3020은 <code>errorCode</code>(카멜) — 혼동 주의", "defchg": "", "prev": 3.79547471162378, "new": 0.9376288659793814, "it": 0.9323915237134208, "no": 0.9430979978925185, "delta": -2.8578458456443983, "z": -70.64129413858096, "arm_delta": -0.010706474179097647, "arm_z": -0.3442807154653659, "base_label": "431+432", "bench": {"cozy": 2.3270871584404365, "mahjong": 2.592450785623984}, "n": {"prev": 2254, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "pu_cr", "name": "인당 토너생성시도", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "한 사람이 토너 생성 다이얼로그를 몇 번 만나는지", "defchg": "3100 호출 시점 변경(클리어 직후 즉시)·3회 거절 중단·쿨다운 제거가 동시 적용", "prev": 3.6832440703902067, "new": 1.3688829787234043, "it": 1.3639223911903513, "no": 1.3739881273610361, "delta": -2.3143610916668025, "z": -57.32292214643644, "arm_delta": -0.010065736170684847, "arm_z": -0.26374275401198005, "base_label": "431+432", "bench": {"cozy": 3.8172092827359645, "mahjong": 4.728325203252033}, "n": {"prev": 2614, "no": 1853, "it": 1907, "new": 3760, "b_cozy": 23743, "b_mahjong": 15375}}, {"key": "pu_sh", "name": "인당 토너공유시도", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "공유 다이얼로그 노출 횟수", "defchg": "3200 정의 변경", "prev": 1.7953328232593726, "new": 2.453723404255319, "it": 2.6334556895647614, "no": 2.2687533729087965, "delta": 0.6583905809959465, "z": 17.424548716282914, "arm_delta": 0.36470231665596486, "arm_z": 7.130875084438284, "base_label": "431+432", "bench": {"cozy": 1.8151033988965168, "mahjong": 2.669268292682927}, "n": {"prev": 2614, "no": 1853, "it": 1907, "new": 3760, "b_cozy": 23743, "b_mahjong": 15375}}, {"key": "pu_po", "name": "인당 토너먼트등록성공", "unit": "회", "want": "up", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "①로 크게 오를 자리(계측 정정분 포함)", "defchg": "3300계열 정의 변경", "prev": 0.09984697781178271, "new": 2.606382978723404, "it": 2.8453067645516517, "no": 2.3604964921748515, "delta": 2.5065360009116215, "z": 52.01245023705587, "arm_delta": 0.4848102723768002, "arm_z": 9.192647142408191, "base_label": "431+432", "bench": {"cozy": 1.379690856252369, "mahjong": 2.140032520325203}, "n": {"prev": 2614, "no": 1853, "it": 1907, "new": 3760, "b_cozy": 23743, "b_mahjong": 15375}}, {"key": "pu_feed", "name": "인당 피드 공유 성공", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "이번 패치와 무관 — 흔들리면 다른 원인", "defchg": "", "prev": 0.05776587605202754, "new": 0.09202127659574467, "it": 0.058206607236497114, "no": 0.12682137075013492, "delta": 0.03425540054371713, "z": 4.773989328139365, "arm_delta": -0.0686147635136378, "arm_z": -6.761959213924521, "base_label": "431+432", "bench": {"cozy": 0.031967316682811775, "mahjong": 0.367479674796748}, "n": {"prev": 2614, "no": 1853, "it": 1907, "new": 3760, "b_cozy": 23743, "b_mahjong": 15375}}, {"key": "pu_shot", "name": "인당 스크린샷 공유 성공", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "이번 패치와 무관 — 흔들리면 다른 원인", "defchg": "", "prev": 0.03557765876052028, "new": 0.059308510638297875, "it": 0.019926586261143155, "no": 0.09983810037776579, "delta": 0.023730851877777598, "z": 4.140005856763687, "arm_delta": -0.07991151411662263, "arm_z": -9.048033614698106, "base_label": "431+432", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 2614, "no": 1853, "it": 1907, "new": 3760, "b_cozy": 23743, "b_mahjong": 15375}}, {"key": "pu_msg", "name": "인당 메세지 성공", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "SPEC-030 상승 추세가 이어지는지", "defchg": "", "prev": 0.13618974751338944, "new": 0.10505319148936171, "it": 0.10225485055060304, "no": 0.10793308148947653, "delta": -0.031136556024027734, "z": -3.552046708996764, "arm_delta": -0.005678230938873485, "arm_z": -0.5370005248221963, "base_label": "431+432", "bench": {"cozy": 0.6333656235522048, "mahjong": 0.3952520325203252}, "n": {"prev": 2614, "no": 1853, "it": 1907, "new": 3760, "b_cozy": 23743, "b_mahjong": 15375}}, {"key": "pu_ctx", "name": "인당 컨텍스트 전환 성공", "unit": "회", "want": "up", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "전환 팝업 거절 제한 제거로 노출이 늘어 <b>오를 것</b>. 단 추천 후보 세션당 1회 제한은 반대 방향", "defchg": "", "prev": 1.9223412394797246, "new": 2.8476063829787233, "it": 3.0901940220241215, "no": 2.5979492714517, "delta": 0.9252651434989987, "z": 22.978972768697737, "arm_delta": 0.49224475057242145, "arm_z": 8.93131885625261, "base_label": "431+432", "bench": {"cozy": 2.6013561891926043, "mahjong": 2.9499186991869917}, "n": {"prev": 2614, "no": 1853, "it": 1907, "new": 3760, "b_cozy": 23743, "b_mahjong": 15375}}, {"key": "pu_fin", "name": "인당 판수", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "활동성 — 패치로 줄면 안 됨", "defchg": "", "prev": 6.0864575363427695, "new": 8.267553191489363, "it": 8.707918196119559, "no": 7.8143550998381, "delta": 2.181095655146593, "z": 31.419182896531108, "arm_delta": 0.8935630962814587, "arm_z": 9.522341552064113, "base_label": "431+432", "bench": {"cozy": 8.131795832123293, "mahjong": 15.072627501613944}, "n": {"prev": 2614, "no": 1853, "it": 1907, "new": 3760, "b_cozy": 99859, "b_mahjong": 27882}}, {"key": "pu_it", "name": "인당 IT 노출", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "arm", "desc": "IT군에만 도는 값. 취소 지면이 붙으면 여기서 늘어난다", "defchg": "", "prev": 2.122137404580153, "new": 2.2382978723404254, "it": 4.406397482957525, "no": 0.007015650296815974, "delta": 4.399381832660708, "z": 23.211426738220528, "arm_delta": 4.399381832660708, "arm_z": 23.211426738220528, "base_label": "431", "bench": {"cozy": 6.178912266295477, "mahjong": 14.799835019008679}, "n": {"prev": 1310, "no": 1853, "it": 1907, "new": 3760, "b_cozy": 99859, "b_mahjong": 27882}}, {"key": "pu_rv", "name": "인당 RV 완료", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "arm", "desc": "순수값은 비IT군 — 빌드 간 차이는 IT의 RV 잠식 점검", "defchg": "", "prev": 1.809487375669472, "new": 2.8893617021276596, "it": 2.9879391714735184, "no": 2.7879114948731787, "delta": 0.2000276766003397, "z": 3.606794426354556, "arm_delta": 0.2000276766003397, "arm_z": 3.606794426354556, "base_label": "431+432", "bench": {"cozy": 0.7613535084469102, "mahjong": 1.210745283695574}, "n": {"prev": 2614, "no": 1853, "it": 1907, "new": 3760, "b_cozy": 99859, "b_mahjong": 27882}}, {"key": "pg_cr", "name": "판당 토너생성시도", "unit": "회/판", "want": "watch", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "판 하나가 끝날 때마다 생성 팝업이 몇 번 뜨는지 — <b>노출 빈도의 직접 지표</b>", "defchg": "3100 호출 시점 변경(클리어 직후 즉시)·3회 거절 중단·쿨다운 제거가 동시 적용", "prev": 0.6051539912005028, "new": 0.16557292671942353, "it": 0.1566301336866193, "no": 0.17582872928176796, "delta": -0.4395810644810793, "z": -75.06029122574067, "arm_delta": -0.019198595595148665, "arm_z": -4.147317516497502, "base_label": "431+432", "bench": {"cozy": 0.23858402861544958, "mahjong": 0.3199961392916931}, "n": {"prev": 15910, "no": 14480, "it": 16606, "new": 31086, "b_cozy": 478343, "b_mahjong": 300463}}, {"key": "pg_sh", "name": "판당 토너공유시도", "unit": "회/판", "want": "watch", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "판당 공유 다이얼로그 노출 횟수", "defchg": "3200 정의 변경", "prev": 0.2949717159019485, "new": 0.2967895515666216, "it": 0.3024208117547874, "no": 0.29033149171270717, "delta": 0.0018178356646731397, "z": 0.34266317170679844, "arm_delta": 0.012089320042080243, "arm_z": 1.951559653492619, "base_label": "431+432", "bench": {"cozy": 0.11411058591847273, "mahjong": 0.16420657451999082}, "n": {"prev": 15910, "no": 14480, "it": 16606, "new": 31086, "b_cozy": 478343, "b_mahjong": 300463}}, {"key": "pg_po", "name": "판당 토너먼트등록성공", "unit": "회/판", "want": "up", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "판당 포스트 성공 — 판을 돌린 만큼 점수가 등록되는지", "defchg": "3300계열 정의 변경", "prev": 0.01640477686989315, "new": 0.31525445538184393, "it": 0.3267493676984223, "no": 0.3020718232044199, "delta": 0.29884967851195077, "z": 47.129070016874884, "arm_delta": 0.02467754449400239, "arm_z": 3.864507178208463, "base_label": "431+432", "bench": {"cozy": 0.08669302153475644, "mahjong": 0.13198297294508807}, "n": {"prev": 15910, "no": 14480, "it": 16606, "new": 31086, "b_cozy": 478343, "b_mahjong": 300463}}, {"key": "pg_feed", "name": "판당 피드 공유 성공", "unit": "회/판", "want": "flat", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "이번 패치와 무관 — 흔들리면 다른 원인", "defchg": "", "prev": 0.009490886235072282, "new": 0.011130412404297754, "it": 0.00668433096471155, "no": 0.0162292817679558, "delta": 0.0016395261692254727, "z": 1.6337976997908803, "arm_delta": -0.009544950803244252, "arm_z": -7.702043405475547, "base_label": "431+432", "bench": {"cozy": 0.002032014684023807, "mahjong": 0.02494150694095446}, "n": {"prev": 15910, "no": 14480, "it": 16606, "new": 31086, "b_cozy": 478343, "b_mahjong": 300463}}, {"key": "pg_msg", "name": "판당 메세지 성공", "unit": "회/판", "want": "watch", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "판당 메세지 발송 — <b>40번 진단의 '판당 메시지'와 같은 축</b>(8/3 이후 160배 상승 중)", "defchg": "", "prev": 0.022375864236329354, "new": 0.012706684681206974, "it": 0.011742743586655426, "no": 0.013812154696132596, "delta": -0.00966917955512238, "z": -7.74298630185868, "arm_delta": -0.0020694111094771706, "arm_z": -1.6128292456229234, "base_label": "431+432", "bench": {"cozy": 0.03998804205350554, "mahjong": 0.02642588272100059}, "n": {"prev": 15910, "no": 14480, "it": 16606, "new": 31086, "b_cozy": 478343, "b_mahjong": 300463}}, {"key": "pg_ctx", "name": "판당 컨텍스트 전환 성공", "unit": "회/판", "want": "up", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "판당 P2P 진입 횟수", "defchg": "", "prev": 0.31583909490886236, "new": 0.34443157691565335, "it": 0.354871733108515, "no": 0.3324585635359116, "delta": 0.028592482006790987, "z": 5.06805713234903, "arm_delta": 0.02241316957260342, "arm_z": 3.3582200768751163, "base_label": "431+432", "bench": {"cozy": 0.1633179538531974, "mahjong": 0.18255159537114388}, "n": {"prev": 15910, "no": 14480, "it": 16606, "new": 31086, "b_cozy": 478343, "b_mahjong": 300463}}, {"key": "pg_it", "name": "판당 IT 노출", "unit": "회/판", "want": "watch", "group": "판당 볼륨", "kind": "rate", "cmp": "arm", "desc": "판당 전면광고 노출 — <b>IT 광고 곡선 로직의 실제 빈도</b>. 취소 지면이 붙으면 여기서 늘어난다", "defchg": "", "prev": 0.3226555246053853, "new": 0.2707328057646529, "it": 0.5060219197880285, "no": 0.0008977900552486188, "delta": 0.5051241297327799, "z": 22.82135420293571, "arm_delta": 0.5051241297327799, "arm_z": 22.82135420293571, "base_label": "431", "bench": {"cozy": 0.8549241862011151, "mahjong": 0.8635605715179573}, "n": {"prev": 8616, "no": 14480, "it": 16606, "new": 31086, "b_cozy": 478343, "b_mahjong": 300463}}, {"key": "pg_rv", "name": "판당 RV 완료", "unit": "회/판", "want": "flat", "group": "판당 볼륨", "kind": "rate", "cmp": "arm", "desc": "판당 리워드광고 완료", "defchg": "", "prev": 0.2972972972972973, "new": 0.3494820819661584, "it": 0.34312898952185955, "no": 0.356767955801105, "delta": -0.013638966279245435, "z": -2.02897119403342, "arm_delta": -0.013638966279245435, "arm_z": -2.02897119403342, "base_label": "431+432", "bench": {"cozy": 0.09277861283639564, "mahjong": 0.03909299980363639}, "n": {"prev": 15910, "no": 14480, "it": 16606, "new": 31086, "b_cozy": 478343, "b_mahjong": 300463}}, {"key": "it_over", "name": "IT 노출(game_over)/유저-일", "unit": "회", "want": "flat", "group": "부작용·판종료", "kind": "rate", "cmp": "arm", "desc": "전면광고 지면이 game_over·game_quit이라 <b>포기 경로를 건드리면 직격</b>. 8/6~7 IT의 91%가 game_over. <b>벤치는 지면 이름이 달라</b>(코지 stage_start·마종 stage_clear) 대응 비교 불가 — 전체 IT는 아래 「판당 IT 노출」에서 비교", "defchg": "", "prev": 2.251304347826087, "new": 2.0853092783505156, "it": 4.077699293642785, "no": 0.004741833508956797, "delta": 4.072957460133828, "z": 20.25931589367597, "arm_delta": 4.072957460133828, "arm_z": 20.25931589367597, "base_label": "431", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 1150, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "it_quit", "name": "IT 노출(game_quit)/유저-일", "unit": "회", "want": "watch", "group": "부작용·판종료", "kind": "rate", "cmp": "arm", "desc": "포기 지면 노출. ②가 포기 흐름을 건드리므로 <b>여기가 가장 먼저 흔들린다</b>", "defchg": "", "prev": 0.16608695652173913, "new": 0.08376288659793814, "it": 0.16195761856710394, "no": 0.002107481559536354, "delta": 0.1598501370075676, "z": null, "arm_delta": 0.1598501370075676, "arm_z": null, "base_label": "431", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 1150, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "it_fin", "name": "IT 완주/유저-일", "unit": "회", "want": "flat", "group": "부작용·판종료", "kind": "rate", "cmp": "arm", "desc": "노출이 줄면 같이 준다. 노출 대비 완주율이 흔들리는지가 포인트", "defchg": "", "prev": 2.2304347826086954, "new": 2.2505154639175258, "it": 4.398587285570131, "no": 0.007376185458377239, "delta": 4.391211100111754, "z": 23.892940113185954, "arm_delta": 4.391211100111754, "arm_z": 23.892940113185954, "base_label": "431", "bench": {"cozy": 6.527162760557296, "mahjong": 5.309987357774968}, "n": {"prev": 1150, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "rounds", "name": "판수/유저-일", "unit": "회", "want": "flat", "group": "부작용·판종료", "kind": "rate", "cmp": "prev", "desc": "②가 판 종료 흐름을 수정 — 판수 자체가 흔들리면 범위를 잘못 건드린 것", "defchg": "", "prev": 7.058562555456965, "new": 8.011855670103094, "it": 8.378405650857719, "no": 7.629083245521602, "delta": 0.9532931146461285, "z": 12.995663773413007, "arm_delta": 0.7493224053361169, "arm_z": 8.240003539046253, "base_label": "431+432", "bench": {"cozy": 12.915622637433849, "mahjong": 10.852916741918007}, "n": {"prev": 2254, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "failrate", "name": "실패(포기) 비중", "unit": "%", "want": "flat", "group": "부작용·판종료", "kind": "prop", "cmp": "prev", "desc": "클리어/실패 구성(data.result). ②는 포기 <b>경로</b>만 손대므로 구성비는 그대로여야 함. <b>벤치 비교 불가</b> — 실패율은 게임 난이도 설계에 종속(코지 25.0% vs 마종 0.1%)", "defchg": "", "prev": 3.2495285983658078, "new": 3.2297497265650135, "it": 2.6074912682163074, "no": 3.943370165745856, "delta": -0.019778871800794295, "z": -0.1146564559068857, "arm_delta": -1.3358788975295486, "arm_z": -6.64578211574125, "base_label": "431+432", "bench": {"cozy": 23.525169177765743, "mahjong": 0.09718334703441023}, "n": {"prev": 15910, "no": 14480, "it": 16606, "new": 31086, "b_cozy": 478343, "b_mahjong": 300463}}, {"key": "rv_vol", "name": "RV 완료/유저-일", "unit": "회", "want": "flat", "group": "부작용·판종료", "kind": "rate", "cmp": "arm", "desc": "RV는 <b>두 빌드 모두에 들어가 있다</b> — 순수값은 IT 간섭 없는 비IT군. 빌드 간 차이는 <b>IT가 RV를 잠식하는지</b> 점검", "defchg": "", "prev": 2.09849157054126, "new": 2.8, "it": 2.8748738647830474, "no": 2.721812434141201, "delta": 0.1530614306418463, "z": 2.8478470132662195, "arm_delta": 0.1530614306418463, "arm_z": 2.8478470132662195, "base_label": "431+432", "bench": {"cozy": 1.1982935522194622, "mahjong": 0.42427307206068265}, "n": {"prev": 2254, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "pre_err", "name": "IT 프리로드 에러율", "unit": "%", "want": "watch", "group": "부작용·판종료", "kind": "prop", "cmp": "arm", "desc": "4090 ÷ (4080+4090). 실측 IT군 58.5% vs 비IT군 25.7% — <b>광고 곡선이 프리로드를 못 따라가는 신호</b>. 노출 지연·누락으로 직결되므로 빈도를 올리기 전에 먼저 볼 것", "defchg": "", "prev": 40.04570848146267, "new": 41.06394129979036, "it": 50.19080136573609, "no": 23.935167734640032, "delta": 26.25563363109606, "z": 22.203536406404176, "arm_delta": 26.25563363109606, "arm_z": 22.203536406404176, "base_label": "431+432", "bench": {"cozy": 21.51395953720194, "mahjong": 18.877852553714757}, "n": {"prev": 3938, "no": 2653, "it": 4979, "new": 7632, "b_cozy": 78047, "b_mahjong": 52453}}, {"key": "sh_vol", "name": "토너공유시도 / 유저-일", "unit": "회", "want": "flat", "group": "부작용·공유", "kind": "rate", "cmp": "prev", "desc": "3200이 실제 다이얼로그 발사 시점만 기록 — <b>줄어드는 게 정상</b>", "defchg": "3200이 <b>실제 다이얼로그 발사 시점</b>에만 기록되도록 좁아짐 — 시도 수가 <b>줄어드는 게 정상</b>", "prev": 2.082076308784383, "new": 2.3778350515463917, "it": 2.5338042381432895, "no": 2.214963119072708, "delta": 0.29575874276200853, "z": 7.408106021837198, "arm_delta": 0.3188411190705813, "arm_z": 6.433396105954053, "base_label": "431+432", "bench": {"cozy": 1.4738092666594664, "mahjong": 1.7821202817410149}, "n": {"prev": 2254, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "sh_acc", "name": "토너공유 성공률 (성공+실패 기준)", "unit": "%", "want": "flat", "group": "부작용·공유", "kind": "prop", "cmp": "prev", "desc": "다이얼로그 수락률 자체는 안 바뀌어야 함. 바뀌면 분리 과정에서 호출 조건이 달라진 것", "defchg": "3200 정의 변경으로 분모가 바뀜", "prev": 6.296743063932449, "new": 7.135004397537379, "it": 7.771497779572063, "no": 6.373732496378561, "delta": 0.8382613336049305, "z": 1.7681026497058099, "arm_delta": 1.3977652831935021, "arm_z": 2.579104435157512, "base_label": "431+432", "bench": {"cozy": 20.739101145221827, "mahjong": 21.25759798784322}, "n": {"prev": 4145, "no": 4142, "it": 4954, "new": 9096, "b_cozy": 51955, "b_mahjong": 47710}}, {"key": "ctx_acc", "name": "컨텍스트 전환 성공률", "unit": "%", "want": "flat", "group": "부작용·공유", "kind": "prop", "cmp": "prev", "desc": "전환 팝업 <b>30초 자동닫힘 제거</b>(유저 응답까지 대기)·거절 제한 제거 → <b>오를 것</b>", "defchg": "", "prev": 71.25638116846285, "new": 52.775039432176655, "it": 55.76795684678717, "no": 49.52165415080753, "delta": -18.481341736286197, "z": -27.048167925868658, "arm_delta": 6.246302695979644, "arm_z": 8.902964635792772, "base_label": "431+432", "bench": {"cozy": 48.09046587215601, "mahjong": 55.93628260825226}, "n": {"prev": 7052, "no": 9721, "it": 10567, "new": 20288, "b_cozy": 162448, "b_mahjong": 98058}}, {"key": "msg_vol", "name": "메세지 성공/유저-일", "unit": "회", "want": "flat", "group": "부작용·공유", "kind": "rate", "cmp": "prev", "desc": "P2P 루프의 최종 산출. SPEC-030 상승 추세가 꺾이는지 확인", "defchg": "", "prev": 0.15794143744454303, "new": 0.1018041237113402, "it": 0.09838546922300706, "no": 0.1053740779768177, "delta": -0.056137313733202826, "z": -6.009521684943673, "arm_delta": -0.006988608753810646, "arm_z": -0.6818783425980249, "base_label": "431+432", "bench": {"cozy": 0.5164704611729128, "mahjong": 0.2867979050027091}, "n": {"prev": 2254, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "ctx_norec", "name": "추천 고갈(9220)/유저-일", "unit": "회", "want": "watch", "group": "부작용·공유", "kind": "rate", "cmp": "prev", "desc": "「추천 후보 세션당 1회」 변경의 직접 산출물 — 후보가 빨리 마르는지. 실측: 구 431에서 430건 → 신 438에서 13건으로 급감", "defchg": "", "prev": 0.3744454303460515, "new": 0.4327319587628866, "it": 0.4636730575176589, "no": 0.40042149631190727, "delta": 0.058286528416835126, "z": 3.428654354113788, "arm_delta": 0.06325156120575165, "arm_z": 2.9912772551088085, "base_label": "431+432", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 2254, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "ctx_delay", "name": "전환 지연 감지(8960)/유저-일", "unit": "회", "want": "watch", "group": "부작용·공유", "kind": "rate", "cmp": "prev", "desc": "신규 이벤트 — 15초(P2P)/20초(토너) 초과 시 채널 추천 중단 로직의 동작 증거. 신 빌드에만 발화하는 게 정상", "defchg": "", "prev": 0.0, "new": 0.03505154639175258, "it": 0.035317860746720484, "no": 0.03477344573234984, "delta": 0.03505154639175258, "z": null, "arm_delta": 0.000544415014370643, "arm_z": 0.09054327560496936, "base_label": "431+432", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 2254, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "ctx_to", "name": "전환 타임아웃(9210)/유저-일", "unit": "회", "want": "down", "group": "부작용·공유", "kind": "rate", "cmp": "prev", "desc": "「팝업 30초 자동닫힘 제거」로 <b>발생 자체가 중단</b>되는 게 정상 — 신 빌드에서 0이어야 함", "defchg": "", "prev": 0.025288376220053237, "new": 0.0, "it": 0.0, "no": 0.0, "delta": -0.025288376220053237, "z": null, "arm_delta": 0.0, "arm_z": null, "base_label": "431+432", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 2254, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}, {"key": "login", "name": "로그인 완료/유저-일", "unit": "회", "want": "flat", "group": "부작용·건전성", "kind": "rate", "cmp": "prev", "desc": "빌드 배포 시 기본 확인. 떨어지면 로딩·초기화 회귀 의심", "defchg": "", "prev": 1.3247559893522627, "new": 1.4376288659793814, "it": 1.4656912209889001, "no": 1.4083245521601686, "delta": 0.11287287662711876, "z": 3.6059782724585525, "arm_delta": 0.05736666882873154, "arm_z": 1.4896747627878943, "base_label": "431+432", "bench": {"cozy": 2.1267415487633654, "mahjong": 1.8228643669857323}, "n": {"prev": 2254, "no": 1898, "it": 1982, "new": 3880, "b_cozy": 37036, "b_mahjong": 27685}}], "metrics_west": [{"key": "cr_rate_lk", "name": "토너 생성률 (루커)", "unit": "%", "want": "watch", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "3110 ÷ 3100 — <b>루커 「토너 생성률」과 같은 식</b>(토너생성성공 ÷ 토너생성시도)", "defchg": "3110이 서버 점수 등록 완료인 경우에만 기록되도록 좁아져 <b>내려가는 게 정상</b>", "prev": 0.39555952532856964, "new": 3.0163481464425512, "it": 4.06392694063927, "no": 1.9507663725034836, "delta": 2.6207886211139817, "z": 12.093496119189847, "arm_delta": 2.113160568135786, "arm_z": 4.0709114524964685, "base_label": "431+432", "bench": {"cozy": 13.722764838467318, "mahjong": 20.129456523610322}, "n": {"prev": 7837, "no": 2153, "it": 2190, "new": 4343, "b_cozy": 53240, "b_mahjong": 58089}}, {"key": "sh_rate_lk", "name": "토너 공유율 (루커)", "unit": "%", "want": "watch", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "3210 ÷ 3200 — <b>루커 「토너 공유율」과 같은 식</b>(토너공유성공 ÷ 토너공유시도)", "defchg": "3200이 실제 다이얼로그 발사 시점만 기록하도록 좁아져 분모가 바뀜", "prev": 5.677610466551468, "new": 7.202701012879829, "it": 8.454673555659936, "no": 5.776945707408398, "delta": 1.5250905463283608, "z": 3.1652532737716728, "arm_delta": 2.6777278482515374, "arm_z": 4.621341759974028, "base_label": "431+432", "bench": {"cozy": 16.49622189178527, "mahjong": 19.996758508914102}, "n": {"prev": 4051, "no": 3739, "it": 4258, "new": 7997, "b_cozy": 32953, "b_mahjong": 30850}}, {"key": "post_acc", "name": "토너먼트 등록 성공률", "unit": "%", "want": "up", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "3310 ÷ (3310+3320). 로그 정의서상 <b>3300=토너먼트 등록 시도 · 3310=등록 성공 · 3320=등록 실패</b>입니다(‘포스트’가 아니라 <b>등록</b>). <b>루커 보드엔 없는 지표</b> — 루커는 생성(3100)·공유(3200)만 봅니다. <b>이 패치의 핵심 지표</b>, 9%대 → 96~99% 기대. 루커엔 3300계열 카드가 없어 대응 지표가 없고, 가장 가까운 건 위 「토너 공유율」입니다 — 분모가 <b>시도(3200)</b>냐 <b>판정된 건(성공+실패)</b>이냐가 달라 값이 갈립니다(응답 없이 끝난 건이 시도에는 들어가고 성공+실패에는 안 들어감)", "defchg": "3300계열이 실제 postScoreAsync 결과 기준으로 분리(실패 시 3회 재시도) — <b>이 변화가 패치 목적</b>", "prev": 6.3641394576646375, "new": 97.51545683535609, "it": 97.85517094924613, "no": 97.11801242236024, "delta": 91.15131737769146, "z": 101.39599565162607, "arm_delta": 0.7371585268858922, "arm_z": 2.206183256780225, "base_label": "431+432", "bench": {"cozy": 99.34595663934758, "mahjong": 99.67341343440044}, "n": {"prev": 3614, "no": 4025, "it": 4709, "new": 8734, "b_cozy": 24769, "b_mahjong": 24802}}, {"key": "post_split", "name": "토너먼트 등록 분리 여부", "unit": "ratio", "want": "down", "group": "판정", "kind": "none", "cmp": "prev", "desc": "<b>등록 실패(3320) ÷ 공유 실패(3220)</b>. 분리 전에는 공유 실패를 포스트 실패로 그대로 복제해 찍어 <b>정확히 1.000</b>이었습니다 — <b>0에 가까워지면 분리가 먹힌 것</b>(등록은 실패할 이유가 거의 없음). ※이전 정의(3310÷3210)는 분리된 뒤 <b>상한 없는 배수</b>가 되어 크기를 해석할 수 없었습니다", "defchg": "3300계열 분리 — 1.000에서 0으로 떨어지는 게 성공 신호", "prev": 0.9997045790251108, "new": 0.029721955896452542, "it": 0.026336375488917863, "no": 0.03346797461050202, "delta": -0.9699826231286582, "z": null, "arm_delta": -0.007131599121584158, "arm_z": null, "base_label": "431+432", "bench": {"cozy": 0.006185094685400122, "mahjong": 0.0034371552236272594}, "n": {"prev": 3385, "no": 3466, "it": 3835, "new": 7301, "b_cozy": 26192, "b_mahjong": 23566}}, {"key": "post_vol", "name": "토너먼트등록성공 / 유저-일", "unit": "회", "want": "up", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "계측 정정분. 실제 바이럴 증가가 아니라 숫자가 제자리를 찾는 것", "defchg": "3300계열 정의 변경분 포함", "prev": 0.19491525423728814, "new": 3.41910879164994, "it": 3.6169544740973314, "no": 3.211996713229252, "delta": 3.224193537412652, "z": 42.86838959696551, "arm_delta": 0.4049577608680792, "arm_z": 5.460611814416102, "base_label": "431+432", "bench": {"cozy": 1.8532158457599035, "mahjong": 1.7045438874715577}, "n": {"prev": 1180, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "cr_vol", "name": "토너생성시도 / 유저-일", "unit": "회", "want": "watch", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "올리는 변경(클리어 직후 즉시 노출·30초 쿨다운 제거)과 내리는 변경(3회 거절 중단·포기 시 미노출)이 <b>동시에</b> 들어가 방향이 미정 — 순효과를 본다", "defchg": "", "prev": 6.6415254237288135, "new": 1.7434765154556402, "it": 1.718995290423862, "no": 1.7691043549712409, "delta": -4.898048908273173, "z": -70.70126356312726, "arm_delta": -0.050109064547378956, "arm_z": -0.9467524636119212, "base_label": "431+432", "bench": {"cozy": 4.009640006025004, "mahjong": 4.005309246362821}, "n": {"prev": 1180, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "cr_acc", "name": "토너생성 성공률 (성공+실패 기준)", "unit": "%", "want": "watch", "group": "판정", "kind": "prop", "cmp": "prev", "desc": "3110 정의가 좁아져 <b>내려가는 게 정상</b>. 전후 비교로 회귀 판정하지 말 것", "defchg": "3110이 <b>서버 점수 등록 완료</b>인 경우에만 기록되도록 좁아짐 — 수락률이 <b>내려가는 게 정상</b>", "prev": 0.37264094242096407, "new": 3.0564629024731684, "it": 4.12037037037037, "no": 1.975540921919097, "delta": 2.6838219600522044, "z": 12.672628825638165, "arm_delta": 2.144829448451273, "arm_z": 4.078553758337397, "base_label": "431+432", "bench": {"cozy": 12.855659763157432, "mahjong": 20.832368294464537}, "n": {"prev": 8319, "no": 2126, "it": 2160, "new": 4286, "b_cozy": 56831, "b_mahjong": 56129}}, {"key": "cr_rej", "name": "유저-일당 생성 팝업 거절", "unit": "회", "want": "down", "group": "판정", "kind": "rate", "cmp": "prev", "desc": "3120 중 USER_INPUT ÷ 유저-일 — <b>「연속 3회 거절 시 세션 내 중단」의 직접 검증</b>. 실측: 거절 유저의 평균 거절 구 12.7~16.2회(최대 183) → 신 2.6회(최대 5~6)로 상한이 실제로 걸림. ※3120의 에러 필드는 <code>error_code</code>(스네이크), 3020은 <code>errorCode</code>(카멜) — 혼동 주의", "defchg": "", "prev": 5.930508474576271, "new": 1.2284223203532718, "it": 1.2346938775510203, "no": 1.2218570254724732, "delta": -4.702086154222999, "z": -72.64424776708682, "arm_delta": 0.012836852078547123, "arm_z": 0.2889520966714945, "base_label": "431+432", "bench": {"cozy": 3.1242657026660643, "mahjong": 2.9281527959732467}, "n": {"prev": 1180, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "pu_cr", "name": "인당 토너생성시도", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "한 사람이 토너 생성 다이얼로그를 몇 번 만나는지", "defchg": "3100 호출 시점 변경(클리어 직후 즉시)·3회 거절 중단·쿨다운 제거가 동시 적용", "prev": 7.144029170464904, "new": 2.260801665799063, "it": 2.248459958932238, "no": 2.273495248152059, "delta": -4.883227504665841, "z": -60.82113290859013, "arm_delta": -0.0250352892198209, "arm_z": -0.3648463010145967, "base_label": "431+432", "bench": {"cozy": 6.455895865237366, "mahjong": 6.249422632794457}, "n": {"prev": 1097, "no": 947, "it": 974, "new": 1921, "b_cozy": 6530, "b_mahjong": 6928}}, {"key": "pu_sh", "name": "인당 토너공유시도", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "공유 다이얼로그 노출 횟수", "defchg": "3200 정의 변경", "prev": 3.692798541476755, "new": 4.162935970848516, "it": 4.371663244353183, "no": 3.948257655755016, "delta": 0.4701374293717615, "z": 6.214046678838213, "arm_delta": 0.4234055885981669, "arm_z": 4.545270541891741, "base_label": "431+432", "bench": {"cozy": 4.006738131699847, "mahjong": 3.7204099307159355}, "n": {"prev": 1097, "no": 947, "it": 974, "new": 1921, "b_cozy": 6530, "b_mahjong": 6928}}, {"key": "pu_po", "name": "인당 토너먼트등록성공", "unit": "회", "want": "up", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "①로 크게 오를 자리(계측 정정분 포함)", "defchg": "3300계열 정의 변경", "prev": 0.2096627164995442, "new": 4.433628318584071, "it": 4.731006160164271, "no": 4.127771911298838, "delta": 4.223965602084527, "z": 45.66540058292135, "arm_delta": 0.6032342488654328, "arm_z": 6.272786680888541, "base_label": "431+432", "bench": {"cozy": 3.0168453292496173, "mahjong": 2.934324480369515}, "n": {"prev": 1097, "no": 947, "it": 974, "new": 1921, "b_cozy": 6530, "b_mahjong": 6928}}, {"key": "pu_feed", "name": "인당 피드 공유 성공", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "이번 패치와 무관 — 흔들리면 다른 원인", "defchg": "", "prev": 0.1276207839562443, "new": 0.1691827173347215, "it": 0.11190965092402463, "no": 0.22808870116156282, "delta": 0.04156193337847722, "z": 2.7886822652850825, "arm_delta": -0.11617905023753819, "arm_z": -6.060444860849167, "base_label": "431+432", "bench": {"cozy": 0.05880551301684533, "mahjong": 0.4317263279445728}, "n": {"prev": 1097, "no": 947, "it": 974, "new": 1921, "b_cozy": 6530, "b_mahjong": 6928}}, {"key": "pu_shot", "name": "인당 스크린샷 공유 성공", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "이번 패치와 무관 — 흔들리면 다른 원인", "defchg": "", "prev": 0.08113035551504102, "new": 0.11244143675169183, "it": 0.037987679671457907, "no": 0.1890179514255544, "delta": 0.0313110812366508, "z": 2.59113052411759, "arm_delta": -0.15103027175409647, "arm_z": -8.885091502521156, "base_label": "431+432", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 1097, "no": 947, "it": 974, "new": 1921, "b_cozy": 6530, "b_mahjong": 6928}}, {"key": "pu_msg", "name": "인당 메세지 성공", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "SPEC-030 상승 추세가 이어지는지", "defchg": "", "prev": 0.2999088422971741, "new": 0.18271733472149923, "it": 0.17248459958932238, "no": 0.1932418162618796, "delta": -0.1171915075756749, "z": -6.457645733379429, "arm_delta": -0.020757216672557227, "arm_z": -1.0634972937872869, "base_label": "431+432", "bench": {"cozy": 1.3094946401225114, "mahjong": 0.542147806004619}, "n": {"prev": 1097, "no": 947, "it": 974, "new": 1921, "b_cozy": 6530, "b_mahjong": 6928}}, {"key": "pu_ctx", "name": "인당 컨텍스트 전환 성공", "unit": "회", "want": "up", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "전환 팝업 거절 제한 제거로 노출이 늘어 <b>오를 것</b>. 단 추천 후보 세션당 1회 제한은 반대 방향", "defchg": "", "prev": 3.9489516864175025, "new": 4.833940655908381, "it": 5.145790554414784, "no": 4.513199577613516, "delta": 0.8849889694908786, "z": 10.99027395701632, "arm_delta": 0.6325909768012679, "arm_z": 6.300163321588245, "base_label": "431+432", "bench": {"cozy": 5.611638591117917, "mahjong": 4.075057736720554}, "n": {"prev": 1097, "no": 947, "it": 974, "new": 1921, "b_cozy": 6530, "b_mahjong": 6928}}, {"key": "pu_fin", "name": "인당 판수", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "prev", "desc": "활동성 — 패치로 줄면 안 됨", "defchg": "", "prev": 11.912488605287146, "new": 13.805309734513274, "it": 14.314168377823409, "no": 13.28194297782471, "delta": 1.892821129226128, "z": 13.797530130799162, "arm_delta": 1.0322253999986994, "arm_z": 6.08612528911524, "base_label": "431+432", "bench": {"cozy": 17.556836685296837, "mahjong": 19.953488372093023}, "n": {"prev": 1097, "no": 947, "it": 974, "new": 1921, "b_cozy": 22723, "b_mahjong": 14233}}, {"key": "pu_it", "name": "인당 IT 노출", "unit": "회", "want": "watch", "group": "인당 볼륨", "kind": "rate", "cmp": "arm", "desc": "IT군에만 도는 값. 취소 지면이 붙으면 여기서 늘어난다", "defchg": "", "prev": 4.155234657039712, "new": 3.5335762623633524, "it": 6.955852156057495, "no": 0.013727560718057022, "delta": 6.942124595339438, "z": 22.43361933745814, "arm_delta": 6.942124595339438, "arm_z": 22.43361933745814, "base_label": "431", "bench": {"cozy": 14.82700347665361, "mahjong": 19.41403779948008}, "n": {"prev": 554, "no": 947, "it": 974, "new": 1921, "b_cozy": 22723, "b_mahjong": 14233}}, {"key": "pu_rv", "name": "인당 RV 완료", "unit": "회", "want": "flat", "group": "인당 볼륨", "kind": "rate", "cmp": "arm", "desc": "순수값은 비IT군 — 빌드 간 차이는 IT의 RV 잠식 점검", "defchg": "", "prev": 3.7702825888787603, "new": 5.165018219677251, "it": 5.474332648870637, "no": 4.84688489968321, "delta": 0.6274477491874269, "z": 6.045946403703238, "arm_delta": 0.6274477491874269, "arm_z": 6.045946403703238, "base_label": "431+432", "bench": {"cozy": 2.4643312942833253, "mahjong": 1.8548443757465045}, "n": {"prev": 1097, "no": 947, "it": 974, "new": 1921, "b_cozy": 22723, "b_mahjong": 14233}}, {"key": "pg_cr", "name": "판당 토너생성시도", "unit": "회/판", "want": "watch", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "판 하나가 끝날 때마다 생성 팝업이 몇 번 뜨는지 — <b>노출 빈도의 직접 지표</b>", "defchg": "3100 호출 시점 변경(클리어 직후 즉시)·3회 거절 중단·쿨다운 제거가 동시 적용", "prev": 0.599709213345577, "new": 0.163763197586727, "it": 0.1570793286472529, "no": 0.1711718874224837, "delta": -0.43594601575885006, "z": -68.6165256989176, "arm_delta": -0.014092558775230801, "arm_z": -2.8309337428869785, "base_label": "431+432", "bench": {"cozy": 0.2100959717136002, "mahjong": 0.31217386163941124}, "n": {"prev": 13068, "no": 12578, "it": 13942, "new": 26520, "b_cozy": 253408, "b_mahjong": 186079}}, {"key": "pg_sh", "name": "판당 토너공유시도", "unit": "회/판", "want": "watch", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "판당 공유 다이얼로그 노출 횟수", "defchg": "3200 정의 변경", "prev": 0.30999387817569635, "new": 0.30154600301659124, "it": 0.3054081193515995, "no": 0.29726506598823343, "delta": -0.008447875159105112, "z": -1.4327404301102564, "arm_delta": 0.00814305336336607, "arm_z": 1.2058099172016574, "base_label": "431+432", "bench": {"cozy": 0.1300393042050764, "mahjong": 0.16578979895635726}, "n": {"prev": 13068, "no": 12578, "it": 13942, "new": 26520, "b_cozy": 253408, "b_mahjong": 186079}}, {"key": "pg_po", "name": "판당 토너먼트등록성공", "unit": "회/판", "want": "up", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "판당 포스트 성공 — 판을 돌린 만큼 점수가 등록되는지", "defchg": "3300계열 정의 변경", "prev": 0.017600244872972147, "new": 0.3211538461538462, "it": 0.33051212164682253, "no": 0.31078072825568454, "delta": 0.30355360128087405, "z": 43.45856749166317, "arm_delta": 0.019731393391137997, "arm_z": 2.830832689763583, "base_label": "431+432", "bench": {"cozy": 0.09710427452961233, "mahjong": 0.13285217568882035}, "n": {"prev": 13068, "no": 12578, "it": 13942, "new": 26520, "b_cozy": 253408, "b_mahjong": 186079}}, {"key": "pg_feed", "name": "판당 피드 공유 성공", "unit": "회/판", "want": "flat", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "이번 패치와 무관 — 흔들리면 다른 원인", "defchg": "", "prev": 0.010713192531374349, "new": 0.012254901960784314, "it": 0.007818103571940897, "no": 0.01717284146923199, "delta": 0.0015417094294099647, "z": 1.3299653097249389, "arm_delta": -0.009354737897291094, "arm_z": -6.697471740578144, "base_label": "431+432", "bench": {"cozy": 0.0019375868165172371, "mahjong": 0.02112006190918911}, "n": {"prev": 13068, "no": 12578, "it": 13942, "new": 26520, "b_cozy": 253408, "b_mahjong": 186079}}, {"key": "pg_msg", "name": "판당 메세지 성공", "unit": "회/판", "want": "watch", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "판당 메세지 발송 — <b>40번 진단의 '판당 메시지'와 같은 축</b>(8/3 이후 160배 상승 중)", "defchg": "", "prev": 0.025176002448729723, "new": 0.013235294117647059, "it": 0.012049921101707071, "no": 0.01454921291143266, "delta": -0.011940708331082664, "z": -8.379360202274865, "arm_delta": -0.0024992918097255894, "arm_z": -1.7639614899611766, "base_label": "431+432", "bench": {"cozy": 0.043210948352064654, "mahjong": 0.02606419853933007}, "n": {"prev": 13068, "no": 12578, "it": 13942, "new": 26520, "b_cozy": 253408, "b_mahjong": 186079}}, {"key": "pg_ctx", "name": "판당 컨텍스트 전환 성공", "unit": "회/판", "want": "up", "group": "판당 볼륨", "kind": "rate", "cmp": "prev", "desc": "판당 P2P 진입 횟수", "defchg": "", "prev": 0.3314967860422406, "new": 0.35015082956259425, "it": 0.35948931286759434, "no": 0.33979965018285896, "delta": 0.018654043520353658, "z": 2.9754551630467474, "arm_delta": 0.019689662684735376, "arm_z": 2.7054210027822956, "base_label": "431+432", "bench": {"cozy": 0.18251199646420002, "mahjong": 0.18233116042111147}, "n": {"prev": 13068, "no": 12578, "it": 13942, "new": 26520, "b_cozy": 253408, "b_mahjong": 186079}}, {"key": "pg_it", "name": "판당 IT 노출", "unit": "회/판", "want": "watch", "group": "판당 볼륨", "kind": "rate", "cmp": "arm", "desc": "판당 전면광고 노출 — <b>IT 광고 곡선 로직의 실제 빈도</b>. 취소 지면이 붙으면 여기서 늘어난다", "defchg": "", "prev": 0.32965774022626376, "new": 0.2559577677224736, "it": 0.4859417587146751, "no": 0.0010335506439815552, "delta": 0.48490820807069357, "z": 22.16402254361493, "arm_delta": 0.48490820807069357, "arm_z": 22.16402254361493, "base_label": "431", "bench": {"cozy": 0.8937010670539209, "mahjong": 0.9069158798144874}, "n": {"prev": 6983, "no": 12578, "it": 13942, "new": 26520, "b_cozy": 253408, "b_mahjong": 186079}}, {"key": "pg_rv", "name": "판당 RV 완료", "unit": "회/판", "want": "flat", "group": "판당 볼륨", "kind": "rate", "cmp": "arm", "desc": "판당 리워드광고 완료", "defchg": "", "prev": 0.3164983164983165, "new": 0.37413273001508296, "it": 0.38244154353751253, "no": 0.36492288122117983, "delta": 0.0175186623163327, "z": 2.3287875962596916, "arm_delta": 0.0175186623163327, "arm_z": 2.3287875962596916, "base_label": "431+432", "bench": {"cozy": 0.10063612829902766, "mahjong": 0.04458321465614067}, "n": {"prev": 13068, "no": 12578, "it": 13942, "new": 26520, "b_cozy": 253408, "b_mahjong": 186079}}, {"key": "it_over", "name": "IT 노출(game_over)/유저-일", "unit": "회", "want": "flat", "group": "부작용·판종료", "kind": "rate", "cmp": "arm", "desc": "전면광고 지면이 game_over·game_quit이라 <b>포기 경로를 건드리면 직격</b>. 8/6~7 IT의 91%가 game_over. <b>벤치는 지면 이름이 달라</b>(코지 stage_start·마종 stage_clear) 대응 비교 불가 — 전체 IT는 아래 「판당 IT 노출」에서 비교", "defchg": "", "prev": 3.5380794701986753, "new": 2.606985146527499, "it": 5.090266875981162, "no": 0.007395234182415777, "delta": 5.0828716417987465, "z": 19.589160946234422, "arm_delta": 5.0828716417987465, "arm_z": 19.589160946234422, "base_label": "431", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 604, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "it_quit", "name": "IT 노출(game_quit)/유저-일", "unit": "회", "want": "watch", "group": "부작용·판종료", "kind": "rate", "cmp": "arm", "desc": "포기 지면 노출. ②가 포기 흐름을 건드리므로 <b>여기가 가장 먼저 흔들린다</b>", "defchg": "", "prev": 0.2731788079470199, "new": 0.11802488960256925, "it": 0.22762951334379905, "no": 0.003286770747740345, "delta": 0.22434274259605871, "z": null, "arm_delta": 0.22434274259605871, "arm_z": null, "base_label": "431", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 604, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "it_fin", "name": "IT 완주/유저-일", "unit": "회", "want": "flat", "group": "부작용·판종료", "kind": "rate", "cmp": "arm", "desc": "노출이 줄면 같이 준다. 노출 대비 완주율이 흔들리는지가 포인트", "defchg": "", "prev": 3.475165562913907, "new": 2.8329987956643916, "it": 5.528257456828886, "no": 0.011503697617091208, "delta": 5.516753759211794, "z": 23.08165319176506, "arm_delta": 5.516753759211794, "arm_z": 23.08165319176506, "base_label": "431", "bench": {"cozy": 9.682482301551438, "mahjong": 6.39936564848652}, "n": {"prev": 604, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "rounds", "name": "판수/유저-일", "unit": "회", "want": "flat", "group": "부작용·판종료", "kind": "rate", "cmp": "prev", "desc": "②가 판 종료 흐름을 수정 — 판수 자체가 흔들리면 범위를 잘못 건드린 것", "defchg": "", "prev": 11.07457627118644, "new": 10.646326776395021, "it": 10.943485086342228, "no": 10.335250616269516, "delta": -0.4282494947914195, "z": -3.689901749651561, "arm_delta": 0.6082344700727127, "arm_z": 4.650023003388232, "base_label": "431+432", "bench": {"cozy": 19.084801928001205, "mahjong": 12.830379921395574}, "n": {"prev": 1180, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "failrate", "name": "실패(포기) 비중", "unit": "%", "want": "flat", "group": "부작용·판종료", "kind": "prop", "cmp": "prev", "desc": "클리어/실패 구성(data.result). ②는 포기 <b>경로</b>만 손대므로 구성비는 그대로여야 함. <b>벤치 비교 불가</b> — 실패율은 게임 난이도 설계에 종속(코지 25.0% vs 마종 0.1%)", "defchg": "", "prev": 3.25221916131007, "new": 3.31447963800905, "it": 2.661024243293645, "no": 4.038797901097154, "delta": 0.06226047669898005, "z": 0.32639094043955896, "arm_delta": -1.377773657803509, "arm_z": -6.258511497860819, "base_label": "431+432", "bench": {"cozy": 26.209117312792017, "mahjong": 0.09297126489286808}, "n": {"prev": 13068, "no": 12578, "it": 13942, "new": 26520, "b_cozy": 253408, "b_mahjong": 186079}}, {"key": "rv_vol", "name": "RV 완료/유저-일", "unit": "회", "want": "flat", "group": "부작용·판종료", "kind": "rate", "cmp": "arm", "desc": "RV는 <b>두 빌드 모두에 들어가 있다</b> — 순수값은 IT 간섭 없는 비IT군. 빌드 간 차이는 <b>IT가 RV를 잠식하는지</b> 점검", "defchg": "", "prev": 3.5050847457627117, "new": 3.9831393014853473, "it": 4.185243328100471, "no": 3.771569433032046, "delta": 0.4136738950684249, "z": 5.1688332970560324, "arm_delta": 0.4136738950684249, "arm_z": 5.1688332970560324, "base_label": "431+432", "bench": {"cozy": 1.9206205753878596, "mahjong": 0.5720195821554162}, "n": {"prev": 1180, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "pre_err", "name": "IT 프리로드 에러율", "unit": "%", "want": "watch", "group": "부작용·판종료", "kind": "prop", "cmp": "arm", "desc": "4090 ÷ (4080+4090). 실측 IT군 58.5% vs 비IT군 25.7% — <b>광고 곡선이 프리로드를 못 따라가는 신호</b>. 노출 지연·누락으로 직결되므로 빈도를 올리기 전에 먼저 볼 것", "defchg": "", "prev": 48.13798510388083, "new": 44.7561193496516, "it": 52.51605995717345, "no": 29.177861364857606, "delta": 23.33819859231584, "z": 16.542380161286122, "arm_delta": 23.33819859231584, "arm_z": 16.542380161286122, "base_label": "431+432", "bench": {"cozy": 24.066034671155606, "mahjong": 18.699423836343627}, "n": {"prev": 2551, "no": 1861, "it": 3736, "new": 5597, "b_cozy": 33861, "b_mahjong": 30894}}, {"key": "sh_vol", "name": "토너공유시도 / 유저-일", "unit": "회", "want": "flat", "group": "부작용·공유", "kind": "rate", "cmp": "prev", "desc": "3200이 실제 다이얼로그 발사 시점만 기록 — <b>줄어드는 게 정상</b>", "defchg": "3200이 <b>실제 다이얼로그 발사 시점</b>에만 기록되도록 좁아짐 — 시도 수가 <b>줄어드는 게 정상</b>", "prev": 3.433050847457627, "new": 3.2103572862304297, "it": 3.3422291993720563, "no": 3.0723089564502875, "delta": -0.2226935612271972, "z": -3.4777363725027035, "arm_delta": 0.26992024292176886, "arm_z": 3.7572803497098843, "base_label": "431+432", "bench": {"cozy": 2.4817743636089773, "mahjong": 2.1271461077018547}, "n": {"prev": 1180, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "sh_acc", "name": "토너공유 성공률 (성공+실패 기준)", "unit": "%", "want": "flat", "group": "부작용·공유", "kind": "prop", "cmp": "prev", "desc": "다이얼로그 수락률 자체는 안 바뀌어야 함. 바뀌면 분리 과정에서 호출 조건이 달라진 것", "defchg": "3200 정의 변경으로 분모가 바뀜", "prev": 6.36237897648686, "new": 7.312428589564555, "it": 8.581644815256258, "no": 5.8663769690385665, "delta": 0.9500496130776952, "z": 1.851840431173594, "arm_delta": 2.7152678462176913, "arm_z": 4.618474586902698, "base_label": "431+432", "bench": {"cozy": 17.187302390287087, "mahjong": 20.746594921809315}, "n": {"prev": 3615, "no": 3682, "it": 4195, "new": 7877, "b_cozy": 31628, "b_mahjong": 29735}}, {"key": "ctx_acc", "name": "컨텍스트 전환 성공률", "unit": "%", "want": "flat", "group": "부작용·공유", "kind": "prop", "cmp": "prev", "desc": "전환 팝업 <b>30초 자동닫힘 제거</b>(유저 응답까지 대기)·거절 제한 제거 → <b>오를 것</b>", "defchg": "", "prev": 71.56781761110193, "new": 52.65963479641601, "it": 55.022505214622896, "no": 50.13489736070381, "delta": -18.908182814685922, "z": -25.67531275485805, "arm_delta": 4.887607853919086, "arm_z": 6.496040998995667, "base_label": "431+432", "bench": {"cozy": 49.537294888822245, "mahjong": 52.96780841165267}, "n": {"prev": 6053, "no": 8525, "it": 9109, "new": 17634, "b_cozy": 93364, "b_mahjong": 64054}}, {"key": "msg_vol", "name": "메세지 성공/유저-일", "unit": "회", "want": "flat", "group": "부작용·공유", "kind": "rate", "cmp": "prev", "desc": "P2P 루프의 최종 산출. SPEC-030 상승 추세가 꺾이는지 확인", "defchg": "", "prev": 0.2788135593220339, "new": 0.1409072661581694, "it": 0.13186813186813187, "no": 0.15036976170912078, "delta": -0.1379062931638645, "z": -8.893288239676243, "arm_delta": -0.01850162984098891, "arm_z": -1.2287811460593268, "base_label": "431+432", "bench": {"cozy": 0.824672390420244, "mahjong": 0.3344135696062884}, "n": {"prev": 1180, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "ctx_norec", "name": "추천 고갈(9220)/유저-일", "unit": "회", "want": "watch", "group": "부작용·공유", "kind": "rate", "cmp": "prev", "desc": "「추천 후보 세션당 1회」 변경의 직접 산출물 — 후보가 빨리 마르는지. 실측: 구 431에서 430건 → 신 438에서 13건으로 급감", "defchg": "", "prev": 0.7067796610169491, "new": 0.4913689281413087, "it": 0.5007849293563579, "no": 0.4815119145439606, "delta": -0.2154107328756404, "z": -8.096248383547945, "arm_delta": 0.019273014812397293, "arm_z": 0.6859004351417606, "base_label": "431+432", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 1180, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "ctx_delay", "name": "전환 지연 감지(8960)/유저-일", "unit": "회", "want": "watch", "group": "부작용·공유", "kind": "rate", "cmp": "prev", "desc": "신규 이벤트 — 15초(P2P)/20초(토너) 초과 시 채널 추천 중단 로직의 동작 증거. 신 빌드에만 발화하는 게 정상", "defchg": "", "prev": 0.0, "new": 0.046969088719389804, "it": 0.04945054945054945, "no": 0.04437140509449466, "delta": 0.046969088719389804, "z": null, "arm_delta": 0.0050791443560547905, "arm_z": 0.58440658701644, "base_label": "431+432", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 1180, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "ctx_to", "name": "전환 타임아웃(9210)/유저-일", "unit": "회", "want": "down", "group": "부작용·공유", "kind": "rate", "cmp": "prev", "desc": "「팝업 30초 자동닫힘 제거」로 <b>발생 자체가 중단</b>되는 게 정상 — 신 빌드에서 0이어야 함", "defchg": "", "prev": 0.044915254237288135, "new": 0.0, "it": 0.0, "no": 0.0, "delta": -0.044915254237288135, "z": null, "arm_delta": 0.0, "arm_z": null, "base_label": "431+432", "bench": {"cozy": 0.0, "mahjong": 0.0}, "n": {"prev": 1180, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}, {"key": "login", "name": "로그인 완료/유저-일", "unit": "회", "want": "flat", "group": "부작용·건전성", "kind": "rate", "cmp": "prev", "desc": "빌드 배포 시 기본 확인. 떨어지면 로딩·초기화 회귀 의심", "defchg": "", "prev": 1.490677966101695, "new": 1.5752709755118426, "it": 1.619309262166405, "no": 1.5291700903861956, "delta": 0.08459300941014769, "z": 1.9236160212769409, "arm_delta": 0.09013917178020936, "arm_z": 1.7915119461223443, "base_label": "431+432", "bench": {"cozy": 2.5280162675101674, "mahjong": 2.025511963042129}, "n": {"prev": 1180, "no": 1217, "it": 1274, "new": 2491, "b_cozy": 13278, "b_mahjong": 14503}}], "n_west": {"fin": 26520, "users": 1921, "sessions": 5963, "it": 974, "no": 947}};
+// 권역 토글 — 서구권이 판수의 대부분이지만 광고 노출 밀도가 달라 따로 볼 필요가 있다.
+let GEO = 'all';
+// 안정권(벤치 도달) 항목을 흐리게 볼지 — 기본 켬. 전체를 같은 밀도로 훑고 싶을 때 끈다.
+let DIM = true;
+function setGeo(g){ GEO = g; renderAll();
+applyDim(); }
+function setDim(v){ DIM = v; applyDim(); }
+function applyDim(){
+  const el = document.getElementById('groups');
+  if(el) el.className = DIM ? 'dimon' : '';
+  const b = document.getElementById('dimBtns');
+  if(b) b.innerHTML = [[true,'흐리게'],[false,'모두 보기']].map(([v,l])=>
+    `<button class="${DIM===v?'on':''}" onclick="setDim(${v})">${l}</button>`).join('');
+}
+const MET = () => (GEO === 'west' ? (P.metrics_west || P.metrics) : P.metrics);
+const num = n => n==null?'—':Math.round(n).toLocaleString();
+const f2 = (v,u) => v==null?'—':
+  u==='ratio' ? v.toFixed(3) :
+  u==='회'    ? v.toFixed(2)+'회' :
+  u==='회/판'  ? v.toFixed(3)+'회' :
+  (Math.abs(v)>=10?v.toFixed(1):v.toFixed(2))+'%';
+// 바이럴 지표 = IT 간섭 점검 대상이자 '비IT군 기준으로 읽어야 하는' 지표
+// 비IT군엔 값이 구조적으로 0인 지표(광고가 아예 안 돎) — 여기만 IT군이 판정 기준
+// 낮을수록 좋은 지표(벤치 대비 판정 방향이 반대)
+const DOWN_GOOD = ['failrate','post_split'];
+// 벤치 대비 '조건 충족' 허용 범위 — 이 안이면 더 볼 필요 없다고 보고 흐리게 처리한다
+const OK_BAND = 0.15;
+// ★정의 변경 지표의 벤치 비교 — 2026-08-08 클라 소스 대조로 '축이 같음' 확인, 보류 해제.
+//   3110 생성 성공: 코지 `ViewCozyTile.ts:2707` · 마종 `DataManager.ts:2319` 모두
+//     NetworkManager.tournamentUpdateScore() 응답에 errCode가 없을 때 기록 = 서버 등록 완료 기준.
+//     우리 신 정의와 동일하다 — 오히려 이전 정의가 벤치와 어긋나 있었다.
+//   3200 공유 시도: 코지 `ViewCozyTile.ts:2402`(getTournamentAsync 직전) ·
+//     마종 `DataManager.ts:2265`(shareTournament 직전) = 공유 API 호출 직전. 우리 신 정의와 동일.
+//   ⇒ 벤치 비교가 성립하므로 목록을 비운다. 전후 비교만 여전히 불가(정의 변경 뱃지는 유지).
+const BENCH_DEF_DIFF = [];
+const IT_ONLY_KEYS = ['it_over','it_quit','it_fin','pu_it','pg_it'];
+const VIRAL_KEYS = ['cr_rate_lk','sh_rate_lk','post_acc','post_split','post_vol','cr_vol','cr_acc','sh_vol','sh_acc',
+                    'msg_vol','ctx_acc','pu_cr','pu_sh','pu_po','pu_msg','pu_ctx',
+                    'pg_cr','pg_sh','pg_po','pg_msg','pg_ctx'];
+// 벤치 안정권 판정 — 지표 칩과 요약 카드가 반드시 같은 규칙을 쓰도록 한 곳에 둔다.
+// (한때 카드가 옛 중앙값 규칙으로 따로 세어 두 숫자가 어긋났다)
+function benchState(m){
+  const isAdKey = IT_ONLY_KEYS.includes(m.key);
+  const na = ['it_over','it_quit'].includes(m.key) ? '대응 지면 없음'
+           : m.key==='failrate' ? '게임 설계 종속'
+           : ['ctx_norec','ctx_delay','ctx_to'].includes(m.key) ? '벤치 이벤트 상이' : null;
+  const bv = Object.values(m.bench||{}).filter(v=>v!=null);
+  const mine = isAdKey ? m.it : m.no;
+  if(na || !bv.length || mine==null) return {ok:false, na, lo:null, hi:null, mine};
+  const lo=Math.min(...bv), hi=Math.max(...bv);
+  const ok = DOWN_GOOD.includes(m.key) ? (mine <= hi*(1+OK_BAND)) : (mine >= lo*(1-OK_BAND));
+  return {ok, na:null, lo, hi, mine};
+}
+
+const WANT = {up:['오를 것','p-up'], down:['내릴 것','p-down'],
+              flat:['변화 없어야','p-flat'], watch:['감시','p-watch']};
+
+function renderAll(){
+  // 권역 토글이 전체를 다시 그리도록 렌더를 한 함수로 묶는다.
+  document.getElementById('geoBtns').innerHTML =
+    [['all','글로벌'],['west','서구권 (NA+EU)']].map(([g,l])=>
+      `<button class="${GEO===g?'on':''}" onclick="setGeo('${g}')">${l}</button>`).join('');
+  document.getElementById('geoNote').innerHTML = GEO==='west'
+    ? `서구권 기준 · 신 빌드 <b>${num((P.n_west||{}).fin)}판</b> / 유저 ${num((P.n_west||{}).users)}명`
+    : `전 권역 합산`;
+  const _st = document.getElementById('stamp');
+  if(_st) _st.textContent = '갱신 ' + P.updated;
+  document.getElementById('tgt').textContent = num(P.target);
+  // 관측 진행도 권역에 따라 바뀌어야 한다(서구권만 볼 땐 그쪽 판수가 기준).
+  const W = P.n_west||{};
+  const N   = GEO==='west' ? (W.fin||0)      : P.n;
+  const NU  = GEO==='west' ? (W.users||0)    : P.n_users;
+  const NS  = GEO==='west' ? (W.sessions||0) : P.sessions;
+  const PCT = Math.min(100, Math.round(N / (P.target||1) * 100));
+  document.getElementById('nnow').innerHTML =
+    `${num(N)}<span style="font-size:15px;color:var(--mut);font-weight:700"> / ${num(P.target)}판 · ${PCT}%`+
+    `${NS?` · 세션 ${num(NS)}`:''}${NU?` · 유저 ${num(NU)}명`:''}</span>`;
+  document.getElementById('bar').style.width = PCT+'%';
+  document.getElementById('progNote').innerHTML =
+    (GEO==='west' ? '<b>서구권 기준</b> · ' : '') +
+    (N >= P.target
+      ? `<b style="color:var(--good)">1,000판 도달</b> — 이 시점의 액션 빈도로 빌드 이슈 유무를 1차 판단합니다`
+      : `${num(P.target)}판까지 <b>${num(Math.max(0,P.target-N))}판</b> 남음 — 그전 수치는 <b>방향만</b> 보세요`+
+        `${P.ab&&GEO!=='west'?` · IT군 ${num(P.fin_it)}판/세션 ${num(P.sess_it)} · 비IT군 ${num(P.fin_no)}판/세션 ${num(P.sess_no)}`:''}`);
+  
+  document.getElementById('banner').innerHTML = (P.deployed && !P.comparable)
+    ? `<div class="banner b-wait">🟢 <b>배포 감지 · 램프업 중</b> — 신 빌드가 로그에 잡히기 시작했습니다
+       (${[P.arm_it,P.arm_no].filter(Boolean).map(b=>`<b>#${b}</b> ${bnote(String(b))}`).join(' · ')}).<br>
+       아직 유저 <b>${num(P.n_users)}명</b>으로 비교 기준(${num(P.min_u)}명) 미만이라 <b>수치가 크게 튑니다</b> —
+       지금 값으로 판단하지 마세요. 유입이 쌓이면 자동으로 비교가 시작됩니다.
+       ${P.it_seen?'':'<br><span style="color:#B45309">IT 로그가 아직 0건이라 어느 쪽이 IT군인지 로그로 못 가릅니다 — 번호 기준(#438=A) 임시 표시이며, IT가 한 건이라도 들어오면 자동 정정됩니다.</span>'}</div>`
+    : !P.deployed
+    ? `<div class="banner b-wait">🟡 <b>패치 배포 대기</b> — 빌드 <b>${P.patch_min}</b> 이상이 아직 로그에 안 잡힙니다.
+       (현재 라이브: ${P.live_pair.map(b=>`<b>${b}</b> ${bnote(String(b))}`).join(' · ') || '—'})<br>
+       배포되면 자동으로 신 빌드를 잡고, <b>전면광고가 실제로 도는 쪽</b>을 IT군으로 판별해 비교를 시작합니다.
+       <span style="color:#B45309">패치 빌드 번호가 정해지면 생성기의 <code>PATCH_MIN_BUILD</code>를 그 값으로 맞춰주세요.</span></div>`
+    : P.ab
+    ? `<div class="banner b-live">🔵 <b>A/B 감지</b> — IT군 <b>빌드 ${P.arm_it}</b>(${bnote(String(P.arm_it))} · ${num(P.n_it)}명) ·
+       비IT군 <b>빌드 ${P.arm_no}</b>(${bnote(String(P.arm_no))} · ${num(P.n_no)}명) ·
+       직전 빌드 <b>${P.prev_build}</b>(${bnote(String(P.prev_build))})와도 비교 중.
+       ${P.n < P.target ? '아직 모수 미달이라 <b>관측 단계</b>입니다.' : '<b>모수 확보 완료.</b>'}</div>`
+    : `<div class="banner b-wait">🟡 <b>단일 빌드만 감지</b>(${P.new_label}) — 실험·대조 두 빌드가 아직 다 잡히지 않았습니다.
+       ①② 판정은 직전 빌드 ${P.prev_build}와의 비교로 진행하고, <b>IT 관련 지표는 arm이 갈릴 때까지 보류</b>합니다.</div>`;
+  
+  // 빌드 번호 옆에 항상 설명을 붙인다 — 번호만 보고 무슨 빌드인지 매번 찾는 일을 없앤다.
+  function bnote(b){
+    if(b==null||b==='—') return '';
+    if(P.notes && P.notes[b]) return P.notes[b];
+    if(Number(b) >= P.patch_min) return P.patch_note;
+    return '미기재';
+  }
+  const bl = b => b==null||b==='—' ? '—' : `${b}<div class="bnote">${bnote(b)}</div>`;
+  
+  const BLDS = (GEO==='west' ? (P.builds_west||P.builds) : P.builds);
+  document.getElementById('tBuilds').innerHTML =
+    `<thead><tr><th>빌드</th><th>설명</th><th>유저</th><th>세션</th><th>판수</th><th>유저-일</th><th>첫 로그</th><th>마지막</th><th>역할</th></tr></thead><tbody>`+
+    BLDS.map(b=>{
+      const role = b.build===P.arm_it ? '<span class="pill p-watch">IT군</span>'
+                 : b.build===P.arm_no ? '<span class="pill p-flat">비IT군</span>'
+                 : b.build===P.prev_build ? '<span class="pill p-down">직전(대조)</span>' : '';
+      return `<tr><td>${b.build}</td><td style="text-align:left;font-weight:600;color:var(--sub)">${bnote(String(b.build))}</td>
+        <td>${num(b.users)}</td><td>${num(b.sessions)}</td><td>${num(b.fin)}</td><td>${num(b.ud)}</td>
+        <td style="color:var(--mut);font-weight:600">${b.d0}</td>
+        <td style="color:var(--mut);font-weight:600">${b.d1}</td><td>${role}</td></tr>`;}).join('')+
+    `</tbody>`;
+  
+  (function(){
+    // ★14단계 × 4빌드를 막대로 나열하면 56개가 쌓여 오히려 못 읽는다.
+    //   '도달 시각'은 계속 커지기만 해서 차이가 안 보이는 것도 문제.
+    //   → 빌드당 한 줄 타임라인으로 바꾸고, 칠하는 값을 '직전 단계 대비 소요시간'으로 둔다.
+    //     그러면 어느 구간에서 시간이 먹히는지가 바로 보인다(가장 긴 구간은 빨갛게).
+    const I = P.intro||{}, bs = Object.keys(I).filter(b=>Number(b)>0).sort((x,y)=>y-x);
+    const el = document.getElementById('tIntro');
+    if(!bs.length){ el.innerHTML = `<div class="mdesc">해당 조건(서구권 신규 · 대상 빌드)에 인트로 로그가 없습니다</div>`; return; }
+    const short = e => e.replace(/^ALL_LOAD_/,'').replace(/^INTRO_/,'').replace(/_FINISH$/,'')
+                        .replace(/^1000_LOGIN_COMPLETE$/,'LOGIN_DONE').replace(/^1010_LOAD_COMPLETE$/,'LOAD_DONE');
+    // 빌드별 (단계, 누적초) → 구간 소요시간
+    const lanes = bs.map(b=>{
+      // ALL_INTRO_DEBUG_ERROR_98은 '단계'가 아니라 실패 이벤트다 — 타임라인에 넣으면
+      // 총 소요시간이 그쪽에 끌려간다(실측 총 17.96초 중 11.85초). 따로 표시한다.
+      const pts = P.intro_steps.filter(e=>e.indexOf('ERROR')<0 && I[b][e] && I[b][e].p50!=null)
+        .map(e=>({e, t:I[b][e].p50, n:I[b][e].n, p90:I[b][e].p90}))
+        .sort((x,y)=>x.t-y.t);
+      let prev=0; const segs=pts.map(pt=>{const d=Math.max(0, pt.t-prev); prev=pt.t; return {...pt, d};});
+      const err = I[b]['ALL_INTRO_DEBUG_ERROR_98'] || null;
+      return {b, segs, total: pts.length? pts[pts.length-1].t : 0, err};
+    });
+    const maxT = Math.max(...lanes.map(l=>l.total), 0.1);
+    // 계열 = (구 빌드, 신 빌드) 쌍. 로그에 실제로 있는 빌드만 남긴다.
+    const has = b => b && bs.includes(String(b));
+    const PAIRS = [{on:true, old:P.prev_it, nw:P.arm_it}, {on:false, old:P.prev_no, nw:P.arm_no}]
+      .map(x=>({...x, bs:[x.old, x.nw].filter(has)}));
+    const DBS = PAIRS.flatMap(x=>x.bs);
+    // ★표 순서는 선언 순서가 아니라 ★실제 측정된 누적초 순★이어야 한다.
+    //   선언 순서로 두면 1.91초 다음에 1.56초가 오고 ALL_LOAD_INTRO_FINISH(1.03초)가 끝자락에 붙어
+    //   '로그 순서'라는 라벨과 실제가 어긋난다. 실패 이벤트는 단계가 아니므로 항상 맨 끝.
+    const STARTS = ['INTRO_BUNDLE','INTRO_OBJECT_POOL'];
+    const medT = e => { const v = DBS.map(b=>I[b][e]&&I[b][e].p50).filter(x=>x!=null).sort((a,c)=>a-c);
+      return v.length ? v[Math.floor(v.length/2)] : 1e9; };
+    const ORD = P.intro_steps.filter(e=>DBS.some(b=>I[b][e]))
+      .sort((a,b)=>(a.indexOf('ERROR')>=0)-(b.indexOf('ERROR')>=0) || medT(a)-medT(b));
+    const SEP = PAIRS.filter(x=>x.bs.length).slice(0,-1)
+      .reduce((a,x)=>(a.push((a.length?a[a.length-1]:0)+x.bs.length), a), []);   // 계열 경계 열 인덱스
+    const isNew = b => String(b)===String(P.arm_it) || String(b)===String(P.arm_no);
+    // 신 열에 붙일 '구 대비' — ★같은 계열의 구 빌드와만 비교한다(광고 유무가 섞이면 의미가 없다).
+    const OLDOF = {}; PAIRS.forEach(x=>{ if(x.old && x.nw) OLDOF[String(x.nw)] = String(x.old); });
+    // 로딩은 느려지는 게 나쁨 — +면 빨강. 0.03초 미만은 노이즈라 '≈'로 눕힌다.
+    const vsOld = (b,e,c) => {
+      const ob = OLDOF[String(b)]; if(!ob) return '';
+      const o = I[ob] && I[ob][e]; if(!o || !o.p50) return '';
+      const dSec = c.p50 - o.p50, pct = dSec/o.p50*100;
+      if(Math.abs(dSec) < 0.03) return `<span class="vs" style="color:#A8AEC0">≈ 구</span>`;
+      return `<span class="vs" style="color:${dSec>0?'#DC2626':'#059669'}">${dSec>0?'+':''}${pct.toFixed(0)}%</span>`;};
+    // 실패 이벤트는 초가 아니라 발생 건수 — 도달률 차이를 %p로 본다.
+    const vsOldN = (b,e,c) => {
+      const ob = OLDOF[String(b)]; if(!ob) return '';
+      const o = I[ob] && I[ob][e]; if(!o) return '';
+      const a = reach(b,c.n), z = reach(ob,o.n); if(a==null || z==null) return '';
+      const d = a - z;
+      if(Math.abs(d) < 0.5) return `<span class="vs" style="color:#A8AEC0">≈ 구</span>`;
+      return `<span class="vs" style="color:${d>0?'#DC2626':'#059669'}">${d>0?'+':''}${d.toFixed(1)}%p</span>`;};
+    // 도달률 = 그 빌드 첫 단계(ALL_LOAD_FB) 표본 대비. 단계가 뒤로 갈수록 표본이 줄면 이탈이다.
+    const base0 = {}; bs.forEach(b=>{
+      const f = P.intro_steps.find(e=>I[b][e] && I[b][e].n);
+      base0[b] = f ? I[b][f].n : 0;});
+    const reach = (b,n) => base0[b] ? n/base0[b]*100 : null;
+    const rch = (b,c) => { const r=reach(b,c.n); return r==null?'':`<span class="rch">(${r.toFixed(0)}%)</span>`; };
+    // ★START이 있는 단계는 '완주율'(FINISH÷START)이 진짜 신호다.
+    //   도달률만 보면 미도달과 미완료가 섞인다 — OBJECT_POOL이 정확히 그 경우였다.
+    const startOf = {'INTRO_BUNDLE_FINISH':'INTRO_BUNDLE','INTRO_OBJECT_POOL_FINISH':'INTRO_OBJECT_POOL'};
+    const donePct = (b,e) => { const st=startOf[e]; if(!st) return null;
+      const a=I[b][st], c=I[b][e]; return (a&&c&&a.n) ? c.n/a.n*100 : null; };
+    const tip = (b,e,c,seg) => { const r=reach(b,c.n), dp=donePct(b,e);
+      return `${e}\n빌드 #${b} · 누적 ${c.t!=null?c.t.toFixed(2):c.p50.toFixed(2)}초`
+        + (seg&&seg.d>0?` · 이 구간 ${seg.d.toFixed(2)}초`:'')
+        + ` · p90 ${c.p90.toFixed(2)}초\n표본 ${num(c.n)}명`
+        + (r==null?'':` · 도달률 ${r.toFixed(1)}% (첫 단계 ${num(base0[b])}명 대비)`)
+        + (dp==null?'':`\n완주율 ${dp.toFixed(1)}% — ${startOf[e]} 찍힌 ${num(I[b][startOf[e]].n)}명 중 ${num(c.n)}명만 완료`)
+        + (()=>{ const ob=OLDOF[String(b)]; const o=ob&&I[ob]&&I[ob][e];
+            const mine = c.p50!=null ? c.p50 : c.t;   // 표 셀은 p50, 막대 세그먼트는 t로 들어온다
+            if(!o||!o.p50||mine==null) return '';
+            const ds=mine-o.p50;
+            return `\n같은 계열 구 #${ob} ${o.p50.toFixed(2)}초 대비 ${ds>0?'+':''}${ds.toFixed(2)}초 (${ds>0?'+':''}${(ds/o.p50*100).toFixed(1)}%)`;})();};
+    const PAL = ['#93B4F5','#6E9BE8','#4F8EF7','#7C9AD6','#9B87E0','#B5A6EA','#6FA98A','#8DC4A8'];
+    el.innerHTML =
+      `<div class="mchg" style="margin-bottom:9px">⚠️ <b>오브젝트 풀 프리로드 미완료</b> —
+         <code>INTRO_OBJECT_POOL</code>은 96~98% 찍히는데 <code>_FINISH</code>는 80~85%(신규·유저-일 기준).
+         로그 누락이 아니라 <code>preloadResources()</code> 미완료입니다(호출부 <code>BaseIntro.ts</code>에 분기 없음 ·
+         미완료 유저도 인트로는 완주). <b>단, 8/8 벤치 대조 결과 솔 고유 결함은 아닙니다</b> —
+         신규 유저 완주율(최근 5일·유저 기준) 솔 91.6% vs 코지 타일즈 92.2% vs 마종 저니 96.3%로
+         코지와 같은 수준. 3게임 공통 구조 현상이라 이슈레이징보다는 공통 개선 후보(마종만 +5%p 우위).</div></div>`+
+      `<div class="rvlegend"><span class="k" style="color:var(--mut)">막대 한 칸 = 직전 단계에서 그 단계까지 걸린 시간 · 가장 긴 구간은 <b style="color:#DC2626">빨강</b> · 마우스를 올리면 단계명과 누적 시각</span></div>`+
+      // ★빌드를 그냥 나열하면 '광고 유무'와 '패치 전후'가 섞여 읽힌다.
+      //   광고 켜진 계열(구→신)·꺼진 계열(구→신)로 묶어야 로딩 변화가 패치 때문인지 광고 때문인지 갈린다.
+      PAIRS.map(P2=>{
+        const ls = P2.bs.map(b=>lanes.find(l=>l.b===String(b))).filter(Boolean);
+        if(!ls.length) return '';
+        const o = lanes.find(l=>l.b===String(P2.old)), n = lanes.find(l=>l.b===String(P2.nw));
+        const dt = (o&&n) ? n.total-o.total : null;
+        return `<div class="ipair ${P2.on?'on':'off'}">
+          <div class="ipairhd">${P2.on?'🟠 전면광고 있는 계열':'🔵 전면광고 없는 계열'}
+            <span class="sub">#${P2.old||'—'} → #${P2.nw||'—'}</span>
+            ${dt==null?'':`<span class="dlt" style="color:${dt>0.15?'#DC2626':dt<-0.15?'#059669':'#5B6478'}">전후 ${dt>0?'+':''}${dt.toFixed(2)}초</span>`}</div>`
+          + ls.map(l=>{
+        const worst = l.segs.reduce((m,x)=>x.d>m.d?x:m, {d:-1});
+        return `<div class="lane">
+          <div class="lanelab"><b>${String(l.b)===String(P2.nw)?'신':'구'} #${l.b}</b><span class="rvsub">${bnote(String(l.b))}</span></div>
+          <div class="lanebar">`+
+            l.segs.map((x,i)=>{
+              const w=x.d/maxT*100, isW=(x===worst && x.d>0.15);
+              return `<i style="width:${w}%;background:${isW?'#DC2626':PAL[i%PAL.length]}"
+                data-tip="${tip(l.b, x.e, x, x)}">${w>9?short(x.e).slice(0,12):''}</i>`;
+            }).join('')+
+          `</div>
+          <div class="lanetot">${l.total.toFixed(2)}초<span class="rvn">최장 ${short(worst.e||'')} ${worst.d>0?worst.d.toFixed(2)+'초':''}${l.err?` · <b style="color:#DC2626">인트로 실패 ${num(l.err.n)}</b>`:''}</span></div>
+        </div>`;}).join('') + `</div>`;}).join('')
+      // 펼치면 로그 순서 그대로 단계별 누적초를 전부 볼 수 있게 — 막대는 개요, 표는 정밀 확인용
+      + `<details class="sq" style="margin-top:10px"><summary>단계별 상세 — 로그 순서 · 누적초(+직전 대비 구간)</summary>
+         <div class="tscroll"><table class="itbl" style="margin:8px 0 4px">
+         <thead>
+           <tr><th rowspan="2" class="stepcol" style="vertical-align:bottom">단계</th>
+             ${PAIRS.filter(x=>x.bs.length).map(x=>`<th class="grphd ${x.on?'on':'off'}" colspan="${x.bs.length}">${x.on?'🟠 전면광고 있는 계열':'🔵 전면광고 없는 계열'}</th>`).join('')}</tr>
+           <tr>${DBS.map((b,i)=>`<th class="bcol${SEP.includes(i)?' gsep':''}">${isNew(b)?'신':'구'} <b>#${b}</b></th>`).join('')}</tr>
+         </thead><tbody>`
+      + ORD.map((e,oi)=>{
+          const isErr = e.indexOf('ERROR')>=0, isSt = STARTS.includes(e);
+          return `<tr><td class="stepcol" style="font-family:ui-monospace,Menlo,monospace;font-size:11px;${isErr?'color:#DC2626;':''}font-weight:700">`
+          + `<span class="idx">${isErr?'!':String(oi+1).padStart(2,'0')}</span>${e}`
+          + (isErr?' <span class="pill p-miss">실패 이벤트</span>':isSt?' <span class="pill p-hold">시작</span>':'')+`</td>`
+          + DBS.map((b,i)=>{const sep=SEP.includes(i)?' gsep':''; const c=I[b][e];
+              if(!c) return `<td class="${sep}" style="color:#C3C9D6">—</td>`;
+              if(isErr) return `<td class="${sep}" data-tip="${tip(b,e,c)}" style="color:#DC2626">n ${num(c.n)}${rch(b,c)}${vsOldN(b,e,c)}</td>`;
+              const lane=lanes.find(x=>x.b===b), seg=lane&&lane.segs.find(x=>x.e===e);
+              const dp = donePct(b,e);
+              return `<td class="${sep}" data-tip="${tip(b,e,c,seg)}"><b>${c.p50.toFixed(2)}초</b>`
+                + (seg&&seg.d>0?` <span style="font-size:10.5px;color:#9AA0B8">+${seg.d.toFixed(2)}</span>`:'')
+                + (dp!=null && dp<95
+                    ? ` <span class="rch" style="color:#DC2626">완주 ${dp.toFixed(0)}%</span>`
+                    : rch(b,c))
+                + vsOld(b,e,c) + `</td>`;}).join('')+`</tr>`;}).join('')
+      + `</tbody></table></div>
+         <div class="mdesc">누적초 = ALL_LOAD_FB 최초 발생으로부터의 p50 · +숫자 = 직전 단계 대비 구간 소요 ·
+           행 순서 = <b>실제 측정된 누적초 순</b>(선언 순서가 아님) · 괄호 = <b>도달률</b>(그 빌드 첫 단계 표본 대비) ·
+           START이 있는 단계는 <b style="color:#DC2626">완주율</b>(FINISH ÷ START, 95% 미만일 때만) ·
+           <b>신 열의 색 숫자</b> = 같은 계열 구 빌드 대비 증감(<b style="color:#DC2626">+ 느려짐</b> /
+           <b style="color:#059669">− 빨라짐</b>, 0.03초 미만은 <span style="color:#A8AEC0">≈ 구</span>) ·
+           셀에 마우스를 올리면 전체 로그명·구간·p90·표본·구 대비 초</div></details>`;
+  })();
+  
+  // 말풍선 — 이벤트 위임이라 다시 그려도 다시 붙일 필요가 없다.
+  (function(){
+    const tipEl = document.getElementById('tip');
+    let cur = null;
+    document.addEventListener('mouseover', ev => {
+      const t = ev.target.closest ? ev.target.closest('[data-tip]') : null;
+      if(!t){ if(cur){ tipEl.style.display='none'; cur=null; } return; }
+      if(t===cur) return;
+      cur = t;
+      tipEl.innerHTML = t.getAttribute('data-tip').replace(/^([^\n]+)/, '<b>$1</b>');
+      tipEl.style.display = 'block';
+    });
+    document.addEventListener('mousemove', ev => {
+      if(!cur) return;
+      const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+      // 화면 밖으로 나가지 않게 — 오른쪽/아래 끝에서는 커서 반대편으로 뒤집는다.
+      tipEl.style.left = Math.min(ev.clientX + 14, window.innerWidth  - w - 10) + 'px';
+      tipEl.style.top  = (ev.clientY + h + 22 > window.innerHeight ? ev.clientY - h - 12
+                                                                  : ev.clientY + 18) + 'px';
+    });
+    document.addEventListener('mouseout', ev => {
+      if(cur && !ev.relatedTarget) { tipEl.style.display='none'; cur=null; }
+    });
+  })();
+
+  document.getElementById('sqlbox').innerHTML = (P.sql||[]).map(([t,q])=>
+    `<details class="sq"><summary>${t}</summary><pre>${q.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</pre></details>`
+  ).join('') + `<div class="note" style="margin-top:10px">
+    <code>&lt;시작&gt;</code>·<code>&lt;끝&gt;</code>에 날짜를 넣어 <code>bq query --nouse_legacy_sql --max_rows=100000</code>로 실행하세요.
+    <b>--max_rows를 빼면 100행에서 잘립니다.</b></div>`;
+  
+  // 판정 — 기대 방향과 실제 움직임이 맞는지. 모수 미달이면 무조건 보류.
+  function verdict(m){
+    // 로그 정의가 바뀐 지표는 전후 비교 자체가 성립하지 않는다 — 회귀로 오진하지 않도록 막는다.
+    if(m.defchg && m.cmp==='prev') return ['비교 불가','p-hold'];
+    if(m.cmp==='arm' && !P.ab) return ['A/B 대기','p-hold'];
+    const NN = GEO==='west' ? ((P.n_west||{}).fin||0) : P.n;
+  if(NN < P.target) return ['관측 중','p-hold'];
+    if(m.delta==null)  return ['—','p-hold'];
+    const sig = (m.z!=null && Math.abs(m.z)>=1.96);
+    // z를 못 구하는 경우(건수 부족)는 '미달'이 아니라 판정 보류다 — 9210처럼 신 빌드 0회(=정상)가
+    // 건수 부족으로 z가 없어 '미달'로 찍히는 오판을 막는다. 0 도달이 목표인 지표는 값으로 판정.
+    if(m.want==='down' && m.new===0 && m.prev>0) return ['기대대로 · 0 도달','p-hit'];
+    if(m.z==null && m.delta!=null && (m.want==='up'||m.want==='down'))
+      return ['건수 부족','p-hold'];
+    if(m.want==='up')   return m.delta>0 && sig ? ['기대대로','p-hit'] : ['미달','p-miss'];
+    if(m.want==='down') return m.delta<0 && sig ? ['기대대로','p-hit'] : ['미달','p-miss'];
+    // flat/watch: 유의하게 움직였으면 사이드 이펙트
+    const ax = m.cmp==='arm' ? 'IT군 차이' : '전후 변화';
+  return sig ? [ax+' 있음','p-miss'] : [ax+' 없음','p-hit'];
+  }
+  
+  // ── 한눈에 보기 — 글을 읽지 않아도 상태가 보이게 신호등으로 ─────
+  (function(){
+    const el=document.getElementById('summary'); if(!el) return;
+    const M=k=>MET().find(x=>x.key===k)||{};
+    const bmedOf=m=>{const b=Object.values(m.bench||{}).filter(v=>v!=null).sort((a,b)=>a-b);
+      return b.length?b[Math.floor(b.length/2)]:null;};
+    const cards=[];
+    // ① 등록 로그 분리
+    const sp=M('post_split'), pa=M('post_acc');
+    cards.push({t:'① 토너먼트 등록 로그 분리', v:pa.no==null?'—':pa.no.toFixed(0)+'%',
+      sub:`분리여부 ${sp.no==null?'—':sp.no.toFixed(3)} (1.000이면 미분리)`,
+      ok:(sp.no!=null&&sp.no<0.3)&&(pa.no!=null&&pa.no>90), lab:'등록 성공률'});
+    // ② 포기 경로
+    const fr=M('failrate');
+    cards.push({t:'② 판 포기 시 다이얼로그 제거', v:fr.new==null?'—':fr.new.toFixed(2)+'%',
+      sub:`구 ${fr.prev==null?'—':fr.prev.toFixed(2)}% → 신 · 변화 없어야 정상`,
+      ok:(fr.z==null||Math.abs(fr.z)<1.96), lab:'실패(포기) 비중'});
+    // RV 잠식
+    const R=(P.rv_watch||{})[GEO==='west'?'west':'all']||{};
+    const A=R[P.arm_it], B=R[P.arm_no];
+    const rr=(A&&B&&B.users&&A.users)?(A.rv/A.users)/(B.rv/B.users):null;
+    cards.push({t:'RV 잠식', v:rr==null?'—':(rr*100).toFixed(0)+'%',
+      sub:'IT군 RV ÷ 비IT군 RV · 100%면 잠식 없음', ok:(rr!=null&&rr>=0.7), lab:'잠식 정도'});
+    // 광고 총량 vs 벤치
+    const tot=(x)=>x&&x.fin?(x.rv+x.it)/x.fin:null;
+    const bt=Object.values((GEO==='west'?P.rv_bench_west:P.rv_bench)||{}).map(v=>v.pg_rv+v.pg_it).sort((a,b)=>a-b);
+    const btm=bt.length?bt[Math.floor(bt.length/2)]:null;
+    const ta=tot(A);
+    cards.push({t:'판당 총광고 (RV+IT)', v:ta==null?'—':ta.toFixed(2),
+      sub:`벤치 ${btm==null?'—':btm.toFixed(2)} 대비 ${(ta&&btm)?(ta/btm*100).toFixed(0)+'%':'—'}`,
+      ok:(ta!=null&&btm!=null&&ta/btm>=0.8), lab:'IT군 기준'});
+    // 대조군 IT 누출 — 0이 정상
+    const lk = P.leak||{};
+    cards.push({t:'대조군 IT 누출', v:`${num(lk.users||0)}명`,
+      sub:`노출 ${num(lk.n||0)}건 · <b>0명이 정상</b> — 늘어나면 A/B 오염`,
+      ok:(lk.users||0)===0, lab:`#${P.arm_no||'—'} 기준`});
+    // 안정권 / 볼 곳 — 지표 칩과 동일한 benchState 규칙으로 센다
+    let okN=0, watchN=0;
+    MET().forEach(m=>{const st=benchState(m);
+      if(st.na || st.mine==null || st.lo==null) return;
+      st.ok ? okN++ : watchN++; });
+    el.innerHTML =
+      `<div class="sumgrid">`+
+      cards.map(c=>`<div class="sumcard ${c.ok?'s-ok':'s-warn'}">
+         <div class="s-t">${c.t}</div>
+         <div class="s-v">${c.v}<span class="s-l">${c.lab}</span></div>
+         <div class="s-s">${c.sub}</div></div>`).join('')+
+      `<div class="sumcard s-neutral">
+         <div class="s-t">벤치 대비 현황</div>
+         <div class="s-v">${okN}<span class="s-l">안정권 / 볼 곳 ${watchN}</span></div>
+         <div class="s-bar"><i style="width:${okN+watchN?okN/(okN+watchN)*100:0}%"></i></div>
+         <div class="s-s">코지·마종 런칭 동기간 <b>범위</b> 기준(하한 −15% 이상) — 지표 칩과 동일 규칙</div></div>`+
+      `</div>`;
+  })();
+
+  // ── RV 잠식 추적 ────────────────────────────────────────────
+  // 시각별 여러 줄로 쌓으면 '지금 이게 괜찮은 수치인지'가 안 읽힌다.
+  // 최신 시각 한 줄로 두고, 벤치 런칭 동기간을 같은 표에 넣어 기준선과 나란히 본다.
+  (function(){
+    const el = document.getElementById('rvw'), R = P.rv_watch||{};
+    const geoKey = (GEO==='west') ? 'west' : 'all';
+    const A = (R[geoKey]||{})[P.arm_it], B = (R[geoKey]||{})[P.arm_no];
+    if(!P.ab || !A || !B){ el.innerHTML = `<div class="mdesc">실험·대조 두 빌드가 잡히면 표시됩니다.</div>`; return; }
+    const RB = (GEO==='west' ? (P.rv_bench_west||P.rv_bench) : P.rv_bench)||{}, bk = Object.keys(RB);
+    const pu = x => x.users ? x.rv/x.users : null;
+    const pgR = x => x.fin ? x.rv/x.fin : null;
+    const pgI = x => x.fin ? x.it/x.fin : null;
+    const f3 = v => v==null ? '—' : v.toFixed(3);
+    const f2b = v => v==null ? '—' : v.toFixed(2)+'회';
+    // 판당 총광고(RV+IT) 구성을 가로 누적 막대로 — 표 숫자만으로는
+    // '총량이 벤치 수준인가'와 '그 안에서 RV 비중이 얼마인가'가 한눈에 안 들어온다.
+    const rows = [
+      {lab:`솔 비IT군 #${P.arm_no}`, sub:'IT 없음 · 순수 RV', rv:pgR(B), it:pgI(B), pu:pu(B), n:B.users, me:1},
+      {lab:`솔 IT군 #${P.arm_it}`,  sub:'IT 켜짐 — 벤치와 맞댈 대상', rv:pgR(A), it:pgI(A), pu:pu(A), n:A.users, me:2},
+      ...bk.map(k=>({lab:RB[k].name, sub:`런칭 D+${P.sol_dn[0]}~${P.sol_dn[1]} · IT 켜진 상태`,
+                     rv:RB[k].pg_rv, it:RB[k].pg_it, pu:RB[k].pu_rv, n:RB[k].users, me:0})),
+    ];
+    const maxTot = Math.max(...rows.map(r=>(r.rv||0)+(r.it||0)), 0.01);
+    const bar = rows.map(r=>{
+      const tot=(r.rv||0)+(r.it||0);
+      const wR=(r.rv||0)/maxTot*100, wI=(r.it||0)/maxTot*100;
+      const nameCol = r.me===1 ? '#1D4ED8' : r.me===2 ? '#7C3AED' : '#2CB87A';
+      return `<div class="rvrow">
+        <div class="rvlab"><b style="color:${nameCol}">${r.lab}</b>
+          <span class="rvsub">${r.sub}</span></div>
+        <div class="rvbar">
+          ${wR>0?`<i class="seg-rv" style="width:${wR}%" title="판당 RV ${f3(r.rv)}">${wR>12?'RV '+f3(r.rv):''}</i>`:''}
+          ${wI>0?`<i class="seg-it" style="width:${wI}%" title="판당 IT ${f3(r.it)}">${wI>12?'IT '+f3(r.it):''}</i>`:''}
+        </div>
+        <div class="rvtot">${f3(tot)}<span class="rvn">${num(r.n)}명</span></div>
+      </div>`;}).join('');
+
+    const ratio = (pu(A)!=null && pu(B)) ? pu(A)/pu(B) : null;
+    const thin = Math.min(A.users,B.users) < 30;
+    el.innerHTML =
+      `<div class="mhead"><span class="mname">${GEO==='west'?'서구권 (NA+EU)':'글로벌'} · 신 빌드 등장 후 누적 · ${P.updated} 기준</span>
+        ${thin?'<span class="pill p-hold">표본 부족 n&lt;30</span>':''}
+        <span class="sp"></span>
+        <span class="pill ${ratio!=null&&ratio<0.7?'p-miss':'p-hit'}">IT군 RV = 비IT군의 ${ratio==null?'—':(ratio*100).toFixed(0)+'%'}</span></div>
+      <div class="rvlegend"><span class="k"><i class="seg-rv"></i>리워드(RV)</span>
+        <span class="k"><i class="seg-it"></i>전면(IT)</span>
+        <span class="k" style="color:var(--mut)">막대 길이 = 판당 광고 노출 · 우측 숫자 = 판당 총광고</span></div>
+      ${bar}
+      <div class="mdesc" style="margin-top:8px">
+        <b>벤치는 IT가 켜진 상태</b>라 <b>솔 IT군</b>과 맞대야 '잠식 후 수준이 정상인지'가 판정됩니다.
+        비IT군이 높은 건 광고를 <b>RV로만 소비</b>하기 때문이라 그 자체가 기준선은 아닙니다 —
+        실질 지표는 <b>판당 총광고(RV+IT)</b>가 벤치와 비슷해지는지입니다.<br>
+        ※벤치 IT는 <b>지면 필터 없이 전체</b>를 셉니다(지면 이름이 게임마다 다름 — 코지는
+        <code>stage_start</code>·<code>stage_retry</code>가 주력, 우리는 <code>game_over</code>·<code>game_quit</code>).
+        <b>판 시작에도 트는 벤치 vs 판 종료에만 트는 우리</b>는 지면 전략 자체가 다릅니다.</div>`;
+  })();
+
+  // ── IT 간섭 점검 ────────────────────────────────────────────
+  (function(){
+    const el = document.getElementById('mix');
+    const ms = MET().filter(m=>VIRAL_KEYS.includes(m.key) && m.arm_z!=null);
+    if(!P.ab){ el.innerHTML = `<div class="mdesc">실험·대조 두 빌드가 아직 안 잡혀 점검할 수 없습니다.</div>`; return; }
+    if(!ms.length){ el.innerHTML =
+      `<div class="mdesc"><b>표본 부족</b> — 빌드별 분모가 아직 검정 기준(30)에 못 미쳐 z를 낼 수 없습니다.
+       현재 IT군 ${num(P.n_it)}명 / 비IT군 ${num(P.n_no)}명. 이 상태의 두 빌드 간 차이는 <b>대부분 노이즈</b>이니
+       지금 합산 여부를 결론내지 마세요.</div>`; return; }
+    const sig = ms.filter(m=>Math.abs(m.arm_z)>=1.96);
+    const head = sig.length
+      ? `<div class="mhead"><span class="mname">⚠️ 간섭 의심 — 바이럴 지표 ${sig.length}/${ms.length}개에서 실험·대조 간 유의차</span>
+         <span class="pill p-miss">분리 권장</span></div>
+         <div class="mdesc">합산하면 IT에 눌린 값과 안 눌린 값이 섞입니다.
+         <b>바이럴 판정은 비IT군(#${P.arm_no}) 단독</b>으로 보세요.</div>`
+      : `<div class="mhead"><span class="mname">✅ 간섭 신호 없음 — 바이럴 지표 ${ms.length}개 모두 실험·대조 간 유의차 없음</span>
+         <span class="pill p-hit">합산 타당</span></div>
+         <div class="mdesc">신 합산(모수 2배)으로 봐도 됩니다.</div>`;
+    const rows = ms.slice().sort((a,b)=>Math.abs(b.arm_z)-Math.abs(a.arm_z)).map(m=>{
+      const s2 = Math.abs(m.arm_z)>=1.96;
+      return `<tr><td>${m.name}</td>
+        <td style="color:#1D4ED8;font-size:14px">${f2(m.no,m.unit)}</td>
+        <td style="color:#9AA0B8;font-weight:700">${f2(m.it,m.unit)}</td>
+        <td style="color:${s2?'#DC2626':'#5B6478'}">${m.arm_delta>0?'+':''}${f2(m.arm_delta,m.unit)}</td>
+        <td style="color:var(--mut)">${m.arm_z.toFixed(1)}</td>
+        <td>${s2?'<span class="pill p-miss">유의</span>':'<span class="pill p-flat">차이 없음</span>'}</td></tr>`;}).join('');
+    el.innerHTML = head + `<div class="tscroll"><table style="margin-top:10px">
+      <thead><tr><th>바이럴 지표</th><th style="color:#1D4ED8">비IT군 #${P.arm_no} · 판정 기준</th>
+      <th style="color:#B6BBC9">IT군 #${P.arm_it}</th>
+      <th>IT−비IT</th><th>z</th><th>판정</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  })();
+  
+  const G = {};
+  MET().forEach(m => (G[m.group]=G[m.group]||[]).push(m));
+  const GORD = (P.groups||Object.keys(G)).filter(g=>G[g] && G[g].length);
+  document.getElementById('groups').innerHTML = GORD.map(g=>{
+    // 벤치 열은 ★항상 그린다 — 비교가 안 되는 지표만 값을 '비교 불가'로 두고 사유를 라벨에 남긴다.
+    //   열을 빼버리면 지표마다 칸 수가 달라져 세로로 훑을 수가 없다.
+    const showBench = true;
+    const BK = Object.keys(P.bench||{});
+    // 소스 고정 비교 — 벤치 갭에서 유입 믹스를 걷어낸 값. 허브 가입 유저만·각 게임 런칭 동기간.
+    const hubLine = () => { const h=P.hub_cmp||{};
+      if(!h.sol || !h.sol.users) return '';
+      const f=(x,k)=>h[x]&&h[x][k?'ud':'users'] ? (h[x].fin/(k?h[x].ud:h[x].users)).toFixed(1) : '—';
+      const fm=(x,num,den)=>h[x]&&h[x][den]?(h[x][num]/h[x][den]).toFixed(num==='msg_ok'?3:2):'—';
+      const rc=x=>h[x]&&h[x].users?(h[x].msg_senders/h[x].users*100).toFixed(1):'—';
+      return `<br><b>유입 소스를 고정하면 갭이 대부분 사라집니다</b> — 웹게임 허브 가입 유저만·각 게임 런칭 동기간
+        (D+${P.sol_dn[0]}~${P.sol_dn[1]}) 실측:
+        인당 판수 솔 <b>${f('sol')}</b> vs 코지 ${f('cozy')} · 마종 ${f('mahjong')} ·
+        인당 메세지 성공 솔 <b>${fm('sol','msg_ok','users')}</b> vs 코지 ${fm('cozy','msg_ok','users')} · 마종 ${fm('mahjong','msg_ok','users')}
+        (마종과 동급) · 메세지 도달률(1회+ 발송 유저 비중)은 솔 ${rc('sol')}%로 벤치(${rc('cozy')}·${rc('mahjong')}%)보다 오히려 높습니다.
+        ※동기간 비교도 유입 퀄리티·네트워크 규모까지는 못 맞춥니다(코지는 D+0~26 누적 신규 10.2만 vs 솔 2.6만) —
+        전체 기준 벤치 갭의 1차 원인은 제품이 아니라 <b>유입 믹스 + 네트워크 규모</b>입니다.`;};
+    const PU_ACT_KEYS = ['pu_fin','pu_it','pu_rv'];
+    const rows = G[g].map(m=>{
+      const [wl,wc] = WANT[m.want];
+      const [vl,vc] = verdict(m);
+      const d = m.delta==null ? '—'
+        : `<b style="color:${m.delta>0?'#059669':m.delta<0?'#DC2626':'#5B6478'}">${m.delta>0?'+':''}${f2(m.delta,m.unit)}</b>`;
+      const RV_KEYS = ['rv_vol','pu_rv','pg_rv'];
+      const axis = m.cmp!=='arm' ? '신 − 구'
+                 : RV_KEYS.includes(m.key) ? 'IT−비IT · 잠식 점검' : 'IT군 − 비IT군';
+      // ★'arm 비교'라고 다 IT군이 기준인 건 아니다.
+      //   IT 전용 지표만 비IT군에 값이 구조적으로 0이라 IT군이 기준이 된다.
+      //   RV는 두 빌드 모두에 들어가 있으므로 순수값은 IT 간섭이 없는 비IT군이다 —
+      //   arm 비교는 'IT가 RV를 잠식하는가' 점검이지 IT군을 표준으로 삼는 게 아니다.
+      const isAd = IT_ONLY_KEYS.includes(m.key);
+      // 값 옆 괄호 = 그 값의 분모(모수). 비율만 보면 '3건 중 2건'도 66.7%로 보인다.
+      const nn = k => (m.n && m.n[k]!=null) ? `<span class="base">(${num(m.n[k])})</span>` : '';
+      const cell = (k,v,cls='',nk=null) =>
+        `<div class="st ${cls}"><div class="k">${k}</div><div class="v">${v}${nk?nn(nk):''}</div></div>`;
+
+      // 벤치 안정권/비교 불가 판정은 benchState() 한 곳에서 — 요약 카드와 규칙 공유(사유 주석도 그쪽에).
+    const st = benchState(m);
+    const NA_REASON = st.na;
+    const noBench = !!NA_REASON;
+    const defDiff = BENCH_DEF_DIFF.includes(m.key);
+    const okBench = st.ok;
+    const bTip = st.lo!=null ? `벤치 범위 ${f2(st.lo,m.unit)} ~ ${f2(st.hi,m.unit)} · 우리 ${f2(st.mine,m.unit)}`
+               : defDiff ? '우리만 정의가 좁아져 벤치(옛 정의)와 축이 다릅니다' : '';
+    // '벤치 안정권'과 '유의한 움직임'은 서로 다른 축이라 동시에 성립할 수 있다.
+    // 그때는 볼 곳이므로 흐리게 처리하지 않는다.
+    const moved = (vl.indexOf('있음') >= 0);
+    const dimIt = okBench && !moved;
+    const bench = BK.map(k => (noBench || defDiff)
+      ? cell(`<b>${P.bench[k].name}</b> <span style="color:#C0C5D2">${NA_REASON || '정의 축 다름'}</span>`,
+             defDiff ? `<span style="font-size:13px;color:#9AA0B8">${f2(m.bench&&m.bench[k],m.unit)}</span>`
+                     : '<span style="font-size:12px;color:#B6BBC9">비교 불가</span>', 'dim')
+      : cell(m.group==='인당 볼륨'
+             ? (PU_ACT_KEYS.includes(m.key)
+                ? `<b>${P.bench[k].name}</b> 부스트후 D+${P.pu_dn[0]}~${P.pu_dn[1]} · 관측일수 일치(${P.days_new}일)`
+                : `<b>${P.bench[k].name}</b> 런칭 동기간 D+${P.sp_dn[0]}~${P.sp_dn[1]} · 관측일수 일치(${P.days_new}일)`)
+             : `<b>${P.bench[k].name}</b> 런칭 D+${P.sol_dn[0]}~${P.sol_dn[1]}`,
+             f2(m.bench&&m.bench[k],m.unit), 'bench', 'b_'+k)).join('');
+      return `<div class="mrow${dimIt?' met-ok':''}">
+        <div class="mhead">
+          <span class="mname">${m.name}</span>
+          <span class="pill exp ${wc}" title="사전에 세운 기대">${wl}</span>
+          ${m.defchg?'<span class="pill exp p-hold" title="전제 — 로그 정의가 바뀌어 전후 비교 불가">정의 변경</span>':''}
+          <span class="sp"></span>
+          <span class="reswrap">
+            ${okBench?`<span class="res r-stable" title="${bTip}">벤치 안정권</span>`:''}
+            ${defDiff?`<span class="res r-defdiff" title="${bTip}">벤치 판정 보류</span>`:''}
+            <span class="res ${vc}">${vl}</span>
+          </span>
+        </div>
+        <div class="mdesc">${m.desc}</div>
+        ${m.defchg?`<div class="mchg">⚠️ <b>로그 정의 변경</b> — ${m.defchg}<br>
+          정의가 바뀌면 값이 움직이는 게 정상이라 <b>전후 비교로 회귀를 판정하면 안 됩니다.</b></div>`:''}
+        <div class="stats">
+          ${cell(`<b>구 ${m.base_label}</b> ${isAd?'전면광고 있던 빌드':'8/6 A/B 두 빌드 합산'}`, f2(m.prev,m.unit), '', 'prev')}
+          ${cell(`<b>비IT군</b> ${P.arm_no?('#'+P.arm_no):'미배포'}${isAd?'':' · 판정 기준'}`, f2(m.no,m.unit), isAd?'dim':'noit', 'no')}
+          ${cell(`<b>IT군</b> ${P.arm_it?('#'+P.arm_it):'미배포'}${isAd?' · 판정 기준':''}`, f2(m.it,m.unit), isAd?'noit':'dim', 'it')}
+          ${cell(`<b>신 합산</b> ${P.new_label==='—'?'미배포':P.new_label}`, f2(m.new,m.unit), 'new', 'new')}
+          ${cell(`<b>차이</b> ${axis}`, d + (m.z==null?'':` <span style="font-size:11px;color:#9AA0B8;font-weight:700">z ${m.z.toFixed(1)}</span>`), 'diff')}
+          ${bench}
+        </div>
+      </div>`;}).join('');
+    return `<h2>${g}<span class="h2s">${g==='판정'?'패치가 겨냥한 지표':g==='인당 볼륨'?'유저 1명당 몇 번 — 벤치는 부스트후 창(D+60~)·관측일수 일치':g==='판당 볼륨'?'완료 판 1판당 몇 번 — 활동량이 아니라 판 단위 발생 빈도':'이 패치가 건드린 코드 경로에서 흔들릴 수 있는 지표'}</span></h2>
+      <div class="card">${rows}</div>`+
+      (showBench ? `<div class="note" style="margin-top:-6px">
+        <b>벤치는 '런칭 동기간'입니다</b> — 바이럴 지표는 친구 수에 묶여 있고 친구는 시간이 지나며 쌓이므로,
+        런칭 7개월째인 코지의 <b>현재값</b>과 붙이면 우리가 구조적으로 불리합니다.
+        솔의 현재 경과일(<b>D+${P.sol_dn[0]}~${P.sol_dn[1]}</b>, 런칭 ${P.sol_launch})과 <b>같은 자리</b>를
+        각 게임 자기 런칭 기준으로 잘라 비교합니다 (${BK.map(k=>P.bench[k].name+' '+P.bench[k].window).join(' · ')}).<br>
+        <b>벤치 '현재값'은 쓰지 않습니다</b> — 2026-08-07 실측상 성숙도 편향이 크고 비단조입니다
+        (코지 인당 포스트 1.44 → 2.01 → <b>0.83</b>회로 오히려 감소 · 마종 인당 메세지 0.38 → 1.8 → 2.88회로 7.6배).
+        현재값을 기준선으로 삼으면 목표가 부풀려지거나 방향이 뒤집힙니다.
+        다만 <b>수락률 같은 비율형은 창을 바꿔도 거의 안 움직여</b>(포스트 수락률 99.0~99.7%) 이번 패치 핵심 지표의 판정은 창과 무관합니다.<br>
+        <b>퍼블마는 제외</b> — 게임 방식이 달라 P2P·토너 구조가 대응되지 않습니다.</div>` : '') +
+      (g==='인당 볼륨' ? `<div class="note" style="margin-top:-6px">
+        <b>인당 벤치는 지표 성격으로 갈립니다</b> — <b>활동성(판수·IT·RV)은 부스트후 창(D+${P.pu_dn[0]}~${P.pu_dn[1]})</b>:
+        런칭 동기간은 부스트 코호트가 볼륨을 부풀립니다(8/8 실측: 코지 인당 판수 D+22~23 <b>14.1</b> → D+60~61 <b>9.4</b>, −33%).
+        <b>바이럴(토너·공유·메세지)은 런칭 동기간(D+${P.sp_dn[0]}~${P.sp_dn[1]})</b>: 친구 수에 묶여
+        시간이 지날수록 커지므로 성숙한 벤치를 대면 우리가 부당하게 나빠 보입니다.
+        아울러 <b>관측일수 일치(${P.days_new}일)</b> — 인당 지표는 창이 길수록 커지므로 벤치 창을 신 빌드
+        관측일수만큼만 자릅니다(관측이 길어지면 매일 따라 늘어남).${hubLine()}</div>` : '');
+  }).join('');
+  
+  (function(){
+    // 지면 구성은 표보다 누적 막대가 낫다 — '어느 지면이 몇 %'가 바로 읽힌다.
+    const bs = (GEO==='west' ? (P.builds_west||P.builds) : P.builds).filter(b=>b.pos && b.pos.length);
+    const el = document.getElementById('tPos');
+    if(!bs.length){ el.innerHTML = `<div class="mdesc">해당 조건에 전면광고 노출 로그가 없습니다</div>`; return; }
+    const KNOWN=['game_over','game_quit'];
+    const COL={game_over:'#4F8EF7', game_quit:'#9B87E0', switch_cancel:'#F59E0B'};
+    const all=[...new Set(bs.flatMap(b=>b.pos.map(p=>p.pos)))];
+    const hasNew = all.some(p=>!KNOWN.includes(p));
+    el.innerHTML =
+      `<div class="rvlegend">`+all.map(p=>
+        `<span class="k"><i style="background:${COL[p]||'#B6BBC9'}"></i>${p}${KNOWN.includes(p)?'':' <b style="color:#B45309">신규</b>'}</span>`).join('')+
+      `</div>`+
+      bs.map(b=>{
+        const tot=b.pos.reduce((a2,x)=>a2+x.c,0);
+        return `<div class="rvrow">
+          <div class="rvlab"><b>빌드 ${b.build}</b><span class="rvsub">${bnote(String(b.build))}</span></div>
+          <div class="rvbar">`+
+            b.pos.map(x=>{const w=x.c/tot*100;
+              return `<i style="width:${w}%;background:${COL[x.pos]||'#B6BBC9'}" title="${x.pos} ${num(x.c)}건 (${w.toFixed(1)}%)">${w>16?x.pos.replace('game_','')+' '+w.toFixed(0)+'%':''}</i>`;}).join('')+
+          `</div>
+          <div class="rvtot">${num(tot)}<span class="rvn">건</span></div></div>`;}).join('')+
+      (hasNew?'':`<div class="mdesc" style="margin-top:8px"><b>취소 시 노출 지면</b>
+        <span class="pill p-hold">배포 후 등장 예정</span> — <code>game_over</code>·<code>game_quit</code> 외의 값이 나타나면 붙은 것입니다.</div>`);
+  })();
+  
+  applyDim();
+  document.getElementById('how').innerHTML =
+    `<b>읽는 법</b> — <b>기대</b>가 '변화 없어야'인데 유의하게 움직였으면 그게 <b>사이드 이펙트</b>입니다. `+
+    `z는 두 비율 차의 검정통계량이고 <b>|z|≥1.96</b>이면 유의로 봅니다(비율형은 분모 30 미만 · 횟수형은 건수 5 미만이면 계산하지 않음).<br>`+
+    `<b>1,000판은 통계적 게이트가 아니라 '여기까지는 지켜본다'는 관측 기준점</b>입니다. `+
+    `그전까지는 전 지표가 <b>'관측 중'</b>으로 표시되는데, 초반 소표본에서 방향이 자주 뒤집혀 확정 판정을 미뤄두는 것입니다.<br>`+
+    `<b>⚠️ 로그 정의가 바뀐 지표(3110·3200·3300계열)는 '비교 불가'</b>로 고정됩니다 — `+
+    `값이 움직이는 게 정상이라 전후 비교로 회귀를 판정하면 안 됩니다.<br>`+
+    `<b>IT 관련 지표는 IT군 vs 비IT군</b>으로, <b>①② 지표는 신(두 빌드 합산) vs 직전 빌드</b>로 비교합니다 — `+
+    `①②는 두 빌드에 모두 들어가므로 빌드끼리 비교하면 차이가 안 나옵니다(비교축은 차이 칸에 표시).<br>`+
+    `<b>핵심 판정 지표는 「토너먼트 등록 분리 여부」(등록 실패 3320 ÷ 공유 실패 3220)</b>입니다. 분리 전에는 공유 실패를 등록 실패로 그대로 복제해 정확히 <b>1.000</b>이었고, <b>0에 가까울수록 분리가 먹힌 것</b>입니다 — 현재 0.000으로 분리 확정, 등록 성공률은 벤치(99%대)와 같은 자리입니다.`+
+    `이 값이 1.00에서 벌어져야 ①이 실제로 먹힌 것입니다. 수락률만 오르고 이 값이 1.00이면 다른 원인입니다.<br>`+
+    `<b>intr_en 지연공유</b>는 payload에 모드 필드가 없어 <b>로그로 감시할 수 없습니다</b> — 필요 시 계측 추가 요청 대상입니다.<br>`+
+  `집계는 <b>글로벌</b>입니다 — 모수를 빨리 채우기 위해 권역을 제한하지 않았습니다. `+
+    `<b>A/B(IT군 vs 비IT군)는 무작위 배정</b>이라 지오가 섞여도 양쪽에 똑같이 섞여 비교가 성립합니다. `+
+    `다만 <b>신 빌드 vs 직전 빌드는 시차 비교</b>라 그 사이 지오 믹스가 바뀌면 교란될 수 있습니다 — `+
+    `①② 판정에서 애매한 차이가 나오면 권역을 갈라 재확인하세요.<br>`+
+    `창은 <b>${P.base_from}~${P.base_to}</b>이며 빌드별로 나눠 집계합니다. 배포 당일은 부분일이라 신 빌드 값이 하루 안에서도 움직입니다.`;
+}
+renderAll();
+</script>
+</body></html>
