@@ -159,10 +159,10 @@
 <h3>스토리를 영상으로 보려면</h3>
 
 <div class="yt">
-  <a class="ytcard" href="https://www.youtube.com/playlist?list=PLsP01i3plYGgntFXx6HVb0LhgmtGB9s3L" target="_blank" rel="noopener">
+  <a class="ytcard" href="https://www.youtube.com/playlist?list=PLsP01i3plYGgntFXx6HVb0LhgmtGB9s3L" data-embed="OjTfyOW2uTg" target="_blank" rel="noopener">
     <img src="https://img.youtube.com/vi/OjTfyOW2uTg/hqdefault.jpg" alt="Gossip Harbor Storyline 재생목록 썸네일">
     <div class="t">▶ Gossip Harbor Storyline — 전체 재생목록</div>
-    <div class="s">Day별 스토리 컷신만 모은 유튜브 재생목록. 서사 전체를 훑기에 가장 좋습니다.</div>
+    <div class="s">Day별 스토리 컷신만 모은 유튜브 재생목록. 팝업에서는 대표 영상(Day 52)이 재생되고, 전체 목록은 새창으로 여세요.</div>
   </a>
   <a class="ytcard" href="https://www.youtube.com/watch?v=o9HZBnTR6V0" target="_blank" rel="noopener">
     <img src="https://img.youtube.com/vi/o9HZBnTR6V0/hqdefault.jpg" alt="Day 1 워크스루 썸네일">
@@ -290,10 +290,10 @@ pity 방식 럭키, 경쟁 이벤트의 <b>봇 상대</b>(실제 유저가 아�
     <div class="t">▶ 공식 런칭 트레일러 (40초)</div>
     <div class="s">2D 카툰 아트 톤과 꾸미기 연출을 40초에 확인 — <b>꾸미기 스타일 기준점</b>.</div>
   </a>
-  <a class="ytcard" href="https://www.youtube.com/playlist?list=PLCVGmIx-9jTKnLmozfZJvGJofLSNWUCA6" target="_blank" rel="noopener">
+  <a class="ytcard" href="https://www.youtube.com/playlist?list=PLCVGmIx-9jTKnLmozfZJvGJofLSNWUCA6" data-embed="M0r2VZzGUVM" target="_blank" rel="noopener">
     <img src="https://img.youtube.com/vi/M0r2VZzGUVM/hqdefault.jpg" alt="Love & Pies 스토리 전용 재생목록 썸네일">
     <div class="t">▶ Full Story Only — 스토리 전용 재생목록</div>
-    <div class="s">게임플레이 없이 컷신만 모은 재생목록. 대화극 연출 비교용.</div>
+    <div class="s">게임플레이 없이 컷신만 모은 재생목록. 팝업에서는 대표 영상(Day 2)이 재생되고, 전체 목록은 새창으로 여세요.</div>
   </a>
 </div>
 
@@ -392,17 +392,16 @@ pity 방식 럭키, 경쟁 이벤트의 <b>봇 상대</b>(실제 유저가 아�
 (function(){
   var modal=document.getElementById('ytmodal'), frame=document.getElementById('ytmFrame'),
       ttl=document.getElementById('ytmTitle'), openBtn=document.getElementById('ytmOpen');
-  function embedUrl(href){
-    var m=href.match(/[?&]v=([\w-]{6,})/);
-    if(m) return 'https://www.youtube.com/embed/'+m[1]+'?autoplay=1';
-    m=href.match(/[?&]list=([\w-]+)/);
-    if(m) return 'https://www.youtube.com/embed/videoseries?list='+m[1]+'&autoplay=1';
+  function embedUrl(card){
+    if(card.dataset.embed) return 'https://www.youtube-nocookie.com/embed/'+card.dataset.embed+'?autoplay=1&rel=0';
+    var m=card.href.match(/[?&]v=([\w-]{6,})/);
+    if(m) return 'https://www.youtube-nocookie.com/embed/'+m[1]+'?autoplay=1&rel=0';
     return null;
   }
   function close(){ modal.classList.remove('on'); frame.innerHTML=''; }
   document.querySelectorAll('.ytcard').forEach(function(card){
     card.addEventListener('click',function(e){
-      var url=embedUrl(card.href);
+      var url=embedUrl(card);
       if(!url) return; // 임베드 불가하면 원래대로 새창
       e.preventDefault();
       ttl.textContent=(card.querySelector('.t')||{}).textContent||'YouTube';
