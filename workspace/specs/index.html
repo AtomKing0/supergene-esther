@@ -769,7 +769,10 @@ function renderMonitorGroups(items) {
     const g  = G[k];
     const st = MONITOR_STATUS[k] || {};
     const lv = st.level || 'ok';
-    const badge = st.nCrit ? `위반 ${st.nCrit}` : (st.nWarn ? `주의 ${st.nWarn}` : '이상 없음');
+    // 위반 = 활동성 롤백선이 깨진 것 / 계측 = 판정 신뢰도 문제. 둘을 같은 말로 쓰면 과잉 경보가 된다
+    const badge = st.nCrit ? `위반 ${st.nCrit}`
+                : (st.nMeas ? `계측 ${st.nMeas}`
+                : (st.nWarn ? `주의 ${st.nWarn}` : '이상 없음'));
     const dn = (st.dn != null) ? `D+${st.dn}` : '';
     out += `<div class="mgroup ${lv}">
       <div class="mbar">
