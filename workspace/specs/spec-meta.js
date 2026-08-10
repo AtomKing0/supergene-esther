@@ -158,7 +158,7 @@ const SPECS = [
   {
     id: 'spec-027', file: 'spec-027-shadow-chase.html',
     title: '[콘텐츠-이벤트] 그림자 냥이 추격전',
-    tags: ['content', 'feature'], priority: 'high', status: 'wip', date: '2026. 7. 24.', dueDate: null, relatedTo: ['spec-020'],
+    tags: ['content', 'feature'], priority: 'high', status: 'monitor', date: '2026. 7. 24.', dueDate: null, relatedTo: ['spec-020'],
   },
   {
     id: 'spec-028', file: 'spec-028-event-boost-pack.html',
