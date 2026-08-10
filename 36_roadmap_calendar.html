@@ -162,6 +162,12 @@
   .ck{margin-top:9px;border-top:1px dashed var(--line);padding-top:8px}
   .ckh{font-size:10.5px;font-weight:800;color:var(--mut);margin-bottom:5px;letter-spacing:.2px}
   .ckh b{color:var(--sub)}
+  /* 액션이 전부 끝난 체크리스트 — 접어서 한 줄로 두고 눌러 펼친다 */
+  .ckh.fold{display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:0;
+      color:var(--grn);user-select:none}
+  .ckh.fold .ar{font-size:9px;color:var(--mut)}
+  .ckh.fold .hint{margin-left:auto;font-weight:700;color:var(--mut)}
+  .ckh.fold:hover .hint{color:var(--sub)}
   .cki{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--ink);
        padding:2px 0;line-height:1.55}
   .cki input{margin:3px 0 0;accent-color:var(--grn);cursor:pointer;flex:0 0 auto}
@@ -896,16 +902,22 @@ function renderWeek(){
   document.getElementById('wView').innerHTML=h+'</div>';
 }
 
+// 전부 끝난 체크리스트를 펼쳐 둔 일감 — 화면 상태라 저장하지 않는다
+const CKOPEN={};
+function ckFold(id){CKOPEN[id]=!CKOPEN[id];renderDay();}
+
 function renderDay(){
   document.getElementById('dTtl').textContent=
     `${DSEL.getMonth()+1}월 ${DSEL.getDate()}일 (${WD[DSEL.getDay()]})${same(DSEL,TODAY)?' · 오늘':''}`;
-  const ts=tasksOn(DSEL);
+  // 액션이 전부 끝난 일감은 아래로 내린다 — 오늘 손댈 것이 위에 오게
+  const ts0=tasksOn(DSEL), ckAllDone=o=>{const c=ckOf(o.t);return c.length>0&&c.every(x=>x.d);};
+  const ts=ts0.filter(o=>!ckAllDone(o)).concat(ts0.filter(ckAllDone));
   if(isWE(DSEL)){document.getElementById('dView').innerHTML='<div class="empty">주말에는 일정을 두지 않습니다.</div>';return;}
   if(!ts.length){document.getElementById('dView').innerHTML='<div class="empty">이 날짜에 예정된 일정이 없습니다.</div>';return;}
   document.getElementById('dView').innerHTML=ts.map(({t,first,span})=>{
     const c=CAT[Ct(t)].color, id=t.id, st=stOf(t), sl=slackOf(t), sp=specOf(t), fs=flags(t), ck=ckOf(t);
     const dp=depOf(t), pl=depPlanOf(t), dl=depLate(t), md=d=>d.slice(5).replace('-','/');
-    const dn=ck.filter(x=>x.d).length;
+    const dn=ck.filter(x=>x.d).length, allDn=ck.length>0&&dn===ck.length, ckOpen=!!CKOPEN[id];
     const opts=Object.entries(ST).map(([v,o])=>`<option value="${v}" ${v===st?'selected':''}>${o.n}</option>`).join('');
     return `<div class="task ${st==='done'?'isdone':''} ${fs.indexOf('late')>=0?'islate':''}">
       <span class="dot" style="background:${c}"></span>
@@ -938,13 +950,16 @@ function renderDay(){
         ${dp?`<button onclick="depClear('${id}')">기록 삭제</button>`:''}
       </div>`:''}
       <div class="ck">
-        <div class="ckh">체크리스트 <b>${dn}/${ck.length}</b>${ck.length&&dn===ck.length?' · 전부 완료':''}</div>
+        ${allDn?`<div class="ckh fold" onclick="ckFold('${id}')"><span class="ar">${ckOpen?'▼':'▶'}</span>
+              ✅ 모든 액션 완료 <b>${dn}/${ck.length}</b><span class="hint">${ckOpen?'접기':'펼치기'}</span></div>`
+              :`<div class="ckh">체크리스트 <b>${dn}/${ck.length}</b></div>`}
+        ${allDn&&!ckOpen?'':`
         ${ck.map((x,i)=>`<label class="cki ${x.d?'on':''}"><input type="checkbox" ${x.d?'checked':''}
             onchange="ckToggle('${id}',${i})"><span>${esc(x.n)}</span>
             <button onclick="event.preventDefault();ckDel('${id}',${i})" title="삭제">✕</button></label>`).join('')
           || '<div style="font-size:11.5px;color:var(--mut)">항목이 없습니다. 빠지면 안 되는 액션을 적어두세요.</div>'}
         <div class="ckadd"><input type="text" id="ci_${id}" placeholder="빠지면 안 되는 액션 추가"
-            onkeydown="ckKey(event,'${id}')"><button onclick="ckAdd('${id}')">추가</button></div>
+            onkeydown="ckKey(event,'${id}')"><button onclick="ckAdd('${id}')">추가</button></div>`}
       </div>
       </div></div>`;
   }).join('');
