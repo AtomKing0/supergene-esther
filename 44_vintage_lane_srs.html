@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vintage Lane — SRS 요구사항 명세서 + 콘텐츠 물량 산정</title>
+<style>
+  :root{--bg:#0e1116;--panel:#161b22;--panel2:#1c232d;--line:#2a3340;--ink:#e8edf3;--sub:#9aa7b4;--dim:#6b7887;
+    --brand:#e0a94e;--brand2:#5ec8d8;--pink:#e97fa6;--green:#7fd18b;--purple:#a58cf0;--warn:#f0c674;--danger:#e77c7c;
+    --navbg:#0b0e13;--hover:#12171e;--strong:#ffffff;--shadow:rgba(0,0,0,.35);}
+  html[data-theme="light"]{--bg:#f6efe3;--panel:#fffaf1;--panel2:#f2e8d7;--line:#e4d8c2;--ink:#3a3126;--sub:#6f6353;--dim:#9a8d78;
+    --brand:#b06f22;--brand2:#217a87;--pink:#c05f83;--green:#4e9a5c;--purple:#7458c9;--warn:#a9791a;--danger:#c05353;
+    --navbg:#efe4d1;--hover:#f0e6d3;--strong:#241d13;--shadow:rgba(120,95,55,.16);}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.65;font-size:15.5px;transition:background .25s,color .25s}
+  a{color:var(--brand2);text-decoration:none}
+  .wrap{display:grid;grid-template-columns:250px 1fr;max-width:1340px;margin:0 auto}
+  nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:24px 16px;border-right:1px solid var(--line);background:var(--navbg)}
+  nav .logo{font-weight:800;color:var(--strong);font-size:15px}nav .logo span{color:var(--brand)}
+  nav .tag{font-size:11px;color:var(--dim);margin:4px 0 18px;line-height:1.5}
+  nav a{display:block;color:var(--sub);font-size:12.5px;padding:6px 9px;border-radius:8px;margin-bottom:1px}
+  nav a:hover{background:var(--panel);color:var(--ink)}
+  nav a.active{background:var(--panel);color:var(--brand);font-weight:700;box-shadow:inset 3px 0 0 var(--brand)}
+  nav .h{color:var(--dim);font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin:14px 0 3px;padding-left:9px}
+  main{padding:0 44px 120px;min-width:0}
+  header.hero{padding:54px 0 30px;border-bottom:1px solid var(--line)}
+  .kicker{display:inline-block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);border:1px solid var(--brand);padding:5px 12px;border-radius:999px;margin-bottom:16px}
+  h1{font-size:32px;line-height:1.2;margin:0 0 12px;font-weight:800}h1 span{color:var(--brand)}
+  .lead{font-size:15.5px;color:var(--sub);max-width:820px}
+  section{padding:40px 0;border-bottom:1px solid var(--line);scroll-margin-top:20px}
+  .secno{font-size:12px;letter-spacing:.16em;color:var(--brand);text-transform:uppercase;font-weight:700}
+  h2{font-size:23px;margin:8px 0 6px;font-weight:800}
+  h3{font-size:16.5px;margin:26px 0 10px;font-weight:700;color:var(--strong)}
+  h4{font-size:13.5px;margin:16px 0 7px;font-weight:700;color:var(--brand)}
+  p{margin:0 0 12px}.intro{color:var(--sub);max-width:840px}.muted{color:var(--sub)}
+  ul,ol{margin:0 0 12px;padding-left:20px}li{margin-bottom:5px}strong{color:var(--strong)}
+  code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12px;color:var(--brand2);font-family:ui-monospace,Menlo,monospace}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:12.8px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:700;position:sticky}
+  td b{color:var(--strong)}tr:hover td{background:var(--hover)}
+  .tbl-wrap{overflow-x:auto}
+  .rid{font-family:ui-monospace,Menlo,monospace;color:var(--brand2);font-size:11.5px;white-space:nowrap;font-weight:700}
+  .p0{color:var(--danger);font-weight:800;font-size:11px}
+  .p1{color:var(--warn);font-weight:800;font-size:11px}
+  .p2{color:var(--dim);font-weight:800;font-size:11px}
+  .call{border-left:3px solid var(--brand);background:var(--panel);border-radius:0 12px 12px 0;padding:13px 16px;margin:16px 0;font-size:14px}
+  .call.green{border-color:var(--green)}.call.warn{border-color:var(--warn)}.call.pink{border-color:var(--pink)}
+  .call .t{font-weight:700;color:var(--strong);margin-bottom:4px;font-size:12.5px}
+  .grid{display:grid;gap:12px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px}
+  .card h4{margin-top:0}.card p{font-size:13px;color:var(--sub);margin:0}
+  /* 콘텐츠 물량 시트(Part B) */
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tfoot td{border-top:2px solid var(--line);font-weight:800;color:var(--strong);background:var(--hover)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px}
+  .kpi .n{font-size:24px;font-weight:800;color:var(--strong)}
+  .kpi .n small{font-size:13px;color:var(--brand);font-weight:700}
+  .kpi .l{font-size:11.5px;color:var(--sub);margin-top:4px}
+  .tag{display:inline-block;font-size:10px;letter-spacing:.06em;border:1px solid var(--line);color:var(--dim);border-radius:5px;padding:2px 7px;margin-right:6px}
+  .partdiv{margin:8px 0 0;padding:22px 0 0;border-top:2px solid var(--brand)}
+  .partdiv .pk{display:inline-block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);font-weight:800}
+  .partdiv h2{font-size:26px;margin:6px 0 4px}
+  /* 참조 시트 링크 · 스키마 첨부 */
+  .ref{font-size:12px;color:var(--sub)}
+  .ref b{color:var(--brand2);font-weight:700;font-family:ui-monospace,Menlo,monospace;font-size:11px}
+  .ref .tabn{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:10.5px;color:var(--brand);font-weight:700;margin-right:3px;white-space:nowrap}
+  details.schema{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:14px 0;overflow:hidden}
+  details.schema>summary{cursor:pointer;padding:12px 16px;font-weight:700;font-size:13px;color:var(--strong);list-style:none;display:flex;align-items:center;gap:8px}
+  details.schema>summary::-webkit-details-marker{display:none}
+  details.schema>summary::before{content:"▸";color:var(--brand);font-size:12px;transition:transform .15s}
+  details.schema[open]>summary::before{transform:rotate(90deg)}
+  details.schema>summary .tabn{font-family:ui-monospace,Menlo,monospace}
+  details.schema .body{padding:0 16px 14px}
+  details.schema table{font-size:12px;margin:6px 0}
+  .schema-note{font-size:12px;color:var(--sub);margin:2px 0 10px}
+  .colname{font-family:ui-monospace,Menlo,monospace;color:var(--brand2);font-size:11px;font-weight:700}
+  @media(max-width:900px){.wrap{grid-template-columns:1fr}nav.side{display:none}main{padding:0 18px 80px}.g2,.g3,.kpis{grid-template-columns:1fr}}
+  .foot{padding:32px 0 10px;color:var(--dim);font-size:12px}
+  /* 리버싱 근거 표기 */
+  .src{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--brand2);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-left:5px;white-space:nowrap}
+  .cf{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.04em;border-radius:4px;padding:1px 6px}
+  .cf.h{color:var(--green);border:1px solid var(--green)}
+  .cf.m{color:var(--warn);border:1px solid var(--warn)}
+  .cf.l{color:var(--dim);border:1px solid var(--dim)}
+  /* 테마 토글 */
+  #themeBtn{position:fixed;top:16px;right:18px;z-index:50;display:inline-flex;align-items:center;gap:7px;
+    background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;
+    font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px var(--shadow);transition:all .2s}
+  #themeBtn:hover{border-color:var(--brand);color:var(--brand)}
+  #themeBtn .ic{font-size:14px;line-height:1}
+  @media(max-width:900px){#themeBtn{top:10px;right:10px;padding:6px 11px}}
+</style>
+</head>
+<body>
+<button id="themeBtn" type="button" aria-label="테마 전환"><span class="ic">🌙</span><span class="lb">다크</span></button>
+<div class="wrap">
+<nav class="side">
+  <div class="logo">VINTAGE <span>LANE</span></div>
+  <div class="tag">SRS + 콘텐츠 물량 v1.2 (전략문서 v1.5 연계)<br>← 전략문서(Part 4 출시스펙) 연계</div>
+  <a class="h">Part A · 요구사항 (SRS)</a>
+  <a class="h">1. 개요</a>
+  <a href="#intro">1. 목적·범위·정의</a>
+  <a href="#overall">2. 전체 설명</a>
+  <a class="h">3. 기능 요구사항 (FR)</a>
+  <a href="#fr-rule">3.0 ID 규칙·시트 연동</a>
+  <a href="#fr-board">3.1 머지 보드</a>
+  <a href="#fr-gen">3.2 생성기</a>
+  <a href="#fr-order">3.3 오더</a>
+  <a href="#fr-econ">3.4 이코노미</a>
+  <a href="#fr-story">3.5 스토리·복원</a>
+  <a href="#fr-prog">3.6 진행·레벨</a>
+  <a href="#fr-pace">3.7 논타이머 페이싱</a>
+  <a href="#fr-onb">3.8 온보딩</a>
+  <a href="#fr-save">3.9 세이브·동기화</a>
+  <a href="#fr-mon">3.10 수익화</a>
+  <a href="#fr-live">3.11 라이브옵스</a>
+  <a href="#fr-a11y">3.12 접근성</a>
+  <a href="#fr-bi">3.13 계측·BI</a>
+  <a class="h">4~6. 비기능·인터페이스·데이터</a>
+  <a href="#nfr">4. 비기능 요구사항</a>
+  <a href="#ext">5. 외부 인터페이스</a>
+  <a href="#data">6. 데이터 요구사항</a>
+  <a href="#trace">7. 추적성</a>
+  <a href="#calib">8. 원작 리버싱 캘리브레이션</a>
+  <a class="h">Part B · 콘텐츠 물량</a>
+  <a href="#o">B0. 산정 전제</a>
+  <a href="#chains">B1. 아이템 체인</a>
+  <a href="#gen">B2. 생성기</a>
+  <a href="#story">B3. 스토리 챕터</a>
+  <a href="#deco">B4. 복원(데코) 구역</a>
+  <a href="#era">B5. 시대 테마</a>
+  <a href="#char">B6. 캐릭터·표정</a>
+  <a href="#ui">B7. UI·재화·연출</a>
+  <a href="#audio">B8. 오디오</a>
+  <a href="#live">B9. 이벤트·시즌</a>
+  <a href="#loc">B10. 현지화 문자열</a>
+  <a href="#rollup">B11. 총 물량 집계</a>
+  <a class="h">연계</a>
+  <a href="42_vintage_lane_strategy.html">↗ 전략·사업성</a>
+  <a href="43_vintage_lane_production.html">↗ 제품·프로덕션</a>
+  <a href="46_vintage_lane_tracker.html">↗ 트래커</a>
+</nav>
+<main>
+
+<header class="hero">
+  <span class="kicker">SRS + Content Volume · Launch v1.2</span>
+  <h1>Vintage Lane — <span>SRS 요구사항 명세서 + 콘텐츠 물량</span></h1>
+  <p class="lead">전략문서 Part 4(출시 스펙)를 개발 착수 가능한 <strong>Part A 기능/비기능 요구사항(FR·NFR)</strong>과
+  <strong>Part B 콘텐츠 물량 산정(아트·스토리·오디오·문자열)</strong>으로 상세화한다.
+  모든 수치는 <strong>Gossip Harbor APK 리버싱(Lua 소스·config·밸런스 시트)</strong>에서 도출한 실측값을 1차 기준으로 삼고,
+  시니어·논타이머 컨셉에 맞춰 조정했다(§8 캘리브레이션 참조).
+  요구사항 우선순위: <span class="p0">P0</span>=출시필수 / <span class="p1">P1</span>=Fast-follow / <span class="p2">P2</span>=Later.</p>
+</header>
+
+<!-- 1 -->
+<section id="intro">
+  <div class="secno">1</div>
+  <h2>목적 · 범위 · 정의</h2>
+  <h4>1.1 목적</h4>
+  <p class="intro">Vintage Lane v1.0(FB Instant Games, 40–65세 북미 여성(시니어 친화) 타겟 머지-2)의 소프트웨어 요구사항을 정의한다. 개발·QA·기획의 단일 기준 문서.</p>
+  <h4>1.2 범위</h4>
+  <p class="intro">v1.0 출시 범위(코어 머지 루프·스토리/복원·논타이머·최소 라이브옵스·수익화·40–65세 시니어 친화 UX)를 다룬다. 소셜/길드·분기 스토리·다국어 등은 <span class="p2">P2</span>로 범위 외.</p>
+  <h4>1.3 용어 정의</h4>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>용어</th><th>정의</th></tr></thead><tbody>
+    <tr><td><b>체인(Chain)</b></td><td>같은 계열 아이템의 레벨 사슬(레벨1→N). 두 동일 아이템 병합 시 +1레벨.</td></tr>
+    <tr><td><b>생성기(Generator)</b></td><td>탭하면 낮은 레벨 아이템을 생산하는 보드 오브젝트.</td></tr>
+    <tr><td><b>오더(Order)</b></td><td>손님 주문. 요구 아이템 제출 시 코인/보상.</td></tr>
+    <tr><td><b>코인/젬</b></td><td>코인=소프트(단일목적) · 젬=하드(다목적, 구매 가능).</td></tr>
+    <tr><td><b>논타이머</b></td><td>시간압박(에너지 고갈·타이머 스킵 강요)을 최소화한 페이싱. 무에너지 또는 소프트에너지.</td></tr>
+    <tr><td><b>이벤트 하네스</b></td><td>이벤트가 코어 루프를 재사용하도록 하는 구조 + 리모트 config로 클라 업데이트 없이 이벤트 추가.</td></tr>
+    </tbody></table></div>
+</section>
+
+<!-- 2 -->
+<section id="overall">
+  <div class="secno">2</div>
+  <h2>전체 설명</h2>
+  <div class="grid g2">
+    <div class="card"><h4>제품 관점</h4><p>HTML5 인스턴트 게임. 서버는 세이브·리모트config·이벤트·IAP 검증 담당. 코어 로직은 플랫폼 독립(멀티플랫폼 포팅 여지).</p></div>
+    <div class="card"><h4>사용자 클래스</h4><p>주 타겟 40–65세 북미 여성(캐주얼). 게임 경험 스펙트럼 넓음 → 온보딩·가독성 최우선. 무·저·고과금 세그먼트 공존.</p></div>
+    <div class="card"><h4>운영 환경</h4><p>Facebook/Instagram Instant Games(모바일 웹뷰). 구세대 단말·저대역 네트워크 고려. ≤200MB.</p></div>
+    <div class="card"><h4>제약·가정</h4><p>Meta 플랫폼 정책·70/30 수수료. 논타이머·WCAG 2.2·경량은 불변 제약. 서버 전용값은 리모트config.</p></div>
+  </div>
+</section>
+
+<!-- 3.0 ID RULE -->
+<section id="fr-rule">
+  <div class="secno">3.0</div>
+  <h2>기능 요구사항 읽는 법 — ID 규칙 · 데이터 시트 연동</h2>
+  <p class="intro">§3의 모든 기능 요구사항은 동일한 형식을 따른다. 각 요구사항이 <strong>어떤 밸런스 시트 탭의 어떤 컬럼을 참조해 구현되는지</strong>를 함께 명시하므로,
+  개발자는 이 문서의 FR → 시트 탭 → JSON → 서버 config 순서로 값을 그대로 끌어다 쓸 수 있다.</p>
+
+  <h4>요구사항 ID 명명 규칙</h4>
+  <div class="call"><div class="t">FR-&lt;도메인&gt;-&lt;일련번호&gt;</div>
+  <ul style="margin:8px 0 0">
+    <li><code>FR</code> = Functional Requirement(기능 요구사항). 비기능은 <code>NFR-&lt;범주&gt;-NN</code>.</li>
+    <li><b>&lt;도메인&gt;</b> = 기능 영역 약어. 본 문서 §3의 소절과 1:1 대응 —
+      <code>BOARD</code>(보드)·<code>GEN</code>(생성기)·<code>ORDER</code>(오더)·<code>ECON</code>(이코노미)·<code>STORY</code>(스토리·복원)·<code>PROG</code>(진행·레벨)·<code>PACE</code>(논타이머)·<code>ONB</code>(온보딩)·<code>SAVE</code>(세이브)·<code>MON</code>(수익화)·<code>LIVE</code>(라이브옵스)·<code>A11Y</code>(접근성)·<code>BI</code>(계측).</li>
+    <li><b>&lt;일련번호&gt;</b> = 도메인 내 2자리 순번(01, 02…). 번호 자체에 우선순위 의미는 없으며, 우선순위는 별도 <span class="p0">P0</span>/<span class="p1">P1</span>/<span class="p2">P2</span> 컬럼으로 표기.</li>
+    <li>이 ID는 §7 추적성 표에서 전략문서(PRD)와, 하단 <a href="46_vintage_lane_tracker.html">트래커</a>의 개발 태스크와 상호 참조된다.</li>
+  </ul></div>
+
+  <h4>테이블 컬럼 정의</h4>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>컬럼</th><th>의미</th></tr></thead><tbody>
+    <tr><td class="rid">ID</td><td>위 규칙에 따른 요구사항 식별자. 변경 없이 고정(코드·QA·트래커에서 참조).</td></tr>
+    <tr><td>우선</td><td><span class="p0">P0</span> 출시 필수 · <span class="p1">P1</span> Fast-follow · <span class="p2">P2</span> Later.</td></tr>
+    <tr><td>요구사항</td><td>구현해야 할 동작을 풀어서 서술. 원작 리버싱으로 확인된 상수·공식은 <code>코드체</code>로 병기.</td></tr>
+    <tr><td><b>참조 데이터(시트)</b></td><td><span class="tabn">탭이름</span> <span class="colname">컬럼명</span> 형식으로, 이 기능이 읽어야 할 밸런스 시트의 위치를 지정. 복잡한 테이블은 아래 <b>▸ 스키마</b> 토글에 전체 컬럼을 첨부.</td></tr>
+    <tr><td>수용 기준</td><td>완료(Done)로 인정하는 검증 조건.</td></tr>
+    </tbody></table></div>
+
+  <div class="call green"><div class="t">단일 소스 원칙</div>모든 참조는 <strong>밸런스 시트(75탭)</strong>를 가리킨다. 시트 → JSON → 서버 리모트 config 파이프라인이 유일한 값 공급원이며,
+  클라이언트에는 폴백 기본값만 둔다(§6.4). 예: <span class="tabn">머지체인</span>의 한 행이 곧 아이템 1종의 병합·생성·판매 정의 전체다.</div>
+</section>
+
+<!-- 3.1 BOARD -->
+<section id="fr-board">
+  <div class="secno">3.1</div>
+  <h2>기능 요구사항 — 머지 보드</h2>
+  <p class="intro">플레이어가 아이템을 옮기고 병합하는 <strong>코어 상호작용 면</strong>. 아이템 배치·병합·보관·정리·정보표시를 담당한다.
+  원작은 좌표 기반 비정형 슬롯 집합을 쓰지만, 본 클론은 시니어 가독성을 위해 정형 그리드로 단순화한다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-BOARD-01</td><td class="p0">P0</td>
+      <td><b>보드 그리드 렌더링 및 아이템 드래그 이동.</b> 7×9 정형 그리드를 그리고, 플레이어가 아이템을 손가락으로 끌어 빈 칸으로 옮길 수 있어야 한다. 원작은 <code>1_1·1_2·1_4</code>처럼 결번이 있는 비정형 좌표 슬롯(각 슬롯에 이동가능 여부·명도 속성)을 쓰나, 본 클론은 규칙적인 격자로 대체한다.</td>
+      <td class="ref"><span class="tabn">보드슬롯</span> <span class="colname">slot</span>(행_열)·<span class="colname">move</span>·<span class="colname">luminance_min/max</span> — 원작 슬롯 형태 참고용. 클론 그리드 크기는 <span class="tabn">보드슬롯스펙</span>에 정의.</td>
+      <td>중급(Galaxy A54급) 60fps·구형(RAM 3GB 미만) 30fps 폴백, 드래그 지연 ≤100ms.<span class="src">GH: SlotConfig 696슬롯</span></td></tr>
+    <tr><td class="rid">FR-BOARD-02</td><td class="p0">P0</td>
+      <td><b>동일 아이템 병합(핵심 규칙).</b> 같은 종류(<code>Type</code>) 아이템 2개를 겹치면 상위 아이템(<code>MergedType</code>) 1개로 합쳐지며 +1레벨. <code>MergedType</code>이 비어 있으면 최종 단계라 더 병합되지 않고 흔들림 피드백만 준다. <b>병합은 에너지를 소모하지 않는다.</b> 병합 성공 시 오더 충족 여부를 재검사한다.</td>
+      <td class="ref"><span class="tabn">머지체인</span> <span class="colname">Type</span>→<span class="colname">MergedType</span>(병합 결과 코드)·<span class="colname">Step</span>(단계). 한 체인의 사다리 전체가 여기 정의됨(아래 스키마).</td>
+      <td>하위 2개 소멸·상위 1개 생성·연출 재생. 최종단은 병합 불가 처리.<span class="src">GH: CanItemMerge / _DoMergeItem</span></td></tr>
+    <tr><td class="rid">FR-BOARD-03</td><td class="p0">P0</td>
+      <td><b>스토리지(임시 보관함) 입출고.</b> 보드가 붐빌 때 아이템을 임시 슬롯에 넣고 필요할 때 다시 꺼낼 수 있다. 보관 상태는 세이브에 반영된다.</td>
+      <td class="ref"><span class="tabn">인벤토리해금</span> <span class="colname">slot_index</span>(기본 5칸/최대 32칸)·<span class="colname">unlock_cost</span>(젬).</td>
+      <td>보관/꺼내기 자유, 저장 복원 시 보관 내용 유지.</td></tr>
+    <tr><td class="rid">FR-BOARD-04</td><td class="p0">P0</td>
+      <td><b>보드 가득 참 경고 및 정리 유도.</b> 빈 칸이 0이면 신규 스폰·생성이 막히므로, 안내 문구와 정리(판매·보관) 동선을 제시한다.</td>
+      <td class="ref">런타임 상태(<code>IsBoardFull</code>) — 시트값 아님. 판매가는 <span class="tabn">머지체인</span> <span class="colname">SellingPrice</span>.</td>
+      <td>빈 칸 0일 때 안내 노출, 생성 차단.</td></tr>
+    <tr><td class="rid">FR-BOARD-05</td><td class="p0">P0</td>
+      <td><b>아이템 탭 시 정보 표시.</b> 아이템을 누르면 레벨·판매가·사용처를 큰 폰트로 보여주고, 판매/사용은 단일 액션으로 처리한다.</td>
+      <td class="ref"><span class="tabn">아이템마스터</span> <span class="colname">한글명</span>·<span class="colname">단계</span>·<span class="colname">판매가</span>·<span class="colname">버블해제가</span> 등 아이템 1종 전 속성(단일 소스).</td>
+      <td>큰 폰트 정보 팝업, 단일 액션.</td></tr>
+    <tr><td class="rid">FR-BOARD-06</td><td class="p1">P1</td>
+      <td><b>보드/보관 확장 슬롯 구매.</b> 젬으로 인벤토리 슬롯을 추가 개방한다.</td>
+      <td class="ref"><span class="tabn">인벤토리해금</span> <span class="colname">unlock_cost</span>(슬롯별 젬 비용).</td>
+      <td>구매 시 스토리지 칸 수 증가.</td></tr>
+    <tr><td class="rid">FR-BOARD-07</td><td class="p0">P0</td>
+      <td><b>판매 확인·Undo.</b> 레벨 N 이상(config, 기본≥5) 아이템 판매 시 확인 다이얼로그 표시. 판매 후 10초 Undo 허용(1회), 실행 시 아이템 복원·코인 회수. 시니어 실수 방지 핵심.</td>
+      <td class="ref"><span class="tabn">시스템상수</span> <span class="colname">sell_confirm_min_level</span>(config, 기본 5).</td>
+      <td>확인 다이얼로그 노출·10초 내 복원 QA.</td></tr>
+    <tr><td class="rid">FR-BOARD-08</td><td class="p0">P0</td>
+      <td><b>보드 풀 생성 차단.</b> 빈 칸 0일 때 생성기 탭해도 아이템 생성 안 함·에너지 미소모. FR-BOARD-04 정리 유도와 연계.</td>
+      <td class="ref">런타임 상태(<code>IsBoardFull</code>)·<span class="tabn">머지체인</span> <span class="colname">SellingPrice</span>.</td>
+      <td>풀 보드 탭 시 에너지 차감 없음 확인.</td></tr>
+    <tr><td class="rid">FR-BOARD-09</td><td class="p1">P1</td>
+      <td><b>버블 기능 런칭 제외 명시.</b> 원작 버블(Lv4 해금)은 v1.0 런칭 제외. P1에서 재검토(§8 캘리브레이션 버블 항목 연계).</td>
+      <td class="ref">§8.1 버블 항목 참조.</td>
+      <td>런칭 빌드에 버블 UI/로직 미포함 확인.</td></tr>
+    </tbody></table></div>
+
+  <details class="schema"><summary>▸ 스키마 첨부 · <span class="tabn">머지체인</span> (54컬럼) — 아이템 병합 사다리 + 생성기 정의</summary>
+    <div class="body">
+      <p class="schema-note">머지체인의 <b>한 행 = 아이템 1종</b>. 앞부분 13컬럼이 병합·판매·생성기 속성을 정의하고, 이후 <code>생성물 N번째 아이템코드/가중치</code>가 최대 20쌍 반복되어 생성기 산출 확률표를 이룬다(빈칸=미사용). 마지막에 <code>ChainId</code>.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>컬럼(한글 헤더)</th><th>변수명</th><th>의미</th></tr></thead><tbody>
+        <tr><td>같은 머지 계열 묶음 번호</td><td class="colname">Chain</td><td>같은 사다리(체인) 식별</td></tr>
+        <tr><td>체인 내 단계(1=최하위)</td><td class="colname">Step</td><td>레벨. 1이 가장 낮음</td></tr>
+        <tr><td>아이템 코드</td><td class="colname">Type</td><td>이 아이템 고유 코드</td></tr>
+        <tr><td>한글명</td><td class="colname">Name</td><td>표시명</td></tr>
+        <tr><td>병합 결과 코드(빈칸=최종)</td><td class="colname">MergedType</td><td>2개 병합 시 나오는 상위 코드. 빈칸=최종단</td></tr>
+        <tr><td>희귀등급(1=희귀)</td><td class="colname">Rare</td><td>레어 여부</td></tr>
+        <tr><td>판매 골드</td><td class="colname">SellingPrice</td><td>판매 시 코인</td></tr>
+        <tr><td>생성기 여부(O)</td><td class="colname">IsGenerator</td><td>생성기면 O</td></tr>
+        <tr><td>1회 생산 에너지</td><td class="colname">Spread_CostEnergy</td><td>탭 1회당 에너지(대개 1)</td></tr>
+        <tr><td>보드 최대 산출물</td><td class="colname">Spread_ItemMaxNumber</td><td>보드 재고 상한(2단 재고 1층)</td></tr>
+        <tr><td>창고 최대 보유</td><td class="colname">Spread_StorageMaxNumber</td><td>창고 재고 상한(2층)</td></tr>
+        <tr><td>산출물 회복(초)</td><td class="colname">Spread_ItemRecoveryDuration</td><td>보드 재고 1개 회복 주기</td></tr>
+        <tr><td>창고 회복(초)</td><td class="colname">Spread_StorageRecoveryDuration</td><td>창고 재고 회복 주기</td></tr>
+        <tr><td>생성물 N번째 코드/가중치 ×20</td><td class="colname">…_Item / …_Weight</td><td>생성기 산출 후보와 가중치(가중 랜덤). 최대 20쌍</td></tr>
+        <tr><td>캐노니컬 체인 id</td><td class="colname">ChainId</td><td>아이템 family=백단위 prefix. 오더 <code>GeneratorChain</code> 참조 해소용(§6.3)</td></tr>
+        </tbody></table></div>
+    </div></details>
+</section>
+
+<!-- 3.2 GEN -->
+<section id="fr-gen">
+  <div class="secno">3.2</div>
+  <h2>기능 요구사항 — 생성기</h2>
+  <p class="intro">아이템 공급원. 탭하면 지정된 체인의 낮은 레벨 아이템을 뱉는다. 상태머신·2단 재고·가중 랜덤 드롭·럭키 보너스로 구성되며, 이 파라미터가 게임의 공급 속도(=진행 페이스)를 좌우한다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-GEN-01</td><td class="p0">P0</td>
+      <td><b>생성기 상태머신 + 탭 산출.</b> 생성기는 <code>초기화 → 개방대기 → 개방완료</code> 순으로 준비된 뒤 탭할 수 있다. 탭 1회당 아이템 1개를 뱉고 에너지를 <code>Spread_CostEnergy</code>(대개 1)만큼 차감한다.</td>
+      <td class="ref"><span class="tabn">머지체인</span> <span class="colname">IsGenerator</span>·<span class="colname">Spread_CostEnergy</span>; 상세 타이머는 <span class="tabn">아이템스펙</span> <span class="colname">Spread_Auto</span>·<span class="colname">Spread_WeightType</span> 등.</td>
+      <td>개방 타이머 후 산출, 에너지 차감, 젬 스피드업 옵션.<span class="src">GH: Spread_* 상태머신</span></td></tr>
+    <tr><td class="rid">FR-GEN-02</td><td class="p0">P0</td>
+      <td><b>가중 랜덤 드롭 테이블.</b> 산출물은 <code>생성물 N번째 코드/가중치</code> 목록에서 가중 랜덤으로 1개 선택. 가중치 유형은 <code>Fixed</code>(무한 생성)와 <code>Decremental</code>(뽑을 때마다 목록에서 제거되는 소진형)이 있다.</td>
+      <td class="ref"><span class="tabn">머지체인</span> <span class="colname">생성물 1~20번째 아이템코드/가중치</span>(40컬럼); 유형은 <span class="tabn">아이템스펙</span> <span class="colname">Spread_WeightType</span>.</td>
+      <td>확률표 config 반영·레어 시각 구분. Decremental은 소진 시 생성기 소멸.<span class="src">GH: WeightType 1·2</span></td></tr>
+    <tr><td class="rid">FR-GEN-03</td><td class="p0">P0</td>
+      <td><b>2단 재고 시스템.</b> 즉시 뽑을 수 있는 <b>보드 재고</b>(회복 주기마다 +1)와, 보드 재고가 바닥나면 리필되는 <b>창고 재고</b>의 2층 구조. 둘 다 소진되면 한 사이클 리셋되어 둘 다 최대로 복구된다.</td>
+      <td class="ref"><span class="tabn">머지체인</span> <span class="colname">Spread_ItemMaxNumber</span>·<span class="colname">Spread_StorageMaxNumber</span>·<span class="colname">Spread_ItemRecoveryDuration</span>·<span class="colname">Spread_StorageRecoveryDuration</span>.</td>
+      <td>한도 도달 시 생성 중지·재충전 게이지 표시. 각 타이머 젬 즉시완료.<span class="src">GH: 2-tier stock</span></td></tr>
+    <tr><td class="rid">FR-GEN-04</td><td class="p0">P0</td>
+      <td><b>무비용 장쿨형 생성기 3라인(무료 머지 보장).</b> 에너지가 0이어도(또는 무에너지 모드에서도) 항상 머지를 이어갈 수 있도록, 비용 없는 생성기 라인을 <b>3개</b>(정원·보석함·여행트렁크) 제공한다.</td>
+      <td class="ref"><span class="tabn">머지체인</span>에서 <span class="colname">Spread_CostEnergy=0</span>인 생성기 행(장쿨형 3라인).</td>
+      <td>에너지 없이도 항상 머지 가능. 3라인 동시 쿨다운이어도 최소 1라인은 회복 상태가 되도록 쿨 오프셋 배치.</td></tr>
+    <tr><td class="rid">FR-GEN-07</td><td class="p0">P0</td>
+      <td><b>생성기 자체의 머지 업그레이드(생성기 = 체인 아이템).</b> 생성기는 보드 위 고정 오브젝트가 아니라 <b>머지 체인의 상위 구간</b>이다. 하위 일반 아이템이 머지되어 <b>1단계 생성기</b>가 되고, 같은 단계 생성기 2개를 머지하면 상위 단계 생성기가 되어 <b>재고 상한·회복속도·산출 아이템 티어가 함께 상승</b>한다. 런칭은 라인당 <b>생성기 3단계</b>, 이후 라이브옵스로 상위 단계를 증축한다.</td>
+      <td class="ref"><span class="tabn">머지체인</span> 동일 <span class="colname">ChainId</span> 안에서 <span class="colname">IsGenerator</span>=1인 연속 <span class="colname">Step</span> 구간 + 단계별 <span class="colname">Spread_ItemMaxNumber</span>·<span class="colname">Spread_ItemRecoveryDuration</span>.<span class="src">GH: chain 1 s4–s11(8단)·chain 4 s4–s11</span></td>
+      <td>생성기 2개 머지 시 상위 생성기로 승급·재고/회복/산출티어 갱신. <b>상위 단계 추가가 시트 행 추가만으로 가능</b>(클라 하드코딩 금지).</td></tr>
+    <tr><td class="rid">FR-GEN-08</td><td class="p0">P0</td>
+      <td><b>생성기 2 아키타입 파라미터.</b> ① <b>즉시형</b> 6라인 — 재고 상한 크고(20~80) 회복 짧음(수십초~3분), 오더 재료 주공급원. ② <b>장쿨형</b> 3라인 — 재고 상한 작고(4~12) 회복 김(1~6시간), 비용 0, 복귀 훅 역할. 두 타입은 동일 스키마에 값만 다르게 설정한다.</td>
+      <td class="ref"><span class="tabn">머지체인</span> <span class="colname">Spread_CostEnergy</span>·<span class="colname">Spread_ItemMaxNumber</span>·<span class="colname">Spread_ItemRecoveryDuration</span>.<span class="src">GH 실측: 즉시형 cap 26–80·회복 180s / 장쿨형 cap 4–12·회복 3600–21600s</span></td>
+      <td>타입별 값이 전부 시트 제어. 장쿨형 회복 완료가 FR-LIVE 재방문 알림과 연동.</td></tr>
+    <tr><td class="rid">FR-GEN-05</td><td class="p0">P0</td>
+      <td><b>럭키 프로듀스(pity 보너스).</b> 생성기 산출 시 확률적으로 더 좋은 상위 아이템을 대신 지급한다. 순수 확률이 아니라 <code>[total, lucky]</code> 카운터 보장 방식(예 [60,1] = 60회당 1회 럭키). <code>super_items</code>에 속하면 슈퍼 럭키 연출. 플레이어 레벨 구간별로 다른 설정을 적용한다.</td>
+      <td class="ref"><span class="tabn">럭키생산</span> <span class="colname">lucky_chance_pct/x</span>(pity)·<span class="colname">generator_1~5</span>·<span class="colname">lucky_item_N/weight_N</span>·<span class="colname">super_item_N</span>·<span class="colname">level_min/max</span>(아래 스키마).</td>
+      <td>pity 카운터로 럭키 보장·슈퍼럭키 연출·레벨구간별 config 적용.<span class="src">GH: LuckyProduce</span></td></tr>
+    <tr><td class="rid">FR-GEN-06</td><td class="p1">P1</td>
+      <td><b>생성기 부스터.</b> 일시적으로 산출 레벨/개수를 올리는 부스터(비용 증가). 이벤트 <code>GeneratorBoost</code> 활성 시 추가 럭키·엑스트라 산출.</td>
+      <td class="ref"><span class="tabn">튜닝노브</span>(부스트 배수 레버) + 이벤트 config.</td>
+      <td>토글 on/off·비용/산출 config화.</td></tr>
+    </tbody></table></div>
+
+  <details class="schema"><summary>▸ 스키마 첨부 · <span class="tabn">럭키생산</span> (25컬럼) — 레벨 구간별 럭키 pity 설정</summary>
+    <div class="body">
+      <p class="schema-note">한 행 = <b>한 레벨 구간의 럭키 규칙</b>. 어떤 생성기(<code>generator_1~5</code>)에 적용되는지, 어떤 상위 아이템을 어떤 가중치로 줄지(<code>lucky_item/weight</code> 6쌍), 그중 슈퍼 럭키(<code>super_item</code> 4개)를 정의한다.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>변수명</th><th>의미</th></tr></thead><tbody>
+        <tr><td class="colname">level_min / level_max</td><td>이 규칙이 적용되는 플레이어 레벨 구간</td></tr>
+        <tr><td class="colname">lucky_chance_pct</td><td>pity의 <code>total</code>(몇 회당) — 예 60</td></tr>
+        <tr><td class="colname">lucky_chance_x</td><td>pity의 <code>lucky</code>(그중 몇 회 럭키) — 예 1</td></tr>
+        <tr><td class="colname">generator_1 … 5</td><td>이 럭키 규칙이 걸리는 생성기 코드(최대 5)</td></tr>
+        <tr><td class="colname">lucky_item_1~6 / lucky_weight_1~6</td><td>럭키 산출 후보 아이템과 가중치(source 체인에 맞게 선택)</td></tr>
+        <tr><td class="colname">super_item_1 … 4</td><td>슈퍼 럭키로 분류되는 아이템(더 높은 등급 연출)</td></tr>
+        </tbody></table></div>
+    </div></details>
+</section>
+
+<!-- 3.3 ORDER -->
+<section id="fr-order">
+  <div class="secno">3.3</div>
+  <h2>기능 요구사항 — 오더(손님 주문)</h2>
+  <p class="intro">머지의 <strong>목적과 보상</strong>을 부여하는 시스템. 손님이 요구 아이템을 주문하고, 플레이어가 보드에서 만들어 납품하면 코인·포인트·경험치를 받는다.
+  주문 생성은 플레이어 레벨 기반 3티어 필터 + 난이도 예산으로 통제되며, 이 규칙이 난이도 곡선의 핵심이다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-ORDER-01</td><td class="p0">P0</td>
+      <td><b>주문 슬롯 표시 + 3티어 아이템 선정.</b> 손님 주문 3~5개를 상단 트레이에 큰 아이콘으로 보여준다. 각 주문의 요구 아이템은 플레이어 레벨에 맞춰 <b>3티어(1순위=고단계 / 2·3순위=중하단계)</b>로 필터한 뒤 선택하고, 요구 종수(1/2/3종)는 레벨별 가중치로 정한다.</td>
+      <td class="ref"><span class="tabn">오더난이도</span> <span class="colname">FirstMin/Max·SecondMax·ThirdMax</span>(티어 단계 범위)·<span class="colname">PlayerMin/Max</span>; 종수는 <span class="tabn">오더아이템수가중치</span> <span class="colname">One/Two/ThreeItemsWeight</span>.</td>
+      <td>레벨별 티어·종수 가중 반영, 큰 아이콘 트레이.<span class="src">GH: MainOrderCreator</span></td></tr>
+    <tr><td class="rid">FR-ORDER-02</td><td class="p0">P0</td>
+      <td><b>납품 및 보상 지급.</b> 요구 아이템이 보드에 모두 있으면 원터치로 제출하고, <b>코인 = Σ(아이템 <code>Price</code> × 요구 개수)</b>를 지급한다. 별도로 이벤트/패스 진행용 포인트와 레벨업용 경험치도 함께 준다.</td>
+      <td class="ref">코인 단가 <span class="tabn">오더아이템</span> <span class="colname">Price</span>; 포인트 <span class="tabn">오더난이도</span> <span class="colname">Point</span>. 재화 키는 <span class="tabn">재화리워드키</span>.</td>
+      <td>충족 시 원터치 제출·보상 연출, 코인=단가합 공식 일치.<span class="src">GH: MainOrder 보상식</span></td></tr>
+    <tr><td class="rid">FR-ORDER-03</td><td class="p0">P0</td>
+      <td><b>난이도 예산 + 갱신 주기.</b> 한 주문의 난이도 총합이 상한(<code>DiffScoreLimit=300</code>)을 넘지 않도록 아이템별 <code>DiffScore</code> 예산으로 통제한다. 주문 슬롯은 종류별 주기로 갱신되어, 어려운 주문만 남아도 다음에 쉬운 주문이 나오게 한다.</td>
+      <td class="ref"><span class="tabn">오더난이도</span> <span class="colname">DiffSumMin/Max</span>·<span class="colname">RefreshTime</span>(3600/1800/900/300초); 아이템 난이도 <span class="tabn">오더아이템</span> <span class="colname">DiffScore</span>.</td>
+      <td>난이도 합 ≤ 상한, 주기 갱신으로 세션 완결감 유지.<span class="src">GH: OrderItemDiffScoreLimit</span></td></tr>
+    <tr><td class="rid">FR-ORDER-04</td><td class="p1">P1</td>
+      <td><b>오더 종류 확장 + 퀘스트 라인.</b> Fixed(고정)·Random(메인)·Special(스토리)·Branch(분기)·Lucky 등 종류를 지원하고, 전용 생성기·데코 보상을 주는 장기 퀘스트 라인을 별도 트랙으로 운영한다. 손님 아바타는 레벨로 해금된다.</td>
+      <td class="ref"><span class="tabn">오더고정</span>·<span class="tabn">오더특수</span>(<span class="colname">GeneratorChain·StartReward</span>)·<span class="tabn">오더아바타</span> <span class="colname">Category·UnlockLevel</span>.</td>
+      <td>종류별 주문 동작·아바타 레벨 해금.<span class="src">GH: OrderType 5종</span></td></tr>
+    </tbody></table></div>
+
+  <details class="schema"><summary>▸ 스키마 첨부 · <span class="tabn">오더난이도</span> (12컬럼) — 주문 생성 규칙</summary>
+    <div class="body">
+      <p class="schema-note">한 행 = <b>한 오더 종류(Type)의 생성 규칙</b>. 갱신 주기·해금 레벨·보상 포인트·난이도 예산·티어별 단계 범위를 정의한다.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>변수명</th><th>의미</th></tr></thead><tbody>
+        <tr><td class="colname">Type</td><td>오더 생성 규칙 종류</td></tr>
+        <tr><td class="colname">RefreshTime</td><td>슬롯 갱신 주기(초). 3600=1시간</td></tr>
+        <tr><td class="colname">UnlockLevel</td><td>이 규칙이 열리는 플레이어 레벨</td></tr>
+        <tr><td class="colname">Point</td><td>완료 시 획득 포인트(패스/이벤트용)</td></tr>
+        <tr><td class="colname">PlayerMin / PlayerMax</td><td>필터 적용 진행도 하한/상한(빈칸=무제한)</td></tr>
+        <tr><td class="colname">DiffSumMin / DiffSumMax</td><td>요구 아이템 난이도 총합 하한/상한(=300)</td></tr>
+        <tr><td class="colname">FirstMin / FirstMax</td><td>1순위(최고단계) 요구 아이템 최소/최대 단계</td></tr>
+        <tr><td class="colname">SecondMax / ThirdMax</td><td>2순위·3순위 최대 단계</td></tr>
+        </tbody></table></div>
+    </div></details>
+
+  <div class="grid g2">
+    <details class="schema"><summary>▸ <span class="tabn">오더아이템</span> (11컬럼)</summary>
+      <div class="body">
+        <p class="schema-note">한 행 = 오더에 등장 가능한 아이템 1종의 보상/난이도 파라미터.</p>
+        <div class="tbl-wrap"><table><tbody>
+          <tr><td class="colname">Code / Name</td><td>아이템 코드·명</td></tr>
+          <tr><td class="colname">UnlockLevel</td><td>오더 등장 시작 레벨</td></tr>
+          <tr><td class="colname">Price</td><td>보상 코인 계산용 단가</td></tr>
+          <tr><td class="colname">Weight</td><td>기본 등장 가중치</td></tr>
+          <tr><td class="colname">DiffScore</td><td>난이도 점수(예산 300에 합산)</td></tr>
+          <tr><td class="colname">WeightMultiple</td><td>조건부 가중치 배수</td></tr>
+          <tr><td class="colname">RepeatWeightDecrease</td><td>연속 등장 시 가중 감소</td></tr>
+          <tr><td class="colname">forbidden_slot_1~3</td><td>등장 금지 슬롯</td></tr>
+        </tbody></table></div>
+      </div></details>
+    <details class="schema"><summary>▸ <span class="tabn">오더아이템수가중치</span> (4컬럼)</summary>
+      <div class="body">
+        <p class="schema-note">레벨별 <b>요구 아이템 종수 확률</b>. 초반은 1종 위주(시니어 배려).</p>
+        <div class="tbl-wrap"><table><tbody>
+          <tr><td class="colname">Level</td><td>플레이어 레벨</td></tr>
+          <tr><td class="colname">OneItemWeight</td><td>1종 요구 가중(예 Lv1=60)</td></tr>
+          <tr><td class="colname">TwoItemsWeight</td><td>2종 요구 가중(예 20)</td></tr>
+          <tr><td class="colname">ThreeItemsWeight</td><td>3종 요구 가중(예 20)</td></tr>
+        </tbody></table></div>
+      </div></details>
+  </div>
+</section>
+
+<!-- 3.4 ECON -->
+<section id="fr-econ">
+  <div class="secno">3.4</div>
+  <h2>기능 요구사항 — 이코노미(재화)</h2>
+  <p class="intro">이중 통화 구조. <strong>코인(소프트)</strong>은 진행(스토리·복원)에만 쓰이는 단일 목적 재화, <strong>젬(하드)</strong>은 편의·구매·이벤트에 두루 쓰이며 IAP로 살 수 있는 다목적 재화다. 재화의 획득처(소스)와 소비처(싱크)를 명시적으로 관리한다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-ECON-01</td><td class="p0">P0</td>
+      <td><b>코인(소프트 통화).</b> 오더 납품·아이템 판매로 벌고, 스토리 챕터·복원에만 소비한다. 직접 구매 불가(인플레 통제).</td>
+      <td class="ref"><span class="tabn">경제소스싱크</span>(코인 행: 소스=오더/판매, 싱크=스토리/복원)·<span class="tabn">재화리워드키</span>.</td>
+      <td>소비처가 진행 콘텐츠로 한정됨.</td></tr>
+    <tr><td class="rid">FR-ECON-02</td><td class="p0">P0</td>
+      <td><b>젬(하드 통화).</b> 에너지 리필·상점 구매·리롤·슬롯 확장·이벤트에 두루 쓰이며 IAP·보상으로 획득한다.</td>
+      <td class="ref"><span class="tabn">경제소스싱크</span>(젬 행)·<span class="tabn">상점</span> <span class="colname">cost_type/cost_amount</span>·<span class="tabn">인벤토리해금</span> <span class="colname">unlock_cost</span>.</td>
+      <td>IAP·보상 획득, 다목적 소비 동작.</td></tr>
+    <tr><td class="rid">FR-ECON-03</td><td class="p0">P0</td>
+      <td><b>진행 비용 곡선.</b> 상위 아이템일수록 스토리/복원 비용이 가파르게 오르는 곡선을 둔다(장기 목표 유지). 곡선 파라미터는 튜닝 레버로 관리한다.</td>
+      <td class="ref"><span class="tabn">튜닝노브</span>(비용 곡선 레버)·<span class="tabn">진행타임라인</span>·<span class="tabn">스토리</span>(챕터별 비용).</td>
+      <td>체인 비용 config화, 밸런스 시트 연동.</td></tr>
+    <tr><td class="rid">FR-ECON-04</td><td class="p0">P0</td>
+      <td><b>재화 원장·트랜잭션 무결성.</b> 모든 획득/소비를 로그로 남기고 서버가 권위를 갖는다(클라 조작 방지).</td>
+      <td class="ref"><span class="tabn">세이브스키마</span>(재화 테이블)·<span class="tabn">서버API계약(초안)</span>.</td>
+      <td>재화 변동 전건 서버 원장 기록, 불일치 시 서버 권위. QA: 클라 조작 시 거부·정상값 복원.</td></tr>
+    <tr><td class="rid">FR-ECON-05</td><td class="p0">P0</td>
+      <td><b>재화 부족 UX.</b> 코인 부족 시 다음 오더를 하이라이트해 비압박 유도. 젬 부족 시 소프트 CTA(강제 모달 금지).</td>
+      <td class="ref"><span class="tabn">경제소스싱크</span>·<span class="tabn">튜닝노브</span>(CTA 빈도 레버).</td>
+      <td>부족 상황 강제 모달 0건·안내 1회 이하 QA.</td></tr>
+    </tbody></table></div>
+  <details class="schema"><summary>▸ 참고 · <span class="tabn">경제소스싱크</span> — 재화 순환(소스 vs 싱크) 설계표</summary>
+    <div class="body"><p class="schema-note">각 재화별로 <span class="colname">+ 유입(획득처)</span> / <span class="colname">- 유출(소비처)</span> / <span class="colname">밸런스 메모</span>를 정리해 인플레·디플레를 점검하는 기획 설계용 표. <span class="tabn">튜닝노브</span>와 함께 라이브옵스 조정의 근거가 된다.</p></div></details>
+</section>
+
+<!-- 3.5 STORY -->
+<section id="fr-story">
+  <div class="secno">3.5</div>
+  <h2>기능 요구사항 — 스토리 · 복원(데코)</h2>
+  <p class="intro">코인의 소비처이자 <strong>감정적 진행 동기</strong>. 선형 스토리를 코인으로 열어 나가고, 낡은 공간을 복원하며 원하는 디자인을 자유롭게 고른다. 시니어 타겟의 향수 훅(회상)이 핵심 정서 장치다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-STORY-01</td><td class="p0">P0</td>
+      <td><b>선형 스토리 챕터 진행.</b> 코인을 투자해 다음 스토리 조각을 순차 언락한다. 분기 선택 없이 진행되며(무결정), 세션 시작 시 다음 조각을 하이라이트한다.</td>
+      <td class="ref"><span class="tabn">스토리</span> <span class="colname">Book·Task·Page·Type·Content_KO</span>·<span class="tabn">메인태스크</span> <span class="colname">day·area·cost·reward</span>.</td>
+      <td>다음 조각 하이라이트·무결정 진행.</td></tr>
+    <tr><td class="rid">FR-STORY-02</td><td class="p0">P0</td>
+      <td><b>회상 CG·대사 재생(향수 훅).</b> 특정 챕터에서 옛 기억 CG와 대사를 큰 폰트로 재생하고, 스킵 버튼을 항상 제공한다.</td>
+      <td class="ref"><span class="tabn">스토리</span> <span class="colname">Type</span>(title/subtitle/content)·<span class="colname">ContentCode</span>·<span class="tabn">스토리화자</span>(화자 정의).</td>
+      <td>큰 폰트 대사·상시 스킵.</td></tr>
+    <tr><td class="rid">FR-STORY-03</td><td class="p0">P0</td>
+      <td><b>복원(데코) 구역별 3디자인 선택 · 무페널티 변경.</b> 각 복원 슬롯마다 3가지 디자인 중 하나를 고르고, 언제든 비용 없이 다시 바꿀 수 있다(자기표현·후회 방지).</td>
+      <td class="ref"><span class="tabn">스킨데코</span> <span class="colname">slot·item_id·area·timeline</span>(슬롯/디자인/구역 매핑).</td>
+      <td>언제든 재선택, 비용 없이 변경.</td></tr>
+    <tr><td class="rid">FR-STORY-04</td><td class="p0">P0</td>
+      <td><b>복원 전/후 비주얼 전환.</b> 복원 완료 시 구역 배경을 '후' 상태로 갱신하고 연출을 재생한다.</td>
+      <td class="ref"><span class="tabn">스킨데코</span> <span class="colname">area</span>별 전/후 배경 리소스·<span class="tabn">지역해금</span>.</td>
+      <td>완료 시 배경 갱신·연출.</td></tr>
+    <tr><td class="rid">FR-STORY-05</td><td class="p2">P2</td>
+      <td><b>분기 선택형 라이브 스토리.</b> 플레이어 선택으로 갈라지는 라이브 내러티브(출시 범위 외).</td>
+      <td class="ref">— (Later, <span class="tabn">오더브랜치</span> 구조 재활용 예정)</td>
+      <td>범위 외(Later).</td></tr>
+    </tbody></table></div>
+</section>
+
+<!-- 3.6 PROG -->
+<section id="fr-prog">
+  <div class="secno">3.6</div>
+  <h2>기능 요구사항 — 진행 · 레벨</h2>
+  <p class="intro">플레이어 레벨은 <strong>기능 개방과 콘텐츠 게이팅의 축</strong>. 오더/태스크로 경험치를 얻어 레벨업하고, 레벨에 따라 생성기·기능·지역이 순차 개방된다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-PROG-01</td><td class="p0">P0</td>
+      <td><b>경험치·레벨업 커브.</b> 오더/메인태스크 완료로 경험치를 얻어 레벨업한다(런칭 ~Lv30). 레벨 필요치는 <b>Lv1=30에서 레벨마다 +15 선형</b>(30/45/60/75…) 증가하고, 도달 시 보상을 지급한다.</td>
+      <td class="ref"><span class="tabn">레벨커브</span> <span class="colname">Level·Cost·reward_N_item/amount</span>(아래 스키마); 경험치원 <span class="tabn">메인태스크</span>·오더.</td>
+      <td>레벨 커브 config 일치, 도달 시 보상 지급.<span class="src">GH: LevelConfig.cost</span></td></tr>
+    <tr><td class="rid">FR-PROG-02</td><td class="p0">P0</td>
+      <td><b>피처·지역 레벨 게이팅.</b> 레벨에 따라 기능을 순차 개방한다 — <b>인벤토리 Lv2 · 상점 Lv3</b>(원작 버블 Lv4는 클론 미채택). 지역은 레벨+태스크 완료 조건으로 열린다. 판정은 <code>기능 enable=1 && 현재레벨 ≥ openLevel</code>.</td>
+      <td class="ref"><span class="tabn">기능플래그</span> <span class="colname">name·enable·param_1</span>(예 <code>openLevel-2</code>)·<span class="tabn">지역해금</span> <span class="colname">level·condition</span>.</td>
+      <td>Lv2 인벤토리·Lv3 상점 해금 동작, 일반 세션(≥8분) 기준 Lv3까지 누적 ≤90분.<span class="src">GH: FunctionEnableConfig</span></td></tr>
+    </tbody></table></div>
+  <details class="schema"><summary>▸ 스키마 첨부 · <span class="tabn">레벨커브</span> (8컬럼) — 레벨별 필요치·보상</summary>
+    <div class="body">
+      <p class="schema-note">한 행 = 한 레벨. PST 자매게임의 <code>reward_N_item/amount</code> 플랫 컬럼 관례를 따라 최대 3보상을 나열한다.</p>
+      <div class="tbl-wrap"><table><tbody>
+        <tr><td class="colname">Level</td><td>플레이어 레벨</td></tr>
+        <tr><td class="colname">Cost</td><td>레벨 도달 필요값(+15 선형, 경험치성)</td></tr>
+        <tr><td class="colname">reward_1_item / reward_1_amount</td><td>보상1 아이템·수량</td></tr>
+        <tr><td class="colname">reward_2_item / reward_2_amount</td><td>보상2 아이템·수량</td></tr>
+        <tr><td class="colname">reward_3_item / reward_3_amount</td><td>보상3 아이템·수량</td></tr>
+      </tbody></table></div>
+    </div></details>
+</section>
+
+<!-- 3.7 PACE -->
+<section id="fr-pace">
+  <div class="secno">3.7</div>
+  <h2>기능 요구사항 — 논타이머 페이싱</h2>
+  <div class="call warn"><div class="t">핵심 제약</div>시니어 타겟은 <strong>시간압박을 기피</strong>(불안). 최종 방식(무에너지 vs 소프트에너지)은 프로토 A/B로 확정하되, 아래는 두 모드 공통 요구.</div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-PACE-01</td><td class="p0">P0</td>
+      <td><b>에너지 모드 리모트 토글.</b> <code>energy_mode = none(무에너지) | soft(관대한 에너지)</code>를 서버 config로 전환할 수 있어야 한다. 클라 업데이트 없이 A/B로 최적 모드를 찾는다.</td>
+      <td class="ref"><span class="tabn">시스템상수</span> <span class="colname">name=energy_mode</span>·<span class="tabn">서버config표면</span>(리모트 제어 키).</td>
+      <td>서버 config만으로 모드 전환.</td></tr>
+    <tr><td class="rid">FR-PACE-02</td><td class="p0">P0</td>
+      <td><b>soft 모드 완화 파라미터.</b> soft 모드에서는 원작 기본값(<code>MaxEnergy=100</code>, <code>회복 120초/1</code>)보다 관대하게(상한↑·회복↑) 설정하고, "에너지 부족" 팝업의 압박 톤을 제거해 리필을 선택적 편의로 둔다. 무한에너지 아이템(<code>infi_ene</code>)을 계승한다.</td>
+      <td class="ref"><span class="tabn">시스템상수</span> <span class="colname">DefaultMaxEnergy·DefaultRecoveryDuration</span>(클라 폴백, 서버 오버라이드 여부 포함).</td>
+      <td>압박 톤 제거, 리필=편의. 완화값 적용.<span class="src">GH: EnergyModel</span></td></tr>
+    <tr><td class="rid">FR-PACE-03</td><td class="p0">P0</td>
+      <td><b>타이머 스킵 강요 없는 진행.</b> 강제 대기로 진행을 막지 않고, 콘텐츠 게이팅(스토리·컬렉션)으로 페이스를 조절한다.</td>
+      <td class="ref"><span class="tabn">진행타임라인</span>·<span class="tabn">튜닝노브</span>(페이싱 레버).</td>
+      <td>강제 대기 없음, 진행은 콘텐츠로.</td></tr>
+    </tbody></table></div>
+  <details class="schema"><summary>▸ 스키마 첨부 · <span class="tabn">시스템상수</span> (4컬럼) — 클라 폴백 상수 + 서버 오버라이드 표기</summary>
+    <div class="body"><p class="schema-note"><span class="colname">source</span>(SystemConfig/EnergyModel 등) · <span class="colname">name</span>(상수명) · <span class="colname">value</span>(값) · <span class="colname">desc</span>(설명, <b>서버 오버라이드 여부 포함</b>). 클라 값은 폴백이며 라이브는 <span class="tabn">서버config표면</span>의 리모트 값이 우선.</p></div></details>
+</section>
+
+<!-- 3.8 ONB -->
+<section id="fr-onb">
+  <div class="secno">3.8</div>
+  <h2>기능 요구사항 — 온보딩</h2>
+  <p class="intro">시니어 신규 유저의 첫 세션 이탈을 막는 <strong>가장 중요한 구간</strong>. 원작의 튜토리얼 스텝 순서·선행조건 체인을 참고해, 단일 액션·큰 화살표로 머지→오더→복원을 순서대로 가르친다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-ONB-01</td><td class="p0">P0</td>
+      <td><b>단계별 튜토리얼.</b> 머지 → 오더 납품 → 복원을 순서대로, 한 번에 하나의 액션만 유도한다(큰 화살표·명료한 카피). 각 스텝은 선행 완료조건(<code>TutorialFinished-X</code> 체인)으로 이어진다.</td>
+      <td class="ref"><span class="tabn">튜토리얼플로우</span> <span class="colname">순서·id·선행조건·executer·설명(한글)</span>(원작 스텝 시퀀스 그대로).</td>
+      <td>각 스텝 유도 액션 1개, 지시 카피 ≤10단어, 시니어 5명 중 4명이 힌트 없이 3초 내 수행.</td></tr>
+    <tr><td class="rid">FR-ONB-02</td><td class="p0">P0</td>
+      <td><b>튜토 완료율 계측 · 중단점 로깅.</b> 스텝별 진입/완료/이탈을 로깅해 어디서 막히는지 추적한다.</td>
+      <td class="ref"><span class="tabn">BI이벤트택소노미</span> <span class="colname">tutorial_step</span> 계열 이벤트.</td>
+      <td>소프트런칭 7일·신규 200명 기준 완료율 ≥80% (tutorial_step 이벤트).</td></tr>
+    <tr><td class="rid">FR-ONB-03</td><td class="p0">P0</td>
+      <td><b>인트로 감정 훅.</b> '할머니의 편지·가게 상속' 인트로로 첫 세션 몰입을 만든다(스킵 가능).</td>
+      <td class="ref"><span class="tabn">스토리</span>(챕터1 인트로)·<span class="tabn">알림텍스트</span>.</td>
+      <td>스킵 가능, 첫 세션 몰입.</td></tr>
+    <tr><td class="rid">FR-ONB-04</td><td class="p0">P0</td>
+      <td><b>튜토 중단 복원·스킵.</b> <code>tutorialStep</code> 기준으로 중단 지점 재개. 완료 계정 재설치 시 자동 스킵.</td>
+      <td class="ref"><span class="tabn">튜토리얼플로우</span> <span class="colname">id·선행조건</span>·<span class="tabn">세이브스키마</span> <span class="colname">tutorialStep</span>.</td>
+      <td>스텝3 후 재시작 시 스텝4 재개·완료 계정 스킵 QA.</td></tr>
+    </tbody></table></div>
+</section>
+
+<!-- 3.9 SAVE -->
+<section id="fr-save">
+  <div class="secno">3.9</div>
+  <h2>기능 요구사항 — 세이브 · 동기화</h2>
+  <p class="intro">진행 데이터의 <strong>영속성과 무결성</strong>. 서버가 세이브·시간의 권위를 갖고, 기기 변경·오프라인·충돌 상황에서 진행을 안전하게 유지한다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-SAVE-01</td><td class="p0">P0</td>
+      <td><b>서버 세이브 저장·복원.</b> FB 계정에 진행을 저장하고, 기기를 바꿔도 이어서 플레이할 수 있어야 한다.</td>
+      <td class="ref"><span class="tabn">세이브스키마</span> <span class="colname">DB Table·저장 용도</span>(동기화 대상 테이블 목록)·<span class="tabn">서버API계약(초안)</span> <code>/save</code>.</td>
+      <td>기기 변경 시 진행 유지.</td></tr>
+    <tr><td class="rid">FR-SAVE-02</td><td class="p0">P0</td>
+      <td><b>서버 시간 기준 처리.</b> 에너지 리필·이벤트 기간·쿨다운을 서버 시각으로 계산해 클라 시계 조작을 막는다.</td>
+      <td class="ref"><span class="tabn">서버API계약(초안)</span>(서버시간 제공)·<span class="tabn">저장동기화스펙</span>.</td>
+      <td>클라 시계 조작 방지.</td></tr>
+    <tr><td class="rid">FR-SAVE-03</td><td class="p0">P0</td>
+      <td><b>세이브 충돌·오프라인 처리.</b> 오프라인 플레이 후 재접속 시 충돌 해소 규칙에 따라 재동기화한다.</td>
+      <td class="ref"><span class="tabn">저장동기화스펙</span>(충돌 해소 규칙)·<span class="tabn">세이브스키마</span>.</td>
+      <td>서버 타임스탬프 최신 우선, 오프라인 완료 오더는 delta 병합, 보드 충돌 시 서버 우선·이탈 아이템 스토리지 이동.</td></tr>
+    <tr><td class="rid">FR-SAVE-04</td><td class="p0">P0</td>
+      <td><b>네트워크 단절 플레이.</b> 오프라인 상태에서 로컬 플레이 허용. 재연결 시 delta 동기화. 단절 안내는 조용한 배너(시니어 불안 최소화).</td>
+      <td class="ref"><span class="tabn">저장동기화스펙</span>·<span class="tabn">시스템상수</span>(오프라인 허용 flag).</td>
+      <td>오프라인 5분 후 재연결 시 진행 유지 QA.</td></tr>
+    </tbody></table></div>
+</section>
+
+<!-- 3.10 MON -->
+<section id="fr-mon">
+  <div class="secno">3.10</div>
+  <h2>기능 요구사항 — 수익화</h2>
+  <p class="intro">시니어 세그먼트에 맞춘 <strong>비압박 레이어드 수익화</strong>. IAP 젬팩·오퍼·시즌패스·보상형 광고·비압박 소비(수집/자기표현)를 조합하되, 후회·압박을 유발하지 않는 톤을 유지한다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-MON-01</td><td class="p0">P0</td>
+      <td><b>젬 팩 IAP.</b> 6단계($0.99–$99.99) 젬 팩을 판매하고, 결제는 서버가 영수증을 검증한 뒤 지급한다.</td>
+      <td class="ref"><span class="tabn">상점</span> <span class="colname">Source=IAP</span>·<span class="colname">Id·cost_type/amount·good_N_item/amount</span>·<span class="tabn">상점IAP스펙</span>.</td>
+      <td>결제 완료·지급·영수증 검증.</td></tr>
+    <tr><td class="rid">FR-MON-02</td><td class="p0">P0</td>
+      <td><b>스타터팩·데일리 스페셜·오퍼.</b> 가치 태그("이만큼 이득")와 비교 UI로 명시적 이득을 보여주는 오퍼를 운영한다.</td>
+      <td class="ref"><span class="tabn">상점</span> <span class="colname">Source=Bundle/DailyDeal·Condition·BuyLimit·DurationSec</span>.</td>
+      <td>가치 명시·비교 UI.</td></tr>
+    <tr><td class="rid">FR-MON-03</td><td class="p0">P0</td>
+      <td><b>시즌 패스 v1.</b> 무료+유료 2티어, 상시 캐치업(자기 페이스). 토큰을 모아 레벨업하며 무료/유료 보상을 받는다. <!-- 런칭은 단일 버전(A/B 없음), 트랙 A/B는 FR-LIVE-05(P1) 이후 --></td>
+      <td class="ref"><span class="tabn">배틀패스</span> <span class="colname">level·token_required·free_item/amount·paid_item/amount·is_super</span>(추정치, 아래 스키마).</td>
+      <td>과금 후회 방지, 자기 페이스.</td></tr>
+    <tr><td class="rid">FR-MON-04</td><td class="p0">P0</td>
+      <td><b>보상형 광고.</b> 필요 순간에 동적으로 배치되는 저가치 보상 광고. <b>과금 유저에게도 유지</b>(비압박 획득 경로).</td>
+      <td class="ref"><span class="tabn">튜닝노브</span>(광고 빈도/보상 레버)·<span class="tabn">재화리워드키</span>.</td>
+      <td>필요 순간 노출·과금 후에도 유지.</td></tr>
+    <tr><td class="rid">FR-MON-05</td><td class="p0">P0</td>
+      <td><b>비압박 소비 레버.</b> 컬렉션·시대테마·데코 프리미엄 등 수집/자기표현 기반 소비처를 제공한다.</td>
+      <td class="ref"><span class="tabn">스킨데코</span>·<span class="tabn">친밀도상점</span>·<span class="tabn">친밀도목록</span>.</td>
+      <td>수집/자기표현 동기 기반.</td></tr>
+    <tr><td class="rid">FR-MON-06</td><td class="p1">P1</td>
+      <td><b>번들 레이어링.</b> 1+1·Buy All·에스컬레이팅 데일리 등 이벤트 흐름과 결합한 번들.</td>
+      <td class="ref"><span class="tabn">상점</span> <span class="colname">Condition</span>(번들 해금)·이벤트 config.</td>
+      <td>이벤트 흐름 결합.</td></tr>
+    <tr><td class="rid">FR-MON-07</td><td class="p0">P0</td>
+      <td><b>결제 실패·중복 처리.</b> IAP 실패(네트워크·취소·검증실패) 시 재화 미지급 팝업+고객지원 링크 표시. <code>/iap/restore</code>로 중복 방지 및 정당 결제 복원.</td>
+      <td class="ref"><span class="tabn">서버API계약(초안)</span> <code>/iap/verify</code>·<code>/iap/restore</code>·<span class="tabn">상점IAP스펙</span>.</td>
+      <td>결제 취소 후 미지급 확인, 동일 영수증 2회 검증 시 1회만 지급.</td></tr>
+    <tr><td class="rid">FR-MON-08</td><td class="p0">P0</td>
+      <td><b>시즌 패스 만료.</b> 패스 종료 시 포인트 소멸. 종료 48h 전 배너 안내. 구매 복원 시 유료 보상 소급 지급.</td>
+      <td class="ref"><span class="tabn">배틀패스</span>·<span class="tabn">이벤트캘린더</span>(만료 타임스탬프).</td>
+      <td>48h 전 배너 노출·복원 시 유료 보상 지급 QA.</td></tr>
+    <tr><td class="rid">FR-MON-09</td><td class="p0">P0</td>
+      <td><b>오퍼 만료 UX.</b> 만료된 오퍼는 구매 버튼 비활성화+"기간 종료" 표시. 만료 영수증 서버에서 거부.</td>
+      <td class="ref"><span class="tabn">상점</span> <span class="colname">DurationSec·Condition</span>·<span class="tabn">서버API계약(초안)</span>.</td>
+      <td>만료 오퍼 구매 시도 시 서버 거부·UI 비활성 확인.</td></tr>
+    </tbody></table></div>
+  <details class="schema"><summary>▸ 스키마 첨부 · <span class="tabn">상점</span> (15컬럼) / <span class="tabn">배틀패스</span> (9컬럼, ⚠추정치)</summary>
+    <div class="body">
+      <p class="schema-note"><span class="tabn">상점</span>: <span class="colname">Source</span>(IAP/Bundle/DailyDeal) · <span class="colname">Id · Type · Condition · cost_type/amount · BuyLimit · DurationSec · Icon · good_1~3_item/amount</span>. PST <code>product.json</code> 플랫 컬럼 관례.</p>
+      <p class="schema-note"><span class="tabn">배틀패스</span>(<b>APK에 실제값 없음 → 경제 기반 추정치, 서버 config로 확정</b>): <span class="colname">level · token_required · free_item/amount · paid_item/amount · is_super · in_use</span>.</p>
+    </div></details>
+</section>
+
+<!-- 3.11 LIVE -->
+<section id="fr-live">
+  <div class="secno">3.11</div>
+  <h2>기능 요구사항 — 라이브옵스</h2>
+  <p class="intro">출시 후 볼륨을 키우는 <strong>운영 엔진</strong>. 모든 이벤트가 코어 루프(주문/코인)를 재사용하고, 리모트 config로 클라 업데이트 없이 스케줄·추가한다. 경쟁 이벤트는 실시간 상대 대신 로봇(가상 점수)을 쓴다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-LIVE-01</td><td class="p0">P0</td>
+      <td><b>이벤트 하네스.</b> 모든 이벤트가 별도 미니게임(카니발) 없이 코어 머지·주문·코인 태스크로 수렴하도록 구조화한다.</td>
+      <td class="ref"><span class="tabn">이벤트시스템스펙</span>·<span class="tabn">이벤트모드</span> <span class="colname">Mode·Theme·config_table_N</span>.</td>
+      <td>모든 이벤트가 주문/코인 태스크로 수렴.</td></tr>
+    <tr><td class="rid">FR-LIVE-02</td><td class="p0">P0</td>
+      <td><b>리모트 config 이벤트 스케줄러.</b> 서버에서 이벤트를 추가·기간 설정할 수 있고, 클라 업데이트가 필요 없다.</td>
+      <td class="ref"><span class="tabn">이벤트캘린더</span>·<span class="tabn">이벤트명매핑</span>·<span class="tabn">서버config표면</span>(스케줄 키).</td>
+      <td>서버에서 이벤트 추가·기간 설정.</td></tr>
+    <tr><td class="rid">FR-LIVE-03</td><td class="p0">P0</td>
+      <td><b>시즌 이벤트(30일).</b> 무료/유료 트랙의 장기 아크와 일일 목표를 갖는 시즌 이벤트 1개.</td>
+      <td class="ref"><span class="tabn">이벤트메달보상</span>·<span class="tabn">이벤트페이퍼보상</span>·<span class="tabn">이벤트마일스톤템플릿</span>.</td>
+      <td>장기 아크·일일 목표.</td></tr>
+    <tr><td class="rid">FR-LIVE-04</td><td class="p0">P0</td>
+      <td><b>단기 이벤트 2–3종.</b> 수집·경쟁·데일리 형태. 경쟁 이벤트는 <b>로봇 상대</b>가 시간에 따라 점수를 쌓는다. 봇은 체크포인트(<code>경과초-누적점수-증가방식</code>) 리스트로 정의되며, 증가방식은 <code>0=이징 / 1=버스트 / 2=계단 점프</code>.</td>
+      <td class="ref"><span class="tabn">배틀봇</span>·<span class="tabn">팀봇</span> <span class="colname">elapsed_sec_N·cum_score_N·prog_mode_N</span>(아래 스키마)·<span class="tabn">이벤트플레인점수</span>.</td>
+      <td>sawtooth·1vN 토너먼트·부스트, 봇 3모드 동작.<span class="src">GH: Battle/Team bot</span></td></tr>
+    <tr><td class="rid">FR-LIVE-05</td><td class="p1">P1</td>
+      <td><b>이벤트 체인화·A/B 프레임워크.</b> 이벤트 산출물을 다음 이벤트로 연결하고, 세그먼트 실험을 돌린다. <em class="muted">(시즌패스 트랙 A/B = FR-MON-03 단일 버전 런칭 이후 본 FR에서 실험)</em></td>
+      <td class="ref"><span class="tabn">서버값재구성(추정)</span>·<span class="tabn">서버config표면</span>(A/B 키).</td>
+      <td>이벤트 간 산출물 연결·세그 실험.</td></tr>
+    <tr><td class="rid">FR-LIVE-06</td><td class="p0">P0</td>
+      <td><b>이벤트 종료 재화 처리.</b> 이벤트 전용 재화 종료 시 소멸. 종료 24h 전 알림. 잔여 포인트에 "보상 받기" CTA 제공.</td>
+      <td class="ref"><span class="tabn">이벤트캘린더</span>·<span class="tabn">재화리워드키</span>(이벤트 전용 재화 코드).</td>
+      <td>종료 후 잔액 0·24h 전 알림 QA.</td></tr>
+    <tr><td class="rid">FR-LIVE-07</td><td class="p1">P1</td>
+      <td><b>FB 알림·재방문 훅.</b> FB Instant SDK 알림으로 이벤트 시작/생성기 충전/새 챕터 가능 알림. 동의 후 1일 최대 2회. 설정에서 온오프. 논타이머 게임의 핵심 복귀 장치.</td>
+      <td class="ref"><span class="tabn">알림텍스트</span>·<span class="tabn">서버config표면</span>(알림 빈도 config).</td>
+      <td>알림 클릭 BI 이벤트 추적 확인.</td></tr>
+    </tbody></table></div>
+  <details class="schema"><summary>▸ 스키마 첨부 · <span class="tabn">배틀봇</span> (21컬럼) / <span class="tabn">팀봇</span> (23컬럼) — 가상 상대 점수 곡선</summary>
+    <div class="body">
+      <p class="schema-note">한 행 = 봇 1개. <span class="colname">id·groupId</span>(·배틀봇은 <span class="colname">round</span>) 뒤로 <b>체크포인트 6~7개</b>가 <code>경과시간·누적점수·증가방식</code> 3컬럼씩 반복된다. 증가방식(<span class="colname">prog_mode</span>): <b>0</b>=이징 보간(부드럽게 따라잡음) · <b>1</b>=랜덤 분할 증가(버스트) · <b>2</b>=정시 계단 점프.</p>
+      <div class="tbl-wrap"><table><tbody>
+        <tr><td class="colname">id / groupId</td><td>봇 식별·그룹(배틀봇은 <span class="colname">round</span> 추가)</td></tr>
+        <tr><td class="colname">elapsed_sec_N</td><td>체크포인트 N의 경과 시간(초)</td></tr>
+        <tr><td class="colname">cum_score_N</td><td>체크포인트 N의 누적 점수</td></tr>
+        <tr><td class="colname">prog_mode_N</td><td>N→N+1 구간 점수 증가방식(0/1/2)</td></tr>
+      </tbody></table></div>
+    </div></details>
+</section>
+
+<!-- 3.12 A11Y -->
+<section id="fr-a11y">
+  <div class="secno">3.12</div>
+  <h2>기능 요구사항 — 접근성 (시니어)</h2>
+  <p class="intro">40–65세 타겟의 시각·조작 특성을 반영한 <strong>불변 제약(WCAG 2.2)</strong>. 큰 폰트·고대비·색+형태 이중 구별·큰 탭 타겟을 디자인 시스템 토큰으로 강제한다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-A11Y-01</td><td class="p0">P0</td>
+      <td><b>큰 폰트 + 확대 옵션.</b> 본문 ≥18–20pt, 핵심 CTA ≥30pt급. 설정에서 텍스트 크기를 더 키울 수 있다.</td>
+      <td class="ref">디자인 시스템 토큰(<span class="tabn">아트에셋물량</span> UI 항목)·설정 값.</td>
+      <td>설정서 텍스트 크기 조절.</td></tr>
+    <tr><td class="rid">FR-A11Y-02</td><td class="p0">P0</td>
+      <td><b>명암비 준수.</b> 본문 4.5:1 / 대형 텍스트 3:1 이상(WCAG 2.2).</td>
+      <td class="ref">디자인 시스템 색 토큰(대비 감사 대상).</td>
+      <td>대비 감사 통과.</td></tr>
+    <tr><td class="rid">FR-A11Y-03</td><td class="p0">P0</td>
+      <td><b>체인 단계 이중 구별.</b> 인접한 체인 단계를 색만이 아니라 형태로도 구별해, 유사색 판별을 불필요하게 만든다.</td>
+      <td class="ref"><span class="tabn">아이템아트대조표</span>(단계별 실루엣/형태 차별화)·<span class="tabn">머지체인</span> <span class="colname">Step</span>.</td>
+      <td>유사색 없이 구별 가능.</td></tr>
+    <tr><td class="rid">FR-A11Y-04</td><td class="p0">P0</td>
+      <td><b>큰 탭 타겟·단일 액션.</b> 넉넉한 간격과 큰 히트 영역으로 오조작을 줄이고, 한 번에 하나의 액션만 요구한다.</td>
+      <td class="ref">디자인 시스템(탭 타겟 최소 크기 토큰).</td>
+      <td>관찰 세션 10분당 오조작 ≤2회, 탭 타겟 ≥44×44pt 정적 감사.</td></tr>
+    <tr><td class="rid">FR-A11Y-05</td><td class="p1">P1</td>
+      <td><b>색맹 QA.</b> UI 전체를 적록색맹·전색맹 시뮬레이터로 검증. 색 단독으로 상태 전달 금지(형태·레이블 병행 필수).</td>
+      <td class="ref"><span class="tabn">아이템아트대조표</span>·디자인 시스템(이중 구별 토큰).</td>
+      <td>색맹 시뮬레이션 감사 통과.</td></tr>
+    <tr><td class="rid">FR-A11Y-06</td><td class="p0">P0</td>
+      <td><b>사운드·햅틱 설정.</b> BGM/SFX 개별 온오프, 햅틱 온오프. 설정값 세이브 유지.</td>
+      <td class="ref"><span class="tabn">세이브스키마</span>(설정 필드)·<span class="tabn">시스템상수</span>.</td>
+      <td>토글 동작·재시작 후 설정값 유지 QA.</td></tr>
+    </tbody></table></div>
+</section>
+
+<!-- 3.13 BI -->
+<section id="fr-bi">
+  <div class="secno">3.13</div>
+  <h2>기능 요구사항 — 계측 · BI</h2>
+  <p class="intro">데이터 기반 라이브옵스의 토대. 원작에서 추출한 <strong>976개 분석 이벤트 분류(EBIType)</strong>를 참고해 핵심 이벤트를 로깅하고, 퍼널·리텐션·세그먼트를 모니터링한다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>우선</th><th>요구사항 (풀이)</th><th>참조 데이터(시트)</th><th>수용 기준</th></tr></thead><tbody>
+    <tr><td class="rid">FR-BI-01</td><td class="p0">P0</td>
+      <td><b>핵심 이벤트 로깅.</b> <code>session</code>·<code>tutorial_step</code>·<code>order_complete</code>·<code>merge</code>·<code>chapter_unlock</code>·<code>purchase</code> 등 핵심 행동을 스키마화해 로깅한다.</td>
+      <td class="ref"><span class="tabn">BI이벤트택소노미</span> <span class="colname">카테고리·EventName(EBIType)</span>(총 976개 중 런칭 필수 선별).</td>
+      <td>스키마 정의·수집 검증.</td></tr>
+    <tr><td class="rid">FR-BI-02</td><td class="p0">P0</td>
+      <td><b>퍼널·리텐션 대시보드.</b> D1/D7/D30 리텐션과 온보딩·구매 퍼널을 대시보드로 모니터링한다.</td>
+      <td class="ref"><span class="tabn">BI이벤트택소노미</span>(퍼널 이벤트)·KPI 게이트 정의.</td>
+      <td>KPI 게이트 모니터링.</td></tr>
+    <tr><td class="rid">FR-BI-03</td><td class="p1">P1</td>
+      <td><b>세그먼트·A/B 리포팅.</b> 페이싱(에너지 모드)·오퍼 실험을 세그먼트별로 분석한다.</td>
+      <td class="ref"><span class="tabn">서버config표면</span>(A/B 세그 키)·<span class="tabn">튜닝노브</span>.</td>
+      <td>페이싱/오퍼 실험 분석.</td></tr>
+    </tbody></table></div>
+</section>
+
+<!-- 4 NFR -->
+<section id="nfr">
+  <div class="secno">4</div>
+  <h2>비기능 요구사항 (NFR)</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>범주</th><th>요구사항</th><th>목표/기준</th></tr></thead><tbody>
+    <tr><td class="rid">NFR-PERF-01</td><td>성능</td><td>패키지 용량</td><td><b>≤200MB</b>, 콜드 로드 FCP ≤5초(3G·구형), 초기 패킷 ≤5MB, 지연 로딩</td></tr>
+    <tr><td class="rid">NFR-PERF-02</td><td>성능</td><td>프레임/반응</td><td>중급 60fps / 구형 30fps 폴백, 60초 플레이 프레임타임 P95 ≤33ms</td></tr>
+    <tr><td class="rid">NFR-PLAT-01</td><td>플랫폼</td><td>FB/IG Instant SDK 준수 · 코어 로직 플랫폼 독립</td><td>멀티플랫폼 포팅 여지 유지</td></tr>
+    <tr><td class="rid">NFR-SEC-01</td><td>보안</td><td>IAP 영수증 서버 검증·재화 서버 권위</td><td>클라 조작 방지</td></tr>
+    <tr><td class="rid">NFR-SEC-02</td><td>보안</td><td>경쟁 이벤트 기본 안티치트(서버 검증)</td><td>경과시간 대비 최대 가능 점수 초과·1분 내 봇 최고점 5배 급증 시 제출 거부</td></tr>
+    <tr><td class="rid">NFR-REL-01</td><td>신뢰성</td><td>세이브 무결성·크래시율</td><td>크래시율 ≤0.5%(crash-free sessions), 세이브 유실 0건(오더 완료 후 재접속 시 코인 미지급 사례)</td></tr>
+    <tr><td class="rid">NFR-SCAL-01</td><td>확장성</td><td>리모트 config 기반 콘텐츠/이벤트/밸런스</td><td>클라 업데이트 없이 운영 변경</td></tr>
+    <tr><td class="rid">NFR-LOC-01</td><td>현지화</td><td>문자열 외부화·다국어 대응 구조</td><td>런칭 영어, 확장 대비</td></tr>
+    <tr><td class="rid">NFR-A11Y-01</td><td>접근성</td><td>WCAG 2.2 준수(폰트·대비·구별성)</td><td>감사 통과</td></tr>
+    </tbody></table></div>
+</section>
+
+<!-- 5 EXT -->
+<section id="ext">
+  <div class="secno">5</div>
+  <h2>외부 인터페이스</h2>
+  <div class="grid g2">
+    <div class="card"><h4>FB Instant Games SDK</h4><p>인증(플레이어), IAP(구매·영수증), 보상형 광고, 컨텍스트(공유/초대는 P1+). 세션 라이프사이클.</p></div>
+    <div class="card"><h4>백엔드 API</h4><p><code>/save</code>(로드·저장)·<code>/config</code>(리모트config)·<code>/events</code>(스케줄·진행)·<code>/iap/verify</code>·<code>/leaderboard</code>(경쟁 이벤트). 서버시간 제공.</p></div>
+    <div class="card"><h4>광고 네트워크</h4><p>FB Audience Network(보상형). 동적 배치·frequency cap.</p></div>
+    <div class="card"><h4>BI/애널리틱스</h4><p>이벤트 스트림 → 데이터 웨어하우스·대시보드. 실시간 KPI.</p></div>
+  </div>
+</section>
+
+<!-- 6 DATA -->
+<section id="data">
+  <div class="secno">6</div>
+  <h2>데이터 요구사항</h2>
+  <h4>6.1 핵심 엔티티(런타임)</h4>
+  <ul>
+    <li><code>Item{ id, chainId, level, x, y, inStorage }</code></li>
+    <li><code>Generator{ id, type, outputChainId, dropTable, capMax, capNow, energyCost }</code></li>
+    <li><code>Order{ id, requires:[{chainId,level,qty}], rewardCoins, rewardItems, state, cooldownUntil, lastRefreshedAt, orderType }</code></li>
+    <li><code>StoryChapter{ id, costCoins, xp, unlocked, sceneRef, decoUnlock }</code></li>
+    <li><code>DecoSlot{ areaId, slotId, chosenDesign(1..3), unlocked, lastChangedAt, changeCount }</code></li>
+    <li><code>PlayerState{ coins, gems, energy?, level, xp, chapterProgress, tutorialStep, inventory, lifetimeStats{ mergeCount, orderCount, coinsEarned } }</code></li>
+    <li><code>PurchaseRecord{ orderId, platform, productId, receiptToken, verifiedAt, grantedAt, state(pending|verified|revoked) }</code></li>
+    <li><code>EventProgress{ playerId, eventId, startedAt, expiresAt, currentPoints, milestoneReached, state(active|claimed|expired), currencyBalance }</code></li>
+    <li><code>PlayerSegment{ playerId, experimentId, segmentKey(예 energy_mode:none|soft), assignedAt }</code> — 재설치 후 서버에서 동일 세그먼트 복원</li>
+  </ul>
+  <h4>6.2 config 스키마(리모트)</h4>
+  <ul>
+    <li>체인/생성기/드롭테이블/머지비용 곡선 · 레벨 커브 · 피처 언락 페이싱</li>
+    <li>오더 생성·난이도 · 시즌/이벤트 정의·스케줄 · 오퍼/패스 구성 · 밸런스 파라미터</li>
+    <li><code>energy_mode</code> 및 A/B 세그먼트 값</li>
+  </ul>
+  <h4>6.3 ChainId 식별 체계 <span class="src">GH: 코드 백단위 prefix</span></h4>
+  <ul>
+    <li><code>ChainId</code> = 아이템 family = 코드 <b>백단위 prefix</b>(예 101~111→체인1, 1601~1610→체인16). 네임드는 <code>sp4_2_1</code>→<code>sp4_2</code>.</li>
+    <li><code>GeneratorChain=N</code> 참조 = <b>family N의 생성기가 family N+1 아이템을 산출</b>(예 GeneratorChain 15=개집 → family 16=개). 오더/특수/분기의 생성기 참조를 이 규칙으로 해소.</li>
+  </ul>
+  <h4>6.4 config 변형 · 서버 오버라이드 <span class="src">GH: GetServerConfig/FileReplace</span></h4>
+  <ul>
+    <li>기본은 base config 로드. 서버가 <code>suffix</code>를 주면 <code>FileReplace</code>로 변형 로드: <code>_nerf</code>/<code>_nerf_more</code>(난이도 완화 A/B), <code>_shell</code>(테마), <code>_contiorder</code>(연속 오더), <code>_chesthard</code>(상자 하드).</li>
+    <li>플레이어 그룹(A/B) 게이팅(<code>IsPlayerGroupOpen</code>). <b>라이브 기본값 = base(=본 시트값)</b>이므로 시트가 곧 런칭 밸런스의 단일 소스.</li>
+  </ul>
+  <div class="call"><div class="t">원칙</div>밸런스·콘텐츠·이벤트·페이싱은 <strong>전부 리모트 config화</strong> → 시트→JSON→서버 파이프라인으로 클라 업데이트 없이 운영. 원작과 동일한 <strong>base + suffix 변형</strong> 구조를 채택해 A/B·난이도 튜닝을 클라 배포 없이 수행.</div>
+
+  <h4>6.5 밸런스 시트 데이터 분류 <span class="src">시트 탭: 데이터분류</span></h4>
+  <p class="muted">밸런스 시트(75탭)는 <b>실제 런칭 클라/서버가 참조하는 라이브 config</b>와 <b>기획·개발·QA용 참고 문서</b>로 나뉜다. 시트의 <span class="tabn">데이터분류</span> 탭에 전 탭이 색인(🟢/🟡/🔵 탭 색상)되어 있으며, 개발은 🟢·🟡만 JSON→서버로 올린다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>분류</th><th class="num">탭수</th><th>성격</th><th>대표 탭</th><th>런칭 취급</th></tr></thead><tbody>
+    <tr><td><b>🟢 클라이언트 · 실측</b></td><td class="num">45</td><td>APK 클라 상수/config에서 추출한 값. 그대로 서버 config로 사용.</td><td class="ref"><span class="tabn">머지체인</span><span class="tabn">아이템스펙</span><span class="tabn">오더난이도</span><span class="tabn">레벨커브</span><span class="tabn">럭키생산</span> 등</td><td>JSON→서버(값 확정)</td></tr>
+    <tr><td><b>🟡 클라이언트 · 추정</b></td><td class="num">5</td><td>서버 전용값(로컬 부재). PST 자매게임 구조 이식 + GH 경제 매핑. <b>구조=확정, 값=추정</b>.</td><td class="ref"><span class="tabn">데일리출석</span><span class="tabn">일일휠</span><span class="tabn">스트릭연속</span><span class="tabn">배틀패스</span><span class="tabn">이벤트캘린더</span></td><td>JSON→서버(값 라이브 튜닝)</td></tr>
+    <tr><td><b>🔵 참고 · 문서</b></td><td class="num">24</td><td>스펙·검증·설계·위키·제작물량 문서. 런칭 클라가 직접 참조하지 않음.</td><td class="ref"><span class="tabn">게임규칙</span><span class="tabn">서버API계약(초안)</span><span class="tabn">경제소스싱크</span><span class="tabn">BI이벤트택소노미</span><span class="tabn">아이템마스터</span>(조인뷰) 등</td><td>참조 전용(비출고)</td></tr>
+    </tbody></table></div>
+  <div class="call warn"><div class="t">주의</div><span class="tabn">보드슬롯</span>(원작 696 비정형 슬롯)은 클론이 정형 그리드로 대체하므로 참고로 분류. <span class="tabn">아이템마스터</span>는 여러 클라 테이블을 합친 <b>dev 조인 뷰</b>(파생본)라 출고 대상이 아니며, 실제 출고는 <span class="tabn">아이템스펙</span>·<span class="tabn">아이템속성</span> 등 분할 테이블이다.</div>
+
+  <h4>6.6 JSON 추출 파이프라인 · 원작 재현 검증 <span class="src">extract/client_json/</span></h4>
+  <p class="muted">🟢·🟡 50탭을 <b>시트 규칙</b>(Row2=Property Name, Row3~=데이터, 1번째 column부터, row/col 빈 내용 만나면 중단) 그대로 JSON 추출 → 코어루프 불변식 검증까지 파이프라인화(<code>extract_client_json.py</code> / <code>validate_client_json.py</code>).</p>
+  <div class="kpis">
+    <div class="kpi"><div class="n">50<small>탭</small></div><div class="l">클라 config JSON(measured 45·estimated 5)</div></div>
+    <div class="kpi"><div class="n">12,559<small>rec</small></div><div class="l">추출 레코드(규칙 준수)</div></div>
+    <div class="kpi"><div class="n">5/5<small>✅</small></div><div class="l">코어루프 불변식 통과</div></div>
+    <div class="kpi"><div class="n">🟢</div><div class="l">원작 코어 재현 가능 판정</div></div>
+  </div>
+  <div class="call green"><div class="t">판정: 배포 가능 (코어)</div>머지 사다리 폐포성·레벨커브 단조·오더 코드 해소·티어 상한·럭키 pity 커버 <b>전부 통과</b>. 리버싱 감사에서 발견한 <b>blocker 4건(레벨85 누락·보상키 3101/3601·튜토 중복 id) 해소</b>, major 6건 수정, 🟡5탭 PST 경제 튜닝 완료. 이벤트 5탭 7,362 참조 dangling 0. <b>지금 JSON을 서버 config로 올리면 코어 루프가 원작처럼 동작</b>한다. 상세: <code>extract/client_json/_VERDICT.md</code>.</div>
+  <div class="call warn"><div class="t">기획 결정 대기 (크래시 아님)</div>8301 새 체인 초기 3단 획득경로·오더 Type9 First 아이템 풀 협소·DailyDeal Type 미입력·배틀봇 Group1 라운드 9·10 등은 게임디자인 결정이 필요한 known-gap. <code>_VERDICT.md</code>에 8항목 정리.</div>
+
+  <h4>6.7 값 규약 — 빈칸 제거(클라 누락 방지) <span class="src">시트 탭: 값규약</span></h4>
+  <p class="muted">기획이 <b>모든 셀 값을 시트로 통제</b>하고 클라가 빠짐없이 바라보도록, 클라 스칼라 필드의 빈칸을 <b>약속된 센티넬</b>로 채움(PST 자매게임 규약 준용). "비생성기가 생성기처럼 보이는" 모호함은 <code>IsGenerator=0</code>·<code>Spread_*=0(생성기 아님)</code>처럼 <b>타입별 약속값</b>으로 해소.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>규약</th><th>규칙</th><th>값</th><th>의미</th></tr></thead><tbody>
+    <tr><td>전역 수치 N/A</td><td>수치 컬럼 빈칸</td><td><code>0</code></td><td>해당없음 / <code>*Max</code>=무제한 / <code>*Min</code>=하한없음 / SellingPrice=판매불가</td></tr>
+    <tr><td>전역 문자 N/A</td><td>문자 컬럼 빈칸</td><td><code>none</code></td><td>편집/아이콘/설명키 등 문자 해당없음</td></tr>
+    <tr><td>플래그</td><td>불리언</td><td><code>0</code>/<code>1</code>·<code>O</code></td><td>0=아니오·off (예 IsGenerator=0=비생성기)</td></tr>
+    <tr><td>병합</td><td><code>MergedType</code></td><td><code>none</code></td><td>최종단(더 병합 없음)</td></tr>
+    <tr><td>배열 슬롯</td><td>번호붙은 반복(produce_item_N·reward_N…)</td><td>(빈칸 유지)</td><td>빈칸=목록 끝 → JSON은 존재 슬롯만 배열 추출(패딩 안함)</td></tr>
+    <tr><td>확률/가중치</td><td>gacha_rate·weight</td><td>분모 10000</td><td>1% = 100</td></tr>
+    </tbody></table></div>
+  <div class="call green"><div class="t">결과: 스칼라 빈칸 0</div>클라 스칼라 <b>267컬럼 빈칸 0개</b>(79,355셀 규약값으로 채움) → <b>빈칸 때문에 클라가 값을 못 보는 경우 제거</b>. 배열 슬롯 351컬럼만 "목록끝" 규약으로 의도적 빈칸 유지. 규약 원본은 시트 <span class="tabn">값규약</span> 탭.</div>
+</section>
+
+<!-- 7 TRACE -->
+<section id="trace">
+  <div class="secno">7</div>
+  <h2>추적성 (Traceability)</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>전략문서(PRD/출시스펙)</th><th>SRS 대응</th></tr></thead><tbody>
+    <tr><td>CORE-1 머지 코어 루프</td><td>FR-BOARD·FR-GEN·FR-ORDER·FR-ECON</td></tr>
+    <tr><td>CORE-2 이중 통화</td><td>FR-ECON-01/02</td></tr>
+    <tr><td>STORY-1 내러티브·데코</td><td>FR-STORY-01~04</td></tr>
+    <tr><td>PROG-1 피처 언락 페이싱</td><td>FR-PROG-02</td></tr>
+    <tr><td>논타이머(Part4)</td><td>FR-PACE-01~03</td></tr>
+    <tr><td>LIVE-1/2 이벤트 하네스·패스</td><td>FR-LIVE-01~04</td></tr>
+    <tr><td>MON-1 레이어드 수익화</td><td>FR-MON-01~06, FR-MON-07, FR-MON-08, FR-MON-09</td></tr>
+    <tr><td>시니어 UX(시장조사)</td><td>FR-A11Y-01~04, FR-A11Y-05, FR-A11Y-06·FR-ONB·NFR-A11Y</td></tr>
+    <tr><td>OPS-1/확장성</td><td>NFR-SCAL·FR-LIVE-02·데이터 6.2</td></tr>
+    <tr><td>세이브·오프라인</td><td>FR-SAVE-01~03, FR-SAVE-04</td></tr>
+    <tr><td>온보딩 복원·스킵</td><td>FR-ONB-01~03, FR-ONB-04</td></tr>
+    <tr><td>이코노미 UX·무결성</td><td>FR-ECON-01~04, FR-ECON-05</td></tr>
+    <tr><td>라이브옵스 이벤트·알림</td><td>FR-LIVE-01~05, FR-LIVE-06, FR-LIVE-07</td></tr>
+    <tr><td>보드 안전성·버블 제외</td><td>FR-BOARD-01~06, FR-BOARD-07, FR-BOARD-08, FR-BOARD-09</td></tr>
+    </tbody></table></div>
+</section>
+
+<!-- 8 CALIB -->
+<section id="calib">
+  <div class="secno">8</div>
+  <h2>원작 리버싱 캘리브레이션 (파라미터 근거)</h2>
+  <p class="intro">Vintage Lane의 밸런스 파라미터는 <strong>Gossip Harbor APK를 리버싱한 실측값</strong>(디컴파일 Lua 소스 2,400모듈 · config JSON · 75탭 밸런스 시트)을 1차 기준으로 삼는다.
+  아래는 각 시스템의 <strong>원작 값 → 본 클론 채택값 → 신뢰도</strong> 대조표다.
+  신뢰도: <span class="cf h">HIGH</span> 클라 소스에 상수로 존재 · <span class="cf m">MED</span> config/자매게임(PST) 관례로 추론 · <span class="cf l">LOW</span> 서버 전용(구조만 확보, 값은 추정).</p>
+
+  <h4>8.1 코어 루프 파라미터</h4>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>시스템</th><th>원작(GH) 실측</th><th>Vintage Lane 채택</th><th>신뢰도</th><th>근거(소스)</th></tr></thead><tbody>
+    <tr><td><b>에너지 상한</b></td><td><code>MaxEnergy=100</code></td><td>soft: 120 / none: 무한(A/B)</td><td><span class="cf h">HIGH</span></td><td class="rid">EnergyModel</td></tr>
+    <tr><td><b>에너지 회복</b></td><td><code>120초당 1</code></td><td>soft: 90–100초/1(완화)</td><td><span class="cf h">HIGH</span></td><td class="rid">DefaultRecoveryDuration</td></tr>
+    <tr><td><b>머지 비용</b></td><td>에너지 무소모</td><td>동일(무소모)</td><td><span class="cf h">HIGH</span></td><td class="rid">_DoMergeItem</td></tr>
+    <tr><td><b>생성기 탭 비용</b></td><td><code>Spread_CostEnergy≈1</code></td><td>1(soft)/0(none)</td><td><span class="cf h">HIGH</span></td><td class="rid">Spread_CostEnergy</td></tr>
+    <tr><td><b>생성기 재고</b></td><td>2단(보드+창고), 타이머 회복</td><td>동일 구조 채택</td><td><span class="cf h">HIGH</span></td><td class="rid">ItemMaxNumber/StorageMaxNumber</td></tr>
+    <tr><td><b>럭키 프로듀스</b></td><td>pity <code>[total,lucky]</code>(예 60:1)</td><td>동일 pity, 값 튜닝</td><td><span class="cf h">HIGH</span></td><td class="rid">LuckyProduce</td></tr>
+    <tr><td><b>버블</b></td><td>Lv4 해금 · DDA 하향 · 60초 소멸 · 젬 해제</td><td><b>런칭 제외</b>(시니어 마찰↓), P1 재검토</td><td><span class="cf h">HIGH</span></td><td class="rid">_TrySpreadBubbleByMerge</td></tr>
+    </tbody></table></div>
+
+  <h4>8.2 오더 · 진행 파라미터</h4>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>시스템</th><th>원작(GH) 실측</th><th>Vintage Lane 채택</th><th>신뢰도</th><th>근거(소스)</th></tr></thead><tbody>
+    <tr><td><b>오더 티어</b></td><td>레벨기반 First/Second/Third 3티어</td><td>동일 3티어</td><td><span class="cf h">HIGH</span></td><td class="rid">MainOrderCreator</td></tr>
+    <tr><td><b>오더 난이도 상한</b></td><td><code>DiffScoreLimit=300</code></td><td>300(초기)·프로토 후 하향 검토</td><td><span class="cf h">HIGH</span></td><td class="rid">OrderItemDiffScoreLimit</td></tr>
+    <tr><td><b>요구 종수 가중</b></td><td>Lv1 = 60/20/20(1/2/3종)</td><td>동일, 시니어용 1종 비중↑</td><td><span class="cf h">HIGH</span></td><td class="rid">OrderItemNumberWeight</td></tr>
+    <tr><td><b>오더 코인 보상</b></td><td>Σ(<code>Price</code>×요구수)</td><td>동일 공식</td><td><span class="cf h">HIGH</span></td><td class="rid">MainOrder</td></tr>
+    <tr><td><b>레벨 필요치</b></td><td>Lv1=30, +15 선형</td><td>동일 커브(~Lv30)</td><td><span class="cf m">MED</span></td><td class="rid">LevelConfig.cost</td></tr>
+    <tr><td><b>피처 언락</b></td><td>인벤Lv2·상점Lv3·버블Lv4</td><td>인벤Lv2·상점Lv3(버블 제외)</td><td><span class="cf h">HIGH</span></td><td class="rid">FunctionEnableConfig</td></tr>
+    <tr><td><b>오더 갱신 주기</b></td><td>3600/1800/900/300초(Type별)</td><td>동일 config화</td><td><span class="cf h">HIGH</span></td><td class="rid">RefreshTime</td></tr>
+    </tbody></table></div>
+
+  <h4>8.3 라이브옵스 · 서버 전용값</h4>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>시스템</th><th>원작(GH) 실측</th><th>Vintage Lane 채택</th><th>신뢰도</th><th>근거(소스)</th></tr></thead><tbody>
+    <tr><td><b>config 변형</b></td><td>base + suffix(<code>_nerf</code> 등) FileReplace</td><td>동일 base+suffix 구조</td><td><span class="cf h">HIGH</span></td><td class="rid">GetServerConfig</td></tr>
+    <tr><td><b>경쟁 봇</b></td><td><code>prog_mode</code> 0/1/2(이징/버스트/계단)</td><td>동일 3모드</td><td><span class="cf h">HIGH</span></td><td class="rid">Battle/Team bot speed</td></tr>
+    <tr><td><b>이벤트 스케줄</b></td><td>서버 리모트(로컬 부재)</td><td>PST 관례로 스케줄 재구성</td><td><span class="cf l">LOW</span></td><td class="rid">event_schedule(추정)</td></tr>
+    <tr><td><b>데일리/배틀패스 값</b></td><td>서버 리모트(구조만 확보)</td><td>PST daily/streak/wheel 이식</td><td><span class="cf l">LOW</span></td><td class="rid">서버값재구성(추정)</td></tr>
+    <tr><td><b>오퍼 타겟팅</b></td><td>서버 A/B·세그먼트</td><td>구조 채택, 값 라이브 튜닝</td><td><span class="cf l">LOW</span></td><td class="rid">remote config</td></tr>
+    </tbody></table></div>
+
+  <div class="call green"><div class="t">개발 착수 준비도</div>코어 루프·오더·진행 파라미터는 <strong>대부분 HIGH(클라 상수)</strong> → 시트값 그대로 서버 config에 올리면 원작과 동등하게 동작한다.
+  LOW(서버 전용)는 값이 아니라 <strong>구조/스키마를 확보</strong>했으므로, 자매게임(PST) 관례로 초기값을 넣고 라이브 데이터로 튜닝하면 된다.</div>
+  <div class="call warn"><div class="t">한계</div>이벤트 스케줄·라이브 A/B·오퍼 타겟팅의 <strong>실제 라이브 값</strong>은 서버에만 존재해 APK로 복원 불가. 본 문서는 이를 <span class="cf l">LOW</span>로 명시하고 추정 초기값을 제공한다.</div>
+</section>
+
+<!-- ============ PART B · 콘텐츠 물량 산정 ============ -->
+<div class="partdiv">
+  <span class="pk">Part B</span>
+  <h2>콘텐츠 물량 산정 시트</h2>
+  <p class="intro">Part A 요구사항이 정의한 콘텐츠를 <strong>제작 물량(아트·스토리·오디오·문자열)</strong>으로 환산한다. GH의 방대한 볼륨을 따르지 않고 <strong>"초반 2–3주를 탄탄히"</strong>에 집중한 얇은 런칭 규모.</p>
+</div>
+
+<section id="o">
+  <div class="secno">B0</div>
+  <h2>산정 전제</h2>
+  <div class="kpis">
+    <div class="kpi"><div class="n">2–3주</div><div class="l">런칭 초반 콘텐츠 분량 목표</div></div>
+    <div class="kpi"><div class="n">~Lv30</div><div class="l">플레이어 레벨 상한(런칭)</div></div>
+    <div class="kpi"><div class="n">논타이머</div><div class="l">시니어 페이싱(압박 최소)</div></div>
+    <div class="kpi"><div class="n">≤200MB</div><div class="l">FB Instant 용량 제약</div></div>
+  </div>
+  <ul>
+    <li><strong>아트 물량 산정 단위</strong>: "스프라이트 수" = 고유 아이콘/이미지 컷 기준(상태 변형은 별도 표기).</li>
+    <li><strong>런칭 이후</strong> 콘텐츠·시대 테마는 라이브옵스·업데이트로 지속 공급(리스킨 파이프라인 전제) → 본 시트는 <strong>v1.0 최소 세트</strong>.</li>
+    <li>수치는 <strong>산정 기준선(estimate)</strong>이며 프로토·밸런싱 후 ±조정.</li>
+  </ul>
+</section>
+
+<section id="chains">
+  <div class="secno">B1</div>
+  <h2>아이템 체인</h2>
+  <p class="intro">골동품 테마 소품 체인. 각 체인의 <strong>레벨 수 = 고유 아이템 스프라이트 수</strong>.
+  GH 구조를 따라 <strong>라인 1개 = [생성기 체인] + [산출 리소스 체인]의 페어</strong>로 구성한다(GH의 홀짝 페어 규칙: <code>GeneratorChain=N</code> → family N+1 산출).
+  <strong>런칭은 9라인 전량을 열되 각 체인을 얕게</strong> 시작하고, 상위 단계는 라이브옵스로 증축한다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>체인</th><th>라인</th><th class="num">런칭 레벨</th><th class="num">확장 후</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>찻잔 진열대 <b>(생성기)</b></td><td>다구</td><td class="num">5</td><td class="num">8</td><td>일반 2 + 생성기 3단</td></tr>
+      <tr><td>2</td><td>찻잔 → 티세트</td><td>다구</td><td class="num">7</td><td class="num">11</td><td>리소스</td></tr>
+      <tr><td>3</td><td>램프 선반 <b>(생성기)</b></td><td>조명</td><td class="num">5</td><td class="num">8</td><td>일반 2 + 생성기 3단</td></tr>
+      <tr><td>4</td><td>오일램프 → 샹들리에</td><td>조명</td><td class="num">7</td><td class="num">11</td><td>리소스</td></tr>
+      <tr><td>5</td><td>책장 <b>(생성기)</b></td><td>서적</td><td class="num">5</td><td class="num">8</td><td>일반 2 + 생성기 3단</td></tr>
+      <tr><td>6</td><td>낡은 책 → 장서</td><td>서적</td><td class="num">7</td><td class="num">11</td><td>리소스 · 스토리 단서</td></tr>
+      <tr><td>7</td><td>시계 공방 <b>(생성기)</b></td><td>시계</td><td class="num">5</td><td class="num">8</td><td>일반 2 + 생성기 3단</td></tr>
+      <tr><td>8</td><td>회중시계 → 벽시계</td><td>시계</td><td class="num">7</td><td class="num">11</td><td>리소스</td></tr>
+      <tr><td>9</td><td>재봉 코너 <b>(생성기)</b></td><td>재봉</td><td class="num">5</td><td class="num">8</td><td>일반 2 + 생성기 3단</td></tr>
+      <tr><td>10</td><td>실패 → 자수 액자</td><td>재봉</td><td class="num">7</td><td class="num">11</td><td>리소스</td></tr>
+      <tr><td>11</td><td>축음기 선반 <b>(생성기)</b></td><td>음반 <span class="src">신규</span></td><td class="num">5</td><td class="num">8</td><td>일반 2 + 생성기 3단</td></tr>
+      <tr><td>12</td><td>레코드 → 뮤직박스</td><td>음반 <span class="src">신규</span></td><td class="num">7</td><td class="num">11</td><td>리소스</td></tr>
+      <tr><td>13</td><td>정원 화단 <b>(생성기·무료)</b></td><td>정원</td><td class="num">5</td><td class="num">8</td><td>장쿨형 · 무료 머지 보장</td></tr>
+      <tr><td>14</td><td>씨앗 → 화훼 장식</td><td>정원</td><td class="num">7</td><td class="num">11</td><td>리소스</td></tr>
+      <tr><td>15</td><td>보석함 <b>(생성기·무료)</b></td><td>보석 <span class="src">신규</span></td><td class="num">5</td><td class="num">8</td><td>장쿨형</td></tr>
+      <tr><td>16</td><td>원석 → 브로치</td><td>보석 <span class="src">신규</span></td><td class="num">7</td><td class="num">11</td><td>리소스</td></tr>
+      <tr><td>17</td><td>여행 트렁크 <b>(생성기·무료)</b></td><td>여행 <span class="src">신규</span></td><td class="num">5</td><td class="num">8</td><td>장쿨형 · 시대여행 훅</td></tr>
+      <tr><td>18</td><td>엽서 → 기념 앨범</td><td>여행 <span class="src">신규</span></td><td class="num">7</td><td class="num">11</td><td>리소스 · 회상 CG 트리거</td></tr>
+      <tr><td>19</td><td>코인 주머니(보상)</td><td>—</td><td class="num">4</td><td class="num">5</td><td>보상 체인</td></tr>
+      <tr><td>20</td><td>에너지/부스트(재화)</td><td>—</td><td class="num">4</td><td class="num">5</td><td>재화 체인</td></tr>
+      <tr><td>21</td><td>선물상자(이벤트)</td><td>—</td><td class="num">4</td><td class="num">6</td><td>이벤트 공용</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="3">합계 · 21 체인 (생성기 9 + 리소스 9 + 공용 3)</td><td class="num">120</td><td class="num">187</td><td>+상태변형 별도</td></tr></tfoot>
+  </table></div>
+  <p class="muted">→ 런칭 아이템 스프라이트 <strong>~120종</strong>(생성기 스프라이트 45종 포함 — 별도 계상하지 않음). 상태 변형(반짝임·선택·쿨다운·잠금)은 셰이더/오버레이로 처리해 추가 컷 최소화.</p>
+  <div class="call"><div class="t">레어 서브체인은 Fast-follow</div>기존안의 라인별 레어 서브체인(홍차잎·양초·태엽부품 등 5체인 33컷)은 <strong>런칭에서 제외</strong>하고 확장 시 투입한다. 생성기 라인 3개를 늘리고도 런칭 아트가 늘지 않는 이유. 레어 드롭 슬롯은 <b>럭키 프로듀스(FR-GEN-05)</b>가 대신 채운다.</div>
+</section>
+
+<section id="gen">
+  <div class="secno">B2</div>
+  <h2>생성기</h2>
+  <p class="intro"><strong>9라인 전량 런칭.</strong> 생성기는 정적 오브젝트가 아니라 체인 상위 구간이며(FR-GEN-07), 런칭 3단계 → 확장 6단계로 증축한다.
+  스프라이트는 B1 생성기 체인에 이미 포함되어 <strong>여기서 중복 계상하지 않는다</strong>.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>생성기 라인</th><th>타입</th><th>산출 체인</th><th>비용</th><th class="num">재고 상한</th><th class="num">회복</th><th class="num">런칭 단계</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>찻잔 진열대</td><td>즉시형</td><td>2</td><td>1(soft)/0(none)</td><td class="num">20→40</td><td class="num">60~180s</td><td class="num">3</td></tr>
+      <tr><td>2</td><td>램프 선반</td><td>즉시형</td><td>4</td><td>1(soft)/0(none)</td><td class="num">20→40</td><td class="num">60~180s</td><td class="num">3</td></tr>
+      <tr><td>3</td><td>책장</td><td>즉시형</td><td>6</td><td>1(soft)/0(none)</td><td class="num">20→40</td><td class="num">60~180s</td><td class="num">3</td></tr>
+      <tr><td>4</td><td>시계 공방</td><td>즉시형</td><td>8</td><td>1(soft)/0(none)</td><td class="num">20→40</td><td class="num">60~180s</td><td class="num">3</td></tr>
+      <tr><td>5</td><td>재봉 코너</td><td>즉시형</td><td>10</td><td>1(soft)/0(none)</td><td class="num">20→40</td><td class="num">60~180s</td><td class="num">3</td></tr>
+      <tr><td>6</td><td>축음기 선반 <span class="src">신규</span></td><td>즉시형</td><td>12</td><td>1(soft)/0(none)</td><td class="num">20→40</td><td class="num">60~180s</td><td class="num">3</td></tr>
+      <tr><td>7</td><td>정원 화단</td><td>장쿨형</td><td>14</td><td>0 (상시 무료)</td><td class="num">4→10</td><td class="num">1~3h</td><td class="num">3</td></tr>
+      <tr><td>8</td><td>보석함 <span class="src">신규</span></td><td>장쿨형</td><td>16</td><td>0 (상시 무료)</td><td class="num">4→10</td><td class="num">2~4h</td><td class="num">3</td></tr>
+      <tr><td>9</td><td>여행 트렁크 <span class="src">신규</span></td><td>장쿨형</td><td>18</td><td>0 (상시 무료)</td><td class="num">4→10</td><td class="num">4~6h</td><td class="num">3</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="7">합계 · <b>9 생성기 라인</b> (즉시형 6 · 장쿨형 3) — 스프라이트는 B1에 포함</td><td class="num">27단</td></tr></tfoot>
+  </table></div>
+  <div class="call warn"><div class="t">근거 · GH 실측 대조</div>
+  GH v3.93 <code>merge_chain</code>(460행/155체인) 분석: 상시 생성기 <b>9라인</b>(chain 1·4·7·8·10·12·15·17·19), 나머지 93개 생성기는 전부 보물상자·선물함 등 일회성.
+  즉시형(쇼핑백·커피·어망·수영·산호)은 <code>CostEnergy=1 / cap 26–80 / storage=cap×3 / 회복 180s</code>, 장쿨형(오렌지나무·개집·블록상자)은 <code>CostEnergy=0 / cap 4–12 / storage=cap×2 / 회복 3600–21600s</code>.
+  본 스펙은 <b>논타이머 원칙에 맞춰 장쿨형 비중을 3/9로 높이고</b>(GH와 동일 수), 즉시형 재고 상한은 GH보다 낮춰 세션 과부하를 줄였다.
+  <span class="muted">생성기 쿨 오프셋은 3라인이 동시에 비지 않도록 배치(FR-GEN-04 수용 기준).</span></div>
+</section>
+
+<section id="story">
+  <div class="secno">B3</div>
+  <h2>스토리 챕터</h2>
+  <p class="intro">선형 챕터 14개(약 2–3주 분량). 일부 챕터에 <strong>회상 CG</strong> 배치(향수 훅). 코인 비용은 지수적 상승.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th class="num">챕터</th><th>내용(요지)</th><th class="num">회상 CG</th><th>데코 언락</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1–2</td><td>할머니의 편지·가게 상속(인트로 훅)</td><td class="num">1</td><td>상점 입구 개방</td></tr>
+      <tr><td class="num">3</td><td>첫 복원·손님 등장</td><td class="num">1</td><td>—</td></tr>
+      <tr><td class="num">4–6</td><td>마을 소개·낡은 물건 속 첫 기억(1920s)</td><td class="num">2</td><td>진열장</td></tr>
+      <tr><td class="num">7–8</td><td>가족의 옛 이야기·단서 등장</td><td class="num">2</td><td>—</td></tr>
+      <tr><td class="num">9–11</td><td>기억의 조각이 맞춰지기 시작 · 할머니가 감춘 작업대</td><td class="num">2</td><td>작업대</td></tr>
+      <tr><td class="num">12–14</td><td>따뜻한 비밀의 실마리(런칭 클리프행어)</td><td class="num">1</td><td>—(다음 시즌 · 뒷마당)</td></tr>
+    </tbody>
+    <tfoot><tr><td class="num">14</td><td>챕터</td><td class="num">8</td><td>3구역</td></tr></tfoot>
+  </table></div>
+  <p class="muted">→ 스토리 대본 <strong>14챕터</strong>, 회상 CG <strong>~8컷</strong>. 대사는 문자열로 외부화(현지화 대응).</p>
+</section>
+
+<section id="deco">
+  <div class="secno">B4</div>
+  <h2>복원(데코) 구역</h2>
+  <p class="intro">각 구역은 여러 슬롯, 슬롯당 <strong>무료 2디자인 선택(무페널티 변경)</strong>. 앞 2구역은 <strong>젬 프리미엄 디자인 1종</strong>을 추가로 제공(비압박 소비 레버).
+  런칭 언락은 챕터 1–2 / 4–6 / <strong>9–11</strong>로 분산한다. 4번째 구역(뒷마당)은 런칭에서 빼고 다음 시즌 콘텐츠로 이연.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>구역</th><th>언락 챕터</th><th class="num">슬롯</th><th class="num">무료 디자인</th><th class="num">프리미엄(젬)</th><th class="num">데코 스프라이트</th><th class="num">배경(전/후)</th></tr></thead>
+    <tbody>
+      <tr><td>상점 입구</td><td>1–2</td><td class="num">5</td><td class="num">2</td><td class="num">1</td><td class="num">15</td><td class="num">2</td></tr>
+      <tr><td>진열장</td><td>4–6</td><td class="num">5</td><td class="num">2</td><td class="num">1</td><td class="num">15</td><td class="num">2</td></tr>
+      <tr><td>작업대</td><td>9–11</td><td class="num">4</td><td class="num">2</td><td class="num">—</td><td class="num">8</td><td class="num">2</td></tr>
+    </tbody>
+    <tfoot><tr><td>합계 · 3구역</td><td></td><td class="num">14</td><td class="num">28</td><td class="num">10</td><td class="num">38</td><td class="num">6</td></tr></tfoot>
+  </table></div>
+  <p class="muted">→ 데코 스프라이트 <strong>~38종</strong>(무료 28 + 젬 10) + 구역 배경 전/후 <strong>6컷</strong>. 기존안(54+8) 대비 <strong>−18컷</strong>이며, 그중 10컷은 매출 자산으로 전환. 뒷마당은 다음 시즌으로 이연.</p>
+  <div class="call warn"><div class="t">산정 시 계산 방식 (아트·클라 확인 필요)</div>
+  배경 6컷 = 구역 3개 × 전/후 2컷으로, <strong>슬롯 디자인 조합은 개별로 세지 않은 수치</strong>다.
+  슬롯마다 선택지가 2~3개이므로 '복원 후' 화면의 조합 수는 슬롯 수에 따라 늘어난다.
+  <strong>구현·제작 방식은 아트/클라 판단 영역</strong>이므로, 방식이 정해지면 이 6컷 산정을 갱신한다.</div>
+</section>
+
+<section id="era">
+  <div class="secno">B5</div>
+  <h2>시대 테마 배경</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>시대 테마</th><th>용도</th><th class="num">배경/소품 컷</th></tr></thead>
+    <tbody>
+      <tr><td>1920s 파리 카페</td><td>회상 CG·챕터 배경</td><td class="num">3</td></tr>
+      <tr><td>1950s 아메리칸 다이너</td><td>회상·이벤트 테마</td><td class="num">3</td></tr>
+      <tr><td>빈티지 기차역</td><td>회상·이벤트 테마</td><td class="num">3</td></tr>
+    </tbody>
+    <tfoot><tr><td>합계 · 3 테마</td><td></td><td class="num">9</td></tr></tfoot>
+  </table></div>
+  <p class="muted">→ 시대 테마는 이후 이벤트/업데이트로 계속 확장(재사용·리스킨).</p>
+</section>
+
+<section id="char">
+  <div class="secno">B6</div>
+  <h2>캐릭터 · 표정</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>캐릭터</th><th class="num">인원</th><th class="num">표정/포즈</th><th class="num">아트 컷</th></tr></thead>
+    <tbody>
+      <tr><td>주인공(활기찬 40대 여성)</td><td class="num">1</td><td class="num">5</td><td class="num">5</td></tr>
+      <tr><td>할머니(회상 속)</td><td class="num">1</td><td class="num">3</td><td class="num">3</td></tr>
+      <tr><td>이름 있는 마을 손님</td><td class="num">3</td><td class="num">3</td><td class="num">9</td></tr>
+    </tbody>
+    <tfoot><tr><td>합계 · 5 캐릭터</td><td class="num">5</td><td></td><td class="num">17</td></tr></tfoot>
+  </table></div>
+  <p class="muted">→ 캐릭터 <strong>5명</strong>, 표정/포즈 컷 <strong>~17컷</strong>. UA 크리에이티브에도 재활용.</p>
+  <div class="call"><div class="t">감축 근거 (30 → 17컷)</div>
+  <b>손님 7명 → 이름 있는 3명.</b> 런칭 분량이 2–3주인데 표정 세트를 가진 캐릭터가 7명이면 등장 밀도가 과하다. 나머지 4명과 표정 확장은 Fast-follow.<br>
+  <b>오더 트레이는 영향 없음</b> — 주문 화면의 손님 얼굴은 B7의 <span class="tabn">오더 아바타 버스트</span> ~7컷(소형)으로 이미 별도 계상되어 있어, 이름 있는 캐릭터를 줄여도 오더 화면 다양성은 유지된다.<br>
+  <b>주인공 5표정은 유지.</b> 이 장르 UA 승자 크리에이티브가 감정적 캐릭터 드라마 썸네일이라, 주인공 표정 폭은 아트가 아니라 <b>마케팅 자산</b>이다. 여기를 줄이면 UA 제작비로 되돌아온다.</div>
+</section>
+
+<section id="ui">
+  <div class="secno">B7</div>
+  <h2>UI · 재화 · 연출</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>항목</th><th class="num">에셋 수</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>UI 컴포넌트(버튼·패널·팝업·HUD)</td><td class="num">~60</td><td>디자인시스템 토큰화(큰 폰트·고대비)</td></tr>
+      <tr><td>재화·보상 아이콘</td><td class="num">~15</td><td>코인·젬·에너지·부스트·티켓 등</td></tr>
+      <tr><td>오더/이벤트 카드</td><td class="num">~12</td><td>템플릿화</td></tr>
+      <tr><td>머지/복원/보상 연출(이펙트)</td><td class="num">~15</td><td>부드러운 톤(시니어); 최종단 머지 불가 흔들림 포함</td></tr>
+      <tr><td>아이콘/스토어 배너·로고</td><td class="num">~10</td><td>ASO용 세트</td></tr>
+      <tr><td>시즌 패스 UI(트랙·보상 타일·잠금/해제)</td><td class="num">~10</td><td>FR-MON-03 연계</td></tr>
+      <tr><td>튜토리얼 오버레이(큰 화살표·마스크·포인터)</td><td class="num">~6</td><td>FR-ONB-01/04 연계</td></tr>
+      <tr><td>오더 아바타 버스트(트레이 소형)</td><td class="num">~7</td><td>손님 오더 완료 연출</td></tr>
+      <tr><td>경쟁 이벤트 리더보드 UI(순위 행·봇 아바타·내 순위 강조)</td><td class="num">~6</td><td>FR-LIVE-04 연계</td></tr>
+    </tbody>
+    <tfoot><tr><td>합계</td><td class="num">~141</td><td></td></tr></tfoot>
+  </table></div>
+</section>
+
+<section id="audio">
+  <div class="secno">B8</div>
+  <h2>오디오</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>범주</th><th class="num">트랙/컷</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>BGM(메인·회상·이벤트)</td><td class="num">4</td><td>잔잔한 피아노 톤</td></tr>
+      <tr><td>SFX(머지·복원·오더·UI)</td><td class="num">~30</td><td>부드러운 청량감</td></tr>
+      <tr><td>보상/성취 스팅어</td><td class="num">~6</td><td></td></tr>
+    </tbody>
+    <tfoot><tr><td>합계</td><td class="num">~40</td><td></td></tr></tfoot>
+  </table></div>
+</section>
+
+<section id="live">
+  <div class="secno">B9</div>
+  <h2>이벤트 · 시즌 콘텐츠 (Launch)</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>콘텐츠</th><th class="num">수</th><th>에셋 함의</th></tr></thead>
+    <tbody>
+      <tr><td>시즌 이벤트(30일)</td><td class="num">1</td><td>시즌 테마 UI·보상 트랙·패스 아트</td></tr>
+      <tr><td>단기 이벤트(수집·경쟁·데일리)</td><td class="num">3</td><td>이벤트 UI 템플릿·보상표(리스킨 재사용)</td></tr>
+      <tr><td>선물상자/이벤트 아이템 체인</td><td class="num">1</td><td>체인#21 공용</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>이벤트 전용 원화 물량 (런칭)</h3>
+  <p class="muted">런칭 이벤트는 <strong>시즌1 + 단기 3종</strong>(W1–W4 캘린더 기준). UI·보상 트랙은 템플릿이지만, <strong>이벤트마다 최소한의 전용 그림은 필요</strong>하므로 아래를 별도 계상한다. 기존 판에서는 이 항목이 0으로 빠져 있었다.</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>이벤트</th><th>전용 원화</th><th class="num">컷</th></tr></thead>
+    <tbody>
+      <tr><td>시즌1 「할머니의 첫 기억」(30일)</td><td>시즌 테마 배경 1 · 패스 보상 타일 4 · <b>주인공 전신 1</b></td><td class="num">6</td></tr>
+      <tr><td>수집 A 「찻잔」</td><td>이벤트 맵 배경 1 · 수집 전용 아이템 6</td><td class="num">7</td></tr>
+      <tr><td>경쟁 A 「랭킹배틀」</td><td>이벤트 맵 배경 1 · 트로피·순위 보상 3</td><td class="num">4</td></tr>
+      <tr><td>데일리 부스트 A</td><td>전용 배너 아트 1 (나머지 UI 템플릿)</td><td class="num">1</td></tr>
+    </tbody>
+    <tfoot><tr><td>합계 · 시즌1 + 단기 3종</td><td></td><td class="num">18</td></tr></tfoot>
+  </table></div>
+  <div class="call warn"><div class="t">주의 — 전신 컷은 신규 카테고리</div>
+  B6 캐릭터 17컷은 전부 <strong>대사창용 표정 초상</strong>이다. 이벤트 팝업에 쓰이는 <strong>전신 일러스트는 별도 작업</strong>이라 위 시즌1에 1컷만 잡았다.
+  벤치마크는 이벤트마다 전신 컷을 새로 뽑으므로, 이벤트 그리드를 늘릴수록 이 항목이 선형으로 증가한다.</div>
+
+  <div class="call"><div class="t">확장 원칙</div>이벤트는 <strong>템플릿+리스킨</strong>으로 제작해 출시 후 그리드를 저비용으로 배가(GH: 20→100). 신규 아트는 최소, 리모트 config로 스케줄. 다만 <strong>이벤트 1종당 전용 원화 4~7컷</strong>이 계속 발생한다는 점을 운영 계획에 반영할 것.</div>
+</section>
+
+<section id="loc">
+  <div class="secno">B10</div>
+  <h2>현지화 문자열</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>범주</th><th class="num">문자열(추정)</th></tr></thead>
+    <tbody>
+      <tr><td>스토리 대사(14챕터)</td><td class="num">~400</td></tr>
+      <tr><td>UI·시스템</td><td class="num">~210</td></tr>
+      <tr><td>튜토리얼 스텝 카피 <span class="muted">(FR-ONB-01/04 연계; 기존 UI·시스템에서 분리 표기)</span></td><td class="num">~40</td></tr>
+      <tr><td>오더·아이템·재화 명칭</td><td class="num">~150</td></tr>
+      <tr><td>오퍼·패스·이벤트 카피</td><td class="num">~120</td></tr>
+    </tbody>
+    <tfoot><tr><td>합계 (런칭 영어)</td><td class="num">~920</td></tr></tfoot>
+  </table></div>
+  <p class="muted">→ 런칭은 영어. 문자열 외부화 구조로 이후 다국어 확장 대비.</p>
+</section>
+
+<section id="rollup">
+  <div class="secno">B11</div>
+  <h2>총 물량 집계 (Launch v1.0)</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>영역</th><th class="num">물량</th><th>핵심 산출물</th></tr></thead>
+    <tbody>
+      <tr><td>아이템 스프라이트 <span class="src">생성기 45 포함</span></td><td class="num">~120</td><td>21 체인 (생성기 9 + 리소스 9 + 공용 3)</td></tr>
+      <tr><td>생성기(별도 상태컷)</td><td class="num">0</td><td>체인에 흡수 · 상태는 오버레이 처리</td></tr>
+      <tr><td>데코 스프라이트 + 구역 배경</td><td class="num">~38 + 6</td><td>3 구역 · 14 슬롯</td></tr>
+      <tr><td>시대 테마 배경/소품</td><td class="num">~9</td><td>3 테마</td></tr>
+      <tr><td>캐릭터 아트 컷</td><td class="num">~17</td><td>5 캐릭터 (이름 있는 손님 3)</td></tr>
+      <tr><td>UI·재화·연출</td><td class="num">~141</td><td>디자인시스템 포함 (B7 재계산)</td></tr>
+      <tr><td>스토리 회상 CG</td><td class="num">~8</td><td>14 챕터</td></tr>
+      <tr><td><b>이벤트 전용 원화</b></td><td class="num">~18</td><td>시즌1 + 단기 3종 (B9 신설)</td></tr>
+      <tr><td>오디오(BGM+SFX)</td><td class="num">~40</td><td>4 BGM</td></tr>
+      <tr><td>현지화 문자열</td><td class="num">~920</td><td>영어 런칭</td></tr>
+    </tbody>
+    <tfoot><tr><td>아트 컷 합계(대략)</td><td class="num">~356</td><td>+오디오 40·문자열 920 (UI +29컷 반영)</td></tr></tfoot>
+  </table></div>
+  <div class="kpis">
+    <div class="kpi"><div class="n">~356<small>컷</small></div><div class="l">런칭 아트 총량(스프라이트+배경+CG+UI)</div></div>
+    <div class="kpi"><div class="n">~40<small>개</small></div><div class="l">오디오(BGM 4 + SFX/스팅어 ~36)</div></div>
+    <div class="kpi"><div class="n">~920<small>줄</small></div><div class="l">현지화 문자열(영어)</div></div>
+    <div class="kpi"><div class="n">21 / 9 / 3</div><div class="l">체인 / 생성기 라인 / 데코구역</div></div>
+  </div>
+  <div class="call green"><div class="t">개정 델타 (v1.1 → v1.2)</div>
+  <b>생성기 6→9라인</b>(+3, GH 동수)·<b>체인 14→21</b>·데코 <b>4구역 18슬롯 → 3구역 14슬롯</b>·아이템 107→120.
+  그럼에도 아트 총량은 <b>376 → 338컷(−38)</b>. 근거: ① 생성기 정적 3상태 18컷을 체인 스프라이트에 흡수 ② 레어 서브체인 5개(33컷)를 Fast-follow로 이연 ③ 데코 54+8 → 38+6컷(뒷마당 구역 이연) ④ 캐릭터 30 → 17컷(손님 7→3명). 단 <b>이벤트 전용 원화 18컷을 신규 계상</b>(기존 판 누락분)하여 최종 356컷.
+  <b>순효과 = 런칭 아트를 줄이면서 생성기 라인업과 보드 다양성은 원작 수준 확보.</b></div>
+  <div class="call green"><div class="t">해석</div>GH 대비 <strong>약 1/4~1/5 규모</strong>의 얇은 런칭. "초반 2–3주 완결성 + 확장 뼈대(리모트 config·템플릿)"에 집중해, 아트/개발 리스크를 낮추고 <strong>출시 후 라이브옵스로 볼륨을 키운다.</strong></div>
+  <div class="call warn"><div class="t">주의</div>수치는 <strong>산정 기준선</strong>. 프로토·밸런싱 후 체인 길이·데코 슬롯·CG 수는 ±조정된다. 상태 변형·해상도 배수(@2x 등)는 별도 제작 관리.</div>
+</section>
+
+<div class="foot">Vintage Lane · SRS 요구사항 명세서 + 콘텐츠 물량 산정 v1.2 · <a href="42_vintage_lane_strategy.html">전략·사업성</a> · <a href="43_vintage_lane_production.html">제품·프로덕션</a> · <a href="46_vintage_lane_tracker.html">트래커</a> · 내부 전용</div>
+
+</main>
+</div>
+<script>
+(function(){
+  var root=document.documentElement,btn=document.getElementById('themeBtn');
+  var ic=btn.querySelector('.ic'),lb=btn.querySelector('.lb');
+  function apply(t){root.setAttribute('data-theme',t);
+    if(t==='light'){ic.textContent='☀️';lb.textContent='라이트';}else{ic.textContent='🌙';lb.textContent='다크';}}
+  var saved=null;try{saved=localStorage.getItem('vl-theme');}catch(e){}
+  apply(saved==='light'?'light':'dark');
+  btn.addEventListener('click',function(){
+    var next=root.getAttribute('data-theme')==='light'?'dark':'light';
+    apply(next);try{localStorage.setItem('vl-theme',next);}catch(e){}});
+})();
+(function(){
+  var links=[].slice.call(document.querySelectorAll('nav.side a[href^="#"]'));
+  var secs=links.map(a=>document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+  function spy(){var cur=null;for(var i=0;i<secs.length;i++){if(secs[i].getBoundingClientRect().top<=140)cur=secs[i];}
+    if(innerHeight+scrollY>=document.body.offsetHeight-4&&secs.length)cur=secs[secs.length-1];
+    links.forEach(a=>a.classList.remove('active'));
+    if(cur){var l=links.find(a=>a.getAttribute('href')==='#'+cur.id);if(l)l.classList.add('active');}}
+  addEventListener('scroll',spy,{passive:true});addEventListener('resize',spy);spy();
+})();
+</script>
+</body>
+</html>

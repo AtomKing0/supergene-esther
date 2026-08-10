@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vintage Lane — 전략 &amp; 사업성 판단 문서</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2a3340;
+    --ink:#e8edf3; --sub:#9aa7b4; --dim:#6b7887;
+    --brand:#5ec8d8; --brand2:#f2a65a; --pink:#e97fa6; --green:#7fd18b; --purple:#a58cf0;
+    --warn:#f0c674; --danger:#e77c7c;
+    --radius:14px; --maxw:1080px;
+  }
+  /* Light theme overrides */
+  body.light{
+    --bg:#f5f7fa; --panel:#ffffff; --panel2:#eef2f7; --line:#dde3ea;
+    --ink:#1a2230; --sub:#4a5666; --dim:#8593a3;
+    --brand:#1391a5; --brand2:#cf7a26; --pink:#cf4f83; --green:#369a49; --purple:#6f53c9;
+    --warn:#b98916; --danger:#cf4747;
+  }
+  body.light nav.side{background:#eef2f7}
+  body.light nav.side .logo{color:#1a2230}
+  body.light .card.accent{background:linear-gradient(180deg,#eaf6f8,#f4fafb);border-color:#c3e2e8}
+  body.light .card.pink{background:linear-gradient(180deg,#fdeef4,#fdf6f9);border-color:#f1cfdc}
+  body.light .card.green{background:linear-gradient(180deg,#edf8ef,#f5fbf6);border-color:#cbe9d1}
+  body.light .card.purple{background:linear-gradient(180deg,#f2eefb,#f8f5fd);border-color:#ded2f3}
+  body.light .concept{background:linear-gradient(135deg,#eaf1f8,#f4eefb);border-color:#dbe2ea}
+  body.light .diff .dc:first-child{background:#eef3f8}
+  body.light tr:hover td{background:#eef3f8}
+  body.light .kpi .n{color:#1a2230}
+  body.light h3,body.light .card h4,body.light td b,body.light strong,body.light .call .t{color:#101722}
+  body.light .concept .cname,body.light .road .ph .pt,body.light .tile .tt,body.light .shot .cap,body.light .frame .tt,body.light .fig-lead b,body.light .kchart .kct{color:#101722}
+  body.light .req .rid{color:#fff}
+  body.light .theme-toggle,body.light nav.side{box-shadow:0 1px 0 rgba(0,0,0,.03)}
+  body.light code{background:#eef2f7;color:#0f6f7e}
+  body.light .tile,body.light .shot .tc{background:#eef2f7}
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.7;font-size:16px;-webkit-font-smoothing:antialiased;
+    transition:background .25s ease,color .25s ease}
+  a{color:var(--brand);text-decoration:none}
+
+  /* Active nav (scrollspy) */
+  nav.side a.active{background:var(--panel);color:var(--brand);font-weight:700;box-shadow:inset 3px 0 0 var(--brand)}
+
+  /* Theme toggle */
+  .theme-toggle{position:fixed;top:16px;right:22px;z-index:60;
+    background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    border-radius:999px;padding:8px 15px;font-size:12.5px;cursor:pointer;font-weight:600;
+    display:inline-flex;align-items:center;gap:7px;line-height:1;
+    box-shadow:0 4px 14px rgba(0,0,0,.18);transition:all .2s ease}
+  .theme-toggle:hover{border-color:var(--brand);color:var(--brand);transform:translateY(-1px)}
+  @media(max-width:900px){.theme-toggle{top:12px;right:14px;padding:7px 12px;font-size:12px}}
+
+  /* Layout */
+  .wrap{display:grid;grid-template-columns:248px 1fr;max-width:1360px;margin:0 auto;gap:0}
+  nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+    padding:26px 18px;border-right:1px solid var(--line);background:#0b0e13}
+  nav.side .logo{font-weight:800;font-size:15px;letter-spacing:.02em;margin-bottom:4px;color:#fff}
+  nav.side .logo span{color:var(--brand)}
+  nav.side .tag{font-size:11px;color:var(--dim);margin-bottom:22px;line-height:1.5}
+  nav.side a{display:block;color:var(--sub);font-size:13px;padding:7px 10px;border-radius:8px;margin-bottom:2px}
+  nav.side a:hover{background:var(--panel);color:var(--ink)}
+  nav.side a.head{color:var(--dim);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;margin:18px 0 4px;padding-left:10px;pointer-events:none}
+  main{padding:0 48px 120px;min-width:0}
+
+  /* Hero */
+  header.hero{padding:64px 0 40px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .kicker{display:inline-block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--brand);border:1px solid var(--brand);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+  h1{font-size:40px;line-height:1.18;margin:0 0 16px;font-weight:800;letter-spacing:-.01em}
+  h1 em{font-style:normal;color:var(--brand2)}
+  .lead{font-size:17px;color:var(--sub);max-width:760px}
+  .metaline{margin-top:24px;font-size:12.5px;color:var(--dim);display:flex;gap:18px;flex-wrap:wrap}
+  .metaline b{color:var(--sub);font-weight:600}
+
+  /* Sections */
+  section{padding:52px 0;border-bottom:1px solid var(--line);scroll-margin-top:20px}
+  .secno{font-size:12px;letter-spacing:.18em;color:var(--brand2);text-transform:uppercase;font-weight:700}
+  h2{font-size:28px;margin:8px 0 6px;font-weight:800;letter-spacing:-.01em}
+  h3{font-size:19px;margin:34px 0 12px;font-weight:700;color:#fff}
+  h4{font-size:15px;margin:22px 0 8px;font-weight:700;color:var(--brand)}
+  p{margin:0 0 14px}
+  .muted{color:var(--sub)}
+  .intro{color:var(--sub);font-size:15.5px;margin-bottom:8px}
+  ul,ol{margin:0 0 16px;padding-left:20px}
+  li{margin-bottom:7px}
+  strong{color:#fff;font-weight:700}
+  .hl{color:var(--brand2);font-weight:700}
+  .hl2{color:var(--pink);font-weight:700}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:26px 0}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .kpi .n{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.02em}
+  .kpi .n small{font-size:15px;color:var(--brand);font-weight:700}
+  .kpi .l{font-size:12px;color:var(--sub);margin-top:5px;line-height:1.4}
+
+  /* Generic cards */
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .card h4{margin-top:0}
+  .card.accent{border-color:#38505a;background:linear-gradient(180deg,#15242a,#141a20)}
+  .card.pink{border-color:#4a2c3a;background:linear-gradient(180deg,#24151d,#181318)}
+  .card.green{border-color:#2c4a34;background:linear-gradient(180deg,#152418,#141a15)}
+  .card.purple{border-color:#372c52;background:linear-gradient(180deg,#1c1830,#161420)}
+  .card .ico{font-size:22px;margin-bottom:8px}
+  .card p{font-size:14px;color:var(--sub);margin-bottom:0}
+  .card p+p{margin-top:8px}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13.5px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+  tr:hover td{background:#12171e}
+  td b{color:#fff}
+  .win{color:var(--green);font-weight:700}
+  .lose{color:var(--danger);font-weight:700}
+  .tbl-wrap{overflow-x:auto}
+
+  /* Callouts */
+  .call{border-left:3px solid var(--brand);background:var(--panel);border-radius:0 12px 12px 0;padding:16px 20px;margin:20px 0;font-size:14.5px}
+  .call.warn{border-color:var(--warn)}
+  .call.pink{border-color:var(--pink)}
+  .call .t{font-weight:700;color:#fff;margin-bottom:4px;font-size:13px;letter-spacing:.03em}
+  .call.warn .t{color:var(--warn)}
+  .call.pink .t{color:var(--pink)}
+
+  /* Loop diagram */
+  .loop{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:22px 0;font-size:13px}
+  .loop .node{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-weight:600;white-space:nowrap}
+  .loop .node.hot{border-color:var(--brand2);color:var(--brand2)}
+  .loop .arw{color:var(--dim);font-size:16px}
+
+  /* Pills */
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .pill{font-size:12px;padding:5px 12px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--sub)}
+  .pill.on{border-color:var(--brand);color:var(--brand)}
+
+  /* Proven/Better/New columns */
+  .pbn{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0}
+  .pbn .col{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel)}
+  .pbn .col .cap{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;margin-bottom:12px}
+  .pbn .col.p .cap{color:var(--sub)}
+  .pbn .col.b .cap{color:var(--green)}
+  .pbn .col.n .cap{color:var(--pink)}
+  .pbn .col ul{padding-left:16px;margin:0}
+  .pbn .col li{font-size:13px;color:var(--sub)}
+
+  /* PRD requirement blocks */
+  .req{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0;margin:14px 0;overflow:hidden}
+  .req .rhead{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--panel2);border-bottom:1px solid var(--line)}
+  .req .rid{font-size:11px;font-weight:800;color:var(--bg);background:var(--brand);padding:3px 9px;border-radius:6px;letter-spacing:.04em}
+  .req .rtitle{font-weight:700;font-size:15px}
+  .req .prio{margin-left:auto;font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--sub)}
+  .req .prio.p0{border-color:var(--danger);color:var(--danger)}
+  .req .prio.p1{border-color:var(--warn);color:var(--warn)}
+  .req .prio.p2{border-color:var(--dim);color:var(--dim)}
+  .req .rbody{padding:16px 18px;font-size:14px;color:var(--sub)}
+  .req .rbody ul{margin:8px 0 0}
+  .req .rbody li{font-size:13.5px}
+
+  /* concept hero */
+  .concept{background:linear-gradient(135deg,#1a2430,#171320);border:1px solid var(--line);border-radius:18px;padding:30px;margin:24px 0}
+  .concept .cname{font-size:24px;font-weight:800;color:#fff;margin-bottom:6px}
+  .concept .cname span{color:var(--pink)}
+  .concept .cline{color:var(--brand2);font-weight:600;margin-bottom:14px}
+
+  /* differentiator */
+  .diff{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:16px 0}
+  .diff .dc{padding:16px 18px}
+  .diff .dc:first-child{border-right:1px solid var(--line);background:#12171e}
+  .diff .dh{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+  .diff .dc:first-child .dh{color:var(--dim)}
+  .diff .dc:last-child .dh{color:var(--pink)}
+  .diff .dc p{font-size:13.5px;color:var(--sub);margin:0}
+
+  /* roadmap */
+  .road{position:relative;margin:24px 0;padding-left:24px}
+  .road::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .road .ph{position:relative;margin-bottom:22px}
+  .road .ph::before{content:"";position:absolute;left:-24px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--brand);border:2px solid var(--bg)}
+  .road .ph .pt{font-weight:700;color:#fff}
+  .road .ph .pw{font-size:12px;color:var(--brand2);font-weight:600;margin-left:8px}
+  .road .ph .pd{font-size:13.5px;color:var(--sub);margin-top:3px}
+
+  /* Figures (PDF captures) */
+  figure.fig{margin:24px 0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+  figure.fig img{max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;background:#fff;cursor:zoom-in}
+  figure.fig figcaption{font-size:12.5px;color:var(--dim);margin-top:11px;line-height:1.55;text-align:center}
+  figure.fig figcaption b{color:var(--sub)}
+  figure.fig figcaption .tag{display:inline-block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    border:1px solid var(--line);color:var(--dim);border-radius:5px;padding:2px 7px;margin-right:7px;vertical-align:middle}
+  /* .fig-row = 좌우 2단(스토리·데코 등 비교용). 나머지는 개별 풀-와이드 figure로 큼직하게 */
+  .fig-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+  .fig-row figure.fig{margin:0}
+  .fig-lead{margin:26px 0 -6px;font-size:14.5px;color:var(--sub)}
+  .fig-lead b{color:#fff}
+  @media(max-width:700px){.fig-row{grid-template-columns:1fr}}
+  /* Lightbox */
+  #lightbox{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);display:none;
+    align-items:center;justify-content:center;cursor:zoom-out;padding:30px}
+  #lightbox.on{display:flex}
+  #lightbox img{max-width:96%;max-height:94%;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+
+  /* Production-merged components */
+  code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px;color:var(--brand);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .swatch{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
+  .swatch i{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.15);display:block}
+  .chip{display:inline-block;font-size:11px;padding:3px 9px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--sub);margin:2px 4px 2px 0}
+  .board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+  .tile{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px;font-size:12px}
+  .tile .n{font-size:10px;color:var(--brand2);font-weight:800;letter-spacing:.08em}
+  .tile .tt{color:#fff;font-weight:700;margin:3px 0;font-size:12.5px}
+  .tile p{color:var(--sub);font-size:11.5px;margin:0}
+  .shot{display:grid;grid-template-columns:70px 1fr 1fr;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:8px;font-size:12.5px}
+  .shot>div{padding:9px 11px;border-right:1px solid var(--line)}
+  .shot>div:last-child{border-right:0}
+  .shot .tc{background:var(--panel2);font-weight:800;color:var(--brand2);font-size:11px}
+  .shot .vis{color:var(--sub)}
+  .shot .cap{color:#fff}
+  .shot .cap b{color:var(--brand);font-weight:700;font-size:11px;display:block;margin-bottom:2px}
+  @media(max-width:700px){.board{grid-template-columns:1fr}.shot{grid-template-columns:60px 1fr}.shot .cap{grid-column:1/-1;border-top:1px solid var(--line)}}
+
+  /* 참고 차트 한국어 재현(native) */
+  .kchart{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px 14px;margin:20px 0}
+  .kchart .kct{font-weight:700;color:#fff;font-size:13.5px}
+  .kchart .kcs{color:var(--dim);font-size:11.5px;margin:2px 0 16px}
+  .kbars{display:flex;align-items:flex-end;gap:5px;height:210px;border-bottom:1px solid var(--line)}
+  .kbars .kb{flex:1 1 0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0}
+  .kbars .kb b{font-size:9px;color:var(--sub);font-weight:700;margin-bottom:3px;white-space:nowrap}
+  .kbars .kb i{display:block;width:76%;background:linear-gradient(180deg,var(--brand2),#b96f24);border-radius:3px 3px 0 0;min-height:2px}
+  .kxl{display:flex;gap:5px;margin-top:6px}
+  .kxl span{flex:1 1 0;text-align:center;font-size:9px;color:var(--dim);min-width:0;white-space:nowrap;overflow:hidden}
+  .kphase{display:flex;gap:6px;margin-top:12px}
+  .kphase span{flex:1 1 0;text-align:center;font-size:10.5px;font-weight:700;color:var(--brand2);border-top:2px solid var(--brand2);padding-top:5px}
+  .quad{position:relative;height:360px;background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:20px 0}
+  .quad .axx,.quad .axy{position:absolute;background:var(--line)}
+  .quad .axx{left:6%;right:6%;top:50%;height:1px}
+  .quad .axy{top:6%;bottom:6%;left:50%;width:1px}
+  .quad .qlbl{position:absolute;font-size:10.5px;color:var(--dim);font-weight:700;letter-spacing:.04em}
+  .quad .g{position:absolute;transform:translate(-50%,-50%);font-size:11px;font-weight:700;color:var(--sub);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 10px;white-space:nowrap}
+  .quad .g.hl{border-color:var(--brand2);color:var(--brand2)}
+
+  .foot{padding:40px 0 10px;color:var(--dim);font-size:12.5px}
+  .src{font-size:12px;color:var(--dim);margin-top:10px}
+  .src b{color:var(--sub)}
+
+  @media(max-width:900px){
+    .wrap{grid-template-columns:1fr}
+    nav.side{display:none}
+    main{padding:0 22px 80px}
+    .kpis,.g2,.g3,.pbn{grid-template-columns:1fr 1fr}
+    .diff{grid-template-columns:1fr}
+    .diff .dc:first-child{border-right:none;border-bottom:1px solid var(--line)}
+    h1{font-size:30px}
+  }
+  @media(max-width:560px){.kpis,.g2,.g3,.pbn{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" aria-label="테마 전환">☀️ 라이트</button>
+<div class="wrap">
+
+<!-- ============ SIDEBAR ============ -->
+<nav class="side">
+  <div class="logo">VINTAGE <span>LANE</span></div>
+  <div class="tag">전략 · 사업성 판단 문서 v2.0<br>(왜 만들고, 돈이 되나 — 투자·그린라이트용)</div>
+
+  <a class="head">Part 1 · 벤치마킹 분석</a>
+  <a href="#summary">0. Executive Summary</a>
+  <a href="#market">1. 시장 &amp; 성과 진단</a>
+  <a href="#audience">2. 타겟 &amp; 오디언스</a>
+  <a href="#core">3. 코어 게임플레이</a>
+  <a href="#economy">4. 이코노미 설계</a>
+  <a href="#liveops">5. 라이브옵스 &amp; 이벤트</a>
+  <a href="#journey">5b. 라이브옵스 진화 여정</a>
+  <a href="#monet">6. 수익화 구조</a>
+
+  <a class="head">Part 2 · 전략 &amp; 컨셉</a>
+  <a href="#research">8. 타겟 시장조사 (시니어 여성)</a>
+  <a href="#platform">8b. 배포 플랫폼 (FB Instant Games)</a>
+  <a href="#position">9. 경쟁 포지셔닝</a>
+  <a href="#strength">10. 우리의 강점 포인트</a>
+  <a href="#concept">11. 컨셉 제안</a>
+  <a href="#roadmap">12. 로드맵 &amp; 리스크</a>
+
+  <a class="head">Part 3 · 사업성 (그린라이트)</a>
+  <a href="#econ-sim">21. 이코노미 수지 시뮬레이션</a>
+  <a href="#nontimer-mon">22. 가격표 &amp; 논타이머 근거</a>
+  <a href="#bizcase">23. 비즈니스 케이스</a>
+  <a href="#validation">24. 검증 계획 상세</a>
+  <a href="#legal">28. 법무·정책 체크리스트</a>
+
+  <a class="head">연계 문서</a>
+  <a href="43_vintage_lane_production.html">↗ 제품·프로덕션 기획</a>
+  <a href="44_vintage_lane_srs.html">↗ SRS + 콘텐츠 물량</a>
+  <a href="45_vintage_lane_prototype.html">↗ 아웃게임 프로토</a>
+  <a href="46_vintage_lane_tracker.html">↗ 개발·아트 트래커</a>
+</nav>
+
+<!-- ============ MAIN ============ -->
+<main>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <span class="kicker">Vintage Lane · 전략 · 사업성 판단</span>
+  <h1>Vintage Lane — <em>전략 &amp; 사업성</em> 판단 문서</h1>
+  <p class="lead">"왜 이 게임을 만들고, 돈이 되는가"에 답하는 <strong>투자·그린라이트 심사용</strong> 마스터.
+  <strong>Gossip Harbor 벤치마킹 분석 → 시장·타겟 → 컨셉 확정 → 이코노미·가격·LTV·손익 → 검증 → 법무</strong>의 한 흐름.
+  제품 구현·제작 상세는 <a href="43_vintage_lane_production.html">제품·프로덕션 기획</a>·<a href="44_vintage_lane_srs.html">SRS</a>로 분리했다.</p>
+  <div class="metaline">
+    <span><b>대상:</b> Vintage Lane (FB Instant Games 머지-2)</span>
+    <span><b>레퍼런스:</b> Deconstructor of Fun · Naavik · AppMagic + 시장조사</span>
+    <span><b>구성:</b> 벤치마킹 + 전략/컨셉 + 사업성</span>
+    <span><b>독자:</b> 경영진·투자·그린라이트</span>
+  </div>
+</header>
+
+<!-- 0. SUMMARY -->
+<section id="summary">
+  <div class="secno">Part 1 — 00</div>
+  <h2>Executive Summary</h2>
+  <p class="intro">"샤크핀(급등 후 급락)" 현상이 지배하는 모바일 시장에서 Gossip Harbor는 <strong>거의 선형에 가까운 안정적 성장</strong>을 보였다.
+  핵심은 화려한 신규 메커니즘이 아니라 <strong>검증된 머지-2 코어 + 여성 코어 타겟 몰입 스토리 + 촘촘한 라이브옵스 + 하이브리드 수익화</strong>의 정교한 결합이다.</p>
+
+  <div class="kpis">
+    <div class="kpi"><div class="n">$720M<small>+</small></div><div class="l">누적 IAP 매출 (2022.06 출시 이후, AppMagic)</div></div>
+    <div class="kpi"><div class="n">$62M<small>/월</small></div><div class="l">월 IAP 최고치 (2025.10) — 머지-2 장르 역대 최고</div></div>
+    <div class="kpi"><div class="n">20 → 100</div><div class="l">월간 이벤트 수 (2년간) — 라이브옵스 스케일업</div></div>
+    <div class="kpi"><div class="n">#1</div><div class="l">머지 장르 매출 (Merge Mansion·Travel Town 추월)</div></div>
+  </div>
+
+  <div class="call">
+    <div class="t">한 줄 요약</div>
+    Gossip Harbor는 <strong>Love &amp; Pies의 코어를 벤치마킹</strong>해 <strong>더 나은 시즌/이벤트 프레임워크</strong>와
+    <strong>유저 저니 머지 체인·이벤트 난이도 에스컬레이션</strong>을 얹어 정상에 올랐다. 결정적 성장은
+    <strong>2024–2025 라이브옵스 진화</strong>(월 20→100 이벤트)에서 나왔다. 즉 "발명"이 아니라
+    <strong>패스트 팔로우 + 지속적 실험/반복 + 촘촘한 이벤트 그리드</strong>가 무기다. 우리의 승부처도 여기에 있다.
+  </div>
+</section>
+
+<!-- 1. MARKET -->
+<section id="market">
+  <div class="secno">Part 1 — 01</div>
+  <h2>시장 &amp; 성과 진단</h2>
+  <p class="intro">Gossip Harbor가 왜 이겼는지를 UA·리텐션·인게이지먼트·수익 효율 4개 축으로 분해한다.
+  경쟁작 대비 <strong>낮은 ARPDAU에도 불구하고 매출 1위</strong>라는 사실이 이 게임의 본질을 설명한다.</p>
+
+  <figure class="fig">
+    <img src="images/naa_revenue.png" alt="2025 머지 매출 추이">
+    <figcaption><span class="tag">Naavik · Sensor Tower</span>2025년 상위 머지 게임 매출 추이 — Gossip Harbor(파랑)가 후발주자임에도 지수적으로 상승해 선두를 추월.</figcaption>
+  </figure>
+
+  <h3>핵심 경쟁 지표 벤치마크</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>지표</th><th>Gossip Harbor</th><th>Travel Town</th><th>Merge Mansion</th><th>시사점</th></tr></thead>
+    <tbody>
+      <tr><td>D1 리텐션</td><td class="win">46%</td><td>40%</td><td>57%</td><td>초반 훅 강함(코어 여성타겟)</td></tr>
+      <tr><td>D7 / D30 / D60</td><td class="win">26 / 15 / 12%</td><td>22 / 13 / 9%</td><td>33 / 22 / 18%</td><td>Travel Town 상회, 장기 안정</td></tr>
+      <tr><td>주간 세션 수</td><td class="win">41</td><td>32</td><td>—</td><td>+27% 더 자주 접속</td></tr>
+      <tr><td>주간 플레이 분</td><td class="win">186분</td><td>128분</td><td>—</td><td>+45% 더 오래 체류</td></tr>
+      <tr><td>ARPDAU</td><td>$0.26</td><td class="win">$0.35</td><td>—</td><td>객단가는 25% 낮음</td></tr>
+      <tr><td>유료 UA 다운로드 비중</td><td>78%</td><td>55%</td><td>39%</td><td>공격적 UA, 광고비는 TT의 절반 이하</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="call warn">
+    <div class="t">가장 중요한 인사이트</div>
+    Gossip Harbor는 <strong>객단가(ARPDAU)가 낮은데도 매출 1위</strong>다. 이유는 ① <strong>압도적 리텐션·인게이지먼트로 유저 풀 자체를 키웠고</strong>,
+    ② <strong>낮은 광고비로 유저를 효율적으로 획득</strong>(RPD 대비 광고비 절반)했기 때문이다.
+    → 우리의 전략도 "고래에게 비싸게"가 아니라 <strong>"넓은 저변을 오래 붙잡고 자연스럽게 태우는"</strong> 방향이어야 한다.
+  </div>
+
+  <div class="src"><b>퍼블리셔:</b> Microfun (2008 베이징 설립). 머지 장르 매출 1위 퍼블리셔. GH 누적 IAP $720M+, 자매작 Seaside Escape 등 <b>다수 머지 타이틀을 "테스트&amp;개선" 모델로 병렬 운영</b>. 하나의 성공에 베팅하지 않고 포트폴리오 전체에서 학습을 순환시키는 것이 Microfun의 진짜 해자.</div>
+</section>
+
+<!-- 2. AUDIENCE -->
+<section id="audience">
+  <div class="secno">Part 1 — 02</div>
+  <h2>타겟 &amp; 오디언스 전략</h2>
+  <p class="intro">Gossip Harbor의 성공은 "코어 타겟에게 사과 없이(unapologetically) 헌신"한 데서 나온다.
+  <strong>79% 여성 · 평균 32세 (올드 밀레니얼 여성)</strong>라는 명확한 타겟에 스토리·데코·코어를 전부 정렬시켰다.</p>
+
+  <div class="grid g2">
+    <div class="card pink"><div class="ico">💔</div><h4>스토리 = 타겟 정서</h4>
+      <p>주인공 <strong>Quinn</strong>은 이혼 후 아버지의 불탄 레스토랑을 재건하는 싱글맘. 아마추어 탐정이 되어 <strong>음식 중독 사건</strong>을 파헤친다. 드라마·로맨스·미스터리·사보타주 — 진범/불륜 콘텐츠를 소비하는 타겟 취향과 정확히 일치.</p></div>
+    <div class="card purple"><div class="ico">🎨</div><h4>데코 메타 = 자기표현</h4>
+      <p>레스토랑 리노베이션에서 <strong>플레이어가 디자인을 직접 선택</strong>(3종 중), 언제든 <strong>페널티 없이 변경 가능</strong>. Travel Town(시티빌더)·Merge Mansion(고정 데코)과 달리 자기표현 동기를 자극.</p></div>
+    <div class="card accent"><div class="ico">🍳</div><h4>코어 = 직관적 릴랙스</h4>
+      <p>머지 보드 = Quinn의 주방. 손님 주문을 머지로 충족. Travel Town·Merge Mansion처럼 <strong>무관한 아이템을 조합하지 않아</strong> 캐주얼 유저에게 훨씬 직관적.</p></div>
+  </div>
+
+  <div class="fig-row">
+    <figure class="fig"><img src="images/naa_story.png" alt="Gossip Harbor 스토리 대사"><figcaption><span class="tag">Gameplay</span>스토리 메타 — Quinn의 이혼·음식중독·사보타주 미스터리 대사·리빌. 타겟(올드 밀레니얼 여성)의 콘텐츠 취향과 정합.</figcaption></figure>
+    <figure class="fig"><img src="images/naa_decoration.png" alt="Gossip Harbor 데코 메타"><figcaption><span class="tag">Gameplay</span>데코(꾸미기) 메타 — 리노베이션 색상·디자인을 직접 선택·변경(자기표현). 시티빌더·고정데코 경쟁작과 차별.</figcaption></figure>
+  </div>
+
+  <div class="call pink">
+    <div class="t">우리에게 주는 교훈</div>
+    "모두를 위한 게임"은 아무에게도 안 팔린다. <strong>단일 코어 타겟을 정하고 스토리·아트·메타·코어를 전부 그 타겟에 정렬</strong>하는 것이 첫 번째 원칙.
+  </div>
+</section>
+
+<!-- 3. CORE -->
+<section id="core">
+  <div class="secno">Part 1 — 03</div>
+  <h2>코어 게임플레이 구조</h2>
+  <p class="intro">전형적 머지-2 루프지만, 각 스텝이 <strong>"고민 없는(no-brainer) 결정"</strong>으로 설계되어 캐주얼 유저의 인지 부하를 최소화한다.</p>
+
+  <div class="loop">
+    <span class="node hot">제너레이터 (에너지 소모)</span><span class="arw">→</span>
+    <span class="node">아이템 머지</span><span class="arw">→</span>
+    <span class="node">손님 주문 충족</span><span class="arw">→</span>
+    <span class="node hot">코인 획득</span><span class="arw">→</span>
+    <span class="node">스토리 진행 · 리노베이션</span><span class="arw">→</span>
+    <span class="node">레벨업</span><span class="arw">↻</span>
+    <span class="node">제너레이터 · 기능 · 이벤트 언락</span>
+  </div>
+
+  <p class="fig-lead"><b>스토어에서의 자기 소개</b> — GH는 자신을 Gossip / Help Them / Story / Merge / Design 5축으로 내세운다. 코어(머지)만이 아니라 스토리·데코를 앞세워 타겟 정서를 먼저 건드리는 포지셔닝이다.</p>
+  <figure class="fig"><img src="images/dof_overview.png" alt="게임 개요"><figcaption><span class="tag">DoF</span>Gossip Harbor 스토어 포지셔닝 5축</figcaption></figure>
+
+  <p class="fig-lead"><b>위 루프의 실제 도식</b> — 앞서 설명한 폐순환(제너레이터→머지→서브→코인→진행→레벨업)을 DoF가 정리한 원본 다이어그램. 각 스텝이 다음 스텝에 자원을 공급하며 자연스럽게 순환한다.</p>
+  <figure class="fig"><img src="images/dof_economy_loop.png" alt="게임 이코노미 루프"><figcaption><span class="tag">DoF</span>코어 이코노미 루프 — 제너레이터→머지→서브→코인→레벨업 폐순환</figcaption></figure>
+
+  <h3>설계 디테일 (벤치마킹 포인트)</h3>
+  <ul>
+    <li><strong>코인의 단일 목적:</strong> 코인은 오직 "스토리 진행/리노베이션"에만 쓴다. 어디에 쓸지 고민할 필요 없음 → 매 세션 시작 시 코인부터 소진하게 유도(세션 리듬 형성).</li>
+    <li><strong>넥스트 내러티브 하이라이트:</strong> 세션 시작마다 다음 스토리 조각을 강조 표시. 코인이 충분하면 자동으로 투자 유도 → 무결정 진행.</li>
+    <li><strong>세션 완결감:</strong> 주문 등장에 쿨다운. 어려운 주문만 남기고 종료해도, 다음 세션엔 쉬운 주문이 새로 생성 → <strong>매 세션 완결 가능한 목표</strong> 보장.</li>
+    <li><strong>지수적 머지 비용:</strong> 레벨 15 아이템 = 레벨1 아이템 <strong>16,384개</strong> 필요(≈ 젬 $256어치 에너지). 진짜 비용이 유저에게 안 보임 → 과금 깊이 확보.</li>
+    <li><strong>레어 드롭:</strong> 감자 등 희귀 드롭 10% 확률 → 레벨은 낮아도(7레벨) 실질 에너지 요구는 10배. 도박적 재미 + 과금 훅.</li>
+    <li><strong>오더 퀘스트:</strong> 전용 제너레이터, 512아이템/43일 완주 설계의 장기 목표. 데코 보상 지급.</li>
+    <li><strong>제너레이터 부스터:</strong> Lv15 (+1레벨/2배 에너지), Lv40 (+2/4배) — Coin Master식 라이트 도박 + 에너지 소비 속도↑.</li>
+  </ul>
+
+  <h3>피처 언락 페이싱</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>플레이어 레벨</th><th>언락 (경과 시간)</th><th>의도</th></tr></thead>
+    <tbody>
+      <tr><td><b>Lv 2</b></td><td>보드 기프트 (~5분)</td><td>즉각 보상 습관</td></tr>
+      <tr><td><b>Lv 3</b></td><td>스타터팩 · 커피 제너레이터 (~10분)</td><td>첫 오퍼 노출(10분)</td></tr>
+      <tr><td><b>Lv 4</b></td><td>Great Deals 오퍼 (~15분)</td><td>과금 옵션 조기 학습</td></tr>
+      <tr><td><b>Lv 6</b></td><td>경쟁 이벤트 (~25분)</td><td>라이브옵스 진입</td></tr>
+      <tr><td><b>Lv 10</b></td><td>시즌 패스 · 크로스프로모 (~60분)</td><td>모든 이벤트 프레임 개방</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figure class="fig">
+    <img src="images/dof_feature_unlock.png" alt="피처 언락 타임라인">
+    <figcaption><span class="tag">DoF</span>피처 언락 타임라인 — Lv2 보드기프트(~5분) → Lv3 스타터팩·커피 제너레이터 → Lv4 딜 → Lv6 경쟁이벤트 → Lv10 시즌패스·크로스프로모(~60분).</figcaption>
+  </figure>
+  <p class="muted">→ <strong>2세션 내 Lv10 도달</strong>하도록 초반 에너지를 넉넉히 주고, 첫 1시간 안에 여러 오퍼·이벤트를 모두 경험시킨다.</p>
+</section>
+
+<!-- 4. ECONOMY -->
+<section id="economy">
+  <div class="secno">Part 1 — 04</div>
+  <h2>이코노미 설계</h2>
+  <p class="intro">두 개의 통화로 <strong>"인지 부하 낮은 소프트 통화 + 다목적 하드 통화"</strong>를 명확히 분리했다. 에너지를 조여 세션당 소비 속도를 통제하는 것이 수익화의 핵심 레버.</p>
+
+  <div class="diff">
+    <div class="dc"><div class="dh">코인 (소프트)</div><p>단일 목적 = 스토리 진행/리노베이션. 상점에서 직접 구매 불가(피기뱅크 제외). 소비처 고민 제로 → 인지 부하 없음.</p></div>
+    <div class="dc"><div class="dh">젬 (하드)</div><p>다목적 = 에너지 리필 · 아이템 구매 · 상점 리프레시 · 타이머 스킵 · 버블 · 인벤토리 확장 · 이벤트. 직접 구매 가능.</p></div>
+  </div>
+
+  <p class="fig-lead"><b>과금 깊이를 숨기는 지수 곡선</b> — 상위 레벨 아이템일수록 비용이 기하급수로 뛴다. 레벨15 하나 = 레벨1 아이템 16,384개(≈$256어치 에너지). 유저는 이 진짜 비용을 체감하지 못한 채 깊게 소비하게 된다.</p>
+  <figure class="fig"><img src="images/dof_merge_cost.png" alt="머지 비용 지수 곡선"><figcaption><span class="tag">DoF</span>지수적 머지 비용 — 레벨15 = 레벨1 아이템 16,384개</figcaption></figure>
+
+  <p class="fig-lead"><b>하드 통화 가격 — 저가 진입점 전략</b> — GH(좌)와 Travel Town(우)의 젬 상점 비교. GH는 낮은 가격대를 더 촘촘히 깔아 무·저과금까지 소비 습관을 심는다.</p>
+  <figure class="fig"><img src="images/naa_currency.png" alt="하드 통화 가격 비교"><figcaption><span class="tag">Naavik</span>젬 가격: Gossip Harbor vs Travel Town</figcaption></figure>
+
+  <h3>에너지 = 수익화의 목줄</h3>
+  <ul>
+    <li><strong>타이트한 에너지 통제:</strong> 보상형 광고 무료 에너지 드립이 Travel Town보다 <strong>40% 낮음</strong>. 세션 연장을 유료화.</li>
+    <li><strong>스케일링 리필:</strong> 첫 리필은 10젬으로 저렴(무·저과금 유저 포함) → 사용할수록 비용 상승(고과금 대상). 하루 첫 리필은 시즌 포인트도 지급되어 "기분 좋은 소비" 설계.</li>
+    <li><strong>에너지 팩:</strong> 350 / 570 / 780 에너지. 4배 부스터 사용 시 780을 <strong>7분에 소진</strong> → 스펜드 속도 극대화. 미전환 시 <strong>가격 동적 인하</strong>.</li>
+  </ul>
+
+  <div class="call">
+    <div class="t">벤치마킹 결론</div>
+    이코노미의 천재성은 "소비가 즐겁게 느껴지도록" 만든 것. <strong>소프트 통화는 무결정, 하드 통화는 저가 리필로 무·저과금까지 소비 습관을 심고</strong>,
+    지수적 머지 비용으로 진짜 깊이를 감춘다.
+  </div>
+</section>
+
+<!-- 5. LIVEOPS -->
+<section id="liveops">
+  <div class="secno">Part 1 — 05</div>
+  <h2>라이브옵스 &amp; 이벤트 프레임워크</h2>
+  <p class="intro">Gossip Harbor를 경쟁작과 진짜로 가르는 지점. <strong>이벤트가 코어 루프를 "엔진"으로 사용</strong>하기 때문에 카니발라이제이션(모드 간 시간 잠식)이 없다.</p>
+
+  <div class="kpis">
+    <div class="kpi"><div class="n">90-100</div><div class="l">5월 한 달 라이브옵스 이벤트 수 (Travel Town과 유사)</div></div>
+    <div class="kpi"><div class="n">4-5 → 8-10</div><div class="l">동시 진행 이벤트(최소→최대) · TT는 2-3→5-6</div></div>
+    <div class="kpi"><div class="n">36 티어</div><div class="l">시즌 패스 (30일, 무료+유료 배틀패스)</div></div>
+    <div class="kpi"><div class="n">30일</div><div class="l">시즌 이벤트 = 최상위 장기 아크</div></div>
+  </div>
+
+  <figure class="fig">
+    <img src="images/naa_liveops_table.png" alt="2025년 5월 라이브옵스 비교">
+    <figcaption><span class="tag">Naavik · Gameplay</span>2025년 5월 라이브옵스 슬레이트 비교: Gossip Harbor vs Travel Town — 총량은 비슷(90–100개)하나 GH는 동시 진행 8–10개로 약 2배(TT 5–6개).</figcaption>
+  </figure>
+
+  <h3>이벤트 계층 구조</h3>
+  <div class="grid g2">
+    <div class="card accent"><h4>🌸 시즌 이벤트 (Bloomin Season)</h4>
+      <p>30일 장기 아크. 매일 에스컬레이팅 목표 7종(주문/코인) + 젬 소비 퀘스트 + 100에너지 루핑 목표. 58,500포인트 필요. 초반 쉽고 <strong>후반 급격히 어려워짐</strong>(마지막 스테이지 = 첫 10스테이지 합). 초기엔 유료 캐치업 없었으나, 이후 <strong>50% 포인트 보너스 구매 옵션 추가</strong>.</p></div>
+    <div class="card purple"><h4>🎲 Lucky Larks (Monopoly Go식)</h4>
+      <p>주문 완수로 주사위 획득 → 보드 이동 → 이벤트 상점 구매. 7스테이지, 90만+ 포인트. 스테이지 비용 <strong>26배 에스컬레이션</strong>(1→7). 데코 + 아바타 보상. 대표적 <strong>패스트 팔로우 적응</strong> 사례.</p></div>
+    <div class="card green"><h4>🪙 Lori's Dough Derby (수집 이벤트)</h4>
+      <p>3일 멀티데이. <strong>톱니파형(sawtooth) 밸런싱</strong>으로 비용이 계속 오르지 않아 진입 부담 적음. 3,550코인 / 10 마일스톤. 코어 목표(코인/주문)를 강화.</p></div>
+    <div class="card pink"><h4>🏆 Ziva's Goldrush (경쟁 이벤트)</h4>
+      <p>1 vs 4+ 토너먼트. 사실상 "다른 플레이어를 배경으로 한 싱글 이벤트". 캐주얼 M3에서 검증된 포맷, 이해·참여 쉬움.</p></div>
+  </div>
+
+  <p class="fig-lead"><b>장기 아크의 상업화 — 시즌 패스</b> — 무료/유료($4.99·$7.99) 트랙 구조. 독점 스킨 없이 머지 아이템만 담아 보상 가치가 불투명한 점은 우리가 개선할 지점(→ 투명한 가치 소구).</p>
+  <figure class="fig"><img src="images/dof_season_pass.png" alt="시즌 패스"><figcaption><span class="tag">DoF</span>시즌 패스 무료/유료 트랙 구조</figcaption></figure>
+
+  <p class="fig-lead"><b>이벤트 롱테일 설계 — Lucky Larks</b> — 7스테이지 보상 구성(트리맵). 후반으로 갈수록 요구·보상 규모가 급증(1→7 약 26배)해, 하이엔게이지 유저만 끝까지 가는 롱테일을 만든다.</p>
+  <figure class="fig"><img src="images/dof_lucky_larks.png" alt="Lucky Larks 스테이지 보상 구성"><figcaption><span class="tag">DoF</span>Lucky Larks 7스테이지 보상 구성 트리맵</figcaption></figure>
+
+  <div class="call warn">
+    <div class="t">핵심 원리 — Event Harness</div>
+    모든 이벤트가 <strong>코어 루프(제너레이트→머지→서브→코인)를 그대로 사용</strong>한다. 목표가 달라도 "주문 완수/코인 획득"이라는 단일 태스크로 수렴 →
+    동시에 8-10개가 돌아도 혼란·분산 없음. <strong>시즌 = 장기 아크, 단기 이벤트 = 그때그때 초점</strong>. 이 구조가 인게이지먼트를 45% 끌어올렸다.
+  </div>
+</section>
+
+<!-- 5b. LIVEOPS JOURNEY -->
+<section id="journey">
+  <div class="secno">Part 1 — 05b</div>
+  <h2>라이브옵스 진화 여정 — 월 20 → 100 이벤트</h2>
+  <p class="intro">GH의 매출은 "한 방"이 아니라 <strong>2년에 걸친 라이브옵스 진화</strong>가 만든 것이다. AppMagic 데이터는
+  <strong>월 이벤트 수가 20 → 50 → 100으로 두 번의 스파이크</strong>를 그리며 성장했음을 보여준다. 매출 급등은 이벤트 증설 "직후"가 아니라
+  <strong>백그라운드에서 누적된 라이브옵스 완성도가 유저 행동을 바꾼 결과</strong>로 뒤따랐다. 이것이 가장 중요한 벤치마킹 포인트다.</p>
+
+  <figure class="fig">
+    <img src="images/app_two_spikes.png" alt="라이브옵스 두 번의 스파이크">
+    <figcaption><span class="tag">AppMagic</span>월간 이벤트 수의 두 번의 성장 파동 — pre-Q2 2024(~20) → Q2–Q3 2024(~50) → Q3–Q4 2025(~100). 매출 급등은 이 누적의 "뒤"에 따라왔다.</figcaption>
+  </figure>
+
+  <div class="road">
+    <div class="ph"><span class="pt">Phase 0 — 견고한 기초</span><span class="pw">~Q1 2024 · 월 ~20 이벤트</span>
+      <div class="pd">단순하지만 바쁜 그리드. 1–10일 이벤트, 리텐션 중심. <strong>Race 포맷(Beat the Heat Wipeout)</strong>을 장르 초기에 도입해 지금도 최강 성과.
+      수익화는 클래식 팩 + 시즌패스 + 젬 번들 위주 — 강한 스펜드 트리거는 아직 없음. <strong>"Buy All" / pick-one 딜의 초기 버전</strong> 첫 실험.</div></div>
+    <div class="ph"><span class="pt">Phase 1 — 1차 스파이크 (20→50)</span><span class="pw">Q2–Q3 2024 · 월 ~50</span>
+      <div class="pd">단일 대형 피처가 아니라 <strong>"짧은 이벤트"의 급증</strong>이 견인. 데일리 8–10→20+개, 숏 이벤트 10→25개.
+      게임이 더 어려워진 게 아니라 <strong>템포가 빨라짐</strong> → 통화 소비 자연 증가.
+      두 신규 메커닉: <strong>앨범 시스템(Springtime Keepsakes, 카드 수집)</strong> + <strong>Lava Quest(Mutineer Mayhem, Royal Match식 100인 타임드 체인·탈락 공포)</strong>.</div></div>
+    <div class="ph"><span class="pt">Phase 2 — 2차 스파이크 (60→100)</span><span class="pw">Q3–Q4 2025 · 월 95–100</span>
+      <div class="pd">이제 GH가 장르를 <strong>선도</strong>. 핵심은 수량이 아니라 <strong>이벤트 체인(하나의 루프가 다음 루프에 아이템을 공급)</strong>.
+      "여러 루프가 동시에 전진하기 때문에" 유저가 복귀 → <strong>less stop, more go</strong>.
+      신규: <strong>Win Streak(Restaurant Goals, 주간 스타·놓치면 리셋)</strong> + <strong>Lucky Wheel(Flower Fellowship, 협동 플레이 — Monopoly GO식)</strong>.</div></div>
+  </div>
+
+  <p class="fig-lead"><b>2차 스파이크의 대표 신규 메커닉 — Win Streak</b> — Restaurant Goals: 주간 목표를 3연속 달성하면 최상위 보상, 한 주라도 놓치면 리셋. 다른 이벤트 태스크와 연동돼 라이브옵스 전체를 촘촘히 연결한다.</p>
+  <figure class="fig"><img src="images/app_winstreak.png" alt="Win Streak 이벤트"><figcaption><span class="tag">AppMagic</span>Win Streak(Restaurant Goals) — 주간 스타 3연속·놓치면 리셋</figcaption></figure>
+
+  <p class="fig-lead"><b>"한 메커닉에 베팅 안 함"의 증거</b> — 분기별로 Race·Win Streak·Lava Quest·Lucky Wheel·Fishing 등 다양한 포맷을 동시에 굴린다. 유형별 스펜드 모먼트를 촘촘히 커버하는 것이 GH 라이브옵스의 핵심.</p>
+  <figure class="fig"><img src="images/app_types.png" alt="분기별 이벤트 타입 믹스"><figcaption><span class="tag">AppMagic</span>분기별 이벤트 타입 구성(스택 바)</figcaption></figure>
+
+  <h3>이벤트 메커닉 다양성 (분기별 믹스)</h3>
+  <p class="muted">GH의 진짜 강점은 "많이 돌린 것"이 아니라 <strong>"올바른 것을 골라 영구 루프로 만든 것"</strong>. 다양한 포맷을 병렬로 운용해 유저 유형별 스펜드 모먼트를 촘촘히 커버한다.</p>
+  <div class="pills">
+    <span class="pill on">Race (경쟁 루프)</span>
+    <span class="pill on">Win Streak (연속 스트릭)</span>
+    <span class="pill on">Lava Quest (타임드 탈락)</span>
+    <span class="pill on">Album (카드 수집)</span>
+    <span class="pill on">Lucky Wheel (협동)</span>
+    <span class="pill">Monopoly (주사위 보드)</span>
+    <span class="pill">Pick-a-Box / Card</span>
+    <span class="pill">Fishing</span>
+    <span class="pill">Tabletop</span>
+  </div>
+
+  <div class="call">
+    <div class="t">우리에게 주는 3대 교훈</div>
+    ① <strong>하나의 메커닉에 베팅 금지</strong> — 긴 루프·빠른 루프·스트릭·협동·압박 비트를 섞은 <strong>풀 그리드</strong>가 필요.
+    ② <strong>이벤트 체인화</strong> — 이벤트끼리 아이템·보상을 주고받게 엮으면 "쉴 틈 없는" 리듬이 생긴다.
+    ③ <strong>반복(iterate)하되 재건축(rebuild)하지 마라</strong> — 성공한 테스트 하나가 다음 테스트를 언락. 시스템은 이렇게 균열 없이 확장된다.
+  </div>
+
+  <div class="call pink">
+    <div class="t">⚠️ 로드맵 함의 — "출시 = 끝" 아님</div>
+    GH의 매출 1위는 <strong>출시 후 2년간의 라이브옵스 누적</strong>에서 나왔다. 우리 사업계획도 <strong>출시 시점 이벤트 수를 최소로 잡되,
+    분기마다 이벤트 그리드를 배가하는 라이브옵스 로드맵</strong>과 <strong>전담 라이브옵스 조직</strong>을 전제로 설계해야 한다. (→ <a href="#roadmap">11장</a> 반영)
+  </div>
+</section>
+
+<!-- 6. MONETIZATION -->
+<section id="monet">
+  <div class="secno">Part 1 — 06</div>
+  <h2>수익화 구조</h2>
+  <p class="intro">IAP 중심 + 보상형 광고 15-20% 상단 기여. 핵심은 <strong>"고래를 조이는 깊은 이코노미"와 "무·저과금을 태우는 하이브리드 수익화"의 동시 운용</strong>.</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <h4>IAP — 젬 팩 &amp; 번들</h4>
+      <ul style="margin:0;padding-left:18px;font-size:13.5px;color:var(--sub)">
+        <li>젬 팩 $1.99–$99.99. 달러당 50–84젬(최고는 $39.99), 평균 64젬/달러.</li>
+        <li>테마 번들: 큰 히어로 이미지 중심 → <span class="hl2">"배너 블라인드니스" 리스크</span>(가치 소구 불명확).</li>
+        <li>에너지 팩 동적 가격: 미전환 시 다음 노출 때 인하.</li>
+        <li>오퍼 타입: 유저 저니 / 에너지(에스컬레이팅) / 시즌 / 이벤트 아이템.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>보상형 광고 — 다이내믹 하이브리드</h4>
+      <ul style="margin:0;padding-left:18px;font-size:13.5px;color:var(--sub)">
+        <li>동적 배치: 유저가 필요할 때 딱 등장(에너지/타이머/버블). 저가치 보상만.</li>
+        <li>서프라이즈&amp;딜라이트 → FOMO로 접속 유도.</li>
+        <li>Unity 리서치: 보상형 광고 시청자는 <strong>구매 확률 4.5배</strong>, D30 리텐션 3.5–5배.</li>
+        <li><span class="hl2">주의:</span> 과금 후 에너지 체스트 광고 제거 → 과금 유저가 징벌적으로 느낄 수 있음.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>수익화 스택의 진화 (라이브옵스와 동반 성장)</h3>
+  <p class="muted">AppMagic 분석: GH의 수익화는 라이브옵스 그리드와 <strong>단계적으로 함께 진화</strong>했다. 각 레이어가 서로를 대체하지 않고 <strong>서로 다른 스펜드 모먼트를 커버</strong>한다.</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>레이어</th><th>도입 시점</th><th>설명</th></tr></thead>
+    <tbody>
+      <tr><td><b>클래식 팩 · 젬 번들</b></td><td>기초 (Phase 0)</td><td>기본 IAP. 강한 긴급성 없음</td></tr>
+      <tr><td><b>Buy All / Pick-one 딜</b></td><td>Phase 0→1</td><td>3티어 + "전체 구매(30% OFF)" → 평균 결제액 상승 (예: Santa's Grab Bag)</td></tr>
+      <tr><td><b>1+1 번들</b></td><td>Phase 1</td><td>"1개 사면 1개 무료". 이해 쉽고 고압 이벤트 대비 자원 비축 → ARPPU↑</td></tr>
+      <tr><td><b>2티어 시즌패스</b></td><td>Phase 1</td><td>VIP Pass(코어 보상) + Super Pass(고가치 보너스·추가 시즌포인트) (예: Oceanic Season)</td></tr>
+      <tr><td><b>이벤트 연장 오퍼</b></td><td>Phase 1</td><td>막판 태스크용 추가 시간·이벤트 통화. "진척 잃기 싫은" 유저 소프트 넛지</td></tr>
+      <tr><td><b>에스컬레이팅 데일리 번들</b></td><td>Phase 2</td><td>매일 새 옵션 언락, 최종 보상은 전부 구매 시 (Three-Pack Gift). 데일리 체크인 리듬과 정합</td></tr>
+      <tr><td><b>이벤트별 프로그레션 패스</b></td><td>Phase 2</td><td>이벤트 내 별도 보상 트랙 + VIP 티어 (Purrfect Progress). 시즌패스 위 <strong>2차 진행 레이어</strong></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>매출 구성 (Phase 1 말 기준, AppMagic)</h4>
+  <div class="kpis">
+    <div class="kpi"><div class="n">~62%</div><div class="l">스페셜 오퍼 &amp; 임시 번들 — 라이브옵스에 밀착</div></div>
+    <div class="kpi"><div class="n">~18%</div><div class="l">하드 통화 (젬) 직접 구매</div></div>
+    <div class="kpi"><div class="n">~10%</div><div class="l">시즌 패스</div></div>
+    <div class="kpi"><div class="n">나머지</div><div class="l">기타 상시 오퍼</div></div>
+  </div>
+  <p class="muted">→ 핵심: <strong>매출의 60%+가 "이벤트에 묶인 오퍼"</strong>다. 상시 상점이 아니라 <strong>라이브옵스 흐름 안에서 소비가 발생</strong>하도록 설계됐다.</p>
+
+  <div class="call">
+    <div class="t">우리의 설계 원칙</div>
+    ① 무·저과금에게도 <strong>저가 에너지 리필</strong>로 소비 습관 심기 ② 보상형 광고를 <strong>"필요한 순간 등장"</strong>하게 동적 배치 ③ 지수적 머지 비용으로 <strong>과금 깊이는 숨기기</strong>
+    ④ <strong>오퍼를 이벤트 흐름에 묶어</strong> "소비가 플레이의 일부"로 느껴지게 ⑤ 패스·번들·1+1·다이내믹 오퍼를 <strong>레이어링</strong>(각기 다른 스펜드 모먼트 커버).
+    단, Gossip Harbor의 실수(과금 후 광고 제거, 번들 가치 불투명)는 피한다.
+  </div>
+</section>
+
+<!-- 7. PRD -->
+<!-- ============ PART 2 ============ -->
+
+<!-- 8. MARKET RESEARCH: SENIOR WOMEN -->
+<section id="research">
+  <div class="secno">Part 2 — 08</div>
+  <h2>타겟 시장조사 — 시니어 북미 여성</h2>
+  <p class="intro">원작 GH의 타겟은 "30대 여성(평균 32세)"이다. 본 섹션은 <strong>최초 가정(시니어 50세+, 특히 55–70대)</strong> 하의 조사이며,
+  이후 플랫폼 분석(8b)을 거쳐 <strong>확정 타겟은 40–65세 북미 여성으로 재보정</strong>됐다 — 조사 결과 자체는 시니어 친화 설계의 근거로 유효하다.
+  이 섹션은 다중 출처 조사(AARP·AppMagic·GameRefinery·학술지)를 종합해 <strong>이 세그먼트의 규모·장르 선호·UX 요구·테마 적합성</strong>을 데이터로 검증하고,
+  그로부터 컨셉·아트톤·설계 원칙을 도출한다.</p>
+
+  <div class="call green" style="margin-top:0">
+    <div class="t">✅ 데이터 검증 상태 (2026-07 재확인 완료)</div>
+    핵심 지표를 원문에서 재확인했다 — <strong>AARP 세그먼트 규모·장르 비율(퍼즐 73%·카드타일 69%·워드 58%)·여성 데일리 52%·주 12h·$2.5B</strong>,
+    <strong>GameRefinery 머지 데모(70% 여성·31% 45세+)</strong>, <strong>노년층 타이머 기피(복수 학술·업계 출처)</strong> 모두 확인됨.
+    단 <strong>AppMagic H1 2025 머지 매출 수치(+94% 등)</strong>는 리포트 인용값으로 개별 페이지 재확인은 미완(타 GH 자료로 정합성 교차 확인).
+  </div>
+
+  <h3>① 세그먼트 규모 — "실버 게이머"는 크고 돈을 쓴다</h3>
+  <div class="kpis">
+    <div class="kpi"><div class="n">5,240만</div><div class="l">미국 50세+ 게이머 (50+ 인구의 45%) · AARP 2023</div></div>
+    <div class="kpi"><div class="n">52%<small> vs 37%</small></div><div class="l">여성 50+ 매일 플레이 비율(남성 37%) — 여성이 더 헤비</div></div>
+    <div class="kpi"><div class="n">주 12h</div><div class="l">평균 플레이 시간 · 73% 스마트폰/태블릿, 84% 게임앱 이용</div></div>
+    <div class="kpi"><div class="n">$2.5B</div><div class="l">50+ 세그먼트 반기 게임 지출 전망</div></div>
+  </div>
+  <p class="muted">→ 시니어 여성은 <strong>규모·인게이지먼트·지출 모두 매력적</strong>이면서 경쟁이 상대적으로 덜한 세그먼트. 광고주·퍼블리셔가 주목하는 이유다.</p>
+
+  <h3>② 장르 선호 — 결정적 인사이트</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>발견</th><th>수치</th><th>출처</th></tr></thead>
+    <tbody>
+      <tr><td>50+ 최애 장르: 퍼즐/로직</td><td><b>73%</b></td><td>AARP 2023</td></tr>
+      <tr><td>50+ 카드·타일 게임</td><td><b>69%</b></td><td>AARP 2023</td></tr>
+      <tr><td>50+ 워드 게임</td><td><b>58%</b></td><td>AARP 2023</td></tr>
+      <tr><td>모바일 퍼즐 게이머 중 여성 비중</td><td><b>76%</b></td><td>FinancesOnline</td></tr>
+      <tr><td>50+ 퍼즐 일 플레이 시간 (전 연령 중 최다)</td><td><b>17.6분</b></td><td>Adjoe</td></tr>
+      <tr><td>Merge Dragons 플레이어 여성 비중</td><td class="win"><b>70%</b></td><td>GameRefinery</td></tr>
+      <tr><td>Merge Dragons 플레이어 45세+ 비중</td><td class="win"><b>31%</b></td><td>GameRefinery</td></tr>
+      <tr><td>Merge-2 (Complex Meta) 매출 성장 YoY</td><td class="win"><b>+94%</b></td><td>AppMagic H1 2025</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call">
+    <div class="t">시사점 — 머지는 되지만 "퍼즐/카드처럼 느껴져야" 한다</div>
+    시니어 여성의 압도적 선호는 <strong>퍼즐·카드·타일·워드</strong>다. 머지는 인접 장르로 수용도가 높지만(Merge Dragons 45+ 31%),
+    이들의 1순위는 아니다. → 우리 머지 게임은 <strong>보드가 복잡한 "코어 머지"보다, 퍼즐처럼 명료하고 편안한 톤</strong>이어야 하고,
+    익숙한 퍼즐/카드/워드 요소를 <strong>이벤트·미니게임으로 접목</strong>하면 친화도가 크게 오른다.
+  </div>
+
+  <h3>③ 시니어 UX 요구 — GH 설계와 충돌 지점</h3>
+  <div class="grid g2">
+    <div class="card pink"><div class="ico">⏱️</div><h4>타이머·시간압박 기피 (가장 중요)</h4>
+      <p>학술 연구(JMIR): 노년층은 <strong>시간압박 메커니즘이 불안·스트레스를 유발</strong>해 적극 기피. → GH의 <strong>에너지·타이머 압박 수익화와 정면 충돌</strong>. 시니어 타겟은 타이머를 최소화하고 <strong>느긋한 페이스</strong>로 재설계 필요.</p></div>
+    <div class="card accent"><div class="ico">🔎</div><h4>가독성·접근성</h4>
+      <p>보조 텍스트 ≥20pt·핵심 ≥30pt, 대비 <strong>4.5:1</strong>(WCAG 2.2). 비슷한 색/모양 오브젝트 구별 어려움 → <strong>핵심 아이템 시각적 차별화</strong>. 컨트롤 크기·간격 확대, 개념 단순화.</p></div>
+    <div class="card green"><div class="ico">🕊️</div><h4>비폭력·친숙한 콘텐츠</h4>
+      <p>노년층은 <strong>비폭력·문화적으로 친숙한</strong> 콘텐츠 선호. "생소하면 안 된다"는 요구와 정확히 일치 → 판타지/난해한 세계관보다 <strong>익숙한 일상·자연·향수</strong> 소재가 안전.</p></div>
+    <div class="card purple"><div class="ico">😊</div><h4>정서 톤</h4>
+      <p>GH 광고는 100% 가족 고난·66.7%가 "고난 지속"으로 마무리(Segwise). 시니어 여성엔 <strong>고난 자극보다 따뜻함·성취·위안</strong>의 톤이 더 맞을 가능성 → 크리에이티브 A/B 필요.</p></div>
+  </div>
+
+  <h3>④ 경쟁 차별화 가드레일 — Microfun 영토 회피</h3>
+  <div class="call warn" style="margin-top:0">
+    <div class="t">🚧 Microfun 머지 3형제의 공통 공식 = 우리가 피해야 할 것</div>
+    <strong>Gossip Harbor</strong>(Brimwave 섬·이혼 싱글맘 Quinn), <strong>Seaside Escape</strong>(해안섬 Kryphos·몰락 배우 Rowan), 자매작 다수가
+    <strong>"해안/섬 배경 + 몰락한 여성 주인공 + 복원 서사"</strong>라는 동일 공식을 공유한다.
+    → 우리 컨셉은 이 3요소, 특히 <strong>① 해안·섬 배경 ② '몰락한 여성이 재기하는' 주인공 클리셰</strong>를 피해야 "복제작"으로 안 보인다.
+  </div>
+
+  <h3>⑤ 후보 컨셉 — 시장 적합성 &amp; 경쟁 중복 평가</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>컨셉</th><th>친숙도</th><th>차별화</th><th>경쟁 중복</th><th>평가</th></tr></thead>
+    <tbody>
+      <tr><td><b>A. 골동품점 복원 (노스탤지어)</b></td><td class="win">매우 높음</td><td>중간</td><td class="win">낮음</td><td>향수·유품·세대 서사 = 시니어 정서 직결. 해안·섬 아님. <b>가장 안전</b></td></tr>
+      <tr><td><b>C′. <u>내륙</u> 소도시 코지 미스터리</b><br><span style="font-size:11.5px;color:var(--dim)">(원안 C의 '해안'을 내륙으로 수정)</span></td><td class="win">높음</td><td class="win">높음</td><td class="win">낮음</td><td>코지 미스터리는 시니어 여성 초강세 장르(Hallmark·Murder She Wrote 정서). <b>내륙 소도시</b>로 옮겨 Microfun 해안 영토 회피 → 친숙+차별+비중복 균형 최적</td></tr>
+      <tr><td><b>C. 해안마을 코지 미스터리 (원안)</b></td><td class="win">높음</td><td class="win">높음</td><td class="lose">높음 ⚠️</td><td>미스터리 훅은 좋으나 <b>'해안' 세팅이 Seaside Escape와 정면 중복</b> → 배경 수정 필요</td></tr>
+      <tr><td><b>B. 마법 마을 코지 판타지</b></td><td class="lose">낮음</td><td class="win">매우 높음</td><td class="win">낮음</td><td>판타지는 "친숙 콘텐츠 선호"와 상충 위험. 차별화 최고이나 <b>생소함 리스크</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call pink">
+    <div class="t">시장조사 기반 컨셉 권고 (갱신)</div>
+    데이터는 <strong>A(노스탤지어)와 C′(내륙 코지 미스터리)</strong>가 시니어 여성의 "친숙하되 차별화" 요구에 부합함을 시사한다.
+    단 <strong>원안 C의 '해안' 세팅은 자매작 Seaside Escape(해안섬 복원)와 중복</strong>되므로 배경을 <strong>내륙 소도시로 수정(C′)</strong>해야 한다.
+    미스터리 훅 자체는 Microfun이 하지 않는 영역이라 차별점으로 유효하다.
+    → 아래 <a href="#concept">11장</a>에서 A vs C′ 최종 결정.
+  </div>
+
+  <div class="src"><b>출처:</b> AARP "2023 Gamers 50-Plus"(원문 재확인) · GameRefinery Merge 데모(재확인) · 노년층 게임 선호/타이머 기피 PMC5413800 외 학술(재확인) · AppMagic Casual Report H1 2025(리포트 인용) · FinancesOnline·Adjoe(퍼즐 데모) · JMIR/PMC(노년층 UX) · Segwise(GH 크리에이티브) · WCAG 2.2. <b>검증:</b> 핵심 지표 2026-07 원문 재확인 완료.</div>
+</section>
+
+<!-- 8b. PLATFORM: FACEBOOK INSTANT GAMES -->
+<section id="platform">
+  <div class="secno">Part 2 — 08b</div>
+  <h2>배포 플랫폼 분석 — Facebook Instant Games</h2>
+  <p class="intro">우리는 <strong>Facebook/Instagram(FB Instant Games)</strong>에 배포한다. 이는 App Store/Google Play와 <strong>오디언스·수익화·경쟁 구도가 전혀 다른</strong> 결정적 변수다.
+  결론부터: <strong>이 플랫폼 선택은 우리 타겟(시니어 여성)과 자연 정합</strong>하지만, 페이드 UA·경쟁 테마·타겟 폭을 재보정해야 한다.</p>
+
+  <h3>① 플랫폼 = 타겟과 정합 (하지만 폭 재보정 필요)</h3>
+  <div class="grid g2">
+    <div class="card accent"><h4>👍 왜 정합하는가</h4>
+      <p>Facebook 유저층은 <strong>모바일 스토어보다 고령</strong>. 미국 45–54세가 일일 참여 최고(76%), 50–64세 강세, 65+도 10%↑로 증가.
+      캐주얼 게임은 <strong>여성 편중</strong>(캐주얼 플레이어 중 여성 25–44세가 61% 차지). → 시니어 친화 게임의 <strong>천연 서식지</strong>.</p></div>
+    <div class="card pink"><h4>⚠️ 재보정 포인트</h4>
+      <p>단, FB 캐주얼 <strong>과금 스위트스팟은 25–44세 여성</strong>이 가장 두껍다. 55세+ 시니어층에만 좁히면 유효 모수가 준다.
+      → 타겟을 <strong>"40–65세 북미 여성"으로 확정</strong>했다. 시니어 친화 UX(큰 폰트·논타이머)는 배제가 아닌 <strong>차별점</strong>으로 유지.</p></div>
+  </div>
+
+  <h3>② 수익화·기술 제약 (기획 전제)</h3>
+  <ul>
+    <li><strong>HTML5 인스턴트 게임</strong>(≤200MB, 경량) — 1인 플레이 코어·멀티플랫폼 포팅 결정과 정합.</li>
+    <li>머지 게임 매출은 <strong>IAP 중심</strong>(광고는 보조). Meta <strong>수익 배분 70/30</strong>.</li>
+    <li>스토어 앱 대비 그래픽·용량 제약 → <strong>가볍고 명료한 아트</strong>가 유리(시니어 가독성 요구와도 일치).</li>
+  </ul>
+
+  <h3>③ FB 머지 경쟁 지형 (제공 스크린샷 분석)</h3>
+  <p class="muted">FB "Merge Games" 허브의 <b>Most played / Top grossing</b> 리스트를 테마별로 분류. 무엇이 이 플랫폼에서 실제로 통하는지 보여준다.</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>테마 클러스터</th><th>대표작 (플레이어/순위)</th><th>플랫폼 성과</th></tr></thead>
+    <tbody>
+      <tr><td><b>복원 드라마 (GH식·여성 감정 썸네일)</b></td><td>Merge Haven(496K·최다), Mansion Tale: Merge Secrets(103K), Merge Dream Hotel(77K), DesignVille(112K)</td><td class="win">최다 플레이 + 상위 그로싱. 가장 붐비는 레드오션</td></tr>
+      <tr><td><b>판타지/마법</b></td><td>Mergest Kingdom(그로싱 2위), Fairyland Merge &amp; Magic(그로싱 4위), Merge Legends, Merge Lagoon(149K), Elves/Goblins/Elf</td><td class="win">그로싱 상위 다수 — FB에서 <b>판타지는 검증됨</b></td></tr>
+      <tr><td><b>감각/추상/숫자</b></td><td>Piece of Cake(그로싱 1위·팝잇), 2020 Connect, Dice-Merge, Merge The Numbers</td><td class="win">Piece of Cake 그로싱 1위 — 단순·촉각 테마도 강세</td></tr>
+      <tr><td><b>팜/자연/트로피컬</b></td><td>Tropical Merge(그로싱 3위), Farm Merge Valley(56K), MergeVille(45K)</td><td>안정적 중상위</td></tr>
+      <tr><td><b>미스터리/고딕</b></td><td>Lamplighter(61K·그로싱 7위, 등불 든 여성)</td><td>소수지만 존재·검증 — 코지 미스터리 톤 가능성</td></tr>
+      <tr><td class="win"><b>노스탤지어/골동품/기억</b></td><td>— (부재)</td><td class="win">💡 <b>화이트스페이스</b> — FB 머지에 없음</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="call">
+    <div class="t">플랫폼 분석이 컨셉 결정에 주는 3가지</div>
+    ① <strong>노스탤지어(A안)는 FB 머지에서 경쟁작이 없는 화이트스페이스</strong> — 차별화엔 최상, 단 플랫폼 미검증이라 코어 완성도로 증명해야 함.<br>
+    ② <strong>판타지(B안)는 FB에서 그로싱 검증됨</strong>(Mergest Kingdom·Fairyland) — "생소함 리스크"가 App Store 데이터보다 낮음. 완전 배제 대신 <strong>이벤트/스핀오프 테마 후보</strong>로 보관.<br>
+    ③ <strong>UA 크리에이티브는 "감정적 캐릭터 드라마"가 승자</strong>(Merge Haven 우는 신부 등). 노스탤지어라도 <strong>표정 풍부한 인간 주인공 + 감정 훅</strong>으로 광고를 만들어야 FB에서 먹힌다.
+  </div>
+
+  <div class="src"><b>출처:</b> Statista(US Facebook 연령·성별) · Hootsuite/Phyllo(FB 데모그래픽 2025–26) · Meta Business(Instant Games IAP·70/30) · Udonis(머지 수익화) · Game-Ace/Innovecs(Instant Games 개요) · 사용자 제공 FB Merge Games 허브 스크린샷(Most played/Top grossing). <b>주의:</b> FB 캐주얼 "여성 25–44 61%"는 캐주얼 전반치이며 머지 한정치는 아님.</div>
+</section>
+
+<!-- 9. POSITIONING -->
+<section id="position">
+  <div class="secno">Part 2 — 09</div>
+  <h2>경쟁 포지셔닝</h2>
+  <p class="intro">머지 시장은 두 축 <strong>(캐주얼↔코어) × (라이브옵스 헤비↔라이트)</strong>로 매핑된다.
+  Gossip Harbor는 <strong>캐주얼 + 라이브옵스 헤비</strong> 사분면을 장악했다. 우리는 여기에 인접하되 빈 공간을 노린다.</p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>타이틀</th><th>포지션</th><th>메타</th><th>UA 크리에이티브 전략</th></tr></thead>
+    <tbody>
+      <tr><td><b>Gossip Harbor</b></td><td>캐주얼 · 라이브옵스 헤비</td><td>내러티브 + 리노베이션</td><td>감정적·논란성 (Playrix/Hero Wars/Lily's Garden식)</td></tr>
+      <tr><td>Travel Town</td><td>중간 · 라이브옵스 중</td><td>내러티브 + 라이트 시티빌딩</td><td>미스터리 스토리 + 셀럽 콜라보 (Royal Match/Candy Crush식)</td></tr>
+      <tr><td>Love &amp; Pies</td><td>캐주얼 · 라이브옵스 라이트</td><td>내러티브 중심</td><td>GH가 코어를 벤치마킹한 원형</td></tr>
+      <tr><td>Merge Mansion</td><td>코어 · 라이브옵스 중</td><td>미스터리 + 고정 데코</td><td>최고 리텐션, 좁은 TAM</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <figure class="fig">
+    <img src="images/dof_positioning.png" alt="머지 시장 포지셔닝 맵">
+    <figcaption><span class="tag">DoF</span>머지 시장 포지셔닝(캐주얼↔코어 × 라이브옵스 헤비↔라이트) — GH는 "캐주얼 + 라이브옵스 헤비" 사분면을 장악.</figcaption>
+  </figure>
+
+  <h3>Gossip Harbor의 Proven / Better / New</h3>
+  <div class="pbn">
+    <div class="col p"><div class="cap">Proven (검증·차용)</div>
+      <ul><li>캐주얼 아트 스타일</li><li>내러티브</li><li>코어 게임플레이</li><li>리스토레이션</li><li>세일즈</li></ul></div>
+    <div class="col b"><div class="cap">Better (개선)</div>
+      <ul><li>시즌 시스템</li><li>이벤트 프레임워크</li><li>스토리 드리븐</li></ul></div>
+    <div class="col n"><div class="cap">New (신규)</div>
+      <ul><li>유저 저니 머지 체인</li><li>이벤트 내 난이도 에스컬레이션</li></ul></div>
+  </div>
+  <p class="muted">→ 시사점: <strong>정상 타이틀조차 "발명"은 New 칸 2개뿐</strong>. 대부분 Proven+Better다. 우리도 <strong>코어는 검증된 것을 완성도로 이기고, New는 1–2개에 집중</strong>한다.</p>
+</section>
+
+<!-- 9. STRENGTH -->
+<section id="strength">
+  <div class="secno">Part 2 — 10</div>
+  <h2>우리가 만들어야 할 강점 포인트</h2>
+  <p class="intro">시장조사·플랫폼 분석 결과, 우리의 1번 해자는 <strong>"소셜"이 아니라 "타겟·플랫폼·정서의 정렬"</strong>이다.
+  즉 <strong>시니어 북미 여성 × FB Instant Games × 노스탤지어 화이트스페이스</strong>라는 미개척 교차점을 선점하는 것. 5개 축에서 차별화 강점을 만든다.</p>
+
+  <h3>기회 = 미개척 교차점 + GH의 빈틈</h3>
+  <div class="grid g2">
+    <div class="card pink"><div class="ico">🎯</div><h4>강점 ① 타겟·플랫폼 정렬 (1번 해자)</h4>
+      <div class="diff" style="margin-top:10px"><div class="dc"><div class="dh">GH 현황</div><p>30대 여성·App Store 중심. 시니어 여성·FB Instant Games는 <strong>직접 겨냥하지 않음</strong>.</p></div>
+        <div class="dc"><div class="dh">우리 강점</div><p><strong>40–65세 북미 여성 × FB(고령·여성 편중 플랫폼) × 노스탤지어(FB 머지 화이트스페이스)</strong> 삼중 정렬. 경쟁이 비어 있는 자리.</p></div></div></div>
+    <div class="card accent"><div class="ico">🧓</div><h4>강점 ② 시니어 친화 설계</h4>
+      <div class="diff" style="margin-top:10px"><div class="dc"><div class="dh">GH 현황</div><p>고밀도 보드·작은 UI·<strong>에너지/타이머 압박</strong> → 노년층엔 불안·피로.</p></div>
+        <div class="dc"><div class="dh">우리 강점</div><p><strong>논타이머 느긋한 페이싱</strong>(노년층 타이머 기피 반영), 큰 폰트·고대비·명료 아트(WCAG 2.2). 접근성 = 차별화.</p></div></div></div>
+    <div class="card green"><div class="ico">💎</div><h4>강점 ③ 투명한 가치 소구</h4>
+      <div class="diff" style="margin-top:10px"><div class="dc"><div class="dh">GH 현황</div><p>번들이 큰 히어로 이미지 중심 → "배너 블라인드니스". 보너스 가치·최적 가격 미표기.</p></div>
+        <div class="dc"><div class="dh">우리 강점</div><p><strong>명확한 "이만큼 이득" 태그</strong>·비교 UI. 신뢰 기반 전환율↑, 과금 후회↓ (시니어 신뢰 특히 중요).</p></div></div></div>
+    <div class="card purple"><div class="ico">📖</div><h4>강점 ④ 향수 감정 스토리</h4>
+      <div class="diff" style="margin-top:10px"><div class="dc"><div class="dh">GH 현황</div><p>자극적 막장·고난 지속 정서(선형+스킵). 시니어 여성 정서와 결이 다름.</p></div>
+        <div class="dc"><div class="dh">우리 강점</div><p><strong>향수·위안·발견</strong>의 분기형 기억 스토리. FB UA 승자(감정적 캐릭터 드라마)와 정합하면서 톤은 따뜻하게.</p></div></div></div>
+  </div>
+
+  <div class="card green" style="margin-top:14px"><div class="ico">👥</div><h4>강점 ⑤ (플러스알파·P2) 라이트 소셜/협동</h4>
+    <p>GH·Travel Town·Merge Mansion 모두 <strong>영구 소셜 구조가 비어 있다</strong>. 단 우리는 <strong>1인 플레이 코어를 확정</strong>(멀티플랫폼 포팅·시니어 접근성 우선)했으므로,
+    소셜은 <strong>출시 후 플러스알파(선물·라이트 협동 이벤트·친구 초대)</strong>로 후행 도입해 오가닉 바이럴을 보강한다. 초기 리스크는 격리.</p></div>
+
+  <div class="call warn">
+    <div class="t">우선순위 판단 (최종)</div>
+    핵심 해자는 <strong>①타겟·플랫폼 정렬 + ②시니어 친화 설계</strong>다 — 경쟁이 비운 "시니어 여성 × FB × 노스탤지어" 교차점을 <strong>먼저, 깊게</strong> 점유하는 것.
+    ③투명성·④향수 스토리가 이를 강화하고, <strong>⑤소셜은 1인 코어 검증 후 플러스알파</strong>로 얹는다. (소셜을 코어로 삼지 않는 이유: 1인 플레이·멀티플랫폼·시니어 접근성이 우선순위이기 때문)
+  </div>
+</section>
+
+<!-- 11. CONCEPT (FINAL) -->
+<section id="concept">
+  <div class="secno">Part 2 — 11</div>
+  <h2>컨셉 제안 <span style="font-size:14px;color:var(--green);font-weight:700;border:1px solid var(--green);border-radius:6px;padding:2px 10px;vertical-align:middle;margin-left:8px">✔ 확정 (A안)</span></h2>
+  <p class="intro">시장조사(시니어 여성)·플랫폼 분석(FB Instant Games)·경쟁 가드레일을 모두 반영해
+  <strong>A안 — "노스탤지어 골동품점 복원 × 시대여행 감성"</strong>으로 확정한다. 검증된 머지-2 코어는 그대로 차용하되,
+  <strong>세계관·정서·페이싱을 시니어 여성 + FB 화이트스페이스에 정렬</strong>한다.</p>
+
+  <div class="concept">
+    <div class="cname">확정: <span>"Vintage Lane: Merge &amp; Story"</span> — 기억을 되살리는 골동품점</div>
+    <div class="cline">Merge-2 · Cozy Nostalgia · <strong>Memory Restoration</strong> — 40–65세 북미 여성 · FB Instant Games</div>
+    <p class="muted"><strong>활기찬 40대 여성(주인공)</strong>이 <strong>돌아가신 할머니가 남긴 낡은 골동품점 'Vintage Lane'</strong>을 물려받아 인생 2막으로 하나씩 복원한다.
+    머지로 복원한 물건마다 <strong>그 물건이 담은 과거의 기억·사연이 되살아나고(시대·장소를 넘나드는 "안락의자 여행")</strong>, 잊혀졌던 가족의 따뜻한 비밀이 밝혀진다.
+    자극적 막장이 아닌 <strong>향수·위안·발견</strong>의 정서. 할머니는 회상 속 따뜻한 앵커 캐릭터로 유지하되, <strong>타이틀·주인공에 연령 라벨("grandma/senior")은 쓰지 않는다.</strong> 해안·섬 배경도, "몰락한 여성의 재기" 클리셰도 쓰지 않는다.</p>
+  </div>
+
+  <h3>게임명 &amp; SEO/ASO 네이밍 근거</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>요소</th><th>선택</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td>브랜드 토큰</td><td><b>Vintage</b></td><td><b>친숙·고검색</b> 단어 + <b>아스피레이셔널(트렌디, "old" 아님)</b> + 골동품/복원 콘텐츠 직접 서술. ("Heirloom"은 이해는 되나 검색 안 하는 감성 개념어 → 친숙도·SEO 약해 탈락)</td></tr>
+      <tr><td>세팅 토큰</td><td><b>Lane</b></td><td>코지 <b>내륙</b> 소도시 골목(해안 회피) + 이벤트 "새 골목" 확장</td></tr>
+      <tr><td>부제</td><td><b>Merge &amp; Story</b></td><td>고volume 장르 키워드 — GH·Seaside 검증 패턴([짧은 친숙 제목]+[장르 부제] · 키워드는 25자 이후 부제에)</td></tr>
+      <tr><td>ASO 키워드 필드</td><td colspan="2">antique · restore · home design · decorate · puzzle · match · cozy · hidden object · story</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call warn"><div class="t">네이밍 조사 근거 (친숙도·연령 라벨)</div>
+    ASO 베스트프랙티스: 제목은 <strong>3단어 미만·친숙한 단어</strong>, 장르 키워드는 부제(25자 이후)에. → <code>Heirloom</code>은 <strong>검색 안 하는 감성어라 탈락</strong>, 친숙·고검색·아스피레이셔널한 <strong>Vintage</strong> 채택.
+    AARP: 50+의 60%+가 "senior" 호칭 거부 · "grandma" 태그 부정적 · 55+의 55%가 "older/mature" 거슬려함 → <strong>연령 라벨 미사용</strong>, 주인공 <strong>활기찬 40대</strong>(또래 반영 구매의향 200%↑). <b>상표·스토어 중복 검색 필요.</b>
+  </div>
+
+  <h3>왜 이 컨셉인가 — 조사 근거 정합</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>조사 발견</th><th>컨셉 A의 대응</th></tr></thead>
+    <tbody>
+      <tr><td>시니어 여성은 <b>비폭력·친숙한 콘텐츠</b> 선호 (AARP/JMIR)</td><td class="win">향수·골동품·가족 = 가장 친숙하고 편안한 소재</td></tr>
+      <tr><td>노년층은 <b>타이머·시간압박 기피</b>(불안 유발)</td><td class="win">느긋한 논타이머 페이싱, "복원의 여유" 정서로 재설계</td></tr>
+      <tr><td>여행 테마 매력 크나 <b>Travel Town이 여행-머지 장악</b></td><td class="win">"시대·기억 여행"으로 흡수 — 정면충돌 회피, 아트 다양성 확보</td></tr>
+      <tr><td>Microfun 3형제 = <b>해안/섬 + 몰락 여성 + 복원</b></td><td class="win">해안·섬·몰락여성 클리셰 <b>전부 회피</b> → 복제작으로 안 보임</td></tr>
+      <tr><td>FB 머지에 <b>노스탤지어/골동품 테마 부재</b></td><td class="win">💡 화이트스페이스 선점 — 차별화 + 신선함</td></tr>
+      <tr><td>FB UA 승자 = <b>감정적 캐릭터 드라마 썸네일</b></td><td class="win">할머니 유산·되살아난 기억 = 강한 감정 훅으로 광고 제작 가능</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>3개 설계 필러</h3>
+  <div class="grid g2">
+    <div class="card accent"><h4>① 검증된 코어 (Proven)</h4><p>GH식 머지-2 루프·이중 통화·지수 머지 비용·피처 언락 페이싱·이벤트 하네스를 <strong>완성도 높게 차용</strong>. 단 <strong>에너지/타이머 압박은 시니어용으로 완화</strong>(논타이머·느긋한 페이스).</p></div>
+    <div class="card green"><h4>② 개선된 라이브옵스 (Better)</h4><p>시즌 패스 + 다층 이벤트. <strong>투명한 가치 소구·과금 유저 존중·상시 캐치업</strong>으로 GH 실수 정정. <strong>시대/지역별 테마 이벤트</strong>로 무한 확장(1920s 파리, 1950s 다이너…).</p></div>
+    <div class="card pink"><h4>③ 시니어 친화 + 감정 스토리 (New)</h4><p><strong>큰 폰트·고대비·명료한 아트·단순 조작</strong>(WCAG 2.2). 물건마다 <strong>분기 선택형 기억 스토리</strong>로 감정 몰입. <strong>소셜/협동은 플러스알파(P2)</strong>로 후행.</p></div>
+  </div>
+
+  <h3>차별화 요약 — vs Gossip Harbor</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>축</th><th>Gossip Harbor</th><th>우리 게임 (Vintage Lane)</th></tr></thead>
+    <tbody>
+      <tr><td>세계관</td><td>해안 섬·불탄 레스토랑</td><td class="win">내륙 골동품점·시대여행 기억 (Microfun 영토 회피)</td></tr>
+      <tr><td>주인공</td><td>이혼한 싱글맘(몰락 여성 재기)</td><td class="win">할머니 유산을 잇는 활기찬 40대 여성 (또래 반영·인생 2막)</td></tr>
+      <tr><td>정서 톤</td><td class="lose">자극적 막장·가십·고난 지속</td><td class="win">향수·위안·발견 (시니어 여성 정합)</td></tr>
+      <tr><td>타겟</td><td>30대 여성(평균 32세)</td><td class="win">40–65세 북미 여성 (FB 플랫폼 정합)</td></tr>
+      <tr><td>플랫폼</td><td>App Store / Google Play</td><td class="win">FB Instant Games (노스탤지어 화이트스페이스)</td></tr>
+      <tr><td>페이싱</td><td class="lose">에너지·타이머 압박</td><td class="win">논타이머·느긋함 (노년층 타이머 기피 반영)</td></tr>
+      <tr><td>접근성</td><td>고밀도 보드·작은 UI</td><td class="win">큰 폰트·고대비·명료 아트 (시니어 UX)</td></tr>
+      <tr><td>소셜</td><td>라이트 이벤트성 협동</td><td>1인 코어 확정 · 협동은 플러스알파(P2)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="call pink">
+    <div class="t">한 줄 포지셔닝</div>
+    <strong>"Gossip Harbor의 검증된 머지 엔진 위에, 시니어 북미 여성을 위한 따뜻한 향수 스토리를 얹은 FB Instant Game"</strong> —
+    자극 대신 위안, 타이머 대신 여유, 해안 클리셰 대신 시대여행 기억. 경쟁이 비어 있는 자리를 선점한다.
+  </div>
+
+  <div class="call warn">
+    <div class="t">다음 단계 (컨셉 확정 후)</div>
+    ① <strong>아트 스타일 무드보드</strong> 2–3종 제작 → 시니어 여성 타겟 소규모 선호 테스트.
+    ② <strong>UA 크리에이티브 A/B</strong>(감정적 캐릭터 드라마 스타일 필수) — 할머니 유산/되살아난 기억 훅.
+    ③ 코어 프로토타입에 <strong>논타이머 페이싱</strong> 검증(D1 리텐션 게이트). 세부는 <a href="#roadmap">12장 로드맵</a> 참조.
+  </div>
+</section>
+
+<!-- 11. ROADMAP -->
+<section id="roadmap">
+  <div class="secno">Part 2 — 12</div>
+  <h2>로드맵 &amp; 리스크</h2>
+
+  <h3>단계별 개발 로드맵 (컨셉 A · FB Instant Games)</h3>
+  <div class="road">
+    <div class="ph"><span class="pt">Phase 0 — 프로토타입 &amp; 컨셉 검증</span><span class="pw">~6주</span>
+      <div class="pd">머지-2 코어 + 이중 통화 + 지수 머지 비용 + <strong>논타이머 페이싱</strong> 검증. <strong>아트 무드보드 2–3종</strong> 시니어 여성 선호 테스트. 코어 재미(D1 목표 40%+) 게이트.</div></div>
+    <div class="ph"><span class="pt">Phase 1 — Soft Launch MVP (FB)</span><span class="pw">~4개월</span>
+      <div class="pd">CORE-1/2, STORY-1(향수 기억 스토리), PROG-1, 시니어 친화 UX(큰 폰트·고대비) 구현 + 기본 시즌패스. FB Instant Games 소규모 소프트런칭, 리텐션·ARPPU 튜닝. <strong>감정적 캐릭터 UA 크리에이티브 A/B</strong>.</div></div>
+    <div class="ph"><span class="pt">Phase 2 — 라이브옵스 &amp; 수익화</span><span class="pw">~3개월</span>
+      <div class="pd">이벤트 하네스(LIVE-1/2), 레이어드 수익화(MON-1), 번들 가치 소구 UI. <strong>시대/지역 테마 이벤트</strong>(1920s 파리 등)로 확장. UA 스케일업.</div></div>
+    <div class="ph"><span class="pt">Phase 3 — 플러스알파: 라이트 소셜</span><span class="pw">~3개월</span>
+      <div class="pd">1인 코어 검증 후 <strong>선물·친구 초대·라이트 협동 이벤트</strong>(DIFF-1) 추가로 오가닉 바이럴 보강. <strong>코어가 아닌 부가 레이어</strong>로 리스크 격리.</div></div>
+    <div class="ph"><span class="pt">Phase 4 — 라이브옵스 스케일업 (지속)</span><span class="pw">출시 후 상시</span>
+      <div class="pd"><strong>GH 교훈:</strong> 매출 1위는 출시 후 2년 라이브옵스 누적의 결과. 이벤트 그리드 <strong>분기별 배가</strong>(월 20→50→100), 이벤트 체인화, 메커닉 라이브러리 확장(LIVE-3/OPS-1). 전담 라이브옵스 조직 필수.</div></div>
+  </div>
+
+  <h3>주요 리스크 &amp; 대응</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>리스크</th><th>내용</th><th>대응</th></tr></thead>
+    <tbody>
+      <tr><td class="lose">노스탤지어 미검증</td><td>FB 화이트스페이스지만 = 플랫폼 검증 데이터 없음</td><td>Phase 0 아트/컨셉 선호 테스트 + 코어 재미 게이트로 조기 검증</td></tr>
+      <tr><td class="lose">타겟 모수</td><td>40–65세 중 55세+ 시니어층에만 좁히면 FB 과금 모수 축소</td><td>40–65세 전 구간 타겟 유지, 시니어 친화 UX를 차별점으로(배제 아님)</td></tr>
+      <tr><td class="lose">논타이머 수익화</td><td>타이머 완화 시 GH식 에너지 압박 수익 레버 약화</td><td>스토리/컬렉션/시대이벤트 등 <strong>비압박형 소비 동기</strong>로 대체 설계</td></tr>
+      <tr><td class="lose">FB 플랫폼 의존</td><td>단일 플랫폼 정책·수수료(70/30) 리스크</td><td>HTML5 코어로 <strong>멀티플랫폼 포팅</strong> 여지 확보(1인 플레이 유지 이유)</td></tr>
+      <tr><td class="lose">코어 재미 실패</td><td>차별화 훅 있어도 코어 약하면 리텐션 붕괴</td><td>Phase 0에서 코어 재미 게이트 통과 필수</td></tr>
+      <tr><td class="lose">라이브옵스 운영 부담</td><td>월 100 이벤트급 그리드는 지속 콘텐츠·조직 필요</td><td>이벤트 템플릿/리스킨 파이프라인, 전담 조직 사전 확보</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="call">
+    <div class="t">최종 결론</div>
+    Gossip Harbor의 교훈 — <strong>승리는 발명이 아니라, 검증된 코어를 타겟에 정렬하고 라이브옵스로 "2년간" 완성하는 실행력</strong>이다.
+    우리는 이 공식을 그대로 취하되(코어 완성도 + 촘촘한 이벤트 그리드 + 레이어드 수익화),
+    <strong>"시니어 북미 여성 × FB Instant Games × 노스탤지어 골동품점"</strong>이라는 경쟁이 비운 교차점을 선점한다.
+    자극 대신 위안, 타이머 대신 여유, 해안 클리셰 대신 시대여행 기억 — 이것이 우리의 진입 각도다.
+  </div>
+</section>
+
+<!-- ============ PART 3 · 프로덕션 상세 산출물 ============ -->
+
+<!-- 13. MOODBOARD -->
+<!-- 14. SPEC -->
+<!-- 15. UA -->
+<!-- 16. NEXT -->
+<!-- ============ PART 4 · 출시 스펙 ============ -->
+
+<!-- 17. LAUNCH SCOPE -->
+<!-- 18. CORE SYSTEMS & CONTENT -->
+<!-- 19. MONETIZATION & LIVEOPS -->
+<!-- 20. TECH / QUALITY / KPI / DoD -->
+<!-- ============ PART 5 · 심화 설계 (그린라이트 보강) ============ -->
+<!-- 21. ECONOMY BALANCE SIMULATION -->
+<section id="econ-sim">
+  <div class="secno">Part 3 — 21</div>
+  <h2>이코노미 수지 시뮬레이션</h2>
+  <p class="intro">논타이머(무에너지/소프트에너지) 제약 아래에서 <strong>코인·젬의 소스/싱크를 수치로 역산</strong>한다. 목표는 GH식 "즐거운 소비"를 압박 없이 재현하는 것 — <strong>"부족을 느끼되 압박당하지 않는" 균형점</strong>을 D1/D7/D30 시뮬레이션으로 잡는다.</p>
+  <div class="call warn"><div class="t">읽는 법 — 모든 수치는 산정 기준선(가정)</div>아래 표의 값은 확정 밸런스가 아니라 <strong>2–3주 소진 페이스</strong>와 KPI 게이트(D1≥40%·D7≥22%·세션≥8분)에서 역산한 <strong>설계 기준선</strong>이다. 각 행에 근거 논리를 병기했으며, 프로토 A/B(<code>FR-PACE-01</code>)와 초기 지표로 재튜닝한다.</div>
+
+  <h3>1) 코인 — 소스/싱크 수치</h3>
+  <h4>오더 보상 (3단계 난이도)</h4>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>오더 유형</th><th>요구 아이템(평균 레벨)</th><th>코인 보상</th><th>등장 비중</th><th>근거 논리</th></tr></thead>
+    <tbody>
+      <tr><td><b>쉬움</b></td><td>1–2종 (Lv 2–4)</td><td class="win">30</td><td>50%</td><td>세션 완결감 담당 — 항상 즉시 충족 가능</td></tr>
+      <tr><td><b>보통</b></td><td>2–3종 (Lv 4–6)</td><td>80</td><td>35%</td><td>1–2회 머지 사이클 요구 — 세션 중반 리듬</td></tr>
+      <tr><td><b>어려움</b></td><td>3–4종 (Lv 6–8)</td><td class="lose">220</td><td>15%</td><td>다음 세션으로 이월 허용(쿨다운 리필) — 압박 아닌 목표</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="2"><b>가중 평균 / 오더</b></td><td colspan="3"><b>≈ 76 코인</b> (30·0.5 + 80·0.35 + 220·0.15)</td></tr></tfoot>
+  </table>
+  </div>
+  <p class="muted">→ <strong>세션당 오더 완수 8–12개</strong>(8–12분 세션, 오더당 ~60초 상당 머지)로 가정 → <strong>세션당 코인 순생산 ≈ 610–910</strong>(가중평균 76 × 8~12). 아이템 판매 소액(+5–10%) 별도.</p>
+
+  <h4>챕터 1→14 코인 비용 곡선 (초반 저비용 → 지수 상승)</h4>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>챕터</th><th>코인 비용</th><th>누적 비용</th><th>예상 도달일*</th><th>설계 의도</th></tr></thead>
+    <tbody>
+      <tr><td>Ch 1</td><td>150</td><td>150</td><td>D1</td><td>즉시 첫 스토리 리빌(무결정 진행)</td></tr>
+      <tr><td>Ch 2</td><td>300</td><td>450</td><td>D1</td><td>2세션 내 2챕터(훅 강화)</td></tr>
+      <tr><td>Ch 3</td><td>550</td><td>1,000</td><td>D2</td><td>온보딩 종료·복원 1구역 개방</td></tr>
+      <tr><td>Ch 4</td><td>900</td><td>1,900</td><td>D3</td><td>완만 상승 시작</td></tr>
+      <tr><td>Ch 5</td><td>1,500</td><td>3,400</td><td>D4</td><td>1시대 테마 완성(1920s 파리)</td></tr>
+      <tr><td>Ch 6</td><td>2,400</td><td>5,800</td><td>D5–6</td><td>지수 기울기 진입</td></tr>
+      <tr><td>Ch 7</td><td>3,600</td><td>9,400</td><td>D7</td><td class="win">D7 리텐션 게이트 — 복원 2구역</td></tr>
+      <tr><td>Ch 8</td><td>5,200</td><td>14,600</td><td>D8–9</td><td>중반 페이스 안정</td></tr>
+      <tr><td>Ch 9</td><td>7,200</td><td>21,800</td><td>D10</td><td>2시대 테마(1950s 다이너)</td></tr>
+      <tr><td>Ch 10</td><td>9,800</td><td>31,600</td><td>D12</td><td>복원 3구역 개방</td></tr>
+      <tr><td>Ch 11</td><td>13,000</td><td>44,600</td><td>D14</td><td>2주차 콘텐츠 벽 완충</td></tr>
+      <tr><td>Ch 12</td><td>17,000</td><td>61,600</td><td>D16–17</td><td>지수 상단</td></tr>
+      <tr><td>Ch 13</td><td>22,000</td><td>83,600</td><td>D19</td><td>3시대 테마(기차역)</td></tr>
+      <tr><td>Ch 14</td><td class="lose">28,000</td><td><b>111,600</b></td><td>D21</td><td>런칭 저니 완결(2–3주)</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="5">*무과금 기준. 곡선 ≈ 초반 선형 → Ch6부터 매 챕터 <strong>×1.4–1.5</strong> 지수. 진짜 비용을 체감 못하게 GH식 은닉.</td></tr></tfoot>
+  </table>
+  </div>
+  <p class="muted">→ <strong>일일 순생산 코인</strong>(무과금, 1일 2–3세션 가정) ≈ <strong>1,500–2,700</strong>. 누적 111,600을 <strong>~21일</strong>에 소진 → 하루 평균 소요 ≈ 5,300. <strong>후반부 생산&lt;소요</strong> 구간이 "부족감"을 만들되(부스터·이벤트로 메움), 이월 허용으로 압박은 없음.</p>
+
+  <h4>데코 슬롯 비용 (18슬롯 / 4구역, 코인+젬 이원화)</h4>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>티어</th><th>슬롯 수</th><th>기본 디자인(코인)</th><th>프리미엄 디자인(젬)</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>구역 1 (초반)</td><td>4</td><td>400–800</td><td>—</td><td>무과금도 전부 접근(자기표현 습관)</td></tr>
+      <tr><td>구역 2</td><td>5</td><td>1,000–2,000</td><td>1구역당 1–2개 <b>60–120젬</b></td><td>3디자인 중 1은 프리미엄</td></tr>
+      <tr><td>구역 3</td><td>5</td><td>2,500–4,000</td><td>90–150젬</td><td>시대 테마 연동 프리미엄</td></tr>
+      <tr><td>구역 4 (후반)</td><td>4</td><td>4,000–6,000</td><td>120–200젬</td><td>완결 보상감</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="5">무페널티 변경(<code>FR-STORY</code>)이므로 프리미엄 데코는 <strong>영구 자기표현 자산</strong>으로 지불의사↑. 기본 디자인은 항상 코인으로 확보 가능(무과금 소외 방지).</td></tr></tfoot>
+  </table>
+  </div>
+
+  <h3>2) 젬 — 소스/싱크 단가</h3>
+  <div class="grid g2">
+    <div class="card green"><h4>젬 소스 (무료 earn 추정)</h4>
+      <p><strong>일일:</strong> 데일리 로그인 5–10젬 · 데일리 태스크 3–8젬 · 오더 스트릭 2–5젬 → <strong>≈ 12–22젬/일</strong></p>
+      <p><strong>주간:</strong> 레벨업(주 3–5회 × 10–20젬) 40–80 · 업적 마일스톤 20–40 · 시즌 무료트랙 30–60 · 이벤트 보상 40–90 → <strong>≈ 220–430젬/주</strong></p>
+      <p class="muted">근거: GH 첫 리필 10젬 = 무·저과금도 최소 1리필/주 가능한 드립. 무과금 주간 총 ≈ 300–560젬.</p></div>
+    <div class="card purple"><h4>젬 싱크 (단가)</h4>
+      <p><strong>보드 확장:</strong> 1칸열 120젬 / 스토리지 +2슬롯 80젬 (편의)</p>
+      <p><strong>선택 부스터:</strong> 생성기 부스트 30–60젬 · 리롤 20젬 (선택적·비압박)</p>
+      <p><strong>컬렉션:</strong> 앨범 페이지 완성 40–100젬 (수집)</p>
+      <p><strong>데코 프리미엄:</strong> 60–200젬 (자기표현)</p>
+      <p><strong>이벤트:</strong> 캐치업/포인트팩 50–150젬 (진행 단축)</p>
+      <p><strong>소프트에너지 모드시</strong>: 첫 리필 10젬(관대) — 압박형 레버 아님</p></div>
+  </div>
+
+  <h3>3) 무과금 유저 D1/D7/D30 수지 시뮬레이션</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>구간</th><th>코인 누적 earn</th><th>코인 누적 spend</th><th>코인 잔고</th><th>젬 누적 earn</th><th>젬 누적 spend*</th><th>젬 잔고</th><th>체감</th></tr></thead>
+    <tbody>
+      <tr><td><b>D1</b></td><td>4,000</td><td>450 (Ch1–2)</td><td class="win">3,550</td><td>25</td><td>0</td><td class="win">25</td><td>풍요 — 첫날 훅</td></tr>
+      <tr><td><b>D7</b></td><td>18,500</td><td>14,600 (~Ch8)</td><td>3,900</td><td>310</td><td>200</td><td>110</td><td>여유 有, 살짝 계획 필요</td></tr>
+      <tr><td><b>D30</b></td><td>72,000</td><td>111,600 (Ch14 完)+데코</td><td class="lose">낮음(수시 0 근접)</td><td>1,150</td><td>1,050</td><td>100</td><td class="hl">부족감 有 · 압박 無</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="8">*젬 spend는 무과금이 편의/수집에 쓰는 <strong>선택 소비</strong> 가정(강제 아님). D30 코인은 후반 챕터·데코가 생산을 앞질러 "조금 더 벌어야 하는" 상태를 의도적으로 유지.</td></tr></tfoot>
+  </table>
+  </div>
+  <div class="call pink"><div class="t">균형점 — "부족을 느끼되 압박당하지 않는"</div>초반(D1–D7)은 <strong>의도적 풍요</strong>로 습관·리텐션을 심고, D14 이후 <strong>코인 생산&lt;소요</strong>로 완만한 부족감을 만든다. 단, ① 이월 가능한 오더, ② 무에너지 정원 생성기(무료 머지 상시), ③ 무페널티 데코 → <strong>"기다림·강제"가 아닌 "한 세션 더 하고 싶은" 부족</strong>. 지불 트리거는 압박 해소가 아니라 <strong>가속·수집·자기표현</strong>이다.</div>
+
+  <h3>4) 논타이머 ARPDAU 가설</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>젬 싱크 항목</th><th>매출 비중(가설)</th><th>지불 동기</th><th>비압박 정합</th></tr></thead>
+    <tbody>
+      <tr><td>스페셜오퍼·스타터·번들</td><td><b>50%</b></td><td>가치 인식(묶음 할인)</td><td class="win">○ 압박 무관</td></tr>
+      <tr><td>데코 프리미엄·시대테마</td><td>18%</td><td>자기표현(영구 자산)</td><td class="win">○ 논타이머 핵심</td></tr>
+      <tr><td>시즌패스</td><td>14%</td><td>진행 가치·수집</td><td class="win">○</td></tr>
+      <tr><td>이벤트 캐치업·포인트</td><td>10%</td><td>진행 단축(선택)</td><td class="win">○</td></tr>
+      <tr><td>보드/스토리지 확장·부스터</td><td>8%</td><td>편의</td><td class="win">○</td></tr>
+      <tr><td>(소프트에너지시) 에너지 리필</td><td>0–10%</td><td>세션 연장(관대)</td><td>△ soft 모드 한정</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="4">GH 실측 구성(스페셜오퍼 62%/젬 18%/패스 10%)에서 <strong>압박형 에너지 매출을 자기표현·수집으로 대체</strong>한 재배분. 가정: DAU 페이드무료 혼합, 결제전환 무에너지에서 소폭 낮음.</td></tr></tfoot>
+  </table>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><div class="n">$0.09<small>~</small></div><div class="l"><b>보수</b> 가설 — 무에너지·전환율 GH 대비 −40%, 편의 매출 상실</div></div>
+    <div class="kpi"><div class="n">$0.13</div><div class="l"><b>기준</b> 가설 — 자기표현·수집 대체가 절반 회복 (Merge Mansion $0.21의 62%)</div></div>
+    <div class="kpi"><div class="n">$0.18<small>+</small></div><div class="l"><b>낙관</b> 가설 — 데코/시즌테마 소비 강세 + 소프트에너지 A/B 승</div></div>
+    <div class="kpi"><div class="n">$0.26</div><div class="l">GH 벤치(참고) — 압박형 포함 상한. 우리는 리텐션·저CPI로 총매출 방어</div></div>
+  </div>
+  <p class="muted">→ 핵심 가정: <strong>ARPDAU 하락분을 리텐션(D7≥22%)·인게이지먼트(세션≥8분)·낮은 UA 비용으로 상쇄</strong>(GH 논리 계승). 목표대는 <strong>$0.10–0.15 밴드</strong>. 미달 시 §22 플랜 B(소프트에너지 토글).</p>
+</section>
+
+<!-- 22. PRICING & NON-TIMER MONETIZATION RATIONALE -->
+<section id="nontimer-mon">
+  <div class="secno">Part 3 — 22</div>
+  <h2>가격표 &amp; 논타이머 수익화 근거</h2>
+  <p class="intro">젬팩·스타터·시즌패스의 <strong>확정 가격표</strong>와, "에너지 압박 없이도 ARPDAU $0.10–0.15+가 가능한가"에 대한 <strong>업계 사례 기반 근거</strong>를 정리한다. Meta 수수료 70/30 반영, GH 젬 벤치(50–84젬/달러, 평균 64) 참고.</p>
+
+  <h3>1) 젬팩 6단계 가격표</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>가격</th><th>젬 수량</th><th>달러당 젬</th><th>보너스%</th><th>가치 태그(배너 블라인드니스 방지)</th></tr></thead>
+    <tbody>
+      <tr><td><b>$0.99</b></td><td>50</td><td class="lose">50</td><td>0%</td><td>진입 티어(습관 형성) — 태그 없음</td></tr>
+      <tr><td><b>$4.99</b></td><td>280</td><td>56</td><td>+12%</td><td>인기 (Popular)</td></tr>
+      <tr><td><b>$9.99</b></td><td>620</td><td>62</td><td>+24%</td><td>—</td></tr>
+      <tr><td><b>$19.99</b></td><td>1,340</td><td>67</td><td>+34%</td><td class="win">최고 가치 (Best Value)</td></tr>
+      <tr><td><b>$49.99</b></td><td>3,650</td><td>73</td><td>+46%</td><td>+보너스 데코 스킨 동봉</td></tr>
+      <tr><td><b>$99.99</b></td><td>8,400</td><td class="win">84</td><td>+68%</td><td>+한정 아바타·시대테마 조기해금</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="5">달러당 젬 <strong>50→84</strong>로 GH 밴드 하단→상단을 그대로 재현(평균 64 부근). <strong>가치 태그 원칙</strong>: 한 티어에만 "Best Value", 저가는 촘촘히 깔아 무·저과금 습관을 심고(<code>$0.99·$4.99</code>), 고가에 <strong>비화폐 프리미엄(스킨·아바타)</strong>을 얹어 자기표현 지불의사와 연결.</td></tr></tfoot>
+  </table>
+  </div>
+
+  <h3>2) 스타터팩 · 데일리 스페셜 · 시즌패스</h3>
+  <div class="grid g3">
+    <div class="card accent"><h4>🎁 스타터팩 $2.99</h4>
+      <p>250젬 + 프리미엄 데코 1종(구역1) + 스토리지 +2슬롯 + 부스터 3회. <strong>1회 한정·Lv3 노출</strong>. 젬 단독 대비 체감가치 ≈ 2배 태그. 첫 결제 장벽 낮추는 <strong>가치 소구형 앵커</strong>.</p></div>
+    <div class="card purple"><h4>⭐ 데일리 스페셜</h4>
+      <p>매일 회전 오퍼 $0.99–$4.99: 데코 스킨/부스터 묶음/코인+젬 콤보. 미전환시 <strong>가격 동적 조정</strong>(압박 아닌 가치 제안). 표시가·할인율 명시(GH 배너 블라인드니스 회피).</p></div>
+    <div class="card green"><h4>🌸 시즌패스 (30일·3티어)</h4>
+      <p><strong>무료:</strong> 코인·부스터·젬 소액 상시 드립.<br><strong>유료 $4.99:</strong> +프리미엄 데코 2종·젬 300·시대테마 조기.<br><strong>슈퍼 $7.99:</strong> 유료 전부 +즉시 10티어 스킵·한정 아바타·데코 3종. <strong>상시 캐치업</strong>(후회 방지).</p></div>
+  </div>
+
+  <h3>3) 논타이머 수익화 근거 (업계 조사)</h3>
+  <p class="muted">머지·캐주얼 장르에서 에너지 압박 없이도 유의미한 IAP가 성립하는지 웹 조사로 확인했다. 결론: <strong>지불 동기를 "압박 해소"에서 "가속·수집·자기표현·편의"로 옮기면 성립하며, 실제 선두작들이 이 축으로 매출의 상당분을 낸다.</strong></p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>레버</th><th>지불의사 근거</th><th>업계 사례 (조사)</th><th>우리 적용</th></tr></thead>
+    <tbody>
+      <tr><td><b>수집</b></td><td>완성 강박·소유욕. 압박 무관하게 작동</td><td>화장품·수집형이 기대 상회, 시즌 컬렉션 월간 릴리스가 표준</td><td>컬렉션 앨범·시대테마 세트</td></tr>
+      <tr><td><b>자기표현</b></td><td>영구 자산·사회적 표현. 경쟁우위 없는 코스메틱이 전환율↑</td><td>Gardenscapes/Homescapes 데코 과금, 코스메틱 주 1–2종 릴리스 최적</td><td>데코 프리미엄·무페널티 변경</td></tr>
+      <tr><td><b>진행 단축</b></td><td>세션 제한·기다림에 지불(난이도보다 제약에 지불)</td><td>Love &amp; Pies: 쿨다운 젬 스킵·머지 업셀 버블·영구 세일 번들 (Naavik)</td><td>이벤트 캐치업·부스터(선택)</td></tr>
+      <tr><td><b>편의</b></td><td>보드/스토리지 여유에 지불(마찰 제거)</td><td>Merge Dragons! 무광고 IAP·보드 확장형 (Udonis)</td><td>보드/스토리지 확장</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="4"><strong>벤치 앵커:</strong> Merge Mansion ARPDAU <strong>$0.21</strong>(에너지 더블링 5젬 의존)인데도 GH·TT보다 낮음 → 에너지 압박이 ARPDAU 상한을 보장하지 않음. 하이브리드 캐주얼 IAP ARPDAU 밴드 <strong>$0.15–0.50</strong>(코스메틱 주도). Love&amp;Pies는 에너지 100 정적풀 + <strong>다각화 IAP</strong>로 Merge Mansion보다 RPD 성장 앞섬 → <strong>비압박 레버 조합만으로 $0.10–0.15+ 도달 근거</strong>.</td></tr></tfoot>
+  </table>
+  </div>
+  <div class="call warn"><div class="t">조사의 한계 (명시)</div>공개 소스는 <strong>순수 무에너지 머지의 단독 ARPDAU 실측치를 직접 제공하지 않는다</strong>(대부분 에너지 보유작 또는 혼합 지표). 따라서 우리 $0.10–0.15 밴드는 <strong>인접 사례로부터의 추정</strong>이며, 프로토 A/B와 소프트론칭 실측으로 검증해야 한다.</div>
+
+  <h3>4) 리스크 콜아웃 — 플랜 B</h3>
+  <div class="call pink"><div class="t">논타이머 수익화 미달 시 즉시 대응</div>소프트론칭 D7 ARPDAU가 <strong>보수선($0.09)조차 하회</strong>하면, <code>FR-PACE-01</code>의 <strong>리모트 토글로 <code>energy_mode: none → soft</code></strong>를 <strong>클라이언트 업데이트 없이</strong> 즉시 전환한다. <strong>관대한</strong> 소프트에너지(첫 리필 10젬·무에너지 정원 생성기 상시 유지)로 세션 연장 매출(0→최대 10% 비중)을 열되, 압박형(타이머 스킵·조이기)은 여전히 금지. A/B 세그먼트로 <strong>리텐션 손실 vs ARPDAU 상승</strong>을 저울질해 세그먼트별 최적 모드를 확정한다.</div>
+  <div class="src"><b>출처:</b> Naavik(Love &amp; Pies Merge-2 딥다이브·Gossip Harbor) · Udonis(Merge Mansion Monetization) · Merge Mansion Wiki(Energy) · SolarEngine(Casual IAP Models). 수치는 인접 사례 기반 추정.</div>
+</section>
+
+<!-- 23. BUSINESS CASE -->
+<section id="bizcase">
+  <div class="secno">Part 3 — 23</div>
+  <h2>비즈니스 케이스</h2>
+  <p class="intro">본 섹션의 모든 수치는 <strong>공개 벤치마크 기반 추정치</strong>이며, 실제 운영 데이터로 갱신이 필요합니다. Meta 수수료 30% 반영, GH ARPDAU $0.26 기준 적용. 논타이머 ARPDAU 가설은 §21–22에서 상세화되며 여기서는 기준 가정으로만 인용합니다.</p>
+  <h3>1. ARPDAU 기준 및 플랫폼 맥락</h3>
+  <div class="grid g2">
+    <div class="card accent"><h4>FB Instant Games 캐주얼 ARPDAU</h4>
+      <p>네이티브 모바일 캐주얼: <strong>$0.08–$0.15</strong>. 머지 하이브리드(IAP+IAA): <strong>$0.15–$0.28</strong> 추정. <strong>본 프로젝트 기준 ARPDAU: $0.18</strong> — GH $0.26의 <code>~70%</code>(FB 접근성 할인 + 논타이머 프리미엄 상쇄 전 보수 추정).</p></div>
+    <div class="card green"><h4>GH 벤치마크 인용</h4>
+      <p>Gossip Harbor ARPDAU <strong>$0.26</strong>(스토어 IAP). 머지-2 검증 상단 벤치마크 → 낙관 목표선. 논타이머 프리미엄은 본 섹션에서 <code>중립 가정</code>.</p></div>
+  </div>
+  <h3>2. LTV 추정 — 3 시나리오</h3>
+  <p class="muted">리텐션 곡선 → 평균 수명 → ARPDAU × 수명 = LTV. 모든 수치 가정 기반.</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>항목</th><th>보수</th><th>기준</th><th>낙관</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td><b>D1 리텐션</b></td><td>38%</td><td>42%</td><td>48%</td><td>게이트 ≥40%; GH 46%</td></tr>
+      <tr><td><b>D7 리텐션</b></td><td>19%</td><td>23%</td><td>28%</td><td>게이트 ≥22%; GH 26%</td></tr>
+      <tr><td><b>D30 리텐션</b></td><td>8%</td><td>13%</td><td>18%</td><td>캐주얼 머지 10–18%</td></tr>
+      <tr><td><b>평균 수명(일)</b></td><td class="lose">14</td><td>22</td><td class="win">38</td><td>지수감쇠 적분</td></tr>
+      <tr><td><b>ARPDAU</b></td><td>$0.13</td><td>$0.18</td><td>$0.24</td><td>기준 $0.18</td></tr>
+      <tr><td><b>LTV(ARPDAU×수명)</b></td><td class="lose">$1.82</td><td>$3.96</td><td class="win">$9.12</td><td>추정</td></tr>
+      <tr><td><b>수수료 반영 순LTV</b></td><td class="lose">$1.27</td><td>$2.77</td><td class="win">$6.38</td><td>IAP 70%·실효 ~21%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call warn"><div class="t">수명 계산 방법론(가정 투명)</div>지수감쇠: 평균 수명 ≈ <code>−7 / ln(D7/D1)</code>. 실제 코호트 없으므로 소프트런치 후 실측(Mixpanel/Firebase)으로 교체.</div>
+  <h3>3. CPI 가정 — FB/IG 캐주얼 + 시니어 여성 보정</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>항목</th><th>기준값</th><th>적용</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td>FB/IG 캐주얼 퍼즐 CPI(미국)</td><td>iOS $3.0/And $2.0</td><td>$2.50</td><td>Liftoff·Admiral 2025</td></tr>
+      <tr><td>35+ 여성 보정</td><td>+20–40%</td><td>×1.30</td><td>타겟 협소 → CPM↑</td></tr>
+      <tr><td>FB Instant 채널 보정</td><td>−15–25%</td><td>×0.80</td><td>전환 마찰 감소</td></tr>
+      <tr><td><b>유효 CPI</b></td><td>—</td><td class="lose"><b>$2.60</b></td><td>추정</td></tr>
+      <tr><td>오가닉 비중(초기)</td><td>25–35%</td><td>20%</td><td>GH 유료 78%</td></tr>
+      <tr><td><b>블렌디드 CPI</b></td><td>—</td><td class="win"><b>$2.08</b></td><td>$2.60×80%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3>4. LTV &gt; CPI 성립 — ROAS·회수</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>시나리오</th><th>순LTV</th><th>CPI</th><th>LTV/CPI</th><th>D90 회수</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td><b>보수</b></td><td>$1.27</td><td>$2.08</td><td class="lose">0.61×</td><td class="lose">61%</td><td class="lose">UA 중단</td></tr>
+      <tr><td><b>기준</b></td><td>$2.77</td><td>$2.08</td><td class="win">1.33×</td><td class="win">103%(D90 회수)</td><td class="win">진행 가능</td></tr>
+      <tr><td><b>낙관</b></td><td>$6.38</td><td>$2.08</td><td class="win">3.07×</td><td class="win">D30 이내 회수</td><td class="win">공격 스케일</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call green"><div class="t">핵심 판단</div><strong>기준 시나리오 이상</strong>에서 LTV&gt;CPI 성립·D90 내 회수. 보수는 유료 UA 보류·오가닉 전환 또는 ARPDAU 개선 선행. <strong>소프트런치 8주 데이터로 시나리오 판별</strong>(→ §24).</div>
+  <h3>5. 손익분기 모델</h3>
+  <p class="muted">월 고정비 <strong>$15K–$40K 범위</strong> 가정(소규모 팀; 상세는 §27). Meta 30% 반영.</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>항목</th><th>저단($15K/월)</th><th>고단($40K/월)</th></tr></thead>
+    <tbody>
+      <tr><td>순 ARPDAU(수수료 반영)</td><td colspan="2">$0.18 × 0.70 = <b>$0.126</b></td></tr>
+      <tr><td><b>손익분기 DAU</b></td><td class="win">~3,970</td><td class="lose">~10,580</td></tr>
+      <tr><td>손익분기 월매출(gross)</td><td>$21,400</td><td>$57,100</td></tr>
+      <tr><td>+UA 가산 시 필요 DAU</td><td>+$10K→~6,600</td><td>+$20K→~15,300</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call pink"><div class="t">민감도</div><strong>ARPDAU −30%</strong>: 기준 LTV/CPI 0.93×(유료 UA 중단 분기점). <strong>CPI +30%</strong>: 1.03×(회수 D120+). <strong>CPI −30%</strong>: 낙관 4.37×(D30 완전 회수). → 결론이 ARPDAU·CPI ±30%에 민감 = 소프트런치 실측이 필수.</div>
+  <div class="src"><b>출처:</b> Liftoff 2025 Casual Report · Admiral Media 2025 · Naavik/AppMagic(GH $0.26) · Business of Apps CPI 2025 · Meta Business(IAP). 모든 수치 가정 기반 추정, 실측 후 갱신 필요.</div>
+</section>
+
+<!-- 24. VALIDATION PLAN -->
+<section id="validation">
+  <div class="secno">Part 3 — 24</div>
+  <h2>검증 계획 상세</h2>
+  <p class="intro">§23 비즈니스 케이스가 <strong>어느 시나리오가 현실인지 소프트런치 이전에 조기 판별</strong>하는 것을 목표로 한다. Phase 0(프로토) → Phase 1(소프트런치) → Phase 2(글로벌)의 단계별 게이트 구조.</p>
+  <h3>1. Phase 0 — 프로토 검증 설계</h3>
+  <div class="grid g2">
+    <div class="card"><h4>정량 (FB 소액 광고)</h4><p>타겟 40–65 여성 · <strong>n=200–300 설치</strong> · <strong>2주</strong> · 예산 <strong>$500–800</strong>(CPI $2.60) · 크리에이티브 스토리 vs 메커닉 A/B. 측정: D1·튜토완료·세션·D7·CPI</p></div>
+    <div class="card"><h4>정성 (인터뷰)</h4><p>모집: FB 시니어 그룹·UserTesting/Respondent 패널·지인 스노볼. <strong>40–65 여성 5–8명</strong>, 60분 Zoom think-aloud+인터뷰. 관찰: 가독성·오조작·정서 반응·이탈 포인트</p></div>
+  </div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>에너지 A/B</th><th>조건</th><th>n</th><th>판정 기준</th></tr></thead>
+    <tbody>
+      <tr><td><b>A(논타이머)</b></td><td>에너지 없음</td><td>100+</td><td>D7≥22% & 세션수≥4/일 시 가설 지지</td></tr>
+      <tr><td><b>B(소프트)</b></td><td>60분 재충전·상한5</td><td>100+</td><td>A와 리텐션 차 ±5%p 이내면 에너지 제거 유지</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3>2. 판정 매트릭스</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>지표</th><th>통과(진행)</th><th>조건부(재조정)</th><th>실패(재고)</th></tr></thead>
+    <tbody>
+      <tr><td>D1 리텐션</td><td class="win">≥40%</td><td>35–39%</td><td class="lose">&lt;35%</td></tr>
+      <tr><td>D7 리텐션</td><td class="win">≥22%</td><td>18–21%</td><td class="lose">&lt;18%</td></tr>
+      <tr><td>튜토 완료율</td><td class="win">≥80%</td><td>70–79%</td><td class="lose">&lt;70%</td></tr>
+      <tr><td>세션 시간</td><td class="win">≥12분</td><td>8–11분</td><td class="lose">&lt;8분</td></tr>
+      <tr><td>정성 가독성 오류</td><td class="win">1인 ≤2회</td><td>3–5회</td><td class="lose">≥6회</td></tr>
+      <tr><td>에너지 A/B</td><td class="win">A가 B −3%p 이내</td><td>A가 B −5%p</td><td class="lose">A가 B −8%p↓</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call"><div class="t">의사결정 원칙</div>전 지표 <strong>통과</strong>여야 소프트런치. 1+ <strong>조건부</strong>→2–3주 패치 후 재측정. 1+ <strong>실패</strong>→해당 레이어 <em>격리 수정</em>(전체 중단 아님). 주체: PM/기획 리드(주간 게이트 회의).</div>
+  <h3>3. 소프트런치 계획</h3>
+  <div class="grid g2">
+    <div class="card accent"><h4>지역</h4><p><strong>1순위 캐나다·호주</strong>(영어권·미국 상관 높음·CPI 20–35%↓). 2순위 뉴질랜드·아일랜드(표본 보완).</p></div>
+    <div class="card green"><h4>기간·예산</h4><p><strong>4–8주</strong>(D30 코호트+D7 2회전) · UA <strong>$10K–30K</strong> · 목표 설치 <strong>n=3,000–8,000</strong> · FB 캠페인 80%+오가닉 20%</p></div>
+  </div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>KPI</th><th>소프트런치 목표</th><th>글로벌 진행 게이트</th></tr></thead>
+    <tbody>
+      <tr><td>D1 / D7 / D30</td><td>≥40 / ≥22 / ≥10%</td><td class="win">≥42 / ≥24 / ≥12%</td></tr>
+      <tr><td>튜토 완료율</td><td>≥80%</td><td class="win">≥82%</td></tr>
+      <tr><td>D7 ARPDAU</td><td>≥$0.12</td><td class="win">≥$0.15(기준 시나리오)</td></tr>
+      <tr><td>실측 CPI</td><td>≤$3.50</td><td class="win">≤$2.80</td></tr>
+      <tr><td>크래시율</td><td>≤1%</td><td class="win">≤0.5%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call warn"><div class="t">일정 리스크</div>Phase 0에서 <strong>조건부 2+</strong> 시 소프트런치 2–4주 슬립. 최악 시 Phase 0 재실행 1회(+3주)를 로드맵 버퍼로 포함. 게이트 회의 前 다음 단계 리소스 사전 배정 금지.</div>
+  <div class="src"><b>출처:</b> appvertiser.ai(UA 전략 2025) · FoxData 2026(지역 CPI) · Liftoff 2025 · UserTesting/Respondent. 예산·표본은 가정 기반 추정.</div>
+</section>
+
+<!-- 25. SESSION & RETENTION DESIGN -->
+<!-- 26. LIVEOPS CALENDAR -->
+<!-- 27. PRODUCTION PLAN -->
+<!-- 28. LEGAL & POLICY -->
+<section id="legal">
+  <div class="secno">Part 3 — 28</div>
+  <h2>법무 · 정책 체크리스트</h2>
+  <p class="intro">개발 착수·출시 전 반드시 클리어해야 할 <strong>상표·플랫폼 정책·개인정보·확률형 공시</strong>. 각 항목의 현재 상태와 액션을 정리한다.</p>
+
+  <h3>1. 상표 &amp; 스토어 중복</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>확인 항목</th><th>현재 상태</th><th>액션</th></tr></thead>
+    <tbody>
+      <tr><td>"Vintage Lane" 게임 앱 중복</td><td>1차 웹검색상 <b>동명 게임 미발견</b>(확정 아님)</td><td class="lose">USPTO TESS·App Store·Google Play·FB 정식 검색 필수</td></tr>
+      <tr><td>상표 등록(US/CA/EU)</td><td>미실행 ("필요"로만 표기)</td><td class="lose">USPTO·CIPO·EUIPO 검색 + 출원 계획, 변호사 의견서(권장)</td></tr>
+      <tr><td>유사명 리스크</td><td>"Memory Lane Games"(치매케어 앱) 존재 — 대안명 Memory Lane 회피 근거</td><td>Vintage Lane 유지 시 클래스 9/41 상표 서치</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call warn"><div class="t">차단성 리스크</div>상표·스토어 클리어 <strong>전에 로고·마케팅 자산에 대규모 투자 금지</strong>. 충돌 발견 시 대안명(§11 검토안) 신속 전환 프로세스 준비.</div>
+
+  <h3>2. Meta 플랫폼 &amp; 확률형 아이템 공시</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>항목</th><th>요구/리스크</th><th>우리 대응</th></tr></thead>
+    <tbody>
+      <tr><td>IAP 결제</td><td>Meta Instant Games 결제 API 준수(플랫폼 정책·수수료 70/30)</td><td>FR-MON-01 서버 영수증 검증 연계</td></tr>
+      <tr><td><b>확률형 공시 (핵심)</b></td><td>럭키 드롭(레어 10%)·pity 존재 → <b>미 FTC Section 5</b> 적용. 2025.1 FTC×Cognosphere $20M 합의: <b>정확한 확률·희귀 획득 실화폐 비용 범위 구매화면 공시 + 직접 화폐 구매 옵션</b> 요구</td><td class="lose">인게임 <b>확률 표시</b> + 젬 직접구매 경로 상시 제공 + pity 명시</td></tr>
+      <tr><td>콘텐츠 가이드라인</td><td>Instant Games 심사·광고 통합 정책</td><td>보상형 광고 정책 준수·심사 체크리스트</td></tr>
+      <tr><td>미성년 보호</td><td>타겟 40–65라 리스크 낮음. 단 연령 미표기 유입 대비</td><td>연령 게이트·부모동의 정책은 표준 준수</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call green"><div class="t">유리한 점</div>타겟이 <strong>40–65세 성인</strong>이라 미성년·COPPA 리스크가 본질적으로 낮다. 확률형 공시는 <strong>선제적 투명 공개</strong>(확률 표시+직접구매)로 규제 선행 대응 — 시니어 신뢰와도 정합.</div>
+
+  <h3>3. 개인정보 (북미)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>규정</th><th>적용</th><th>액션</th></tr></thead>
+    <tbody>
+      <tr><td>CCPA(캘리포니아)</td><td>FB 계정 연동·IAP 이력 서버 저장 → 적용</td><td class="lose">개인정보 처리방침·옵트아웃·삭제요청 대응</td></tr>
+      <tr><td>PIPEDA(캐나다)</td><td>소프트런치 지역 → 적용</td><td>동의·데이터 처리 고지</td></tr>
+      <tr><td>FB SDK 데이터 공유</td><td>분석·광고 데이터 범위</td><td>공유 범위 명시·최소수집 원칙</td></tr>
+      <tr><td>Privacy Policy</td><td>스토어·플랫폼 필수</td><td class="lose">출시 前 Privacy Policy·ToS 초안 확보</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>4. 출시 前 법무 체크리스트 (요약)</h3>
+  <ul>
+    <li>☐ "Vintage Lane" USPTO/CIPO/EUIPO + 3개 스토어/FB 중복 검색 완료</li>
+    <li>☐ 상표 출원(또는 사용가능 확인) · 필요 시 대안명 확정</li>
+    <li>☐ 인게임 확률 공시 + 젬 직접구매 경로 구현(FTC 정합)</li>
+    <li>☐ Privacy Policy·ToS·CCPA/PIPEDA 준수 문서 확보</li>
+    <li>☐ Meta Instant Games 정책·결제·광고 심사 체크리스트 통과</li>
+  </ul>
+  <div class="src"><b>출처:</b> USPTO TESS(상표 절차) · FTC Loot Box Workshop·Cognosphere 합의(2025.1) · Gamma Law/Promise Legal(loot box 규제 2025) · Meta Business Help(Instant Games IAP). <b>주의:</b> 법률 자문 아님 — 확정 전 변호사 검토 필요.</div>
+</section>
+
+<div class="foot">
+  <p><strong>출처:</strong> Deconstructor of Fun — "Finding Genre Success: the Case of Gossip Harbor" (Jesper Gustavsson, 2024.08.19) · Naavik Digest — "Gossip Harbor's Meteoric Rise in Merge" (Oindrila Mandal, 2025.06.22) · AppMagic — "Gossip Harbor's LiveOps Journey: From 20 to 100 Events a Month" (Maria Bolshman &amp; Alina Zlotnik, 2025.12.11). 시장조사: AARP·GameRefinery·JMIR·Statista·AppTweak 등. 데이터: Sensor Tower, AppMagic, Pathmatics, Unity Research.</p>
+  <p>본 문서는 내부 기획 검토용이며 외부 배포를 금합니다. · Vintage Lane · 전략·사업성 판단 문서 v2.0 (분석+전략+컨셉+사업성) · 제품 기획은 vintage_lane_production.html</p>
+</div>
+
+</main>
+</div>
+
+<div id="lightbox"><img src="" alt="확대 이미지"></div>
+
+<script>
+(function(){
+  var body=document.body, btn=document.getElementById('themeToggle');
+
+  /* ---- Lightbox (click figure to zoom) ---- */
+  var lb=document.getElementById('lightbox'), lbImg=lb.querySelector('img');
+  document.querySelectorAll('figure.fig img').forEach(function(im){
+    im.addEventListener('click',function(){ lbImg.src=im.src; lb.classList.add('on'); });
+  });
+  lb.addEventListener('click',function(){ lb.classList.remove('on'); lbImg.src=''; });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ lb.classList.remove('on'); lbImg.src=''; } });
+
+  /* ---- Theme toggle (persisted) ---- */
+  try{ if(localStorage.getItem('gh-theme')==='light') body.classList.add('light'); }catch(e){}
+  function paintBtn(){ btn.textContent = body.classList.contains('light') ? '🌙 다크' : '☀️ 라이트'; }
+  paintBtn();
+  btn.addEventListener('click',function(){
+    body.classList.toggle('light');
+    try{ localStorage.setItem('gh-theme', body.classList.contains('light')?'light':'dark'); }catch(e){}
+    paintBtn();
+  });
+
+  /* ---- Scrollspy: highlight left index by scroll position ---- */
+  var links=[].slice.call(document.querySelectorAll('nav.side a[href^="#"]'));
+  var sections=[], map={};
+  links.forEach(function(a){
+    var sec=document.getElementById(a.getAttribute('href').slice(1));
+    if(sec){ sections.push(sec); map[sec.id]=a; }
+  });
+  var ticking=false;
+  function spy(){
+    ticking=false;
+    var current=null;
+    for(var i=0;i<sections.length;i++){
+      if(sections[i].getBoundingClientRect().top<=140) current=sections[i];
+    }
+    // near page bottom → force last section active
+    if(window.innerHeight+window.scrollY >= document.body.offsetHeight-4 && sections.length)
+      current=sections[sections.length-1];
+    links.forEach(function(a){ a.classList.remove('active'); });
+    if(current && map[current.id]){
+      var a=map[current.id]; a.classList.add('active');
+      // keep active link visible within the sticky nav
+      var nav=a.closest('nav');
+      if(nav){
+        var ar=a.getBoundingClientRect(), nr=nav.getBoundingClientRect();
+        if(ar.top<nr.top+8 || ar.bottom>nr.bottom-8) a.scrollIntoView({block:'nearest'});
+      }
+    }
+  }
+  function onScroll(){ if(!ticking){ ticking=true; requestAnimationFrame(spy); } }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  spy();
+})();
+</script>
+</body>
+</html>

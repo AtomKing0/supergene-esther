@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gossip Harbor 리메이크 — 개발·아트 트래커</title>
+<style>
+:root{
+  --bg:#FBF6EC; --card:#FFFFFF; --panel:#FFF4E2; --line:#EADbc7;
+  --coral:#F28C7B; --sage:#8FB08A; --green:#6E9E6A; --lav:#C9B6E4; --gold:#F2B84B; --golddeep:#E0A020;
+  --txt:#4A3F35; --txt2:#7A6A5A; --danger:#D9694E;
+  --dev:#F28C7B; --art:#8FB08A; --ops:#C9B6E4; --base:#F2B84B; --server:#7FA8D9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:'Nunito','Poppins',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:16px;line-height:1.5}
+header{padding:22px 26px;background:linear-gradient(120deg,#FFF4E2,#FBEFDD);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:20;box-shadow:0 3px 10px rgba(74,63,53,.06)}
+h1{margin:0 0 4px;font-size:24px;font-weight:800}
+.sub{color:var(--txt2);font-size:14px}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 26px 60px}
+.bar{height:16px;border-radius:999px;background:#EFE3CE;overflow:hidden;margin-top:10px}
+.bar>span{display:block;height:100%;background:linear-gradient(90deg,var(--sage),var(--green));transition:width .4s}
+.topbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px}
+.stat{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:6px 12px;font-weight:700;font-size:14px}
+.stat b{font-size:18px}
+.btn{border:0;border-radius:999px;padding:8px 16px;font-weight:800;font-size:14px;cursor:pointer;background:var(--coral);color:#fff}
+.btn.ghost{background:#fff;color:var(--txt);border:1.5px solid var(--line)}
+.tabs{display:flex;gap:8px;margin:22px 0 6px}
+.tab{padding:10px 20px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:800;cursor:pointer}
+.tab.on{background:var(--txt);color:#fff;border-color:var(--txt)}
+section{display:none}
+section.on{display:block}
+h2{font-size:19px;margin:26px 0 12px;display:flex;align-items:center;gap:8px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 16px;font-size:13px;color:var(--txt2)}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:3px 10px;font-weight:700}
+.dot{width:11px;height:11px;border-radius:50%}
+/* roadmap */
+.phase{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:16px 18px;margin-bottom:16px;box-shadow:0 4px 12px rgba(74,63,53,.05)}
+.phase h3{margin:0 0 2px;font-size:18px}
+.phase .when{color:var(--txt2);font-size:13px;margin-bottom:12px}
+.tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.task{border-left:6px solid #ccc;border-radius:12px;background:var(--panel);padding:10px 12px;font-size:14px}
+.task .tk{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;opacity:.85}
+.task .dep{display:block;color:var(--txt2);font-size:12px;margin-top:4px;font-style:italic}
+.lanes{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 18px}
+.lane{font-size:12.5px;font-weight:800;border-radius:999px;padding:4px 12px;color:#fff}
+/* checklist */
+.group{background:var(--card);border:1.5px solid var(--line);border-radius:18px;margin-bottom:14px;overflow:hidden}
+.group>.ghd{padding:12px 16px;background:#FFF9EE;font-weight:800;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.group .gcount{font-size:13px;color:var(--txt2);font-weight:700}
+.item{display:flex;gap:12px;align-items:flex-start;padding:11px 16px;border-top:1px solid var(--line)}
+.item .type{flex:0 0 auto;font-size:11px;font-weight:800;border-radius:8px;padding:3px 8px;margin-top:2px;white-space:nowrap}
+.type.have{background:#E4F0E2;color:#4E7A46}
+.type.partial{background:#FCEFD2;color:#96690f}
+.type.pull{background:#E7E0F4;color:#5B3F8C}
+.type.need{background:#FBE1DA;color:#a33d28}
+.item .body{flex:1;min-width:0}
+.item .txt{font-weight:600}
+.item .note{color:var(--txt2);font-size:13px;margin-top:2px}
+.item select{border-radius:10px;border:1.5px solid var(--line);padding:6px 8px;font-weight:800;font-family:inherit;font-size:13px;cursor:pointer}
+.done .txt{text-decoration:line-through;opacity:.6}
+.s-done{background:#E4F0E2}.s-prog{background:#FCEFD2}.s-block{background:#FBE1DA}
+.foot{margin-top:26px;color:var(--txt2);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏡 Gossip Harbor 리메이크 — 개발·아트 트래커</h1>
+  <div class="sub">"Vintage Lane: Merge &amp; Story"(시니어 여성·FB Instant Games) · 문서: <a href="42_vintage_lane_strategy.html" style="color:var(--golddeep);font-weight:800">전략·사업성 ↗</a> · <a href="43_vintage_lane_production.html" style="color:var(--golddeep);font-weight:800">제품·프로덕션 ↗</a> · <a href="44_vintage_lane_srs.html" style="color:var(--golddeep);font-weight:800">SRS+물량 ↗</a> · <a href="45_vintage_lane_prototype.html" style="color:var(--golddeep);font-weight:800">아웃게임 프로토 ↗</a></div>
+  <div class="bar"><span id="progBar"></span></div>
+  <div class="topbar">
+    <div class="stat">전체 진행 <b id="pct">0%</b></div>
+    <div class="stat">완료 <b id="cDone">0</b></div>
+    <div class="stat">진행중 <b id="cProg">0</b></div>
+    <div class="stat">대기 <b id="cWait">0</b></div>
+    <div class="stat">차단 <b id="cBlock">0</b></div>
+    <button class="btn ghost" onclick="resetAll()">초기화</button>
+    <button class="btn ghost" onclick="exportJSON()">진행상태 내보내기</button>
+  </div>
+</header>
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab on" data-t="plan" onclick="showTab('plan')">🗺️ 실행 로드맵</div>
+    <div class="tab" data-t="check" onclick="showTab('check')">✅ 체크리스트</div>
+  </div>
+
+  <!-- ROADMAP -->
+  <section id="plan" class="on">
+    <div class="legend">
+      <span class="chip"><span class="dot" style="background:var(--base)"></span>공통/기반</span>
+      <span class="chip"><span class="dot" style="background:var(--dev)"></span>개발</span>
+      <span class="chip"><span class="dot" style="background:var(--art)"></span>아트</span>
+      <span class="chip"><span class="dot" style="background:var(--ops)"></span>라이브옵스</span>
+      <span class="chip"><span class="dot" style="background:var(--server)"></span>서버/백엔드</span>
+    </div>
+    <div class="lanes" id="lanes"></div>
+    <div id="phases"></div>
+    <div class="phase" style="background:#FFF9EE">
+      <h3>⚙️ 병행 전략 요약 (오케스트레이터)</h3>
+      <ul style="margin:6px 0 0;padding-left:20px">
+        <li><b>Phase 0은 전부 병행</b> — 데이터/규칙/소스는 이미 완료. 남은 <b>BI 택소노미·에셋 추출</b>은 서로 독립이라 동시 착수.</li>
+        <li><b>Phase 1의 3트랙(아트·개발·라이브옵스)은 완전 병행.</b> 개발 프로토는 P0 데이터로 즉시 가능, 아트는 에셋추출(P0)을 레퍼런스로 디자인시스템 먼저.</li>
+        <li><b>서버 백엔드는 P0부터 병행 착수(설계·계약)</b> 하되, 클라 통합은 P2. 개발↔서버 <b>API 계약을 조기 확정</b>해 블로킹 방지.</li>
+        <li><b>임계 경로(Critical Path)</b>: 데이터✅ → 코어루프 프로토(P1개발) → 보드/저장 시스템(P2) → 이벤트/라이브옵스(P3). 아트·서버는 이 경로에 <b>병렬 공급</b>.</li>
+        <li><b>차단 리스크</b>: 서버 전용값(에너지 라이브·이벤트 스케줄·패스 실제값)은 APK에 없음 → 서버팀 or 라이브 관찰로만 확보. 코어 MVP엔 로컬 기본값으로 진행.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CHECKLIST -->
+  <section id="check">
+    <div class="legend">
+      <span class="chip"><span class="type have" style="padding:1px 7px">확보</span>시트/소스에 있음</span>
+      <span class="chip"><span class="type partial" style="padding:1px 7px">부분</span>보강 필요</span>
+      <span class="chip"><span class="type pull" style="padding:1px 7px">추출가능</span>APK 번들·소스서 추출</span>
+      <span class="chip"><span class="type need" style="padding:1px 7px">필요</span>APK에 없음(결정·서버·신규)</span>
+    </div>
+    <div id="checklist"></div>
+  </section>
+
+  <div class="foot">상태는 이 브라우저에 자동 저장됩니다(localStorage). · 팀 공유 시 각자 체크 → 내보내기로 취합</div>
+</div>
+
+<script>
+/* ---------- ROADMAP DATA ---------- */
+const TRACKCOLOR={기획:'#E08AA8',공통:'var(--base)',개발:'var(--dev)',아트:'var(--art)',라이브옵스:'var(--ops)',서버:'var(--server)'};
+const LANES=['기획','공통','개발','아트','라이브옵스','서버'];
+const PHASES=[
+ {id:'PM1',title:'Phase -1 — 컨셉 검증·프리프로덕션 (컨셉 A)',when:'전략 확정 · 산출물 문서 → vintage_lane_production.html',tasks:[
+   {tk:'기획',t:'시장조사(시니어 북미여성·FB Instant Games)',dep:'완료 ✅ · 전략문서 08/08b'},
+   {tk:'기획',t:'컨셉 A 확정 "Vintage Lane: Merge & Story" (40대 여성 주인공)',dep:'완료 ✅ · 전략문서 11'},
+   {tk:'아트',t:'아트 디렉션 3안·접근성 규칙·무드보드 지침',dep:'지침 완료 ✅ · 실물 무드보드는 아트팀'},
+   {tk:'기획',t:'시니어 여성 선호 테스트 플랜',dep:'플랜 완료 ✅ · 리크루팅/인터뷰는 리서치'},
+   {tk:'기획',t:'UA 크리에이티브 컨셉 3종·스토리보드',dep:'완료 ✅ · 영상제작/AB는 마케팅'},
+   {tk:'기획',t:'논타이머 페이싱·수익화 재설계(비압박형)',dep:'완료 ✅'},
+   {tk:'개발',t:'코어 프로토 검증계획·KPI 게이트(D1≥40%)',dep:'완료 ✅ · 빌드는 개발'},
+ ]},
+ {id:'PM05',title:'Phase -0.5 — 프로덕션 상세 스펙',when:'각 팀 착수용 상세 산출물 → vintage_lane_production.html',tasks:[
+   {tk:'아트',t:'무드보드 레퍼런스 큐레이션(카테고리·앵커·팔레트·타이포)',dep:'완료 ✅ · 실물 수집은 아트팀'},
+   {tk:'개발',t:'프로토 빌드 기능명세(시스템·데이터모델·화면·계측·수용기준)',dep:'완료 ✅ · 스캐폴딩은 개발'},
+   {tk:'라이브옵스',t:'UA 영상 상세 콘티·카피(3콘셉트 샷단위+스펙)',dep:'완료 ✅ · 영상제작/집행은 마케팅'},
+ ]},
+ {id:'PM02',title:'Phase -0.2 — 출시 스펙·SRS·물량 산정',when:'출시 v1.0 정의 → 전략문서 Part4 · SRS · 콘텐츠 시트',tasks:[
+   {tk:'기획',t:'출시 범위·원칙(Launch/Fast-follow/Later)',dep:'완료 ✅ · 전략문서 17'},
+   {tk:'개발',t:'SRS 기능/비기능 요구사항 명세(FR·NFR·인터페이스·데이터)',dep:'완료 ✅ · vintage_lane_srs.html'},
+   {tk:'아트',t:'콘텐츠 물량 산정(체인107·데코54·CG·오디오·문자열)',dep:'완료 ✅ · vintage_lane_srs.html(Part B)'},
+   {tk:'개발',t:'출시 KPI 게이트·DoD 정의(D1≥40%·D7≥22%)',dep:'완료 ✅ · 전략문서 20'},
+ ]},
+ {id:'P0',title:'Phase 0 — 기반 확보',when:'지금 (상당 부분 완료) · 전부 병행 가능',tasks:[
+   {tk:'공통',t:'데이터 추출·밸런스시트 51탭',dep:'완료 ✅'},
+   {tk:'공통',t:'코어 규칙 리버싱 · GAME_RULES · 게임규칙 탭',dep:'완료 ✅'},
+   {tk:'공통',t:'전체 Lua 로직 소스 디컴파일 (2400모듈)',dep:'완료 ✅'},
+   {tk:'개발',t:'BI 이벤트 택소노미(EBIType) 추출',dep:'독립 · 다음 착수'},
+   {tk:'개발',t:'튜토리얼 플로우 · 세이브 스키마 정리',dep:'독립'},
+   {tk:'아트',t:'APK 에셋 추출(UnityPy) + 물량 인덱스',dep:'독립 · 다음 착수'},
+ ]},
+ {id:'P1',title:'Phase 1 — 프로토타입 MVP',when:'3트랙 완전 병행',tasks:[
+   {tk:'아트',t:'Cozy Cottage 디자인시스템(토큰+컴포넌트)',dep:'에셋추출(P0) 레퍼런스 · Figma Make 진행중'},
+   {tk:'개발',t:'코어 루프 프로토(머지·생성기·오더·에너지)',dep:'P0 데이터 완료로 즉시 가능'},
+   {tk:'라이브옵스',t:'시트→JSON 변환 파이프라인 (config CMS 기초)',dep:'독립'},
+ ]},
+ {id:'P2',title:'Phase 2 — 코어 게임 완성',when:'개발↔서버 API 계약 후',tasks:[
+   {tk:'개발',t:'보드/슬롯 시스템 · 저장 · 서버시간 동기화',dep:'P1 프로토'},
+   {tk:'개발',t:'레벨/진행 · 상점/IAP · 튜토리얼 통합',dep:'P1'},
+   {tk:'서버',t:'백엔드: 계정·세이브·리모트config·이벤트 스케줄러',dep:'P0부터 설계 병행, 통합은 P2'},
+   {tk:'아트',t:'전체 아이템 체인·캐릭터·UI 프로덕션 아트',dep:'아트 물량표(P0) · 디자인시스템(P1)'},
+ ]},
+ {id:'P3',title:'Phase 3 — 라이브옵스·이벤트',when:'코어 완성 후',tasks:[
+   {tk:'개발',t:'이벤트 시스템(머지 5종·경쟁봇·데일리·패스)',dep:'P2 코어'},
+   {tk:'라이브옵스',t:'이벤트 스케줄러 · A/B 프레임워크 · BI 대시보드',dep:'BI 택소노미(P0)'},
+   {tk:'서버',t:'서버 전용값 세팅(에너지 라이브·스케줄·패스 실제값)',dep:'서버 · 라이브 관찰'},
+ ]},
+];
+
+/* ---------- CHECKLIST DATA ---------- */
+const CHECK=[
+ {g:'D. 시스템 스펙 (Phase2·3 · 소스 리버싱 · 시트 문서화)',items:[
+   {ty:'have',t:'서버 API 계약 초안 (19 엔드포인트)',n:'서버API계약(초안) 탭',s:'done'},
+   {ty:'have',t:'보드/슬롯 시스템 스펙',n:'보드슬롯스펙 탭',s:'done'},
+   {ty:'have',t:'레벨/진행 시스템 스펙',n:'레벨진행스펙 탭',s:'done'},
+   {ty:'have',t:'상점/IAP 통합 스펙',n:'상점IAP스펙 탭',s:'done'},
+   {ty:'have',t:'저장/서버시간 동기화 스펙',n:'저장동기화스펙 탭',s:'done'},
+   {ty:'have',t:'이벤트 시스템 스펙(프레임워크·5대 머지)',n:'이벤트시스템스펙 탭',s:'done'},
+   {ty:'have',t:'시트→JSON 파이프라인(config CMS)',n:'config_out 47탭·13086레코드',s:'done'},
+   {ty:'have',t:'전체 탭 목차·인덱스(62탭)',n:'목차 탭',s:'done'},
+ ]},
+  {g:'C. 컨셉 A — 프리프로덕션 산출물 (vintage_lane_production.html)',items:[
+   {ty:'have',t:'시장조사: 시니어 북미여성 세그먼트',n:'AARP·GameRefinery·JMIR 원문 검증',s:'done'},
+   {ty:'have',t:'배포 플랫폼 분석: FB Instant Games',n:'오디언스·수익화·경쟁 스크린샷',s:'done'},
+   {ty:'have',t:'컨셉 A 확정 "Vintage Lane: Merge & Story"',n:'노스탤지어 골동품점×시대여행·논타이머',s:'done'},
+   {ty:'have',t:'아트 디렉션 3안 + 접근성 규칙(WCAG)',n:'권고: Bright Cozy Craft 하이브리드',s:'done'},
+   {ty:'have',t:'UA 크리에이티브 컨셉 3종·스토리보드',n:'The Letter/Before&After/The Secret',s:'done'},
+   {ty:'have',t:'논타이머 페이싱·수익화 재설계',n:'수집·자기표현·서사 기반 비압박형',s:'done'},
+   {ty:'have',t:'코어 프로토 검증계획·KPI 게이트',n:'D1≥40%·튜토80%·논타이머 A/B',s:'done'},
+   {ty:'have',t:'무드보드 레퍼런스 큐레이션 스펙',n:'카테고리·앵커·팔레트·타이포 (production doc)',s:'done'},
+   {ty:'have',t:'프로토 빌드 기능명세',n:'시스템·데이터모델·화면·계측·수용기준',s:'done'},
+   {ty:'have',t:'UA 영상 상세 콘티·카피(3콘셉트)',n:'샷단위·온스크린카피·제작스펙',s:'done'},
+   {ty:'have',t:'출시 스펙 v1.0(범위·원칙·수익화·라이브옵스)',n:'전략문서 Part4 (17~20)',s:'done'},
+   {ty:'have',t:'SRS 요구사항 명세(FR·NFR·인터페이스·데이터)',n:'vintage_lane_srs.html',s:'done'},
+   {ty:'have',t:'콘텐츠 물량 산정 시트',n:'체인107·데코54·CG9·오디오40·문자열920',s:'done'},
+   {ty:'need',t:'무드보드 실물 제작(3안)',n:'아트팀 · 지침·큐레이션 준비완료',s:'wait'},
+   {ty:'need',t:'시니어 선호 테스트 실행(8–12명)',n:'리서치 · 플랜 준비완료',s:'wait'},
+   {ty:'need',t:'UA 영상 제작·A/B 집행',n:'마케팅 · 컨셉 준비완료',s:'wait'},
+   {ty:'need',t:'코어 프로토 빌드·시니어 플레이테스트',n:'개발 · 게이트 준비완료',s:'wait'},
+ ]},
+ {g:'A. 개발 — 게임 데이터·규칙',items:[
+   {ty:'have',t:'머지 체인·아이템 스펙·생성기 파라미터',n:'시트: 머지체인/아이템스펙',s:'done'},
+   {ty:'have',t:'오더(생성·난이도·보상)·오더 완성세트',n:'오더난이도/오더아이템/오더고정/특수/브랜치',s:'done'},
+   {ty:'have',t:'레벨 커브·메인태스크·지역해금',n:'레벨커브/메인태스크/지역해금',s:'done'},
+   {ty:'have',t:'경제(상점/IAP/번들)·친밀도·점수·인벤토리',n:'상점/친밀도*/머지점수/인벤토리해금',s:'done'},
+   {ty:'have',t:'코어 규칙 문서(에너지·머지·생성기·럭키·버블·게이팅)',n:'게임규칙 탭 + GAME_RULES.md',s:'done'},
+   {ty:'have',t:'전체 게임 로직 소스',n:'extract/lua_source (2400모듈)',s:'done'},
+ ]},
+ {g:'A2. 개발 — 소스서 추가 추출 (보강)',items:[
+   {ty:'pull',t:'BI/애널리틱스 이벤트 택소노미(EBIType)',n:'계측 설계 필수 · 소스에 수백개',s:'done'},
+   {ty:'pull',t:'튜토리얼 플로우(TutorialConfig·Executer)',n:'스텝·조건',s:'done'},
+   {ty:'pull',t:'세이브 데이터 스키마(DBTable 구조)',n:'저장/동기화',s:'done'},
+   {ty:'pull',t:'부스터/변환/거미줄/가속 등 아이템 컴포넌트 규칙',n:'소스 있음·미문서화',s:'wait'},
+ ]},
+ {g:'A3. 개발 — 인프라/서버 (신규 구축)',items:[
+   {ty:'need',t:'엔진/기술 스택 결정',n:'원작 Unity/IL2CPP/xLua',s:'wait'},
+   {ty:'need',t:'백엔드: 계정·세이브 동기화',n:'',s:'wait'},
+   {ty:'need',t:'리모트 config 시스템(원작은 대부분 서버 제어)',n:'ConfigModel suffix/AB',s:'wait'},
+   {ty:'need',t:'이벤트 스케줄러 · A/B 프레임워크',n:'',s:'wait'},
+   {ty:'need',t:'리더보드/매칭(경쟁 이벤트) · 안티치트',n:'',s:'wait'},
+   {ty:'need',t:'IAP 검증 · 광고 SDK 통합(AppLovin/Moloco/Firebase 등)',n:'매니페스트서 SDK 목록 확보 가능',s:'wait'},
+   {ty:'need',t:'라이브옵스 config CMS(시트→JSON→서버)',n:'파이프라인 구축 중',s:'done'},
+ ]},
+ {g:'B1. 아트 — 구조·명칭 (확보)',items:[
+   {ty:'have',t:'아이템 460개 명칭+코드+체인단계',n:'시트',s:'done'},
+   {ty:'have',t:'캐릭터 42·손님·지역·데코 목록',n:'RoleConfig/CustomerConfig',s:'done'},
+   {ty:'have',t:'이미지 리소스맵(ImageFileConfig 4,492 경로)',n:'dataconfig',s:'done'},
+ ]},
+ {g:'B2. 아트 — APK 번들서 추출 (레퍼런스)',items:[
+   {ty:'pull',t:'아이템 스프라이트(체인 단계별 아이콘)',n:'board/ui-atlas 번들',s:'done'},
+   {ty:'pull',t:'캐릭터 아트·표정·오더표정',n:'rolesandstorylocal (area1~3)',s:'prog'},
+   {ty:'pull',t:'UI 아틀라스·HUD·윈도우·버튼',n:'ui-hud/ui-atlas',s:'done'},
+   {ty:'pull',t:'맵/배경·이펙트·로딩/CG',n:'map-main/effects/scenecg',s:'prog'},
+   {ty:'pull',t:'오디오 300개·폰트(CJK)·아바타프레임·애니메이션',n:'audio/font-*/avatarframe',s:'done'},
+ ]},
+ {g:'B3. 아트 — 신규 제작 (Cozy Cottage)',items:[
+   {ty:'need',t:'디자인 시스템(토큰+컴포넌트)',n:'Figma Make 진행중',s:'prog'},
+   {ty:'need',t:'아이템 체인 아트(단계별) · 생성기',n:'원작 카피 금지·재해석',s:'wait'},
+   {ty:'need',t:'재화/보상 아이콘 · UI 컴포넌트 세트',n:'',s:'wait'},
+   {ty:'need',t:'캐릭터·표정 · 오더카드·손님',n:'',s:'wait'},
+   {ty:'need',t:'보드·슬롯·배경·데코 · 머지/버블 연출',n:'',s:'wait'},
+   {ty:'need',t:'스토리 CG · 폰트(시니어 가독성)',n:'',s:'wait'},
+   {ty:'need',t:'아트 물량 산정표(체인153·아이템460·테마32·캐릭터42)',n:'P0 인덱스서 자동집계',s:'done'},
+ ]},
+];
+
+/* ---------- RENDER ---------- */
+const KEY='gh_tracker_v3';
+let state=JSON.parse(localStorage.getItem(KEY)||'{}');
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function idOf(gi,ii){return 'g'+gi+'i'+ii}
+
+document.getElementById('lanes').innerHTML=LANES.map(l=>`<span class="lane" style="background:${TRACKCOLOR[l]}">${l}</span>`).join('');
+document.getElementById('phases').innerHTML=PHASES.map(p=>`
+  <div class="phase">
+    <h3>${p.title}</h3><div class="when">${p.when}</div>
+    <div class="tasks">${p.tasks.map(t=>`
+      <div class="task" style="border-left-color:${TRACKCOLOR[t.tk]}">
+        <span class="tk" style="color:${TRACKCOLOR[t.tk]}">${t.tk}</span><div>${t.t}</div>
+        <span class="dep">${t.dep}</span>
+      </div>`).join('')}</div>
+  </div>`).join('');
+
+function renderCheck(){
+  document.getElementById('checklist').innerHTML=CHECK.map((grp,gi)=>{
+    const total=grp.items.length;
+    const done=grp.items.filter((it,ii)=>(state[idOf(gi,ii)]||it.s)==='done').length;
+    return `<div class="group">
+      <div class="ghd"><span>${grp.g}</span><span class="gcount">${done}/${total}</span></div>
+      ${grp.items.map((it,ii)=>{
+        const id=idOf(gi,ii); const st=state[id]||it.s;
+        const cls=st==='done'?'done s-done':st==='prog'?'s-prog':st==='block'?'s-block':'';
+        return `<div class="item ${cls}">
+          <span class="type ${it.ty}">${({have:'확보',partial:'부분',pull:'추출가능',need:'필요'})[it.ty]}</span>
+          <div class="body"><div class="txt">${it.t}</div>${it.n?`<div class="note">${it.n}</div>`:''}</div>
+          <select onchange="setStatus('${id}',this.value)">
+            ${['wait','prog','done','block'].map(v=>`<option value="${v}" ${st===v?'selected':''}>${({wait:'⚪ 대기',prog:'🟡 진행중',done:'🟢 완료',block:'🔴 차단'})[v]}</option>`).join('')}
+          </select>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+  updateStats();
+}
+function setStatus(id,v){state[id]=v;save();renderCheck()}
+function updateStats(){
+  let all=0,d=0,p=0,w=0,b=0;
+  CHECK.forEach((g,gi)=>g.items.forEach((it,ii)=>{all++;const s=state[idOf(gi,ii)]||it.s;if(s==='done')d++;else if(s==='prog')p++;else if(s==='block')b++;else w++;}));
+  const pct=Math.round(d/all*100);
+  document.getElementById('progBar').style.width=pct+'%';
+  document.getElementById('pct').textContent=pct+'%';
+  document.getElementById('cDone').textContent=d;
+  document.getElementById('cProg').textContent=p;
+  document.getElementById('cWait').textContent=w;
+  document.getElementById('cBlock').textContent=b;
+}
+function showTab(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.t===t));document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===t))}
+function resetAll(){if(confirm('모든 상태를 초기값으로 되돌릴까요?')){state={};save();renderCheck()}}
+function exportJSON(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gh_tracker_state.json';a.click()}
+renderCheck();
+</script>
+</body>
+</html>

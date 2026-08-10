@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vintage Lane — 제품 &amp; 프로덕션 기획 문서</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2a3340;
+    --ink:#e8edf3; --sub:#9aa7b4; --dim:#6b7887;
+    --brand:#5ec8d8; --brand2:#f2a65a; --pink:#e97fa6; --green:#7fd18b; --purple:#a58cf0;
+    --warn:#f0c674; --danger:#e77c7c;
+    --radius:14px; --maxw:1080px;
+  }
+  /* Light theme overrides */
+  body.light{
+    --bg:#f5f7fa; --panel:#ffffff; --panel2:#eef2f7; --line:#dde3ea;
+    --ink:#1a2230; --sub:#4a5666; --dim:#8593a3;
+    --brand:#1391a5; --brand2:#cf7a26; --pink:#cf4f83; --green:#369a49; --purple:#6f53c9;
+    --warn:#b98916; --danger:#cf4747;
+  }
+  body.light nav.side{background:#eef2f7}
+  body.light nav.side .logo{color:#1a2230}
+  body.light .card.accent{background:linear-gradient(180deg,#eaf6f8,#f4fafb);border-color:#c3e2e8}
+  body.light .card.pink{background:linear-gradient(180deg,#fdeef4,#fdf6f9);border-color:#f1cfdc}
+  body.light .card.green{background:linear-gradient(180deg,#edf8ef,#f5fbf6);border-color:#cbe9d1}
+  body.light .card.purple{background:linear-gradient(180deg,#f2eefb,#f8f5fd);border-color:#ded2f3}
+  body.light .concept{background:linear-gradient(135deg,#eaf1f8,#f4eefb);border-color:#dbe2ea}
+  body.light .diff .dc:first-child{background:#eef3f8}
+  body.light tr:hover td{background:#eef3f8}
+  body.light .kpi .n{color:#1a2230}
+  body.light h3,body.light .card h4,body.light td b,body.light strong,body.light .call .t{color:#101722}
+  body.light .concept .cname,body.light .road .ph .pt,body.light .tile .tt,body.light .shot .cap,body.light .frame .tt,body.light .fig-lead b,body.light .kchart .kct{color:#101722}
+  body.light .req .rid{color:#fff}
+  body.light .theme-toggle,body.light nav.side{box-shadow:0 1px 0 rgba(0,0,0,.03)}
+  body.light code{background:#eef2f7;color:#0f6f7e}
+  body.light .tile,body.light .shot .tc{background:#eef2f7}
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.7;font-size:16px;-webkit-font-smoothing:antialiased;
+    transition:background .25s ease,color .25s ease}
+  a{color:var(--brand);text-decoration:none}
+
+  /* Active nav (scrollspy) */
+  nav.side a.active{background:var(--panel);color:var(--brand);font-weight:700;box-shadow:inset 3px 0 0 var(--brand)}
+
+  /* Theme toggle */
+  .theme-toggle{position:fixed;top:16px;right:22px;z-index:60;
+    background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    border-radius:999px;padding:8px 15px;font-size:12.5px;cursor:pointer;font-weight:600;
+    display:inline-flex;align-items:center;gap:7px;line-height:1;
+    box-shadow:0 4px 14px rgba(0,0,0,.18);transition:all .2s ease}
+  .theme-toggle:hover{border-color:var(--brand);color:var(--brand);transform:translateY(-1px)}
+  @media(max-width:900px){.theme-toggle{top:12px;right:14px;padding:7px 12px;font-size:12px}}
+
+  /* Layout */
+  .wrap{display:grid;grid-template-columns:248px 1fr;max-width:1360px;margin:0 auto;gap:0}
+  nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+    padding:26px 18px;border-right:1px solid var(--line);background:#0b0e13}
+  nav.side .logo{font-weight:800;font-size:15px;letter-spacing:.02em;margin-bottom:4px;color:#fff}
+  nav.side .logo span{color:var(--brand)}
+  nav.side .tag{font-size:11px;color:var(--dim);margin-bottom:22px;line-height:1.5}
+  nav.side a{display:block;color:var(--sub);font-size:13px;padding:7px 10px;border-radius:8px;margin-bottom:2px}
+  nav.side a:hover{background:var(--panel);color:var(--ink)}
+  nav.side a.head{color:var(--dim);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;margin:18px 0 4px;padding-left:10px;pointer-events:none}
+  main{padding:0 48px 120px;min-width:0}
+
+  /* Hero */
+  header.hero{padding:64px 0 40px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .kicker{display:inline-block;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--brand);border:1px solid var(--brand);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+  h1{font-size:40px;line-height:1.18;margin:0 0 16px;font-weight:800;letter-spacing:-.01em}
+  h1 em{font-style:normal;color:var(--brand2)}
+  .lead{font-size:17px;color:var(--sub);max-width:760px}
+  .metaline{margin-top:24px;font-size:12.5px;color:var(--dim);display:flex;gap:18px;flex-wrap:wrap}
+  .metaline b{color:var(--sub);font-weight:600}
+
+  /* Sections */
+  section{padding:52px 0;border-bottom:1px solid var(--line);scroll-margin-top:20px}
+  .secno{font-size:12px;letter-spacing:.18em;color:var(--brand2);text-transform:uppercase;font-weight:700}
+  h2{font-size:28px;margin:8px 0 6px;font-weight:800;letter-spacing:-.01em}
+  h3{font-size:19px;margin:34px 0 12px;font-weight:700;color:#fff}
+  h4{font-size:15px;margin:22px 0 8px;font-weight:700;color:var(--brand)}
+  p{margin:0 0 14px}
+  .muted{color:var(--sub)}
+  .intro{color:var(--sub);font-size:15.5px;margin-bottom:8px}
+  ul,ol{margin:0 0 16px;padding-left:20px}
+  li{margin-bottom:7px}
+  strong{color:#fff;font-weight:700}
+  .hl{color:var(--brand2);font-weight:700}
+  .hl2{color:var(--pink);font-weight:700}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:26px 0}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .kpi .n{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.02em}
+  .kpi .n small{font-size:15px;color:var(--brand);font-weight:700}
+  .kpi .l{font-size:12px;color:var(--sub);margin-top:5px;line-height:1.4}
+
+  /* Generic cards */
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .card h4{margin-top:0}
+  .card.accent{border-color:#38505a;background:linear-gradient(180deg,#15242a,#141a20)}
+  .card.pink{border-color:#4a2c3a;background:linear-gradient(180deg,#24151d,#181318)}
+  .card.green{border-color:#2c4a34;background:linear-gradient(180deg,#152418,#141a15)}
+  .card.purple{border-color:#372c52;background:linear-gradient(180deg,#1c1830,#161420)}
+  .card .ico{font-size:22px;margin-bottom:8px}
+  .card p{font-size:14px;color:var(--sub);margin-bottom:0}
+  .card p+p{margin-top:8px}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13.5px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+  tr:hover td{background:#12171e}
+  td b{color:#fff}
+  .win{color:var(--green);font-weight:700}
+  .lose{color:var(--danger);font-weight:700}
+  .tbl-wrap{overflow-x:auto}
+
+  /* Callouts */
+  .call{border-left:3px solid var(--brand);background:var(--panel);border-radius:0 12px 12px 0;padding:16px 20px;margin:20px 0;font-size:14.5px}
+  .call.warn{border-color:var(--warn)}
+  .call.pink{border-color:var(--pink)}
+  .call .t{font-weight:700;color:#fff;margin-bottom:4px;font-size:13px;letter-spacing:.03em}
+  .call.warn .t{color:var(--warn)}
+  .call.pink .t{color:var(--pink)}
+
+  /* Loop diagram */
+  .loop{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:22px 0;font-size:13px}
+  .loop .node{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-weight:600;white-space:nowrap}
+  .loop .node.hot{border-color:var(--brand2);color:var(--brand2)}
+  .loop .arw{color:var(--dim);font-size:16px}
+
+  /* Pills */
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+  .pill{font-size:12px;padding:5px 12px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--sub)}
+  .pill.on{border-color:var(--brand);color:var(--brand)}
+
+  /* Proven/Better/New columns */
+  .pbn{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0}
+  .pbn .col{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel)}
+  .pbn .col .cap{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;margin-bottom:12px}
+  .pbn .col.p .cap{color:var(--sub)}
+  .pbn .col.b .cap{color:var(--green)}
+  .pbn .col.n .cap{color:var(--pink)}
+  .pbn .col ul{padding-left:16px;margin:0}
+  .pbn .col li{font-size:13px;color:var(--sub)}
+
+  /* PRD requirement blocks */
+  .req{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0;margin:14px 0;overflow:hidden}
+  .req .rhead{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--panel2);border-bottom:1px solid var(--line)}
+  .req .rid{font-size:11px;font-weight:800;color:var(--bg);background:var(--brand);padding:3px 9px;border-radius:6px;letter-spacing:.04em}
+  .req .rtitle{font-weight:700;font-size:15px}
+  .req .prio{margin-left:auto;font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--sub)}
+  .req .prio.p0{border-color:var(--danger);color:var(--danger)}
+  .req .prio.p1{border-color:var(--warn);color:var(--warn)}
+  .req .prio.p2{border-color:var(--dim);color:var(--dim)}
+  .req .rbody{padding:16px 18px;font-size:14px;color:var(--sub)}
+  .req .rbody ul{margin:8px 0 0}
+  .req .rbody li{font-size:13.5px}
+
+  /* concept hero */
+  .concept{background:linear-gradient(135deg,#1a2430,#171320);border:1px solid var(--line);border-radius:18px;padding:30px;margin:24px 0}
+  .concept .cname{font-size:24px;font-weight:800;color:#fff;margin-bottom:6px}
+  .concept .cname span{color:var(--pink)}
+  .concept .cline{color:var(--brand2);font-weight:600;margin-bottom:14px}
+
+  /* differentiator */
+  .diff{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:16px 0}
+  .diff .dc{padding:16px 18px}
+  .diff .dc:first-child{border-right:1px solid var(--line);background:#12171e}
+  .diff .dh{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+  .diff .dc:first-child .dh{color:var(--dim)}
+  .diff .dc:last-child .dh{color:var(--pink)}
+  .diff .dc p{font-size:13.5px;color:var(--sub);margin:0}
+
+  /* roadmap */
+  .road{position:relative;margin:24px 0;padding-left:24px}
+  .road::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .road .ph{position:relative;margin-bottom:22px}
+  .road .ph::before{content:"";position:absolute;left:-24px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--brand);border:2px solid var(--bg)}
+  .road .ph .pt{font-weight:700;color:#fff}
+  .road .ph .pw{font-size:12px;color:var(--brand2);font-weight:600;margin-left:8px}
+  .road .ph .pd{font-size:13.5px;color:var(--sub);margin-top:3px}
+
+  /* Figures (PDF captures) */
+  figure.fig{margin:24px 0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+  figure.fig img{max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;background:#fff;cursor:zoom-in}
+  figure.fig figcaption{font-size:12.5px;color:var(--dim);margin-top:11px;line-height:1.55;text-align:center}
+  figure.fig figcaption b{color:var(--sub)}
+  figure.fig figcaption .tag{display:inline-block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    border:1px solid var(--line);color:var(--dim);border-radius:5px;padding:2px 7px;margin-right:7px;vertical-align:middle}
+  /* .fig-row = 좌우 2단(스토리·데코 등 비교용). 나머지는 개별 풀-와이드 figure로 큼직하게 */
+  .fig-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+  .fig-row figure.fig{margin:0}
+  .fig-lead{margin:26px 0 -6px;font-size:14.5px;color:var(--sub)}
+  .fig-lead b{color:#fff}
+  @media(max-width:700px){.fig-row{grid-template-columns:1fr}}
+  /* Lightbox */
+  #lightbox{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);display:none;
+    align-items:center;justify-content:center;cursor:zoom-out;padding:30px}
+  #lightbox.on{display:flex}
+  #lightbox img{max-width:96%;max-height:94%;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+
+  /* Production-merged components */
+  code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px;color:var(--brand);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .swatch{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
+  .swatch i{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.15);display:block}
+  .chip{display:inline-block;font-size:11px;padding:3px 9px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--sub);margin:2px 4px 2px 0}
+  .board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+  .tile{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px;font-size:12px}
+  .tile .n{font-size:10px;color:var(--brand2);font-weight:800;letter-spacing:.08em}
+  .tile .tt{color:#fff;font-weight:700;margin:3px 0;font-size:12.5px}
+  .tile p{color:var(--sub);font-size:11.5px;margin:0}
+  .shot{display:grid;grid-template-columns:70px 1fr 1fr;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:8px;font-size:12.5px}
+  .shot>div{padding:9px 11px;border-right:1px solid var(--line)}
+  .shot>div:last-child{border-right:0}
+  .shot .tc{background:var(--panel2);font-weight:800;color:var(--brand2);font-size:11px}
+  .shot .vis{color:var(--sub)}
+  .shot .cap{color:#fff}
+  .shot .cap b{color:var(--brand);font-weight:700;font-size:11px;display:block;margin-bottom:2px}
+  @media(max-width:700px){.board{grid-template-columns:1fr}.shot{grid-template-columns:60px 1fr}.shot .cap{grid-column:1/-1;border-top:1px solid var(--line)}}
+
+  /* 참고 차트 한국어 재현(native) */
+  .kchart{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px 14px;margin:20px 0}
+  .kchart .kct{font-weight:700;color:#fff;font-size:13.5px}
+  .kchart .kcs{color:var(--dim);font-size:11.5px;margin:2px 0 16px}
+  .kbars{display:flex;align-items:flex-end;gap:5px;height:210px;border-bottom:1px solid var(--line)}
+  .kbars .kb{flex:1 1 0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0}
+  .kbars .kb b{font-size:9px;color:var(--sub);font-weight:700;margin-bottom:3px;white-space:nowrap}
+  .kbars .kb i{display:block;width:76%;background:linear-gradient(180deg,var(--brand2),#b96f24);border-radius:3px 3px 0 0;min-height:2px}
+  .kxl{display:flex;gap:5px;margin-top:6px}
+  .kxl span{flex:1 1 0;text-align:center;font-size:9px;color:var(--dim);min-width:0;white-space:nowrap;overflow:hidden}
+  .kphase{display:flex;gap:6px;margin-top:12px}
+  .kphase span{flex:1 1 0;text-align:center;font-size:10.5px;font-weight:700;color:var(--brand2);border-top:2px solid var(--brand2);padding-top:5px}
+  .quad{position:relative;height:360px;background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:20px 0}
+  .quad .axx,.quad .axy{position:absolute;background:var(--line)}
+  .quad .axx{left:6%;right:6%;top:50%;height:1px}
+  .quad .axy{top:6%;bottom:6%;left:50%;width:1px}
+  .quad .qlbl{position:absolute;font-size:10.5px;color:var(--dim);font-weight:700;letter-spacing:.04em}
+  .quad .g{position:absolute;transform:translate(-50%,-50%);font-size:11px;font-weight:700;color:var(--sub);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 10px;white-space:nowrap}
+  .quad .g.hl{border-color:var(--brand2);color:var(--brand2)}
+
+  .card.rec{border-color:#4a6a3a;background:linear-gradient(180deg,#18261a,#141a15)}
+  body.light .card.rec{border-color:#c9e0cf;background:linear-gradient(180deg,#edf8ef,#f5fbf6)}
+  .foot{padding:40px 0 10px;color:var(--dim);font-size:12.5px}
+  .src{font-size:12px;color:var(--dim);margin-top:10px}
+  .src b{color:var(--sub)}
+
+  @media(max-width:900px){
+    .wrap{grid-template-columns:1fr}
+    nav.side{display:none}
+    main{padding:0 22px 80px}
+    .kpis,.g2,.g3,.pbn{grid-template-columns:1fr 1fr}
+    .diff{grid-template-columns:1fr}
+    .diff .dc:first-child{border-right:none;border-bottom:1px solid var(--line)}
+    h1{font-size:30px}
+  }
+  @media(max-width:560px){.kpis,.g2,.g3,.pbn{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" aria-label="테마 전환">☀️ 라이트</button>
+<div class="wrap">
+
+<!-- ============ SIDEBAR ============ -->
+<nav class="side">
+  <div class="logo">VINTAGE <span>LANE</span></div>
+  <div class="tag">제품 · 프로덕션 기획 문서 v2.0<br>(무엇을, 어떻게 만드나 — 실행팀용)</div>
+
+  <a class="head">Part 1 · 제품 요구사항</a>
+  <a href="#prd">01. PRD — 게임 요구사항</a>
+
+  <a class="head">Part 2 · 프로덕션 상세</a>
+  <a href="#artdir">02b. 아트 디렉션 3안</a>
+  <a href="#seniortest">02c. 시니어 선호 테스트</a>
+  <a href="#mood">02. 무드보드 큐레이션</a>
+  <a href="#spec">03. 프로토 빌드 기능명세</a>
+  <a href="#ua-prod">04. UA 영상 콘티·카피</a>
+  <a href="#next">05. 다음 단계</a>
+
+  <a class="head">Part 3 · 출시 스펙</a>
+  <a href="#launch">06. 출시 범위 &amp; 원칙</a>
+  <a href="#launch-core">07. 코어 시스템 &amp; 콘텐츠</a>
+  <a href="#launch-mon">08. 수익화 &amp; 라이브옵스</a>
+  <a href="#launch-tech">09. 기술·품질·KPI·DoD</a>
+
+  <a class="head">Part 4 · 실행 설계</a>
+  <a href="#session-design">10. 세션 &amp; 리텐션 설계</a>
+  <a href="#ops-calendar">11. 라이브옵스 12주 캘린더</a>
+  <a href="#prod-plan">12. 프로덕션 계획</a>
+
+  <a class="head">연계 문서</a>
+  <a href="42_vintage_lane_strategy.html">↗ 전략·사업성 판단</a>
+  <a href="44_vintage_lane_srs.html">↗ SRS + 콘텐츠 물량</a>
+  <a href="45_vintage_lane_prototype.html">↗ 아웃게임 프로토</a>
+  <a href="46_vintage_lane_tracker.html">↗ 개발·아트 트래커</a>
+</nav>
+
+<!-- ============ MAIN ============ -->
+<main>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <span class="kicker">Vintage Lane · 제품 · 프로덕션 기획</span>
+  <h1>Vintage Lane — <em>제품 &amp; 프로덕션</em> 기획 문서</h1>
+  <p class="lead">"무엇을, 어떻게 만드나"에 답하는 <strong>개발·아트·라이브옵스·마케팅 실행팀용</strong> 마스터.
+  <strong>PRD → 아트 디렉션/무드보드 → 프로토 기능명세 → UA 콘티 → 출시 스펙 → 세션·라이브옵스·프로덕션 계획</strong>.
+  왜/사업성 판단은 <a href="42_vintage_lane_strategy.html">전략·사업성 문서</a>, 상세 요구사항은 <a href="44_vintage_lane_srs.html">SRS</a>로 분리했다.</p>
+  <div class="metaline">
+    <span><b>대상:</b> Vintage Lane (FB Instant Games 머지-2)</span>
+    <span><b>독자:</b> 개발·아트·라이브옵스·마케팅</span>
+    <span><b>구성:</b> PRD + 프로덕션 상세 + 출시스펙 + 실행설계</span>
+    <span><b>기밀:</b> 내부 전용</span>
+  </div>
+</header>
+
+<!-- 0. SUMMARY -->
+<!-- 1. MARKET -->
+<!-- 2. AUDIENCE -->
+<!-- 3. CORE -->
+<!-- 4. ECONOMY -->
+<!-- 5. LIVEOPS -->
+<!-- 5b. LIVEOPS JOURNEY -->
+<!-- 6. MONETIZATION -->
+<!-- 7. PRD -->
+<section id="prd">
+  <div class="secno">Part 1 — 01</div>
+  <h2>PRD — 우리 게임 요구사항</h2>
+  <p class="intro">위 분석에서 도출한 <strong>MVP 우선순위 요구사항</strong>. Gossip Harbor의 검증된 요소는 "차용", 개선점은 "우리 버전"으로 명시한다.
+  <span class="hl">P0</span>=출시 필수 / <span style="color:var(--warn)">P1</span>=1차 라이브옵스 / <span style="color:var(--dim)">P2</span>=확장.</p>
+
+  <div class="req">
+    <div class="rhead"><span class="rid">CORE-1</span><span class="rtitle">머지-2 코어 루프</span><span class="prio p0">P0</span></div>
+    <div class="rbody">에너지 소모 제너레이터 → 머지 → 손님 주문 충족 → 코인 → 스토리/데코 진행 → 레벨업 → 언락의 폐루프.
+      <ul><li>코어 아이템은 <strong>테마 정합적</strong>(무관한 조합 금지)으로 직관성 확보.</li>
+      <li>주문 등장 쿨다운으로 <strong>매 세션 완결 목표</strong> 보장.</li>
+      <li>지수적 머지 비용 곡선(레벨당 2배) 적용.</li></ul>
+    </div>
+  </div>
+
+  <div class="req">
+    <div class="rhead"><span class="rid">CORE-2</span><span class="rtitle">이중 통화 이코노미</span><span class="prio p0">P0</span></div>
+    <div class="rbody">소프트 통화(단일 목적, 무결정 소비) + 하드 통화(다목적, 저가 첫 리필→에스컬레이팅).
+      <ul><li>세션 시작 시 소프트 통화 우선 소진 유도.</li><li>하루 첫 하드통화 소비에 <strong>시즌 포인트 보너스</strong> 결합("기분 좋은 소비").</li></ul>
+    </div>
+  </div>
+
+  <div class="req">
+    <div class="rhead"><span class="rid">STORY-1</span><span class="rtitle">코어 타겟 정렬 내러티브 메타</span><span class="prio p0">P0</span></div>
+    <div class="rbody">타겟 정서에 맞춘 선형 스토리(드라마/미스터리/관계) + <strong>페널티 없는 데코 커스터마이즈</strong>(자기표현).
+      <ul><li>세션 시작 시 다음 스토리 조각 하이라이트 → 무결정 진행.</li><li>스킵 옵션 제공(비독서 유저 배려).</li></ul>
+    </div>
+  </div>
+
+  <div class="req">
+    <div class="rhead"><span class="rid">PROG-1</span><span class="rtitle">피처 언락 페이싱</span><span class="prio p0">P0</span></div>
+    <div class="rbody">초반 에너지 관대 → <strong>2세션 내 핵심 이벤트/오퍼 노출</strong>. 첫 오퍼 ~10분, 시즌 프레임 ~60분 내 개방.</div>
+  </div>
+
+  <div class="req">
+    <div class="rhead"><span class="rid">LIVE-1</span><span class="rtitle">이벤트 하네스 (코어 루프 재사용)</span><span class="prio p1">P1</span></div>
+    <div class="rbody">모든 이벤트가 코어 태스크(주문/코인)로 수렴 → 동시 다중 이벤트에도 카니발 없음.
+      <ul><li>시즌(30일 장기 아크) + 단기/멀티데이 이벤트 계층.</li><li>동시 진행 4–8개 목표.</li></ul>
+    </div>
+  </div>
+
+  <div class="req">
+    <div class="rhead"><span class="rid">LIVE-2</span><span class="rtitle">시즌 배틀패스 (2티어)</span><span class="prio p1">P1</span></div>
+    <div class="rbody">무료 + <strong>2단계 유료 트랙(코어 패스 + 슈퍼 패스)</strong>, 에스컬레이팅 일일 목표. <strong>유료 캐치업/보너스 옵션 처음부터 포함</strong>(GH의 후행 실수 회피 → 과금 후회 방지).</div>
+  </div>
+
+  <div class="req">
+    <div class="rhead"><span class="rid">LIVE-3</span><span class="rtitle">확장 가능한 이벤트 그리드 &amp; 메커닉 라이브러리</span><span class="prio p1">P1</span></div>
+    <div class="rbody">단일 메커닉 의존 금지. 유형별 스펜드 모먼트를 커버하는 <strong>메커닉 라이브러리</strong>를 데이터 드리븐으로 운영.
+      <ul><li>필수 포맷: Race(경쟁) / Win Streak(스트릭) / Album(수집) / Timed Chain(탈락) / <strong>Co-op(협동)</strong>.</li>
+      <li><strong>이벤트 체인화</strong>: 한 이벤트의 산출물이 다른 이벤트 입력으로 연결("less stop, more go").</li>
+      <li>런칭 시 최소 그리드 → <strong>분기별 이벤트 수 배가</strong> 로드맵 전제.</li></ul>
+    </div>
+  </div>
+
+  <div class="req">
+    <div class="rhead"><span class="rid">MON-1</span><span class="rtitle">레이어드 다이내믹 하이브리드 수익화</span><span class="prio p1">P1</span></div>
+    <div class="rbody">보상형 광고를 <strong>필요 순간 동적 배치</strong>(저가치 보상). 에너지 팩 동적 가격.
+      <ul><li><strong>오퍼 레이어링</strong>: Buy All / 1+1 / 에스컬레이팅 데일리 번들 / 이벤트별 프로그레션 패스 — 각기 다른 스펜드 모먼트 커버.</li>
+      <li><strong>오퍼를 이벤트 흐름에 결합</strong>(상시 상점이 아니라 라이브옵스 안에서 소비 발생 — GH 매출의 60%+ 구조).</li>
+      <li><strong>과금 후에도 광고 시청 습관 유지</strong>(GH 실수 회피: 캐핑은 숨은 방식으로).</li>
+      <li>번들에 <strong>명확한 가치 소구 태그</strong> 표기(배너 블라인드니스 방지).</li></ul>
+    </div>
+  </div>
+
+  <div class="req">
+    <div class="rhead"><span class="rid">OPS-1</span><span class="rtitle">라이브옵스 운영 역량 (조직 전제)</span><span class="prio p1">P1</span></div>
+    <div class="rbody">"출시=끝"이 아니라 <strong>출시=시작</strong>. GH의 매출 1위는 2년간의 라이브옵스 누적에서 나왔다.
+      <ul><li>전담 라이브옵스 조직 + 이벤트 리스킨/템플릿화 파이프라인.</li><li><strong>"반복하되 재건축하지 마라"</strong> — 성공 테스트를 영구 루프로 승격하는 프로세스.</li></ul>
+    </div>
+  </div>
+
+  <div class="req">
+    <div class="rhead"><span class="rid">DIFF-1</span><span class="rtitle">차별화 훅 (Part 2 참조)</span><span class="prio p2">P2</span></div>
+    <div class="rbody">검증된 코어 위에 얹을 우리만의 신규 훅. <strong>영구 소셜/길드 레이어</strong>(GH는 라이트한 이벤트성 협동만 보유 — <a href="42_vintage_lane_strategy.html#strength">전략문서 강점 포인트</a> 참조) / 메타 확장 등.</div>
+  </div>
+</section>
+
+<!-- ============ PART 2 ============ -->
+
+<!-- 8. MARKET RESEARCH: SENIOR WOMEN -->
+<!-- 8b. PLATFORM: FACEBOOK INSTANT GAMES -->
+<!-- 9. POSITIONING -->
+<!-- 9. STRENGTH -->
+<!-- 11. CONCEPT (FINAL) -->
+<!-- 11. ROADMAP -->
+<!-- ============ PART 2 · 프로덕션 상세 ============ -->
+
+<!-- 02b. ART DIRECTION (프리프로덕션 흡수) -->
+<section id="artdir">
+  <div class="secno">Part 2 — 02b · 아트</div>
+  <h2>아트 디렉션 &amp; 무드보드 스펙 (3안)</h2>
+  <p class="intro">시니어 여성 가독성(WCAG 2.2)·FB 캐주얼 정합·노스탤지어 정서를 동시에 만족하는 아트 방향 3안을 정의한다.
+  실물 무드보드 이미지 수집·제작은 아트팀 태스크이며, 아래는 그 <strong>제작 지침(레퍼런스·팔레트·규칙)</strong>이다.</p>
+
+  <div class="grid g3">
+    <div class="card"><h4>Direction 1 · Warm Vintage Storybook</h4>
+      <div class="swatch"><i style="background:#E8CfA0"></i><i style="background:#C98A5E"></i><i style="background:#8A5A3C"></i><i style="background:#6E8F6A"></i><i style="background:#F2E4C9"></i></div>
+      <p>세피아·크림·우드톤의 손그림 동화풍. 종이 질감·따뜻한 조명. <strong>노스탤지어 직결</strong>, 스토리 CG에 최적. 단 채도 낮아 보드 가독성은 보강 필요.</p></div>
+    <div class="card rec"><h4>Direction 2 · Bright Cozy Craft <span style="color:var(--green);font-size:11px">★ 권고</span></h4>
+      <div class="swatch"><i style="background:#F2B84B"></i><i style="background:#F28C7B"></i><i style="background:#8FB08A"></i><i style="background:#7FA8D9"></i><i style="background:#FFF4E2"></i></div>
+      <p>밝고 채도 높은 클린 벡터/카툰 + 노스탤지어 소품. <strong>고대비=시니어 가독성↑</strong>, FB 캐주얼 정합 최고. 보드 아이템 식별 용이. <strong>코어 UI/보드 기본 스타일로 권고.</strong></p></div>
+    <div class="card"><h4>Direction 3 · Painterly Heritage</h4>
+      <div class="swatch"><i style="background:#B08A5A"></i><i style="background:#7A5C8A"></i><i style="background:#3E5A6E"></i><i style="background:#C7A24E"></i><i style="background:#EDE3D0"></i></div>
+      <p>유화풍 사실적·고급 골동품 질감. 성숙·프리미엄. 단 <strong>제작비↑·용량↑(FB ≤200MB 부담)·소형 아이콘 가독성↓</strong>. 하이엔드 컬렉션 아트에 부분 활용.</p></div>
+  </div>
+
+  <div class="call">
+    <div class="t">권고 — 하이브리드</div>
+    <strong>코어 보드·UI = Direction 2(Bright Cozy Craft)</strong>로 가독성·FB 정합 확보 + <strong>스토리 CG·기억 회상 씬 = Direction 1(Warm Vintage)</strong> 톤을 얹어 향수 정서 극대화.
+    Direction 3은 프리미엄 컬렉션/데코 아이템에 부분 차용.
+  </div>
+
+  <h3>시니어 접근성 아트 규칙 (필수 준수)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>항목</th><th>규칙</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td>본문 텍스트 대비</td><td><b>4.5:1 이상</b> (큰 텍스트 3:1)</td><td>WCAG 2.2</td></tr>
+      <tr><td>UI 폰트 크기</td><td>본문 ≥18–20pt급, 핵심 CTA ≥30pt급, <b>확대 옵션 제공</b></td><td>노년층 UX 학술(JMIR)</td></tr>
+      <tr><td>아이템 식별성</td><td>인접 체인 단계는 <b>색+형태 둘 다</b> 차별화(색만 X)</td><td>노년층 유사색 구별 곤란</td></tr>
+      <tr><td>컨트롤 크기·간격</td><td>탭 타겟 크게·여백 넉넉히, <b>단일 액션</b> 위주</td><td>골든룰: 개념 단순화</td></tr>
+      <tr><td>연출 강도</td><td>과한 파티클·플래시 자제, <b>부드러운 전환</b></td><td>피로·혼란 방지</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>무드보드 구성 지침 (아트팀 산출)</h3>
+  <ul>
+    <li><strong>3안 × 각 1보드</strong>: ① 보드/아이템 샘플 ② 캐릭터(할머니 회상 · 주인공=활기찬 40대 여성) ③ 골동품점 배경 ④ UI 키트 ⑤ 스토리 CG 톤 ⑥ 컬러/폰트 스펙.</li>
+    <li><strong>레퍼런스 소싱</strong>: 코지 인테리어·빈티지 골동품·따뜻한 가족사진 톤(원작 카피 금지, 정서 레퍼런스만).</li>
+    <li><strong>금지</strong>: 해안·섬·리조트 비주얼, 원작 특유의 캐릭터 조형 모방.</li>
+  </ul>
+</section>
+
+<!-- 02c. SENIOR PREFERENCE TEST (프리프로덕션 흡수) -->
+<section id="seniortest">
+  <div class="secno">Part 2 — 02c · 리서치</div>
+  <h2>시니어 여성 선호 테스트 플랜</h2>
+  <p class="intro">아트 3안 확정 전, <strong>타겟 실사용자 정성 테스트</strong>로 방향을 데이터로 검증한다. (실행은 리서치/마케팅 태스크 — 아래는 설계.)</p>
+  <div class="grid g2">
+    <div class="card"><h4>대상 &amp; 리크루팅</h4>
+      <p><strong>40–65세 북미 여성 8–12명</strong>. FB 캐주얼 게임 그룹·설문 패널서 리크루팅. 게임 경험 스펙트럼(라이트~헤비) 혼합.</p></div>
+    <div class="card"><h4>방법</h4>
+      <p>원격 1:1 인터뷰(20분) 또는 시각 선호 설문. 3안 무드보드 제시 → <strong>선호 순위 + 이유 + "따뜻함/신뢰/읽기 편함" 3축 평가</strong>.</p></div>
+  </div>
+  <h4>측정 항목</h4>
+  <ul>
+    <li><strong>정서 적합</strong>: "이 게임을 하고 싶은가", "따뜻하게 느껴지는가"(노스탤지어 훅 검증).</li>
+    <li><strong>가독성</strong>: 아이템·텍스트가 <strong>편하게 읽히는가</strong>(폰트·대비 실사용 검증).</li>
+    <li><strong>신뢰/친숙</strong>: "생소한가 vs 친숙한가"(생소함 리스크 체크).</li>
+    <li><strong>컨셉 이해</strong>: 첫인상만으로 "무슨 게임인지" 파악되는가(UA 소구 예측).</li>
+  </ul>
+  <div class="call warn"><div class="t">게이트</div>선호 1위 방향이 <strong>정서·가독성·친숙 3축 모두 과반 긍정</strong>이면 채택. 아니면 하이브리드 재조정.</div>
+</section>
+
+<!-- 02. MOODBOARD -->
+<section id="mood">
+  <div class="secno">Part 2 — 02 · 아트</div>
+  <h2>무드보드 레퍼런스 큐레이션</h2>
+  <p class="intro">권고 하이브리드(코어=Bright Cozy Craft, 스토리=Warm Vintage)를 실제 무드보드로 옮기기 위한 <strong>레퍼런스 카테고리·서술 앵커·수집 규칙</strong>. 아트팀은 이 스펙대로 각 방향 6타일 보드를 구성한다.</p>
+
+  <h3>보드 구성 — 방향당 6타일</h3>
+  <div class="board">
+    <div class="tile"><span class="n">TILE 1</span><div class="tt">보드 &amp; 아이템</div><p>골동품 소품(찻잔·시계·램프·책·재봉틀)의 체인 단계 예시. 클린 실루엣·고대비.</p></div>
+    <div class="tile"><span class="n">TILE 2</span><div class="tt">캐릭터</div><p>주인공=활기찬 40대 여성(따뜻·당당·호기심)·할머니(회상 속, 우아). 표정 시트 3종.</p></div>
+    <div class="tile"><span class="n">TILE 3</span><div class="tt">골동품점 배경</div><p>먼지→복원 전후. 따뜻한 목재·창가 햇살·진열장. 내륙 소도시(해안 X).</p></div>
+    <div class="tile"><span class="n">TILE 4</span><div class="tt">UI 키트</div><p>버튼·패널·재화·오더카드. 큰 폰트·넉넉한 여백·명료 아이콘.</p></div>
+    <div class="tile"><span class="n">TILE 5</span><div class="tt">스토리 CG 톤</div><p>회상 씬(세피아·필름 그레인·부드러운 빛). Warm Vintage 방향.</p></div>
+    <div class="tile"><span class="n">TILE 6</span><div class="tt">컬러·타이포 스펙</div><p>팔레트 HEX·폰트 페어링·대비비(4.5:1) 표기.</p></div>
+  </div>
+
+  <h3>레퍼런스 카테고리 &amp; 서술 앵커</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>카테고리</th><th>서술 앵커 (정서·구도)</th><th>수집 소스</th></tr></thead>
+    <tbody>
+      <tr><td>골동품 소품</td><td>빈티지 찻주전자·회중시계·오일램프·타자기·재봉틀·LP·엽서. 따뜻한 재질감, 단순 실루엣</td><td>로열티프리 스톡·자체 촬영</td></tr>
+      <tr><td>코지 인테리어</td><td>햇살 든 목재 상점, 진열장, 뜨개 담요, 화분. 아늑한 "물려받은 가게" 감성</td><td>스톡·핀보드(내부 참고)</td></tr>
+      <tr><td>복원 Before/After</td><td>먼지·녹→반짝임. "되살아나는" 변화의 만족감</td><td>DIY 복원 영상 캡처(참고만)</td></tr>
+      <tr><td>시대 배경</td><td>1920s 카페·1950s 다이너·빈티지 기차역. 챕터별 "여행지"</td><td>퍼블릭도메인 시대 자료</td></tr>
+      <tr><td>따뜻한 인물</td><td>세대 간 유대(할머니-40대 주인공), 편지 읽는 손, 오래된 가족사진 정서</td><td>라이선스 스톡</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>컬러·타이포 스펙 (권고 하이브리드)</h3>
+  <div class="grid g2">
+    <div class="card"><h4>코어 팔레트 (Bright Cozy Craft)</h4>
+      <div class="swatch"><i style="background:#F2B84B"></i><i style="background:#F28C7B"></i><i style="background:#8FB08A"></i><i style="background:#7FA8D9"></i><i style="background:#FFF4E2"></i><i style="background:#4A3F35"></i></div>
+      <p>골드 #F2B84B · 코럴 #F28C7B · 세이지 #8FB08A · 블루 #7FA8D9 · 크림 #FFF4E2 · 잉크 #4A3F35. 고채도·고대비=가독성.</p></div>
+    <div class="card"><h4>스토리 팔레트 (Warm Vintage)</h4>
+      <div class="swatch"><i style="background:#E8CFA0"></i><i style="background:#C98A5E"></i><i style="background:#8A5A3C"></i><i style="background:#6E8F6A"></i><i style="background:#F2E4C9"></i></div>
+      <p>세피아·우드·크림. 회상 씬에만 한정 사용(코어 UI엔 미적용).</p></div>
+  </div>
+  <h4>타이포그래피</h4>
+  <ul>
+    <li><strong>UI 본문</strong>: 굵고 둥근 산세리프(가독성) — 본문 ≥18–20pt급, 확대 옵션.</li>
+    <li><strong>제목·향수 악센트</strong>: 부드러운 세리프/스크립트(노스탤지어) — 장식은 제목에만, 본문 금지.</li>
+    <li><strong>숫자(재화·레벨)</strong>: 두꺼운 고대비 숫자체, 배경과 4.5:1 이상.</li>
+  </ul>
+  <div class="call"><div class="t">수집 규칙</div>① 원작(GH/Seaside) 아트·특유 캐릭터 조형 <strong>모사 금지</strong>. ② 각 타일 3–5레퍼런스로 "정서 합의". ③ 라이선스 상태 태그 필수. ④ 최종은 <strong>선호 테스트</strong>로 방향 확정.</div>
+</section>
+
+<!-- 14. SPEC -->
+<section id="spec">
+  <div class="secno">Part 2 — 03 · 개발</div>
+  <h2>프로토 빌드 기능명세 (Minimum Fun Build)</h2>
+  <p class="intro">"논타이머 코어 재미 + 시니어 온보딩"을 검증할 최소 빌드의 기능명세. 목표는 완성도가 아니라 <strong>KPI 게이트 통과 여부 측정</strong>.</p>
+
+  <h3>시스템 범위</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>시스템</th><th>범위 (In)</th><th>제외 (Out)</th></tr></thead>
+    <tbody>
+      <tr><td>머지 보드</td><td>7×9 그리드, 드래그 머지, 지수 체인(레벨1→N)</td><td>보드 확장·스토리지 구매</td></tr>
+      <tr><td>생성기</td><td>2–3종(예: 찻잔·램프·책), 탭 생성, 아이템 캡</td><td>부스터·희귀드롭 밸런싱</td></tr>
+      <tr><td>오더</td><td>손님 주문 3–5개 슬롯, 완료→코인, 쿨다운 리필</td><td>오더 이벤트·브랜치</td></tr>
+      <tr><td>진행/스토리</td><td>코인→복원 챕터 3개, 다음 조각 하이라이트</td><td>분기 선택(후속)</td></tr>
+      <tr><td>페이싱(A/B)</td><td><code>energy_mode = soft | none</code> 토글</td><td>실시간 서버 config</td></tr>
+      <tr><td>온보딩</td><td>단계별 튜토(머지→오더→복원), 큰 폰트/화살표</td><td>고급 힌트 시스템</td></tr>
+      <tr><td>계측</td><td>핵심 이벤트 로깅(아래 표)</td><td>풀 BI 파이프라인</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>데이터 모델 (프로토 로컬)</h3>
+  <ul>
+    <li><code>Item{ id, chainId, level, x, y }</code> — 보드 아이템.</li>
+    <li><code>Generator{ id, type, capMax, capNow, outputChainId }</code>.</li>
+    <li><code>Order{ id, requires:[{chainId,level,qty}], rewardCoins, state }</code>.</li>
+    <li><code>StoryChapter{ id, costCoins, unlocked, sceneRef }</code>.</li>
+    <li><code>PlayerState{ coins, energy?, chapterProgress, tutorialStep }</code> — <code>energy</code>는 soft모드만.</li>
+  </ul>
+
+  <h3>화면 플로우</h3>
+  <div class="board">
+    <div class="tile"><span class="n">S1</span><div class="tt">인트로/할머니 편지</div><p>감정 훅 → "복원 시작" CTA</p></div>
+    <div class="tile"><span class="n">S2</span><div class="tt">머지 보드(메인)</div><p>생성기·오더·복원 진척 HUD</p></div>
+    <div class="tile"><span class="n">S3</span><div class="tt">복원/스토리 씬</div><p>코인 투자→챕터 언락→회상 CG</p></div>
+  </div>
+
+  <h3>계측 이벤트 (KPI 매핑)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>이벤트</th><th>파라미터</th><th>연결 KPI</th></tr></thead>
+    <tbody>
+      <tr><td><code>session_start / end</code></td><td>ts, duration</td><td>세션 길이·D1 리텐션</td></tr>
+      <tr><td><code>tutorial_step</code></td><td>step, completed</td><td>튜토리얼 완료율 ≥80%</td></tr>
+      <tr><td><code>order_complete</code></td><td>orderId, sessionSeq</td><td>첫 세션 오더 ≥3</td></tr>
+      <tr><td><code>merge</code></td><td>chainId, toLevel</td><td>코어 인게이지먼트</td></tr>
+      <tr><td><code>chapter_unlock</code></td><td>chapterId</td><td>서사 진행(향수 훅)</td></tr>
+      <tr><td><code>energy_block</code>(soft만)</td><td>context</td><td>압박 체감 A/B 비교</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>수용 기준 (Acceptance = KPI 게이트)</h3>
+  <ul>
+    <li><strong>D1 리텐션 ≥ 40%</strong> · 튜토리얼 완료 ≥ 80% · 첫 세션 오더 ≥ 3 · 세션 ≥ 8분(관찰).</li>
+    <li>시니어 5–8명 정성: "편하다·따뜻하다" 과반, <strong>가독성 불만 0건</strong>.</li>
+    <li>A/B: <code>none</code>(무에너지)가 리텐션·정성에서 <code>soft</code> 대비 열위 아님 → 무에너지 채택 근거.</li>
+  </ul>
+  <div class="call warn"><div class="t">기술 메모</div>FB Instant Games = HTML5(≤200MB). 프로토는 경량 엔진(예: Phaser/PixiJS 등) 권장, 코어 로직은 <strong>플랫폼 독립</strong>으로 작성해 멀티플랫폼 포팅 여지 확보. 서버 config는 프로토에서 로컬 상수로 대체.</div>
+</section>
+
+<!-- 15. UA -->
+<section id="ua-prod">
+  <div class="secno">Part 2 — 04 · 마케팅</div>
+  <h2>UA 영상 상세 콘티 · 카피</h2>
+  <p class="intro">UA 3콘셉트를 <strong>샷 단위 콘티 + 온스크린 카피 + VO/사운드 지시</strong>로 심화. 포맷 <strong>세로 9:16, 54–58초</strong>, 훅 0–3초. 카피는 전부 자체 창작(원작 문구 사용 안 함).</p>
+
+  <div class="call pink"><div class="t">공통 톤 가이드 (시니어 여성)</div>따뜻·진심·잔잔. <strong>"고난 지속" 엔딩 금지</strong> → 반드시 <strong>위안/재회/완성</strong>으로 해소. 자막 크게·느린 컷·부드러운 피아노. 자극적 클릭베이트 지양.</div>
+
+  <h3>Concept 1 · "The Letter" (그리움 → 따뜻함)</h3>
+  <div class="shot"><div class="tc">0–3s</div><div class="vis">먼지 쌓인 상자에서 낡은 편지를 꺼내는 손. 클로즈업.</div><div class="cap"><b>온스크린</b>"할머니가 남긴 마지막 부탁"<br><b>VO</b>잔잔한 내레이션 톤</div></div>
+  <div class="shot"><div class="tc">3–18s</div><div class="vis">편지가 가리킨 낡은 찻잔 → 머지로 단계별 복원 → 반짝임.</div><div class="cap"><b>온스크린</b>"낡은 물건을 하나씩 되살리면…"<br><b>SFX</b>부드러운 복원 사운드</div></div>
+  <div class="shot"><div class="tc">18–40s</div><div class="vis">복원된 물건 위로 할머니의 젊은 시절 회상 CG 오버레이.</div><div class="cap"><b>온스크린</b>"잊고 있던 이야기가 깨어나요"<br><b>MUSIC</b>피아노 고조</div></div>
+  <div class="shot"><div class="tc">40–54s</div><div class="vis">환해진 골동품점, 미소 짓는 주인공(40대). 로고.</div><div class="cap"><b>온스크린 CTA</b>"할머니의 이야기를 되살려 주세요"<br><b>버튼</b>무료로 시작</div></div>
+  <p class="muted"><span class="chip">훅:그리움</span><span class="chip">가족비밀</span> 변형 A/B: 훅 카피 3종("마지막 부탁" / "숨겨둔 편지" / "이걸 보고 있다면").</p>
+
+  <h3>Concept 2 · "Before &amp; After" (복원 만족감)</h3>
+  <div class="shot"><div class="tc">0–3s</div><div class="vis">먼지·녹슨 골동품 클로즈업, 손가락으로 먼지 쓱.</div><div class="cap"><b>온스크린</b>"이걸 되살릴 수 있을까?"</div></div>
+  <div class="shot"><div class="tc">3–28s</div><div class="vis">머지 연속 → 단계별 반짝 복원(oddly satisfying), 리듬감 편집.</div><div class="cap"><b>온스크린</b>"합치면 새것처럼"<br><b>SFX</b>ASMR성 청량 사운드</div></div>
+  <div class="shot"><div class="tc">28–46s</div><div class="vis">복원 완료 순간 배경이 그 시대(1920s 카페)로 전환.</div><div class="cap"><b>온스크린</b>"물건마다 다른 시대로"</div></div>
+  <div class="shot"><div class="tc">46–56s</div><div class="vis">진열장 가득 찬 컬렉션. 로고·CTA.</div><div class="cap"><b>온스크린 CTA</b>"당신의 컬렉션을 완성하세요"<br><b>버튼</b>무료로 시작</div></div>
+  <p class="muted"><span class="chip">훅:복원만족</span><span class="chip">수집</span> 넓은 캐주얼층·비드라마. 사운드 온/오프 2버전.</p>
+
+  <h3>Concept 3 · "The Secret in the Attic" (미스터리)</h3>
+  <div class="shot"><div class="tc">0–3s</div><div class="vis">서랍서 낯선 남자와 찍힌 할머니 옛 사진 발견.</div><div class="cap"><b>온스크린</b>"이 사람은… 누구지?"</div></div>
+  <div class="shot"><div class="tc">3–24s</div><div class="vis">물건 복원할수록 단서(편지·티켓·반지)가 하나씩.</div><div class="cap"><b>온스크린</b>"복원할수록 밝혀지는 비밀"</div></div>
+  <div class="shot"><div class="tc">24–46s</div><div class="vis">따뜻한 반전 암시(잃어버린 첫사랑/숨긴 유산). 막장 아님.</div><div class="cap"><b>온스크린</b>"할머니가 숨긴 진실"<br><b>MUSIC</b>미스터리→따뜻함 전환</div></div>
+  <div class="shot"><div class="tc">46–56s</div><div class="vis">진실이 밝혀지고 미소. 로고·CTA.</div><div class="cap"><b>온스크린 CTA</b>"비밀을 밝혀주세요"<br><b>버튼</b>무료로 시작</div></div>
+  <p class="muted"><span class="chip">훅:미스터리</span><span class="chip">궁금증</span> FB 드라마 스타일 차용·톤은 따뜻. 반전 강도 A/B.</p>
+
+  <h3>제작·집행 스펙</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>항목</th><th>스펙</th></tr></thead>
+    <tbody>
+      <tr><td>포맷/길이</td><td>9:16 세로, 54–58초(+15초·30초 컷다운), 1080×1920</td></tr>
+      <tr><td>자막</td><td>큰 폰트·고대비(시니어), 무음 시청 대비 필수 번인</td></tr>
+      <tr><td>변형(A/B)</td><td>3콘셉트 × 훅 3종 × (사운드 유/무) × <b>주인공 30대 vs 40대</b> = 초기 배치. 기본값 40대(타겟 투영), 30대는 실증 비교</td></tr>
+      <tr><td>지표</td><td>CPI·IPM·D1·<strong>D7 리텐션</strong>(오해성 훅 필터)</td></tr>
+      <tr><td>채널</td><td>FB/IG 피드·릴스·스토리 배치</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call green"><div class="t">승자 선정 원칙</div>CPI만 낮은 크리에이티브 채택 금지 — <strong>D7 리텐션까지 양호</strong>한 훅만 스케일. GH 데이터: 오해성 훅은 CPI↓이나 D7↓(6%)로 함정.</div>
+</section>
+
+<!-- 16. NEXT -->
+<section id="next">
+  <div class="secno">Part 2 — 05</div>
+  <h2>다음 단계</h2>
+  <div class="grid g3">
+    <div class="card"><h4>아트</h4><p>무드보드 3안 실물 제작 → 선호 테스트 → 디자인시스템 착수.</p></div>
+    <div class="card"><h4>개발</h4><p>본 명세로 프로토 스캐폴딩 → 계측 붙이고 KPI 게이트 측정.</p></div>
+    <div class="card"><h4>마케팅</h4><p>콘티 기반 12–18 크리에이티브 제작 → 소액 A/B → D7 승자 스케일.</p></div>
+  </div>
+  <div class="call"><div class="t">전체 산출물 맵</div>
+    본 최종본(전략+프리프로덕션 요지+프로덕션 상세) → <a href="46_vintage_lane_tracker.html">개발·아트 트래커</a>에서 상태 추적.
+    설계 라인은 완료, 실물 제작·집행·빌드가 팀 실행 대기.</div>
+</section>
+
+<!-- ============ PART 4 · 출시 스펙 ============ -->
+
+<!-- 17. LAUNCH SCOPE -->
+<section id="launch">
+  <div class="secno">Part 3 — 06</div>
+  <h2>출시 범위 &amp; 원칙 (Vintage Lane v1.0)</h2>
+  <p class="intro">GH의 핵심 교훈 — <strong>"출시 = 완성이 아니라 시작"</strong>. 매출 1위는 출시 후 2년 라이브옵스 누적에서 나왔다.
+  따라서 v1.0은 <strong>얇지만 완결된 코어 + 시니어 UX 완성 + 최소 라이브옵스</strong>로 내고, 이벤트 그리드·소셜은 출시 후 확장한다.</p>
+
+  <h3>출시 3원칙</h3>
+  <div class="grid g3">
+    <div class="card accent"><div class="ico">🎯</div><h4>① 코어 재미 우선</h4><p>아트 완성도보다 <strong>논타이머 머지 재미 + 시니어 온보딩</strong>을 먼저 검증(D1 게이트). 코어가 흔들리면 출시 연기.</p></div>
+    <div class="card green"><div class="ico">🪜</div><h4>② 얇게 내고 라이브옵스로 확장</h4><p>런칭엔 최소 이벤트만. 출시 후 <strong>분기별 이벤트 그리드 배가</strong>가 진짜 성장 엔진(GH 20→100).</p></div>
+    <div class="card pink"><div class="ico">🧓</div><h4>③ 시니어·FB 정합 불변</h4><p><strong>논타이머·큰 폰트·고대비·HTML5 경량</strong>은 타협 불가 요구사항. 전 스펙의 필터.</p></div>
+  </div>
+
+  <h3>범위 구분 — Launch / Fast-follow / Later</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>영역</th><th class="win">Launch (v1.0)</th><th style="color:var(--warn)">Fast-follow (1–3개월)</th><th style="color:var(--dim)">Later (P2)</th></tr></thead>
+    <tbody>
+      <tr><td>코어</td><td>머지 보드·<b>생성기 9라인(전량)</b>·오더·이중통화·복원·논타이머</td><td><b>체인 상위단계 확장(리소스 7→11단·생성기 3→6단)</b>·레어 서브체인·생성기 부스터·오더 퀘스트 라인</td><td>—</td></tr>
+      <tr><td>스토리</td><td>선형 챕터 14개 + 데코 3구역(14슬롯·무료 2디자인)</td><td>4번째 구역(뒷마당)·데코 프리미엄 확장·시대 테마 추가·관계 시스템</td><td>분기 선택형 라이브 스토리</td></tr>
+      <tr><td>라이브옵스</td><td>시즌 1개 + 이벤트 <b>3종</b>(수집·경쟁·데일리)</td><td>이벤트 그리드 확장·이벤트 체인</td><td>메커닉 라이브러리 5종+</td></tr>
+      <tr><td>수익화</td><td>젬팩·스타터팩·시즌패스·보상형광고</td><td>번들 레이어링·에스컬레이팅 데일리</td><td>이벤트별 프로그레션 패스</td></tr>
+      <tr><td>소셜</td><td class="lose">없음 (1인 코어)</td><td>친구 초대·선물(라이트)</td><td>영구 길드·협동 이벤트</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call warn"><div class="t">핵심 판단</div>출시 스펙의 목표는 "많이 담기"가 아니라 <strong>"코어 재미와 시니어 정합을 증명하고, 확장 가능한 뼈대(이벤트 하네스·리모트 config)를 심는 것"</strong>이다.</div>
+
+  <div class="call"><div class="t">📑 상세 문서</div>
+    본 출시 스펙을 개발 착수용으로 상세화한 통합 문서: <a href="44_vintage_lane_srs.html"><strong>SRS 요구사항 명세서 + 콘텐츠 물량 산정 ↗</strong></a> — Part A(기능/비기능 요구사항·인터페이스·데이터) + Part B(아트·스토리·오디오·문자열 제작 물량).<br>
+    아웃게임 화면·라이브옵스 진입 목업: <a href="45_vintage_lane_prototype.html"><strong>아웃게임 DESC &amp; 프로토타입 ↗</strong></a> (홈 화면 구성품 명세 + 라이브옵스 최소 5종 진입).
+  </div>
+</section>
+
+<!-- 18. CORE SYSTEMS & CONTENT -->
+<section id="launch-core">
+  <div class="secno">Part 3 — 07</div>
+  <h2>코어 시스템 &amp; 콘텐츠 볼륨</h2>
+  <p class="intro">v1.0에 실제로 들어가는 코어 시스템과 <strong>런칭 콘텐츠 물량</strong>. GH의 방대한 볼륨(아이템 460·체인 153)을 그대로 따르지 않고, <strong>2–3주 분량의 완결된 초반 저니</strong>로 얇게 시작한다.</p>
+
+  <h3>코어 시스템 (Launch 필수)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>시스템</th><th>Launch 스펙</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>머지 보드</td><td>7×9 그리드, 드래그 머지, 지수 체인, 스토리지 슬롯</td><td>보드 확장은 IAP</td></tr>
+      <tr><td>생성기</td><td><b>9라인 전량</b>(찻잔·램프·책·시계·재봉틀·축음기 / 정원·보석함·여행트렁크). <b>생성기 자체가 머지 체인</b> — 런칭 3단계 업그레이드(cap·회복·산출티어 상승)</td><td>GH 구조 준용: 라인 수는 런칭에 다 열고 <b>단계만 라이브옵스로 확장</b>. 장쿨형 3라인은 상시 무료</td></tr>
+      <tr><td>오더</td><td>손님 주문 3–5슬롯, 완료→코인, 쿨다운 리필</td><td>세션 완결감 보장</td></tr>
+      <tr><td>통화</td><td>코인(소프트·단일목적) + 젬(하드·다목적)</td><td>세션 시작 코인 우선 소진</td></tr>
+      <tr><td>스토리/복원</td><td>선형 챕터 <b>14개</b>, 데코 <b>3구역·14슬롯</b>(슬롯당 무료 2디자인 + 앞 2구역 젬 프리미엄 1디자인, 무페널티 변경)</td><td>향수 훅·자기표현. 언락을 챕터 1–2·4–6·<b>9–11</b>로 분산</td></tr>
+      <tr><td>페이싱</td><td><b>논타이머</b>(프로토 A/B에서 확정: 무에너지 or 소프트에너지)</td><td>시니어 필수</td></tr>
+      <tr><td>진행/레벨</td><td>플레이어 레벨 <b>~30</b>, 피처 언락 페이싱(2세션 내 핵심 개방)</td><td>GH 페이싱 차용</td></tr>
+      <tr><td>온보딩</td><td>단계별 튜토(머지→오더→복원), 큰 폰트·화살표·단일 액션</td><td>튜토 완료율 게이트</td></tr>
+      <tr><td>세이브</td><td>서버 세이브 동기화 + 서버시간 기준</td><td>FB 계정 연동</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>런칭 콘텐츠 물량 (초기 목표치)</h3>
+  <div class="kpis">
+    <div class="kpi"><div class="n">21</div><div class="l">아이템 체인(소품 120종) · <b>생성기 9라인</b></div></div>
+    <div class="kpi"><div class="n">14</div><div class="l">스토리 챕터 (2–3주 분량)</div></div>
+    <div class="kpi"><div class="n">3</div><div class="l">복원(데코) 구역 (슬롯 14) · 무료 2 + 프리미엄 1</div></div>
+    <div class="kpi"><div class="n">3</div><div class="l">시대 테마 배경 (1920s 파리·1950s 다이너·기차역)</div></div>
+  </div>
+  <p class="muted">→ 물량은 <strong>"초반 2–3주를 탄탄히"</strong>에 집중. 이후 콘텐츠·시대 테마는 라이브옵스·업데이트로 지속 공급(리스킨 파이프라인 전제).</p>
+
+  <div class="call warn"><div class="t">🔑 생성기 정책 — 라인은 전량 런칭, 단계는 나중에</div>
+  GH 실데이터(v3.93 <code>merge_chain</code> 460행) 확인 결과, GH의 상시 생성기는 <strong>9라인</strong>이고 <strong>생성기 자체가 머지 체인의 일부</strong>다(예: 쇼핑백 라인 11단 중 s4–s11 8단이 생성기, 커피 라인도 s4–s11).
+  즉 "생성기 6종·정적 3상태"라는 기존 스펙은 원작의 구조를 잘못 축소한 것이다. <strong>라인 수를 줄이면 보드 다양성과 오더 조합이 무너지고 나중에 끼워넣기도 어렵다</strong>(오더 규칙·레벨 언락·튜토리얼 전부 재설계).
+  반대로 <strong>단계는 뒤에 붙이기 쉽다</strong> — GH도 상위 단계 회복시간이 전부 180초로 평탄(s4=2s·s5=30s만 차등)해, 초기 커브 위에 상위 단계를 덧댄 흔적이 남아 있다.
+  따라서 <strong>런칭 = 9라인 전량 × 얕은 단계, 확장 = 단계 증축</strong>으로 간다.
+  <span class="muted">(단, v3.93 스냅샷 기준 추론이며 런칭 빌드 원본 대조는 불가.)</span></div>
+</section>
+
+<!-- 19. MONETIZATION & LIVEOPS -->
+<section id="launch-mon">
+  <div class="secno">Part 3 — 08</div>
+  <h2>수익화 &amp; 라이브옵스 스펙 (Launch)</h2>
+  <p class="intro">IAP 중심(FB 70/30) + 보상형 광고 보조. <strong>논타이머 원칙에 맞춰 "압박"이 아닌 "수집·자기표현·서사"로 소비를 유도</strong>한다. 라이브옵스는 최소 세트로 시작하되 <strong>확장 가능한 하네스</strong>로 심는다.</p>
+
+  <h3>수익화 (Launch)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>레이어</th><th>Launch 스펙</th></tr></thead>
+    <tbody>
+      <tr><td>젬 팩</td><td>6단계($0.99–$99.99), 가격대별 <b>명확한 가치 태그</b>(배너 블라인드니스 방지)</td></tr>
+      <tr><td>스타터/오퍼</td><td>스타터팩, Great Deals, 데일리 스페셜(가치 소구 UI)</td></tr>
+      <tr><td>시즌 패스 v1</td><td>무료 + 유료 2티어, 에스컬레이팅 일일 목표, <b>상시 캐치업 포함</b>(과금 후회 방지)</td></tr>
+      <tr><td>비압박 소비 레버</td><td>컬렉션·시대 테마 언락·<b>데코 프리미엄 디자인(젬, 앞 2구역 10슬롯)</b>·생성기 부스터(수집/자기표현 동기)</td></tr>
+      <tr><td>보상형 광고</td><td>필요 순간 동적 배치(저가치 보상), <b>과금 후에도 유지</b>(GH 실수 회피)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>라이브옵스 (Launch 최소 세트)</h3>
+  <ul>
+    <li><strong>시즌 이벤트 1개(30일)</strong> — 장기 아크, 무료/유료 트랙, 코어 태스크(주문/코인)로 수렴.</li>
+    <li><strong>단기 이벤트 3종</strong> — 수집(sawtooth) + 경쟁(1vN 토너먼트) + 데일리 부스트. 이벤트 1종당 <b>전용 원화 4~7컷</b> 발생(런칭 합계 18컷, SRS B9). 전부 <strong>코어 루프 재사용(카니발 없음)</strong>.</li>
+    <li><strong>이벤트 하네스 &amp; 리모트 config</strong>를 코어에 심어, 출시 후 이벤트 추가가 <strong>클라 업데이트 없이</strong> 가능하게(확장 엔진).</li>
+  </ul>
+  <div class="call"><div class="t">런칭 후 성장 경로</div>출시 시 월 이벤트 소수 → <strong>분기별 배가</strong>(GH: 20→50→100). 이벤트 체인화·메커닉 라이브러리 확장은 Fast-follow 이후. 전담 라이브옵스 운영이 전제.</div>
+</section>
+
+<!-- 20. TECH / QUALITY / KPI / DoD -->
+<section id="launch-tech">
+  <div class="secno">Part 3 — 09</div>
+  <h2>기술·품질·KPI &amp; 출시 준비 완료 기준</h2>
+
+  <h3>기술 &amp; 플랫폼 스펙</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>항목</th><th>Launch 스펙</th></tr></thead>
+    <tbody>
+      <tr><td>플랫폼</td><td>Facebook/Instagram Instant Games (HTML5), <b>≤200MB</b>. 코어 로직 플랫폼 독립(멀티플랫폼 포팅 여지)</td></tr>
+      <tr><td>엔진</td><td>경량 HTML5(Phaser/PixiJS 등)</td></tr>
+      <tr><td>백엔드</td><td>계정·세이브 동기화 · 리모트 config · 이벤트 스케줄러 · IAP 검증 · 서버시간</td></tr>
+      <tr><td>계측/BI</td><td>핵심 이벤트(session·tutorial_step·order_complete·merge·chapter_unlock·purchase) + 퍼널 대시보드</td></tr>
+      <tr><td>접근성</td><td>WCAG 2.2 — 본문 ≥18–20pt·핵심 30pt, 대비 4.5:1, 오브젝트 색+형태 이중 차별화, 폰트 확대 옵션</td></tr>
+      <tr><td>현지화</td><td>런칭 영어(북미) 우선, <b>다국어 대응 구조</b>(문자열 외부화)</td></tr>
+      <tr><td>성능</td><td>콜드 로드 목표·저사양 기기 대응(FB 구세대 단말 고려)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>출시 KPI 목표 (소프트런칭 게이트)</h3>
+  <div class="kpis">
+    <div class="kpi"><div class="n">≥40%</div><div class="l">D1 리텐션 (코어 훅 · GH 46% 참고)</div></div>
+    <div class="kpi"><div class="n">≥22%</div><div class="l">D7 리텐션 (GH 26% 참고)</div></div>
+    <div class="kpi"><div class="n">≥80%</div><div class="l">튜토리얼 완료율 (시니어 온보딩)</div></div>
+    <div class="kpi"><div class="n">튜닝</div><div class="l">ARPDAU·전환율·세션(≥8–10분) — 소프트런칭서 최적화</div></div>
+  </div>
+  <p class="muted">→ 소프트런칭(소규모 지역) → 게이트 통과 시 UA 스케일업·글로벌. 미달 시 코어/페이싱/온보딩 재조정.</p>
+
+  <h3>출시 준비 완료 기준 (Definition of Done)</h3>
+  <div class="req">
+    <div class="rhead"><span class="rid">DoD-1</span><span class="rtitle">코어 게이트 통과</span><span class="prio p0">필수</span></div>
+    <div class="rbody">프로토 KPI 게이트(D1≥40%·튜토≥80%) 통과 + 시니어 정성 "편하다·따뜻하다" 과반·가독성 불만 0.</div>
+  </div>
+  <div class="req">
+    <div class="rhead"><span class="rid">DoD-2</span><span class="rtitle">콘텐츠·수익화·라이브옵스 최소 세트</span><span class="prio p0">필수</span></div>
+    <div class="rbody">챕터 14·<b>생성기 9라인 전량(각 3단계 업그레이드 동작)</b>·데코 3구역 14슬롯(무료2+프리미엄1)·젬팩/스타터/시즌패스v1·시즌1+이벤트 3종(전용 원화 18컷)·이벤트 하네스·리모트 config 탑재. <b>체인 단계 증축이 클라 업데이트 없이 config로 가능</b>할 것.</div>
+  </div>
+  <div class="req">
+    <div class="rhead"><span class="rid">DoD-3</span><span class="rtitle">접근성·성능·계측</span><span class="prio p0">필수</span></div>
+    <div class="rbody">WCAG 2.2 준수·≤200MB·핵심 BI 계측·크래시/세이브 안정성 QA 통과.</div>
+  </div>
+  <div class="req">
+    <div class="rhead"><span class="rid">DoD-4</span><span class="rtitle">UA 크리에이티브 준비</span><span class="prio p1">권장</span></div>
+    <div class="rbody">감정적 캐릭터 콘티 3콘셉트 × 훅 A/B × 주인공 30/40대 배치, D7 기준 승자 선정 체계.</div>
+  </div>
+
+  <div class="call pink"><div class="t">출시 명시 제외 (Out of Scope for v1.0)</div>
+    영구 소셜/길드·협동 이벤트 · 분기 선택형 라이브 스토리 · 이벤트 체인/메커닉 라이브러리 다수 · 다국어(영어 외) · 관계 시스템 심화. → 전부 <strong>Fast-follow / Later</strong>. 무리한 스코프 확장은 코어 완성도와 출시 일정을 해친다.
+  </div>
+</section>
+
+<!-- ============ PART 5 · 심화 설계 (그린라이트 보강) ============ -->
+<!-- 21. ECONOMY BALANCE SIMULATION -->
+<!-- 22. PRICING & NON-TIMER MONETIZATION RATIONALE -->
+<!-- 23. BUSINESS CASE -->
+<!-- 24. VALIDATION PLAN -->
+<!-- 25. SESSION & RETENTION DESIGN -->
+<section id="session-design">
+  <div class="secno">Part 4 — 10</div>
+  <h2>세션 &amp; 리텐션 설계</h2>
+  <p class="intro">논타이머 환경에서 <strong>세션 KPI ≥8분·D1≥40%·D7≥22%</strong>를 달성하려면 "에너지가 끝나면 멈춘다"는 강제 종료 대신, <strong>플레이어 스스로 "지금 멈추면 좋겠다"고 느끼게 하는 설계</strong>가 필요하다. 오더 쿨다운·챕터 클리프행어·데일리 완료 체크 등 심리적 정류장으로 세션 길이를 유도하고 복귀 훅으로 다음 세션을 당긴다.</p>
+
+  <h3>표준 세션 플로우 (8–12분)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>구간</th><th>플레이어 행동</th><th>시스템 장치</th><th>감정 목표</th></tr></thead>
+    <tbody>
+      <tr><td><b>0–1분</b> 복귀 접지</td><td>앱 오픈·복귀 팝업·데일리·태스크 버블 스캔</td><td>복귀 알림→팝업, 데일리 리셋 배지, 태스크 버블 하이라이트</td><td><strong>"돌아오길 잘했다"</strong></td></tr>
+      <tr><td><b>1–3분</b> 재화 소진</td><td>복원 버튼 탭(코인 소진)·다음 챕터 컷신·데코 선택</td><td>코인 단일목적 UI·챕터 비용 하이라이트·짧은 컷신(스킵)</td><td><strong>빠른 성취</strong></td></tr>
+      <tr><td><b>3–8분</b> 핵심 플레이</td><td>머지·오더 소화·생성기 탭·희귀 드롭·시즌 태스크</td><td>오더 쿨다운 표시·아이템 캡 경고·시즌 진행바</td><td><strong>몰입·흐름</strong></td></tr>
+      <tr><td><b>8–10분</b> 이벤트 확인</td><td>이벤트 진척·마감 체크·보상 예약</td><td>이벤트 배지·마감 카운트다운(안내)·패스 미리보기</td><td><strong>내일 올 이유</strong></td></tr>
+      <tr><td><b>10–12분</b> 자연 종료</td><td>쉬운 오더 소진 확인·데일리 체크·"내일 계속" 이탈</td><td>데일리 완료 팝업·다음 리필 시각·챕터 클리프행어</td><td><strong>완결감·기대감</strong></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>논타이머 세션 종료 조건 설계 (핵심)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>종료 장치</th><th>작동 방식</th><th>세션 영향</th><th>복귀 촉진</th><th>정합성</th></tr></thead>
+    <tbody>
+      <tr><td><b>오더 쿨다운 소진</b></td><td>쉬운 오더 소진→어려운 오더만 남음. 다음 세션 리필 보장</td><td>7–10분 자연 절벽</td><td>강함</td><td class="win">완결감으로 이탈</td></tr>
+      <tr><td><b>보드 정리 완료</b></td><td>체인 정리·아이템 캡 도달→"깔끔한 상태" 마무리</td><td>8–12분 자발 이탈</td><td>보통</td><td class="win">자율 종료</td></tr>
+      <tr><td><b>챕터 클리프행어</b></td><td>"다음 기억은 내일…" 소프트 게이트</td><td>챕터 완료 시 종료</td><td>매우 강함</td><td class="win">기다림=설렘</td></tr>
+      <tr><td><b>데일리 목표 완료</b></td><td>"오늘 할 일 다 했어요 🌸" 팝업·뱃지</td><td>복귀 주기 단축으로 보완</td><td>강함</td><td class="win">달성=긍정 종료</td></tr>
+      <tr><td><b>소프트에너지(A/B)</b></td><td>감쇠를 숫자 아닌 "생성기 느려짐" 시각 신호로</td><td>8–10분 상한 자연 형성</td><td>보통</td><td class="win">숫자 강제 없음</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call green"><div class="t">핵심 원칙 — 벌 없는 완결</div>"지금 멈추면 손해"가 아니라 <strong>"지금 멈추면 오늘이 완성된다"</strong>로 프레이밍. 40–65세는 죄책감 없이 이탈할 때 다음 세션에 더 건강하게 복귀한다.</div>
+
+  <h3>일일 세션 리듬 (40–65세 여성 생활 패턴 가설)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>세션</th><th>시간대</th><th>플레이</th><th>콘텐츠</th><th>리셋/리필 설계값</th></tr></thead>
+    <tbody>
+      <tr><td><b>아침</b></td><td>07–09시(커피 타임)</td><td>8–12분</td><td>데일리 리셋·태스크·오더 리필·챕터</td><td>데일리 리셋 <b>07:00</b>·오더 1차</td></tr>
+      <tr><td><b>점심</b></td><td>12–13시</td><td>8–10분</td><td>이벤트 수집·보드 정리·수확</td><td>오더 2차 <b>12:00</b></td></tr>
+      <tr><td><b>저녁</b></td><td>20–22시(소파 릴랙스)</td><td>10–15분</td><td>챕터 메인·데코·이벤트 마감·스트릭</td><td>오더 3차 <b>20:00</b>·클리프행어</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="5">오더 리필 주기 <strong>4시간(3회/일)</strong>로 3세션 정렬. 헤비 유저는 어려운 오더로 자연 이행(강제 컷 없음).</td></tr></tfoot>
+  </table>
+  </div>
+
+  <h3>D1/D7 복귀 훅 설계</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>훅</th><th>트리거</th><th>FB 알림 카피(예)</th><th>정합성</th></tr></thead>
+    <tbody>
+      <tr><td>미완 오더 리필</td><td>이탈 4h·리필 발생</td><td>"Dorothy의 찻잔 주문이 기다려요 ☕"</td><td class="win">초대(압박X)</td></tr>
+      <tr><td>새 챕터 가능</td><td>코인 충분·6h 미접속</td><td>"할머니의 다음 기억이 깨어날 준비가 됐어요 ✨"</td><td class="win">기대감</td></tr>
+      <tr><td>이벤트 마감 임박</td><td>종료 24h 전·달성 가능</td><td>"수집 이벤트, 내일까지예요 🎁"</td><td class="win">달성가능 필터</td></tr>
+      <tr><td>데일리 스트릭</td><td>당일 미접속 18시</td><td>"오늘 들르지 않으셨네요 🌸 스트릭이 기다려요"</td><td class="win">자율 동기</td></tr>
+      <tr><td>생성기 재고</td><td>캡 90%·4h 경과</td><td>"선반이 가득 찼어요! 머지할 시간이에요 🏺"</td><td class="win">손실회피</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call warn"><div class="t">FB 알림 정책 (FR-LIVE-07)</div>일 최대 <strong>2회</strong>, 우선순위 챕터/이벤트 마감→오더/스트릭. 발송 금지 <strong>22–07시 현지</strong>. 긴박감 표현 금지("지금 당장!"), 따뜻한 초대 형식.</div>
+
+  <h3>콘텐츠 소진 분석 (헤비 유저)</h3>
+  <div class="grid g2">
+    <div class="card accent"><div class="ico">📊</div><h4>소진 속도</h4><p>헤비 일 90–120분·챕터당 45–60분 → 14챕터 ≈ 12.1시간. <strong>일 100분 시 7.3일</strong>·일 60분 시 12.1일 소진.</p></div>
+    <div class="card pink"><div class="ico">⏰</div><h4>첫 업데이트</h4><p>챕터 소진 <strong>출시 후 7–12일</strong> → 첫 챕터 추가는 <strong>W3–4 필수</strong>. 출시 前 <strong>챕터 18–20 선행 제작</strong> 권장.</p></div>
+  </div>
+  <div class="call pink"><div class="t">소진 리스크 대응</div>챕터 소진 후 이탈 방어 3버퍼: ① 이벤트 수집 ② 시즌 패스 30일 아크 ③ 데코 구역. 그러나 챕터 공급이 늦으면 헤비 유저 이탈 불가역 → W3 업데이트를 출시 목표에 동기화.</div>
+</section>
+
+<!-- 26. LIVEOPS CALENDAR -->
+<section id="ops-calendar">
+  <div class="secno">Part 4 — 11</div>
+  <h2>런치 후 12주 라이브옵스 캘린더</h2>
+  <p class="intro">GH 교훈 — <strong>"월 20으로 시작해 2년 만에 100으로 키웠다"</strong>. 최소 세트(시즌1+이벤트 3종)로 출시하되 <strong>템플릿+리스킨 파이프라인</strong>을 심어 <strong>12주 이후 분기별 배가</strong> 가능한 뼈대를 갖춘다. W1–4 시즌1·W5–8 시즌2·W9–12 시즌3의 3시즌 아크.</p>
+
+  <h3>Week 1–12 캘린더</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>주차</th><th>시즌</th><th>단기 이벤트</th><th>오퍼</th><th>콘텐츠</th><th>신규 메커닉</th></tr></thead>
+    <tbody>
+      <tr><td><b>W1</b></td><td rowspan="4"><b>시즌1</b><br>"할머니의 첫 기억"<br><span class="muted">30일·무료+유료</span></td><td>데일리 부스트 A</td><td>스타터팩·젬팩 오픈</td><td>챕터1–14·데코1–4</td><td>튜토·언락 페이싱</td></tr>
+      <tr><td><b>W2</b></td><td>수집 A "찻잔"</td><td>위클리 번들 #1</td><td>챕터15+ 선행</td><td>—</td></tr>
+      <tr><td><b>W3</b></td><td>경쟁 A "랭킹배틀"</td><td>위클리 번들 #2</td><td class="win">챕터15–18 추가</td><td>—</td></tr>
+      <tr><td><b>W4</b></td><td>데일리 부스트 B</td><td>시즌엔드 오퍼</td><td>—</td><td>훅 "다음은 파리"</td></tr>
+      <tr><td><b>W5</b></td><td rowspan="4"><b>시즌2</b><br>"1920s 파리"<br><span class="muted">리스킨</span></td><td>수집 B "파리 엽서"</td><td>시즌2 패스·얼리버드</td><td>파리 배경 데코</td><td class="win">앨범/컬렉션 도입</td></tr>
+      <tr><td><b>W6</b></td><td>경쟁 B "경매배틀"</td><td>위클리 #3</td><td>챕터19–22</td><td>앨범 보상 레이어</td></tr>
+      <tr><td><b>W7</b></td><td>수집+경쟁 더블(체인 테스트)</td><td>위클리 #4</td><td>—</td><td>앨범 컴플리션</td></tr>
+      <tr><td><b>W8</b></td><td>데일리 부스트 C</td><td>시즌엔드</td><td>—</td><td>훅 "1950s 다이너"</td></tr>
+      <tr><td><b>W9</b></td><td rowspan="4"><b>시즌3</b><br>"1950s 다이너"<br><span class="muted">포맷 실험</span></td><td>수집 C "다이너 소품"</td><td>시즌3 패스·번들 레이어</td><td>챕터23–26·다이너 배경</td><td class="win">신규 포맷 테스트</td></tr>
+      <tr><td><b>W10</b></td><td>경쟁 C "선수권"</td><td>위클리 #5</td><td>—</td><td>포맷 데이터 수집</td></tr>
+      <tr><td><b>W11</b></td><td>수집+경쟁 더블 B</td><td>위클리 #6·에스컬레이팅</td><td>챕터27–30</td><td>포맷 성과 분석</td></tr>
+      <tr><td><b>W12</b></td><td>데일리 부스트 D</td><td>시즌엔드·분기 빅번들</td><td>—</td><td>훅 "기차역"·W13+ 티저</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>주간 운영 리듬</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>요일</th><th>운영 액션</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td>월</td><td>위클리 이벤트·번들·경쟁 시작</td><td>주 시작·복귀 최고점</td></tr>
+      <tr><td>화·수</td><td>진척 알림 1회·데일리 오퍼 A/B</td><td>주중 유지</td></tr>
+      <tr><td>목</td><td>주말 이벤트 예고·수집 배지</td><td>주말 예열</td></tr>
+      <tr><td>금</td><td>주말 강화(수집 보너스)·마감 알림</td><td>금–일 최고 플레이</td></tr>
+      <tr><td>토·일</td><td>경쟁 클라이맥스·시즌 보상·번들 전환 피크</td><td>주말 여유시간</td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="3">데일리 리셋 매일 07:00·시즌/번들 월 10:00·이벤트 마감 일 23:00(현지).</td></tr></tfoot>
+  </table>
+  </div>
+
+  <h3>이벤트 포맷 라이브러리 (템플릿+리스킨)</h3>
+  <div class="grid g3">
+    <div class="card accent"><div class="ico">🎯</div><h4>수집(Sawtooth)</h4><p>오더→토큰→마일스톤. 템플릿1로 <strong>테마만 리스킨</strong>. 서버 config 교체 배포.</p></div>
+    <div class="card pink"><div class="ico">🏆</div><h4>경쟁(1vN)</h4><p>주간 랭킹·상위 N% 보상. 리스킨: 배경·보상명. <strong>로직/UI 불변</strong>.</p></div>
+    <div class="card green"><div class="ico">⚡</div><h4>데일리 부스트</h4><p>3–5일 배수 보너스. <strong>config 1줄 변경</strong>. 세션 빈도 단기 급등.</p></div>
+  </div>
+  <div class="call green"><div class="t">리스킨 파이프라인 전제</div>이벤트 하네스를 <strong>클라 업데이트 없는 서버 driven config</strong>로. 템플릿은 <code>theme_id·reward_table·duration</code>만 교체. 아트는 ZIP 번들 다운로드로 캐시 갱신 — 스토어 리뷰 대기 없이 런칭.</div>
+
+  <h3>운영 최소 조직</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>역할</th><th>업무</th><th>인원</th></tr></thead>
+    <tbody>
+      <tr><td>이벤트 기획</td><td>스펙·리스킨·캘린더·발주</td><td><b>1</b></td></tr>
+      <tr><td>데이터 분석</td><td>KPI·A/B·성과·소진 예측</td><td><b>1</b></td></tr>
+      <tr><td>QA</td><td>릴리즈·config·정책</td><td><b>0.5</b></td></tr>
+      <tr><td>아트(리스킨)</td><td>테마 에셋·UI 스킨</td><td><b>0.5</b></td></tr>
+      <tr><td>커뮤니티/마케팅</td><td>알림 카피·예고·피드백</td><td><b>0.5</b></td></tr>
+    </tbody>
+    <tfoot><tr><td colspan="2"><b>합계</b></td><td class="win"><b>3.5 FTE</b>(W1–8 최소). W9+ 이벤트 기획 1 추가</td></tr></tfoot>
+  </table>
+  </div>
+
+  <h3>확장 로드맵 (12주 이후)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>시기</th><th>월 이벤트</th><th>확장</th><th>GH 벤치</th></tr></thead>
+    <tbody>
+      <tr><td>W13–24</td><td><b>8–12개</b></td><td>이벤트 체인·신규 포맷 정규화·챕터 31–44</td><td>6개월차 ~20</td></tr>
+      <tr><td>W25–48</td><td><b>20–40개</b></td><td>패스 프리미엄·소셜 라이트(선물·초대)·난이도 에스컬레이션</td><td>1년차 50+</td></tr>
+      <tr><td>W49+</td><td><b>60–100개</b></td><td>메커닉 5종+·협동(길드 P2)·시대테마 10+</td><td>2년차 100</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call pink"><div class="t">확장 전제 — GH 교훈</div>월 100 이벤트는 처음부터가 아니라 <strong>데이터를 보며 분기별 배가</strong>. 전제 ① 리스킨 파이프라인으로 운영비 고정(이벤트↑에도 인건비 비선형) ② 포맷별 세션·전환 측정→<strong>승자만 복제</strong>(품질 희석 방지).</div>
+</section>
+
+<!-- 27. PRODUCTION PLAN -->
+<section id="prod-plan">
+  <div class="secno">Part 4 — 12</div>
+  <h2>프로덕션 계획 (팀·일정·예산)</h2>
+  <p class="intro">Phase 로드맵(§12)에 <strong>팀 구성·달력 마일스톤·예산</strong>을 붙인다. <strong>수치는 업계 통상 소규모 HTML5 캐주얼 팀 기준의 가정치</strong>이며, 실제 인력·단가·착수일로 확정 필요(사내 정보 대기).</p>
+  <div class="call warn"><div class="t">전제</div>착수일(D0)은 미확정 → <strong>상대 주차</strong>로 표기. 인력·비용은 소규모 스튜디오/외주 혼합 가정. §23 손익분기의 "월 $15K–40K"와 정합.</div>
+
+  <h3>1. 팀 구성 (최소 코어 + 확장)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>직무</th><th>Phase 0–1(프로토·MVP)</th><th>Phase 2–3(라이브)</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>PM/게임 기획</td><td>1</td><td>1–2(+라이브옵스 기획)</td><td>본 문서 기준 설계 리드</td></tr>
+      <tr><td>클라 개발(HTML5)</td><td>1–2</td><td>2</td><td>Phaser/Pixi·머지 보드·FB SDK</td></tr>
+      <tr><td>서버/백엔드</td><td>0.5–1</td><td>1</td><td>세이브·리모트config·IAP·이벤트</td></tr>
+      <tr><td>아트</td><td>1</td><td>1 + 리스킨 0.5</td><td>디자인시스템·물량 ~376컷</td></tr>
+      <tr><td>QA</td><td>0.5</td><td>0.5–1</td><td>이벤트 릴리즈·정책 검증</td></tr>
+      <tr><td>데이터 분석</td><td>0(겸직)</td><td>1</td><td>BI·A/B·소진 예측</td></tr>
+      <tr><td>UA/마케팅</td><td>0.5</td><td>1</td><td>크리에이티브·소프트런치</td></tr>
+    </tbody>
+    <tfoot><tr><td><b>합계(FTE)</b></td><td class="win">~4.5–6</td><td>~7.5–9</td><td>가정 — 외주 비중에 따라 변동</td></tr></tfoot>
+  </table>
+  </div>
+
+  <h3>2. 마일스톤 (상대 주차)</h3>
+  <div class="road">
+    <div class="ph"><span class="pt">M0 프로토 완성 &amp; Phase 0 검증</span><span class="pw">W1–W6</span>
+      <div class="pd">코어 머지·논타이머·튜토·스토리3챕터 프로토 → 정량/정성/에너지 A/B(§24). <strong>게이트 통과 시 M1.</strong></div></div>
+    <div class="ph"><span class="pt">M1 Soft Launch MVP</span><span class="pw">W7–W22 (~4개월)</span>
+      <div class="pd">FR P0 전부·챕터14·데코4·시즌패스·이벤트 최소셋·계측. W20–W22 캐나다·호주 소프트런치.</div></div>
+    <div class="ph"><span class="pt">M2 글로벌 출시 준비</span><span class="pw">W23–W30 (~2개월)</span>
+      <div class="pd">소프트런치 게이트 평가·튜닝·수익화 최적화·상표/정책 클리어(§28). 글로벌 게이트 충족 시 출시.</div></div>
+    <div class="ph"><span class="pt">M3 라이브옵스 &amp; 확장</span><span class="pw">출시 후 상시</span>
+      <div class="pd">§26 12주 캘린더 → 분기별 이벤트 그리드 배가. 콘텐츠 업데이트 W3–4부터(소진 대응).</div></div>
+  </div>
+  <p class="muted">→ 총 <strong>착수~글로벌 출시 약 7–8개월</strong>(가정). Phase 0 조건부 판정 시 +2–4주 버퍼.</p>
+
+  <h3>3. 예산 범위 (가정)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>항목</th><th>착수~출시(1회성)</th><th>월 운영(라이브)</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>인건비(FTE)</td><td>범위 大 — 팀 규모·지역 의존</td><td>$15K–40K</td><td>§23 손익분기 가정과 정합</td></tr>
+      <tr><td>아트 제작(외주 옵션)</td><td>~376컷 × 단가</td><td>리스킨 소액</td><td>컷당 공수는 물량시트 연동 산정 필요</td></tr>
+      <tr><td>서버/인프라</td><td>초기 셋업</td><td>MAU 비례(소액~중)</td><td>FB Instant·서버리스 옵션</td></tr>
+      <tr><td>UA(검증·소프트런치)</td><td>프로토 $0.5–0.8K + 소프트 $10–30K</td><td>스케일 시 별도</td><td>§24 예산</td></tr>
+      <tr><td>법무(상표·정책)</td><td>상표 검색·출원 비용</td><td>—</td><td>§28</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="call pink"><div class="t">확정 필요(사내 정보)</div>실제 인력 단가·착수일·외주 여부가 정해지면 위 가정치를 <strong>확정 예산·간트</strong>로 대체한다. 본 섹션은 그린라이트 심사용 <strong>범위 제시</strong>이며, 상세 재무 모델은 별도 스프레드시트로 관리 권장.</div>
+</section>
+
+<!-- 28. LEGAL & POLICY -->
+<div class="foot">
+  <p><strong>출처:</strong> Deconstructor of Fun — "Finding Genre Success: the Case of Gossip Harbor" (Jesper Gustavsson, 2024.08.19) · Naavik Digest — "Gossip Harbor's Meteoric Rise in Merge" (Oindrila Mandal, 2025.06.22) · AppMagic — "Gossip Harbor's LiveOps Journey: From 20 to 100 Events a Month" (Maria Bolshman &amp; Alina Zlotnik, 2025.12.11). 시장조사: AARP·GameRefinery·JMIR·Statista·AppTweak 등. 데이터: Sensor Tower, AppMagic, Pathmatics, Unity Research.</p>
+  <p>본 문서는 내부 기획 검토용이며 외부 배포를 금합니다. · Vintage Lane · 제품·프로덕션 기획 문서 v2.0 (PRD+프로덕션상세+출시스펙+실행설계) · 사업성 판단은 vintage_lane_strategy.html</p>
+</div>
+
+</main>
+</div>
+
+<div id="lightbox"><img src="" alt="확대 이미지"></div>
+
+<script>
+(function(){
+  var body=document.body, btn=document.getElementById('themeToggle');
+
+  /* ---- Lightbox (click figure to zoom) ---- */
+  var lb=document.getElementById('lightbox'), lbImg=lb.querySelector('img');
+  document.querySelectorAll('figure.fig img').forEach(function(im){
+    im.addEventListener('click',function(){ lbImg.src=im.src; lb.classList.add('on'); });
+  });
+  lb.addEventListener('click',function(){ lb.classList.remove('on'); lbImg.src=''; });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ lb.classList.remove('on'); lbImg.src=''; } });
+
+  /* ---- Theme toggle (persisted) ---- */
+  try{ if(localStorage.getItem('gh-theme')==='light') body.classList.add('light'); }catch(e){}
+  function paintBtn(){ btn.textContent = body.classList.contains('light') ? '🌙 다크' : '☀️ 라이트'; }
+  paintBtn();
+  btn.addEventListener('click',function(){
+    body.classList.toggle('light');
+    try{ localStorage.setItem('gh-theme', body.classList.contains('light')?'light':'dark'); }catch(e){}
+    paintBtn();
+  });
+
+  /* ---- Scrollspy: highlight left index by scroll position ---- */
+  var links=[].slice.call(document.querySelectorAll('nav.side a[href^="#"]'));
+  var sections=[], map={};
+  links.forEach(function(a){
+    var sec=document.getElementById(a.getAttribute('href').slice(1));
+    if(sec){ sections.push(sec); map[sec.id]=a; }
+  });
+  var ticking=false;
+  function spy(){
+    ticking=false;
+    var current=null;
+    for(var i=0;i<sections.length;i++){
+      if(sections[i].getBoundingClientRect().top<=140) current=sections[i];
+    }
+    // near page bottom → force last section active
+    if(window.innerHeight+window.scrollY >= document.body.offsetHeight-4 && sections.length)
+      current=sections[sections.length-1];
+    links.forEach(function(a){ a.classList.remove('active'); });
+    if(current && map[current.id]){
+      var a=map[current.id]; a.classList.add('active');
+      // keep active link visible within the sticky nav
+      var nav=a.closest('nav');
+      if(nav){
+        var ar=a.getBoundingClientRect(), nr=nav.getBoundingClientRect();
+        if(ar.top<nr.top+8 || ar.bottom>nr.bottom-8) a.scrollIntoView({block:'nearest'});
+      }
+    }
+  }
+  function onScroll(){ if(!ticking){ ticking=true; requestAnimationFrame(spy); } }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  spy();
+})();
+</script>
+</body>
+</html>
