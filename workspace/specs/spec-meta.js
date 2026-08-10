@@ -48,7 +48,7 @@ const SPECS = [
   {
     id: 'spec-007', file: 'spec-007-season-pass.html',
     title: '[리텐션-패스] 루나 시즌 패스 — ⏸ 보류 (수익화 블록 · 8월 셋째~넷째주 재검토)',
-    tags: ['feature', 'monetize'], priority: 'high', status: 'hold', date: '2026. 7. 28.', dueDate: null, relatedTo: ['spec-028'],
+    tags: ['feature', 'monetize'], priority: 'high', status: 'open', date: '2026. 7. 28.', dueDate: null, relatedTo: ['spec-028'],
   },
   {
     id: 'spec-008', file: 'spec-008-share-reward-launch.html',
@@ -58,7 +58,7 @@ const SPECS = [
   {
     id: 'spec-009', file: 'spec-009-pre-level-popup-ab.html',
     title: '[AB-플로우] 프리레벨 팝업 제거 A/B',
-    tags: ['ux'], priority: 'mid', status: 'open', date: '2026. 4. 6.', dueDate: null, relatedTo: ['spec-009b'],
+    tags: ['ux'], priority: 'mid', status: 'done', date: '2026. 4. 6.', dueDate: null, relatedTo: ['spec-009b'],
   },
   {
     id: 'spec-009b', file: 'spec-009b-continuous-play-ab.html',
@@ -68,7 +68,7 @@ const SPECS = [
   {
     id: 'spec-010', file: 'spec-010-deco-auto-trigger-ab.html',
     title: '[AB-메타] 꾸미기 자동 진입 A/B',
-    tags: ['ux'], priority: 'mid', status: 'open', date: '2026. 4. 6.', dueDate: null, relatedTo: [],
+    tags: ['ux'], priority: 'mid', status: 'done', date: '2026. 4. 6.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-011', file: 'spec-011-peak-rankers-info-button.html',
@@ -88,12 +88,12 @@ const SPECS = [
   {
     id: 'spec-014', file: 'spec-014-daily-task-token-count.html',
     title: '[UX] 데일리 태스크 토큰 누적 획득량 표시',
-    tags: ['ux'], priority: 'low', status: 'open', date: '2026. 4. 14.', dueDate: null, relatedTo: [],
+    tags: ['ux'], priority: 'low', status: 'planned', date: '2026. 4. 14.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-015', file: 'spec-015-collection-unlock-update.html',
     title: '[운영] 콜렉션 UNLOCK 시트 VALUE 수정 — 출시 후 첫 업데이트 필수',
-    tags: ['bug'], priority: 'high', status: 'open', date: '2026. 4. 21.', dueDate: null, relatedTo: [],
+    tags: ['bug'], priority: 'high', status: 'done', date: '2026. 4. 21.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-016', file: 'spec-016-lobby-reward-flow-ab.html',
@@ -103,12 +103,12 @@ const SPECS = [
   {
     id: 'spec-017', file: 'spec-017-simple-test-feature.html',
     title: '[테스트-기능] 간단 테스트 기능',
-    tags: ['test'], priority: 'low', status: 'open', date: '2026. 5. 4.', dueDate: null, relatedTo: [],
+    tags: ['test'], priority: 'low', status: 'archive', date: '2026. 5. 4.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-018', file: 'spec-018-city-race-champion-bundle.html',
     title: '[쇼핑-IAP] City Race Champion Bundle — 초급자 저가형',
-    tags: ['monetize', 'iap'], priority: 'high', status: 'open', date: '2026. 5. 4.', dueDate: null, relatedTo: [],
+    tags: ['monetize', 'iap'], priority: 'high', status: 'archive', date: '2026. 5. 4.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-019', file: 'spec-019-city-race-sprint-pack.html',
@@ -118,7 +118,7 @@ const SPECS = [
   {
     id: 'spec-020', file: 'spec-020-special-offer-3-luna-card.html',
     title: '[UX-수익화] 스페셜 오퍼 3 — 루나 카드 해금 안내',
-    tags: ['ux', 'monetize'], priority: 'mid', status: 'open', date: '2026. 5. 4.', dueDate: null, relatedTo: [],
+    tags: ['ux', 'monetize'], priority: 'mid', status: 'archive', date: '2026. 5. 4.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-021', file: 'spec-021-peak-cup.html',
@@ -133,7 +133,7 @@ const SPECS = [
   {
     id: 'spec-023', file: 'spec-023-city-deck-easter-eggs.html',
     title: '[콘텐츠-수집] 시티 꾸미기 덱 이스터에그',
-    tags: ['content'], priority: 'mid', status: 'open', date: '2026. 5. 28.', dueDate: null, relatedTo: ['spec-020'],
+    tags: ['content'], priority: 'mid', status: 'archive', date: '2026. 5. 28.', dueDate: null, relatedTo: ['spec-020'],
   },
   {
     id: 'spec-023b', file: 'spec-023-city-easter-egg-decks.html',
@@ -162,8 +162,8 @@ const SPECS = [
   },
   {
     id: 'spec-028', file: 'spec-028-event-boost-pack.html',
-    title: '[수익화-오퍼] 이벤트 부스트 팩 (주말 이벤트 연동) — ⏸ 준비 완료 · SPEC-027 측정 창 종료 후 배포',
-    tags: ['monetize'], priority: 'high', status: 'hold', date: '2026. 7. 26.', dueDate: null, relatedTo: ['spec-007', 'spec-027'],
+    title: '[수익화-오퍼] 이벤트 부스트 팩 (주말 이벤트 연동) — 준비 완료 · SPEC-027 관측 종료(8/12) 후 배포',
+    tags: ['monetize'], priority: 'high', status: 'open', date: '2026. 7. 26.', dueDate: null, relatedTo: ['spec-007', 'spec-027'],
   },
   {
     id: 'spec-029', file: 'spec-029-level-default-tier-ramp.html',
@@ -175,7 +175,7 @@ const SPECS = [
     id: 'spec-030', file: 'spec-030-context-switch-expansion.html',
     monitorGroup: 'sol-ctx-switch',
     title: '[소셜-바이럴] 컨텍스트 전환 노출 확대 A/B',
-    tags: ['social', 'feature'], priority: 'high', status: 'done', date: '2026. 7. 29.', dueDate: null, relatedTo: [],
+    tags: ['social', 'feature'], priority: 'high', status: 'monitor', date: '2026. 7. 29.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-031', file: 'spec-031-sh-rescue-activation.html',
@@ -191,23 +191,23 @@ const SPECS = [
   {
     id: 'spec-033', file: 'spec-033-deck-counter.html',
     title: '[UX-인게임] 덱 잔여 수량 표시',
-    tags: ['ux'], priority: 'high', status: 'wip', date: '2026. 7. 30.', dueDate: null, relatedTo: [],
+    tags: ['ux'], priority: 'high', status: 'planned', date: '2026. 7. 30.', dueDate: null, relatedTo: [],
   },
   {
     id: 'spec-034', file: 'spec-034-ingame-booster-sale.html',
     title: '[수익화-부스터] 파이어웍스 인게임 아이템 확장',
-    tags: ['monetize'], priority: 'mid', status: 'open', date: '2026. 7. 30.', dueDate: null, relatedTo: ['spec-032'],
+    tags: ['monetize'], priority: 'mid', status: 'planned', date: '2026. 7. 30.', dueDate: null, relatedTo: ['spec-032'],
   },
   {
     id: 'spec-035', file: 'spec-035-interstitial-frequency.html',
     monitorGroup: 'sol-it-freq',
     title: '[수익화-광고] 전면 광고 빈도 곡선',
-    tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
+    tags: ['monetize', 'balance'], priority: 'high', status: 'done', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
   },
   {
     id: 'spec-037', file: 'spec-037-leaderboard-play-button.html',
     title: '[소셜-바이럴] 리더보드 친구 플레이 버튼',
-    tags: ['social', 'feature'], priority: 'high', status: 'open', date: '2026. 8. 7.', dueDate: null, relatedTo: ['spec-030', 'spec-002'],
+    tags: ['social', 'feature'], priority: 'high', status: 'planned', date: '2026. 8. 7.', dueDate: null, relatedTo: ['spec-030', 'spec-002'],
   },
   {
     id: 'spec-036', file: 'spec-036-retry-flow.html',
@@ -253,7 +253,7 @@ const MONITOR_GROUPS = {
     specs: ['spec-030'],
   },
   'sol-it-freq': {
-    label: '전면 광고 빈도 곡선 — 배포 관측',
+    label: '전면 광고 빈도 곡선 — A 통합 결론 확정',
     since: '2026-08-06',
     url:   '../../37_sol_it_watch.html',
     specs: ['spec-035'],
