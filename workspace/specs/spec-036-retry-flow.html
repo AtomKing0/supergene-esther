@@ -193,11 +193,6 @@ ul li strong,ol li strong { color:var(--text); }
 .gm-w200{width:132px}.gm-w240{width:158px}.gm-w260{width:172px}.gm-sq{width:66px;height:66px}
 .gm-star{position:absolute;top:-9px;right:-7px;background:#ffd633;color:#5a3c00;font-size:.58rem;font-weight:900;border-radius:999px;padding:2px 7px;box-shadow:0 1px 3px rgba(0,0,0,.35);text-shadow:none}
 
-/* 설정(Game Paused) 목업 */
-.gm-toggles{display:flex;justify-content:center;gap:16px;margin-bottom:16px}
-.gm-tg{width:56px;height:56px;border-radius:50%;background:linear-gradient(180deg,#6fd0ff,#0092ff);border:3px solid #fff8ec;box-shadow:0 3px 6px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:1.3rem}
-.gm-stack{display:flex;flex-direction:column;align-items:center;gap:10px}
-
 /* 실제 화면 플로우 */
 .vf{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin:20px 0}
 .vf-cap{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:14px}
@@ -357,6 +352,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>버튼 구성</td><td>뒤로(녹색) / <strong>다시 하기(오렌지)</strong> / <strong>로비로(파란 홈 아이콘)</strong> / 닫기 X &mdash; 레드 나가기는 사라짐</td></tr>
       <tr><td>기본 강조</td><td>다시 하기 &mdash; 중앙 &middot; 가장 넓은 폭(240)</td></tr>
       <tr><td>진입 경로</td><td>엔드레벨 버튼과 일시정지 팝업 Quit <strong>두 경로 모두</strong> 동일 적용</td></tr>
+      <tr><td>덱 잔량 게이팅</td><td>하지 않음 &mdash; 판을 끝낸 유저의 <strong>92.4%가 덱 소진 상태</strong>, 자발적 이탈은 0.1%</td></tr>
       <tr><td>재도전 맵</td><td>새 맵 (기존 배정 로직)</td></tr>
       <tr><td>입장료</td><td>새 판 기준 정상 지불</td></tr>
       <tr><td>데일리 기프트 팝업</td><td>다시 하기 경로에서는 띄우지 않음</td></tr>
@@ -541,27 +537,24 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="mk-note">끄면 <b>레드 Quit이 다시 우측에 서고</b> 문구도 현행으로 돌아감. 즉 문구 2건도 스위치를 함께 타야 함 &mdash; 아래 <b>문구</b> 항목의 분기 규칙 참고.</div>
   </div>
 
-  <h4>일시정지 팝업(경로 2)은 그대로 둠</h4>
-  <div class="mk">
-    <div class="mk-cap">일시정지 팝업 &mdash; 변경 없음. Quit이 나가기 팝업을 열고, 거기서 3분기가 걸림</div>
-    <div class="mk-stage">
-      <div class="gm" style="max-width:360px">
-        <div class="gm-frame">
-          <div class="gm-head">Game Paused</div>
-          <div class="gm-x">&#10006;</div>
-          <div class="gm-body">
-            <div class="gm-toggles">
-              <div class="gm-tg">&#128266;</div><div class="gm-tg">&#127925;</div><div class="gm-tg">&#128241;</div>
-            </div>
-            <div class="gm-stack">
-              <div class="gm-btn gm-green gm-w260">Resume</div>
-              <div class="gm-btn gm-red gm-w260">Quit</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="mk-note">여기의 Quit은 <b>바로 나가지 않고 나가기 팝업을 여는</b> 버튼임. 그래서 이 팝업 자체는 손대지 않아도 되지만, <b>코드상 나가기 팝업 호출부가 별도로 존재</b>하므로 다시 하기 콜백을 두 호출부 모두에 연결해야 함.</div>
+  <h3>덱이 남은 상태에서 눌러도 그대로 띄움</h3>
+  <p>엔드레벨 버튼은 <strong>판 도중 아무 때나 누를 수 있음</strong>. 덱&middot;언두&middot;와일드가 남아 있는데 누르는 유저는 &ldquo;막혀서&rdquo;가 아니라 &ldquo;그만두고 싶어서&rdquo;일 수 있으므로, 그런 상태에서는 다시 하기를 감출지 검토함. <strong>결론은 감추지 않음</strong> &mdash; 그 상태 자체가 거의 없음.</p>
+  <table>
+    <thead><tr><th>판을 끝낸 시점의 덱 잔량</th><th>판수</th><th>비중</th><th>중앙 플레이 시간</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td>0장 &mdash; 덱 소진 (막힘)</td><td>6,184</td><td><strong>92.4%</strong></td><td>53초</td></tr>
+      <tr><td>1~3장</td><td>1</td><td>0.0%</td><td>53초</td></tr>
+      <tr><td>4장 이상 (자발적 이탈)</td><td>4</td><td><strong>0.1%</strong></td><td>161초</td></tr>
+      <tr><td>미기록</td><td>507</td><td>7.6%</td><td>27초</td></tr>
+    </tbody>
+  </table>
+  <p class="note">2026-07-25 ~ 08-08 실패 판 전수(6,696판). <code>2300_GAMEPLAY_FINISH</code> <code>result=fail</code>의 <code>remaining_draw_count</code> 기준.</p>
+  <div class="callout callout-blue">
+    <strong>확정 &mdash; 덱 잔량으로 게이팅하지 않음.</strong> 자발적 이탈은 <b>0.1%(4판)</b>뿐이라 조건을 하나 더 넣을 값어치가 없고, 잘못 걸리면 진짜 막힌 유저에게 다시 하기가 안 뜨는 손해가 훨씬 큼. 게다가 <b>다시 하기는 같은 맵이 아니라 새 맵</b>이므로, 이 판이 안 풀려서 나가려는 유저에게도 오히려 원하는 선택지임.<br>
+    다시 하기가 나가기를 막지도 않음 &mdash; <b>뒤로 &middot; 로비로 &middot; X</b>가 그대로 있어 그만두려는 유저는 한 번 터치로 나감.
+  </div>
+  <div class="callout callout-yellow">
+    <strong>&#9888; 계측 구멍 &mdash; 미기록 7.6%.</strong> <code>remaining_draw_count</code>가 비는 판이 특정 날짜에 몰리지 않고 매일 고르게 나옴(빌드 전환이 아님). <b>나가기 팝업 호출부가 두 곳인데 한쪽만 이 필드를 채우고 있을 가능성</b>이 큼 &mdash; 호출부를 공통화할 때 로그 필드도 함께 맞출 것.
   </div>
 
   <h3>버튼 스펙</h3>
@@ -599,6 +592,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>기본</td><td>노출</td><td><strong>노출 &middot; 강조</strong></td><td>노출</td><td>3버튼</td></tr>
       <tr><td><code>is_retry_flow_open</code> = 0</td><td>노출</td><td>숨김</td><td>숨김 &rarr; 기존 레드 <b>Quit</b>으로 대체</td><td>현행 2버튼 완전 복귀 &middot; 문구도 현행</td></tr>
       <tr><td>튜토리얼 진행 중</td><td>노출</td><td>숨김</td><td>숨김 &rarr; 기존 레드 <b>Quit</b></td><td>튜토리얼은 실패로 끝나지 않음</td></tr>
+      <tr><td>덱&middot;언두&middot;와일드가 남은 판 도중</td><td>노출</td><td><strong>노출</strong></td><td>노출</td><td>게이팅하지 않음 &mdash; 해당 케이스 0.1%</td></tr>
       <tr><td>보유 골드 &lt; 입장료</td><td>노출</td><td>노출</td><td>노출</td><td>누르면 프리레벨 팝업의 기존 부족 처리(충전 안내). 취소 시 로비</td></tr>
       <tr><td>Quick Next Loop v2 켜짐</td><td>노출</td><td>노출</td><td>노출</td><td>다시 하기가 프리레벨 팝업을 건너뛰고 곧장 판 시작 &mdash; 아래 콜아웃</td></tr>
       <tr><td>전면 광고</td><td>없음</td><td><strong>기존대로 노출</strong></td><td>기존대로 노출</td><td>두 분기 모두 <code>LogITPosition.game_quit</code> 유지 &mdash; 광고 종료 후 목적지만 갈림</td></tr>
@@ -786,7 +780,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>아트</td><td><b>신규 이미지 없음.</b> 프리팹 버튼 배치를 <code>cc.Layout</code>으로 교체 · 파란 정사각 홈 버튼 배치</td></tr>
       <tr><td>클라</td><td><code>PopupQuitLevel</code> 버튼 구성 확장 · 콜백 분리 · 문구 스위치 분기</td></tr>
       <tr><td>클라</td><td>다시 하기 경로에서 <code>ViewCreator.showPopupGameEntry()</code> 호출 (프리레벨 팝업 직접 호출 금지)</td></tr>
-      <tr><td>클라</td><td><b>나가기 팝업 호출부 두 곳(<code>onClickEndLevel</code> · <code>onClickOption</code>) 공통화</b> 후 양쪽에 콜백 연결</td></tr>
+      <tr><td>클라</td><td><b>나가기 팝업 호출부 두 곳(<code>onClickEndLevel</code> · <code>onClickOption</code>) 공통화</b> 후 양쪽에 콜백 연결 &mdash; <code>remaining_draw_count</code> 등 로그 필드도 함께 맞출 것(현재 7.6% 미기록)</td></tr>
       <tr><td>클라</td><td>다시 하기 경로에서 데일리 기프트 팝업 · 덤불 전환 미노출 처리</td></tr>
       <tr><td>클라</td><td>전면 광고 호출을 로비로 분기 안으로 이동</td></tr>
       <tr><td>클라</td><td>로그 <code>2223</code> 신설 · <code>2100</code> <code>position</code>에 <code>retry</code> 추가</td></tr>
