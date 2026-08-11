@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-038 · 토너먼트 공유 노출 빈도 정상화</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #a78bfa;
+  --accent2: #c4b5fd;
+  --green: #34d399;   --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;     --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;    --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;  --purple-bg: rgba(167,139,250,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #1e1a35 45%, #1a1d27 100%);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #7c3aed; --accent2: #6d28d9;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626;   --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb;  --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --hero-bg: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 45%, #e0e7ff 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { display:none; }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200; }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;margin-left:260px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.1) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--accent),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-yellow { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+.kpi-trend { font-size:0.72rem;font-weight:700;margin-top:6px; }
+.trend-up   { color:var(--green); }
+.trend-down { color:var(--red); }
+
+.container { max-width:1100px;margin:0 0 0 260px;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-num-3 { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--blue-bg);color:var(--blue); }
+.aud-dev { background:var(--green-bg);color:var(--green); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+h4 { font-size:0.95rem;font-weight:700;margin:24px 0 10px;color:var(--accent); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+.dimmed { opacity:0.45;filter:grayscale(1); }
+.dimmed .sheet-var { color:inherit;background:transparent; }
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-purple { background:var(--purple-bg);border-left:3px solid var(--purple); }
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.86rem; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var     { font-family:monospace;color:var(--blue);font-weight:600;min-width:300px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:72px; }
+.sheet-row-unit    { font-size:0.75rem;color:var(--text2);min-width:100px; }
+.sheet-row-desc    { color:var(--text2);font-size:0.82rem;flex:1; }
+
+.flow-step { display:flex;gap:14px;margin-bottom:14px;align-items:flex-start; }
+.flow-dot  { width:28px;height:28px;border-radius:50%;background:var(--purple-bg);border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--purple);flex-shrink:0;margin-top:2px; }
+.flow-body { flex:1; }
+.flow-body strong { color:var(--text);font-size:0.9rem; }
+.flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+
+.step-label{display:inline-block;font-size:.66rem;font-weight:800;letter-spacing:.12em;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,.3);padding:3px 10px;border-radius:6px;margin-top:34px}
+.step-label+h3{margin-top:8px;color:var(--text);font-size:1.15rem}
+.d-up{color:var(--green);font-weight:700}
+.d-down{color:var(--red);font-weight:700}
+.seq-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin:16px 0}
+.seq-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.seq-label{min-width:118px;font-size:.8rem;font-weight:700;color:var(--text)}
+.seq-label span{display:block;font-weight:500;font-size:.72rem;color:var(--text2)}
+.seq{display:flex;gap:3px;flex-wrap:wrap}
+.seq i,.seq-legend i{display:inline-block;width:15px;height:19px;border-radius:3px;vertical-align:-4px}
+.seq i.n,.seq-legend i.n{background:#3a4056}
+.seq i.h,.seq-legend i.h{background:var(--yellow)}
+.seq i.s,.seq-legend i.s{background:var(--red)}
+[data-theme="light"] .seq i.n,[data-theme="light"] .seq-legend i.n{background:#c8cbd6}
+.seq-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.75rem;color:var(--text2);border-top:1px solid var(--border);padding-top:12px}
+.seq-legend span{display:flex;align-items:center;gap:6px}
+.seq-note{margin-left:auto;color:var(--text2)}
+
+.pick td{background:var(--green-bg)}
+.pick td:first-child{color:var(--green)}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">&larr; 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">&#9776;</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-038</div>
+  <a href="#s1">&#9312; 기획 의도 &amp; 확정 설계</a>
+  <a href="#s2">&#9313; 개발 스펙</a>
+  <a href="#s3">&#9314; 로깅 · 검증 · 롤백</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-038</span>
+      <span class="badge badge-purple" id="hero-tag" style="cursor:pointer" title="태그 변경">&#129309; 소셜-바이럴</span>
+      <span class="badge badge-red" id="hero-priority" style="cursor:pointer" title="우선순위 변경">&#128308; 높은 우선순위</span>
+      <span class="badge badge-blue" id="hero-status" style="cursor:pointer" title="상태 변경">&#128309; 검토중</span>
+      <span class="badge badge-green">2026. 8. 11.</span>
+    </div>
+    <h1>토너먼트 공유 노출 빈도 정상화<br><span>Share Exposure Normalization</span></h1>
+    <p class="hero-sub">공유 다이얼로그 자동 발화가 벤치(코지·마종) 대비 <strong>2~3배 과다</strong>함.
+    유저당 공유 <strong>성공</strong> 횟수는 이미 벤치 밴드 안이므로, 수락 확률이 낮은 노출을 줄여
+    성공 손실 없이 발화량을 벤치 수준으로 되돌림. 친구 신호 보유 여부로 자동 발화 상한을 차등 적용함.</p>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">공유 시도 / 유저 (5일)</div>
+        <div class="kpi-value" style="color:var(--red)">20.8</div>
+        <div class="kpi-sub">친구 신호 보유 유저 기준<br>벤치 동기간 9.1~12.1</div>
+        <div class="kpi-trend">&#9660; 목표 벤치 밴드</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">공유 성공 / 유저 (5일)</div>
+        <div class="kpi-value" style="color:var(--green)">2.14</div>
+        <div class="kpi-sub">벤치 동기간 2.51~3.27<br>이미 밴드 하단 &mdash; 유지가 가드레일</div>
+        <div class="kpi-trend">&#9654; 손실 없어야 성공</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">공유 수락률</div>
+        <div class="kpi-value" style="color:var(--blue)">6.5%</div>
+        <div class="kpi-sub">분모 과다로 희석된 값<br>벤치 동기간 14.7~35.9%</div>
+        <div class="kpi-trend trend-up">&#9650; 분모 정상화로 수렴 기대</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">가드레일</div>
+        <div class="kpi-value" style="color:var(--yellow)">성공/DAU</div>
+        <div class="kpi-sub">0.35 아래로 유의 하락 시</div>
+        <div class="kpi-trend">&#9654; 즉시 롤백</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">&#9312;</div>
+    <div class="section-meta"><div class="section-title">기획 의도 &amp; 확정 설계</div></div>
+  </div>
+
+  <h3>문제</h3>
+  <p>공유 다이얼로그가 판 종료마다 자동 발화해 같은 유저에게 반복 노출됨. 벤치 런칭 동기간과 같은 축으로 맞춰도
+  솔의 유저당 발화량이 2~3배 많음. 유저당 <strong>성공</strong>은 벤치 밴드 안이므로 초과 노출분은
+  수락으로 이어지지 않는 낭비이며, 수락률 지표를 구조적으로 낮게 보이게 함.</p>
+  <table>
+    <thead><tr><th>유저군 (5일 누적)</th><th>솔</th><th>코지 동기간</th><th>마종 동기간</th></tr></thead>
+    <tbody>
+    <tr><td>친구 신호 보유 &mdash; 공유 시도/유저</td><td style="color:var(--red)"><strong>20.8회</strong></td><td>10.2회</td><td>9.1회</td></tr>
+    <tr><td>친구 신호 보유 &mdash; 공유 성공/유저</td><td><strong>2.14회</strong></td><td>2.51회</td><td>3.27회</td></tr>
+    <tr><td>친구 신호 없음 &mdash; 공유 시도/유저</td><td style="color:var(--red)"><strong>7.1회</strong></td><td>2.5회</td><td>3.0회</td></tr>
+    <tr><td>친구 신호 없음 &mdash; 공유 성공/유저</td><td><strong>0.32회</strong></td><td>0.36회</td><td>0.45회</td></tr>
+    </tbody>
+  </table>
+
+  <h3>고칠 부분</h3>
+  <p>자동 발화에만 상한을 둠. 유저가 스스로 여는 공유(로비 토너먼트 지면 등)는 제한하지 않음.
+  친구 신호가 있는 유저는 수락 확률이 2.5배 높으므로 상한을 더 줌.</p>
+
+  <h3>확정 정책</h3>
+  <table>
+    <thead><tr><th>구분</th><th>정의 · 값</th></tr></thead>
+    <tbody>
+    <tr><td><strong>친구 신호</strong></td><td>P2P 메세지 성공 또는 컨텍스트 전환 성공을 <strong>1회 이상</strong> 경험한 유저. 최초 성공 시점에 클라 로컬 플래그로 기록하며 이후 해제하지 않음</td></tr>
+    <tr><td><strong>자동 발화 상한 &mdash; 신호 있음</strong></td><td>세션당 <strong>2회</strong></td></tr>
+    <tr><td><strong>자동 발화 상한 &mdash; 신호 없음</strong></td><td>세션당 <strong>1회</strong></td></tr>
+    <tr><td><strong>유저 주도 지면</strong></td><td>상한 없음 · 상한 카운터에 셈하지 않음</td></tr>
+    <tr><td><strong>기존 연속 거절 상한</strong></td><td>유지. 이 스펙의 상한과 <strong>둘 다</strong> 통과해야 발화(별개 조건)</td></tr>
+    <tr><td><strong>적용 범위</strong></td><td>전량 적용(A/B 없음) · 생성 다이얼로그는 이 스펙의 범위가 아님</td></tr>
+    </tbody>
+  </table>
+
+  <h3>동작 비교</h3>
+  <table>
+    <thead><tr><th></th><th>As-Is</th><th>To-Be</th></tr></thead>
+    <tbody>
+    <tr><td>자동 발화 조건</td><td>판 종료 시 토너 보유·거절 상한 미달이면 매번</td><td>왼쪽 조건 + <strong>세션 상한(신호 있음 2회 / 없음 1회) 미달</strong></td></tr>
+    <tr><td>유저 주도 공유</td><td>제한 없음</td><td>변화 없음</td></tr>
+    <tr><td>친구 신호 구분</td><td>없음</td><td>클라 로컬 플래그로 상한만 차등</td></tr>
+    </tbody>
+  </table>
+
+  <h3>기대 결과</h3>
+  <p>유저당 발화가 벤치 밴드(2.5~3.5회/유저-일 수준)로 내려가고, 수락 확률이 낮은 노출이 제거되므로
+  공유 성공 총량은 유지된 채 수락률이 벤치 방향으로 수렴함. 반복 노출로 인한 다이얼로그 피로도 함께 줄어듦.</p>
+</section>
+
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">&#9313;</div>
+    <div class="section-meta"><div class="section-title">개발 스펙</div></div>
+  </div>
+
+  <h3>용어 &mdash; 세 층을 다른 단어로 부름</h3>
+  <table>
+    <thead><tr><th>용어</th><th>뜻</th><th>혼동 주의</th></tr></thead>
+    <tbody>
+    <tr><td><strong>세션</strong></td><td>FB 인스턴트 게임 실행 1회(부팅~종료). 상한 카운터의 리셋 단위</td><td>플레이 세션 시간·로그인 일수와 다름</td></tr>
+    <tr><td><strong>상한 카운터</strong></td><td>이번 세션에서 자동 발화한 횟수. 세션 시작 시 0</td><td>기존 &lsquo;연속 거절 카운터&rsquo;와 별개 &mdash; 그쪽은 거절만 세고 생성 성공 시 리셋</td></tr>
+    <tr><td><strong>친구 신호</strong></td><td>영구 플래그. 리셋 없음</td><td>기간형 아님 &mdash; 30일 창 같은 만료를 두지 않음</td></tr>
+    </tbody>
+  </table>
+
+  <h3>&#9398; 서버가 기억해야 하는 값 &mdash; 없음</h3>
+  <table>
+    <thead><tr><th>값</th><th>누가 보관</th><th>언제 갱신</th><th>비고</th></tr></thead>
+    <tbody>
+    <tr><td>친구 신호 플래그</td><td><strong>클라 로컬</strong></td><td>P2P 메세지 성공 · 컨텍스트 전환 성공 시 set</td><td>서버 저장 안 함</td></tr>
+    <tr><td>상한 카운터</td><td><strong>클라 메모리</strong></td><td>자동 발화 시 +1 · 세션 시작 시 0</td><td>영속화 불필요</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-purple"><strong>서버 변경 없음.</strong> 시트 상수 2건(신호 있음/없음 상한)만 추가하면 빌드 없이 값 조정·롤백이 가능함. 두 값을 모두 0으로 두면 상한 없음(현행과 동일)으로 동작함.</div>
+
+  <h3>&#9399; 판정 순서 &mdash; 판 종료 자동 발화 시</h3>
+  <table>
+    <thead><tr><th>순서</th><th>검사</th><th>불통과 시</th></tr></thead>
+    <tbody>
+    <tr><td>1</td><td>기존 자동 발화 조건(토너 보유·클리어·연속 거절 상한 등)</td><td>종료 &mdash; 현행과 동일</td></tr>
+    <tr><td>2</td><td>상한 카운터 &lt; 상한(친구 신호에 따라 2 또는 1)</td><td>종료 &mdash; 로그 없음(3200 미발화)</td></tr>
+    <tr><td>3</td><td>발화 &rarr; 상한 카운터 +1 &rarr; 기존 흐름(3200 기록)</td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+
+  <h3>예외 &mdash; 그럼 이때는?</h3>
+  <table>
+    <thead><tr><th>상황</th><th>동작</th></tr></thead>
+    <tbody>
+    <tr><td>세션 중 친구 신호가 생기면</td><td>플래그는 즉시 set하되 상한은 <strong>다음 세션부터</strong> 2회 적용. 진행 중 세션의 카운터는 재계산하지 않음</td></tr>
+    <tr><td>로컬 플래그가 유실되면(캐시 삭제 등)</td><td>신호 없음으로 동작. 다음 P2P·전환 성공 시 자연 복원 &mdash; 보수적 방향이므로 별도 복구 로직 없음</td></tr>
+    <tr><td>상한 도달 후 유저가 직접 공유를 열면</td><td>정상 발화. 카운터에 셈하지 않음</td></tr>
+    <tr><td>상한 도달 후 판을 계속 깨면</td><td>이번 세션엔 자동 발화 없음. 재접속(새 세션) 시 카운터 0부터</td></tr>
+    <tr><td>시트 상수가 없거나 0이면</td><td>상한 없음 &mdash; 현행과 동일하게 동작(안전 기본값)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>타임존</h3>
+  <p>이 스펙의 판정은 전부 <strong>세션 단위</strong>라 달력 시간에 의존하지 않음. 성과 집계(아래 &#9314;)는 FB 로그 기준 <strong>UTC</strong> 일자를 씀.</p>
+</section>
+
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">&#9314;</div>
+    <div class="section-meta"><div class="section-title">로깅 · 검증 · 롤백</div></div>
+  </div>
+
+  <h3>계측 &mdash; 기존 로그 재사용</h3>
+  <table>
+    <thead><tr><th>이벤트</th><th>출처</th><th>용도</th></tr></thead>
+    <tbody>
+    <tr><td><span class="sheet-var">3200_TOURNAMENT_SHARE</span></td><td>클라 로그 정의서 &mdash; 실제 다이얼로그 발사 시점</td><td>발화량 · 수락률 분모</td></tr>
+    <tr><td><span class="sheet-var">3210_TOURNAMENT_SHARE_SUCCESS</span> / <span class="sheet-var">3220_TOURNAMENT_SHARE_FAIL</span></td><td>클라 로그 정의서</td><td>성공 · 실패(errorCode)</td></tr>
+    </tbody>
+  </table>
+  <p>신규 이벤트 없음. 친구 신호 보유 여부는 분석 시 로그(P2P 성공·전환 성공 이력)로 재구성 가능하므로 추가 필드를 요구하지 않음.
+  단 <strong>선택 사항</strong>으로 <span class="sheet-var">3200</span>의 data에 <span class="sheet-var">auto</span>(자동/유저 주도 구분) 1필드를 추가하면 상한 동작 검증이 쉬워짐.</p>
+
+  <h3>KPI</h3>
+  <table>
+    <thead><tr><th>지표</th><th>As-Is</th><th>To-Be</th><th>비고</th></tr></thead>
+    <tbody>
+    <tr><td><strong>공유 성공/DAU</strong> &#11088;가드레일</td><td>0.35</td><td><strong>유지 이상</strong></td><td>유의 하락 시 즉시 롤백 &mdash; 이 지표가 판정의 최우선</td></tr>
+    <tr><td>공유 시도/유저-일</td><td>5.4</td><td>2.5~3.5</td><td>벤치 밴드</td></tr>
+    <tr><td>공유 수락률</td><td>6.5%</td><td>12% 이상</td><td>분모 정상화의 결과로 따라옴 &mdash; 목표로 삼되 단독 판정 금지</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-yellow"><strong>비교 주의</strong> &mdash; 적용 후의 수락률·시도량은 노출 정책이 벤치와 달라지므로,
+  벤치·전후 비교 판정은 <strong>결과 지표(성공/DAU)</strong>로만 함. 41 통합 팔로업 페이지에 적용일 마커를 추가함.</div>
+
+  <h3>롤백</h3>
+  <p>시트 상수 2건을 0으로 되돌리면 즉시 현행 동작으로 복귀함(빌드 불필요). 롤백 트리거는 공유 성공/DAU의 유의 하락 단 하나임.</p>
+</section>
+
+</div>
+
+<script>
+// ── 메타 배지 드롭다운 (index.html과 localStorage 공유) ──────────────
+(function () {
+  const SPEC_ID = 'spec-035';
+
+  const TAG_INFO = {
+    review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
+    feature: { label: '✨ 기능',    cls: 'badge-green'  },
+    balance: { label: '⚖️ 밸런스',  cls: 'badge-yellow' },
+    bug:     { label: '🐛 버그',    cls: 'badge-red'    },
+    ux:      { label: '🎨 UX/UI',   cls: 'badge-purple' },
+    content: { label: '📦 콘텐츠',  cls: 'badge-yellow' },
+    etc:     { label: '📌 기타',    cls: 'badge-blue'   },
+  };
+  const PRI_INFO = {
+    high: { label: '🔴 높은 우선순위', cls: 'badge-red'    },
+    mid:  { label: '🟡 보통 우선순위', cls: 'badge-yellow' },
+    low:  { label: '⚪ 낮은 우선순위', cls: 'badge-blue'   },
+  };
+  const STATUS_INFO = {
+    open:    { label: '🔵 검토중',    cls: 'badge-blue'   },
+    wip:     { label: '🟡 진행중',    cls: 'badge-yellow' },
+    done:    { label: '✅ 완료',      cls: 'badge-green'  },
+    archive: { label: '🗄️ 아카이브', cls: 'badge-blue'   },
+    hold:    { label: '⏸ 보류',      cls: 'badge-blue'   },
+  };
+  const DD_OPTIONS = {
+    tag:      Object.entries(TAG_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    priority: Object.entries(PRI_INFO).map(([v,i])    => ({ val: v, label: i.label })),
+    status:   Object.entries(STATUS_INFO).map(([v,i]) => ({ val: v, label: i.label })),
+  };
+  const DD_LABEL  = { tag: '태그', priority: '우선순위', status: '상태' };
+  const DEFAULTS  = { tag: 'balance', priority: 'high', status: 'open' };
+  let ddField = null;
+
+  // ── 드롭다운 HTML (body에 append) ──
+  const dd = document.createElement('div');
+  dd.id = 'metaBadgeDropdown';
+  dd.style.cssText = 'position:fixed;z-index:800;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.4);padding:5px;min-width:150px;display:none;';
+  document.body.appendChild(dd);
+
+  const ddCss = document.createElement('style');
+  ddCss.textContent = '.dd-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);padding:5px 10px 3px;display:block}.dd-itm{display:flex;align-items:center;padding:7px 10px;border-radius:7px;font-size:.8rem;cursor:pointer;color:var(--text);transition:background .1s;white-space:nowrap;gap:6px}.dd-itm:hover{background:var(--surface2)}.dd-itm.active{color:var(--accent);font-weight:700;background:var(--purple-bg)}';
+  document.head.appendChild(ddCss);
+
+  function getOv()      { return JSON.parse(localStorage.getItem('spec-ov') || '{}'); }
+  function saveOv(ov)   { localStorage.setItem('spec-ov', JSON.stringify(ov)); }
+  function getVal(k)    { const ov = getOv(); return (ov[SPEC_ID] && ov[SPEC_ID][k]) || DEFAULTS[k]; }
+  function setVal(k, v) { const ov = getOv(); if (!ov[SPEC_ID]) ov[SPEC_ID] = {}; ov[SPEC_ID][k] = v; saveOv(ov); }
+
+  function applyBadge(el, info) {
+    el.className = 'badge ' + info.cls;
+    el.textContent = info.label;
+    el.style.cursor = 'pointer';
+  }
+
+  function updateHero() {
+    applyBadge(document.getElementById('hero-tag'),      TAG_INFO[getVal('tag')]      || TAG_INFO.etc);
+    applyBadge(document.getElementById('hero-priority'), PRI_INFO[getVal('priority')] || PRI_INFO.mid);
+    applyBadge(document.getElementById('hero-status'),   STATUS_INFO[getVal('status')]|| STATUS_INFO.open);
+  }
+
+  function openDropdown(e, field) {
+    e.stopPropagation();
+    const cur = getVal(field);
+    dd.innerHTML = `<span class="dd-lbl">${DD_LABEL[field]}</span>` +
+      DD_OPTIONS[field].map(o =>
+        `<div class="dd-itm${o.val === cur ? ' active' : ''}" data-val="${o.val}">${o.label}</div>`
+      ).join('');
+    const rect = e.currentTarget.getBoundingClientRect();
+    dd.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+    dd.style.top  = (rect.bottom + 5) + 'px';
+    dd.style.display = 'block';
+    ddField = field;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    updateHero();
+    const fieldMap = { 'hero-tag': 'tag', 'hero-priority': 'priority', 'hero-status': 'status' };
+    Object.keys(fieldMap).forEach(elId => {
+      document.getElementById(elId).addEventListener('click', e => openDropdown(e, fieldMap[elId]));
+    });
+    dd.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const item = e.target.closest('.dd-itm');
+      if (!item || !ddField) return;
+      setVal(ddField, item.dataset.val);
+      dd.style.display = 'none';
+      ddField = null;
+      updateHero();
+    });
+    document.addEventListener('click', () => { dd.style.display = 'none'; ddField = null; });
+  });
+
+  // ── 사이드바 네비 ──
+  var links    = document.querySelectorAll('.nav-sidebar a');
+  var sections = document.querySelectorAll('section[id]');
+  function activate() {
+    var scrollY = window.pageYOffset + 120;
+    sections.forEach(function (s) {
+      if (s.offsetTop <= scrollY && s.offsetTop + s.offsetHeight > scrollY) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = document.querySelector('.nav-sidebar a[href="#' + s.id + '"]');
+        if (a) a.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', activate);
+  activate();
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.nav-sidebar') && !e.target.closest('.nav-toggle'))
+      document.querySelector('.nav-sidebar').classList.remove('open');
+  });
+})();
+</script>
+<script src="memo.js"></script>
+</body>
+</html>
