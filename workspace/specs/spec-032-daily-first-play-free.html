@@ -219,7 +219,6 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td>무료 방식</td><td><strong>입장료 미차감</strong></td><td>재화를 주고 다시 거두는 왕복이 없음. 잔고 상태와 무관하게 항상 진입이 성립함</td></tr>
     <tr><td>발생 단위</td><td><strong>세션 1회</strong><br><span style="color:var(--text2)">로그인 이후 첫 게임</span></td><td>진입이 막히는 순간이 접속 직후에 집중됨. 판정 기준이 서버가 이미 들고 있는 마지막 게임 정보 하나라 추가 상태가 필요 없음</td></tr>
-    <tr><td><strong>횟수 상한</strong></td><td><strong>없음</strong></td><td>실측 세션 발생량이 <strong>유저-일당 1.48회 · p90 2회</strong>라 반복 취득 여지가 애초에 좁음. 상한을 걸어도 골드 소비 감소가 0.43%에서 0.39%로 <strong>0.04%p</strong> 줄 뿐이라 카운터·리셋 축을 얹을 값어치가 없음</td></tr>
     <tr><td><strong>대상</strong></td><td><strong>Lv 10 이상 ~ 50 미만</strong></td><td><strong>골드 벽의 70%가 Lv 10~49에 몰려 있음</strong>(Lv10~24 9.0% · Lv25~49 12.9%). Lv 3~9는 막힘이 0.9%, Lv 50 이상은 입장료에서 막히지 않음 &mdash; 아래 형평성 항목 참조</td></tr>
     <tr><td>배수</td><td><strong>x1 고정</strong></td><td>프리레벨 팝업을 건너뛰므로 배수·부스터 선택 단계가 없음. 게임 종료 보상도 x1 기준으로 계산됨</td></tr>
     <tr><td>프리레벨 팝업</td><td><strong>건너뜀</strong></td><td>무료 판에서 배수를 고를 수 있으면 면제액이 배수를 따라 커짐. 팝업 자체를 지나쳐 첫 터치까지의 단계도 함께 줄임</td></tr>
@@ -291,16 +290,15 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
   </div>
 
-  <h3>시트 &mdash; <span class="sheet-var">PST_const</span> 신규 3행</h3>
+  <h3>시트 &mdash; <span class="sheet-var">PST_const</span> 신규 2행</h3>
   <table>
     <thead><tr><th>key_number</th><th>const_name</th><th>const_value</th><th>설명</th></tr></thead>
     <tbody>
-    <tr><td>10080</td><td><span class="sheet-var">session_free_entry_use</span></td><td><strong>1</strong></td><td>기능 사용 여부. <strong>0이면 OFF</strong> (킬 스위치)</td></tr>
-    <tr><td>10081</td><td><span class="sheet-var">session_free_entry_min_level</span></td><td><strong>10</strong></td><td>적용 시작 레벨(이상). 골드 벽이 Lv 10부터 발생하며 Lv 3~9는 막힘 0.9%로 불필요함</td></tr>
-    <tr><td>10082</td><td><span class="sheet-var">session_free_entry_max_level</span></td><td><strong>50</strong></td><td>적용 종료 레벨(미만). Lv 50 이상은 입장료에서 막히지 않으므로 제외</td></tr>
+    <tr><td>10080</td><td><span class="sheet-var">session_free_entry_min_level</span></td><td><strong>10</strong></td><td>적용 시작 레벨(이상). 골드 벽이 Lv 10부터 발생하며 Lv 3~9는 막힘 0.9%로 불필요함</td></tr>
+    <tr><td>10081</td><td><span class="sheet-var">session_free_entry_max_level</span></td><td><strong>50</strong></td><td>적용 종료 레벨(미만). Lv 50 이상은 입장료에서 막히지 않으므로 제외. <strong>0이면 대상이 사라져 기능 OFF</strong></td></tr>
     </tbody>
   </table>
-  <p>세 값 모두 <strong>서버가 읽고 판정</strong>함. 구간을 넓히거나 좁히는 데 클라 수정이 필요 없어야 함.</p>
+  <p>두 값 모두 <strong>서버가 읽고 판정</strong>함. 구간을 넓히거나 좁히는 데 클라 수정이 필요 없어야 함.</p>
 
   <h3>서버 &mdash; 상태 모델</h3>
   <p>클라 연출과 무관하게 <strong>서버가 기억하는 상태</strong>는 아래 셋임. 판정 입력은 <strong>마지막 게임 정보</strong> 하나뿐이고, 별도 카운터를 두지 않음.</p>
@@ -309,7 +307,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td><strong>무료 입장 가능</strong></td><td>로그인 이후 마지막 게임 정보가 <strong>없음</strong> + 레벨 조건 충족</td><td>&mdash; (판정 결과만 로그인 응답에 실림)</td></tr>
     <tr><td><strong>무료 입장 소진</strong></td><td>무료 입장으로 게임이 시작됨</td><td><span class="sheet-var">lastGameInfo</span> 기록</td></tr>
-    <tr><td><strong>대상 밖</strong></td><td>레벨 &lt; min_level 또는 레벨 &ge; max_level, 또는 <span class="sheet-var">session_free_entry_use</span> = 0</td><td>저장 없음 &mdash; 기존 입장료 흐름 그대로</td></tr>
+    <tr><td><strong>대상 밖</strong></td><td>레벨 &lt; min_level 또는 레벨 &ge; max_level, (max_level = 0이면 전원 해당)</td><td>저장 없음 &mdash; 기존 입장료 흐름 그대로</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
@@ -323,7 +321,7 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>항목</th><th>내용</th></tr></thead>
     <tbody>
-    <tr><td>일일 카운터</td><td><strong>두지 않음</strong> &mdash; 횟수 상한이 없으므로 리셋 축·타임존 처리도 발생하지 않음</td></tr>
+    <tr><td>일일 카운터</td><td><strong>두지 않음</strong> &mdash; 판정이 마지막 게임 정보 하나로 끝나므로 리셋 축·타임존 처리가 발생하지 않음</td></tr>
     <tr><td>멱등성</td><td>같은 세션에서 게임 시작이 재시도돼도 마지막 게임 정보가 이미 기록돼 있으므로 무료 입장은 1회로 고정됨. 판정 권한은 <strong>서버 단독</strong></td></tr>
     <tr><td>중도 이탈</td><td>무료 판을 끝내지 않고 앱을 껐다 켜도 마지막 게임 정보가 남아 있으므로 재차 무료가 되지 않음</td></tr>
     </tbody>
@@ -378,7 +376,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>유저-일당 완료 판수</td><td>&mdash;</td><td><strong>비열위</strong> &mdash; 감소하면 롤백 검토</td></tr>
     <tr><td><strong>세션 첫 판의 판당 보상</strong></td><td>&mdash;</td><td><strong>감시</strong> &mdash; 배수 선택이 사라진 만큼 줄어드는데, 두 번째 판 이후 배수 선택이 이를 되메우는지 확인</td></tr>
     <tr><td>D1 리텐션</td><td>&mdash;</td><td><strong>비열위</strong></td></tr>
-    <tr><td><strong>유저-일당 무료 입장 횟수</strong></td><td>1.48 (모의)</td><td><strong>유지</strong> &mdash; 급증하면 재시작 반복 신호. 이때 횟수 상한을 도입함</td></tr>
+    <tr><td>유저-일당 무료 입장 발생</td><td>1.48 (모의)</td><td><strong>유지</strong> &mdash; 골드 소비 감소 폭이 예측을 벗어나는지 확인</td></tr>
     <tr><td style="color:var(--text2)">골드 잔고 분포</td><td style="color:var(--text2)">중앙값 2,000</td><td style="color:var(--text2)">상승 여부 관찰 &mdash; 인플레 감시</td></tr>
     </tbody>
   </table>
@@ -388,7 +386,7 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>롤백</h3>
-  <p><span class="sheet-var">session_free_entry_use</span>를 <strong>0</strong>으로 설정하면 다음 로그인부터 무료 입장 판정이 꺼지고 기존 입장료 흐름으로 복귀함. <strong>빌드 불필요 · 시트 push만으로 즉시 반영.</strong> 진행 중이던 무료 판은 그대로 끝까지 플레이됨.</p>
+  <p><span class="sheet-var">session_free_entry_max_level</span>을 <strong>0</strong>으로 설정하면 다음 로그인부터 무료 입장 판정이 꺼지고 기존 입장료 흐름으로 복귀함. <strong>빌드 불필요 · 시트 push만으로 즉시 반영.</strong> 진행 중이던 무료 판은 그대로 끝까지 플레이됨.</p>
 </section>
 
 
