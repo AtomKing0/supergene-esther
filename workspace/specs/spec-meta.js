@@ -187,7 +187,7 @@ const SPECS = [
   {
     id: 'spec-032', file: 'spec-032-daily-first-play-free.html',
     title: '[경제-온보딩] 세션 첫 판 무료 입장',
-    tags: ['feature', 'balance'], priority: 'high', status: 'open', date: '2026. 7. 29.', dueDate: null, relatedTo: [],
+    tags: ['feature', 'balance'], priority: 'high', status: 'wip', date: '2026. 7. 29.', dueDate: '2026-08-14', relatedTo: [],
   },
   {
     id: 'spec-033', file: 'spec-033-deck-counter.html',
@@ -218,7 +218,7 @@ const SPECS = [
   {
     id: 'spec-036', file: 'spec-036-retry-flow.html',
     title: '[UX-플로우] 실패 후 재도전 흐름 단축',
-    tags: ['ux'], priority: 'high', status: 'open', date: '2026. 8. 5.', dueDate: null, relatedTo: ['spec-009b', 'spec-035'],
+    tags: ['ux'], priority: 'high', status: 'wip', date: '2026. 8. 5.', dueDate: '2026-08-19', relatedTo: ['spec-009b', 'spec-035'],
   },
 ];
 
