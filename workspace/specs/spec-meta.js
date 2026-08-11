@@ -186,7 +186,7 @@ const SPECS = [
   },
   {
     id: 'spec-032', file: 'spec-032-daily-first-play-free.html',
-    title: '[경제-온보딩] 하루 첫 판 무료 입장',
+    title: '[경제-온보딩] 세션 첫 판 무료 입장',
     tags: ['feature', 'balance'], priority: 'high', status: 'open', date: '2026. 7. 29.', dueDate: null, relatedTo: [],
   },
   {
