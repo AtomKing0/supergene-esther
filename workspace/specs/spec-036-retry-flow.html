@@ -111,6 +111,10 @@ tbody td:first-child { color:var(--text);font-weight:600; }
 .callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
 .callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
 .callout-purple { background:var(--purple-bg);border-left:3px solid var(--purple); }
+.callout-red    { background:var(--red-bg);border-left:3px solid var(--red); }
+.todo-row td { background:var(--yellow-bg); }
+.todo-row td:first-child { color:var(--yellow); }
+.todo-chip{display:inline-block;background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,.4);font-size:.66rem;font-weight:800;border-radius:5px;padding:2px 8px;letter-spacing:.04em;margin-left:6px}
 .callout strong { color:var(--text); }
 .callout p { margin:0;color:var(--text2); }
 
@@ -191,7 +195,6 @@ ul li strong,ol li strong { color:var(--text); }
 .gm-red   {background:linear-gradient(180deg,#ff8a2b,#ec2020);text-shadow:-1.5px -1.5px 0 #a9341d,1.5px -1.5px 0 #a9341d,-1.5px 1.5px 0 #a9341d,1.5px 1.5px 0 #a9341d}
 .gm-blue  {background:linear-gradient(180deg,#6fd0ff,#0092ff);border-radius:16px;font-size:1.3rem}
 .gm-w200{width:132px}.gm-w240{width:158px}.gm-w260{width:172px}.gm-sq{width:66px;height:66px}
-.gm-star{position:absolute;top:-9px;right:-7px;background:#ffd633;color:#5a3c00;font-size:.58rem;font-weight:900;border-radius:999px;padding:2px 7px;box-shadow:0 1px 3px rgba(0,0,0,.35);text-shadow:none}
 
 /* 실제 화면 플로우 */
 .vf{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin:20px 0}
@@ -360,8 +363,8 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>문구</td><td>타이틀&middot;설명을 재도전 유도 문안으로 교체(키 재사용). 구 문안은 <code>_V1</code> 키로 보존</td></tr>
       <tr><td>노출 제어</td><td><code>const</code> 시트 <code>is_retry_flow_open</code> &mdash; 버튼과 문구를 함께 분기</td></tr>
       <tr><td>튜토리얼</td><td>다시 하기 미노출</td></tr>
-      <tr><td>신규 아트</td><td>없음 &mdash; 기존 스프라이트 전량 재사용</td></tr>
-      <tr><td>신규 문자열</td><td><code>T_RETRY</code> 1건</td></tr>
+      <tr><td>아트</td><td>버튼 <strong>신규 제작</strong> 및 3버튼 배치 설계를 UI/UX 디자이너에게 요청</td></tr>
+      <tr><td>신규 문자열</td><td><code>T_RETRY</code> 1건 &middot; 타이틀&middot;설명 문안 교체 2건</td></tr>
     </tbody>
   </table>
 </section>
@@ -492,14 +495,14 @@ ul li strong,ol li strong { color:var(--text); }
                 </div>
                 <div class="gm-btns">
                   <div class="gm-btn gm-green gm-w200">Back</div>
-                  <div class="gm-btn gm-orange gm-w240">Try Again<span class="gm-star">추천</span></div>
+                  <div class="gm-btn gm-orange gm-w240">Try Again</div>
                   <div class="gm-btn gm-blue gm-sq">&#127968;</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="mk-note"><b>To-Be</b> &mdash; 좌측 <b>뒤로</b>는 색&middot;자리 그대로 두고, 중앙에 <b>다시 하기</b>를 새로 넣고, 우측 끝은 <b>로비로(홈 아이콘)</b>가 받음. <code>추천</code> 뱃지는 예시 표기이며 <b>실제 구현에는 넣지 않음</b>(문구 뱃지 신설 = 신규 아트&middot;신규 문구 발생).</div>
+        <div class="mk-note"><b>To-Be</b> &mdash; 좌측 <b>뒤로</b>는 색&middot;자리 그대로 두고, 중앙에 <b>다시 하기</b>를 새로 넣고, 우측 끝은 <b>로비로(홈 아이콘)</b>가 받음. <b>버튼 이미지와 최종 배치는 디자이너 시안으로 확정</b>하며, 이 목업은 위계와 배치 의도를 전달하는 용도임.</div>
       </div>
     </div>
   </div>
@@ -537,6 +540,22 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="mk-note">끄면 <b>레드 Quit이 다시 우측에 서고</b> 문구도 현행으로 돌아감. 즉 문구 2건도 스위치를 함께 타야 함 &mdash; 아래 <b>문구</b> 항목의 분기 규칙 참고.</div>
   </div>
 
+  <h3>뒤로를 없애고 2버튼으로 가지 않는 이유</h3>
+  <p>코드상 <strong>뒤로와 닫기 X는 완전히 같은 동작</strong>임(<code>onClickClose</code>가 <code>onClickBack</code>을 그대로 호출). 그래서 뒤로를 지우고 <strong>다시 하기 / 로비로</strong> 2버튼으로 가면 훨씬 깔끔해지고, 기존 절대좌표를 그대로 써서 <code>cc.Layout</code> 작업도 통째로 사라짐. 그런데 <strong>돌아가기는 죽은 경로가 아님</strong>.</p>
+  <table>
+    <thead><tr><th>확인</th><th>실측</th></tr></thead>
+    <tbody>
+      <tr><td>나가기 팝업에서 돌아간 판</td><td>742판 (<code>2221</code> 기준, 8/1~8/8)</td></tr>
+      <tr class="pick"><td>그중 결국 클리어로 끝난 판</td><td><strong>223판 · 30.1%</strong></td></tr>
+      <tr><td>환산</td><td>주 약 200판 회수 &mdash; 이 기획 목표(+475판/주)와 같은 자릿수</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <strong>확정 &mdash; 뒤로를 남김.</strong> 이미 &ldquo;끝낼까&rdquo; 고민한 판인데 돌아가서 <b>3판 중 1판을 살려냄</b>. 덱이 소진된 상태에서 살리려면 추가 덱&middot;와일드를 사야 하므로 골드 소비도 함께 붙는 경로임.<br>
+    <b>게임 자체의 관례와도 맞음</b> &mdash; 일시정지 팝업은 같은 질문을 하면서 돌아가기(Resume)를 X가 아니라 <b>큰 녹색 버튼</b>으로 주고 있음. 나가기 팝업만 돌아가기를 74px 구석 X로 줄이면 두 팝업의 문법이 어긋남.<br>
+    <b>&#9888; 다만 근거가 완전하지는 않음</b> &mdash; <code>2221</code>이 뒤로와 X를 <b>구분 없이 한 코드로</b> 찍어서, 위 30.1%가 큰 버튼 덕인지 X만으로도 나오는지 분리되지 않음. 이번 작업에서 <code>2221</code>에 <b>어느 쪽을 눌렀는지 구분 필드를 추가</b>해 다음 개정 때 판단 근거를 확보함.
+  </div>
+
   <h3>덱이 남은 상태에서 눌러도 그대로 띄움</h3>
   <p>엔드레벨 버튼은 <strong>판 도중 아무 때나 누를 수 있음</strong>. 덱&middot;언두&middot;와일드가 남아 있는데 누르는 유저는 &ldquo;막혀서&rdquo;가 아니라 &ldquo;그만두고 싶어서&rdquo;일 수 있으므로, 그런 상태에서는 다시 하기를 감출지 검토함. <strong>결론은 감추지 않음</strong> &mdash; 그 상태 자체가 거의 없음.</p>
   <table>
@@ -558,7 +577,7 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>버튼 스펙</h3>
-  <p>세 버튼 모두 <strong>이미 게임에 있는 스프라이트를 그대로 씀</strong>. 신규 이미지 제작 없음.</p>
+  <p>아래 크기&middot;스프라이트는 <strong>기존 팝업에서 뽑은 기준값</strong>이며 <strong>확정 시안이 아님</strong>. 최종 버튼 이미지와 3버튼 배치는 <strong>UI/UX 디자이너가 신규 제작</strong>함 &mdash; 아래 <b>아트 요청</b> 항목 참고.</p>
   <table>
     <thead><tr><th>버튼</th><th>크기</th><th>스프라이트</th><th>9-slice (L/R)</th><th>핸들러</th><th>문자열</th></tr></thead>
     <tbody>
@@ -600,54 +619,76 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
 
-  <h3>문구</h3>
-  <p>프레이밍을 바꿈. 지금 문구는 &ldquo;나가면 보상을 잃는다&rdquo;로 <strong>나가기를 막는 데 초점</strong>이 있는데, 이 기획의 목표는 <strong>다시 하기를 주 동선으로 만드는 것</strong>이라 서로 어긋남. 진행이 멈춘다는 사실을 알리고 한 판 더를 권하는 문안으로 교체함.</p>
-  <table>
-    <thead><tr><th>구분</th><th>Key</th><th>위치</th><th>kr</th><th>en</th></tr></thead>
-    <tbody>
-      <tr class="pick"><td>신규</td><td><code>T_RETRY</code></td><td>중앙 버튼</td><td>다시 하기</td><td>Try Again</td></tr>
-      <tr><td>값 교체</td><td><code>T_QUIT_LEVEL_TITLE</code></td><td>타이틀</td><td>아직 못 깼어요</td><td>Not cleared yet</td></tr>
-      <tr><td>값 교체</td><td><code>T_QUIT_LEVEL_DESC</code></td><td>설명</td><td>이 판은 아직 안 끝났어요.<br>한 판 더 해볼까요?</td><td>This level isn&rsquo;t finished.<br>One more try?</td></tr>
-      <tr><td>재사용</td><td><code>T_BACK</code></td><td>좌측 버튼</td><td>뒤로</td><td>Back</td></tr>
-      <tr><td>등록 안 함</td><td><s>T_LOBBY</s> / <s>T_HOME</s></td><td>&mdash;</td><td colspan="2">로비로는 아이콘 단독이라 문자열이 필요 없음. 신설하지 않음</td></tr>
-    </tbody>
-  </table>
-  <div class="txtsample"><div class="h">&#128221; 확정 문안 (en)</div><table><tbody>
-    <tr><td>T_RETRY</td><td class="en">Try Again</td></tr>
-    <tr><td>T_QUIT_LEVEL_TITLE</td><td class="en">Not cleared yet</td></tr>
-    <tr><td>T_QUIT_LEVEL_DESC</td><td class="en">This level isn&rsquo;t finished. One more try?</td></tr>
-    <tr><td>T_BACK <span style="color:var(--text2)">(재사용)</span></td><td class="en">Back</td></tr>
-  </tbody></table></div>
-  <div class="callout callout-yellow">
-    <strong>&#9888; 문구 2건은 스위치를 함께 타야 함.</strong> <code>is_retry_flow_open</code>이 꺼진 상태에서 새 타이틀&middot;설명만 남으면 &ldquo;한 판 더 해볼까요?&rdquo; 아래에 다시 하기 버튼이 없는 모순이 생김. <b>타이틀&middot;설명도 스위치로 분기</b>하거나, 스위치 해제 시 되돌릴 구 문구를 별도 키로 보존할 것. 결정: <b>키를 하나 더 만들지 않고, 클라에서 스위치에 따라 표시 문구를 고르는 방식</b>으로 처리함 &mdash; 구 문안은 <code>T_QUIT_LEVEL_TITLE_V1</code>&middot;<code>T_QUIT_LEVEL_DESC_V1</code>로 원문을 복사 보존.
-  </div>
-  <div class="callout callout-yellow">
-    <strong>&#9888; 폭 검증 대상 &mdash; 프랑스어&middot;러시아어.</strong> 프랑스어는 이 게임에서 항상 최장이고(영어 대비 +38~57%), 240px 버튼에 폰트 44로 <b>Réessayer</b> 급 단어가 들어가는지 반드시 실기 확인. 넘치면 버튼 폭을 늘리지 말고 <b>해당 언어만 자동 축소</b>(<code>cc.Label</code> overflow SHRINK)로 처리 &mdash; 폭을 늘리면 564 + 여유 44 계산이 깨짐.
-  </div>
-
   <h3>모션 &middot; 사운드</h3>
   <table>
     <thead><tr><th>항목</th><th>처리</th></tr></thead>
     <tbody>
       <tr><td>팝업 등장&middot;퇴장</td><td>기존 <code>Popup_default_show</code> 클립 그대로. 신규 애니메이션 없음</td></tr>
       <tr><td>버튼 클릭음</td><td>기존 <code>ClickSound</code> 공통 컴포넌트. 다시 하기 전용 음색 없음</td></tr>
-      <tr><td>다시 하기 강조 연출</td><td><strong>넣지 않음.</strong> 반짝임&middot;펄스는 신규 애니메이션 제작이 필요하고, 배치와 색만으로 위계가 이미 서 있음</td></tr>
+      <tr><td>다시 하기 강조 연출</td><td><strong>넣지 않음.</strong> 반짝임&middot;펄스는 신규 애니메이션이 필요하고, 배치와 색만으로 위계가 이미 섬. 뱃지&middot;라벨 장식도 넣지 않음(문구 추가 발생)</td></tr>
       <tr><td>화면 전환 연출</td><td><strong>확정 필요</strong> &mdash; 로비로 나갈 때 쓰던 덤불 전환(<code>showBushView</code>)을 다시 하기 경로에서도 쓸지. 로비를 안 거치는데 전환막이 끼면 단축 효과가 줄어듦. <b>제안: 다시 하기 경로에서는 생략</b>하고 팝업 페이드아웃 &rarr; 프리레벨 팝업 페이드인으로 잇기</td></tr>
     </tbody>
   </table>
 
-  <h3>아트 작업</h3>
-  <div class="callout callout-blue"><strong>신규 이미지 제작 0건.</strong> 아래 에셋을 전부 재사용함. 아트 작업은 <b>프리팹 버튼 배치 변경 1건</b>뿐임.</div>
+  <h3>아트 요청 <span class="art-chip">ART</span></h3>
+  <p>버튼이 2개에서 3개로 늘고 위계가 셋으로 갈리므로, <strong>버튼 이미지 신규 제작과 3버튼 배치 설계를 UI/UX 디자이너에게 요청</strong>함. 아래 기존 에셋은 <strong>색&middot;톤&middot;크기의 출발점</strong>으로만 참고함.</p>
   <table>
-    <thead><tr><th>에셋</th><th>현재 사용처</th><th>이번 용도</th></tr></thead>
+    <thead><tr><th>요청 항목</th><th>내용</th><th>참고 기준</th></tr></thead>
     <tbody>
-      <tr><td><code>UI_btn_main_green.png</code></td><td>나가기 팝업 Back</td><td>그대로 (뒤로)</td></tr>
-      <tr><td><code>UI_btn_main_orange.png</code></td><td>승리 결과 팝업 Collect x2</td><td>다시 하기</td></tr>
-      <tr><td><code>UI_btn_blue02.png</code></td><td>승리 결과 팝업 홈 버튼 배경</td><td>로비로 배경</td></tr>
-      <tr><td><code>UI_Icon_home.png</code></td><td>승리 결과 팝업 홈 아이콘 (92&times;95)</td><td>로비로 아이콘</td></tr>
-      <tr><td><code>UI_btn_main_red.png</code></td><td>나가기 팝업 Quit</td><td>스위치 OFF&middot;튜토리얼에서만 사용 &mdash; <b>삭제하지 말 것</b></td></tr>
+      <tr class="pick"><td><strong>다시 하기 버튼</strong> (신규)</td><td>주 행동. 셋 중 가장 강한 위계. 아이콘 동반 여부도 함께 제안 요청</td><td>승리 결과 팝업 <code>UI_btn_main_orange.png</code> (310&times;96) 톤</td></tr>
+      <tr class="pick"><td><strong>로비로 버튼</strong> (신규)</td><td>홈 아이콘 형태. 텍스트 없이 뜻이 통해야 함</td><td>승리 결과 팝업 홈 버튼 <code>UI_btn_blue02.png</code> + <code>UI_Icon_home.png</code> (100&times;100)</td></tr>
+      <tr class="pick"><td><strong>3버튼 배치 설계</strong></td><td>세 버튼의 폭 배분&middot;간격&middot;정렬. 팝업 패널 폭 <b>608</b> 안에 들어가야 하고, 버튼 하나가 빠졌을 때(스위치 OFF&middot;튜토리얼) 중앙 정렬이 자연스럽게 무너지지 않아야 함</td><td>승리 결과 팝업 <code>Contents/Btns</code> 수평 <code>cc.Layout</code> 구조</td></tr>
+      <tr><td>뒤로 버튼</td><td>현행 유지가 기본. 신규 3버튼과 톤이 안 맞으면 함께 정리 요청</td><td><code>UI_btn_main_green.png</code> (기존 260&times;96)</td></tr>
+      <tr><td>레드 나가기 버튼</td><td>스위치 OFF&middot;튜토리얼에서 되살아나므로 <b>삭제하지 말 것</b></td><td><code>UI_btn_main_red.png</code> 유지</td></tr>
     </tbody>
   </table>
+  <div class="callout callout-yellow">
+    <strong>&#9888; 디자이너에게 함께 전달할 제약 2가지.</strong><br>
+    <b>① 회색은 쓰지 말 것</b> &mdash; 이 게임에서 회색은 잠김&middot;비활성 전용임(프리레벨 팝업의 잠긴 부스터). 위계를 낮추려고 회색을 쓰면 눌리지 않는 버튼으로 읽힘.<br>
+    <b>② 다시 하기를 기존 나가기 자리(우측)에 놓지 말 것</b> &mdash; 나가려고 우측을 누르던 유저가 입장료를 내고 새 판에 들어가는 오조작이 생김. 우측 끝은 판을 뜨는 버튼이 받아야 함.
+  </div>
+
+  <h3>문구 &middot; <code>string_code</code> 변경 <span class="art-chip-mini">번역</span></h3>
+  <p>프레이밍을 바꿈. 지금 문구는 &ldquo;나가면 보상을 잃는다&rdquo;로 <strong>나가기를 막는 데 초점</strong>이 있는데, 이 기획의 목표는 <strong>다시 하기를 주 동선으로 만드는 것</strong>이라 서로 어긋남. 진행이 멈췄다는 사실을 알리고 한 판 더를 권하는 문안으로 교체함.</p>
+  <p style="font-size:12.5px;color:var(--text2);margin:0 0 8px">라이브 컬럼 = <code>Key &middot; en &middot; ar &middot; es &middot; pt &middot; id &middot; ru &middot; fr &middot; th &middot; jp &middot; kr</code> (10개 언어 &middot; <b>en이 첫 컬럼</b>). 아래는 <b>kr&middot;en 기준값</b>이며 나머지 8개 언어는 번역 후 채움.</p>
+  <table>
+    <thead><tr><th>구분</th><th>Key</th><th>화면</th><th>kr</th><th>en</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td>신규</td><td><code>T_RETRY</code></td><td>중앙 버튼</td><td>다시 하기</td><td>Try Again</td></tr>
+      <tr class="pick"><td>신규</td><td><code>T_QUIT_LEVEL_TITLE_V1</code></td><td>타이틀(구 문안 보존)</td><td>그만둘까요?</td><td>Quit level?</td></tr>
+      <tr class="pick"><td>신규</td><td><code>T_QUIT_LEVEL_DESC_V1</code></td><td>설명(구 문안 보존)</td><td>보상을 잃게 돼요!</td><td>You&rsquo;ll lose your rewards!</td></tr>
+      <tr><td>값 교체</td><td><code>T_QUIT_LEVEL_TITLE</code></td><td>타이틀</td><td>아직 못 깼어요</td><td>Not cleared yet</td></tr>
+      <tr><td>값 교체</td><td><code>T_QUIT_LEVEL_DESC</code></td><td>설명</td><td>이 판은 아직 안 끝났어요.<br>한 판 더 해볼까요?</td><td>This level isn&rsquo;t finished.<br>One more try?</td></tr>
+    </tbody>
+  </table>
+
+  <h4 style="font-size:14px;margin:16px 0 6px">재사용 &mdash; 신규 생성 금지 (라이브 실존 키)</h4>
+  <table>
+    <thead><tr><th>용도</th><th>Key</th><th>kr</th><th>en</th></tr></thead>
+    <tbody>
+      <tr><td>좌측 버튼</td><td><code>T_BACK</code></td><td>뒤로</td><td>Back</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12.5px;color:var(--text2)">&#8251; 등록하지 않음 &mdash; <code>T_LOBBY</code>&middot;<code>T_HOME</code>: 로비로는 아이콘 단독이라 문자열이 필요 없음. 버튼에 텍스트를 붙이는 시안이 나오면 그때 신설 여부를 다시 판단함.</p>
+
+  <div class="txtsample"><div class="h">&#128221; 확정 문안 (en)</div><table><tbody>
+    <tr><td>T_RETRY</td><td class="en">Try Again</td></tr>
+    <tr><td>T_QUIT_LEVEL_TITLE</td><td class="en">Not cleared yet</td></tr>
+    <tr><td>T_QUIT_LEVEL_DESC</td><td class="en">This level isn&rsquo;t finished. One more try?</td></tr>
+    <tr><td>T_QUIT_LEVEL_TITLE_V1</td><td class="en">Quit level?</td></tr>
+    <tr><td>T_QUIT_LEVEL_DESC_V1</td><td class="en">You&rsquo;ll lose your rewards!</td></tr>
+    <tr><td>T_BACK <span style="color:var(--text2)">(재사용)</span></td><td class="en">Back</td></tr>
+  </tbody></table></div>
+
+  <div class="callout callout-red">
+    <strong>&#9888; 문안에 숫자&middot;고유명을 박지 말 것.</strong> 남은 판수&middot;레벨 같은 값이 문구에 들어가게 되면 전부 <code>{0}</code>&middot;<code>{1}</code> 자리표시자로 받을 것. 현재 확정 문안에는 치환값이 없음.
+  </div>
+  <div class="callout callout-yellow">
+    <strong>&#9888; 문구도 스위치를 함께 타야 함.</strong> <code>is_retry_flow_open</code>이 꺼진 상태에서 새 타이틀&middot;설명만 남으면 &ldquo;한 판 더 해볼까요?&rdquo; 아래에 다시 하기 버튼이 없는 모순이 생김. <b>구 문안을 <code>_V1</code> 키로 보존하고, 클라가 스위치에 따라 표시 키를 고름</b>.
+  </div>
+  <div class="callout callout-yellow">
+    <strong>&#9888; 폭 검증 대상 &mdash; 프랑스어&middot;러시아어.</strong> 프랑스어는 이 게임에서 항상 최장임(영어 대비 +38~57%). 디자이너 시안이 나오면 <b>fr&middot;ru를 넣은 상태로 폭을 확인</b>할 것. 넘치면 버튼 폭을 늘리지 말고 해당 언어만 자동 축소(<code>cc.Label</code> overflow SHRINK)로 처리 &mdash; 폭을 늘리면 패널 608 안에 세 버튼이 안 들어감.
+  </div>
 </section>
 
 <section id="s3">
@@ -729,11 +770,18 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>테이블</th><th>필드</th><th>값</th><th>설명</th></tr></thead>
     <tbody>
-      <tr><td><code>const</code></td><td><code>is_retry_flow_open</code></td><td>bool</td><td>다시 하기·로비로 버튼과 신규 문구의 노출 여부. 끄면 기존 2버튼 흐름·구 문구로 복귀</td></tr>
+      <tr class="todo-row"><td><code>const</code></td><td><code>is_retry_flow_open</code> <span class="todo-chip">논의 필요</span></td><td>bool</td><td><strong>시트 상수로 뺄지 논의 필요.</strong> 뺄 경우 = 빌드 없이 즉시 롤백 가능(아래 롤백 항목이 이 전제 위에 있음). 안 뺄 경우 = 시트 컬럼이 늘지 않지만 문제 발생 시 <b>클라 빌드를 다시 올려야 함</b></td></tr>
       <tr><td><code>string_code</code></td><td><code>T_RETRY</code></td><td>문자열</td><td>중앙 버튼 문구. 10개 언어 등록</td></tr>
-      <tr><td><code>string_code</code></td><td><code>T_QUIT_LEVEL_TITLE</code> · <code>T_QUIT_LEVEL_DESC</code></td><td>문자열</td><td>값 교체(키 유지). 구 문안을 <code>_V1</code> 접미 키로 복사 보존</td></tr>
+      <tr><td><code>string_code</code></td><td><code>T_QUIT_LEVEL_TITLE_V1</code> · <code>T_QUIT_LEVEL_DESC_V1</code></td><td>문자열</td><td>구 문안 보존용 신규 키 2건</td></tr>
+      <tr><td><code>string_code</code></td><td><code>T_QUIT_LEVEL_TITLE</code> · <code>T_QUIT_LEVEL_DESC</code></td><td>문자열</td><td>값 교체(키 유지). 문안은 ② <b>문구 · string_code 변경</b> 표 참고</td></tr>
     </tbody>
   </table>
+  <div class="callout callout-yellow">
+    <strong>&#9888; 논의 필요 &mdash; <code>is_retry_flow_open</code>을 시트 상수로 뺄 것인가.</strong><br>
+    <b>뺀다</b> &mdash; 시트만 고쳐 즉시 끄고 켤 수 있음. 지표가 나빠지면 빌드 없이 원복되고, A/B로 켰다 껐다 할 여지도 생김. 대신 클라가 OFF 분기(기존 2버튼 레이아웃 + 구 문구)를 <b>계속 들고 있어야 함</b> &mdash; 버튼 이미지도 신구 두 벌이 남음.<br>
+    <b>안 뺀다</b> &mdash; 코드와 프리팹이 깔끔해지고 레드 나가기 버튼&middot;<code>_V1</code> 문구를 안 남겨도 됨. 대신 문제가 생기면 <b>클라 빌드 롤백</b>이 유일한 수단임.<br>
+    <b>연동 주의</b> &mdash; 이 결정에 따라 <code>_V1</code> 문구 키 2건과 레드 버튼 유지 여부, 그리고 아래 <b>롤백</b> 항목이 함께 바뀜. 셋을 따로 정하면 어긋남.
+  </div>
   <p class="note">기존 값을 참고로 쓰는 상수 &mdash; <code>is_interstitial_ad_quit_open</code>(현재 1), <code>is_quick_next_loop_open</code>(현재 0) · <code>is_prelevel_popup_open</code>(현재 1) · <code>is_reward_on_result_open</code>(현재 0). 이 기획은 이 값들을 <b>바꾸지 않음</b>. 읽기만 함.</p>
 </section>
 
@@ -775,9 +823,11 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>파트</th><th>항목</th></tr></thead>
     <tbody>
+      <tr class="todo-row"><td>기획</td><td><code>is_retry_flow_open</code>을 시트 상수로 뺄지 결정 <span class="todo-chip">논의 필요</span> &mdash; <code>_V1</code> 문구 키·레드 버튼 유지·롤백 방식이 여기에 딸려 있음</td></tr>
       <tr><td>기획</td><td><code>T_RETRY</code> 신규 등록 · 타이틀/설명 문안 교체 및 <code>_V1</code> 보존 키 등록 (10개 언어)</td></tr>
-      <tr><td>기획</td><td><code>const</code> 시트 <code>is_retry_flow_open</code> 등록</td></tr>
-      <tr><td>아트</td><td><b>신규 이미지 없음.</b> 프리팹 버튼 배치를 <code>cc.Layout</code>으로 교체 · 파란 정사각 홈 버튼 배치</td></tr>
+      <tr><td>기획</td><td>디자이너 시안 확정 후 버튼 크기·간격을 스펙 표에 반영</td></tr>
+      <tr><td>아트</td><td><b>다시 하기 · 로비로 버튼 신규 제작</b> + 3버튼 배치 설계 (② 아트 요청 참고)</td></tr>
+      <tr><td>아트</td><td>시안 확정 후 프리팹 버튼 배치를 <code>cc.Layout</code>으로 교체</td></tr>
       <tr><td>클라</td><td><code>PopupQuitLevel</code> 버튼 구성 확장 · 콜백 분리 · 문구 스위치 분기</td></tr>
       <tr><td>클라</td><td>다시 하기 경로에서 <code>ViewCreator.showPopupGameEntry()</code> 호출 (프리레벨 팝업 직접 호출 금지)</td></tr>
       <tr><td>클라</td><td><b>나가기 팝업 호출부 두 곳(<code>onClickEndLevel</code> · <code>onClickOption</code>) 공통화</b> 후 양쪽에 콜백 연결 &mdash; <code>remaining_draw_count</code> 등 로그 필드도 함께 맞출 것(현재 7.6% 미기록)</td></tr>
@@ -801,7 +851,7 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
 
   <h3>롤백</h3>
-  <p><code>const</code> 시트의 <code>is_retry_flow_open</code>을 끄면 다시 하기·로비로 버튼이 사라지고 레드 나가기 버튼과 구 문구가 돌아오면서 기존 흐름으로 즉시 복귀함. 클라 빌드 롤백이 필요하지 않음.</p>
+  <p><strong>위 <code>is_retry_flow_open</code> 논의 결과에 따라 갈림.</strong> 상수로 빼면 시트에서 끄는 즉시 다시 하기·로비로 버튼이 사라지고 레드 나가기 버튼과 구 문구가 돌아오며, 클라 빌드 롤백이 필요 없음. 상수를 두지 않기로 하면 <strong>클라 빌드 롤백이 유일한 복구 수단</strong>이므로 배포 시점과 감시 기간을 그에 맞춰 잡아야 함.</p>
 </section>
 
 <section id="s5">
