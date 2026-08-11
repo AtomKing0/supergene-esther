@@ -282,7 +282,7 @@ ul li strong,ol li strong { color:var(--text); }
         <div class="kpi-label">실패 시 레벨</div>
         <div class="kpi-value" style="color:var(--blue)">동결</div>
         <div class="kpi-sub">클리어만 +1 · 재도전 강제</div>
-        <div class="kpi-trend">&#9650; 로그 확증</div>
+        <div class="kpi-trend">&#9650; 재도전 강제</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">목표 진입률</div>
@@ -376,17 +376,13 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>진입 경로 &mdash; 나가기 팝업은 두 군데서 열림</h3>
-  <p>같은 팝업이지만 여는 곳이 둘이고, <strong>열리는 조건이 서로 다름</strong>. 지금은 두 경로가 각자 거의 같은 코드를 들고 있어서(<code>ViewGame.onClickEndLevel</code> / <code>ViewGame.onClickOption</code>) 한쪽만 고치면 다른 쪽이 옛 흐름으로 남음. <strong>두 경로 모두에 다시 하기가 나와야 함.</strong></p>
+  <p>같은 팝업이지만 여는 곳이 둘임. 두 경로가 각자 거의 같은 코드를 들고 있어서(<code>ViewGame.onClickEndLevel</code> / <code>ViewGame.onClickOption</code>) 한쪽만 고치면 다른 쪽이 옛 흐름으로 남음. <strong>두 경로 모두에 다시 하기가 나와야 하며, 이 기회에 두 호출부를 하나로 합침.</strong></p>
 
   <div class="fl">
     <span class="fl-tag">경로 1</span>
     <span class="fl-box">인게임<small>카드 배치 화면</small></span><span class="fl-arw">&rarr;</span>
     <span class="fl-box">엔드레벨 버튼<small>덱 0장일 때만 노출</small></span><span class="fl-arw">&rarr;</span>
     <span class="fl-box hot">나가기 팝업</span>
-  </div>
-  <div class="callout callout-blue">
-    <strong>엔드레벨 버튼은 상시 노출이 아님.</strong> <code>StageView</code>가 드로우 덱이 <b>0장이 되는 순간에만</b> 띄우고(<code>showOrHideEndLevelNode(drawCount === 0)</code>, <code>btn_show_scale</code>), <b>추가 덱을 사서 덱이 다시 채워지면 도로 감춤</b>(<code>btn_hide_scale</code>). 그래서 경로 1로 들어온 유저는 <b>전부 덱이 마른 상태</b>임 &mdash; 이 기획이 겨냥한 &ldquo;진행 정지&rdquo; 유저와 정확히 같은 집단임.<br>
-    반면 <b>경로 2(톱니 &rarr; 일시정지 팝업)는 판 도중 언제나</b> 열 수 있음. 덱이 남은 채로 판이 끝나는 경우는 이 경로로만 들어옴.
   </div>
   <div class="fl">
     <span class="fl-tag">경로 2</span>
@@ -456,33 +452,14 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>팝업 목업</h3>
-  <p>아래는 클라 실측값으로 그린 목업임. 색은 실제 스프라이트 PNG에서 뽑았고(패널 <code>#fff8ec</code>, 녹색 <code>#00d900</code>, 오렌지 <code>#ffb600&rarr;#ff7800</code>, 블루 <code>#0097ff</code>), 텍스트 외곽선 색과 두께는 프리팹의 <code>cc.LabelOutline</code> 값 그대로임. 목업은 게임 화면 재현이라 문서 테마와 무관하게 고정 색을 씀.</p>
+  <p>좌측은 현행 실제 화면, 우측은 To-Be 목업임. 목업의 색은 실제 스프라이트 값을 따랐으나(패널 <code>#fff8ec</code>, 녹색 <code>#00d900</code>, 오렌지 <code>#ffb600&rarr;#ff7800</code>, 블루 <code>#0097ff</code>) <strong>확정 시안이 아니며 버튼 이미지와 최종 배치는 디자이너가 정함</strong>.</p>
 
   <div class="mk">
     <div class="mk-cap">나가기 팝업 &mdash; As-Is(현행) / To-Be(확정)</div>
     <div class="mk-row2">
       <div>
-        <div class="mk-stage">
-          <div class="gm">
-            <div class="gm-frame">
-              <div class="gm-head">Quit level?</div>
-              <div class="gm-x">&#10006;</div>
-              <div class="gm-body">
-                <div class="gm-desc">You&rsquo;ll lose your rewards!</div>
-                <div class="gm-ribbon">Reward <b>x2</b></div>
-                <div class="gm-rewardbox">
-                  <div class="gm-item"><div class="gm-coin">&clubs;</div><div class="gm-amt">3,600</div></div>
-                  <div class="gm-item"><div class="gm-icon">&#128296;</div><div class="gm-amt">x1</div></div>
-                </div>
-                <div class="gm-btns">
-                  <div class="gm-btn gm-green gm-w260">Back</div>
-                  <div class="gm-btn gm-red gm-w260">Quit</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="mk-note"><b>As-Is</b> &mdash; 버튼 2개가 절대좌표 <code>(&plusmn;124, &minus;155)</code>에 고정. 우측 레드가 유일한 탈출구라 &ldquo;나가기&rdquo; 외 선택지가 없음.</div>
+        <div class="mk-stage"><img src="ref-036-quit-popup-only.png" alt="현행 나가기 팝업" style="max-width:420px;width:100%;border-radius:10px;display:block"></div>
+        <div class="mk-note"><b>As-Is</b> &mdash; 버튼 2개가 절대좌표 <code>(&plusmn;124, &minus;155)</code>에 고정. 우측 레드가 유일한 탈출구임.</div>
       </div>
       <div>
         <div class="mk-stage">
@@ -512,10 +489,10 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <div class="callout callout-purple">
-    <strong>색을 이렇게 정한 이유 &mdash; 오조작 방지와 팔레트 규칙 두 가지임.</strong><br>
-    <b>① 다시 하기를 옛 Quit 자리(우측 오렌지)에 놓지 않음.</b> 나가려고 우측을 누르던 유저가 그대로 누르면 입장료를 내고 새 판에 들어가 버림. 우측 끝은 <b>로비로</b>가 받아 &ldquo;우측 끝을 누르면 판을 뜬다&rdquo;는 결과가 그대로 보존됨.<br>
-    <b>② 뒤로를 회색으로 바꾸지 않음.</b> 이 게임에서 <b>회색은 잠김&middot;비활성 전용</b>임(프리레벨 팝업의 잠긴 부스터 2개가 회색+자물쇠). 뒤로를 회색으로 내리면 눌리지 않는 버튼으로 읽힘. 뒤로는 사용률 17.5%(<code>2221</code> 789 / <code>2220</code> 4,514)로 죽은 버튼이 아님 &mdash; 녹색&middot;좌측 그대로 유지함.<br>
-    <b>③ 레드는 팝업에서 사라짐.</b> 나가기를 더 이상 강조하지 않겠다는 이 기획의 의도와 일치함. 레드는 인게임 엔드레벨 버튼에만 남음.
+    <strong>배치 규칙 &mdash; 반드시 지킬 것.</strong><br>
+    <b>① 다시 하기는 기존 나가기 자리(우측)에 두지 않음.</b> 나가려고 우측을 누르던 유저가 입장료를 내고 새 판에 들어가는 오조작이 생김. 우측 끝은 판을 뜨는 버튼이 받음.<br>
+    <b>② 뒤로는 녹색&middot;좌측 그대로 유지.</b> 이 게임에서 회색은 잠김&middot;비활성 전용이라 위계를 낮추려고 회색을 쓰면 안 됨.<br>
+    <b>③ 레드는 팝업에서 사라짐.</b> 인게임 엔드레벨 버튼에만 남김.
   </div>
 
   <h4>노출 제어를 껐을 때 &mdash; 현행 2버튼 복귀</h4>
@@ -542,47 +519,6 @@ ul li strong,ol li strong { color:var(--text); }
       </div>
     </div>
     <div class="mk-note">끄면 <b>레드 Quit이 다시 우측에 서고</b> 문구도 현행으로 돌아감. 즉 문구 2건도 스위치를 함께 타야 함 &mdash; 아래 <b>문구</b> 항목의 분기 규칙 참고.</div>
-  </div>
-
-  <h3>뒤로를 없애고 2버튼으로 갈 것인가</h3>
-  <p>코드상 <strong>뒤로와 닫기 X는 완전히 같은 동작</strong>임(<code>onClickClose</code>가 <code>onClickBack</code>을 그대로 호출). 그래서 뒤로를 지우고 <strong>다시 하기 / 로비로</strong> 2버튼으로 가면 훨씬 깔끔해지고, 기존 절대좌표를 그대로 써서 <code>cc.Layout</code> 작업도 통째로 사라짐. 검토 결과 <strong>이번 개정에서는 유지</strong>하되, 데이터로 확정한 것이 아니라는 점을 명시해 둠.</p>
-  <table>
-    <thead><tr><th>확인</th><th>실측</th></tr></thead>
-    <tbody>
-      <tr><td>나가기 팝업에서 판으로 돌아간 판</td><td>742판 (<code>2221</code> 기준, 8/1~8/8)</td></tr>
-      <tr class="pick"><td>그중 결국 클리어로 끝난 판</td><td><strong>223판 · 30.1%</strong> (주 약 200판)</td></tr>
-    </tbody>
-  </table>
-  <div class="callout callout-red">
-    <strong>&#9888; 이 숫자는 &ldquo;뒤로 버튼이 필요하다&rdquo;를 증명하지 못함.</strong> <code>2221</code>은 <b>뒤로와 X를 구분 없이 한 코드로</b> 찍음. 그래서 위 223판이 큰 녹색 버튼 덕인지, <b>X만으로도 그대로 나오는 값인지 분리되지 않음</b>. 전부 X였다면 뒤로를 지워도 손실이 없다는 뜻이 됨.<br>
-    이 숫자가 말해 주는 것은 <b>&ldquo;돌아가기 경로 자체는 살아 있고 값이 크다&rdquo;</b>까지임 &mdash; 그 경로를 <b>어떤 크기의 타깃으로 줄지</b>는 답하지 못함.
-  </div>
-  <div class="callout callout-blue">
-    <strong>이번 개정 &mdash; 뒤로를 유지함.</strong> 데이터가 아니라 아래 세 가지 판단임.<br>
-    <b>① 돌아가기 경로의 값이 큼</b> &mdash; 엔드레벨 버튼은 덱이 0일 때만 뜨므로, 여기서 돌아간다는 것은 <b>추가 덱&middot;와일드를 사서 살린다</b>는 뜻임. 골드 소비가 붙는 동선이라 접근성을 낮출 때의 손실이 비대칭적으로 큼.<br>
-    <b>② 게임 자체의 관례</b> &mdash; 일시정지 팝업은 같은 질문을 하면서 돌아가기(Resume)를 X가 아니라 <b>큰 녹색 버튼</b>으로 줌. 나가기 팝업만 74px 구석 X로 줄이면 두 팝업의 문법이 어긋남.<br>
-    <b>③ 되돌리기 비용</b> &mdash; 남겼다가 빼는 것은 쉽지만, 뺐다가 지표가 나빠지면 되돌리는 데 빌드가 한 바퀴 더 듦.<br>
-    <b>&rarr; 이번 작업에서 <code>2221</code>에 뒤로/X 구분 필드를 추가</b>하고, 실측이 쌓이면 다음 개정에서 2버튼안을 다시 판단함. 그때 X 비중이 압도적이면 뒤로를 지우는 쪽이 맞음.
-  </div>
-
-  <h3>덱 잔량으로 게이팅하지 않음</h3>
-  <p>엔드레벨 버튼은 아무 때나 떠 있는 것이 아님. <strong>드로우 덱이 0장이 되는 순간에만 나타나고</strong>(<code>StageView.showOrHideEndLevelNode(drawCount === 0)</code>), 추가 덱을 사서 덱이 다시 채워지면 <strong>버튼이 도로 사라짐</strong>(<code>btn_show_scale</code> / <code>btn_hide_scale</code>). 즉 <strong>경로 1로 들어온 유저는 정의상 전부 막힌 상태</strong>이며, &ldquo;덱이 남았는데 그만두는&rdquo; 상황은 이 경로에 존재하지 않음.</p>
-  <table>
-    <thead><tr><th>판을 끝낸 시점의 덱 잔량</th><th>판수</th><th>비중</th><th>해석</th></tr></thead>
-    <tbody>
-      <tr class="pick"><td>0장 &mdash; 덱 소진</td><td>6,184</td><td><strong>92.4%</strong></td><td>엔드레벨 버튼 노출 조건 자체 &mdash; 구조적으로 나오는 값</td></tr>
-      <tr><td>1~3장</td><td>1</td><td>0.0%</td><td rowspan="2">덱이 남은 채 끝난 판 &mdash; <b>경로 2(일시정지 &rarr; Quit)</b>로 들어온 것으로 봄. 이쪽은 판 도중 언제나 열 수 있음</td></tr>
-      <tr><td>4장 이상</td><td>4</td><td><strong>0.1%</strong></td></tr>
-      <tr><td>미기록</td><td>507</td><td>7.6%</td><td>아래 계측 구멍 참고</td></tr>
-    </tbody>
-  </table>
-  <p class="note">2026-07-25 ~ 08-08 실패 판 전수(6,696판). <code>2300_GAMEPLAY_FINISH</code> <code>result=fail</code>의 <code>remaining_draw_count</code> 기준. <b>92.4%는 유저 행동이 아니라 버튼 노출 조건이 만든 값이므로 근거로 쓸 수 없음</b> &mdash; 판단에 쓰는 숫자는 아래 0.1%임.</p>
-  <div class="callout callout-blue">
-    <strong>확정 &mdash; 게이팅하지 않음.</strong> 경로 1은 노출 조건상 이미 전부 막힌 상태라 조건을 더 걸 이유가 없음. 덱이 남은 채 끝나는 판은 경로 2로 들어온 <b>0.1%(5판)</b>뿐이라 그쪽만 따로 처리할 값어치도 없음.<br>
-    그리고 <b>다시 하기는 같은 맵이 아니라 새 맵</b>이므로, 이 판이 안 풀려서 나가려는 유저에게도 오히려 원하는 선택지임. 나가기를 막지도 않음 &mdash; <b>뒤로 &middot; 로비로 &middot; X</b>가 그대로 있어 한 번 터치로 나감.
-  </div>
-  <div class="callout callout-yellow">
-    <strong>&#9888; 계측 구멍 &mdash; 미기록 7.6%.</strong> <code>remaining_draw_count</code>가 비는 판이 특정 날짜에 몰리지 않고 매일 고르게 나옴(빌드 전환이 아님). <b>나가기 팝업 호출부가 두 곳인데 한쪽만 이 필드를 채우고 있을 가능성</b>이 큼 &mdash; 호출부를 공통화할 때 로그 필드도 함께 맞출 것. 이 구멍이 메워져야 경로 1 / 경로 2 비중도 정확히 갈림.
   </div>
 
   <h3>버튼 스펙</h3>
@@ -747,12 +683,10 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
   <div class="callout callout-yellow">
-    <strong>SPEC-035와 같은 지면을 씀 &mdash; 이미 라이브에서 켜져 있음.</strong> 나가기 지면 스위치 <code>is_interstitial_ad_quit_open</code>이 <b>현재 라이브 값 1</b>이라, 지금도 나가기 확정 시 전면 광고가 호출되고 콜백을 최대 5초(<code>QUIT_AD_CALLBACK_TIMEOUT_MS</code>) 기다림.<br>
-    <b>확정 &mdash; 광고는 두 경로 모두 그대로 둠.</b> <code>ADPlayer.tryShowInterstitialAD(LogITPosition.game_quit, ...)</code> 호출은 지금 위치에 그대로 두고, <b>콜백(<code>proceedQuit</code>) 안에서만</b> 다시 하기 / 로비로를 가름. 광고 노출 수·지면 분포·SPEC-035의 노출/DAU 목표가 전부 그대로 유지되므로 <b>두 스펙 사이에 조정할 것이 없음</b>.
+    <strong>전면 광고 &mdash; 호출 위치를 옮기지 말 것.</strong> <code>ADPlayer.tryShowInterstitialAD(LogITPosition.game_quit, ...)</code> 호출은 지금 위치에 그대로 두고, <b>콜백(<code>proceedQuit</code>)과 타임아웃 폴백 안에서만</b> 다시 하기 / 로비로를 가름. 광고 노출 수&middot;지면 분포가 그대로 유지되므로 SPEC-035와 조정할 것이 없음.
   </div>
   <div class="callout callout-purple">
-    <strong>Quick Next Loop(v2) A/B와의 관계 &mdash; 직접 팝업을 띄우지 말 것.</strong> 별도 A/B로 <b>프리레벨 팝업을 아예 건너뛰고 입장료를 0으로 두는 v2</b>가 존재함(<code>is_quick_next_loop_open</code> &middot; <code>is_prelevel_popup_open</code> &middot; <code>is_reward_on_result_open</code>). <b>현재 라이브 값은 셋 다 v1</b>(각각 0 / 1 / 0)이라 이 기획의 &ldquo;프리레벨 팝업 직행 &middot; 입장료 정상 지불&rdquo; 전제가 그대로 성립하지만, v2가 켜지면 전제가 깨짐.<br>
-    <b>해법은 이미 있음.</b> <code>ViewCreator.showPopupGameEntry(stageId, onClose)</code>가 내부에서 v1/v2를 판정해 갈라줌 &mdash; v1이면 프리레벨 팝업을 띄우고 v2면 곧장 판을 시작함. 따라서 <b>다시 하기는 프리레벨 팝업을 직접 열지 말고 이 함수를 호출</b>하면 두 버전 모두에서 자동으로 맞음. <code>gameEnd</code>의 <code>betGoldAmount</code>도 기존 <code>isPrelevelPopupOpen</code> 분기를 그대로 쓰면 됨.
+    <strong>프리레벨 팝업을 직접 열지 말 것.</strong> <code>ViewCreator.showPopupGameEntry(stageId, onClose)</code>를 호출함. 이 함수가 Quick Next Loop v1/v2를 내부에서 판정해 &mdash; v1이면 프리레벨 팝업, v2면 곧장 판 시작 &mdash; 두 버전 모두에서 자동으로 맞음. <code>gameEnd</code>의 <code>betGoldAmount</code>도 기존 <code>isPrelevelPopupOpen</code> 분기를 그대로 씀.
   </div>
 
   <h3>클라</h3>
@@ -805,7 +739,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>코드</th><th>시점</th><th>필드</th><th>출처</th></tr></thead>
     <tbody>
       <tr><td><code>2220_GAMEPLAY_END_SURE</code></td><td>그만두기 팝업 노출 (기존)</td><td><code>difficulty_tier</code> · <code>seed</code></td><td>클라</td></tr>
-      <tr><td><code>2221_GAMEPLAY_END_SURE_NO</code></td><td>뒤로 · 닫기 (기존)</td><td><code>difficulty_tier</code> · <code>seed</code></td><td>클라</td></tr>
+      <tr class="pick"><td><code>2221_GAMEPLAY_END_SURE_NO</code></td><td>뒤로 · 닫기 X (기존)</td><td><code>difficulty_tier</code> · <code>seed</code> · <strong><code>close_type</code> 추가</strong>(<code>back</code> / <code>x</code>)</td><td>클라 &mdash; 두 버튼이 한 코드로 찍혀 분리되지 않으므로 구분 필드를 신설함</td></tr>
       <tr><td><code>2222_GAMEPLAY_END_SURE_YES</code></td><td><strong>로비로</strong> 선택 (의미 변경)</td><td><code>difficulty_tier</code> · <code>seed</code></td><td>클라</td></tr>
       <tr><td><code>2223_GAMEPLAY_END_SURE_RETRY</code></td><td><strong>다시 하기</strong> 선택 (신규)</td><td><code>difficulty_tier</code> · <code>seed</code> · <code>remaining_card_count</code></td><td>클라 &mdash; 판 종료 시점의 화면 상태에서 얻음</td></tr>
       <tr><td><code>2100_GAMEPLAY_START</code></td><td>판 시작 (기존)</td><td><code>position</code>에 <code>retry</code> 값 추가</td><td>클라 &mdash; 진입 경로 구분용. 기존 값은 <code>lobby</code></td></tr>
@@ -842,7 +776,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>클라</td><td><b>나가기 팝업 호출부 두 곳(<code>onClickEndLevel</code> · <code>onClickOption</code>) 공통화</b> 후 양쪽에 콜백 연결 &mdash; <code>remaining_draw_count</code> 등 로그 필드도 함께 맞출 것(현재 7.6% 미기록)</td></tr>
       <tr><td>클라</td><td>다시 하기 경로에서 데일리 기프트 팝업 · 덤불 전환 미노출 처리</td></tr>
       <tr><td>클라</td><td>전면 광고 호출을 로비로 분기 안으로 이동</td></tr>
-      <tr><td>클라</td><td>로그 <code>2223</code> 신설 · <code>2100</code> <code>position</code>에 <code>retry</code> 추가</td></tr>
+      <tr><td>클라</td><td>로그 <code>2223</code> 신설 · <code>2100</code> <code>position</code>에 <code>retry</code> 추가 · <code>2221</code>에 <code>close_type</code> 추가</td></tr>
       <tr><td>서버</td><td><code>gameEnd</code> 직후 <code>gameStart</code> 연속 호출 검증 여부 확인</td></tr>
       <tr><td>QA</td><td>다시 하기 &rarr; 프리레벨 팝업 &rarr; 판 시작까지 정상 진입</td></tr>
       <tr><td>QA</td><td><b>일시정지 팝업 &rarr; Quit 경로에서도</b> 동일하게 3버튼이 뜨고 다시 하기가 동작</td></tr>
