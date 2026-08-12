@@ -177,8 +177,8 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="badge badge-green">2026. 8. 12.</span>
     </div>
     <h1>토너먼트 소셜 팝업 개편<br><span>공유 · 초대 토글</span></h1>
-    <p class="hero-sub">토너 컨텍스트의 판 종료 팝업이 <strong>공유만 반복 발화</strong>해 벤치 대비 2~3배 과다하고,
-    신규를 데려오는 <strong>토너 초대 지면은 부재</strong>함. 판 종료 팝업을 <strong>공유 &harr; 토너 초대
+    <p class="hero-sub">토너 컨텍스트의 판 종료 팝업이 <strong>공유(<span class="sheet-var">shareTournament</span>)만 반복 발화</strong>해 벤치 대비 2~3배 과다하고,
+    신규를 데려오는 <strong>토너 초대 지면은 부재</strong>함. 판 종료 팝업을 <strong>공유 &harr; 토너 초대(<span class="sheet-var">inviteAsync</span>)
     번갈아 발화(토글)</strong>로 바꿔 공유 시도를 절반(벤치 밴드)으로 자동 정상화하고, 그 자리에
     전사 최고 D14 유입 지면(퍼블마 검증)을 새로 연다. 두 팝업은 생김새·행위가 달라 피로 축이 분리됨.</p>
     <div class="kpi-grid">
@@ -219,7 +219,7 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>문제 — 같은 팝업의 반복 · 신규를 만드는 지면의 부재</h3>
-  <p>토너 컨텍스트에 있는 유저는 판 종료마다 <strong>공유 팝업만</strong> 만남. 발화량은 벤치 대비 2~3배인데
+  <p>토너 컨텍스트에 있는 유저는 판 종료마다 <strong>공유 팝업(<span class="sheet-var">shareTournament</span> &middot; 3200)만</strong> 만남. 발화량은 벤치 대비 2~3배인데
   유저당 공유 성공은 벤치 밴드 안이므로 초과 노출은 전부 거절로 소모되고 있음. 한편 신규 유입을 만드는
   초대 지면은 전사에서 퍼블마만 보유하며, D14 기준 전 지면 중 최상위임.</p>
   <table>
@@ -233,7 +233,7 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
 
   <h3>고칠 부분</h3>
-  <p>판 종료 소셜 팝업을 하나의 토글 슬롯으로 통합함 — 호출마다 <strong>공유 &rarr; 토너 초대 &rarr; 공유 &rarr; &hellip;</strong>
+  <p>판 종료 소셜 팝업을 하나의 토글 슬롯으로 통합함 — 호출마다 <strong><span class="sheet-var">shareTournament</span> &rarr; <span class="sheet-var">inviteFriend</span> &rarr; <span class="sheet-var">shareTournament</span> &rarr; &hellip;</strong>
   순서로 번갈아 발화(퍼블마 검증 구조 그대로). 공유 시도는 자동으로 절반이 되어 벤치 밴드에 들어가고,
   초대는 <strong>게임을 하지 않는 FB 친구 전체가 대상</strong>이라 인게임 친구가 적은 솔의 약점을 우회하는 신규 유입 지면이 됨.</p>
 
@@ -241,7 +241,7 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>구분</th><th>정의 · 값</th></tr></thead>
     <tbody>
-    <tr><td><strong>자동 발화 슬롯</strong></td><td>토너 컨텍스트에서 판 클리어 종료 시 1개 슬롯 — <strong>공유 &harr; 토너 초대 토글</strong> (첫 발화는 공유부터)</td></tr>
+    <tr><td><strong>자동 발화 슬롯</strong></td><td>토너 컨텍스트에서 판 클리어 종료 시 1개 슬롯 — <strong>공유 &harr; 토너 초대 토글</strong> (<span class="sheet-var">shouldInvitePopupNext</span>=false로 시작 &mdash; 첫 발화는 공유부터)</td></tr>
     <tr><td><strong>쿨타임</strong></td><td><strong>없음</strong> — 솔은 판 사이 간격 p50 82초라 퍼블마의 60초 쿨타임이 사실상 걸리지 않아 제외함. 발화 빈도는 토글 자체가 제어</td></tr>
     <tr><td><strong>초대 페이로드</strong> (entryPointData)</td><td><span class="sheet-var">{ social: "TOURNAMENT_INVITE", tournament_id, player, is_invite: true, version, ad_parent, timestamp }</span> &mdash; 퍼블마 <span class="sheet-var">TournamentBattleView.showTournamentInvitePopup()</span> 필드 구성 정렬. 수신자는 탭 시 <strong>해당 토너 컨텍스트로 진입</strong></td></tr>
     <tr><td><strong>기존 정책 유지</strong></td><td>연속 거절 상한 · 판 포기 시 미노출 · 유저 주도 지면(로비 등) 무제한 — 전부 현행 유지</td></tr>
@@ -253,9 +253,9 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th></th><th>As-Is</th><th>To-Be</th></tr></thead>
     <tbody>
-    <tr><td>토너 컨텍스트 판 종료</td><td><strong>공유 팝업만</strong> 매판 발화</td><td><strong>공유 &harr; 초대 번갈아</strong> 발화 · 쿨타임 없음</td></tr>
+    <tr><td>토너 컨텍스트 판 종료</td><td><strong><span class="sheet-var">shareTournament</span>만</strong> 매판 발화</td><td><strong><span class="sheet-var">shareTournament</span> &harr; <span class="sheet-var">inviteFriend</span></strong> 번갈아 발화 · 쿨타임 없음</td></tr>
     <tr><td>공유 시도량</td><td>유저당 20.8회/5일 (벤치 2~3배)</td><td>~10회 &mdash; 벤치 밴드 자동 도달</td></tr>
-    <tr><td>토너 초대</td><td>지면 없음</td><td>신설 &mdash; FB 친구 선택 다이얼로그로 도전장 발송</td></tr>
+    <tr><td>토너 초대 (<span class="sheet-var">inviteAsync</span>)</td><td>지면 없음</td><td>신설 &mdash; FB 친구 선택 다이얼로그로 도전장 발송</td></tr>
     </tbody>
   </table>
 
@@ -288,6 +288,16 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="section-meta"><div class="section-title">개발 스펙</div></div>
   </div>
 
+  <h3>명칭 대응표 &mdash; 이 문서의 한글명은 아래 코드 식별자를 가리킴</h3>
+  <table>
+    <thead><tr><th>한글명</th><th>클라 함수 (솔)</th><th>FB API</th><th>로그 이벤트</th><th>유입 귀속</th></tr></thead>
+    <tbody>
+    <tr><td><strong>공유 팝업</strong></td><td><span class="sheet-var">shareTournament()</span> <span style="opacity:.7">(FacebookPlatform.ts · shareCurrentTournament 경유)</span></td><td><span class="sheet-var">shareAsync</span></td><td><span class="sheet-var">3200_TOURNAMENT_SHARE</span> / <span class="sheet-var">3210_&hellip;_SUCCESS</span> / <span class="sheet-var">3220_&hellip;_FAIL</span></td><td><span class="sheet-var">social: "TOURNAMENT"</span></td></tr>
+    <tr><td><strong>토너 초대 팝업</strong> (신설)</td><td><span class="sheet-var">inviteFriend(LogInvitePosition.tournament_invite)</span></td><td><span class="sheet-var">inviteAsync</span></td><td><span class="sheet-var">3460_MSG_P2P_INVITE</span> / <span class="sheet-var">3470_&hellip;_SUCCESS</span> / <span class="sheet-var">3480_&hellip;_FAIL</span> (position=<span class="sheet-var">"tournament_invite"</span>)</td><td><span class="sheet-var">social: "TOURNAMENT_INVITE"</span></td></tr>
+    <tr><td>생성 팝업 <span style="opacity:.7">(범위 외)</span></td><td><span class="sheet-var">handleTournamentCreate()</span></td><td><span class="sheet-var">createTournamentAsync</span></td><td><span class="sheet-var">3100</span> / <span class="sheet-var">3110</span> / <span class="sheet-var">3120</span> / <span class="sheet-var">3130</span></td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+
   <h3>용어 &mdash; 세 층을 다른 단어로 부름</h3>
   <table>
     <thead><tr><th>용어</th><th>뜻</th><th>혼동 주의</th></tr></thead>
@@ -311,7 +321,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>변수명</th><th>타입</th><th>기본값</th><th>값 의미</th></tr></thead>
     <tbody>
     <tr><td><span class="sheet-var">tournament_invite_enabled</span></td><td>int</td><td><strong>0</strong></td>
-        <td><strong>0</strong> = 끔(현행 &mdash; 공유만 발화) &middot; <strong>1</strong> = 켬(공유 &harr; 토너 초대 토글)</td></tr>
+        <td><strong>0</strong> = 끔(현행 &mdash; <span class="sheet-var">shareTournament</span>만 발화) &middot; <strong>1</strong> = 켬(<span class="sheet-var">shareTournament</span> &harr; <span class="sheet-var">inviteFriend</span> 토글)</td></tr>
     </tbody>
   </table>
   <table>
@@ -330,7 +340,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td>1</td><td>기존 자동 발화 조건(토너 컨텍스트 · 클리어 · 연속 거절 상한)</td><td>종료 &mdash; 현행과 동일</td></tr>
     <tr><td>2</td><td><span class="sheet-var">tournament_invite_enabled</span> = 1인가</td><td>0이면 현행 공유 흐름으로</td></tr>
-    <tr><td>3</td><td>발화(유저 제스처 안에서) &rarr; 성공 시 토글 순번 전환</td><td>&mdash;</td></tr>
+    <tr><td>3</td><td><span class="sheet-var">shouldInvitePopupNext</span>에 따라 <span class="sheet-var">shareTournament()</span> 또는 <span class="sheet-var">inviteFriend()</span> 발화(유저 제스처 안에서) &rarr; 성공 시 순번 반전</td><td>&mdash;</td></tr>
     </tbody>
   </table>
 
@@ -349,11 +359,11 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>상황</th><th>동작</th></tr></thead>
     <tbody>
-    <tr><td>초대 차례인데 유저가 친구 선택을 취소하면</td><td>발화는 일어난 것 &mdash; 토글 순번은 다음(공유)으로 전환 · 연속 거절 상한 카운트</td></tr>
+    <tr><td>초대 차례(<span class="sheet-var">shouldInvitePopupNext</span>=true)인데 유저가 친구 선택을 취소하면</td><td>발화는 일어난 것(<span class="sheet-var">3480</span> USER_INPUT) &mdash; 순번은 공유로 반전 · 연속 거절 상한 카운트</td></tr>
     <tr><td>판을 포기하면</td><td>발화 없음(현행 유지) · 순번 유지</td></tr>
     <tr><td>비토너 컨텍스트(솔로·P2P)면</td><td>이 스펙 범위 외 &mdash; 기존 생성 흐름 그대로</td></tr>
     <tr><td>수신자가 이미 그 토너에 있으면</td><td>그냥 해당 컨텍스트 진입 &mdash; 별도 처리 없음</td></tr>
-    <tr><td><span class="sheet-var">tournament_invite_enabled</span>=0 또는 상수 없음</td><td>현행(공유만)과 동일 &mdash; 안전 기본값</td></tr>
+    <tr><td><span class="sheet-var">tournament_invite_enabled</span>=0 또는 상수 없음</td><td>현행(<span class="sheet-var">shareTournament</span>만)과 동일 &mdash; 안전 기본값</td></tr>
     </tbody>
   </table>
 
@@ -403,9 +413,9 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>지표</th><th>As-Is</th><th>To-Be</th><th>비고</th></tr></thead>
     <tbody>
-    <tr><td><strong>공유 성공/DAU</strong> &#11088;가드레일</td><td>0.35</td><td><strong>유지 이상</strong></td><td>유의 하락 시 롤백 &mdash; 판정 최우선</td></tr>
+    <tr><td><strong>공유 성공(<span class="sheet-var">3210</span>)/DAU</strong> &#11088;가드레일</td><td>0.35</td><td><strong>유지 이상</strong></td><td>유의 하락 시 롤백 &mdash; 판정 최우선</td></tr>
     <tr><td>공유 시도/유저-일</td><td>5.4</td><td>~2.7 (벤치 밴드)</td><td>토글의 자동 결과</td></tr>
-    <tr><td>토너 초대 유입/주</td><td>0</td><td>신설 &mdash; 볼륨 관측</td><td>퍼블마 900명/주는 6개월 성숙값 &mdash; 초기 기대치는 보수적으로</td></tr>
+    <tr><td>토너 초대 유입(<span class="sheet-var">social=TOURNAMENT_INVITE</span>)/주</td><td>0</td><td>신설 &mdash; 볼륨 관측</td><td>퍼블마 900명/주는 6개월 성숙값 &mdash; 초기 기대치는 보수적으로</td></tr>
     <tr><td>초대 수신자 D14</td><td>&mdash;</td><td>오가닉 대비 유의 우위</td><td>퍼블마 NA 12.1% 참조</td></tr>
     </tbody>
   </table>
@@ -413,7 +423,7 @@ ul li strong,ol li strong { color:var(--text); }
   <strong>결과 지표(성공/DAU)</strong>로만 함. 41 통합 팔로업 페이지에 적용일 마커와 초대 지표를 추가함.</div>
 
   <h3>롤백</h3>
-  <p><span class="sheet-var">tournament_invite_enabled</span>를 0으로 되돌리면 다음 세션부터 전원 현행(공유만)으로 복귀함(빌드 불필요). 롤백 트리거는 공유 성공/DAU의 유의 하락 단 하나임.</p>
+  <p><span class="sheet-var">tournament_invite_enabled</span>를 0으로 되돌리면 다음 세션부터 전원 현행(공유만)으로 복귀함(빌드 불필요). 롤백 트리거는 공유 성공(<span class="sheet-var">3210</span>)/DAU의 유의 하락 단 하나임.</p>
 </section>
 
 </div>
