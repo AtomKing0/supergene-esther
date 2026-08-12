@@ -363,7 +363,7 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>로깅</h3>
-  <p>발생 자체는 <strong>전용 이벤트</strong>로 남기고, 판 단위 지표는 <strong>기존 2100·2300의 기존 필드에 값 하나를 더하는 것</strong>으로 처리함. 두 축을 분리하면 루커에서 이벤트 간 조인 없이 각각 바로 집계됨.</p>
+  <p>발생 자체는 <strong>전용 이벤트</strong>로 남기고, 판 단위 지표는 <strong>기존 2100·2300의 기존 필드에 값 하나를 더하는 것</strong>으로 처리함. <span class="sheet-var">position</span>은 현재 <strong>lobby 단일값</strong>이라 값을 갈라도 기존 집계가 흔들리지 않음. 두 축을 분리하면 루커에서 이벤트 간 조인 없이 각각 바로 집계됨.</p>
   <table>
     <thead><tr><th>이벤트</th><th>필드</th><th>출처</th><th>용도</th></tr></thead>
     <tbody>
@@ -372,9 +372,13 @@ ul li strong,ol li strong { color:var(--text); }
         <td><strong>서버</strong> &mdash; 판정 주체가 서버이므로 클라가 추정하지 않음</td>
         <td>무료 입장 발생량 · 면제 골드 총액 · <strong>어뷰징 감시</strong>(<span class="sheet-var">last_used_at</span>이 같은 날이면 재발생)</td></tr>
     <tr><td><span class="sheet-var">2100_GAMEPLAY_START</span></td>
-        <td><span class="sheet-var">entry_type</span> = <strong>free</strong><br><span style="color:var(--text2)">기존 필드에 값 추가 (현재 gold · ticket)</span></td>
+        <td><span class="sheet-var">position</span> = <strong>daily_free_entry</strong><br><span style="color:var(--text2)">기존 필드에 값 추가 (현재 lobby 단일)</span></td>
         <td>서버</td>
         <td><strong>무료 판 필터.</strong> 이 값 없이는 <span class="sheet-var">entry_cost</span>=0인 기존 판(Lv 1~2 · 무한 티켓)과 구분되지 않음. <span class="sheet-var">betting</span>은 <strong>x1</strong>로 기록됨</td></tr>
+    <tr><td style="color:var(--text2)"><span class="sheet-var">12001 / 12002_INTRO_DIRECT_ENTRY_START/END</span></td>
+        <td style="color:var(--text2)">변경 없음</td>
+        <td style="color:var(--text2)">클라</td>
+        <td style="color:var(--text2)"><strong>직행 구분 불가</strong> &mdash; 레벨 1~2 직행·강종 복귀가 같은 로그를 쓰는데 구분 필드가 없어 셋이 안 갈림. 무료 직행의 시작&rarr;완료 이탈은 이 쌍 대신 <strong>2098 대비 2100(position) 비율</strong>로 봄</td></tr>
     <tr><td><span class="sheet-var">2300_GAMEPLAY_FINISH</span></td>
         <td><strong>변경 없음</strong> &mdash; 기존 <span class="sheet-var">betting</span> 사용</td>
         <td>서버</td>
