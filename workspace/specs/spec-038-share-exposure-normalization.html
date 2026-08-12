@@ -178,8 +178,9 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
     <h1>토너먼트 공유 노출 빈도 정상화<br><span>Share Exposure Normalization</span></h1>
     <p class="hero-sub">공유 다이얼로그 자동 발화가 벤치(코지·마종) 대비 <strong>2~3배 과다</strong>함.
-    유저당 공유 <strong>성공</strong> 횟수는 이미 벤치 밴드 안이므로, 수락 확률이 낮은 노출을 줄여
-    성공 손실 없이 발화량을 벤치 수준으로 되돌림. 친구 신호 보유 여부로 자동 발화 상한을 차등 적용함.</p>
+    원인은 발사 조건의 구조 차이 — 벤치는 <strong>토너로 시작한 판 1회만</strong> 묻는데, 솔은 FB 컨텍스트가
+    유지되는 동안 <strong>판마다</strong> 물음. 벤치와 같은 축으로 <strong>자동 발화를 컨텍스트 전환 직후
+    첫 판 종료 1회로 한정</strong>해 성공 손실 없이 발화량을 정상화함.</p>
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">공유 시도 / 유저 (5일)</div>
@@ -232,19 +233,20 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
 
   <h3>고칠 부분</h3>
-  <p>자동 발화에만 상한을 둠. 유저가 스스로 여는 공유(로비 토너먼트 지면 등)는 제한하지 않음.
-  친구 신호가 있는 유저는 수락 확률이 2.5배 높으므로 상한을 더 줌.</p>
+  <p>벤치(코지·마종)는 토너를 판 단위 상태로 관리해 <strong>토너로 시작한 그 판 종료에만</strong> 공유를 묻고
+  다음 판에서 리셋됨(마종 ViewMahjong.ts:258·1657 · 코지 ViewCozyTile.ts:443·2399). 솔은 판 상태 없이
+  현재 FB 컨텍스트만 봐서(ViewGame.ts callRegistTournament) 전환 1회 수락 후 <strong>모든 판</strong>에서
+  발사됨 — 이 축을 벤치와 동일하게 맞춤. 유저가 스스로 여는 공유(로비 등)는 제한하지 않음.</p>
 
   <h3>확정 정책</h3>
   <table>
     <thead><tr><th>구분</th><th>정의 · 값</th></tr></thead>
     <tbody>
-    <tr><td><strong>친구 신호</strong></td><td>P2P 메세지 성공 또는 컨텍스트 전환 성공을 <strong>1회 이상</strong> 경험한 유저. 최초 성공 시점에 클라 로컬 플래그로 기록하며 이후 해제하지 않음</td></tr>
-    <tr><td><strong>자동 발화 상한 &mdash; 신호 있음</strong></td><td>세션당 <strong>2회</strong></td></tr>
-    <tr><td><strong>자동 발화 상한 &mdash; 신호 없음</strong></td><td>세션당 <strong>1회</strong></td></tr>
-    <tr><td><strong>유저 주도 지면</strong></td><td>상한 없음 · 상한 카운터에 셈하지 않음</td></tr>
-    <tr><td><strong>기존 연속 거절 상한</strong></td><td>유지. 이 스펙의 상한과 <strong>둘 다</strong> 통과해야 발화(별개 조건)</td></tr>
-    <tr><td><strong>적용 범위</strong></td><td>전량 적용(A/B 없음) · 생성 다이얼로그는 이 스펙의 범위가 아님</td></tr>
+    <tr><td><strong>자동 발화 조건</strong></td><td>토너 컨텍스트로 <strong>전환(진입)한 직후 첫 판 종료 1회만</strong> 자동 발화. 같은 컨텍스트에 머무는 이후 판에서는 자동 발화하지 않음</td></tr>
+    <tr><td><strong>재무장 조건</strong></td><td>새로 컨텍스트를 전환(다른 토너로 이동 포함)하면 다시 1회 발화 가능</td></tr>
+    <tr><td><strong>유저 주도 지면</strong></td><td>제한 없음 &mdash; 로비 토너먼트 지면 등에서 유저가 직접 여는 공유는 언제나 가능</td></tr>
+    <tr><td><strong>기존 연속 거절 상한</strong></td><td>유지. 이 스펙의 조건과 <strong>둘 다</strong> 통과해야 발화(별개 조건)</td></tr>
+    <tr><td><strong>적용 범위</strong></td><td>전량 적용(A/B 없음) · 생성 다이얼로그는 이 스펙의 범위가 아님 · 벤치(마종 ViewMahjong.ts:1657 · 코지 ViewCozyTile.ts:2399)와 동일 동작</td></tr>
     </tbody>
   </table>
 
@@ -252,9 +254,9 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th></th><th>As-Is</th><th>To-Be</th></tr></thead>
     <tbody>
-    <tr><td>자동 발화 조건</td><td>판 종료 시 토너 보유·거절 상한 미달이면 매번</td><td>왼쪽 조건 + <strong>세션 상한(신호 있음 2회 / 없음 1회) 미달</strong></td></tr>
+    <tr><td>자동 발화 조건</td><td>토너 컨텍스트에 있으면 <strong>판 종료마다</strong>(전환 1회 수락 후 전 판 발화)</td><td>컨텍스트 <strong>전환 직후 첫 판 종료 1회만</strong> &mdash; 이후 판은 미발화</td></tr>
+    <tr><td>재무장</td><td>&mdash;</td><td>새 전환 시 1회 재무장</td></tr>
     <tr><td>유저 주도 공유</td><td>제한 없음</td><td>변화 없음</td></tr>
-    <tr><td>친구 신호 구분</td><td>없음</td><td>클라 로컬 플래그로 상한만 차등</td></tr>
     </tbody>
   </table>
 
@@ -273,9 +275,9 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>용어</th><th>뜻</th><th>혼동 주의</th></tr></thead>
     <tbody>
-    <tr><td><strong>세션</strong></td><td>FB 인스턴트 게임 실행 1회(부팅~종료). 상한 카운터의 리셋 단위</td><td>플레이 세션 시간·로그인 일수와 다름</td></tr>
-    <tr><td><strong>상한 카운터</strong></td><td>이번 세션에서 자동 발화한 횟수. 세션 시작 시 0</td><td>기존 &lsquo;연속 거절 카운터&rsquo;와 별개 &mdash; 그쪽은 거절만 세고 생성 성공 시 리셋</td></tr>
-    <tr><td><strong>친구 신호</strong></td><td>영구 플래그. 리셋 없음</td><td>기간형 아님 &mdash; 30일 창 같은 만료를 두지 않음</td></tr>
+    <tr><td><strong>전환(진입)</strong></td><td>토너 컨텍스트로의 switchAsync/createAsync 성공 1회. 발화권을 무장하는 사건</td><td>공유 다이얼로그 수락과 다름</td></tr>
+    <tr><td><strong>발화권</strong></td><td>전환 후 자동 발화 가능 상태. 첫 판 종료에 발화하며 소진</td><td>세션과 무관 &mdash; 재접속해도 이미 소진된 발화권은 부활하지 않음</td></tr>
+    <tr><td><strong>판</strong></td><td>레벨 1회 플레이. 발화 시점의 단위</td><td>세션 아님</td></tr>
     </tbody>
   </table>
 
@@ -283,19 +285,18 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>값</th><th>누가 보관</th><th>언제 갱신</th><th>비고</th></tr></thead>
     <tbody>
-    <tr><td>친구 신호 플래그</td><td><strong>클라 로컬</strong></td><td>P2P 메세지 성공 · 컨텍스트 전환 성공 시 set</td><td>서버 저장 안 함</td></tr>
-    <tr><td>상한 카운터</td><td><strong>클라 메모리</strong></td><td>자동 발화 시 +1 · 세션 시작 시 0</td><td>영속화 불필요</td></tr>
+    <tr><td>발화권 플래그</td><td><strong>클라 로컬</strong></td><td>전환 성공 시 무장(set) · 자동 발화 시 소진(clear)</td><td>재접속 후에도 소진 상태가 유지되도록 로컬 저장. 유실되면 무장 상태로 초기화 &mdash; 최대 1회 추가 발화로 그침</td></tr>
     </tbody>
   </table>
-  <div class="callout callout-purple"><strong>서버 변경 없음.</strong> 시트 상수 2건(신호 있음/없음 상한)만 추가하면 빌드 없이 값 조정·롤백이 가능함. 두 값을 모두 0으로 두면 상한 없음(현행과 동일)으로 동작함.</div>
+  <div class="callout callout-purple"><strong>서버 변경 없음.</strong> 시트 상수 1건(<span class="sheet-var">tournament_share_after_switch_only</span>, 0=현행/1=적용)으로 빌드 없이 켜고 끔.</div>
 
   <h3>&#9399; 판정 순서 &mdash; 판 종료 자동 발화 시</h3>
   <table>
     <thead><tr><th>순서</th><th>검사</th><th>불통과 시</th></tr></thead>
     <tbody>
-    <tr><td>1</td><td>기존 자동 발화 조건(토너 보유·클리어·연속 거절 상한 등)</td><td>종료 &mdash; 현행과 동일</td></tr>
-    <tr><td>2</td><td>상한 카운터 &lt; 상한(친구 신호에 따라 2 또는 1)</td><td>종료 &mdash; 로그 없음(3200 미발화)</td></tr>
-    <tr><td>3</td><td>발화 &rarr; 상한 카운터 +1 &rarr; 기존 흐름(3200 기록)</td><td>&mdash;</td></tr>
+    <tr><td>1</td><td>기존 자동 발화 조건(토너 컨텍스트·클리어·연속 거절 상한 등)</td><td>종료 &mdash; 현행과 동일</td></tr>
+    <tr><td>2</td><td>발화권이 무장 상태인가</td><td>종료 &mdash; 로그 없음(3200 미발화)</td></tr>
+    <tr><td>3</td><td>발화 &rarr; 발화권 소진 &rarr; 기존 흐름(3200 기록)</td><td>&mdash;</td></tr>
     </tbody>
   </table>
 
@@ -303,11 +304,12 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>상황</th><th>동작</th></tr></thead>
     <tbody>
-    <tr><td>세션 중 친구 신호가 생기면</td><td>플래그는 즉시 set하되 상한은 <strong>다음 세션부터</strong> 2회 적용. 진행 중 세션의 카운터는 재계산하지 않음</td></tr>
-    <tr><td>로컬 플래그가 유실되면(캐시 삭제 등)</td><td>신호 없음으로 동작. 다음 P2P·전환 성공 시 자연 복원 &mdash; 보수적 방향이므로 별도 복구 로직 없음</td></tr>
-    <tr><td>상한 도달 후 유저가 직접 공유를 열면</td><td>정상 발화. 카운터에 셈하지 않음</td></tr>
-    <tr><td>상한 도달 후 판을 계속 깨면</td><td>이번 세션엔 자동 발화 없음. 재접속(새 세션) 시 카운터 0부터</td></tr>
-    <tr><td>시트 상수가 없거나 0이면</td><td>상한 없음 &mdash; 현행과 동일하게 동작(안전 기본값)</td></tr>
+    <tr><td>전환 직후 첫 판을 <strong>포기</strong>하면</td><td>발화하지 않고 발화권 유지(기존 &lsquo;판 포기 시 미노출&rsquo; 유지) &mdash; 다음 클리어 판에서 발화</td></tr>
+    <tr><td>전환 직후 판을 안 하고 로비에 머물면</td><td>발화권 유지 &mdash; 언제든 첫 판 종료 시 발화</td></tr>
+    <tr><td>발화권 소진 후 같은 토너에서 계속 플레이하면</td><td>자동 발화 없음. 유저 주도 지면만 가능</td></tr>
+    <tr><td>다른 토너/컨텍스트로 새로 전환하면</td><td>발화권 재무장 &mdash; 그쪽 첫 판 종료에 1회</td></tr>
+    <tr><td>로컬 플래그 유실(캐시 삭제)</td><td>무장 상태로 초기화 &mdash; 최대 1회 추가 발화로 그침</td></tr>
+    <tr><td>시트 상수가 없거나 0이면</td><td>현행과 동일(안전 기본값)</td></tr>
     </tbody>
   </table>
 
@@ -329,8 +331,8 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td><span class="sheet-var">3210_TOURNAMENT_SHARE_SUCCESS</span> / <span class="sheet-var">3220_TOURNAMENT_SHARE_FAIL</span></td><td>클라 로그 정의서</td><td>성공 · 실패(errorCode)</td></tr>
     </tbody>
   </table>
-  <p>신규 이벤트 없음. 친구 신호 보유 여부는 분석 시 로그(P2P 성공·전환 성공 이력)로 재구성 가능하므로 추가 필드를 요구하지 않음.
-  단 <strong>선택 사항</strong>으로 <span class="sheet-var">3200</span>의 data에 <span class="sheet-var">auto</span>(자동/유저 주도 구분) 1필드를 추가하면 상한 동작 검증이 쉬워짐.</p>
+  <p>신규 이벤트 없음. 전환 시점은 기존 9130계열, 발화는 3200으로 검증 가능함.
+  단 <strong>선택 사항</strong>으로 <span class="sheet-var">3200</span>의 data에 <span class="sheet-var">auto</span>(자동/유저 주도 구분) 1필드를 추가하면 동작 검증이 쉬워짐.</p>
 
   <h3>KPI</h3>
   <table>
