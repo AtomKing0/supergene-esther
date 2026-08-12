@@ -269,28 +269,28 @@ ul li strong,ol li strong { color:var(--text); }
     </div>
   </div>
 
-  <h3>서버 &mdash; 상태 모델</h3>
-  <p>클라 연출과 무관하게 <strong>서버가 기억하는 상태</strong>는 아래 둘임. 판정 입력은 <strong>당일 무료 입장 사용 여부</strong> 하나뿐임.</p>
+  <h3><del style="color:var(--text-dim);text-decoration-color:var(--red)">서버</del> <strong>클라이언트</strong> &mdash; 상태 모델</h3>
+  <p><del style="color:var(--text-dim);text-decoration-color:var(--red)">클라 연출과 무관하게 <strong>서버가 기억하는 상태</strong>는 아래 둘임.</del> <strong>클라가 기억하는 상태</strong>는 아래 둘임 &mdash; 게이트는 클라 단독이고 서버는 무료 여부를 알지 못함(입장료 0으로 시작될 뿐임). 판정 입력은 <strong>당일 무료 입장 사용 여부</strong> 하나뿐임.</p>
   <table>
     <thead><tr><th>상태</th><th>전이 조건</th><th>저장 · 갱신 값</th></tr></thead>
     <tbody>
     <tr><td><strong>무료 입장 가능</strong></td><td>당일 무료 입장 <strong>미사용</strong></td><td>&mdash; (판정 결과만 로그인 응답에 실림)</td></tr>
-    <tr><td><strong>당일 사용 완료</strong></td><td>무료 입장으로 게임이 시작됨</td><td><span class="sheet-var">freeEntryClaimedDate</span> = 해당 일자. 리셋 경계를 넘기면 다시 가능 상태로 돌아감</td></tr>
+    <tr><td><strong>당일 사용 완료</strong></td><td>무료 입장으로 게임이 시작됨</td><td><span class="sheet-var">lastDailyDirectEntryAt</span> = 사용 시각. 날짜가 바뀌면 다시 가능 상태로 돌아감<br><span style="color:var(--text2)">저장소: 페이스북 = 플레이어 스토리지 · 토스 = localStorage</span></td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <strong>시간 용어 2층.</strong> <strong>일일 창</strong> = 리셋 경계부터 다음 경계까지, 무료 입장 1회가 배정되는 범위 · <strong>무료 입장 1회</strong> = 그 안에서 소비되는 참여 단위. <span class="sheet-var">freeEntryClaimedDate</span>가 <strong>오늘 날짜와 같으면 이미 썼다는 의미</strong>이며, 이 값 하나로 판정이 끝남.
+    <strong>시간 용어 2층.</strong> <strong>일일 창</strong> = 리셋 경계부터 다음 경계까지, 무료 입장 1회가 배정되는 범위 · <strong>무료 입장 1회</strong> = 그 안에서 소비되는 참여 단위. <span class="sheet-var">lastDailyDirectEntryAt</span>의 날짜가 <strong>오늘과 같으면 이미 썼다는 의미</strong>이며, 이 값 하나로 판정이 끝남.
   </div>
 
-  <h3>서버 &mdash; 처리 흐름</h3>
+  <h3><del style="color:var(--text-dim);text-decoration-color:var(--red)">서버</del> <strong>클라이언트</strong> &mdash; 처리 흐름</h3>
   <div class="flow-step"><div class="flow-dot">1</div><div class="flow-body"><strong>로그인 처리에서 당일 사용 여부 확인</strong><p>미사용이면 무료 입장 가능으로 판정해 응답에 실어 보냄</p></div></div>
-  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>게임 시작에서 골드 차감을 건너뜀</strong><p>무료 입장으로 시작된 판은 <span class="sheet-var">entry_cost</span> = 0으로 처리하고 <span class="sheet-var">freeEntryClaimedDate</span>를 그날로 기록함</p></div></div>
+  <div class="flow-step"><div class="flow-dot">2</div><div class="flow-body"><strong>게임 시작에서 골드 차감을 건너뜀</strong><p>무료 입장으로 시작된 판은 <span class="sheet-var">entry_cost</span> = 0으로 처리하고 <span class="sheet-var">lastDailyDirectEntryAt</span>을 현재 시각으로 기록함</p></div></div>
   <div class="flow-step"><div class="flow-dot">3</div><div class="flow-body"><strong>게임 종료에서 x1 보상 기준을 지정</strong><p>배수 선택 단계를 지나쳤으므로 보상 계산 배수를 <strong>1</strong>로 고정하는 필드를 게임 종료 처리에 둠</p></div></div>
   <table>
     <thead><tr><th>항목</th><th>내용</th></tr></thead>
     <tbody>
-    <tr><td>리셋 경계</td><td><strong>페이스북 = UTC 0시 · 토스 = KST 0시</strong> &mdash; 각 플랫폼의 기존 데일리 리셋 축을 그대로 따름. 두 플랫폼의 경계가 다른 것은 의도된 동작임</td></tr>
-    <tr><td>멱등성</td><td>게임 시작이 재시도돼도 당일 일자가 이미 기록돼 있으므로 무료 입장은 1회로 고정됨. 판정 권한은 <strong>서버 단독</strong></td></tr>
+    <tr><td>리셋 경계</td><td><del style="color:var(--text-dim);text-decoration-color:var(--red)">페이스북 = UTC 0시 · 토스 = KST 0시 &mdash; 각 플랫폼의 기존 데일리 리셋 축을 그대로 따름</del> <strong>디바이스 로컬 자정</strong> &mdash; 서버 보정 시각을 <strong>기기 타임존으로 해석</strong>해 연·월·일을 비교함. 데일리 기프트 등 서버 판정 리셋과는 축이 다름<br><span style="color:var(--text2)">기획서 규칙(타임존은 플랫폼별)의 <strong>예외</strong>임 &mdash; 이 기능은 클라 단독 판정이라 플랫폼 축을 쓰지 않음</span></td></tr>
+    <tr><td>멱등성</td><td>게임 시작이 재시도돼도 당일 일자가 이미 기록돼 있으므로 무료 입장은 1회로 고정됨. 판정 권한은 <del style="color:var(--text-dim);text-decoration-color:var(--red)">서버 단독</del> <strong>클라 단독</strong></td></tr>
     <tr><td>중도 이탈</td><td>무료 판을 끝내지 않고 앱을 껐다 켜도 그날 사용 기록이 남아 있으므로 재차 무료가 되지 않음</td></tr>
     </tbody>
   </table>
@@ -316,7 +316,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>3</td><td>레벨 1~2</td><td>원래부터 인게임 직행이고 입장료가 0이라 줄 혜택이 없음</td><td><code>BaseIntro</code> <code>level &lt;= 2</code></td></tr>
       <tr><td>4</td><td>강종 복귀</td><td>진행 중이던 판이 살아 있어 그 판으로 복귀가 우선</td><td><code>lastGameStartInfo</code> 유효 분기</td></tr>
       <tr><td>5</td><td>Quick Next Loop A/B 그룹</td><td>인트로에서 로비를 보는 그룹이라 팝업 유저가 아님</td><td><code>isQuickNextLoopActive</code></td></tr>
-      <tr><td>6</td><td>오늘 이미 사용함</td><td>하루 1회 제한</td><td>서버 판정</td></tr>
+      <tr><td>6</td><td>오늘 이미 사용함</td><td>하루 1회 제한</td><td><del style="color:var(--text-dim);text-decoration-color:var(--red)">서버 판정</del> 클라 판정</td></tr>
       <tr><td>7</td><td>프리게임 팝업 전용 튜토리얼 대기 중</td><td>그 튜토리얼은 팝업 안에서만 진행 가능해서 건너뛰면 학습이 끊김 &mdash; 아래 해당 레벨 표</td><td><code>TutorialManager</code></td></tr>
       <tr><td>8</td><td><code>gameStart</code> 에러</td><td>판을 시작하지 못해 팝업으로 폴백</td><td>서버 응답 실패</td></tr>
       <tr><td>9</td><td>앱 안 끄고 자정 넘김</td><td>판정이 앱 실행 첫 진입에만 돌아 세션 중에는 재판정 없음</td><td>인트로 1회 판정</td></tr>
@@ -341,7 +341,7 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
 
   <div class="callout callout-blue">
-    <strong>9번 자정은 플랫폼별 자정임.</strong> 페이스북은 UTC 0시, 토스는 KST 0시를 경계로 함. 판정이 앱 실행 첫 진입에만 돌기 때문에, 앱을 켠 채로 경계를 넘기면 그 세션에서는 재판정이 없고 다음 실행부터 다시 받음.
+    <strong>9번 자정은 <del style="color:var(--text-dim);text-decoration-color:var(--red)">플랫폼별 자정</del> 디바이스 로컬 자정임.</strong> 기기 타임존이 바뀌면 그 즉시 날짜도 바뀜. 판정이 앱 실행 첫 진입에만 돌기 때문에, 앱을 켠 채로 경계를 넘기면 그 세션에서는 재판정이 없고 다음 실행부터 다시 받음.
   </div>
 
   <h3>다른 무료 진입과의 경계</h3>
@@ -369,11 +369,11 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td><span class="sheet-var">2098_DAILY_FREE_ENTRY</span><br><strong>신규</strong></td>
         <td><span class="sheet-var">level</span> · <span class="sheet-var">entry_cost</span>(면제액) · <span class="sheet-var">gold_balance</span> · <span class="sheet-var">last_used_at</span> · <span class="sheet-var">tz_offset</span></td>
-        <td><strong>서버</strong> &mdash; 판정 주체가 서버이므로 클라가 추정하지 않음</td>
+        <td><del style="color:var(--text-dim);text-decoration-color:var(--red)">서버</del> <strong>클라</strong> &mdash; 판정 주체가 클라이므로 발행도 클라에서 함(판 시작 성공 후)</td>
         <td>무료 입장 발생량 · 면제 골드 총액 · <strong>어뷰징 감시</strong>(<span class="sheet-var">last_used_at</span>이 같은 날이면 재발생)</td></tr>
     <tr><td><span class="sheet-var">2100_GAMEPLAY_START</span></td>
         <td><span class="sheet-var">position</span> = <strong>daily_free_entry</strong><br><span style="color:var(--text2)">기존 필드에 값 추가 (현재 lobby 단일)</span></td>
-        <td>서버</td>
+        <td><del style="color:var(--text-dim);text-decoration-color:var(--red)">서버</del> 클라</td>
         <td><strong>무료 판 필터.</strong> 이 값 없이는 <span class="sheet-var">entry_cost</span>=0인 기존 판(Lv 1~2 · 무한 티켓)과 구분되지 않음. <span class="sheet-var">betting</span>은 <strong>x1</strong>로 기록됨</td></tr>
     <tr><td style="color:var(--text2)"><span class="sheet-var">12001 / 12002_INTRO_DIRECT_ENTRY_START/END</span></td>
         <td style="color:var(--text2)">변경 없음</td>
@@ -394,7 +394,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td><span class="sheet-var">entry_cost</span></td><td>이번에 <strong>면제된</strong> x1 입장료</td><td>같은 이름의 2100 <span class="sheet-var">entry_cost</span>는 <strong>0</strong>으로 기록됨 &mdash; 두 이벤트를 한 뷰에 합쳐 합산하면 의미가 섞이므로 루커에서 이벤트별로 분리해 쓸 것</td></tr>
     <tr><td><span class="sheet-var">gold_balance</span></td><td><strong>판 시작 직전</strong> 잔액</td><td>무료라 이 판으로는 줄지 않음. 진입 시 골드 부족 여부 판정에 씀</td></tr>
     <tr><td><span class="sheet-var">last_used_at</span></td><td><strong>직전</strong> 무료 입장 시각(epoch ms)</td><td>이력이 없으면 <strong>0</strong>. 값이 오늘 리셋 경계 이후면 <strong>그 자체가 어뷰징 신호</strong></td></tr>
-    <tr><td><span class="sheet-var">tz_offset</span></td><td>유저 로컬 타임존 오프셋(분)</td><td>JS <span class="sheet-var">getTimezoneOffset</span> 규약이라 <strong>부호가 반대</strong>임 &mdash; KST(UTC+9)가 <strong>-540</strong>. 리셋 경계는 플랫폼 기준(페이스북 UTC · 토스 KST)이고 이 값은 <strong>분석용</strong>으로, 유저 로컬 자정과 리셋 경계가 얼마나 벌어지는지 보는 데 씀</td></tr>
+    <tr><td><span class="sheet-var">tz_offset</span></td><td>유저 로컬 타임존 오프셋(분)</td><td>JS <span class="sheet-var">getTimezoneOffset</span> 규약이라 <strong>부호가 반대</strong>임 &mdash; KST(UTC+9)가 <strong>-540</strong>. <del style="color:var(--text-dim);text-decoration-color:var(--red)">리셋 경계는 플랫폼 기준(페이스북 UTC · 토스 KST)이고 이 값은 분석용임</del> <strong>리셋 경계가 곧 이 오프셋 기준의 자정</strong>이므로, 값이 바뀌는 유저는 경계도 함께 움직임 &mdash; 어뷰징 판별에 씀</td></tr>
     </tbody>
   </table>
 
