@@ -185,7 +185,7 @@ ul li strong,ol li strong { color:var(--text); }
       <div class="kpi-card">
         <div class="kpi-label">공유 시도 / 유저 (5일)</div>
         <div class="kpi-value" style="color:var(--red)">20.8</div>
-        <div class="kpi-sub">벤치 동기간 9.1~12.1<br>토글만으로 절반 &rarr; 밴드 자동 도달</div>
+        <div class="kpi-sub">벤치 동기간 9.1~12.1<br>토글로 절반 &rarr; 밴드 자동 도달</div>
         <div class="kpi-trend">&#9660; 목표 ~10</div>
       </div>
       <div class="kpi-card">
@@ -242,7 +242,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>구분</th><th>정의 · 값</th></tr></thead>
     <tbody>
     <tr><td><strong>자동 발화 슬롯</strong></td><td>토너 컨텍스트에서 판 클리어 종료 시 1개 슬롯 — <strong>공유 &harr; 토너 초대 토글</strong> (<span class="sheet-var">shouldInvitePopupNext</span>=false로 시작 &mdash; 첫 발화는 공유부터)</td></tr>
-    <tr><td><strong>쿨타임</strong></td><td><strong>없음</strong> — 솔은 판 사이 간격 p50 82초라 퍼블마의 60초 쿨타임이 사실상 걸리지 않아 제외함. 발화 빈도는 토글 자체가 제어</td></tr>
+    <tr><td><strong>쿨타임</strong></td><td><strong>60초 &mdash; 퍼블마 값 그대로 이식</strong>(<span class="sheet-var">tournamentViralCooldownMs = 60000</span> · 팝업 공통 타이머 1개). 솔은 판 간격 p50 82초라 평시엔 거의 안 걸리지만 짧은 판 연속·재도전 흐름의 안전판. 값 커스터마이징은 라이브 후 데이터 보고 별도 진행</td></tr>
     <tr><td><strong>초대 페이로드</strong> (entryPointData)</td><td><span class="sheet-var">{ social: "TOURNAMENT_INVITE", tournament_id, player, is_invite: true, version, ad_parent, timestamp }</span> &mdash; 퍼블마 <span class="sheet-var">TournamentBattleView.showTournamentInvitePopup()</span> 필드 구성 정렬. 수신자는 탭 시 <strong>해당 토너 컨텍스트로 진입</strong></td></tr>
     <tr><td><strong>기존 정책 유지</strong></td><td>연속 거절 상한 · 판 포기 시 미노출 · 유저 주도 지면(로비 등) 무제한 — 전부 현행 유지</td></tr>
     <tr><td><strong>적용 범위</strong></td><td>전량 적용 &mdash; 시트 <span class="sheet-var">tournament_invite_enabled</span>로 켜고 끔 · 생성 다이얼로그(비토너 컨텍스트)는 범위 외</td></tr>
@@ -253,7 +253,7 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th></th><th>As-Is</th><th>To-Be</th></tr></thead>
     <tbody>
-    <tr><td>토너 컨텍스트 판 종료</td><td><strong><span class="sheet-var">shareTournament</span>만</strong> 매판 발화</td><td><strong><span class="sheet-var">shareTournament</span> &harr; <span class="sheet-var">inviteFriend</span></strong> 번갈아 발화 · 쿨타임 없음</td></tr>
+    <tr><td>토너 컨텍스트 판 종료</td><td><strong><span class="sheet-var">shareTournament</span>만</strong> 매판 발화</td><td><strong><span class="sheet-var">shareTournament</span> &harr; <span class="sheet-var">inviteFriend</span></strong> 번갈아 발화 · 공통 쿨타임 60초(퍼블마 동일)</td></tr>
     <tr><td>공유 시도량</td><td>유저당 20.8회/5일 (벤치 2~3배)</td><td>~10회 &mdash; 벤치 밴드 자동 도달</td></tr>
     <tr><td>토너 초대 (<span class="sheet-var">inviteAsync</span>)</td><td>지면 없음</td><td>신설 &mdash; FB 친구 선택 다이얼로그로 도전장 발송</td></tr>
     </tbody>
@@ -271,7 +271,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>기타 전체</td><td>70,944</td><td>1.21일</td><td>2.6</td><td>0.40</td><td>0.92</td><td>0.20</td><td>5.9%</td><td>1.7%</td><td>1.0%</td></tr>
     </tbody>
   </table>
-  <div class="callout callout-green">초대 유입은 D1·D7·D14 전 구간에서 공유링크의 2~4배, 일반 유입의 4~12배이며
+  <div class="callout">초대 유입은 D1·D7·D14 전 구간에서 공유링크의 2~4배, 일반 유입의 4~12배이며
   (D14 12.0% &mdash; 리텐션이 깊어질수록 격차가 벌어짐: D1 4.1배 &rarr; D14 12배), 수익화 행동(RV·IT)도 2~7배임.
   특히 <strong>메세지 성공 2.51회/인 &mdash; 공유링크의 3배, 일반 유입의 12배</strong>로,
   초대로 들어온 유저가 그 자체로 P2P 메세지 루프의 노드가 된다는 &lsquo;씨앗&rsquo; 가설의 직접 실증임.</div>
@@ -314,8 +314,9 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>용어</th><th>뜻</th><th>혼동 주의</th></tr></thead>
     <tbody>
-    <tr><td><strong>토글 순번</strong> <span class="sheet-var">shouldInvitePopupNext</span></td><td>다음 발화가 공유인지 초대인지의 상태(boolean · true=초대 차례). 발화 성공 시에만 반전 &mdash; 퍼블마 <span class="sheet-var">TournamentBattleView.shouldInvitePopupNext</span>와 동일 명명</td><td>판 포기로는 반전하지 않음</td></tr>
+    <tr><td><strong>토글 순번</strong> <span class="sheet-var">shouldInvitePopupNext</span></td><td>다음 발화가 공유인지 초대인지의 상태(boolean · true=초대 차례). 발화 성공 시에만 반전. 성공 = 다이얼로그 <strong>발사</strong> 성공(유저 수락 여부 무관 &mdash; 친구 선택을 취소해도 반전하며 <span class="sheet-var">lastViralPopupShownAt</span>도 갱신) &mdash; 퍼블마 <span class="sheet-var">TournamentBattleView.shouldInvitePopupNext</span>와 동일 명명</td><td>판 포기로는 반전하지 않음(팝업 자체가 안 뜸)</td></tr>
     <tr><td><strong>초대</strong> <span class="sheet-var">inviteFriend(LogInvitePosition.tournament_invite)</span></td><td>inviteAsync 친구 선택 다이얼로그 발사. 게임 미설치 FB 친구 포함 전체가 대상</td><td>공유(<span class="sheet-var">shareTournament</span>, 컨텍스트 내 자랑)와 다른 API·다른 대상</td></tr>
+    <tr><td><strong>쿨타임</strong> <span class="sheet-var">tournamentViralCooldownMs = 60000</span></td><td>바이럴 팝업(공유·초대 공통) 최소 재발화 간격 &mdash; 마지막 발화 시각 타이머 1개(<span class="sheet-var">lastViralPopupShownAt</span>)</td><td>종류별 개별 타이머 아님 &mdash; 퍼블마 <span class="sheet-var">canShowTournamentViralPopup()</span> 구조 그대로</td></tr>
     </tbody>
   </table>
 
@@ -324,6 +325,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>값</th><th>누가 보관</th><th>언제 갱신</th><th>비고</th></tr></thead>
     <tbody>
     <tr><td><span class="sheet-var">shouldInvitePopupNext</span> (boolean)</td><td><strong>클라 로컬 스토리지</strong></td><td>발화 성공 시 반전</td><td>유실 시 false(공유부터) 재시작 &mdash; 영향 미미</td></tr>
+    <tr><td><span class="sheet-var">lastViralPopupShownAt</span> (epoch ms)</td><td><strong>클라 메모리(static)</strong></td><td>팝업 발화 시</td><td>쿨타임 판정용 · 영속화 불필요 &mdash; 퍼블마 <span class="sheet-var">markTournamentViralPopupShown()</span> 대응</td></tr>
     </tbody>
   </table>
   <div class="callout callout-purple"><strong>서버 변경 없음.</strong> 동작 전체를 밸런스시트 <span class="sheet-var">const</span> <strong>1건</strong>으로 제어함 &mdash; 끄기·켜기 전부 <strong>빌드 없이 시트에서</strong> 가능.</div>
@@ -352,7 +354,8 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td>1</td><td>기존 자동 발화 조건(토너 컨텍스트 · 클리어 · 연속 거절 상한)</td><td>종료 &mdash; 현행과 동일</td></tr>
     <tr><td>2</td><td><span class="sheet-var">tournament_invite_enabled</span> = 1인가</td><td>0이면 현행 공유 흐름으로</td></tr>
-    <tr><td>3</td><td><span class="sheet-var">shouldInvitePopupNext</span>에 따라 <span class="sheet-var">shareTournament()</span> 또는 <span class="sheet-var">inviteFriend()</span> 발화(유저 제스처 안에서) &rarr; 성공 시 순번 반전</td><td>&mdash;</td></tr>
+    <tr><td>3</td><td>마지막 발화 후 60초(<span class="sheet-var">tournamentViralCooldownMs</span>)가 지났는가</td><td>종료 &mdash; 발화 없음 · <strong>순번 유지</strong></td></tr>
+    <tr><td>4</td><td><span class="sheet-var">shouldInvitePopupNext</span>에 따라 <span class="sheet-var">shareTournament()</span> 또는 <span class="sheet-var">inviteFriend()</span> 발화(유저 제스처 안에서) &rarr; 성공 시 순번 반전 · <span class="sheet-var">lastViralPopupShownAt</span> 갱신</td><td>&mdash;</td></tr>
     </tbody>
   </table>
 
@@ -372,6 +375,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>상황</th><th>동작</th></tr></thead>
     <tbody>
     <tr><td>초대 차례(<span class="sheet-var">shouldInvitePopupNext</span>=true)인데 유저가 친구 선택을 취소하면</td><td>발화는 일어난 것(<span class="sheet-var">3480</span> USER_INPUT) &mdash; 순번은 공유로 반전 · 연속 거절 상한 카운트</td></tr>
+    <tr><td>쿨타임 중 판이 끝나면</td><td>그 판은 발화 없음 · 토글 순번 유지(다음 판에 같은 종류 재시도)</td></tr>
     <tr><td>판을 포기하면</td><td>발화 없음(현행 유지) · 순번 유지</td></tr>
     <tr><td>비토너 컨텍스트(솔로·P2P)면</td><td>이 스펙 범위 외 &mdash; 기존 생성 흐름 그대로</td></tr>
     <tr><td>수신자가 이미 그 토너에 있으면</td><td>그냥 해당 컨텍스트 진입 &mdash; 별도 처리 없음</td></tr>
@@ -385,7 +389,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>무엇</th><th>위치</th><th>참고 포인트</th></tr></thead>
     <tbody>
     <tr><td><strong>토글 분기</strong></td><td><span class="sheet-var">game/ingame/TournamentBattleView.ts:315~340</span> <span class="sheet-var">showTournamentViralPopup()</span></td><td><span class="sheet-var">shouldInvitePopupNext</span>로 초대&harr;피드 토글 · 토너 컨텍스트 여부 분기 &mdash; 솔은 피드 대신 공유로 치환</td></tr>
-    <tr><td>쿨타임 (솔은 미채택)</td><td>같은 파일 <span class="sheet-var">:87, :271~276</span></td><td>참고만 &mdash; 솔은 판 간격(82초)이 쿨타임(60초)보다 길어 실효가 없어 제외</td></tr>
+    <tr><td><strong>쿨타임</strong></td><td>같은 파일 <span class="sheet-var">:87</span> <span class="sheet-var">tournamentViralCooldownMs = 60000</span> · <span class="sheet-var">:271~276</span> <span class="sheet-var">canShowTournamentViralPopup()</span> / <span class="sheet-var">markTournamentViralPopupShown()</span></td><td><strong>그대로 이식</strong> &mdash; 정적 타이머 게이트·값 동일(커스터마이징은 라이브 후)</td></tr>
     <tr><td><strong>초대 발사·페이로드</strong></td><td>같은 파일 <span class="sheet-var">:344~364</span> <span class="sheet-var">showTournamentInvitePopup()</span></td><td>entryPointData 필드 구성(social·player·is_invite·ad_parent&hellip;) 원본</td></tr>
     <tr><td><strong>inviteAsync 래퍼</strong></td><td><span class="sheet-var">common/Fbi.ts:2100</span> <span class="sheet-var">inviteAsyncGame()</span></td><td>position 로깅·이미지 템플릿·콜백 처리 &mdash; 솔 <span class="sheet-var">BasePlatform.inviteFriend()</span>가 대응물</td></tr>
     <tr><td><strong>초대 로그 3종</strong></td><td><span class="sheet-var">common/LogManager.ts:806~827</span> <span class="sheet-var">logMsgP2PInvite / &hellip;Success / &hellip;Fail</span></td><td>3460/3470/3480 · <span class="sheet-var">position</span>·<span class="sheet-var">image_id</span>·<span class="sheet-var">error_code</span> 필드</td></tr>
@@ -402,7 +406,7 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
 
   <h3>타임존</h3>
-  <p>이 스펙의 판정은 전부 판 단위로 달력 시간과 무관함. 성과 집계는 FB 로그 기준 <strong>UTC</strong> 일자를 씀.</p>
+  <p>쿨타임은 클라 단조 시계 기준 60초로 달력 시간과 무관함. 그 외 판정은 판 단위. 성과 집계는 FB 로그 기준 <strong>UTC</strong> 일자를 씀.</p>
 </section>
 
 <section id="s3">
@@ -426,7 +430,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>지표</th><th>As-Is</th><th>To-Be</th><th>비고</th></tr></thead>
     <tbody>
     <tr><td><strong>공유 성공(<span class="sheet-var">3210</span>)/DAU</strong> &#11088;가드레일</td><td>0.35</td><td><strong>유지 이상</strong></td><td>유의 하락 시 롤백 &mdash; 판정 최우선</td></tr>
-    <tr><td>공유 시도/유저-일</td><td>5.4</td><td>~2.7 (벤치 밴드)</td><td>토글의 자동 결과</td></tr>
+    <tr><td>공유 시도/유저-일 (분모 = 활동 유저-일 · &sect;1의 20.8회는 친구 신호 보유 유저당 5일 누적이라 분모가 다름)</td><td>5.4</td><td>~2.7 (벤치 밴드)</td><td>토글+쿨타임의 자동 결과</td></tr>
     <tr><td>토너 초대 유입(<span class="sheet-var">social=TOURNAMENT_INVITE</span>)/주</td><td>0</td><td>신설 &mdash; 볼륨 관측</td><td>퍼블마 900명/주는 6개월 성숙값 &mdash; 초기 기대치는 보수적으로</td></tr>
     <tr><td>초대 수신자 D14</td><td>&mdash;</td><td>오가닉 대비 유의 우위</td><td>퍼블마 NA 12.1% 참조</td></tr>
     </tbody>
@@ -443,7 +447,7 @@ ul li strong,ol li strong { color:var(--text); }
 <script>
 // ── 메타 배지 드롭다운 (index.html과 localStorage 공유) ──────────────
 (function () {
-  const SPEC_ID = 'spec-035';
+  const SPEC_ID = 'spec-038';
 
   const TAG_INFO = {
     review:  { label: '🔍 리뷰',    cls: 'badge-blue'   },
