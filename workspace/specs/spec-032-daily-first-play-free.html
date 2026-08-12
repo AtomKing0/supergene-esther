@@ -363,15 +363,40 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>로깅</h3>
+  <p>발생 자체는 <strong>전용 이벤트</strong>로 남기고, 판 단위 지표는 <strong>기존 2100·2300의 기존 필드에 값 하나를 더하는 것</strong>으로 처리함. 두 축을 분리하면 루커에서 이벤트 간 조인 없이 각각 바로 집계됨.</p>
   <table>
-    <thead><tr><th>이벤트</th><th>추가 필드</th><th>출처</th><th>용도</th></tr></thead>
+    <thead><tr><th>이벤트</th><th>필드</th><th>출처</th><th>용도</th></tr></thead>
     <tbody>
-    <tr><td><span class="sheet-var">2100_GAMEPLAY_START</span></td><td><span class="sheet-var">is_free_entry</span> (bool)</td><td><strong>서버 응답</strong> &mdash; 판정 주체가 서버이므로 클라가 추정하지 않음</td><td>무료 입장 발생량·유저당 빈도 집계. <span class="sheet-var">entry_cost</span>는 0으로 기록됨</td></tr>
-    <tr><td><span class="sheet-var">2300_GAMEPLAY_FINISH</span></td><td><span class="sheet-var">reward_multiple</span> (int)</td><td><strong>서버</strong> &mdash; 보상 계산에 실제로 쓴 배수</td><td>무료 판은 1로 고정. 배수별 보상 검증 및 판당 보상 감시</td></tr>
+    <tr><td><span class="sheet-var">2098_DAILY_FREE_ENTRY</span><br><strong>신규</strong></td>
+        <td><span class="sheet-var">level</span> · <span class="sheet-var">entry_cost</span>(면제액) · <span class="sheet-var">gold_balance</span> · <span class="sheet-var">last_used_at</span> · <span class="sheet-var">tz_offset</span></td>
+        <td><strong>서버</strong> &mdash; 판정 주체가 서버이므로 클라가 추정하지 않음</td>
+        <td>무료 입장 발생량 · 면제 골드 총액 · <strong>어뷰징 감시</strong>(<span class="sheet-var">last_used_at</span>이 같은 날이면 재발생)</td></tr>
+    <tr><td><span class="sheet-var">2100_GAMEPLAY_START</span></td>
+        <td><span class="sheet-var">entry_type</span> = <strong>free</strong><br><span style="color:var(--text2)">기존 필드에 값 추가 (현재 gold · ticket)</span></td>
+        <td>서버</td>
+        <td><strong>무료 판 필터.</strong> 이 값 없이는 <span class="sheet-var">entry_cost</span>=0인 기존 판(Lv 1~2 · 무한 티켓)과 구분되지 않음. <span class="sheet-var">betting</span>은 <strong>x1</strong>로 기록됨</td></tr>
+    <tr><td><span class="sheet-var">2300_GAMEPLAY_FINISH</span></td>
+        <td><strong>변경 없음</strong> &mdash; 기존 <span class="sheet-var">betting</span> 사용</td>
+        <td>서버</td>
+        <td>무료 판은 <strong>x1</strong>로 들어오므로 클리어율 · 판당 보상 · 판 길이를 배수별로 그대로 비교 가능</td></tr>
     <tr><td style="color:var(--text2)">9400_GOLD_TRANSACTION_LOG</td><td style="color:var(--text2)">변경 없음</td><td style="color:var(--text2)">서버</td><td style="color:var(--text2)">무료 판은 spend 자체가 발생하지 않음 &mdash; 소비 감소분은 이 원장의 차이로 확인</td></tr>
     </tbody>
   </table>
-  <p><span class="sheet-var">is_free_entry</span> 없이는 무료 판과 <span class="sheet-var">entry_cost</span>=0인 기존 판(Lv 1~2 · 무한 티켓 · 다시하기)을 BQ에서 구분할 수 없음. <strong>전후 비교의 조인 키가 되므로 배포 전 필수임.</strong></p>
+
+  <h4>필드 정의</h4>
+  <table>
+    <thead><tr><th>필드</th><th>정의</th><th>비고</th></tr></thead>
+    <tbody>
+    <tr><td><span class="sheet-var">entry_cost</span></td><td>이번에 <strong>면제된</strong> x1 입장료</td><td>같은 이름의 2100 <span class="sheet-var">entry_cost</span>는 <strong>0</strong>으로 기록됨 &mdash; 두 이벤트를 한 뷰에 합쳐 합산하면 의미가 섞이므로 루커에서 이벤트별로 분리해 쓸 것</td></tr>
+    <tr><td><span class="sheet-var">gold_balance</span></td><td><strong>판 시작 직전</strong> 잔액</td><td>무료라 이 판으로는 줄지 않음. 진입 시 골드 부족 여부 판정에 씀</td></tr>
+    <tr><td><span class="sheet-var">last_used_at</span></td><td><strong>직전</strong> 무료 입장 시각(epoch ms)</td><td>이력이 없으면 <strong>0</strong>. 값이 오늘 리셋 경계 이후면 <strong>그 자체가 어뷰징 신호</strong></td></tr>
+    <tr><td><span class="sheet-var">tz_offset</span></td><td>유저 로컬 타임존 오프셋(분)</td><td>JS <span class="sheet-var">getTimezoneOffset</span> 규약이라 <strong>부호가 반대</strong>임 &mdash; KST(UTC+9)가 <strong>-540</strong>. 리셋 경계는 플랫폼 기준(페이스북 UTC · 토스 KST)이고 이 값은 <strong>분석용</strong>으로, 유저 로컬 자정과 리셋 경계가 얼마나 벌어지는지 보는 데 씀</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow">
+    <strong>&#9888; <span class="sheet-var">session_first</span>는 쓰지 말 것.</strong> 2100에 이미 있는 필드지만 <strong>8/1~8/11 142,688건이 전부 false</strong>로, true가 한 건도 없음. 세션 첫 판 여부를 이 필드로 판정하면 전량 누락됨.
+  </div>
 
   <h3>검증 지표</h3>
   <table>
@@ -382,7 +407,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>유저-일당 완료 판수</td><td>&mdash;</td><td><strong>비열위</strong> &mdash; 감소하면 롤백 검토</td></tr>
     <tr><td><strong>하루 첫 판의 판당 보상</strong></td><td>&mdash;</td><td><strong>감시</strong> &mdash; 배수 선택이 사라진 만큼 줄어드는데, 두 번째 판 이후 배수 선택이 이를 되메우는지 확인</td></tr>
     <tr><td>D1 리텐션</td><td>&mdash;</td><td><strong>비열위</strong></td></tr>
-    <tr><td><strong>무료 입장 2회 이상 유저-일 비중</strong></td><td>0%</td><td><strong>0% 유지</strong> &mdash; 정상 동작이면 유저-일당 정확히 1회이므로 2회 이상은 전부 어뷰징임. 유의하게 올라오면 판정을 서버 저장으로 옮김</td></tr>
+    <tr><td><strong>무료 입장 2회 이상 유저-일 비중</strong></td><td>0%</td><td><strong>0% 유지</strong> &mdash; 정상 동작이면 유저-일당 정확히 1회이므로 2회 이상은 전부 어뷰징임. <span class="sheet-var">2098</span> 건수 또는 <span class="sheet-var">last_used_at</span>이 당일인 건으로 판정. 유의하게 올라오면 판정을 서버 저장으로 옮김</td></tr>
     <tr><td style="color:var(--text2)">골드 잔고 분포</td><td style="color:var(--text2)">중앙값 2,000</td><td style="color:var(--text2)">상승 여부 관찰 &mdash; 인플레 감시</td></tr>
     </tbody>
   </table>
