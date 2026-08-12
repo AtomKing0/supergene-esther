@@ -243,7 +243,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td><strong>자동 발화 슬롯</strong></td><td>토너 컨텍스트에서 판 클리어 종료 시 1개 슬롯 — <strong>공유 &harr; 토너 초대 토글</strong> (첫 발화는 공유부터)</td></tr>
     <tr><td><strong>쿨타임</strong></td><td>팝업 종류별 각 <strong>60초</strong> (퍼블마 값) — 쿨타임에 걸리면 그 판은 발화 없음, 토글 순번 유지</td></tr>
-    <tr><td><strong>초대 페이로드</strong></td><td><span class="sheet-var">social: TOURNAMENT_INVITE</span> + 현재 토너 id + <span class="sheet-var">is_invite</span> — 수신자는 탭 시 <strong>해당 토너 컨텍스트로 진입</strong></td></tr>
+    <tr><td><strong>초대 페이로드</strong> (entryPointData)</td><td><span class="sheet-var">{ social: "TOURNAMENT_INVITE", tournament_id, player, is_invite: true, version, ad_parent, timestamp }</span> &mdash; 퍼블마 <span class="sheet-var">TournamentBattleView.showTournamentInvitePopup()</span> 필드 구성 정렬. 수신자는 탭 시 <strong>해당 토너 컨텍스트로 진입</strong></td></tr>
     <tr><td><strong>기존 정책 유지</strong></td><td>연속 거절 상한 · 판 포기 시 미노출 · 유저 주도 지면(로비 등) 무제한 — 전부 현행 유지</td></tr>
     <tr><td><strong>적용 범위</strong></td><td><strong>A/B 배포</strong>(퍼블마 837/838 선례) · 생성 다이얼로그(비토너 컨텍스트)는 범위 외</td></tr>
     </tbody>
@@ -290,9 +290,9 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>용어</th><th>뜻</th><th>혼동 주의</th></tr></thead>
     <tbody>
-    <tr><td><strong>토글 순번</strong></td><td>다음 발화가 공유인지 초대인지의 상태. 발화 성공 시에만 다음으로 넘어감</td><td>쿨타임 스킵·판 포기로는 넘어가지 않음</td></tr>
-    <tr><td><strong>쿨타임</strong></td><td>같은 종류 팝업의 최소 재발화 간격 60초 (종류별 독립)</td><td>기존 &lsquo;연속 거절 상한&rsquo;과 별개 &mdash; 그쪽은 횟수, 이쪽은 시간</td></tr>
-    <tr><td><strong>초대</strong></td><td>inviteAsync 친구 선택 다이얼로그 발사. 게임 미설치 FB 친구 포함 전체가 대상</td><td>공유(shareAsync, 컨텍스트 내 자랑)와 다른 API·다른 대상</td></tr>
+    <tr><td><strong>토글 순번</strong> <span class="sheet-var">shouldInvitePopupNext</span></td><td>다음 발화가 공유인지 초대인지의 상태(boolean · true=초대 차례). 발화 성공 시에만 반전 &mdash; 퍼블마 <span class="sheet-var">TournamentBattleView.shouldInvitePopupNext</span>와 동일 명명</td><td>쿨타임 스킵·판 포기로는 반전하지 않음</td></tr>
+    <tr><td><strong>쿨타임</strong> <span class="sheet-var">TOURNAMENT_POPUP_COOLTIME_SEC = 60</span></td><td>같은 종류 팝업의 최소 재발화 간격. 종류별 독립 타이머(<span class="sheet-var">lastShareFiredAt</span> · <span class="sheet-var">lastInviteFiredAt</span>)</td><td>기존 &lsquo;연속 거절 상한&rsquo;(<span class="sheet-var">tournamentCreateRejectLimit</span>)과 별개 &mdash; 그쪽은 횟수, 이쪽은 시간</td></tr>
+    <tr><td><strong>초대</strong> <span class="sheet-var">inviteFriend(LogInvitePosition.tournament_invite)</span></td><td>inviteAsync 친구 선택 다이얼로그 발사. 게임 미설치 FB 친구 포함 전체가 대상</td><td>공유(<span class="sheet-var">shareTournament</span>, 컨텍스트 내 자랑)와 다른 API·다른 대상</td></tr>
     </tbody>
   </table>
 
@@ -300,8 +300,8 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>값</th><th>누가 보관</th><th>언제 갱신</th><th>비고</th></tr></thead>
     <tbody>
-    <tr><td>토글 순번</td><td><strong>클라 로컬</strong></td><td>발화 성공 시 다음 종류로</td><td>유실 시 공유부터 재시작 &mdash; 영향 미미</td></tr>
-    <tr><td>종류별 마지막 발화 시각</td><td><strong>클라 메모리</strong></td><td>발화 시</td><td>쿨타임 판정용 · 영속화 불필요</td></tr>
+    <tr><td><span class="sheet-var">shouldInvitePopupNext</span> (boolean)</td><td><strong>클라 로컬 스토리지</strong></td><td>발화 성공 시 반전</td><td>유실 시 false(공유부터) 재시작 &mdash; 영향 미미</td></tr>
+    <tr><td><span class="sheet-var">lastShareFiredAt</span> · <span class="sheet-var">lastInviteFiredAt</span> (epoch sec)</td><td><strong>클라 메모리</strong></td><td>해당 종류 발화 시</td><td>쿨타임 판정용 · 영속화 불필요</td></tr>
     </tbody>
   </table>
   <div class="callout callout-purple"><strong>서버 변경 없음.</strong> 시트 상수 1건(<span class="sheet-var">tournament_popup_toggle_mode</span>, 0=현행 공유만/1=토글)로 빌드 없이 켜고 끔. A/B 배정도 이 값으로 가름.</div>
@@ -320,7 +320,7 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>항목</th><th>내용</th><th>비고</th></tr></thead>
     <tbody>
-    <tr><td>초대 발사 연결</td><td>기존 <span class="sheet-var">inviteFriend</span> 재사용 · 지면 <span class="sheet-var">LogInvitePosition.tournament_invite</span>(enum 기존재)</td><td>클라</td></tr>
+    <tr><td>초대 발사 연결</td><td>기존 <span class="sheet-var">BasePlatform.inviteFriend()</span> 재사용 · 지면 <span class="sheet-var">LogInvitePosition.tournament_invite</span>(<span class="sheet-var">BaseLogManager.ts:93</span> 기존재) · 발사 지점 = 판 종료 소셜 슬롯(<span class="sheet-var">handleFacebookShare</span> &lsquo;tournament&rsquo; 분기)</td><td>클라</td></tr>
     <tr><td>초대 메시지 이미지</td><td>어드민에 <span class="sheet-var">p2p:tournament_invite</span> 템플릿 등록(퍼블마·스냅앤게스 선례)</td><td>어드민·아트</td></tr>
     <tr><td>초대 문구</td><td>로컬라이즈 키 신설 &mdash; 도전장 톤(퍼블마 참고)</td><td>전 언어</td></tr>
     <tr><td>수신자 진입</td><td>기존 THREAD 컨텍스트 진입 처리로 동작 &mdash; 귀속 로깅만 확인</td><td>솔은 매판 점수 등록 구조라 퍼블마의 중간 등록 이슈 없음</td></tr>
@@ -355,7 +355,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>이벤트</th><th>출처</th><th>용도</th></tr></thead>
     <tbody>
     <tr><td><span class="sheet-var">3200/3210/3220</span></td><td>기존 &mdash; 공유 발사·성공·실패</td><td>공유 축 판정</td></tr>
-    <tr><td><span class="sheet-var">3460/3470/3480</span> 계열 초대 발사·성공·실패</td><td><strong>신설</strong> &mdash; 퍼블마 번호 체계 정렬(3460_MSG_P2P_INVITE류) · 로그정의서 등재 필요</td><td>초대 축 판정</td></tr>
+    <tr><td><span class="sheet-var">3460_MSG_P2P_INVITE</span> · <span class="sheet-var">3470_MSG_P2P_INVITE_SUCCESS</span> · <span class="sheet-var">3480_MSG_P2P_INVITE_FAIL</span></td><td><strong>신설</strong> &mdash; 퍼블마와 동일 이벤트·필드(<span class="sheet-var">position: "tournament_invite"</span> · <span class="sheet-var">image_id</span> · 실패 시 <span class="sheet-var">error_code</span>/<span class="sheet-var">error_message</span>) · 로그정의서 등재 필요</td><td>초대 축 판정 &mdash; 지면 구분은 <span class="sheet-var">position</span> 필드</td></tr>
     <tr><td>유입 귀속</td><td>entrypoint <span class="sheet-var">payload.social=TOURNAMENT_INVITE</span></td><td>수신자 유입·D14</td></tr>
     </tbody>
   </table>
