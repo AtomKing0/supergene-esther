@@ -227,7 +227,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td>공유 시도/유저 (친구 신호 보유)</td><td style="color:var(--red)"><strong>20.8회</strong></td><td>10.2회</td><td>9.1회</td><td>&mdash;</td></tr>
     <tr><td>공유 성공/유저</td><td>2.14회</td><td>2.51회</td><td>3.27회</td><td>&mdash;</td></tr>
-    <tr><td>토너 초대 유입 (주간)</td><td style="color:var(--red)"><strong>0</strong></td><td>0 (지면 없음)</td><td>0 (지면 없음)</td><td><strong>900명 · 신규 305</strong></td></tr>
+    <tr><td>토너 초대 유입 (8/6~12 주간)</td><td style="color:var(--red)"><strong>0</strong></td><td>0 (지면 없음)</td><td>0 (지면 없음)</td><td><strong>900명 · 신규 305</strong></td></tr>
     <tr><td>토너 초대 수신자 D14 (NA)</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td><strong>12.1%</strong> (n390)</td></tr>
     </tbody>
   </table>
@@ -242,7 +242,7 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>구분</th><th>정의 · 값</th></tr></thead>
     <tbody>
     <tr><td><strong>자동 발화 슬롯</strong></td><td>토너 컨텍스트에서 판 클리어 종료 시 1개 슬롯 — <strong>공유 &harr; 토너 초대 토글</strong> (첫 발화는 공유부터)</td></tr>
-    <tr><td><strong>쿨타임</strong></td><td>팝업 종류별 각 <strong>60초</strong> (퍼블마 값) — 쿨타임에 걸리면 그 판은 발화 없음, 토글 순번 유지</td></tr>
+    <tr><td><strong>쿨타임</strong></td><td><strong>없음</strong> — 솔은 판 사이 간격 p50 82초라 퍼블마의 60초 쿨타임이 사실상 걸리지 않아 제외함. 발화 빈도는 토글 자체가 제어</td></tr>
     <tr><td><strong>초대 페이로드</strong> (entryPointData)</td><td><span class="sheet-var">{ social: "TOURNAMENT_INVITE", tournament_id, player, is_invite: true, version, ad_parent, timestamp }</span> &mdash; 퍼블마 <span class="sheet-var">TournamentBattleView.showTournamentInvitePopup()</span> 필드 구성 정렬. 수신자는 탭 시 <strong>해당 토너 컨텍스트로 진입</strong></td></tr>
     <tr><td><strong>기존 정책 유지</strong></td><td>연속 거절 상한 · 판 포기 시 미노출 · 유저 주도 지면(로비 등) 무제한 — 전부 현행 유지</td></tr>
     <tr><td><strong>적용 범위</strong></td><td><strong>시트 A/B로 시작</strong>(<span class="sheet-var">toggle_mode=2</span>, player_id 짝홀 50%) · 생성 다이얼로그(비토너 컨텍스트)는 범위 외</td></tr>
@@ -253,13 +253,15 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th></th><th>As-Is</th><th>To-Be</th></tr></thead>
     <tbody>
-    <tr><td>토너 컨텍스트 판 종료</td><td><strong>공유 팝업만</strong> 매판 발화</td><td><strong>공유 &harr; 초대 번갈아</strong> 발화 · 종류별 쿨타임 60초</td></tr>
+    <tr><td>토너 컨텍스트 판 종료</td><td><strong>공유 팝업만</strong> 매판 발화</td><td><strong>공유 &harr; 초대 번갈아</strong> 발화 · 쿨타임 없음</td></tr>
     <tr><td>공유 시도량</td><td>유저당 20.8회/5일 (벤치 2~3배)</td><td>~10회 &mdash; 벤치 밴드 자동 도달</td></tr>
     <tr><td>토너 초대</td><td>지면 없음</td><td>신설 &mdash; FB 친구 선택 다이얼로그로 도전장 발송</td></tr>
     </tbody>
   </table>
 
-  <h3>초대 유입 유저의 질 &mdash; 퍼블마 실측 (가입 후 7일 · 8/12 BQ)</h3>
+  <h3>초대 유입 유저의 질 &mdash; 퍼블마 실측</h3>
+  <p style="font-size:0.85rem;color:var(--text2)">코호트 = <strong>2026-07-15 ~ 07-28 가입자</strong>(D14 관측 가능 구간) · 활동 지표 = 가입 후 7일 · D14 = 가입 14일째 재방문 · 8/12 BQ 추출.
+  유입 볼륨(주간 900명·신규 305)은 <strong>8/6~8/12 최근 7일</strong> 기준.</p>
   <table>
     <thead><tr><th>유입 소스</th><th>표본</th><th>활동일</th><th>판수/인</th><th>RV/인</th><th>IT/인</th><th>메세지 성공/인</th><th>D1</th><th>D7</th><th>D14</th></tr></thead>
     <tbody>
@@ -290,8 +292,7 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>용어</th><th>뜻</th><th>혼동 주의</th></tr></thead>
     <tbody>
-    <tr><td><strong>토글 순번</strong> <span class="sheet-var">shouldInvitePopupNext</span></td><td>다음 발화가 공유인지 초대인지의 상태(boolean · true=초대 차례). 발화 성공 시에만 반전 &mdash; 퍼블마 <span class="sheet-var">TournamentBattleView.shouldInvitePopupNext</span>와 동일 명명</td><td>쿨타임 스킵·판 포기로는 반전하지 않음</td></tr>
-    <tr><td><strong>쿨타임</strong> <span class="sheet-var">TOURNAMENT_POPUP_COOLTIME_SEC = 60</span></td><td>같은 종류 팝업의 최소 재발화 간격. 종류별 독립 타이머(<span class="sheet-var">lastShareFiredAt</span> · <span class="sheet-var">lastInviteFiredAt</span>)</td><td>기존 &lsquo;연속 거절 상한&rsquo;(<span class="sheet-var">tournamentCreateRejectLimit</span>)과 별개 &mdash; 그쪽은 횟수, 이쪽은 시간</td></tr>
+    <tr><td><strong>토글 순번</strong> <span class="sheet-var">shouldInvitePopupNext</span></td><td>다음 발화가 공유인지 초대인지의 상태(boolean · true=초대 차례). 발화 성공 시에만 반전 &mdash; 퍼블마 <span class="sheet-var">TournamentBattleView.shouldInvitePopupNext</span>와 동일 명명</td><td>판 포기로는 반전하지 않음</td></tr>
     <tr><td><strong>초대</strong> <span class="sheet-var">inviteFriend(LogInvitePosition.tournament_invite)</span></td><td>inviteAsync 친구 선택 다이얼로그 발사. 게임 미설치 FB 친구 포함 전체가 대상</td><td>공유(<span class="sheet-var">shareTournament</span>, 컨텍스트 내 자랑)와 다른 API·다른 대상</td></tr>
     </tbody>
   </table>
@@ -301,10 +302,9 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>값</th><th>누가 보관</th><th>언제 갱신</th><th>비고</th></tr></thead>
     <tbody>
     <tr><td><span class="sheet-var">shouldInvitePopupNext</span> (boolean)</td><td><strong>클라 로컬 스토리지</strong></td><td>발화 성공 시 반전</td><td>유실 시 false(공유부터) 재시작 &mdash; 영향 미미</td></tr>
-    <tr><td><span class="sheet-var">lastShareFiredAt</span> · <span class="sheet-var">lastInviteFiredAt</span> (epoch sec)</td><td><strong>클라 메모리</strong></td><td>해당 종류 발화 시</td><td>쿨타임 판정용 · 영속화 불필요</td></tr>
     </tbody>
   </table>
-  <div class="callout callout-purple"><strong>서버 변경 없음.</strong> 동작 전체를 아래 밸런스시트 <span class="sheet-var">const</span> 2건으로 제어함 &mdash; 온오프·A/B·쿨타임 조정 전부 <strong>빌드 없이 시트에서</strong> 가능.</div>
+  <div class="callout callout-purple"><strong>서버 변경 없음.</strong> 동작 전체를 밸런스시트 <span class="sheet-var">const</span> <strong>1건</strong>으로 제어함 &mdash; 끄기·켜기·A/B 전부 <strong>빌드 없이 시트에서</strong> 가능.</div>
 
   <h3>밸런스시트 상수 &mdash; const 탭</h3>
   <table>
@@ -313,15 +313,13 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td><span class="sheet-var">tournament_popup_toggle_mode</span></td><td>int</td><td><strong>0</strong></td>
         <td><strong>0</strong> = 현행(공유만 발화) &middot; <strong>1</strong> = 전량 토글 적용 &middot;
             <strong>2</strong> = A/B(<span class="sheet-var">player_id</span> 해시 짝홀로 50% 배정 &mdash; 짝수=토글, 홀수=현행)</td></tr>
-    <tr><td><span class="sheet-var">tournament_popup_cooltime_sec</span></td><td>int</td><td><strong>60</strong></td>
-        <td>같은 종류 팝업의 최소 재발화 간격(초). <strong>0 = 쿨타임 없음</strong>. 퍼블마 값 60에서 시작해 시트로 튜닝</td></tr>
     </tbody>
   </table>
   <table>
     <thead><tr><th>운영 규칙</th><th>내용</th></tr></thead>
     <tbody>
     <tr><td>반영 시점</td><td>로그인 시 const fetch로 적용 &mdash; 세션 중 시트 변경은 <strong>다음 세션부터</strong> 반영</td></tr>
-    <tr><td>상수 미존재·파싱 실패</td><td>각각 0 / 60으로 폴백 &mdash; 안전 기본값 = 현행 동작</td></tr>
+    <tr><td>상수 미존재·파싱 실패</td><td>0으로 폴백 &mdash; 안전 기본값 = 현행 동작</td></tr>
     <tr><td>롤아웃 순서</td><td>배포 시 <strong>2(A/B)</strong>로 시작 &rarr; 판정 통과 시 <strong>1</strong>(전량) &rarr; 문제 시 <strong>0</strong>(즉시 현행 복귀)</td></tr>
     <tr><td>key_number</td><td>const 대역에서 배정 &mdash; <span class="sheet-var">tool</span> 탭 대역 인덱스 확인 후 <span class="sheet-var">tournament_create_reject_limit</span>(10106) 인접 번호 사용. 시트 반영은 라이브 시트 직접(백업·하이라이트 규칙 적용)</td></tr>
     <tr><td>A/B 로그 판별</td><td>별도 배정 로그 불필요 &mdash; 분석 시 <span class="sheet-var">mod(player_id, 2)</span>로 재구성(해시식을 클라·분석 동일하게 짝홀로 고정하는 이유)</td></tr>
@@ -334,8 +332,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
     <tr><td>1</td><td>기존 자동 발화 조건(토너 컨텍스트 · 클리어 · 연속 거절 상한)</td><td>종료 &mdash; 현행과 동일</td></tr>
     <tr><td>2</td><td><span class="sheet-var">toggle_mode</span> 판정 &mdash; 0이면 현행 공유 흐름 · 2면 짝홀 배정 후 진행</td><td>(대조군이면 현행 흐름으로)</td></tr>
-    <tr><td>3</td><td>토글 순번의 팝업이 쿨타임(<span class="sheet-var">tournament_popup_cooltime_sec</span>)을 지났는가</td><td>종료 &mdash; 발화 없음 · <strong>순번 유지</strong></td></tr>
-    <tr><td>4</td><td>발화(유저 제스처 안에서) &rarr; 성공 시 토글 순번 전환</td><td>&mdash;</td></tr>
+    <tr><td>3</td><td>발화(유저 제스처 안에서) &rarr; 성공 시 토글 순번 전환</td><td>&mdash;</td></tr>
     </tbody>
   </table>
 
@@ -355,7 +352,6 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>상황</th><th>동작</th></tr></thead>
     <tbody>
     <tr><td>초대 차례인데 유저가 친구 선택을 취소하면</td><td>발화는 일어난 것 &mdash; 토글 순번은 다음(공유)으로 전환 · 연속 거절 상한 카운트</td></tr>
-    <tr><td>초대 차례인데 쿨타임이 안 지났으면</td><td>그 판은 발화 없음 · 순번은 초대에 머무름(다음 판에 재시도)</td></tr>
     <tr><td>판을 포기하면</td><td>발화 없음(현행 유지) · 순번 유지</td></tr>
     <tr><td>비토너 컨텍스트(솔로·P2P)면</td><td>이 스펙 범위 외 &mdash; 기존 생성 흐름 그대로</td></tr>
     <tr><td>수신자가 이미 그 토너에 있으면</td><td>그냥 해당 컨텍스트 진입 &mdash; 별도 처리 없음</td></tr>
@@ -365,12 +361,12 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
 
   <h3>레퍼런스 코드 &mdash; 퍼블마(block-blast-client) 검증 구현</h3>
-  <p>아래가 6개월째 라이브로 도는 원본임. 명명·필드·쿨타임 값을 이대로 정렬하면 로그 분석도 게임 간 호환됨.</p>
+  <p>아래가 6개월째 라이브로 도는 원본임. 명명·필드를 이대로 정렬하면 로그 분석도 게임 간 호환됨.</p>
   <table>
     <thead><tr><th>무엇</th><th>위치</th><th>참고 포인트</th></tr></thead>
     <tbody>
     <tr><td><strong>토글 분기</strong></td><td><span class="sheet-var">game/ingame/TournamentBattleView.ts:315~340</span> <span class="sheet-var">showTournamentViralPopup()</span></td><td><span class="sheet-var">shouldInvitePopupNext</span>로 초대&harr;피드 토글 · 토너 컨텍스트 여부 분기 &mdash; 솔은 피드 대신 공유로 치환</td></tr>
-    <tr><td><strong>쿨타임</strong></td><td>같은 파일 <span class="sheet-var">:87</span> <span class="sheet-var">tournamentViralCooldownMs = 60000</span> · <span class="sheet-var">:271~276</span> <span class="sheet-var">canShowTournamentViralPopup()</span> / <span class="sheet-var">markTournamentViralPopupShown()</span></td><td>정적 타이머 게이트 패턴 그대로</td></tr>
+    <tr><td>쿨타임 (솔은 미채택)</td><td>같은 파일 <span class="sheet-var">:87, :271~276</span></td><td>참고만 &mdash; 솔은 판 간격(82초)이 쿨타임(60초)보다 길어 실효가 없어 제외</td></tr>
     <tr><td><strong>초대 발사·페이로드</strong></td><td>같은 파일 <span class="sheet-var">:344~364</span> <span class="sheet-var">showTournamentInvitePopup()</span></td><td>entryPointData 필드 구성(social·player·is_invite·ad_parent&hellip;) 원본</td></tr>
     <tr><td><strong>inviteAsync 래퍼</strong></td><td><span class="sheet-var">common/Fbi.ts:2100</span> <span class="sheet-var">inviteAsyncGame()</span></td><td>position 로깅·이미지 템플릿·콜백 처리 &mdash; 솔 <span class="sheet-var">BasePlatform.inviteFriend()</span>가 대응물</td></tr>
     <tr><td><strong>초대 로그 3종</strong></td><td><span class="sheet-var">common/LogManager.ts:806~827</span> <span class="sheet-var">logMsgP2PInvite / &hellip;Success / &hellip;Fail</span></td><td>3460/3470/3480 · <span class="sheet-var">position</span>·<span class="sheet-var">image_id</span>·<span class="sheet-var">error_code</span> 필드</td></tr>
@@ -387,7 +383,7 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
 
   <h3>타임존</h3>
-  <p>쿨타임은 클라 단조 시계 기준 60초로 달력 시간과 무관함. 성과 집계는 FB 로그 기준 <strong>UTC</strong> 일자를 씀.</p>
+  <p>이 스펙의 판정은 전부 판 단위로 달력 시간과 무관함. 성과 집계는 FB 로그 기준 <strong>UTC</strong> 일자를 씀.</p>
 </section>
 
 <section id="s3">
