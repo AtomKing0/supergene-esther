@@ -245,7 +245,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td><strong>쿨타임</strong></td><td>팝업 종류별 각 <strong>60초</strong> (퍼블마 값) — 쿨타임에 걸리면 그 판은 발화 없음, 토글 순번 유지</td></tr>
     <tr><td><strong>초대 페이로드</strong> (entryPointData)</td><td><span class="sheet-var">{ social: "TOURNAMENT_INVITE", tournament_id, player, is_invite: true, version, ad_parent, timestamp }</span> &mdash; 퍼블마 <span class="sheet-var">TournamentBattleView.showTournamentInvitePopup()</span> 필드 구성 정렬. 수신자는 탭 시 <strong>해당 토너 컨텍스트로 진입</strong></td></tr>
     <tr><td><strong>기존 정책 유지</strong></td><td>연속 거절 상한 · 판 포기 시 미노출 · 유저 주도 지면(로비 등) 무제한 — 전부 현행 유지</td></tr>
-    <tr><td><strong>적용 범위</strong></td><td><strong>A/B 배포</strong>(퍼블마 837/838 선례) · 생성 다이얼로그(비토너 컨텍스트)는 범위 외</td></tr>
+    <tr><td><strong>적용 범위</strong></td><td><strong>시트 A/B로 시작</strong>(<span class="sheet-var">toggle_mode=2</span>, player_id 짝홀 50%) · 생성 다이얼로그(비토너 컨텍스트)는 범위 외</td></tr>
     </tbody>
   </table>
 
@@ -304,15 +304,38 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td><span class="sheet-var">lastShareFiredAt</span> · <span class="sheet-var">lastInviteFiredAt</span> (epoch sec)</td><td><strong>클라 메모리</strong></td><td>해당 종류 발화 시</td><td>쿨타임 판정용 · 영속화 불필요</td></tr>
     </tbody>
   </table>
-  <div class="callout callout-purple"><strong>서버 변경 없음.</strong> 시트 상수 1건(<span class="sheet-var">tournament_popup_toggle_mode</span>, 0=현행 공유만/1=토글)로 빌드 없이 켜고 끔. A/B 배정도 이 값으로 가름.</div>
+  <div class="callout callout-purple"><strong>서버 변경 없음.</strong> 동작 전체를 아래 밸런스시트 <span class="sheet-var">const</span> 2건으로 제어함 &mdash; 온오프·A/B·쿨타임 조정 전부 <strong>빌드 없이 시트에서</strong> 가능.</div>
+
+  <h3>밸런스시트 상수 &mdash; const 탭</h3>
+  <table>
+    <thead><tr><th>변수명</th><th>타입</th><th>기본값</th><th>값 의미</th></tr></thead>
+    <tbody>
+    <tr><td><span class="sheet-var">tournament_popup_toggle_mode</span></td><td>int</td><td><strong>0</strong></td>
+        <td><strong>0</strong> = 현행(공유만 발화) &middot; <strong>1</strong> = 전량 토글 적용 &middot;
+            <strong>2</strong> = A/B(<span class="sheet-var">player_id</span> 해시 짝홀로 50% 배정 &mdash; 짝수=토글, 홀수=현행)</td></tr>
+    <tr><td><span class="sheet-var">tournament_popup_cooltime_sec</span></td><td>int</td><td><strong>60</strong></td>
+        <td>같은 종류 팝업의 최소 재발화 간격(초). <strong>0 = 쿨타임 없음</strong>. 퍼블마 값 60에서 시작해 시트로 튜닝</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>운영 규칙</th><th>내용</th></tr></thead>
+    <tbody>
+    <tr><td>반영 시점</td><td>로그인 시 const fetch로 적용 &mdash; 세션 중 시트 변경은 <strong>다음 세션부터</strong> 반영</td></tr>
+    <tr><td>상수 미존재·파싱 실패</td><td>각각 0 / 60으로 폴백 &mdash; 안전 기본값 = 현행 동작</td></tr>
+    <tr><td>롤아웃 순서</td><td>배포 시 <strong>2(A/B)</strong>로 시작 &rarr; 판정 통과 시 <strong>1</strong>(전량) &rarr; 문제 시 <strong>0</strong>(즉시 현행 복귀)</td></tr>
+    <tr><td>key_number</td><td>const 대역에서 배정 &mdash; <span class="sheet-var">tool</span> 탭 대역 인덱스 확인 후 <span class="sheet-var">tournament_create_reject_limit</span>(10106) 인접 번호 사용. 시트 반영은 라이브 시트 직접(백업·하이라이트 규칙 적용)</td></tr>
+    <tr><td>A/B 로그 판별</td><td>별도 배정 로그 불필요 &mdash; 분석 시 <span class="sheet-var">mod(player_id, 2)</span>로 재구성(해시식을 클라·분석 동일하게 짝홀로 고정하는 이유)</td></tr>
+    </tbody>
+  </table>
 
   <h3>&#9399; 판정 순서 &mdash; 토너 컨텍스트 판 클리어 종료 시</h3>
   <table>
     <thead><tr><th>순서</th><th>검사</th><th>불통과 시</th></tr></thead>
     <tbody>
     <tr><td>1</td><td>기존 자동 발화 조건(토너 컨텍스트 · 클리어 · 연속 거절 상한)</td><td>종료 &mdash; 현행과 동일</td></tr>
-    <tr><td>2</td><td>토글 순번의 팝업이 쿨타임(60초)을 지났는가</td><td>종료 &mdash; 발화 없음 · <strong>순번 유지</strong></td></tr>
-    <tr><td>3</td><td>발화(유저 제스처 안에서) &rarr; 성공 시 토글 순번 전환</td><td>&mdash;</td></tr>
+    <tr><td>2</td><td><span class="sheet-var">toggle_mode</span> 판정 &mdash; 0이면 현행 공유 흐름 · 2면 짝홀 배정 후 진행</td><td>(대조군이면 현행 흐름으로)</td></tr>
+    <tr><td>3</td><td>토글 순번의 팝업이 쿨타임(<span class="sheet-var">tournament_popup_cooltime_sec</span>)을 지났는가</td><td>종료 &mdash; 발화 없음 · <strong>순번 유지</strong></td></tr>
+    <tr><td>4</td><td>발화(유저 제스처 안에서) &rarr; 성공 시 토글 순번 전환</td><td>&mdash;</td></tr>
     </tbody>
   </table>
 
@@ -336,7 +359,8 @@ ul li strong,ol li strong { color:var(--text); }
     <tr><td>판을 포기하면</td><td>발화 없음(현행 유지) · 순번 유지</td></tr>
     <tr><td>비토너 컨텍스트(솔로·P2P)면</td><td>이 스펙 범위 외 &mdash; 기존 생성 흐름 그대로</td></tr>
     <tr><td>수신자가 이미 그 토너에 있으면</td><td>그냥 해당 컨텍스트 진입 &mdash; 별도 처리 없음</td></tr>
-    <tr><td>시트 상수 0 또는 없음</td><td>현행(공유만)과 동일 &mdash; 안전 기본값 · A/B 대조군</td></tr>
+    <tr><td><span class="sheet-var">toggle_mode</span>=0 또는 상수 없음</td><td>현행(공유만)과 동일 &mdash; 안전 기본값</td></tr>
+    <tr><td><span class="sheet-var">toggle_mode</span>=2인데 홀수 player_id면</td><td>현행 동작(대조군) &mdash; 토글 상태 변수도 만들지 않음</td></tr>
     </tbody>
   </table>
 
@@ -396,7 +420,7 @@ ul li strong,ol li strong { color:var(--text); }
   <strong>결과 지표(성공/DAU)</strong>로만 함. 41 통합 팔로업 페이지에 적용일 마커와 초대 지표를 추가함.</div>
 
   <h3>롤백</h3>
-  <p>시트 상수 1건을 0으로 되돌리면 즉시 현행(공유만)으로 복귀함(빌드 불필요). 롤백 트리거는 공유 성공/DAU의 유의 하락 단 하나임.</p>
+  <p><span class="sheet-var">tournament_popup_toggle_mode</span>를 0으로 되돌리면 다음 세션부터 전원 현행(공유만)으로 복귀함(빌드 불필요). 롤백 트리거는 공유 성공/DAU의 유의 하락 단 하나임.</p>
 </section>
 
 </div>
