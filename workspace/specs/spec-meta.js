@@ -207,8 +207,8 @@ const SPECS = [
   },
   {
     id: 'spec-038', file: 'spec-038-share-exposure-normalization.html',
-    title: '[소셜-바이럴] 토너먼트 공유 노출 빈도 정상화',
-    tags: ['social'], priority: 'high', status: 'open', date: '2026. 8. 11.', dueDate: null, relatedTo: ['spec-030', 'spec-035', 'spec-037'],
+    title: '[소셜-바이럴] 토너먼트 소셜 팝업 개편 — 공유·초대 토글',
+    tags: ['social', 'feature'], priority: 'high', status: 'open', date: '2026. 8. 12.', dueDate: null, relatedTo: ['spec-030', 'spec-035', 'spec-037'],
   },
   {
     id: 'spec-037', file: 'spec-037-leaderboard-play-button.html',
