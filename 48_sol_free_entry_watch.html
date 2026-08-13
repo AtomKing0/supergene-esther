@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>48 · SPEC-032 하루 첫 판 무료 입장 관측</title>
+<style>
+:root{--ground:#EEF0F2;--panel:#fff;--panel2:#F6F7F9;--line:#D7DBDF;--line2:#E5E8EB;
+--ink:#15181C;--ink2:#4A525B;--ink3:#79838D;--accent:#1F6F66;--accent-soft:rgba(31,111,102,.10);
+--ok:#1F7A4D;--ok-bg:rgba(31,122,77,.10);--warn:#946200;--warn-bg:rgba(148,98,0,.12);
+--crit:#B03024;--crit-bg:rgba(176,48,36,.10);--idle:#79838D;--idle-bg:rgba(121,131,141,.12);
+--mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+--ground:#101317;--panel:#171B20;--panel2:#1D2228;--line:#2A3138;--line2:#232930;
+--ink:#E8ECEF;--ink2:#A7B1BA;--ink3:#767F88;--accent:#5FBFB0;--accent-soft:rgba(95,191,176,.12);
+--ok:#4FBE85;--ok-bg:rgba(79,190,133,.13);--warn:#D9A33A;--warn-bg:rgba(217,163,58,.14);
+--crit:#E4736A;--crit-bg:rgba(228,115,106,.13);--idle:#767F88;--idle-bg:rgba(118,127,136,.14);}}
+:root[data-theme="dark"]{--ground:#101317;--panel:#171B20;--panel2:#1D2228;--line:#2A3138;--line2:#232930;
+--ink:#E8ECEF;--ink2:#A7B1BA;--ink3:#767F88;--accent:#5FBFB0;--accent-soft:rgba(95,191,176,.12);
+--ok:#4FBE85;--ok-bg:rgba(79,190,133,.13);--warn:#D9A33A;--warn-bg:rgba(217,163,58,.14);
+--crit:#E4736A;--crit-bg:rgba(228,115,106,.13);--idle:#767F88;--idle-bg:rgba(118,127,136,.14);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6}
+.wrap{max-width:1000px;margin:0 auto;padding:32px 20px 72px;display:flex;flex-direction:column;gap:32px}
+.head{border-bottom:2px solid var(--ink);padding-bottom:16px;display:flex;flex-direction:column;gap:10px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+color:var(--accent);font-weight:600}
+h1{margin:0;font-size:clamp(22px,3.6vw,30px);font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.meta b{color:var(--ink2);font-weight:600}
+.banner{border:1px solid var(--line);border-left:4px solid var(--bl,var(--idle));background:var(--panel);
+border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:5px}
+.banner .h{font-size:18px;font-weight:750;letter-spacing:-.01em}
+.banner .s{font-size:13px;color:var(--ink2)}
+section{display:flex;flex-direction:column;gap:13px}
+h2{margin:0;font-size:16px;font-weight:750;display:flex;align-items:center;gap:10px}
+h2::after{content:"";flex:1;height:1px;background:var(--line)}
+.lede{margin:0;font-size:13.5px;color:var(--ink2);max-width:70ch}
+.lede b{color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;background:var(--line);
+border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.stat{background:var(--panel);padding:13px 15px;display:flex;flex-direction:column;gap:2px}
+.stat-l{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.stat-v{font-size:22px;font-weight:750;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.15}
+.stat-s{font-size:11.5px;color:var(--ink3)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:580px}
+th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+color:var(--ink3);font-weight:650;padding:10px 13px;border-bottom:1px solid var(--line);background:var(--panel2)}
+td{padding:10px 13px;border-bottom:1px solid var(--line2);color:var(--ink2);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+td:first-child{color:var(--ink);font-weight:600}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600;white-space:nowrap}
+.dim{color:var(--ink3)}
+tr.row-hi td{background:var(--accent-soft)}
+tr.row-warn td{background:var(--warn-bg)}
+tr.row-crit td{background:var(--crit-bg)}
+.pill{display:inline-flex;align-items:center;font-family:var(--mono);font-size:10.5px;font-weight:650;
+padding:2px 7px;border-radius:20px;letter-spacing:.03em;white-space:nowrap}
+.p-ok{background:var(--ok-bg);color:var(--ok)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-crit{background:var(--crit-bg);color:var(--crit)}
+.p-idle{background:var(--idle-bg);color:var(--idle)}
+.note{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--panel);
+border-radius:8px;padding:13px 16px;font-size:13.5px;color:var(--ink2)}
+.note b{color:var(--ink)}
+.note-t{display:block;color:var(--ink);font-weight:700;margin-bottom:3px}
+footer{border-top:1px solid var(--line);padding-top:13px;font-family:var(--mono);font-size:11.5px;
+color:var(--ink3);display:flex;flex-wrap:wrap;gap:5px 16px}
+</style></head><body><div class="wrap">
+
+<header class="head">
+  <div class="eyebrow">48 · SPEC-032 배포 관측</div>
+  <h1>하루 첫 판 무료 입장 — KPI 충족과 어뷰징 감시</h1>
+  <div class="meta">
+    <span>갱신 <b>2026-08-13 09:59</b></span>
+    <span>관측 <b>D+0 · 1일차</b></span>
+    <span>정상 빌드 <b>448</b></span>
+    <span>기준선 <b>2026-08-03~08-09</b></span>
+  </div>
+</header>
+
+<div class="banner" style="--bl:var(--warn)">
+  <div class="h">주의 1건</div>
+  <div class="s">다음 관문 · D+3 · 재확인</div>
+</div>
+
+<section>
+  <h2>판정</h2>
+  <div class="tw"><table>
+    <thead><tr><th>항목</th><th>범위</th><th>값</th><th>판정</th></tr></thead>
+    <tbody><tr class=""><td>하루 1회 준수</td><td class="dim">448 빌드</td><td class="num">1.00회</td><td><span class="pill p-ok">정상</span> 유저당 1회를 넘지 않음</td></tr><tr class="row-warn"><td>구버전 잔존</td><td class="dim">그 외 빌드</td><td class="num">3.86회</td><td><span class="pill p-warn">주의</span> 27건 · 전환 대기(고치지 않기로 함)</td></tr><tr class=""><td>같은 날 재발생</td><td class="dim">448 빌드</td><td class="num">0건</td><td><span class="pill p-ok">정상</span> 로컬 조작 어뷰징 없음</td></tr><tr class=""><td>타깃 적중</td><td class="dim">잔고 &lt; 입장료</td><td class="num">29.4%</td><td><span class="pill p-idle">대기</span> 표본 17건 — 판정 보류</td></tr><tr class=""><td>면제 골드</td><td class="dim">주간 환산</td><td class="num">0.76M</td><td><span class="pill p-idle">대기</span> 예측 8.59M — 1일차라 참고만</td></tr></tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>지금 상태</h2>
+  <div class="stats">
+    <div class="stat"><span class="stat-l">무료 판 시작</span><span class="stat-v">68</span>
+      <span class="stat-s">2100 position · 누적</span></div>
+    <div class="stat"><span class="stat-l">무료 입장 로그</span><span class="stat-v">45</span>
+      <span class="stat-s">2098 · 25명</span></div>
+    <div class="stat"><span class="stat-l">면제 골드</span><span class="stat-v">108.8K</span>
+      <span class="stat-s">주간 환산 0.76M · 예측 8.59M</span></div>
+    <div class="stat"><span class="stat-l">무료 판 클리어율</span><span class="stat-v">44.1%</span>
+      <span class="stat-s">30분 근접 조인</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>빌드별 — 하루 1회가 지켜지는가</h2>
+  <p class="lede">판정이 클라 단독이라 <b>빌드가 결과를 가름</b>. 정상 동작이면 유저당 <b>정확히 1.00회</b>임.
+  구버전은 <b>고치지 않고 두기로 함</b> — 전환이 끝나면 자연 소멸함.</p>
+  <div class="tw"><table>
+    <thead><tr><th>빌드</th><th>무료 입장</th><th>유저</th><th>유저당</th><th>무료 판 시작</th><th>판정</th></tr></thead>
+    <tbody><tr class="row-warn"><td>445</td><td class="num">27</td><td class="num">7</td><td class="num">3.86</td><td class="num">27</td><td><span class="pill p-crit">결함</span> 재진입마다 다시 받음</td></tr><tr class="row-hi"><td>448</td><td class="num">17</td><td class="num">17</td><td class="num">1.00</td><td class="num">17</td><td><span class="pill p-ok">정상</span> 하루 1회 지켜짐</td></tr><tr class=""><td>1</td><td class="num">1</td><td class="num">1</td><td class="num">1.00</td><td class="num">4</td><td><span class="pill p-idle">개발</span> 집계 제외 대상</td></tr><tr class=""><td>444</td><td class="num">0</td><td class="num">0</td><td class="num">0.00</td><td class="num">20</td><td><span class="pill p-idle">미발행</span> 구 로그 id — 무료 판만 잡힘</td></tr></tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>일별</h2>
+  <div class="tw"><table>
+    <thead><tr><th>날짜</th><th>DAU</th><th>무료 판</th><th>2098</th>
+      <th>유저당(448)</th><th>면제 골드</th><th>클리어율</th></tr></thead>
+    <tbody><tr><td>08-12</td><td class="num">3,100</td><td class="num">68</td><td class="num">45</td><td class="num">1.00</td><td class="num">108,800</td><td class="num">44.1%</td></tr></tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>비용 — 예측 대비</h2>
+  <div class="stats">
+    <div class="stat"><span class="stat-l">예측 건당</span><span class="stat-v">954</span>
+      <span class="stat-s">전 유저 평균</span></div>
+    <div class="stat"><span class="stat-l">실측 건당</span><span class="stat-v">2,606</span>
+      <span class="stat-s">448 빌드 · n=17</span></div>
+    <div class="stat"><span class="stat-l">평균 레벨</span><span class="stat-v">174</span>
+      <span class="stat-s">Lv 50 미만 4건 · 200+ 2건</span></div>
+    <div class="stat"><span class="stat-l">주간 환산</span><span class="stat-v">0.76M</span>
+      <span class="stat-s">전체 소비의 0.08%</span></div>
+  </div>
+  <div class="note"><span class="note-t">건당 단가는 지금 단계에서 의미 없음</span>
+    Lv 1~2가 하루 첫 판의 <b>61.7%</b>인데 이들은 입장료가 원래 0이라 면제액도 0임.
+    이 층이 표본에 들어오면 평균 단가는 예측치(954골드)로 수렴함.
+    <b>주간 총액이 8.59M을 넘는지</b>만 보면 됨.</div>
+</section>
+
+<section>
+  <h2>아직 못 보는 것</h2>
+  <div class="tw"><table>
+    <thead><tr><th>지표</th><th>기준선</th><th>목표</th><th>언제</th></tr></thead>
+    <tbody>
+      <tr><td>x1 미달 상태의 진입 전환율</td><td class="num">12.6%</td>
+        <td class="num">90%+</td><td class="dim">D+3 · 코호트 필요</td></tr>
+      <tr><td>세션 30초 내 free_coin 호출</td><td class="num">505건/주</td>
+        <td class="dim">감소</td><td class="dim">D+7 · 주 단위</td></tr>
+      <tr><td>유저-일당 완료 판수 <span class="dim">가드레일</span></td><td class="dim">—</td>
+        <td class="dim">비열위</td><td class="dim">D+7 · 감소 시 롤백</td></tr>
+      <tr><td>하루 첫 판의 판당 보상 <span class="dim">가드레일</span></td><td class="dim">—</td>
+        <td class="dim">감시</td><td class="dim">D+7 · x1 고정 영향</td></tr>
+      <tr><td>D1 리텐션 <span class="dim">가드레일</span></td><td class="dim">—</td>
+        <td class="dim">비열위</td><td class="dim">D+8 · 코호트 성숙</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><span class="note-t">측정 공백 4건</span>
+    <b>2300에 position이 없음</b> — 클리어율은 2100 이후 30분 내 첫 2300으로 근접 조인함(정확한 조인 키 없음) ·
+    <b>12001/12002</b>는 레벨 1~2 직행·강종 복귀와 섞여 무료 직행만 못 봄 ·
+    <b>session_first</b>는 항상 false라 쓰면 안 됨 ·
+    <b>2098 로그 id가 8/12에 교체</b>돼 그 이전 발행분은 집계에서 빠짐(그래서 발생량은 2100 기준).</div>
+</section>
+
+<footer>
+  <span>생성기 scripts/sol_free_entry_watch.py</span>
+  <span>소스 game-log-359704.raw.solitaire_city_journey</span>
+  <span>기준선 전체 골드 소비 937.1M</span>
+</footer>
+
+</div></body></html>

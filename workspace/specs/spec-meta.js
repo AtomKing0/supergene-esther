@@ -186,6 +186,7 @@ const SPECS = [
   },
   {
     id: 'spec-032', file: 'spec-032-daily-first-play-free.html',
+    monitorGroup: 'sol-free-entry',
     title: '[경제-온보딩] 하루 첫 판 무료 입장',
     tags: ['feature', 'balance'], priority: 'high', status: 'wip', date: '2026. 7. 29.', dueDate: '2026-08-14', relatedTo: [],
   },
@@ -246,6 +247,12 @@ const PRI_INFO = {
 /* 정의 순서 = 드롭다운 노출 순서. 진행 흐름(예정→검토→진행→보류→완료→보관) */
 /* ── 관측 그룹 — 여러 스펙이 하나의 리포트를 공유할 때 ──────────────── */
 const MONITOR_GROUPS = {
+  'sol-free-entry': {
+    label: '하루 첫 판 무료 입장 — 관측중',
+    since: '2026-08-12',
+    url:   '../../48_sol_free_entry_watch.html',
+    specs: ['spec-032'],
+  },
   'sol-difficulty': {
     label: '솔 난이도 튜닝 — 결론 확정',
     since: '2026-08-01',
