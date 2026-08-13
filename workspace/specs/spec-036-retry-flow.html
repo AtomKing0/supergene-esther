@@ -719,11 +719,11 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td><code>2221_GAMEPLAY_END_SURE_NO</code></td><td>Back · 닫기 X (기존)</td><td><code>difficulty_tier</code> · <code>seed</code></td><td>클라</td></tr>
       <tr><td><code>2222_GAMEPLAY_END_SURE_YES</code></td><td>Quit 선택 (기존, 의미 변경 없음)</td><td><code>difficulty_tier</code> · <code>seed</code></td><td>클라</td></tr>
       <tr class="pick"><td><code>2223_GAMEPLAY_END_SURE_RETRY</code></td><td><strong>Retry 버튼 터치</strong> (신규 · 구현 완료)</td><td><code>difficulty_tier</code> · <code>seed</code></td><td>클라 &mdash; <b>버튼 액션 로그임.</b> 이 시점에는 아직 아무것도 확정되지 않고 프리게임 팝업에서 취소할 수 있음</td></tr>
+      <tr class="pick"><td><code>2100_GAMEPLAY_START</code></td><td><strong>재도전 판 시작</strong> (구현 완료)</td><td><code>position="retry"</code></td><td>클라 &mdash; <code>prepareGame</code>의 <code>logPosition</code> 인자로 전달. Quick Next Loop 경로도 동일</td></tr>
     </tbody>
   </table>
-  <div class="callout callout-yellow">
-    <strong>&#9888; <code>2223</code>은 재도전 성사가 아니라 버튼 터치임.</strong> Retry를 누르면 즉시 찍히고, 그 뒤 프리게임 팝업을 닫으면 재도전이 취소됨. 그래서 <b><code>2223</code>만으로는 실제 재도전 판수를 셀 수 없음</b>. 성사 여부는 <code>2100_GAMEPLAY_START</code>로 봐야 함.<br>
-    <b>후속 &mdash; 진입 경로 구분값.</b> <code>2100</code>의 <code>position</code>에 재도전 값이 아직 없어서 재도전으로 시작한 판을 분리할 수 없음(현재 <code>LogGamePlayPosition</code>에 해당 값 미등록). 재도전 판의 클리어율&middot;보상을 따로 보려면 값 하나가 필요함 &mdash; <b>지금 막는 사안은 아니고 다음 작업으로 넘김</b>.
+  <div class="callout callout-blue">
+    <strong><code>2223</code>은 버튼 터치, <code>2100</code>은 성사 &mdash; 둘을 짝으로 봄.</strong> Retry를 누르면 <code>2223</code>이 즉시 찍히지만 프리게임 팝업에서 취소할 수 있으므로, 실제 재도전 판수는 <code>2100 position="retry"</code>로 셈. <b>두 값의 차이가 곧 취소율</b>이고, 재도전 판의 클리어율&middot;보상도 이 값으로 분리해서 봄.
   </div>
 
   <h3>측정</h3>
@@ -731,8 +731,8 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>확인</th><th>기준</th></tr></thead>
     <tbody>
       <tr><td>실패 후 10분 내 다음 판 진입률</td><td>서구권 69.9% &rarr; 85% (판정 기준)</td></tr>
-      <tr><td>Retry 버튼 터치 비율</td><td><code>2223</code> &divide; <code>2220</code> 60% 이상 &mdash; 취소분 포함이므로 상한 지표로 읽음</td></tr>
-      <tr><td>재도전 판의 클리어율</td><td>진입 경로 구분값이 붙은 뒤 측정 &mdash; 후속</td></tr>
+      <tr><td>Retry 터치 비율 · 성사율</td><td>터치 <code>2223</code> &divide; <code>2220</code> 60% 이상 · 성사 <code>2100 position="retry"</code> &divide; <code>2223</code></td></tr>
+      <tr><td>재도전 판의 클리어율</td><td><code>2100 position="retry"</code>로 분리 &mdash; 기존 판과 차이 없을 것</td></tr>
       <tr><td>실패 유저 당일 재방문율</td><td>하락 없을 것 &mdash; 가드레일</td></tr>
       <tr><td>판당 입장료 소모</td><td>판수 증가에 비례할 것</td></tr>
     </tbody>
@@ -752,8 +752,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>클라</td><td>나가기 팝업 호출부 두 곳(<code>onClickEndLevel</code> · <code>onClickOption</code>)의 <code>remaining_draw_count</code> 등 로그 필드를 맞출 것(현재 7.6% 미기록)</td></tr>
       <tr><td>클라</td><td>다시 하기 경로에서 데일리 기프트 팝업 · 덤불 전환 미노출 처리</td></tr>
       <tr><td>클라</td><td>전면 광고 호출을 로비로 분기 안으로 이동</td></tr>
-      <tr><td>클라</td><td><s>로그 <code>2223</code> 신설</s> &mdash; <b>완료</b></td></tr>
-      <tr><td>후속</td><td><code>2100</code> <code>position</code>에 재도전 진입 구분값 추가 &mdash; 재도전 판의 클리어율 측정용. <b>이번 배포에 필수는 아님</b></td></tr>
+      <tr><td>클라</td><td><s>로그 <code>2223</code> 신설 · <code>2100</code> <code>position="retry"</code></s> &mdash; <b>완료</b></td></tr>
       <tr><td>후속</td><td>재도전 전용 전면 광고 단독 스위치 &mdash; 필요해지면 추가. <b>지금은 불필요</b></td></tr>
       <tr><td>서버</td><td><code>gameEnd</code> 직후 <code>gameStart</code> 연속 호출 검증 여부 확인</td></tr>
       <tr><td>QA</td><td>다시 하기 &rarr; 프리레벨 팝업 &rarr; 판 시작까지 정상 진입</td></tr>
