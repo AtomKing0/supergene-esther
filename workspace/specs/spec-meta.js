@@ -158,8 +158,8 @@ const SPECS = [
   {
     id: 'spec-027', file: 'spec-027-shadow-chase.html',
     monitorGroup: 'sol-shadow-chase',
-    title: '[콘텐츠-이벤트] 그림자 냥이 추격전',
-    tags: ['content', 'feature'], priority: 'high', status: 'monitor', date: '2026. 7. 24.', dueDate: null, relatedTo: ['spec-020'],
+    title: '[콘텐츠-이벤트] 그림자 냥이 추격전 — 8/10 라이브 · 관측 종료(8/13) · 현행 유지',
+    tags: ['content', 'feature'], priority: 'high', status: 'done', date: '2026. 7. 24.', dueDate: null, relatedTo: ['spec-020'],
   },
   {
     id: 'spec-028', file: 'spec-028-event-boost-pack.html',
@@ -272,7 +272,7 @@ const MONITOR_GROUPS = {
     specs: ['spec-035'],
   },
   'sol-shadow-chase': {
-    label: '그림자 냥이 추격전 — 배포 관측중 (D+2 튜닝 게이트)',
+    label: '그림자 냥이 추격전 — 🏁 관측 종료 · 현행 유지',
     since: '2026-08-10',
     url:   '../../42_sol_shadow_watch.html',
     specs: ['spec-027'],
