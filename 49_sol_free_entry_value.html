@@ -66,6 +66,13 @@ border-radius:8px;padding:13px 16px;font-size:13.5px;color:var(--ink2)}
 .fil{height:100%;background:var(--accent);border-radius:4px}
 .fil.lo{background:var(--crit)}
 .bval{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;font-weight:650;font-size:12.5px}
+details{border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
+summary{cursor:pointer;padding:12px 16px;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;
+text-transform:uppercase;color:var(--ink3);font-weight:650}
+summary:hover{color:var(--ink)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+pre{margin:0;padding:0 16px 16px;overflow-x:auto;font-family:var(--mono);font-size:11.5px;line-height:1.6;
+color:var(--ink2);white-space:pre}
 footer{border-top:1px solid var(--line);padding-top:13px;font-family:var(--mono);font-size:11.5px;color:var(--ink3);
 display:flex;flex-wrap:wrap;gap:5px 16px}
 </style></head><body><div class="wrap">
@@ -199,6 +206,134 @@ display:flex;flex-wrap:wrap;gap:5px 16px}
     <li><b>0판 유저-일 전체와 비교하면 안 됨</b> &mdash; 전체 0판의 D1은 36.7%인데
     여기엔 잠깐 접속만 한 코어 유저가 섞여 있음. 반드시 <b>잔고 부족 조건</b>으로 걸러야 함.</li>
   </ul>
+</section>
+
+<section>
+  <h2>쿼리</h2>
+  <p>전부 <code>country IN (서구권)</code> · <code>country != 'KR'</code>(내부 인원) 조건이 붙어 있음.
+  서구권 목록은 <code>supergene-common.analytics_common.tb_dim_country</code>의 Europe + US·CA임.</p>
+
+<details open>
+  <summary>① 배포 전 &mdash; 돈이 없던 유저-일의 D1 (0판 vs 회복 플레이)</summary>
+<pre>WITH src AS (
+  SELECT player_id, log_date, log_time, event, data
+  FROM `game-log-359704.raw.solitaire_city_journey`
+  WHERE log_date BETWEEN '2026-07-28' AND '2026-08-11'   -- 잔고 추적용으로 앞을 넉넉히 잡음
+    AND country IN (&lt;서구권&gt;)),
+-- 레벨별 x1 입장료 = 그 레벨 entry_cost의 최소값
+lv AS (SELECT lv, MIN(ec) x1 FROM (
+    SELECT SAFE_CAST(JSON_VALUE(data,'$.user_level') AS INT64) lv,
+           SAFE_CAST(JSON_VALUE(data,'$.entry_cost') AS INT64) ec
+    FROM src WHERE event='2100_GAMEPLAY_START') WHERE ec&gt;0 GROUP BY lv),
+ud AS (SELECT player_id, log_date, MIN(log_time) t0,
+         COUNTIF(event='2100_GAMEPLAY_START') plays
+       FROM src GROUP BY 1,2 HAVING COUNTIF(event='1000_LOGIN_COMPLETE')&gt;0),
+gold AS (SELECT player_id, log_time, SAFE_CAST(JSON_VALUE(data,'$.after') AS INT64) bal
+         FROM src WHERE event='9400_GOLD_TRANSACTION_LOG'),
+lvl AS (SELECT player_id, log_time, SAFE_CAST(JSON_VALUE(data,'$.user_level') AS INT64) l
+        FROM src WHERE event='2100_GAMEPLAY_START'),
+-- 그날 첫 로그인 직전의 잔고 = 세션에 들고 온 돈
+j AS (SELECT u.player_id, u.log_date, u.plays,
+        ARRAY_AGG(g.bal ORDER BY g.log_time DESC LIMIT 1)[SAFE_OFFSET(0)] bal
+      FROM ud u LEFT JOIN gold g
+        ON g.player_id=u.player_id AND g.log_time &lt; u.t0
+      GROUP BY 1,2,3),
+k AS (SELECT j.*, ARRAY_AGG(l.l ORDER BY l.log_time DESC LIMIT 1)[SAFE_OFFSET(0)] lev
+      FROM j LEFT JOIN lvl l
+        ON l.player_id=j.player_id AND l.log_time &lt; DATETIME(j.log_date)
+      GROUP BY 1,2,3,4),
+-- 핵심 필터: 세션 시작 시점에 잔고 &lt; x1 입장료
+broke AS (SELECT k.*, lv.x1 FROM k JOIN lv ON lv.lv = k.lev
+          WHERE k.bal IS NOT NULL AND k.bal &lt; lv.x1
+            AND k.log_date BETWEEN '2026-08-01' AND '2026-08-10'),
+nxt AS (SELECT DISTINCT player_id, log_date FROM ud)
+SELECT IF(b.plays=0,'A. 못 들어감(0판)','B. 회복해서 플레이(1판+)') grp,
+  COUNT(*) user_days, ROUND(AVG(b.plays),2) avg_plays,
+  ROUND(100*COUNTIF(n.player_id IS NOT NULL)/COUNT(*),1) d1_pct
+FROM broke b LEFT JOIN nxt n
+  ON n.player_id=b.player_id AND n.log_date=DATE_ADD(b.log_date, INTERVAL 1 DAY)
+GROUP BY 1;
+-- 결과: A 347유저-일 47.3% / B 789유저-일 66.3%  (+19.0%p, z=6.04, p&lt;0.001)</pre>
+</details>
+
+<details>
+  <summary>② 배포 후 &mdash; 무료 입장 수령자의 D1</summary>
+<pre>WITH fe AS (   -- 2098 페이로드로 '무료 아니면 못 들어갔을' 유저 판별
+  SELECT player_id, log_date,
+    MAX(IF(SAFE_CAST(JSON_VALUE(data,'$.gold_balance') AS INT64)
+         &lt; SAFE_CAST(JSON_VALUE(data,'$.entry_cost')  AS INT64),1,0)) broke
+  FROM `game-log-359704.raw.solitaire_city_journey`
+  WHERE log_date='2026-08-12'          -- D1을 온전히 볼 수 있는 완결일만
+    AND event='2098_DAILY_FREE_ENTRY' AND country IN (&lt;서구권&gt;)
+  GROUP BY 1,2),
+ud AS (SELECT player_id, log_date, COUNTIF(event='2100_GAMEPLAY_START') plays
+  FROM `game-log-359704.raw.solitaire_city_journey`
+  WHERE log_date BETWEEN '2026-08-12' AND '2026-08-13' AND country IN (&lt;서구권&gt;)
+  GROUP BY 1,2 HAVING COUNTIF(event='1000_LOGIN_COMPLETE')&gt;0),
+nxt AS (SELECT DISTINCT player_id FROM ud WHERE log_date='2026-08-13')
+SELECT IF(f.broke=1,'무료 입장 · 잔고 부족','무료 입장 · 잔고 충분') grp,
+  COUNT(*) user_days, ROUND(AVG(u.plays),2) avg_plays,
+  ROUND(100*COUNTIF(n.player_id IS NOT NULL)/COUNT(*),1) d1_pct
+FROM fe f JOIN ud u USING (player_id, log_date)
+LEFT JOIN nxt n ON n.player_id=f.player_id
+GROUP BY 1;
+-- 결과: 잔고부족 54유저-일 7.37판 64.8% / 잔고충분 131유저-일 36.47판 71.0%</pre>
+</details>
+
+<details>
+  <summary>③ 깊이 &mdash; 무료 입장 수령자가 그날 몇 판까지 가는가</summary>
+<pre>WITH fe AS (
+  SELECT player_id, log_date,
+    MAX(IF(SAFE_CAST(JSON_VALUE(data,'$.gold_balance') AS INT64)
+         &lt; SAFE_CAST(JSON_VALUE(data,'$.entry_cost')  AS INT64),1,0)) broke
+  FROM `game-log-359704.raw.solitaire_city_journey`
+  WHERE log_date &gt;= '2026-08-12' AND event='2098_DAILY_FREE_ENTRY'
+    AND country IN (&lt;서구권&gt;) GROUP BY 1,2),
+ud AS (SELECT player_id, log_date, COUNTIF(event='2100_GAMEPLAY_START') p
+  FROM `game-log-359704.raw.solitaire_city_journey`
+  WHERE log_date &gt;= '2026-08-12' AND country IN (&lt;서구권&gt;) GROUP BY 1,2)
+SELECT IF(broke=1,'잔고 부족','잔고 충분') grp,
+  COUNT(*) user_days, ROUND(AVG(p),2) avg_plays,
+  APPROX_QUANTILES(p,100)[OFFSET(50)] p50,
+  ROUND(100*COUNTIF(p=1)/COUNT(*),1)  only1_pct,
+  ROUND(100*COUNTIF(p&gt;=4)/COUNT(*),1) deep4_pct,
+  ROUND(100*COUNTIF(p&gt;=10)/COUNT(*),1) deep10_pct
+FROM fe JOIN ud USING (player_id, log_date) GROUP BY 1;</pre>
+</details>
+
+<details>
+  <summary>④ 판수 밴드별 D1 &middot; 광고 노출 전후</summary>
+<pre>-- 판수 밴드별 D1 (배포 전, 서구권)
+WITH ud AS (
+  SELECT player_id, log_date, COUNTIF(event='2100_GAMEPLAY_START') p
+  FROM `game-log-359704.raw.solitaire_city_journey`
+  WHERE log_date BETWEEN '2026-08-01' AND '2026-08-11' AND country IN (&lt;서구권&gt;)
+  GROUP BY 1,2 HAVING COUNTIF(event='1000_LOGIN_COMPLETE')&gt;0),
+nxt AS (SELECT DISTINCT player_id, log_date FROM ud)
+SELECT CASE WHEN p=0 THEN '0판' WHEN p=1 THEN '1판' WHEN p&lt;=3 THEN '2~3판'
+            WHEN p&lt;=9 THEN '4~9판' ELSE '10판+' END band,
+  COUNT(*) user_days,
+  ROUND(100*COUNTIF(n.player_id IS NOT NULL)/COUNT(*),1) d1_pct
+FROM ud a LEFT JOIN nxt n
+  ON n.player_id=a.player_id AND n.log_date=DATE_ADD(a.log_date, INTERVAL 1 DAY)
+WHERE a.log_date &lt;= '2026-08-10' GROUP BY band;
+-- 결과: 0판 36.7% / 1판 18.5% / 2~3판 29.9% / 4~9판 40.4% / 10판+ 58.0%
+
+-- 유저-일당 광고 노출 전후 (8/12 롤아웃 중간일 제외)
+WITH ud AS (
+  SELECT player_id, log_date,
+    COUNTIF(event='2100_GAMEPLAY_START')          plays,
+    COUNTIF(event='4210_RV_FINISH')               rv,
+    COUNTIF(event='4010_INTERSTITIAL_AD_FINISH')  it
+  FROM `game-log-359704.raw.solitaire_city_journey`
+  WHERE log_date BETWEEN '2026-08-05' AND '2026-08-13' AND country IN (&lt;서구권&gt;)
+  GROUP BY 1,2 HAVING COUNTIF(event='1000_LOGIN_COMPLETE')&gt;0)
+SELECT IF(log_date&lt;='2026-08-11','배포 전','배포 후') grp, COUNT(*) user_days,
+  ROUND(AVG(plays),2) plays_pu, ROUND(AVG(rv),2) rv_pu, ROUND(AVG(it),2) it_pu
+FROM ud WHERE log_date != '2026-08-12' GROUP BY 1;
+-- 결과: 판수 11.87→13.14 / RV 4.10→4.31 / IT 2.82→7.28
+-- ★ IT 급증은 전면광고 빈도(SPEC-035) 변경이 섞인 값이라 이 기능의 성과로 읽지 말 것</pre>
+</details>
 </section>
 
 <footer>
