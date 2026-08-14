@@ -364,6 +364,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>진입 경로</td><td>엔드레벨 버튼 &middot; 설정 팝업 Quit <strong>두 경로 모두</strong> 나가기 팝업으로 모임. 설정 팝업에는 버튼을 두지 않음</td></tr>
       <tr><td>덱 잔량 게이팅</td><td>하지 않음 &mdash; 판을 끝낸 유저의 <strong>92.4%가 덱 소진 상태</strong>, 자발적 이탈은 0.1%</td></tr>
       <tr><td>재도전 맵</td><td>실패한 그 맵 (스테이지·난이도 티어 승계 · 보드는 새로 섞임)</td></tr>
+      <tr><td>확정 시점</td><td><strong>Retry를 누르는 순간 이전 판이 끝남</strong> &mdash; 되돌리는 단계를 두지 않음</td></tr>
       <tr><td>입장료</td><td>새 판 기준 정상 지불</td></tr>
       <tr><td>데일리 기프트 팝업</td><td>다시 하기 경로에서는 띄우지 않음</td></tr>
       <tr><td>전면 광고</td><td><strong>다시 하기 · 로비로 두 경로 모두 기존대로 재생.</strong> 광고가 끝난 뒤 목적지만 갈림 &mdash; 광고 노출 수·매출 영향 없음</td></tr>
@@ -397,6 +398,11 @@ ul li strong,ol li strong { color:var(--text); }
     <span class="fl-box">톱니 버튼<small>우상단</small></span><span class="fl-arw">&rarr;</span>
     <span class="fl-box">설정 팝업<small>Resume / Quit · 재도전 버튼 없음</small></span><span class="fl-arw">&rarr;</span>
     <span class="fl-box hot">나가기 팝업</span>
+  </div>
+
+  <div class="callout callout-purple">
+    <strong>Retry를 누르면 그 판은 거기서 끝남 &mdash; 되돌리는 단계를 두지 않음.</strong> 유저는 이미 <b>엔드레벨(또는 설정 Quit) &rarr; &ldquo;Quit level?&rdquo; 확인 팝업</b>이라는 두 단계를 거쳐 온 상태임. 그 팝업에서 Quit이냐 Retry냐를 고르는 것 자체가 <b>판을 끝내겠다는 결정</b>이므로, Retry 뒤에 취소 단계를 하나 더 두는 것은 같은 확인을 두 번 받는 셈임.<br>
+    그래서 정산은 <b>Retry 시점 한 곳</b>에서만 일어남. 프리게임 팝업에서 Play를 누르든 닫든 진행 중이던 판으로는 돌아가지 않고, 닫으면 로비로 나감. 정산 지점이 하나라 <b>이중 정산 위험도 구조적으로 사라짐</b>.
   </div>
 
   <h3>화면 플로우 &mdash; 실제 화면으로</h3>
@@ -438,7 +444,7 @@ ul li strong,ol li strong { color:var(--text); }
         <div class="vf-lbl">전면 광고</div><div class="vf-sub">두 경로 모두 유지 &mdash; 매출 손실 없음</div></div>
       <div class="vf-arw">&rarr;</div>
       <div class="vf-step on"><div class="vf-shot"><img src="ref-036-prelevel.png" alt="프리레벨 팝업"></div>
-        <div class="vf-lbl">프리레벨 팝업</div><div class="vf-sub">광고가 끝나면 <strong>로비를 거치지 않고 바로</strong> 열림</div></div>
+        <div class="vf-lbl">프리게임 팝업</div><div class="vf-sub">광고가 끝나면 <strong>로비를 거치지 않고 바로</strong> 열림 &middot; 닫으면 로비</div></div>
     </div>
     <div class="vf-legend">
       <span><i class="vf-key" style="background:var(--accent)"></i> 이 기획이 바꾸는 화면</span>
@@ -663,7 +669,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td>Quick Next Loop v2가 켜져 있으면?</td><td>프리레벨 팝업이 존재하지 않으므로 <b>다시 하기가 곧장 판을 시작함</b>. 입장료도 v2 규칙(0)을 따름 &mdash; 아래 콜아웃</td></tr>
       <tr><td>재도전 광고가 안 나오면?</td><td><b>안 나오는 게 기본임.</b> 레벨 6 이상 &middot; 튜토리얼 완료 &middot; 누적 접속 &middot; 하루 상한 &middot; 직전 광고 후 30초를 전부 통과해야 나옴. 하나라도 걸리면 광고 없이 프리게임 팝업으로 넘어감 &mdash; 버그가 아님</td></tr>
       <tr><td>광고가 실패하거나 콜백이 안 오면?</td><td>나가기 지면과 동일한 타임아웃 폴백을 둠 &mdash; 최대 5초 안에 다음 화면으로 넘어감. 광고 실패가 재도전을 막지 않음</td></tr>
-      <tr><td>Retry를 누른 뒤 프리게임 팝업을 닫으면?</td><td><b>진행 중이던 판이 그대로 돌아옴.</b> 카드 배치&middot;남은 카드 수&middot;부스터가 유지되고 골드가 1도 줄지 않음. 다시 Retry를 눌러도 정상 동작해야 함</td></tr>
+      <tr><td>Retry를 누른 뒤 프리게임 팝업을 닫으면?</td><td><b>진행 중이던 판으로 돌아가지 않고 로비로 나감.</b> Retry 시점에 이미 정산이 끝났으므로 돌아갈 판이 없음</td></tr>
       <tr><td>Play 직후 새 판 시작에 실패하면?</td><td>이전 판이 이미 종료돼 돌아갈 판이 없으므로 <b>에러 팝업 1개 후 로비로 나감</b>. 포기는 1회로만 반영되고 골드가 이중으로 빠지지 않아야 함</td></tr>
     </tbody>
   </table>
@@ -688,7 +694,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td><code>ViewGame.ts</code> 전환 처리</td><td>다시 하기 경로에서는 <code>needShowDailyGift</code>를 설정하지 않음. 로비를 거치지 않으므로 데일리 기프트 팝업이 판 흐름을 끊지 않게 함. 덤불 전환(<code>showBushView</code>)도 생략</td></tr>
       <tr><td>콘텍스트 전환</td><td>다시 하기 경로에서도 <code>switchToContextSolo</code>를 동일하게 호출함</td></tr>
       <tr><td>전면 광고</td><td>재도전 전용 지면 <code>LogITPosition.game_retry</code>로 호출. Retry 직후 &middot; 프리게임 팝업 이전에 판정하고, 콜백이 안 오면 타임아웃 폴백으로 넘김</td></tr>
-      <tr class="pick"><td>이전 판 정산 시점</td><td><b>Retry를 누른 시점이 아니라 프리게임 팝업에서 Play를 누른 시점</b>에 이전 판을 포기 처리함. 그래서 Retry 이후 팝업을 닫으면 판이 온전히 돌아오고 골드&middot;아이템이 전혀 소모되지 않음</td></tr>
+      <tr class="pick"><td>이전 판 정산 시점</td><td><b>Retry를 누른 시점</b>(광고 직후)에 이전 판을 포기 처리함. 프리게임 팝업의 Play&middot;닫기 어느 쪽으로도 진행 중이던 판으로 돌아가지 않으므로 정산을 한 곳에 모음. 닫으면 로비로 나감</td></tr>
     </tbody>
   </table>
 
@@ -718,12 +724,12 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td><code>2220_GAMEPLAY_END_SURE</code></td><td>그만두기 팝업 노출 (기존)</td><td><code>difficulty_tier</code> · <code>seed</code></td><td>클라</td></tr>
       <tr><td><code>2221_GAMEPLAY_END_SURE_NO</code></td><td>Back · 닫기 X (기존)</td><td><code>difficulty_tier</code> · <code>seed</code></td><td>클라</td></tr>
       <tr><td><code>2222_GAMEPLAY_END_SURE_YES</code></td><td>Quit 선택 (기존, 의미 변경 없음)</td><td><code>difficulty_tier</code> · <code>seed</code></td><td>클라</td></tr>
-      <tr class="pick"><td><code>2223_GAMEPLAY_END_SURE_RETRY</code></td><td><strong>Retry 버튼 터치</strong> (신규 · 구현 완료)</td><td><code>difficulty_tier</code> · <code>seed</code></td><td>클라 &mdash; <b>버튼 액션 로그임.</b> 이 시점에는 아직 아무것도 확정되지 않고 프리게임 팝업에서 취소할 수 있음</td></tr>
+      <tr class="pick"><td><code>2223_GAMEPLAY_END_SURE_RETRY</code></td><td><strong>Retry 선택</strong> (신규 · 구현 완료)</td><td><code>difficulty_tier</code> · <code>seed</code></td><td>클라 &mdash; 이 시점에 이전 판이 포기로 확정됨</td></tr>
       <tr class="pick"><td><code>2100_GAMEPLAY_START</code></td><td><strong>재도전 판 시작</strong> (구현 완료)</td><td><code>position="retry"</code></td><td>클라 &mdash; <code>prepareGame</code>의 <code>logPosition</code> 인자로 전달. Quick Next Loop 경로도 동일</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <strong><code>2223</code>은 버튼 터치, <code>2100</code>은 성사 &mdash; 둘을 짝으로 봄.</strong> Retry를 누르면 <code>2223</code>이 즉시 찍히지만 프리게임 팝업에서 취소할 수 있으므로, 실제 재도전 판수는 <code>2100 position="retry"</code>로 셈. <b>두 값의 차이가 곧 취소율</b>이고, 재도전 판의 클리어율&middot;보상도 이 값으로 분리해서 봄.
+    <strong><code>2223</code>은 재도전 선택, <code>2100 position="retry"</code>는 실제 진입 &mdash; 둘을 짝으로 봄.</strong> Retry를 누르면 이전 판이 곧바로 정산되지만, 프리게임 팝업에서 골드가 모자라거나 유저가 닫으면 새 판에는 못 들어가고 로비로 나감. 그래서 <b>두 값의 차이는 취소율이 아니라 &ldquo;재도전을 택했으나 판에 못 들어간 비율&rdquo;</b>임 &mdash; 이 값이 크면 입장료 장벽을 의심해야 함. 재도전 판의 클리어율&middot;보상도 <code>position="retry"</code>로 분리해서 봄.
   </div>
 
   <h3>측정</h3>
