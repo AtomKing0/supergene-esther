@@ -327,7 +327,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
       <tr><td>적용 대상</td><td><code>2100 position="retry"</code> 판 &middot; <strong>덱을 소진한 판만</strong></td></tr>
       <tr class="pick"><td>티어</td><td>승계 폐기 &rarr; <code>dynamic_level</code> 재산정 후 <strong>한 단계 하향</strong> (SH&rarr;Hard, Hard&rarr;Normal). 하한 Normal</td></tr>
-      <tr class="pick"><td>배수</td><td>직전 판 배수 승계 &middot; <strong>올리지 못함</strong>(내리는 것은 허용)</td></tr>
+      <tr><td>배수</td><td>제한하지 않음 &mdash; 입장료가 배수에 비례하므로 기대값이 중립임</td></tr>
       <tr class="pick"><td>보상</td><td><strong>내려간 티어 기준</strong>을 따름</td></tr>
       <tr><td>재도전 맵</td><td>실패한 그 맵 유지 (SPEC-036 그대로)</td></tr>
       <tr><td>반복 상한</td><td>두지 않음 &mdash; 완화로 재실패가 줄면 반복도 주는지 먼저 확인</td></tr>
@@ -350,17 +350,10 @@ ul li strong,ol li strong { color:var(--text); }
   </div>
 
   <h3>어뷰징 차단</h3>
-  <p>완화를 붙이면 <strong>일부러 지고 쉬운 판을 받는</strong> 경로가 새로 생김. 특히 <strong>설정 팝업 &rarr; Quit &rarr; Retry는 덱과 무관하게 판 도중 아무 때나</strong> 가능함.</p>
-  <table>
-    <thead><tr><th>경로</th><th>차단</th></tr></thead>
-    <tbody>
-      <tr class="warn"><td>판 시작 직후 버리고 재도전</td><td>덱 소진 판만 완화 &mdash; 덱이 남으면 티어 승계</td></tr>
-      <tr class="warn"><td>x1로 싸게 포기 &rarr; 재도전에서 x4</td><td>배수 승계 &mdash; 올리지 못함</td></tr>
-      <tr class="warn"><td>낮은 난이도로 높은 티어 보상 수령</td><td>보상도 내려간 티어 기준</td></tr>
-    </tbody>
-  </table>
+  <p>완화를 붙이면 <strong>일부러 지고 쉬운 판을 받는</strong> 경로가 생김. <strong>설정 팝업 &rarr; Quit &rarr; Retry는 덱과 무관하게 판 도중 아무 때나</strong> 되기 때문임. 막는 장치는 위 확정의 두 줄임 &mdash; <strong>덱을 소진한 판만 완화</strong>(판을 일찍 버리면 티어를 그대로 승계), <strong>보상도 내려간 티어 기준</strong>(난이도만 낮추고 보상을 지키면 그 조합이 곧 어뷰징 대상이 됨).</p>
   <div class="callout callout-blue">
-    <strong>&ldquo;덱 소진 판만&rdquo;은 정상 유저를 거르지 않음.</strong> 엔드레벨 버튼이 <b>덱 0장일 때만</b> 뜨므로, 실패 판 중 덱이 남은 채 끝난 경우가 <b>사실상 0%</b>임. 이 조건에 걸리는 건 설정 팝업으로 판을 일찍 버리는 경우뿐임 &mdash; 지금은 유인이 없어 관측되지 않지만, <b>완화가 붙으면 생기므로 미리 막아 둠</b>.
+    <strong>&ldquo;덱 소진 판만&rdquo;은 정상 유저를 거르지 않음.</strong> 엔드레벨 버튼이 <b>덱 0장일 때만</b> 뜨므로, 실패 판 중 덱이 남은 채 끝난 경우가 <b>사실상 0%</b>임. 이 조건에 걸리는 건 설정 팝업으로 판을 일찍 버리는 경우뿐임 &mdash; 지금은 유인이 없어 관측되지 않지만, <b>완화가 붙으면 생기므로 미리 막아 둠</b>.<br>
+    <b>배수는 제한하지 않음</b> &mdash; 입장료가 배수에 비례해 x4로 걸면 입장료도 4배임. 실측상 재도전 판은 오히려 배수를 낮춰 잡음(x1 41.1% / 로비 31.9%).
   </div>
 </section>
 
@@ -376,7 +369,6 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
       <tr class="pick"><td><code>ViewGame.onRetryRequested()</code></td><td><code>currentDifficultyTierKeyNumber</code> 승계를 <b>조건표 재산정 + 한 단계 하향</b>으로 교체. <code>getMapSelector().getNextDifficulty()</code>를 태워 <code>fail_streak</code>·<code>fail_spiral</code>·<code>hard_cooldown</code>이 반영되게 함</td></tr>
       <tr class="pick"><td>완화 대상 판정</td><td>재도전 진입 시점 <b>남은 드로우 덱이 0인지</b>로 판정. 0이 아니면 기존처럼 승계</td></tr>
-      <tr class="pick"><td>배수 제한</td><td>재도전 프리게임 팝업의 배수 초기값을 직전 판 배수로 두고 <b>그보다 높은 값 선택 불가</b></td></tr>
       <tr><td>Quick Next Loop 경로</td><td><code>restartImmediatelyForRetry</code>도 동일 적용 &mdash; 두 경로가 같은 산정 함수를 쓰게 할 것</td></tr>
       <tr><td>로그</td><td><code>2223</code>에 완화 적용 여부(덱 소진 판이었는지) 추가</td></tr>
     </tbody>
@@ -388,7 +380,7 @@ ul li strong,ol li strong { color:var(--text); }
     <tbody>
       <tr><td>재산정 결과가 이미 Normal이면?</td><td>그대로 Normal. 더 내리지 않음</td></tr>
       <tr><td>설정 팝업으로 판을 일찍 버리고 재도전하면?</td><td>덱이 남아 있으므로 <b>완화 대상이 아님</b> &mdash; 티어 승계. 입장료는 정상 지불</td></tr>
-      <tr><td>재도전 판에서 배수를 올리고 싶으면?</td><td>불가. 올리려면 로비를 거쳐 새 판으로 가야 함</td></tr>
+      <tr><td>재도전 판에서 배수를 올리면?</td><td>허용함. 입장료도 배수만큼 더 내므로 완화를 싸게 사는 구조가 아님</td></tr>
       <tr><td>재도전을 연속 반복하면?</td><td>매 회차 같은 규칙 적용. 연패가 쌓이면 <code>fail_spiral</code>이 겹쳐 Normal 고정됨</td></tr>
       <tr><td>재도전 판을 클리어하면?</td><td>다음 판은 평소 조건표를 따름. 하향은 재도전 판 한 판에만 적용</td></tr>
       <tr><td>튜토리얼 구간이면?</td><td>기존대로 Tutorial 티어 &mdash; 적용 대상 아님</td></tr>
