@@ -155,6 +155,10 @@ ul li strong,ol li strong { color:var(--text); }
 .seq-legend span{display:flex;align-items:center;gap:6px}
 .seq-note{margin-left:auto;color:var(--text2)}
 
+.own{display:inline-block;font-size:.64rem;font-weight:900;border-radius:5px;padding:2px 8px;letter-spacing:.04em;white-space:nowrap}
+.own-plan{background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,.45)}
+.own-cli{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,.45)}
+.own-none{background:var(--surface3);color:var(--text-dim);border:1px solid var(--border)}
 .keyrow td{background:var(--purple-bg);border-top:2px solid var(--accent);border-bottom:2px solid var(--accent)}
 .keyrow td:first-child{color:var(--accent);font-weight:800}
 .keychip{display:inline-block;background:var(--accent);color:#160c2b;font-size:.62rem;font-weight:900;border-radius:5px;padding:2px 7px;margin-left:7px;letter-spacing:.04em;vertical-align:1px}
@@ -360,25 +364,27 @@ ul li strong,ol li strong { color:var(--text); }
       <tr class="warn"><td>Super Hard</td><td>46.2% (169)</td><td>92.7%</td><td class="d-down">&minus;46.5%p</td></tr>
     </tbody>
   </table>
-  <p class="note">2026-08-14~18 실측. 재도전 판은 <b>Hard+SH가 50.8%</b>로 일반 판 25.7%의 2배 &mdash; 어려운 티어에서 실패하고 그 티어를 물려받아 또 실패함. 다만 <b>Normal에서도 30%p 벌어지므로</b> 티어 재산정만으로는 부족하고, 한 단계 더 내리는 장치가 필요함.</p>
+  <p class="note">2026-08-14~18 실측. 재도전 판은 <b>Hard+SH가 50.8%</b>로 일반 판 25.7%의 2배 &mdash; 어려운 티어에서 실패하고 그 티어를 물려받아 또 실패함. 다만 <b>Normal에서도 30%p 벌어지므로</b> 티어 승계만이 원인은 아님 &mdash; 이미 한 번 못 깬 맵을 다시 준다는 사실 자체도 함께 작용함.</p>
 
   <h3>확정</h3>
+  <p><span class="own own-plan">기획</span> 밸런스 시트 값 수정 &nbsp; <span class="own own-cli">클라</span> 코드 수정 &nbsp; <span class="own own-none">변경 없음</span> 현행 유지</p>
   <table>
-    <thead><tr><th>항목</th><th>확정</th></tr></thead>
+    <thead><tr><th>항목</th><th>As-Is</th><th>To-Be</th><th>담당</th></tr></thead>
     <tbody>
-      <tr class="keyrow"><td>적용 대상<span class="keychip">게이트</span></td><td><code>2100 position="retry"</code> 판 중 <strong>덱을 소진한 판만</strong> &mdash; 덱이 남은 채 끝낸 판은 완화 없이 티어를 그대로 승계함</td></tr>
-      <tr class="keyrow"><td>재도전 티어<span class="keychip">핵심</span></td><td>승계 폐기 &rarr; <code>dynamic_level</code> <strong>재산정</strong>. 추가 하향은 두지 않음 &mdash; 시뮬레이션상 효과가 같음(&#9314;)</td></tr>
-      <tr><td>배수</td><td>제한하지 않음 &mdash; 입장료가 배수에 비례하므로 기대값이 중립임</td></tr>
-      <tr class="pick"><td>보상</td><td><strong>내려간 티어 기준</strong>을 따름</td></tr>
-      <tr><td>재도전 맵</td><td>실패한 그 맵 유지 (SPEC-036 그대로)</td></tr>
-      <tr class="pick"><td><code>fail_streak</code> 카운터</td><td>Normal 패배에서만 증가 &rarr; <strong>티어 무관 모든 패배에서 증가</strong></td></tr>
-      <tr class="pick"><td><code>fail_spiral</code> 카운터</td><td>Hard 이상 패배에서만 증가 &rarr; <strong>동일하게 모든 패배</strong> &mdash; 안 고치면 문턱 5에 영영 도달 못 함</td></tr>
-      <tr class="pick"><td><code>fail_spiral</code> <code>param_2</code></td><td><code>5</code>(정확히 5일 때만) &rarr; <strong><code>0</code></strong>(5 이상이면 계속)</td></tr>
-      <tr><td>반복 상한</td><td>두지 않음 &mdash; 완화로 재실패가 줄면 반복도 주는지 먼저 확인</td></tr>
+      <tr class="keyrow"><td>적용 대상<span class="keychip">게이트</span></td><td>조건 없음</td><td><code>position="retry"</code> 판 중 <strong>덱을 소진한 판만</strong> 완화. 덱이 남은 채 끝낸 판은 티어 승계 유지</td><td><span class="own own-cli">클라</span></td></tr>
+      <tr class="keyrow"><td>재도전 티어<span class="keychip">핵심</span></td><td>직전 판 티어를 <strong>그대로 승계</strong></td><td><code>dynamic_level</code> <strong>재산정</strong> &mdash; 추가 하향 없음(&#9314; 시뮬레이션)</td><td><span class="own own-cli">클라</span></td></tr>
+      <tr class="pick"><td><code>fail_streak</code> 카운터<br><span style="font-weight:400;color:var(--text2);font-size:.78rem">30003</span></td><td><code>isWin ? 0 : (!isHardOrAbove ? +1 : 유지)</code><br>Normal 패배에서만 증가</td><td><code>isWin ? 0 : +1</code><br><strong>티어 무관 모든 패배에서 증가</strong></td><td><span class="own own-cli">클라</span></td></tr>
+      <tr class="pick"><td><code>fail_spiral</code> 카운터<br><span style="font-weight:400;color:var(--text2);font-size:.78rem">30009</span></td><td><code>isWin ? 0 : (isHardOrAbove ? +1 : 유지)</code><br>Hard 이상 패배에서만 증가</td><td><code>isWin ? 0 : +1</code><br><strong>동일하게 모든 패배</strong> &mdash; 안 고치면 문턱 5에 영영 도달 못 함</td><td><span class="own own-cli">클라</span></td></tr>
+      <tr class="pick"><td><code>fail_spiral</code> <code>param_2</code><br><span style="font-weight:400;color:var(--text2);font-size:.78rem">dynamic_level 30009</span></td><td><code>5</code><br>값이 정확히 5일 때만 매칭</td><td><code>0</code><br><strong>5 이상이면 계속 매칭</strong></td><td><span class="own own-plan">기획</span></td></tr>
+      <tr><td>보상</td><td colspan="2" style="text-align:center">티어에 딸린 <code>reward_hammer</code>를 그대로 따름 &mdash; 티어가 내려가면 보상도 함께 내려감</td><td><span class="own own-none">변경 없음</span></td></tr>
+      <tr><td>배수</td><td colspan="2" style="text-align:center">제한하지 않음 &mdash; 입장료가 배수에 비례해 기대값이 중립임</td><td><span class="own own-none">변경 없음</span></td></tr>
+      <tr><td>재도전 맵</td><td colspan="2" style="text-align:center">실패한 그 맵 유지 (SPEC-036 그대로)</td><td><span class="own own-none">변경 없음</span></td></tr>
+      <tr><td>반복 상한</td><td colspan="2" style="text-align:center">두지 않음 &mdash; 완화로 재실패가 줄면 반복도 주는지 먼저 확인</td><td><span class="own own-none">변경 없음</span></td></tr>
     </tbody>
   </table>
+  <p class="note">시트에서 고칠 값은 <b><code>dynamic_level</code> 30009행의 <code>param_2</code> 하나</b>임. 나머지는 전부 클라 코드이며 신규 컬럼·신규 행은 없음.</p>
 
-  <h3>한 단계 하향의 실효값</h3>
+  <h3>티어별 실효값</h3>
   <table>
     <thead><tr><th>파라미터</th><th>Normal</th><th>Hard</th><th>Super Hard</th></tr></thead>
     <tbody>
@@ -390,7 +396,7 @@ ul li strong,ol li strong { color:var(--text); }
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <strong>두 단계를 한 번에 내리지 않음.</strong> 재도전이 곧 가장 쉬운 판이 되면 일부러 실패하고 재도전하는 경로가 생김. 최대 폭은 <b>SH&rarr;Hard</b>임.
+    <strong>재산정 결과는 대개 Normal임.</strong> Hard 이상에서 진 직후에는 <code>hard_cooldown</code>이 걸려 Normal이 나오고, Normal에서 졌으면 재산정 결과도 Normal임. 그래서 <b>인위적인 하향 없이도</b> 재도전 판은 사실상 Normal로 수렴함(&#9314; 시뮬레이션).
   </div>
 
   <h3>어뷰징 차단</h3>
@@ -411,10 +417,11 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>위치</th><th>변경</th></tr></thead>
     <tbody>
-      <tr class="pick"><td><code>ViewGame.onRetryRequested()</code></td><td><code>currentDifficultyTierKeyNumber</code> 승계를 <b>조건표 재산정 + 한 단계 하향</b>으로 교체. <code>getMapSelector().getNextDifficulty()</code>를 태워 <code>hard_cooldown</code> 등 조건표가 반영되게 함</td></tr>
-      <tr class="keyrow"><td>완화 대상 판정<span class="keychip">게이트</span></td><td>재도전 진입 시점 <b>남은 드로우 덱이 0인지</b>로 판정. 0이 아니면 완화 없이 기존처럼 티어를 승계함</td></tr>
+      <tr class="pick"><td><code>ViewGame.onRetryRequested()</code> <span class="own own-cli">클라</span></td><td><code>currentDifficultyTierKeyNumber</code> 승계를 <b>조건표 재산정</b>으로 교체. <code>getMapSelector().getNextDifficulty()</code>를 태워 <code>hard_cooldown</code> 등이 반영되게 함. <b>추가 하향 로직은 넣지 않음</b></td></tr>
+      <tr class="keyrow"><td>완화 대상 판정<span class="keychip">게이트</span> <span class="own own-cli">클라</span></td><td>재도전 진입 시점 <b>남은 드로우 덱이 0인지</b>로 판정. 0이 아니면 완화 없이 기존처럼 티어를 승계함</td></tr>
       <tr><td>Quick Next Loop 경로</td><td><code>restartImmediatelyForRetry</code>도 동일 적용 &mdash; 두 경로가 같은 산정 함수를 쓰게 할 것</td></tr>
       <tr><td>로그</td><td><code>2223</code>에 완화 적용 여부(덱 소진 판이었는지) 추가</td></tr>
+      <tr class="pick"><td><code>dynamic_level</code> 시트 <span class="own own-plan">기획</span></td><td><b>30009행 <code>param_2</code>: 5 &rarr; 0</b> 하나만 수정. 신규 행·신규 컬럼 없음</td></tr>
     </tbody>
   </table>
 
