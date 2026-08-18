@@ -207,6 +207,11 @@ const SPECS = [
     tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
   },
   {
+    id: 'spec-040', file: 'spec-040-retry-entry-recovery.html',
+    title: '[UX-플로우] 재도전 진입 실패 해소',
+    tags: ['ux'], priority: 'high', status: 'open', date: '2026. 8. 18.', dueDate: null, relatedTo: ['spec-036', 'spec-039'],
+  },
+  {
     id: 'spec-039', file: 'spec-039-retry-difficulty-relief.html',
     title: '[밸런스] 재도전 판 난이도 완화',
     tags: ['balance'], priority: 'high', status: 'open', date: '2026. 8. 18.', dueDate: null, relatedTo: ['spec-036', 'spec-029', 'spec-031'],
