@@ -339,19 +339,42 @@ ul li strong,ol li strong { color:var(--text); }
     <div class="section-meta"><div class="section-title">검토 안</div></div>
   </div>
 
+  <h3>바꿔야 할 것 &mdash; 카운터 증가 규칙</h3>
+  <p>조건 자체는 멀쩡함. <strong>카운터가 오르는 코드 한 줄씩</strong>이 문제임(<code>ViewGame.getDynamicLevelInfosToUpsert</code>).</p>
   <table>
-    <thead><tr><th>안</th><th>내용</th><th>영향</th></tr></thead>
+    <thead><tr><th>대상</th><th>지금</th><th>바꿀 것</th></tr></thead>
     <tbody>
-      <tr class="pick"><td>A. <code>fail_streak</code> 카운터를 티어 무관으로</td><td>Hard 이상 패배에도 카운터가 오르게 함</td><td>Hard/SH 2연패 시 Normal 제공. 지금 비어 있는 구간을 직접 메움</td></tr>
-      <tr><td>B. <code>fail_spiral</code> 문턱 인하</td><td>5연패 &rarr; 3연패 등</td><td>발동은 생기지만 여전히 Hard 이상 연패만 셈. A보다 늦게 걸림</td></tr>
-      <tr><td>C. <code>fail_streak</code> 결과 티어 변경</td><td>Normal &rarr; 그대로 두고 A와 병행</td><td>단독으로는 의미 없음 &mdash; 이미 Normal인 유저에게 Normal을 줌</td></tr>
-      <tr><td>D. 현상 유지</td><td>손대지 않음</td><td><code>hard_cooldown</code>이 사실상 구제를 대신하고 있고 SH 클리어율도 92.7%로 버팀</td></tr>
+      <tr class="keyrow"><td><code>fail_streak</code> (30003)<span class="keychip">핵심</span></td><td><code>isWin ? 0 : (!isHardOrAbove ? +1 : 유지)</code><br>Normal 패배에서만 증가</td><td><code>isWin ? 0 : +1</code><br><strong>티어 무관 모든 패배에서 증가</strong></td></tr>
+      <tr class="pick"><td><code>fail_spiral</code> (30009)</td><td><code>isWin ? 0 : (isHardOrAbove ? +1 : 유지)</code><br>Hard 이상 패배에서만 증가</td><td><code>isWin ? 0 : +1</code><br>동일하게 모든 패배에서 증가</td></tr>
+      <tr class="pick"><td><code>fail_spiral</code> 시트 <code>param_2</code></td><td><code>5</code> &rarr; <b>값이 정확히 5일 때만</b> 매칭</td><td><code>0</code> &rarr; <strong>5 이상이면 계속</strong> 매칭</td></tr>
     </tbody>
   </table>
 
   <div class="callout callout-yellow">
-    <strong>&#9888; 확정 전에 필요한 것 &mdash; 구제가 실제로 부족한지부터 확인.</strong> 지금 지표만 보면 <b>구제가 비어 있는데도 SH 클리어율이 92.7%</b>라 손볼 근거가 약함. 어려운 티어 연패가 이탈로 이어지는지(연패 후 세션 종료율)를 먼저 재고, 문제가 확인되면 A를 우선 검토함.<br>
-    값을 바꾸면 <b>모든 유저의 티어 배분과 판당 보상(해머)이 함께 움직임</b>. SPEC-039 판정이 끝난 뒤 착수해야 두 변경이 섞이지 않음.
+    <strong>&#9888; <code>fail_spiral</code>도 같이 고쳐야 함 &mdash; 안 그러면 영원히 안 걸림.</strong> <code>fail_streak</code>만 고치면 2연패에서 Normal로 내려가는데, 그 뒤 Normal 패배는 <code>fail_spiral</code> 카운터를 올리지 않음. 값이 2에서 멈춰 <b>문턱 5에 영영 도달하지 못함</b> &mdash; 지금 0건인 이유가 그대로 재현됨.<br>
+    <code>param_2=5</code>도 <b>범위 매칭</b>이라 값이 정확히 5일 때만 걸림. 6이 되면 풀림. <code>0</code>으로 두면 &ldquo;5 이상이면 승리할 때까지 Normal&rdquo;이 되어 메모의 의도(패닉 모드 방지)와 맞음.
+  </div>
+
+  <h3>바꾸면 얼마나 걸리는가</h3>
+  <table>
+    <thead><tr><th>연패 길이</th><th>발생</th><th>구제 대상 판</th></tr></thead>
+    <tbody>
+      <tr><td>1연패</td><td>775회</td><td>&mdash; (문턱 미만)</td></tr>
+      <tr class="pick"><td>2연패</td><td>176회</td><td>176판</td></tr>
+      <tr class="pick"><td>3연패</td><td>42회</td><td>84판</td></tr>
+      <tr class="pick"><td>4연패</td><td>11회</td><td>33판</td></tr>
+      <tr class="pick"><td>5연패 이상</td><td>20회</td><td>105판 &mdash; <code>fail_spiral</code> 구간</td></tr>
+    </tbody>
+  </table>
+  <p class="note">2026-08-14~17 실측. 2연패 이상이 <b>249회</b> 발생하고, 구제가 걸릴 판은 <b>약 398판(하루 100판)</b>임 &mdash; 전체 판의 0.94%. 현재 <code>fail_streak</code> 발동 160판(0.38%)에서 <b>2.5배</b>로 늘고, 무엇보다 <b>지금은 하나도 못 받는 Hard·SH 연패 유저가 대상에 들어옴</b>.</p>
+
+  <div class="callout callout-blue">
+    <strong>두 조건이 2단으로 정리됨.</strong> <code>fail_spiral</code>(priority 3)이 <code>fail_streak</code>(4)보다 먼저 평가되므로 <b>2연패 &rarr; Normal</b>, <b>5연패 이상 &rarr; Normal + Super Hard 강제 등장 카운터 초기화</b>로 갈림. 우선순위는 지금 시트 그대로 두면 됨.<br>
+    승리하면 두 카운터가 모두 0으로 풀리므로 <b>한 번만 이기면 정상 곡선으로 복귀</b>함.
+  </div>
+
+  <div class="callout callout-yellow">
+    <strong>&#9888; 그래도 선행 확인은 필요함.</strong> 구제가 비어 있는데도 <b>Super Hard 클리어율이 92.7%</b>라 &ldquo;막혀서 못 깨는&rdquo; 상태인지가 불분명함. <b>Hard 이상 2연패 후 세션 종료율</b>을 먼저 재서 이탈로 이어지는지 확인한 뒤 착수함. 값을 바꾸면 모든 유저의 티어 배분과 판당 보상 해머가 함께 움직임.
   </div>
 </section>
 
