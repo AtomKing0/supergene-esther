@@ -207,6 +207,11 @@ const SPECS = [
     tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
   },
   {
+    id: 'spec-039', file: 'spec-039-retry-difficulty-relief.html',
+    title: '[밸런스] 재도전 판 난이도 완화',
+    tags: ['balance'], priority: 'high', status: 'open', date: '2026. 8. 18.', dueDate: null, relatedTo: ['spec-036', 'spec-029', 'spec-031'],
+  },
+  {
     id: 'spec-038', file: 'spec-038-share-exposure-normalization.html',
     title: '[소셜-바이럴] 토너먼트 소셜 팝업 개편 — 공유·초대 토글',
     tags: ['social', 'feature'], priority: 'high', status: 'open', date: '2026. 8. 12.', dueDate: null, relatedTo: ['spec-030', 'spec-035', 'spec-037'],
