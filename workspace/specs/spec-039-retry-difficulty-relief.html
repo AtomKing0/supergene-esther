@@ -372,16 +372,23 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>항목</th><th>As-Is</th><th>To-Be</th><th>담당</th></tr></thead>
     <tbody>
       <tr class="keyrow"><td>적용 대상<span class="keychip">게이트</span></td><td>조건 없음</td><td><code>position="retry"</code> 판 중 <strong>덱을 소진한 판만</strong> 완화. 덱이 남은 채 끝낸 판은 티어 승계 유지</td><td><span class="own own-cli">클라</span></td></tr>
-      <tr class="keyrow"><td>재도전 티어<span class="keychip">핵심</span></td><td>직전 판 티어를 <strong>그대로 승계</strong></td><td><code>dynamic_level</code> <strong>재산정</strong> &mdash; 추가 하향 없음(&#9314; 시뮬레이션)</td><td><span class="own own-cli">클라</span></td></tr>
+      <tr class="keyrow"><td>재도전 티어<span class="keychip">핵심</span></td><td>직전 판 티어를 <strong>그대로 승계</strong></td><td>승계하지 않고 <code>dynamic_level</code> 조건표로 <strong>다시 계산</strong>함. 계산 결과를 <b>그대로 씀</b> &mdash; 인위적으로 한 단계 더 내리지 않음</td><td><span class="own own-cli">클라</span></td></tr>
       <tr class="pick"><td><code>fail_streak</code> 카운터<br><span style="font-weight:400;color:var(--text2);font-size:.78rem">30003</span></td><td><code>isWin ? 0 : (!isHardOrAbove ? +1 : 유지)</code><br>Normal 패배에서만 증가</td><td><code>isWin ? 0 : +1</code><br><strong>티어 무관 모든 패배에서 증가</strong></td><td><span class="own own-cli">클라</span></td></tr>
       <tr class="pick"><td><code>fail_spiral</code> 카운터<br><span style="font-weight:400;color:var(--text2);font-size:.78rem">30009</span></td><td><code>isWin ? 0 : (isHardOrAbove ? +1 : 유지)</code><br>Hard 이상 패배에서만 증가</td><td><code>isWin ? 0 : +1</code><br><strong>동일하게 모든 패배</strong> &mdash; 안 고치면 문턱 5에 영영 도달 못 함</td><td><span class="own own-cli">클라</span></td></tr>
-      <tr class="pick"><td><code>fail_spiral</code> <code>param_2</code><br><span style="font-weight:400;color:var(--text2);font-size:.78rem">dynamic_level 30009</span></td><td><code>5</code><br>값이 정확히 5일 때만 매칭</td><td><code>0</code><br><strong>5 이상이면 계속 매칭</strong></td><td><span class="own own-plan">기획</span></td></tr>
+      <tr class="pick"><td><code>fail_spiral</code> <code>param_2</code><br><span style="font-weight:400;color:var(--text2);font-size:.78rem">dynamic_level 30009</span></td><td><code>5</code><br>연패 카운터가 <b>정확히 5일 때만</b> 매칭</td><td><code>0</code><br><strong>5 이상이면 계속</strong> 매칭</td><td><span class="own own-plan">기획</span></td></tr>
+      <tr class="pick"><td><code>fail_spiral</code> 메모<br><span style="font-weight:400;color:var(--text2);font-size:.78rem">dynamic_level 30009</span></td><td>&ldquo;연패 시 Normal <b>[param_2]판</b> 강제 제공&rdquo;<br><b>구현과 다름</b></td><td>&ldquo;연패 시 <b>승리할 때까지</b> Normal 제공&rdquo;<br>실제 동작으로 정정</td><td><span class="own own-plan">기획</span></td></tr>
       <tr><td>보상</td><td colspan="2" style="text-align:center">티어에 딸린 <code>reward_hammer</code>를 그대로 따름 &mdash; 티어가 내려가면 보상도 함께 내려감</td><td><span class="own own-none">변경 없음</span></td></tr>
       <tr><td>배수</td><td colspan="2" style="text-align:center">제한하지 않음 &mdash; 입장료가 배수에 비례해 기대값이 중립임</td><td><span class="own own-none">변경 없음</span></td></tr>
       <tr><td>재도전 맵</td><td colspan="2" style="text-align:center">실패한 그 맵 유지 (SPEC-036 그대로)</td><td><span class="own own-none">변경 없음</span></td></tr>
       <tr><td>반복 상한</td><td colspan="2" style="text-align:center">두지 않음 &mdash; 완화로 재실패가 줄면 반복도 주는지 먼저 확인</td><td><span class="own own-none">변경 없음</span></td></tr>
     </tbody>
   </table>
+  <div class="callout callout-yellow">
+    <strong>&#9888; <code>param_2</code>는 &ldquo;몇 판 제공&rdquo;이 아니라 &ldquo;카운터 범위의 상한&rdquo;임.</strong> 평가 코드는 <code>param_2 === 0</code>이면 <b><code>값 &gt;= param_1</code></b>로, 0이 아니면 <b><code>param_1 &lt;= 값 &lt;= param_2</code></b>로 판정함. 즉 <b>0은 &ldquo;상한 없음&rdquo;을 뜻하는 약속값</b>이지 <b>0판이 아님</b>. <code>fail_streak</code>(2,&nbsp;0)&middot;<code>hard_cooldown</code>(1,&nbsp;0)&middot;<code>hard_guarantee</code>(5,&nbsp;0)도 모두 같은 방식이고, 범위로 쓰는 건 <code>user_level_range</code>(1~8) 같은 행뿐임.<br>
+    시트 메모의 &ldquo;Normal <b>[param_2]판</b> 강제 제공&rdquo;은 <b>구현된 적이 없는 서술</b>임 &mdash; N판 동안 유지하는 카운트다운이 코드에 없음. 메모도 함께 정정함.<br>
+    <b>카운터 수정과 한 세트임.</b> 카운터가 모든 패배에서 오르게 바뀌면 Normal로 내려간 뒤에도 계속 올라 <b>값이 6을 넘김</b>. 그때 <code>param_2=5</code>면 매칭이 풀려 <code>fail_spiral</code> 대신 <code>fail_streak</code>가 잡히고, <b><code>fail_spiral</code>일 때만 도는 Super Hard 강제 등장 카운터 초기화가 실행되지 않음</b>. 그래서 둘을 같이 바꿔야 함.
+  </div>
+
   <p class="note">시트에서 고칠 값은 <b><code>dynamic_level</code> 30009행의 <code>param_2</code> 하나</b>임. 나머지는 전부 클라 코드이며 신규 컬럼·신규 행은 없음.</p>
 
   <h3>티어별 실효값</h3>
