@@ -328,21 +328,27 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>항목</th><th>확정</th></tr></thead>
     <tbody>
-      <tr class="keyrow"><td>골드 확인 시점<span class="keychip">핵심</span></td><td><strong>Retry를 누르기 전에 잔고를 확인함.</strong> 입장료가 모자라면 Retry 버튼을 누르는 시점에 알리고 <strong>정산하지 않음</strong> &mdash; 판을 잃지 않고 나가기 팝업에 머무름</td></tr>
-      <tr class="pick"><td>부족 시 안내</td><td>나가기 팝업에서 부족액과 보충 수단(광고 골드·상점)을 그 자리에서 제시. 보충하면 이어서 재도전</td></tr>
+      <tr class="keyrow"><td>골드 부족 시<span class="keychip">핵심</span></td><td>모자란 상태로 Retry를 누르면 <strong>정산하지 않음</strong> &mdash; 판을 잃지 않고 골드 수급 팝업으로 이어짐. 수급에 성공해야 정산·진입</td></tr>
+      <tr class="pick"><td>사전 안내</td><td>나가기 팝업에서 Retry 버튼 옆에 <strong>말풍선으로 부족액을 미리 알림</strong>. <strong>버튼을 막지 않음</strong> &mdash; 유저가 눌러볼 수 있게 둠</td></tr>
+      <tr class="pick"><td>눌렀을 때</td><td><strong>아이들 골드 받기</strong> &rarr; 그래도 모자라면 <strong>광고 보고 무료 골드</strong> 순으로 수급 경로를 제시</td></tr>
       <tr><td>팝업 닫기</td><td>프리게임 팝업의 닫기를 누르면 <strong>이전 판이 이미 끝났음을 알림</strong>. 그대로 로비로 나가는 동작 자체는 유지</td></tr>
-      <tr><td>정산 시점</td><td>변경 없음 &mdash; Retry 시점 유지(SPEC-036 확정)</td></tr>
+      <tr><td>골드 충분 시</td><td>변경 없음 &mdash; Retry 시점 정산 그대로(SPEC-036 확정)</td></tr>
     </tbody>
   </table>
   <div class="callout callout-blue">
-    <strong>정산을 되돌리지 않고 순서만 바꿈.</strong> &ldquo;Play까지 취소 가능&rdquo;으로 되돌리면 SPEC-036에서 확정한 <b>확인 팝업을 두 번 받는 문제</b>가 되살아남. 대신 <b>입장 가능 여부를 Retry 이전으로 당겨</b> 판을 잃는 경우 자체를 없앰.
+    <strong>막지 않고 알리기만 함.</strong> 골드가 모자라도 Retry 버튼은 그대로 눌림 &mdash; 재도전하려는 의사를 꺾지 않고, 누르면 수급 경로로 안내함. <b>막는 대신 정산을 미루는 것</b>이 이 기획의 핵심임.<br>
+    정산을 &ldquo;Play까지 취소 가능&rdquo;으로 되돌리지는 않음. 그러면 SPEC-036에서 확정한 <b>확인 팝업을 두 번 받는 문제</b>가 되살아남. <b>골드가 충분한 유저에게는 지금 흐름이 그대로</b>이고, 모자란 유저만 수급 단계를 한 번 거침.
+  </div>
+
+  <div class="callout callout-blue">
+    <strong>수급으로 메울 수 있는 크기임.</strong> 부족액 중앙값이 <b>1,198골드</b>인데 아이들 골드는 상한이 <b>3,000</b>(<code>idle_gold_max_cap</code>)이라 대부분 한 번에 덮임. 두 경로 모두 이미 활발히 쓰이고 있음 &mdash; 아이들 골드 수령 2,683건, 광고 무료 골드 1,240건(5일).
   </div>
 
   <h3>규모</h3>
   <table>
     <thead><tr><th>구간</th><th>현재</th><th>개선 후</th></tr></thead>
     <tbody>
-      <tr><td>골드 부족 96건</td><td>94.8% 이탈</td><td>부족액 중앙값 <strong>1,198골드</strong> &middot; 47.6%가 필요액의 절반 이상 보유 &rarr; 소액 보충으로 상당수 회수</td></tr>
+      <tr><td>골드 부족 96건</td><td>94.8% 이탈</td><td>부족액 중앙값 <strong>1,198골드</strong> &middot; 아이들 골드 상한 3,000으로 대부분 덮임 &rarr; 수급 경로로 회수</td></tr>
       <tr><td>팝업 닫음 131건</td><td>90.1% 이탈</td><td>판을 잃은 줄 모르고 닫는 경우를 줄임</td></tr>
     </tbody>
   </table>
@@ -358,11 +364,13 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>위치</th><th>변경</th></tr></thead>
     <tbody>
-      <tr class="keyrow"><td><code>PopupQuitLevel.onClickRetry()</code><span class="keychip">핵심</span></td><td>Retry 클릭 시 <b>재도전 입장료와 보유 골드를 먼저 비교</b>. 부족하면 <code>onRetryRequest</code>를 호출하지 않고 부족 안내를 띄움 &mdash; <b>정산·광고·팝업 전환이 모두 일어나지 않음</b></td></tr>
-      <tr><td>입장료 계산</td><td>재도전 판 기준 입장료(직전 판 배수 기준값)로 비교. 프리게임 팝업의 기존 계산식을 그대로 재사용</td></tr>
-      <tr><td>부족 안내</td><td>기존 골드 부족 처리(<code>2270</code> 계열 충전 팝업)를 나가기 팝업 위에서 띄움. 보충 성공 시 재도전을 이어서 진행</td></tr>
+      <tr><td><code>PopupQuitLevel</code> 사전 안내</td><td>팝업 노출 시 재도전 입장료와 보유 골드를 비교해, 모자라면 Retry 버튼 옆에 <b>부족액 말풍선</b>을 띄움. <b>버튼은 비활성화하지 않음</b></td></tr>
+      <tr class="keyrow"><td><code>PopupQuitLevel.onClickRetry()</code><span class="keychip">핵심</span></td><td>부족 상태면 <code>onRetryRequest</code>를 호출하지 않고 <b>골드 수급 팝업으로 분기</b> &mdash; 정산·광고·팝업 전환이 일어나지 않아 <b>판이 그대로 살아 있음</b></td></tr>
+      <tr class="pick"><td>수급 경로</td><td>아이들 골드가 쌓여 있으면 <b>받기 팝업</b>을 먼저, 없거나 그래도 모자라면 <b>광고 보고 무료 골드</b>를 제시. 기존 팝업을 재사용함</td></tr>
+      <tr><td>수급 후 처리</td><td>수급 결과로 입장료를 충족하면 <b>재도전을 이어서 진행</b>(정산 &rarr; 광고 &rarr; 프리게임 팝업). 취소하거나 여전히 모자라면 나가기 팝업으로 돌아옴</td></tr>
+      <tr><td>입장료 계산</td><td>재도전 판 기준 입장료(직전 판 배수 기준값). 프리게임 팝업의 기존 계산식을 그대로 재사용</td></tr>
       <tr><td>프리게임 팝업 닫기</td><td>재도전 경로로 열린 경우, 닫기 시 <b>이전 판이 종료됐음을 알리는 문구</b>를 노출한 뒤 로비로 보냄</td></tr>
-      <tr><td>로그</td><td><code>2223</code>에 <b>진입 차단 사유</b>(골드 부족으로 막힘) 추가 &mdash; 정산 없이 막힌 건을 성사 실패와 구분</td></tr>
+      <tr><td>로그</td><td><code>2223</code>에 <b>골드 부족 분기 여부</b> 추가 &mdash; 정산 없이 수급으로 빠진 건을 성사 실패와 구분. 수급 성공 후 진입까지 이어졌는지도 이 값으로 셈</td></tr>
     </tbody>
   </table>
 
@@ -370,9 +378,9 @@ ul li strong,ol li strong { color:var(--text); }
   <table>
     <thead><tr><th>상황</th><th>처리</th></tr></thead>
     <tbody>
-      <tr><td>골드가 모자라 Retry가 막히면?</td><td>판은 그대로 살아 있음. 나가기 팝업에 머무르며 Back으로 판에 복귀하거나 Quit으로 나갈 수 있음</td></tr>
-      <tr><td>보충하다 취소하면?</td><td>재도전을 진행하지 않음. 판도 정산되지 않음</td></tr>
-      <tr><td>보충 성공 후에는?</td><td>Retry를 다시 누른 것과 동일하게 진행 &mdash; 정산 후 광고, 프리게임 팝업</td></tr>
+      <tr><td>말풍선을 보고도 Retry를 누르면?</td><td>막지 않음. 골드 수급 팝업으로 이어지고, <b>판은 그대로 살아 있음</b></td></tr>
+      <tr><td>수급을 취소하면?</td><td>재도전을 진행하지 않고 나가기 팝업으로 돌아옴. 판도 정산되지 않아 Back으로 복귀 가능</td></tr>
+      <tr><td>수급했는데도 모자라면?</td><td>남은 수급 경로를 이어서 제시하고, 없으면 나가기 팝업으로 돌아옴. 정산하지 않음</td></tr>
       <tr><td>프리게임 팝업에서 배수를 올려 골드가 모자라면?</td><td>기존 부족 처리를 그대로 따름. 이 시점에는 이미 정산이 끝난 상태이므로 로비로 나감</td></tr>
     </tbody>
   </table>
@@ -388,8 +396,8 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>지표</th><th>As-Is</th><th>To-Be</th></tr></thead>
     <tbody>
       <tr class="pick"><td>재도전 선택 후 진입률</td><td>74.7%</td><td><strong>90%</strong></td></tr>
-      <tr><td>골드 부족으로 막힌 비중</td><td>10.7%</td><td>감소 &mdash; 막히더라도 판을 잃지 않음</td></tr>
-      <tr class="keyrow"><td>판을 잃고 진입 못 한 건<span class="keychip">핵심</span></td><td>하루 약 57건</td><td><strong>0건에 수렴</strong> &mdash; 골드 부족은 정산 전에 걸러짐</td></tr>
+      <tr><td>골드 부족 &rarr; 수급 성공률</td><td>&mdash;</td><td>측정 시작 &mdash; 수급 팝업 노출 대비 진입 전환</td></tr>
+      <tr class="keyrow"><td>판을 잃고 진입 못 한 건<span class="keychip">핵심</span></td><td>하루 약 57건</td><td><strong>골드 부족분(하루 24건)은 0건</strong> &mdash; 정산 전에 수급 단계를 거침</td></tr>
       <tr><td>재도전 선택 자체</td><td>897건 / 4일</td><td>하락 없을 것 &mdash; 가드레일</td></tr>
       <tr><td>실패 후 10분 내 재진입</td><td>74.9%</td><td>상승</td></tr>
     </tbody>
