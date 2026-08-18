@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SPEC-039 · 재도전 판 난이도 완화</title>
+<title>SPEC-041 · 연패 구제 조건 재설계</title>
 <style>
 :root {
   --bg: #0f1117;
@@ -258,47 +258,47 @@ ul li strong,ol li strong { color:var(--text); }
 <a href="index.html" class="back-btn">&larr; 목록</a>
 <button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">&#9776;</button>
 <nav class="nav-sidebar">
-  <div class="nav-title">SPEC-039</div>
-  <a href="#s1">&#9312; 문제 &amp; 확정 설계</a>
-  <a href="#s2">&#9313; 개발 스펙</a>
-  <a href="#s3">&#9314; 검증 · 롤백</a>
+  <div class="nav-title">SPEC-041</div>
+  <a href="#s1">&#9312; 문제 &amp; 방향</a>
+  <a href="#s2">&#9313; 검토 안</a>
+  <a href="#s3">&#9314; 검증</a>
 </nav>
 
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-eyebrow">
-      <span class="spec-id-badge">SPEC-039</span>
+      <span class="spec-id-badge">SPEC-041</span>
       <span class="badge badge-yellow">&#9878; 밸런스</span>
-      <span class="badge badge-red">&#128308; 높은 우선순위</span>
+      <span class="badge badge-yellow">&#128993; 보통 우선순위</span>
       <span class="badge badge-blue">&#128309; 검토중</span>
       <span class="badge badge-green">2026. 8. 18.</span>
     </div>
-    <h1>재도전 판 난이도 완화<br><span>Retry Difficulty Relief</span></h1>
-    <p class="hero-sub">SPEC-036 재도전은 실패한 맵을 <strong>난이도 티어까지 그대로 승계</strong>해 다시 줌. 난이도 완화 조건이 걸리지 않아 재도전 판 클리어율이 <strong>58.1%</strong>로 일반 판 96.9%와 벌어짐. 승계를 끊고 한 단계 내림.</p>
+    <h1>연패 구제 조건 재설계<br><span>Fail Relief Rework</span></h1>
+    <p class="hero-sub">연패 구제로 만들어 둔 <code>fail_streak</code>&middot;<code>fail_spiral</code>이 <strong>어려운 티어에서 진 유저에게 닿지 않음</strong>. 카운터가 오르는 조건 때문에 하나는 효과가 없고 하나는 발동이 0건임.</p>
     <div class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-label">재도전 판 클리어율</div>
-        <div class="kpi-value" style="color:var(--red)">58.1%</div>
-        <div class="kpi-sub">일반 판 96.9% &middot; 완료 666판</div>
-        <div class="kpi-trend">&#9660; 10판 중 4판 재실패</div>
+        <div class="kpi-label">fail_streak 발동</div>
+        <div class="kpi-value" style="color:var(--yellow)">0.38%</div>
+        <div class="kpi-sub">160판 / 42,477판</div>
+        <div class="kpi-trend">&#9660; 전부 Normal&rarr;Normal</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Hard+SH 비중</div>
-        <div class="kpi-value" style="color:var(--yellow)">50.8%</div>
-        <div class="kpi-sub">일반 판 25.7%의 <b>2배</b></div>
-        <div class="kpi-trend">&#9660; 티어 승계가 원인</div>
+        <div class="kpi-label">fail_spiral 발동</div>
+        <div class="kpi-value" style="color:var(--red)">0건</div>
+        <div class="kpi-sub">5연패 문턱에 도달 없음</div>
+        <div class="kpi-trend">&#9660; 사실상 사문</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">반복 집중</div>
-        <div class="kpi-value" style="color:var(--yellow)">35.8%</div>
-        <div class="kpi-sub">하루 10회 이상 반복한 15명</div>
-        <div class="kpi-trend">&#9660; 같은 맵에 갇힘</div>
+        <div class="kpi-label">실제 완화는</div>
+        <div class="kpi-value" style="color:var(--blue)">22.3%</div>
+        <div class="kpi-sub"><code>hard_cooldown</code>이 담당</div>
+        <div class="kpi-trend">&#9650; 승패와 무관</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">목표 클리어율</div>
-        <div class="kpi-value" style="color:var(--green)">75%</div>
-        <div class="kpi-sub">일반 판까지 올리지는 않음</div>
-        <div class="kpi-trend trend-up">&#9650; To-Be</div>
+        <div class="kpi-label">Super Hard 클리어율</div>
+        <div class="kpi-value" style="color:var(--yellow)">92.7%</div>
+        <div class="kpi-sub">Normal 97.2% 대비</div>
+        <div class="kpi-trend">&#9660; 구제 없이 버팀</div>
       </div>
     </div>
   </div>
@@ -309,107 +309,67 @@ ul li strong,ol li strong { color:var(--text); }
 <section id="s1">
   <div class="section-header">
     <div class="section-num section-num-1">&#9312;</div>
-    <div class="section-meta"><div class="section-title">문제 &amp; 확정 설계</div></div>
+    <div class="section-meta"><div class="section-title">문제 &amp; 방향</div></div>
   </div>
 
-  <h3>문제 &mdash; 재도전 판만 완화가 걸리지 않음</h3>
-  <p>난이도는 판 시작 때 <code>dynamic_level</code> 조건표가 정함. 실제로 완화를 만드는 조건은 <strong><code>hard_cooldown</code></strong>임 &mdash; Hard 이상을 플레이하면 다음 판을 Normal로 내려줌(전체 판의 <strong>22.3%</strong>가 이걸로 배정됨). <strong>재도전은 이 조건표를 아예 타지 않고 직전 판 티어를 그대로 물려받아</strong>, 이 완화가 가장 필요한 순간에 걸리지 않음.</p>
-  <p class="note">&#8251; 이름만 보면 <code>fail_streak</code>&middot;<code>fail_spiral</code>이 연패 구제 역할일 것 같지만 실측상 아님 &mdash; <code>fail_streak</code>는 전체의 0.38%(160판)에서만 걸리고 그마저 <b>Normal &rarr; Normal</b>이라 효과가 없으며, <code>fail_spiral</code>은 <b>발동 0건</b>임. 카운터가 Normal 패배에서만 오르거나(<code>fail_streak</code>) 5연패를 요구해서(<code>fail_spiral</code>) 어려운 티어에서 진 유저에게 닿지 않음. 이 건은 재도전 밖 전체 난이도 곡선 문제라 <b>SPEC-041로 분리</b>함.</p>
+  <h3>문제 &mdash; 구제가 필요한 쪽에 안 걸림</h3>
+  <p>두 조건 모두 살아 있고 시트에서 켜져 있음. 그런데 <strong>카운터가 오르는 조건</strong> 때문에 실제로는 구제 역할을 못 함.</p>
   <table>
-    <thead><tr><th>티어</th><th>재도전 판</th><th>일반 판</th><th>격차</th></tr></thead>
+    <thead><tr><th>조건</th><th>카운터가 오르는 때</th><th>문턱</th><th>결과 티어</th><th>실측 발동</th></tr></thead>
     <tbody>
-      <tr><td>Normal</td><td>66.5% (328)</td><td>97.2%</td><td class="d-down">&minus;30.7%p</td></tr>
-      <tr><td>Hard</td><td>53.5% (170)</td><td>96.1%</td><td class="d-down">&minus;42.6%p</td></tr>
-      <tr class="warn"><td>Super Hard</td><td>46.2% (169)</td><td>92.7%</td><td class="d-down">&minus;46.5%p</td></tr>
+      <tr class="warn"><td><code>fail_streak</code></td><td><strong>Normal 패배에서만</strong> 증가 &middot; Hard 이상 패배는 값 유지</td><td>2연패</td><td>Normal</td><td>160판 (0.38%)</td></tr>
+      <tr class="warn"><td><code>fail_spiral</code></td><td><strong>Hard 이상 패배에서만</strong> 증가</td><td>5연패</td><td>Normal 5판</td><td><strong>0건</strong></td></tr>
+      <tr><td><code>hard_cooldown</code></td><td>Hard 이상 <b>플레이</b> 시 증가(승패 무관)</td><td>1판</td><td>Normal</td><td>9,454판 (22.3%)</td></tr>
     </tbody>
   </table>
-  <p class="note">2026-08-14~18 실측. 재도전 판은 <b>Hard+SH가 50.8%</b>로 일반 판 25.7%의 2배 &mdash; 어려운 티어에서 실패하고 그 티어를 물려받아 또 실패함. 다만 <b>Normal에서도 30%p 벌어지므로</b> 티어 재산정만으로는 부족하고, 한 단계 더 내리는 장치가 필요함.</p>
+  <p class="note">2026-08-14~17 실측, <code>2100_GAMEPLAY_START</code>의 <code>tier_reason</code> 기준(총 42,477판).</p>
 
-  <h3>확정</h3>
-  <table>
-    <thead><tr><th>항목</th><th>확정</th></tr></thead>
-    <tbody>
-      <tr class="keyrow"><td>적용 대상<span class="keychip">게이트</span></td><td><code>2100 position="retry"</code> 판 중 <strong>덱을 소진한 판만</strong> &mdash; 덱이 남은 채 끝낸 판은 완화 없이 티어를 그대로 승계함</td></tr>
-      <tr class="pick"><td>티어</td><td>승계 폐기 &rarr; <code>dynamic_level</code> 재산정 후 <strong>한 단계 하향</strong> (SH&rarr;Hard, Hard&rarr;Normal). 하한 Normal</td></tr>
-      <tr><td>배수</td><td>제한하지 않음 &mdash; 입장료가 배수에 비례하므로 기대값이 중립임</td></tr>
-      <tr class="pick"><td>보상</td><td><strong>내려간 티어 기준</strong>을 따름</td></tr>
-      <tr><td>재도전 맵</td><td>실패한 그 맵 유지 (SPEC-036 그대로)</td></tr>
-      <tr><td>반복 상한</td><td>두지 않음 &mdash; 완화로 재실패가 줄면 반복도 주는지 먼저 확인</td></tr>
-    </tbody>
-  </table>
-
-  <h3>한 단계 하향의 실효값</h3>
-  <table>
-    <thead><tr><th>파라미터</th><th>Normal</th><th>Hard</th><th>Super Hard</th></tr></thead>
-    <tbody>
-      <tr><td><code>deck_help_rate</code></td><td>4,875</td><td>3,000</td><td>2,200</td></tr>
-      <tr><td><code>field_help_rate</code></td><td>3,625</td><td>2,450</td><td>1,320</td></tr>
-      <tr><td><code>pity_trigger_count</code></td><td>5</td><td>8</td><td>10</td></tr>
-      <tr><td><code>required_gimmick_count</code></td><td>0</td><td>3</td><td>4</td></tr>
-      <tr><td><code>reward_hammer</code></td><td>1</td><td>2</td><td>3</td></tr>
-    </tbody>
-  </table>
-  <div class="callout callout-blue">
-    <strong>두 단계를 한 번에 내리지 않음.</strong> 재도전이 곧 가장 쉬운 판이 되면 일부러 실패하고 재도전하는 경로가 생김. 최대 폭은 <b>SH&rarr;Hard</b>임.
+  <div class="callout callout-yellow">
+    <strong>&#9888; 두 조건이 서로의 사각을 만듦.</strong> Normal에서 지면 <code>fail_streak</code>가 오르는데 <b>결과 티어도 Normal</b>이라 바뀌는 게 없음 &mdash; 실측 160판이 전부 Normal&rarr;Normal임. Hard 이상에서 지면 <code>fail_streak</code>는 아예 안 오르고 <code>fail_spiral</code>만 오르는데 <b>5연패</b>를 요구해 도달하는 유저가 없음.<br>
+    결과적으로 <b>어려운 티어에서 진 직후를 구제하는 장치가 비어 있음</b>. 그 자리를 <code>hard_cooldown</code>이 메우고 있지만 이건 <b>승패와 무관</b>하게 걸리는 조건이라 &ldquo;졌으니 쉬워진다&rdquo;는 설계 의도와는 다름.
   </div>
 
-  <h3>어뷰징 차단</h3>
-  <p>완화를 붙이면 <strong>일부러 지고 쉬운 판을 받는</strong> 경로가 생김. <strong>설정 팝업 &rarr; Quit &rarr; Retry는 덱과 무관하게 판 도중 아무 때나</strong> 되기 때문임. 막는 장치는 위 확정의 두 줄임 &mdash; <strong>덱을 소진한 판만 완화</strong>(판을 일찍 버리면 티어를 그대로 승계), <strong>보상도 내려간 티어 기준</strong>(난이도만 낮추고 보상을 지키면 그 조합이 곧 어뷰징 대상이 됨).</p>
-  <div class="callout callout-blue">
-    <strong>&ldquo;덱 소진 판만&rdquo;은 정상 유저를 거르지 않음.</strong> 엔드레벨 버튼이 <b>덱 0장일 때만</b> 뜨므로, 실패 판 중 덱이 남은 채 끝난 경우가 <b>사실상 0%</b>임. 이 조건에 걸리는 건 설정 팝업으로 판을 일찍 버리는 경우뿐임 &mdash; 지금은 유인이 없어 관측되지 않지만, <b>완화가 붙으면 생기므로 미리 막아 둠</b>.<br>
-    <b>배수는 제한하지 않음</b> &mdash; 입장료가 배수에 비례해 x4로 걸면 입장료도 4배임. 실측상 재도전 판은 오히려 배수를 낮춰 잡음(x1 41.1% / 로비 31.9%).
-  </div>
+  <h3>방향</h3>
+  <p>재도전 쪽(SPEC-039)은 조건표를 태우는 것만으로 <code>hard_cooldown</code>이 걸려 해결됨. <strong>이 문서는 재도전 밖, 전체 난이도 곡선의 연패 구제를 다룸</strong> &mdash; 손대면 모든 유저의 티어 배분이 움직이므로 SPEC-039와 분리해 별도 판정함.</p>
 </section>
 
 <section id="s2">
   <div class="section-header">
     <div class="section-num section-num-2">&#9313;</div>
-    <div class="section-meta"><div class="section-title">개발 스펙</div></div>
+    <div class="section-meta"><div class="section-title">검토 안</div></div>
   </div>
 
-  <p>서버 변경 없음. 티어는 클라가 정해 <code>gameStart</code>로 올리는 기존 구조를 그대로 씀. <strong>시트 신규 컬럼도 없음</strong> &mdash; 하향 폭이 1단계 고정이라 코드 상수로 충분함.</p>
   <table>
-    <thead><tr><th>위치</th><th>변경</th></tr></thead>
+    <thead><tr><th>안</th><th>내용</th><th>영향</th></tr></thead>
     <tbody>
-      <tr class="pick"><td><code>ViewGame.onRetryRequested()</code></td><td><code>currentDifficultyTierKeyNumber</code> 승계를 <b>조건표 재산정 + 한 단계 하향</b>으로 교체. <code>getMapSelector().getNextDifficulty()</code>를 태워 <code>hard_cooldown</code> 등 조건표가 반영되게 함</td></tr>
-      <tr class="keyrow"><td>완화 대상 판정<span class="keychip">게이트</span></td><td>재도전 진입 시점 <b>남은 드로우 덱이 0인지</b>로 판정. 0이 아니면 완화 없이 기존처럼 티어를 승계함</td></tr>
-      <tr><td>Quick Next Loop 경로</td><td><code>restartImmediatelyForRetry</code>도 동일 적용 &mdash; 두 경로가 같은 산정 함수를 쓰게 할 것</td></tr>
-      <tr><td>로그</td><td><code>2223</code>에 완화 적용 여부(덱 소진 판이었는지) 추가</td></tr>
+      <tr class="pick"><td>A. <code>fail_streak</code> 카운터를 티어 무관으로</td><td>Hard 이상 패배에도 카운터가 오르게 함</td><td>Hard/SH 2연패 시 Normal 제공. 지금 비어 있는 구간을 직접 메움</td></tr>
+      <tr><td>B. <code>fail_spiral</code> 문턱 인하</td><td>5연패 &rarr; 3연패 등</td><td>발동은 생기지만 여전히 Hard 이상 연패만 셈. A보다 늦게 걸림</td></tr>
+      <tr><td>C. <code>fail_streak</code> 결과 티어 변경</td><td>Normal &rarr; 그대로 두고 A와 병행</td><td>단독으로는 의미 없음 &mdash; 이미 Normal인 유저에게 Normal을 줌</td></tr>
+      <tr><td>D. 현상 유지</td><td>손대지 않음</td><td><code>hard_cooldown</code>이 사실상 구제를 대신하고 있고 SH 클리어율도 92.7%로 버팀</td></tr>
     </tbody>
   </table>
 
-  <h3>예외 &mdash; 그럼 이때는?</h3>
-  <table>
-    <thead><tr><th>상황</th><th>처리</th></tr></thead>
-    <tbody>
-      <tr><td>재산정 결과가 이미 Normal이면?</td><td>그대로 Normal. 더 내리지 않음</td></tr>
-      <tr><td>설정 팝업으로 판을 일찍 버리고 재도전하면?</td><td>덱이 남아 있으므로 <b>완화 대상이 아님</b> &mdash; 티어 승계. 입장료는 정상 지불</td></tr>
-      <tr><td>재도전 판에서 배수를 올리면?</td><td>허용함. 입장료도 배수만큼 더 내므로 완화를 싸게 사는 구조가 아님</td></tr>
-      <tr><td>재도전을 연속 반복하면?</td><td>매 회차 같은 규칙 적용. Hard 이상을 한 번 거치면 <code>hard_cooldown</code>이 걸려 이후 재도전은 Normal로 수렴함</td></tr>
-      <tr><td>재도전 판을 클리어하면?</td><td>다음 판은 평소 조건표를 따름. 하향은 재도전 판 한 판에만 적용</td></tr>
-      <tr><td>튜토리얼 구간이면?</td><td>기존대로 Tutorial 티어 &mdash; 적용 대상 아님</td></tr>
-    </tbody>
-  </table>
+  <div class="callout callout-yellow">
+    <strong>&#9888; 확정 전에 필요한 것 &mdash; 구제가 실제로 부족한지부터 확인.</strong> 지금 지표만 보면 <b>구제가 비어 있는데도 SH 클리어율이 92.7%</b>라 손볼 근거가 약함. 어려운 티어 연패가 이탈로 이어지는지(연패 후 세션 종료율)를 먼저 재고, 문제가 확인되면 A를 우선 검토함.<br>
+    값을 바꾸면 <b>모든 유저의 티어 배분과 판당 보상(해머)이 함께 움직임</b>. SPEC-039 판정이 끝난 뒤 착수해야 두 변경이 섞이지 않음.
+  </div>
 </section>
 
 <section id="s3">
   <div class="section-header">
     <div class="section-num section-num-3">&#9314;</div>
-    <div class="section-meta"><div class="section-title">검증 · 롤백</div></div>
+    <div class="section-meta"><div class="section-title">검증</div></div>
   </div>
-
   <table>
-    <thead><tr><th>지표</th><th>As-Is</th><th>To-Be</th></tr></thead>
+    <thead><tr><th>확인</th><th>기준</th></tr></thead>
     <tbody>
-      <tr class="pick"><td>재도전 판 클리어율</td><td>58.1%</td><td><strong>75%</strong></td></tr>
-      <tr><td>재도전 판 Hard+SH 비중</td><td>50.8%</td><td>25% 이하 (적용 확인용)</td></tr>
-      <tr><td>하루 10회 이상 반복</td><td>15명 / 재도전의 35.8%</td><td>감소</td></tr>
-      <tr><td>실패 후 10분 내 재진입</td><td>74.9%</td><td>하락 없을 것 &mdash; 가드레일</td></tr>
-      <tr><td>전체 클리어율</td><td>96.9%</td><td>상승폭 1%p 이내 &mdash; 가드레일</td></tr>
-      <tr class="warn"><td>덱이 남은 채 끝난 판</td><td>사실상 0%</td><td>유의하게 오르면 어뷰징 경로가 열린 것</td></tr>
+      <tr><td>선행 &mdash; 구제 필요성</td><td>Hard 이상 2연패 후 세션 종료율 &middot; 일반 대비 유의하게 높은지</td></tr>
+      <tr><td>적용 확인</td><td><code>tier_reason</code>에 <code>fail_streak</code> 비중 상승</td></tr>
+      <tr><td>효과</td><td>Hard 이상 연패 유저의 다음 판 클리어율 &middot; 세션 지속</td></tr>
+      <tr><td>가드레일</td><td>전체 클리어율 상승폭 1%p 이내 &middot; Hard+SH 노출 비중 하락폭 5%p 이내</td></tr>
     </tbody>
   </table>
-  <p class="note">배포 후 7일 판정. 재도전 판이 하루 140건이라 티어 분포는 2~3일이면 보이고 클리어율은 7일 누적으로 봄. <b>롤백은 클라 빌드</b>가 수단임 &mdash; 티어 산정 로직 변경이라 시트로 되돌릴 수 없음.</p>
+  <p class="note">시트 값 변경이라 <code>dynamic_level</code> 행 수정으로 즉시 원복 가능. 관련: SPEC-039(재도전 판 난이도 완화) &middot; SPEC-029(레벨 기반 난이도 승급) &middot; SPEC-031(SH 구제장치).</p>
 </section>
 
 </div>

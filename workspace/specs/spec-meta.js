@@ -207,6 +207,11 @@ const SPECS = [
     tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
   },
   {
+    id: 'spec-041', file: 'spec-041-fail-relief-rework.html',
+    title: '[밸런스] 연패 구제 조건 재설계',
+    tags: ['balance'], priority: 'mid', status: 'open', date: '2026. 8. 18.', dueDate: null, relatedTo: ['spec-039', 'spec-029', 'spec-031'],
+  },
+  {
     id: 'spec-040', file: 'spec-040-retry-entry-recovery.html',
     title: '[UX-플로우] 재도전 진입 실패 해소',
     tags: ['ux'], priority: 'high', status: 'open', date: '2026. 8. 18.', dueDate: null, relatedTo: ['spec-036', 'spec-039'],
