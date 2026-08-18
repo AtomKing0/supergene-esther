@@ -391,6 +391,44 @@ ul li strong,ol li strong { color:var(--text); }
 
   <p class="note">시트에서 고칠 값은 <b><code>dynamic_level</code> 30009행의 <code>param_2</code> 하나</b>임. 나머지는 전부 클라 코드이며 신규 컬럼·신규 행은 없음.</p>
 
+  <h3>실제로 어떻게 도는가</h3>
+  <p>위 두 줄은 <strong>순서대로 걸리는 게이트와 계산</strong>임. <b>적용 대상</b>이 &ldquo;완화를 받을 자격이 있는가&rdquo;를 보고, <b>재도전 티어</b>가 &ldquo;자격이 있으면 난이도를 어떻게 정하는가&rdquo;를 정함. 앞이 통과해야 뒤가 돎.</p>
+
+  <div class="fl">
+    <span class="fl-tag">1</span>
+    <span class="fl-box hot">Retry 터치</span><span class="fl-arw">&rarr;</span>
+    <span class="fl-box">남은 드로우 덱이 0인가?</span>
+  </div>
+  <div class="fl">
+    <span class="fl-tag">2-A</span>
+    <span class="fl-box cold">덱이 남아 있음<small>설정 팝업으로 일찍 버림</small></span><span class="fl-arw">&rarr;</span>
+    <span class="fl-box">완화 없음 &mdash; <b>직전 판 티어 그대로</b><small>SH였으면 SH가 다시 나옴 · 현행과 동일</small></span>
+  </div>
+  <div class="fl">
+    <span class="fl-tag">2-B</span>
+    <span class="fl-box hot">덱을 다 씀<small>끝까지 하다 막힘</small></span><span class="fl-arw">&rarr;</span>
+    <span class="fl-box">승계 버리고 <b>조건표 재계산</b><small>나온 값을 그대로 씀</small></span>
+  </div>
+
+  <h4>재계산하면 무엇이 걸리는가</h4>
+  <table>
+    <thead><tr><th>직전 판에서</th><th>걸리는 조건</th><th>재도전 판 티어</th></tr></thead>
+    <tbody>
+      <tr><td>Super Hard에서 짐</td><td><code>hard_cooldown</code> &mdash; Hard 이상을 플레이했으니 다음은 쉬게</td><td><strong>Normal</strong></td></tr>
+      <tr><td>Hard에서 짐</td><td><code>hard_cooldown</code> &mdash; 동일</td><td><strong>Normal</strong></td></tr>
+      <tr><td>Normal에서 2연패</td><td><code>fail_streak</code> &mdash; 연패 구제</td><td><strong>Normal</strong></td></tr>
+      <tr><td>Normal에서 5연패 이상</td><td><code>fail_spiral</code> &mdash; Super Hard 강제 등장 카운터까지 초기화</td><td><strong>Normal</strong></td></tr>
+      <tr><td>아무것도 안 걸림</td><td><code>default</code></td><td><strong>Normal</strong></td></tr>
+    </tbody>
+  </table>
+  <p class="note">재계산 결과는 <b>사실상 항상 Normal</b>임 &mdash; 어려운 티어에서 졌으면 <code>hard_cooldown</code>이, Normal에서 졌으면 기본값이 Normal을 주기 때문. 그래서 <b>여기서 한 단계 더 내리는 처리는 넣지 않음</b>(&#9314; 시뮬레이션에서 효과가 같음을 확인).</p>
+
+  <div class="callout callout-purple">
+    <strong>왜 두 줄이 세트인가 &mdash; 어뷰징 때문임.</strong> 재계산은 유저에게 <b>유리한 방향으로만</b> 작동함(거의 항상 Normal). 그래서 조건 없이 열어두면 <b>&ldquo;Super Hard 판을 시작하자마자 설정 &rarr; Quit &rarr; Retry&rdquo;로 쉬운 판을 골라 받는 지름길</b>이 생김.<br>
+    덱 소진을 조건으로 걸면 그 길이 막힘 &mdash; 어차피 덱을 다 써야 하므로 정상 플레이와 구분되지 않음. 그리고 <b>정상 유저는 하나도 걸러지지 않음</b>: 엔드레벨 버튼이 덱 0장일 때만 뜨므로 실패로 끝난 판 중 덱이 남은 경우가 사실상 0%임.
+  </div>
+
+
   <h3>티어별 실효값</h3>
   <table>
     <thead><tr><th>파라미터</th><th>Normal</th><th>Hard</th><th>Super Hard</th></tr></thead>
