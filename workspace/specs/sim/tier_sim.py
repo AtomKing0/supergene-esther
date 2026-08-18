@@ -48,11 +48,12 @@ def end_update(tier, win, c, improved):
     c[30006] = 0 if tier == SH else (c.get(30006,0)+1 if win else c.get(30006,0))
     c[30007] = 0 if hard_or_above else (c.get(30007,0)+1 if win else c.get(30007,0))
 
-def run(level, skill, games, improved, seed, mode="full"):
+def run(level, skill, games, improved, seed, mode="full", counters=None):
     rng = random.Random(seed)
     c, out, relief = {}, {NORMAL:0, HARD:0, SH:0}, 0
     rout = {NORMAL:0, HARD:0, SH:0}
-    spiral_p2 = 0 if improved else 5
+    counters = improved if counters is None else counters
+    spiral_p2 = 0 if counters else 5
     prev_tier = None
     retry_pending = False
     for _ in range(games):
@@ -72,7 +73,7 @@ def run(level, skill, games, improved, seed, mode="full"):
         if m in ("fail_streak","fail_spiral","retry_relief"): relief += 1
         fail_p = (1 - CLEAR[t]) * skill
         win = rng.random() > fail_p
-        end_update(t, win, c, improved)
+        end_update(t, win, c, counters)
         prev_tier = t
         retry_pending = (not win) and (rng.random() < RETRY_P)
     n = sum(out.values()); rn = max(sum(rout.values()), 1)
@@ -89,18 +90,20 @@ PERSONAS = [
     ("헤비 · 레벨 900",  900, 1.0),
 ]
 GAMES, TRIALS = 4000, 40
-print(f"{'persona':<16}{'mode':<12}{'Normal':>8}{'Hard':>8}{'SH':>8}{'relief':>8}{'retryH+':>9}")
+print(f"{'persona':<16}{'mode':<24}{'Normal':>8}{'Hard':>8}{'SH':>8}{'relief':>8}{'retryH+':>9}")
 RESULT = {}
-MODES = [(False,"full","현행"), (True,"recalc","재산정만"), (True,"full","재산정+하향")]
+MODES = [(False,"full",None,"현행"),
+         (True,"recalc",False,"재산정만(카운터 현행)"),
+         (True,"recalc",True,"재산정+카운터수정")]
 for name, lv, sk in PERSONAS:
-    for improved, mode, tag in MODES:
+    for improved, mode, cnt, tag in MODES:
         agg = {NORMAL:0.0, HARD:0.0, SH:0.0, "relief":0.0, "retry_hardplus":0.0}
         for s in range(TRIALS):
-            r = run(lv, sk, GAMES, improved, seed=1000+s, mode=mode)
+            r = run(lv, sk, GAMES, improved, seed=1000+s, mode=mode, counters=cnt)
             for k in agg: agg[k] += r[k]
         agg = {k: round(v/TRIALS, 1) for k, v in agg.items()}
         RESULT[(name, tag)] = agg
-        print(f"{name:<16}{tag:<12}{agg[NORMAL]:>8}{agg[HARD]:>8}{agg[SH]:>8}{agg['relief']:>8}{agg['retry_hardplus']:>9}")
+        print(f"{name:<16}{tag:<24}{agg[NORMAL]:>8}{agg[HARD]:>8}{agg[SH]:>8}{agg['relief']:>8}{agg['retry_hardplus']:>9}")
 import json
 json.dump({f"{n}|{t}": v for (n,t),v in RESULT.items()},
           open('/tmp/tier_sim.json','w'), ensure_ascii=False)

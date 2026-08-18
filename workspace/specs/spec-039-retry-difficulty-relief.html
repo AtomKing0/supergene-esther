@@ -353,7 +353,11 @@ ul li strong,ol li strong { color:var(--text); }
       <tr><td><code>hard_cooldown</code></td><td>Hard 이상 <b>플레이</b> 시(승패 무관)</td><td>1판</td><td>9,454판 (22.3%)</td></tr>
     </tbody>
   </table>
-  <p class="note">Normal에서 지면 <code>fail_streak</code>가 오르는데 <b>결과 티어도 Normal</b>이라 바뀌는 게 없고, Hard 이상에서 지면 <code>fail_streak</code>는 아예 안 오르고 <code>fail_spiral</code>만 오르는데 5연패를 요구해 도달하는 유저가 없음. <b>어려운 티어에서 진 직후를 구제하는 장치가 비어 있음</b>.</p>
+  <p class="note">Normal에서 지면 <code>fail_streak</code>가 오르는데 <b>결과 티어도 Normal</b>이라 바뀌는 게 없고, Hard 이상에서 지면 <code>fail_streak</code>는 아예 안 오르고 <code>fail_spiral</code>만 오르는데 5연패를 요구해 도달하는 유저가 없음.</p>
+  <div class="callout callout-blue">
+    <strong>다만 이 건은 곁가지임 &mdash; 이 문서의 핵심은 재도전 승계 폐기임.</strong> 연패 구제를 고쳐도 <b>티어 분포는 거의 그대로</b>임(&#9314; 시뮬레이션에서 확인). 조건표에서 Normal이 아닌 값을 내놓는 규칙은 <code>hard_guarantee</code>&middot;<code>super_hard_guarantee</code> 둘뿐인데 <b>이 카운터들은 승리했을 때만 오르기</b> 때문임 &mdash; 연패 중인 유저는 두 카운터가 얼어붙어 어차피 Normal을 받음.<br>
+    고치는 값어치는 딱 하나 <b>&ldquo;이겨서 SH 강제 등장 카운터가 차 있는데 지금은 연패 중&rdquo;인 순간에 SH가 튀어나오는 것을 막는 것</b>임. 비용이 코드 두 줄과 시트 한 칸이라 넣지만, <b>기대 효과를 크게 잡지 말 것</b>.
+  </div>
 
   <p class="note">&#8251; 이름만 보면 <code>fail_streak</code>&middot;<code>fail_spiral</code>이 연패 구제 역할일 것 같지만 실측상 아님 &mdash; <code>fail_streak</code>는 전체의 0.38%(160판)에서만 걸리고 그마저 <b>Normal &rarr; Normal</b>이라 효과가 없으며, <code>fail_spiral</code>은 <b>발동 0건</b>임. 카운터가 Normal 패배에서만 오르거나(<code>fail_streak</code>) 5연패를 요구해서(<code>fail_spiral</code>) 어려운 티어에서 진 유저에게 닿지 않음. 이 건도 이 문서에서 함께 정비함.</p>
   <table>
@@ -535,6 +539,26 @@ ul li strong,ol li strong { color:var(--text); }
   </table>
   <p class="note">&ldquo;고전&rdquo;은 같은 레벨에서 실패 확률을 3배로 준 페르소나임. <b>완화가 필요한 유저에게만 6.5%로 걸리고</b> 숙련 유저에게는 1.1%만 걸림 &mdash; 난이도 곡선을 흔들지 않고 선택적으로 작동함.</p>
 
+  <h3>연패 구제 수정의 실효 &mdash; 작음</h3>
+  <p>같은 시뮬레이터에서 <code>fail_streak</code>&middot;<code>fail_spiral</code> <strong>규칙을 아예 빼고</strong> 돌려, 티어 선택이 달라지는 판을 셈.</p>
+  <table>
+    <thead><tr><th>페르소나</th><th><code>fail_*</code> 발동</th><th>그중 <strong>실제로 티어가 달라진 판</strong></th></tr></thead>
+    <tbody>
+      <tr><td>신규 &middot; 레벨 50</td><td>177회</td><td><strong>0회</strong></td></tr>
+      <tr><td>헤비 &middot; 레벨 900</td><td>220회</td><td><strong>0회</strong></td></tr>
+      <tr class="pick"><td>고전 &middot; 레벨 500</td><td>1,708회</td><td><strong>29회</strong></td></tr>
+    </tbody>
+  </table>
+  <p class="note">20만 판 기준. 발동은 하는데 결과가 안 바뀜 &mdash; <code>fail_*</code>가 주는 답도 Normal이고, 그 자리에 원래 걸리던 <code>hard_cooldown</code>&middot;<code>default</code>도 Normal이라 <b>덮어써도 같은 값</b>이기 때문임.</p>
+
+  <div class="callout callout-blue">
+    <strong>차이가 나는 순간은 딱 한 종류임.</strong> 40만 판으로 늘려 확인한 결과, 달라진 판은 전부 <b><code>fail_streak</code>가 <code>super_hard_guarantee</code>를 막고 Normal을 준</b> 경우였음 &mdash; 고전 페르소나에서 <b>64회</b>, 다른 페르소나는 <b>0회</b>.<br>
+    이전에 이겨서 SH 강제 등장 카운터가 차 있는데 지금은 연패 중인 유저에게 <b>SH가 튀어나오는 것을 막는 것</b>이 이 수정의 전부임. 시트 메모의 &ldquo;패닉 모드 방지&rdquo;가 정확히 이 뜻임.
+  </div>
+  <div class="callout callout-yellow">
+    <strong>&#9888; 기대 효과를 크게 잡지 말 것.</strong> 40만 판당 64회 &middot; 특정 페르소나 한정임. <b>이 문서의 성과는 재도전 승계 폐기에서 나오고</b>(재도전 판 Hard+ 비중 29~50% &rarr; 0~7%), 연패 구제 수정은 비용이 작아 함께 넣는 곁가지임. 판정 지표도 이 건으로 움직이지 않음.
+  </div>
+
   <div class="callout callout-yellow">
     <strong>&#9888; 시뮬레이션이 뒤집은 것 &mdash; &ldquo;한 단계 하향&rdquo;은 필요 없음.</strong> 승계를 끊고 조건표를 <b>재산정만</b> 해도 재도전 판 Hard+ 비중이 위 수치까지 떨어짐. 거기서 한 단계 더 내려도 결과가 사실상 같음(헤비 6.7% &rarr; 5.9%, 나머지는 소수점 차이).<br>
     Hard 이상에서 진 직후에는 <code>hard_cooldown</code>이 이미 Normal로 보내고, Normal에서 졌으면 재산정 결과도 Normal이라 <b>내릴 여지가 없기 때문</b>임. 확정에서 하향을 뺌.
@@ -553,6 +577,7 @@ ul li strong,ol li strong { color:var(--text); }
       <tr class="pick"><td>재도전 판 클리어율</td><td>58.1%</td><td><strong>75%</strong></td></tr>
       <tr><td>재도전 판 Hard+SH 비중</td><td>50.8%</td><td>25% 이하 (적용 확인용)</td></tr>
       <tr><td>하루 10회 이상 반복</td><td>15명 / 재도전의 35.8%</td><td>감소</td></tr>
+      <tr><td><code>tier_reason</code>에 <code>fail_streak</code> 비중</td><td>0.38%</td><td>상승 &mdash; <b>적용 확인용</b>일 뿐, 성과 지표가 아님</td></tr>
       <tr><td>실패 후 10분 내 재진입</td><td>74.9%</td><td>하락 없을 것 &mdash; 가드레일</td></tr>
       <tr><td>전체 클리어율</td><td>96.9%</td><td>상승폭 1%p 이내 &mdash; 가드레일</td></tr>
       <tr class="warn"><td>덱이 남은 채 끝난 판</td><td>사실상 0%</td><td>유의하게 오르면 어뷰징 경로가 열린 것</td></tr>
