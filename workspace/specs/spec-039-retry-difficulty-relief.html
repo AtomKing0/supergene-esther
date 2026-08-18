@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>SPEC-039 · 재도전 판 난이도 완화</title>
+<title>SPEC-039 · 난이도 완화 조건 정비</title>
 <style>
 :root {
   --bg: #0f1117;
@@ -160,6 +160,31 @@ ul li strong,ol li strong { color:var(--text); }
 .keychip{display:inline-block;background:var(--accent);color:#160c2b;font-size:.62rem;font-weight:900;border-radius:5px;padding:2px 7px;margin-left:7px;letter-spacing:.04em;vertical-align:1px}
 .warn td{background:var(--red-bg)}
 .warn td:first-child{color:var(--red)}
+
+/* ── 시뮬레이션 차트 (ordinal 1-hue ramp · validate_palette PASS) ── */
+.viz{--surface-1:#fff;--t1:#86b6ef;--t2:#2a78d6;--t3:#104281;--ink:var(--text);--ink2:var(--text2);
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:20px 0}
+[data-theme="light"] .viz{--surface-1:#ffffff}
+.viz{--surface-1:#1a1d27;--t1:#9ec5f4;--t2:#3987e5;--t3:#1c5cab}
+[data-theme="light"] .viz{--t1:#86b6ef;--t2:#2a78d6;--t3:#104281}
+.viz-cap{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:14px}
+.viz-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.76rem;color:var(--text2);margin-bottom:14px}
+.viz-legend span{display:flex;align-items:center;gap:6px}
+.viz-key{width:13px;height:13px;border-radius:3px;flex:none}
+.viz-row{margin-bottom:15px}
+.viz-name{font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:5px}
+.viz-pair{display:grid;grid-template-columns:44px 1fr;gap:7px;align-items:center;margin-bottom:4px}
+.viz-tag{font-size:.68rem;font-weight:700;color:var(--text-dim);text-align:right}
+.viz-bar{display:flex;height:22px;border-radius:5px;overflow:hidden;background:var(--surface2)}
+.viz-seg{position:relative;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:800;color:#fff;
+  border-right:2px solid var(--surface-1)}
+.viz-seg:last-child{border-right:0}
+.viz-seg.s1{background:var(--t1);color:#0d366b}
+.viz-seg.s2{background:var(--t2)}
+.viz-seg.s3{background:var(--t3)}
+.viz-note{font-size:.76rem;color:var(--text2);margin-top:12px;line-height:1.6}
+.viz-note b{color:var(--text)}
+
 .pick td{background:var(--green-bg)}
 .pick td:first-child{color:var(--green)}
 
@@ -261,7 +286,8 @@ ul li strong,ol li strong { color:var(--text); }
   <div class="nav-title">SPEC-039</div>
   <a href="#s1">&#9312; 문제 &amp; 확정 설계</a>
   <a href="#s2">&#9313; 개발 스펙</a>
-  <a href="#s3">&#9314; 검증 · 롤백</a>
+  <a href="#s3">&#9314; 시뮬레이션</a>
+  <a href="#s4">&#9315; 검증 · 롤백</a>
 </nav>
 
 <div class="hero">
@@ -273,8 +299,8 @@ ul li strong,ol li strong { color:var(--text); }
       <span class="badge badge-blue">&#128309; 검토중</span>
       <span class="badge badge-green">2026. 8. 18.</span>
     </div>
-    <h1>재도전 판 난이도 완화<br><span>Retry Difficulty Relief</span></h1>
-    <p class="hero-sub">SPEC-036 재도전은 실패한 맵을 <strong>난이도 티어까지 그대로 승계</strong>해 다시 줌. 난이도 완화 조건이 걸리지 않아 재도전 판 클리어율이 <strong>58.1%</strong>로 일반 판 96.9%와 벌어짐. 승계를 끊고 한 단계 내림.</p>
+    <h1>난이도 완화 조건 정비<br><span>Difficulty Relief Rework</span></h1>
+    <p class="hero-sub">재도전 판은 실패한 티어를 <strong>그대로 승계</strong>해 완화가 걸리지 않고, 연패 구제로 둔 <code>fail_streak</code>&middot;<code>fail_spiral</code>은 <strong>카운터 조건 때문에 사실상 죽어 있음</strong>. 두 건을 함께 정비함.</p>
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">재도전 판 클리어율</div>
@@ -314,7 +340,18 @@ ul li strong,ol li strong { color:var(--text); }
 
   <h3>문제 &mdash; 재도전 판만 완화가 걸리지 않음</h3>
   <p>난이도는 판 시작 때 <code>dynamic_level</code> 조건표가 정함. 실제로 완화를 만드는 조건은 <strong><code>hard_cooldown</code></strong>임 &mdash; Hard 이상을 플레이하면 다음 판을 Normal로 내려줌(전체 판의 <strong>22.3%</strong>가 이걸로 배정됨). <strong>재도전은 이 조건표를 아예 타지 않고 직전 판 티어를 그대로 물려받아</strong>, 이 완화가 가장 필요한 순간에 걸리지 않음.</p>
-  <p class="note">&#8251; 이름만 보면 <code>fail_streak</code>&middot;<code>fail_spiral</code>이 연패 구제 역할일 것 같지만 실측상 아님 &mdash; <code>fail_streak</code>는 전체의 0.38%(160판)에서만 걸리고 그마저 <b>Normal &rarr; Normal</b>이라 효과가 없으며, <code>fail_spiral</code>은 <b>발동 0건</b>임. 카운터가 Normal 패배에서만 오르거나(<code>fail_streak</code>) 5연패를 요구해서(<code>fail_spiral</code>) 어려운 티어에서 진 유저에게 닿지 않음. 이 건은 재도전 밖 전체 난이도 곡선 문제라 <b>SPEC-041로 분리</b>함.</p>
+  <h3>연패 구제도 죽어 있음</h3>
+  <table>
+    <thead><tr><th>조건</th><th>카운터가 오르는 때</th><th>문턱</th><th>실측 발동</th></tr></thead>
+    <tbody>
+      <tr class="warn"><td><code>fail_streak</code></td><td><b>Normal 패배에서만</b> 증가</td><td>2연패</td><td>160판 (0.38%) &middot; 전부 Normal&rarr;Normal</td></tr>
+      <tr class="warn"><td><code>fail_spiral</code></td><td><b>Hard 이상 패배에서만</b> 증가</td><td>5연패</td><td><strong>0건</strong></td></tr>
+      <tr><td><code>hard_cooldown</code></td><td>Hard 이상 <b>플레이</b> 시(승패 무관)</td><td>1판</td><td>9,454판 (22.3%)</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Normal에서 지면 <code>fail_streak</code>가 오르는데 <b>결과 티어도 Normal</b>이라 바뀌는 게 없고, Hard 이상에서 지면 <code>fail_streak</code>는 아예 안 오르고 <code>fail_spiral</code>만 오르는데 5연패를 요구해 도달하는 유저가 없음. <b>어려운 티어에서 진 직후를 구제하는 장치가 비어 있음</b>.</p>
+
+  <p class="note">&#8251; 이름만 보면 <code>fail_streak</code>&middot;<code>fail_spiral</code>이 연패 구제 역할일 것 같지만 실측상 아님 &mdash; <code>fail_streak</code>는 전체의 0.38%(160판)에서만 걸리고 그마저 <b>Normal &rarr; Normal</b>이라 효과가 없으며, <code>fail_spiral</code>은 <b>발동 0건</b>임. 카운터가 Normal 패배에서만 오르거나(<code>fail_streak</code>) 5연패를 요구해서(<code>fail_spiral</code>) 어려운 티어에서 진 유저에게 닿지 않음. 이 건도 이 문서에서 함께 정비함.</p>
   <table>
     <thead><tr><th>티어</th><th>재도전 판</th><th>일반 판</th><th>격차</th></tr></thead>
     <tbody>
@@ -330,10 +367,13 @@ ul li strong,ol li strong { color:var(--text); }
     <thead><tr><th>항목</th><th>확정</th></tr></thead>
     <tbody>
       <tr class="keyrow"><td>적용 대상<span class="keychip">게이트</span></td><td><code>2100 position="retry"</code> 판 중 <strong>덱을 소진한 판만</strong> &mdash; 덱이 남은 채 끝낸 판은 완화 없이 티어를 그대로 승계함</td></tr>
-      <tr class="pick"><td>티어</td><td>승계 폐기 &rarr; <code>dynamic_level</code> 재산정 후 <strong>한 단계 하향</strong> (SH&rarr;Hard, Hard&rarr;Normal). 하한 Normal</td></tr>
+      <tr class="keyrow"><td>재도전 티어<span class="keychip">핵심</span></td><td>승계 폐기 &rarr; <code>dynamic_level</code> <strong>재산정</strong>. 추가 하향은 두지 않음 &mdash; 시뮬레이션상 효과가 같음(&#9314;)</td></tr>
       <tr><td>배수</td><td>제한하지 않음 &mdash; 입장료가 배수에 비례하므로 기대값이 중립임</td></tr>
       <tr class="pick"><td>보상</td><td><strong>내려간 티어 기준</strong>을 따름</td></tr>
       <tr><td>재도전 맵</td><td>실패한 그 맵 유지 (SPEC-036 그대로)</td></tr>
+      <tr class="pick"><td><code>fail_streak</code> 카운터</td><td>Normal 패배에서만 증가 &rarr; <strong>티어 무관 모든 패배에서 증가</strong></td></tr>
+      <tr class="pick"><td><code>fail_spiral</code> 카운터</td><td>Hard 이상 패배에서만 증가 &rarr; <strong>동일하게 모든 패배</strong> &mdash; 안 고치면 문턱 5에 영영 도달 못 함</td></tr>
+      <tr class="pick"><td><code>fail_spiral</code> <code>param_2</code></td><td><code>5</code>(정확히 5일 때만) &rarr; <strong><code>0</code></strong>(5 이상이면 계속)</td></tr>
       <tr><td>반복 상한</td><td>두지 않음 &mdash; 완화로 재실패가 줄면 반복도 주는지 먼저 확인</td></tr>
     </tbody>
   </table>
@@ -394,7 +434,64 @@ ul li strong,ol li strong { color:var(--text); }
 
 <section id="s3">
   <div class="section-header">
-    <div class="section-num section-num-3">&#9314;</div>
+    <div class="section-num section-num-2">&#9314;</div>
+    <div class="section-meta"><div class="section-title">시뮬레이션</div></div>
+  </div>
+
+  <p>시트 규칙과 카운터 갱신 코드를 그대로 옮겨 페르소나별로 <strong>4,000판 &times; 40회</strong>를 돌림. 클리어율은 티어별 실측(Normal 97.2 / Hard 96.1 / SH 92.7)을 쓰고, 실패 시 60% 확률로 재도전함(<code>2223 &divide; 2220</code> 실측).</p>
+
+  <div class="viz">
+    <div class="viz-cap">페르소나별 난이도 티어 분포 &mdash; 현행 vs 개선안 (판당 %)</div>
+    <div class="viz-legend">
+      <span><i class="viz-key" style="background:var(--t1)"></i> Normal</span>
+      <span><i class="viz-key" style="background:var(--t2)"></i> Hard</span>
+      <span><i class="viz-key" style="background:var(--t3)"></i> Super Hard</span>
+    </div>
+    <div class="viz-row"><div class="viz-name">신규 · 레벨 50</div>
+  <div class="viz-pair"><div class="viz-tag">현행</div><div class="viz-bar"><div class="viz-seg s1" style="width:81.3%" title="Normal 81.3%">81.3</div><div class="viz-seg s2" style="width:12.4%" title="Hard 12.4%">12.4</div><div class="viz-seg s3" style="width:6.3%" title="Super Hard 6.3%"></div></div></div>
+  <div class="viz-pair"><div class="viz-tag">개선</div><div class="viz-bar"><div class="viz-seg s1" style="width:81.8%" title="Normal 81.8%">81.8</div><div class="viz-seg s2" style="width:12.2%" title="Hard 12.2%">12.2</div><div class="viz-seg s3" style="width:6.0%" title="Super Hard 6.0%"></div></div></div>
+    </div>
+    <div class="viz-row"><div class="viz-name">중급 · 레벨 200</div>
+  <div class="viz-pair"><div class="viz-tag">현행</div><div class="viz-bar"><div class="viz-seg s1" style="width:76.9%" title="Normal 76.9%">76.9</div><div class="viz-seg s2" style="width:15.3%" title="Hard 15.3%">15.3</div><div class="viz-seg s3" style="width:7.8%" title="Super Hard 7.8%"></div></div></div>
+  <div class="viz-pair"><div class="viz-tag">개선</div><div class="viz-bar"><div class="viz-seg s1" style="width:77.6%" title="Normal 77.6%">77.6</div><div class="viz-seg s2" style="width:15.0%" title="Hard 15.0%">15.0</div><div class="viz-seg s3" style="width:7.5%" title="Super Hard 7.5%"></div></div></div>
+    </div>
+    <div class="viz-row"><div class="viz-name">숙련 · 레벨 500</div>
+  <div class="viz-pair"><div class="viz-tag">현행</div><div class="viz-bar"><div class="viz-seg s1" style="width:72.7%" title="Normal 72.7%">72.7</div><div class="viz-seg s2" style="width:18.2%" title="Hard 18.2%">18.2</div><div class="viz-seg s3" style="width:9.1%" title="Super Hard 9.1%">9.1</div></div></div>
+  <div class="viz-pair"><div class="viz-tag">개선</div><div class="viz-bar"><div class="viz-seg s1" style="width:73.0%" title="Normal 73.0%">73.0</div><div class="viz-seg s2" style="width:18.1%" title="Hard 18.1%">18.1</div><div class="viz-seg s3" style="width:8.9%" title="Super Hard 8.9%">8.9</div></div></div>
+    </div>
+    <div class="viz-row"><div class="viz-name">고전 · 레벨 500</div>
+  <div class="viz-pair"><div class="viz-tag">현행</div><div class="viz-bar"><div class="viz-seg s1" style="width:72.5%" title="Normal 72.5%">72.5</div><div class="viz-seg s2" style="width:18.2%" title="Hard 18.2%">18.2</div><div class="viz-seg s3" style="width:9.3%" title="Super Hard 9.3%">9.3</div></div></div>
+  <div class="viz-pair"><div class="viz-tag">개선</div><div class="viz-bar"><div class="viz-seg s1" style="width:74.1%" title="Normal 74.1%">74.1</div><div class="viz-seg s2" style="width:17.9%" title="Hard 17.9%">17.9</div><div class="viz-seg s3" style="width:8.0%" title="Super Hard 8.0%">8.0</div></div></div>
+    </div>
+    <div class="viz-row"><div class="viz-name">헤비 · 레벨 900</div>
+  <div class="viz-pair"><div class="viz-tag">현행</div><div class="viz-bar"><div class="viz-seg s1" style="width:63.6%" title="Normal 63.6%">63.6</div><div class="viz-seg s2" style="width:27.2%" title="Hard 27.2%">27.2</div><div class="viz-seg s3" style="width:9.2%" title="Super Hard 9.2%">9.2</div></div></div>
+  <div class="viz-pair"><div class="viz-tag">개선</div><div class="viz-bar"><div class="viz-seg s1" style="width:64.2%" title="Normal 64.2%">64.2</div><div class="viz-seg s2" style="width:26.9%" title="Hard 26.9%">26.9</div><div class="viz-seg s3" style="width:8.9%" title="Super Hard 8.9%">8.9</div></div></div>
+    </div>
+    <div class="viz-note"><b>전체 난이도 곡선은 거의 움직이지 않음</b> &mdash; 어느 페르소나든 Normal 비중 변화가 <b>1.6%p 이내</b>임. 완화가 <b>연패 중인 판에만</b> 걸리기 때문이며, 이는 &ldquo;전체 클리어율 상승폭 1%p 이내&rdquo; 가드레일과 부합함.</div>
+  </div>
+
+  <h3>재도전 판만 크게 달라짐</h3>
+  <table>
+    <thead><tr><th>페르소나</th><th>재도전 판의 Hard+ 비중<br>현행 &rarr; 개선</th><th>완화 발동률<br>현행 &rarr; 개선</th></tr></thead>
+    <tbody>
+      <tr><td>신규 &middot; 레벨 50</td><td>29.3% &rarr; <strong>0.0%</strong></td><td>0.0% &rarr; 2.0%</td></tr>
+      <tr><td>중급 &middot; 레벨 200</td><td>35.3% &rarr; <strong>0.0%</strong></td><td>0.0% &rarr; 2.1%</td></tr>
+      <tr><td>숙련 &middot; 레벨 500</td><td>39.1% &rarr; <strong>0.1%</strong></td><td>0.0% &rarr; 1.1%</td></tr>
+      <tr class="pick"><td>고전 &middot; 레벨 500</td><td>39.8% &rarr; <strong>1.2%</strong></td><td>0.2% &rarr; <strong>6.5%</strong></td></tr>
+      <tr><td>헤비 &middot; 레벨 900</td><td>49.5% &rarr; <strong>6.7%</strong></td><td>0.0% &rarr; 2.2%</td></tr>
+    </tbody>
+  </table>
+  <p class="note">&ldquo;고전&rdquo;은 같은 레벨에서 실패 확률을 3배로 준 페르소나임. <b>완화가 필요한 유저에게만 6.5%로 걸리고</b> 숙련 유저에게는 1.1%만 걸림 &mdash; 난이도 곡선을 흔들지 않고 선택적으로 작동함.</p>
+
+  <div class="callout callout-yellow">
+    <strong>&#9888; 시뮬레이션이 뒤집은 것 &mdash; &ldquo;한 단계 하향&rdquo;은 필요 없음.</strong> 승계를 끊고 조건표를 <b>재산정만</b> 해도 재도전 판 Hard+ 비중이 위 수치까지 떨어짐. 거기서 한 단계 더 내려도 결과가 사실상 같음(헤비 6.7% &rarr; 5.9%, 나머지는 소수점 차이).<br>
+    Hard 이상에서 진 직후에는 <code>hard_cooldown</code>이 이미 Normal로 보내고, Normal에서 졌으면 재산정 결과도 Normal이라 <b>내릴 여지가 없기 때문</b>임. 확정에서 하향을 뺌.
+  </div>
+</section>
+
+<section id="s4">
+  <div class="section-header">
+    <div class="section-num section-num-3">&#9315;</div>
     <div class="section-meta"><div class="section-title">검증 · 롤백</div></div>
   </div>
 
