@@ -321,6 +321,14 @@ details.sbwrap td.line { color:var(--ink-2); }
 td.shotcell { white-space:nowrap; }
 .shotko { margin-left:7px; font-size:12.5px; color:var(--ink-3); }
 
+/* ---------- 인물 시트 ---------- */
+table.charsheet th:nth-child(1), table.charsheet td:nth-child(1) { width:120px; }
+table.charsheet th:nth-child(3), table.charsheet td:nth-child(3) { width:56px; }
+.charko { display:block; font-size:12.5px; color:var(--ink-3); margin-top:2px; }
+.charlook { display:block; margin-top:5px; font-size:13.5px; color:var(--ink-3); }
+table.charsheet code.emo { display:inline-block; margin:0 4px 4px 0;
+  background:var(--chat-bg); padding:2px 8px; border-radius:999px; }
+
 </style>
 
 <div class="shell">
@@ -328,12 +336,14 @@ td.shotcell { white-space:nowrap; }
   <p class="sidetitle">PROTO-001</p>
   <nav aria-label="목차">
     <a href="#s1"><b>①</b>작업 목록</a>
-    <a href="#s2"><b>②</b>설계 원칙</a>
-    <a href="#s3"><b>③</b>퀘스트 플로우</a>
-    <a href="#s4"><b>④</b>데이터</a>
-    <a href="#s5"><b>⑤</b>에셋 규격 <span class="sidetag">ART</span></a>
-    <a href="#s6"><b>⑥</b>부록 · 스크립트</a>
-    <a href="#s7"><b>⑦</b>설문</a>
+    <a href="#s2"><b>②</b>회의 정리</a>
+    <a href="#s3"><b>③</b>설계 원칙</a>
+    <a href="#s4"><b>④</b>퀘스트 플로우</a>
+    <a href="#s5"><b>⑤</b>데이터</a>
+    <a href="#s6"><b>⑥</b>인물 <span class="sidetag">ART</span></a>
+    <a href="#s7"><b>⑦</b>에셋 규격 <span class="sidetag">ART</span></a>
+    <a href="#s8"><b>⑧</b>부록 · 스크립트</a>
+    <a href="#s9"><b>⑨</b>설문</a>
   </nav>
 </aside>
 
@@ -372,7 +382,46 @@ td.shotcell { white-space:nowrap; }
 </section>
 
 <section class="block" id="s2">
-  <h2><span class="snum">②</span> 설계 원칙 <span class="h2note">빌드는 두 벌, 콘텐츠는 한 벌</span></h2>
+  <h2><span class="snum">②</span> 회의 정리 <span class="h2note">결정된 것과 갈린 것</span></h2>
+
+  <h3 class="sub">아젠다 1 <span class="dash">— 게임 코어 재미 검증, 스토리 진행 방식</span></h3>
+  <div class="tablewrap">
+    <table class="cmp">
+      <thead><tr><th>안</th><th>방식</th><th>제작 경로</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td class="cc">원작 게임의 <strong>채팅 형식</strong> 스토리 진행</td>
+          <td>말풍선 렌더러 직접 구현</td></tr>
+        <tr><td>B</td><td class="vv"><strong>스틸컷 프리뷰</strong> 형식 스토리 진행</td>
+          <td>VN builder 활용</td></tr>
+        <tr><td>C</td><td class="vv"><strong>영상</strong> 형식 스토리 진행</td>
+          <td>VN builder 활용</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="b">
+    <li><strong>공통</strong> — 챕터 브릿지 역할의 영상은 세 안 모두에 동일하게 삽입합니다. (ryul 제작)</li>
+    <li>데이터는 세 안이 같습니다. A는 <code>story_dialogue</code>까지 읽고,
+        B·C는 <code>story_node</code> + <code>present_video</code>만 읽습니다 → <a href="#s4">③ 설계 원칙</a>.</li>
+  </ul>
+
+  <h3 class="sub">아젠다 2 <span class="dash">— 챕터 브릿지 영상 제작 방식</span></h3>
+  <div class="tablewrap">
+    <table class="cmp">
+      <thead><tr><th>안</th><th>방식</th></tr></thead>
+      <tbody>
+        <tr><td>a</td><td class="cc">ryul이 원래 제작하던 방식 그대로</td></tr>
+        <tr><td>b</td><td class="vv">VN builder를 활용해 제작</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <p>브릿지 영상은 세 안 공통이라 <strong>아젠다 1의 선택과 무관하게 먼저 진행할 수 있습니다.</strong>
+    다만 b로 가면 B·C와 제작 파이프라인이 하나로 합쳐집니다.</p>
+  </div>
+</section>
+
+<section class="block" id="s3">
+  <h2><span class="snum">③</span> 설계 원칙 <span class="h2note">빌드는 두 벌, 콘텐츠는 한 벌</span></h2>
   <ul class="b">
     <li>채팅 전용 빌드와 영상 전용 빌드를 <strong>각각</strong> 만듭니다.</li>
     <li>단, 대사를 두 벌로 관리하면 비교 결과가 텍스트 차이로 오염됩니다.</li>
@@ -456,8 +505,8 @@ td.shotcell { white-space:nowrap; }
   </div>
 </section>
 
-<section class="block" id="s3">
-  <h2><span class="snum">③</span> 퀘스트 플로우 <span class="h2note">씬 ID가 바뀌는 자리에 게임플레이가 낀다</span></h2>
+<section class="block" id="s4">
+  <h2><span class="snum">④</span> 퀘스트 플로우 <span class="h2note">씬 ID가 바뀌는 자리에 게임플레이가 낀다</span></h2>
   <ul class="b">
     <li>씬 ID는 <code>{일차}_{태스크번호}_{begin|end}</code> 형식입니다.</li>
     <li><code>begin</code> = 태스크 수락 전 대사, <code>end</code> = 완료 후 대사.</li>
@@ -575,8 +624,8 @@ td.shotcell { white-space:nowrap; }
   </div>
 </section>
 
-<section class="block" id="s4">
-  <h2><span class="snum">④</span> 데이터 <span class="h2note">테이블 3종과 스키마</span></h2>
+<section class="block" id="s5">
+  <h2><span class="snum">⑤</span> 데이터 <span class="h2note">테이블 3종과 스키마</span></h2>
   <ul class="b">
     <li>파일명을 누르면 같은 폴더의 원본 JSON이 열립니다.</li>
     <li>값의 정의는 데이터에 섞지 않고 이 문서가 담당합니다.</li>
@@ -1393,7 +1442,7 @@ for n in story_node
 
   <div class="callout">
     <p><strong><code>anim</code>은 리매핑 대상이 아니라 아트에 요구하는 파일명입니다.</strong>
-    이 값에 맞춰 파일을 받으면 데이터를 고칠 일이 없습니다 → <a href="#s5">⑤ 에셋 규격</a>.
+    이 값에 맞춰 파일을 받으면 데이터를 고칠 일이 없습니다 → <a href="#s7">⑤ 에셋 규격</a>.
     <code>text_en</code>만 프로토 한정 인라인입니다 — 다국어가 붙으면
     <code>string_code</code> + 문자열 테이블로 다시 분리하는 게 맞습니다.</p>
   </div>
@@ -1425,8 +1474,29 @@ for n in story_node
   </table></div>
 </section>
 
-<section class="block" id="s5">
-  <h2><span class="snum">⑤</span> 에셋 규격 <span class="h2note">이 이름으로 주시면 데이터는 안 건드립니다</span></h2>
+<section class="block" id="s6">
+  <h2><span class="snum">⑥</span> 인물 <span class="h2note">프로토에 필요한 인물과 감정</span></h2>
+  <ul class="b">
+    <li>3퀘스트에 등장하는 인물은 <strong>4명</strong>입니다.</li>
+    <li>감정은 전체 10종이지만 <strong>인물별로 실제 쓰이는 것만</strong> 있으면 됩니다 —
+        모두 합쳐 <strong>16장</strong>이면 프로토가 굴러갑니다.
+        4명 × 10종을 다 그릴 필요가 없습니다.</li>
+    <li>외형은 원작 기준입니다. 신작 아트로 재해석하실 경우 실루엣·색 구분만 유지해 주세요.</li>
+  </ul>
+  <div class="tablewrap">
+    <table class="charsheet">
+      <thead><tr><th>인물</th><th>역할 · 외형</th><th>대사</th><th>필요한 감정</th></tr></thead>
+      <tbody><tr><td class="spk"><strong>Quinn</strong><span class="charko">퀸</span></td><td>주인공 · 레스토랑 오너 셰프<span class="charlook">짙은 청록색 단발. 흰 블라우스에 앞치마. 30대. 표정 변화가 가장 크고 모든 씬에 등장합니다.</span></td><td class="num">21</td><td class="line"><code class="emo">angry</code> <code class="emo">confident</code> <code class="emo">happy</code> <code class="emo">neutral</code> <code class="emo">sad</code> <code class="emo">worried</code></td></tr><tr><td class="spk"><strong>Sam</strong><span class="charko">샘</span></td><td>섬의 베테랑 기술자 · 퀸의 오랜 친구<span class="charlook">갈색 머리를 위로 묶고 이마에 고글. 초록 작업복. 공구를 들고 등장하는 컷이 있어 소품이 필요합니다.</span></td><td class="num">6</td><td class="line"><code class="emo">happy</code> <code class="emo">neutral</code> <code class="emo">serious</code> <code class="emo">worried</code></td></tr><tr><td class="spk"><strong>Colton</strong><span class="charko">콜튼</span></td><td>퀸의 전남편<span class="charlook">금발 짧은 머리. 파란 재킷 차림. 카지노에서 돌아온 인물이라 다소 차려입은 인상.</span></td><td class="num">5</td><td class="line"><code class="emo">awkward</code> <code class="emo">neutral</code> <code class="emo">sad</code> <code class="emo">surprised</code></td></tr><tr><td class="spk"><strong>Olivia</strong><span class="charko">올리비아</span></td><td>퀸의 딸<span class="charlook">적갈색 단발. 파란 멜빵 원피스. 어린아이 비율.</span></td><td class="num">3</td><td class="line"><code class="emo">excited</code> <code class="emo">neutral</code></td></tr></tbody>
+    </table>
+  </div>
+  <ul class="b">
+    <li>파일명은 <code>anim_&lt;emotion&gt;</code> 규칙을 그대로 씁니다 &rarr; <a href="#s8">⑦ 에셋 규격</a>.</li>
+    <li>채팅(A)에서는 말풍선 옆 초상화로, 스틸컷·영상(B·C)에서는 컷 안의 표정으로 쓰입니다.</li>
+  </ul>
+</section>
+
+<section class="block" id="s7">
+  <h2><span class="snum">⑦</span> 에셋 규격 <span class="h2note">이 이름으로 주시면 데이터는 안 건드립니다</span></h2>
   <ul class="b">
     <li>파일명은 데이터가 이미 정해 두었습니다. <strong>아트가 이 이름으로 파일을 주면 매핑 작업이 없습니다.</strong></li>
     <li>이름을 바꿔야 하면 데이터가 아니라 <strong>여기 규칙을 먼저 고치고</strong> 다시 뽑습니다.</li>
@@ -1491,8 +1561,8 @@ for n in story_node
   </div>
 </section>
 
-<section class="block" id="s6">
-  <h2><span class="snum">⑥</span> 부록 · 대사 스크립트 <span class="h2note">퀘스트별 전문</span></h2>
+<section class="block" id="s8">
+  <h2><span class="snum">⑧</span> 부록 · 대사 스크립트 <span class="h2note">퀘스트별 전문</span></h2>
   <ul class="b">
     <li>구현에 필요한 값은 <code>story_dialogue.json</code>에 있습니다. 여기는 <strong>읽어보기 용</strong>입니다.</li>
     <li>태스크·스틸컷이 끼는 자리도 그대로 표시해 흐름이 보이게 두었습니다.</li>
@@ -1551,8 +1621,8 @@ for n in story_node
 <tr><td class="num">9</td><td class="spk"><code>Quinn</code></td><td><code class="emo">happy</code></td><td class="line">I&#x27;m gonna figure out what&#x27;s going on here!</td></tr></tbody></table></div><details class="sbwrap"><summary><span class="part">스토리보드 8컷 — 펼치기</span></summary><div class="tablewrap"><table><thead><tr><th>#</th><th>샷</th><th>위치</th><th>등장</th><th>연출</th></tr></thead><tbody><tr><td class="num">1</td><td class="shotcell"><span class="shot">MS</span><span class="shotko">상반신</span></td><td class="spk"><code>1_2_begin</code> <span class="part">step 1–2</span></td><td class="spk"><code>Sam</code> · <code>Quinn</code></td><td class="line">샘이 공구를 들고 도착. 퀸이 반긴다. </td></tr><tr><td class="num">2</td><td class="shotcell"><span class="shot">CU</span><span class="shotko">얼굴</span></td><td class="spk"><code>1_2_begin</code> <span class="part">step 3</span></td><td class="spk"><code>Sam</code></td><td class="line">샘이 공구를 들어 보인다. 대사 없이 그림으로만 가는 컷. <span class="sbtag">채팅 = 스틸컷</span></td></tr><tr><td class="num">3</td><td class="shotcell"><span class="shot">MS</span><span class="shotko">상반신</span></td><td class="spk"><code>1_2_begin</code> <span class="part">step 4–6</span></td><td class="spk"><code>Sam</code> · <code>Quinn</code></td><td class="line">폭동 이유를 묻는 샘, 식중독 사건을 털어놓는 퀸. </td></tr><tr><td class="num">4</td><td class="shotcell"><span class="shot">MS</span><span class="shotko">상반신</span></td><td class="spk"><code>1_2_end</code> <span class="part">step 1–3</span></td><td class="spk"><code>Sam</code> · <code>Quinn</code></td><td class="line">샘이 사고가 아니었을 거라 짚는다. </td></tr><tr><td class="num">5</td><td class="shotcell"><span class="shot">CU</span><span class="shotko">얼굴</span></td><td class="spk"><code>1_2_end</code> <span class="part">step 4–6</span></td><td class="spk"><code>Quinn</code></td><td class="line">퀸의 회상 섞인 표정. 섬 사람들과의 관계를 되짚는다. </td></tr><tr><td class="num">6</td><td class="shotcell"><span class="shot">MS</span><span class="shotko">상반신</span></td><td class="spk"><code>1_2_end</code> <span class="part">step 7</span></td><td class="spk"><code>Quinn</code></td><td class="line">어린 시절 취미 이야기를 꺼내며 눈이 반짝인다. </td></tr><tr><td class="num">7</td><td class="shotcell"><span class="shot">CU</span><span class="shotko">얼굴</span></td><td class="spk"><code>1_2_end</code> <span class="part">step 8</span></td><td class="spk"><code>Quinn</code></td><td class="line">돋보기를 든 탐정 차림의 퀸. 회상 톤으로 전환. <span class="sbtag">채팅 = 스틸컷</span></td></tr><tr><td class="num">8</td><td class="shotcell"><span class="shot">CU</span><span class="shotko">얼굴</span></td><td class="spk"><code>1_2_end</code> <span class="part">step 9</span></td><td class="spk"><code>Quinn</code></td><td class="line">결심한 표정으로 정면. 씬 마무리. </td></tr></tbody></table></div></details></details>
 </section>
 
-<section class="block" id="s7">
-  <h2><span class="snum">⑦</span> 설문 <span class="h2note">플레이 직후 6문항</span></h2>
+<section class="block" id="s9">
+  <h2><span class="snum">⑨</span> 설문 <span class="h2note">플레이 직후 6문항</span></h2>
   <ul class="b">
     <li>내부 10명 미만이라 로그를 붙이거나 통계를 낼 규모가 아닙니다.</li>
     <li>실무자가 두 빌드를 다 해보고 판단하면 됩니다. 그 판단만 흘려보내지 않으면 충분합니다.</li>
