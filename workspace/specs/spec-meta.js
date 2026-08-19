@@ -188,7 +188,7 @@ const SPECS = [
     id: 'spec-032', file: 'spec-032-daily-first-play-free.html',
     monitorGroup: 'sol-free-entry',
     title: '[경제-온보딩] 하루 첫 판 무료 입장',
-    tags: ['feature', 'balance'], priority: 'high', status: 'wip', date: '2026. 7. 29.', dueDate: '2026-08-14', relatedTo: [],
+    tags: ['feature', 'balance'], priority: 'high', status: 'done', date: '2026. 7. 29.', dueDate: '2026-08-14', relatedTo: [],
   },
   {
     id: 'spec-033', file: 'spec-033-deck-counter.html',
@@ -207,6 +207,11 @@ const SPECS = [
     tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
   },
   {
+    id: 'spec-042', file: 'spec-042-prelevel-booster-slot3.html',
+    title: '[밸런스] 프리레벨 세 번째 부스터 슬롯 — 덱 보충',
+    tags: ['balance', 'feature'], priority: 'high', status: 'open', date: '2026. 8. 19.', dueDate: null, relatedTo: ['spec-029', 'spec-031', 'spec-034'],
+  },
+  {
     id: 'spec-040', file: 'spec-040-retry-entry-recovery.html',
     title: '[UX-플로우] 재도전 진입 실패 해소',
     tags: ['ux'], priority: 'high', status: 'open', date: '2026. 8. 18.', dueDate: null, relatedTo: ['spec-036', 'spec-039'],
@@ -214,12 +219,12 @@ const SPECS = [
   {
     id: 'spec-039', file: 'spec-039-retry-difficulty-relief.html',
     title: '[밸런스] 난이도 완화 조건 정비',
-    tags: ['balance'], priority: 'high', status: 'open', date: '2026. 8. 18.', dueDate: null, relatedTo: ['spec-036', 'spec-029', 'spec-031'],
+    tags: ['balance'], priority: 'high', status: 'wip', date: '2026. 8. 18.', dueDate: null, relatedTo: ['spec-036', 'spec-029', 'spec-031'],
   },
   {
     id: 'spec-038', file: 'spec-038-share-exposure-normalization.html',
     title: '[소셜-바이럴] 토너먼트 소셜 팝업 개편 — 공유·초대 토글',
-    tags: ['social', 'feature'], priority: 'high', status: 'open', date: '2026. 8. 12.', dueDate: null, relatedTo: ['spec-030', 'spec-035', 'spec-037'],
+    tags: ['social', 'feature'], priority: 'high', status: 'monitor', date: '2026. 8. 12.', dueDate: null, relatedTo: ['spec-030', 'spec-035', 'spec-037'],
   },
   {
     id: 'spec-037', file: 'spec-037-leaderboard-play-button.html',
@@ -229,7 +234,7 @@ const SPECS = [
   {
     id: 'spec-036', file: 'spec-036-retry-flow.html',
     title: '[UX-플로우] 실패 후 재도전 흐름 단축',
-    tags: ['ux'], priority: 'high', status: 'wip', date: '2026. 8. 5.', dueDate: '2026-08-19', relatedTo: ['spec-009b', 'spec-035'],
+    tags: ['ux'], priority: 'high', status: 'done', date: '2026. 8. 5.', dueDate: '2026-08-19', relatedTo: ['spec-009b', 'spec-035'],
   },
 ];
 
