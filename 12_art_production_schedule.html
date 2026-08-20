@@ -150,6 +150,14 @@ td .edit-btn:hover{color:var(--accent)}
 .ctrl-hint{font-size:.75em;color:var(--muted);font-style:italic}
 .deadline-cell{font-size:.78em;line-height:1.7}
 @media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.deco-grid{grid-template-columns:1fr}.report-header h1{font-size:1.5em}}
+/* 좌측 인덱스 */
+.side-toc{position:fixed;left:16px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 8px;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.side-toc a{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;color:var(--muted);font-size:.82em;white-space:nowrap;transition:all .15s}
+.side-toc a .n{font-weight:700;font-size:.85em;color:var(--accent);width:18px}
+.side-toc a:hover{background:var(--bg);color:var(--text)}
+.side-toc a.active{background:var(--bg);color:var(--text);font-weight:600}
+@media(max-width:1500px){.side-toc a span.t{display:none}.side-toc a{padding:7px 8px}.side-toc a .n{width:auto}}
+@media(max-width:900px){.side-toc{display:none}}
 </style>
 </head>
 <body>
@@ -164,6 +172,14 @@ document.getElementById('themeToggle').addEventListener('click',function(){
   if(typeof renderPuzzleAll==='function')renderPuzzleAll();
 });
 </script>
+<nav class="side-toc" id="sideToc">
+  <a href="#s1"><span class="n">01</span><span class="t">핵심 일정 &amp; Overview</span></a>
+  <a href="#s3"><span class="n">02</span><span class="t">도시 도달 차트</span></a>
+  <a href="#s2"><span class="n">03</span><span class="t">아트 제작 스케줄</span></a>
+  <a href="#s4"><span class="n">04</span><span class="t">데코 카드</span></a>
+  <a href="#s5"><span class="n">05</span><span class="t">리스크 &amp; 권고</span></a>
+  <a href="#s6"><span class="n">06</span><span class="t">퍼즐 사진 제작 일정</span></a>
+</nav>
 <div class="container">
 
 <!-- Header -->
@@ -2296,6 +2312,21 @@ function initPuzzleChart(dataArg) {
 }
 
 // ========== INIT ==========
+// 좌측 인덱스 스크롤 하이라이트
+window.addEventListener('DOMContentLoaded', () => {
+  const links = [...document.querySelectorAll('#sideToc a')];
+  if (links.length) {
+    const secs = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+    const spy = () => {
+      let cur = secs[0];
+      for (const sec of secs) { if (sec.getBoundingClientRect().top <= 120) cur = sec; }
+      links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + cur.id));
+    };
+    document.addEventListener('scroll', spy, { passive: true });
+    spy();
+  }
+});
+
 window.addEventListener('DOMContentLoaded', async () => {
   // city_config 먼저 로드 (CITIES_BASE 확정) → 이후 order/art_done 병렬 로드
   await loadCityConfig();
