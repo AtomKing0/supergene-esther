@@ -246,6 +246,11 @@ document.getElementById('themeToggle').addEventListener('click',function(){
   <button id="scen-btn-2" onclick="toggleArtScenario(2)" class="scen-btn scen-active" style="--sc:#fd79a8">③ 런칭 축소 리스크</button>
 </div>
 <div class="chart-container" style="height:450px"><canvas id="arrivalChart"></canvas></div>
+<div class="callout success">
+  <strong>도시 개방 케이던스 확정 (2026-08-20)</strong>: 12 샌프란시스코 8/25 · 13 리우 9/14 · 14 라스베가스 10/4까지 기존 20일 예약 유지 →
+  <strong>15 바르셀로나(2026-11-03)부터 30일 간격</strong>으로 변경. 30번 도시 개방 2028-01-27.
+  15번부터 데코 업그레이드 5단계(현행 3단계) — <strong>아트 발주 시 업그레이드 4·5단계 비주얼 포함 필요</strong>. 아래 표 "개방 일정" 열 = 확정 일정.
+</div>
 <div class="callout">
   <strong>읽는 법</strong>: X축 = <span id="chart-launch-label"></span> 이후 일수, Y축 = 도달 도시 번호.<br>
   <strong style="color:#ff6b6b">아트 제작선</strong>이 모든 유저 타입보다 <strong>위</strong>에 있으면 안전 (아트가 유저보다 앞서 있음).<br>
@@ -326,39 +331,40 @@ document.getElementById('themeToggle').addEventListener('click',function(){
 <script>
 // ========== DATA ==========
 const CITIES_BASE = [
+  // 순서·해머 = 라이브 시트 meta_city_list city_order + meta_decoration_list 실비용 (2026-08-20 동기화)
   // Published (1-4) — 확정, 아트 완료
-  {id:'newyork',name:'New York',h:61,locked:true,artDone:new Date(2026,2,26)},
-  {id:'venice',name:'Venice',h:64,locked:true,artDone:new Date(2026,2,26)},
-  {id:'sapporo',name:'Sapporo',h:68,locked:true,artDone:new Date(2026,2,27)},
-  {id:'cairo',name:'Cairo',h:71,locked:true,pending:true,artDone:new Date(2026,3,2)},
-  // Sheet city_order 5-30 (순서 미정, 드래그로 변경 가능)
+  {id:'newyork',name:'New York',h:60,locked:true,artDone:new Date(2026,2,26)},
+  {id:'venice',name:'Venice',h:60,locked:true,artDone:new Date(2026,2,26)},
+  {id:'sapporo',name:'Sapporo',h:60,locked:true,artDone:new Date(2026,2,27)},
+  {id:'cairo',name:'Cairo',h:75,locked:true,pending:true,artDone:new Date(2026,3,2)},
+  // 5-14: 개방·예약 확정분 (해머 = 라이브 실비용)
   {id:'prague',name:'Prague',h:75},
-  {id:'bangkok',name:'Bangkok',h:78},
-  {id:'miami',name:'Miami',h:82},
-  {id:'dubai',name:'Dubai',h:85},
-  {id:'tokyo',name:'Tokyo',h:92},
-  {id:'barcelona',name:'Barcelona',h:96},
-  {id:'chicago',name:'Chicago',h:99},
-  {id:'london',name:'London',h:89},
-  {id:'rio',name:'Rio de Janeiro',h:103},
-  {id:'sanfrancisco',name:'San Francisco',h:106},
-  {id:'athens',name:'Athens',h:110},
-  {id:'lasvegas',name:'Las Vegas',h:113},
-  {id:'sydney',name:'Sydney',h:117},
-  {id:'rome',name:'Rome',h:120},
-  {id:'losangeles',name:'Los Angeles',h:124},
-  {id:'istanbul',name:'Istanbul',h:127},
-  {id:'paris',name:'Paris',h:131},
-  // 신규 9개 도시 (22-30)
-  {id:'marrakech',name:'Marrakech',h:134},
-  {id:'kyoto',name:'Kyoto',h:138},
-  {id:'havana',name:'Havana',h:141},
-  {id:'reykjavik',name:'Reykjavik',h:145},
-  {id:'shanghai',name:'Shanghai',h:148},
-  {id:'capetown',name:'Cape Town',h:152},
-  {id:'petra',name:'Petra',h:155},
-  {id:'buenosaires',name:'Buenos Aires',h:159},
-  {id:'mexicocity',name:'Mexico City',h:162}
+  {id:'bangkok',name:'Bangkok',h:90},
+  {id:'miami',name:'Miami',h:90},
+  {id:'dubai',name:'Dubai',h:105},
+  {id:'london',name:'London',h:105},
+  {id:'chicago',name:'Chicago',h:105},
+  {id:'rome',name:'Rome',h:105},
+  {id:'sanfrancisco',name:'San Francisco',h:120},
+  {id:'rio',name:'Rio de Janeiro',h:135},
+  {id:'lasvegas',name:'Las Vegas',h:150},
+  // 15-30: 미제작 — 30일 케이던스 + 5단계 데코 (해머 상향 곡선)
+  {id:'barcelona',name:'Barcelona',h:180},
+  {id:'sydney',name:'Sydney',h:190},
+  {id:'losangeles',name:'Los Angeles',h:195},
+  {id:'tokyo',name:'Tokyo',h:205},
+  {id:'marrakech',name:'Marrakech',h:210},
+  {id:'kyoto',name:'Kyoto',h:220},
+  {id:'havana',name:'Havana',h:230},
+  {id:'reykjavik',name:'Reykjavik',h:235},
+  {id:'athens',name:'Athens',h:245},
+  {id:'paris',name:'Paris',h:250},
+  {id:'shanghai',name:'Shanghai',h:260},
+  {id:'istanbul',name:'Istanbul',h:270},
+  {id:'capetown',name:'Cape Town',h:275},
+  {id:'petra',name:'Petra',h:285},
+  {id:'buenosaires',name:'Buenos Aires',h:290},
+  {id:'mexicocity',name:'Mexico City',h:300}
 ];
 
 // 해머 누진 곡선: 슬롯(순서) 기반. base=40, x1.07. 도시 순서 변경해도 곡선은 고정.
@@ -382,6 +388,13 @@ const WEIGHTED_HPW = 1.20; // hammers per win (85×1 + 10×2 + 5×3) / 100
 let TOTAL_CITIES = CITIES_BASE.length;
 let ART_DAYS = 4;
 let PRE_START_DAYS = 7; // 첫 Pre-Launch 도시 제작 기간 (초기에 더 오래 걸림)
+// 도시 개방 일정 (라이브 시트 meta_city_list publish_at · 2026-08-20 확정)
+// 1~8 런칭 일괄 → 9~14 확정 예약 → 15번부터 30일 간격 (기존 20일에서 변경)
+const CITY_OPEN_CONFIRMED = [
+  '2026-05-01','2026-05-01','2026-05-01','2026-05-01','2026-05-01','2026-05-01','2026-05-01','2026-05-01',
+  '2026-06-26','2026-07-16','2026-08-05','2026-08-25','2026-09-14','2026-10-04'
+];
+const CITY_OPEN_INTERVAL = 30;
 let UPDATE_INTERVAL_EARLY = 5;  // 런칭 후 D+40 이내 업데이트 주기 (일)
 let UPDATE_INTERVAL_LATE  = 8;  // 런칭 후 D+40 이후 업데이트 주기 (일)
 const UPDATE_SPLIT_DAY = 40;    // 주기 전환 기준일 (D+40)
@@ -543,15 +556,14 @@ function compute(cities) {
     postDates.push(prevPost);
   }
 
-  // 업데이트 일정: 런칭→C11 +25일, 이후 20일 간격
+  // 개방 일정 (2026-08-20 확정): 1~14번 = 라이브 시트 publish_at 확정값, 15번부터 30일 간격
   const updateDates = [];
   for (let j = 0; j < cities.length; j++) {
-    if (j < LAUNCH_CITIES) {
-      updateDates.push(new Date(LAUNCH));
+    if (j < CITY_OPEN_CONFIRMED.length) {
+      const p = CITY_OPEN_CONFIRMED[j].split('-');
+      updateDates.push(new Date(+p[0], +p[1]-1, +p[2]));
     } else {
-      const p = j - LAUNCH_CITIES;
-      const interval = p === 0 ? 25 : 20;
-      updateDates.push(addDate(updateDates[j - 1], interval));
+      updateDates.push(addDate(updateDates[j - 1], CITY_OPEN_INTERVAL));
     }
   }
 
@@ -1182,7 +1194,7 @@ function renderSchedule(data) {
   html += `<th colspan="2" style="${gs} #9B59B6;text-align:center;color:#9B59B6">Hardcore</th>`;
   html += `<th colspan="1" style="${gs} var(--yellow);text-align:center;color:var(--yellow)">납기 일정</th>`;
   html += `<th colspan="1" style="${gs} var(--accent);text-align:center;color:var(--accent)">아트 완료</th>`;
-  html += `<th colspan="1" style="${gs} var(--blue);text-align:center;color:var(--blue)">업데이트 일정</th>`;
+  html += `<th colspan="1" style="${gs} var(--blue);text-align:center;color:var(--blue)">개방 일정</th>`;
   html += '</tr>';
   // 컬럼 헤더
   html += '<tr>';
@@ -1198,7 +1210,7 @@ function renderSchedule(data) {
   html += '<th title="Hardcore 유저의 해당 도시 도달 예상 경과일 (런칭 기준 D+N)" style="color:#9B59B6">HC 도달</th>';
   html += '<th title="개발에 넘겨야 하는 마지노선 날짜 (아트+연출 완료 기준)">납기 일정</th>';
   html += '<th title="아트 완료 체크 및 완료 날짜 기록">아트 완료</th>';
-  html += '<th title="인게임 공간 업데이트 예정일 (Cozy 패턴 기반)" style="color:var(--blue)">업데이트<br>일정</th>';
+  html += '<th title="인게임 도시 개방일&#10;1~14번 = 라이브 시트 publish_at 확정 · 15번부터 30일 간격 (2026-08-20 확정)" style="color:var(--blue)">개방<br>일정</th>';
   html += '</tr></thead><tbody>';
 
   let lastPhase = '';
@@ -1266,10 +1278,11 @@ function renderSchedule(data) {
     html += `<td style="color:#9B59B6">${hcDStr}</td>`;
     html += `<td style="color:var(--yellow)">${bufStr}</td>`;
     html += `<td style="text-align:center">${artCheckHtml}</td>`;
-    const updD = Math.round((c.updateDate - LAUNCH) / 86400000);
-    const updCell = i < LAUNCH_CITIES
-      ? `<strong style="color:var(--blue)">런칭</strong>`
-      : `<strong>${fmtDate(c.updateDate)}</strong><div style="font-size:.75em;color:var(--muted)">D+${updD}</div>`;
+    const firstOpen = (() => { const p = CITY_OPEN_CONFIRMED[0].split('-'); return new Date(+p[0], +p[1]-1, +p[2]); })();
+    const updD = Math.round((c.updateDate - firstOpen) / 86400000);
+    const updCell = c.updateDate.getTime() === firstOpen.getTime()
+      ? `<strong style="color:var(--blue)">런칭 일괄 (5/1)</strong>`
+      : `<strong>${c.updateDate.getFullYear() !== 2026 ? (c.updateDate.getFullYear()%100)+"'" : ''}${fmtDate(c.updateDate)}</strong><div style="font-size:.75em;color:var(--muted)">D+${updD}</div>`;
     html += `<td style="color:var(--blue);text-align:center">${updCell}</td></tr>`;
   });
 
