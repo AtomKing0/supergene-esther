@@ -1229,11 +1229,14 @@ function renderSchedule(data) {
     const artDone = getArtDone();
     const doneTs = artDone[c.id];
     const artReady = c.phase === 'Published' || c.phase === '예약'; // 개방/예약분 = 아트 완료
-    const artCheckHtml = artReady
-      ? `<span style="font-size:1.1em">✅</span><div class="art-done-ts">${fmtDate(c.artDate)}</div>`
-      : doneTs
-        ? `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="완료 취소">✅</button><div class="art-done-ts">${doneTs}</div>`
-        : `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="아트 완료 체크">⬜</button>`;
+    // 표시 우선순위: 수기 완료 기록(doneTs) > locked 완료일(artDone) > 개방/예약인데 기록 없음(✅·기록 없음)
+    const artCheckHtml = doneTs
+      ? `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="완료 취소">✅</button><div class="art-done-ts">${doneTs}</div>`
+      : c.locked
+        ? `<span style="font-size:1.1em">✅</span><div class="art-done-ts">${fmtDate(c.artDone)}</div>`
+        : artReady
+          ? `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="완료 시각 기록">✅</button><div class="art-done-ts" style="color:var(--muted)">기록 없음</div>`
+          : `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="아트 완료 체크">⬜</button>`;
     const nowDate = new Date(); nowDate.setHours(0,0,0,0);
     const artDeadline = new Date(c.artDate); artDeadline.setHours(0,0,0,0);
     const isOverdue = !artReady && !doneTs && artDeadline < nowDate;
