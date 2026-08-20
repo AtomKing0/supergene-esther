@@ -314,7 +314,8 @@ document.getElementById('themeToggle').addEventListener('click',function(){
 <div class="callout">
   <strong>퍼즐 피스 드랍 기준 (CONST)</strong>: 베팅 x1 클리어 → <strong>1피스</strong> · 베팅 x2 → <strong>2피스</strong> · 베팅 x4 → <strong>4피스</strong> (레벨당).<br>
   <span style="color:var(--muted)">"완성 레벨" = 앨범 해금 레벨부터 피스를 모두 모으는 데 필요한 레벨 수 누적 기준.</span><br>
-  <strong>일정 확정 (2026-08-20·런칭일 7/10 고정)</strong>: 배포 예정일 = Avg 유저(19판/일·72% ≈ 13.7레벨/일) 해금 레벨 도달일 — 도시 개방일 사이 중간에 오도록 해금 레벨을 배치해 도시와 15일 간격으로 번갈아 배포. 미제작 앨범의 아트 납기 = <strong>배포 예정일 30일 전</strong>.
+  <strong>일정 확정 (2026-08-20·런칭일 7/10 고정)</strong>: 배포 예정일 = <strong>publish_at</strong>(시트 M열) — 도시 개방일 사이 중간에 배치해 도시와 15일 간격으로 번갈아 배포. 미제작 앨범의 아트 납기 = <strong>배포 예정일 30일 전</strong>.<br>
+  <strong>해금 레벨은 일정 게이트가 아님</strong> — 유저 레벨 분포(도달자 실측) 기준으로 별도 관리. 아트가 늦어도 해금 레벨을 올리지 말 것 (publish_at이 막아줌).
 </div>
 
 <div id="puzzle-kpi-area"></div>
@@ -1676,22 +1677,22 @@ let ALBUMS_BASE = [
   {id:'italy', name:'Italy', unlock_lv:45, hammers:64, pieces:[12,17,7,21,22,14,10,19,9,3,24,2]},
   {id:'japan', name:'Japan', unlock_lv:90, hammers:71, pieces:[21,24,13,7,28,5,16,2,11,23,18,10]},
   {id:'egypt', name:'Egypt', unlock_lv:135, hammers:89, pieces:[33,25,23,14,32,9,4,20,28,5,18,11]},
-  {id:'czechia', name:'Czechia', unlock_lv:765, hammers:99, pieces:[38,4,12,9,25,19,32,16,35,23,7,28]},
-  {id:'thailand', name:'Thailand', unlock_lv:1040, hammers:117, pieces:[30,11,22,34,26,41,37,19,15,5,7,45]},
-  {id:'uae', name:'UAE', unlock_lv:1385, hammers:131, pieces:[29,17,21,4,42,35,8,39,48,14,25,46]},
-  {id:'uk', name:'UK', unlock_lv:2205, hammers:89, pieces:[29,11,44,26,33,18,26,41,22,48,15,37]},
-  {id:'brazil', name:'Brazil', unlock_lv:1795, hammers:103, pieces:[11,44,26,33,18,26,41,22,48,15,37,29]},
-  {id:'greece', name:'Greece', unlock_lv:2615, hammers:110, pieces:[44,26,33,18,26,41,22,48,15,37,29,11]},
-  {id:'australia', name:'Australia', unlock_lv:3030, hammers:117, pieces:[26,33,18,26,41,22,48,15,37,29,11,44]},
-  {id:'spain', name:'Spain', unlock_lv:3440, hammers:96, pieces:[33,18,26,41,22,48,15,37,29,11,44,26]},
-  {id:'turkiye', name:'Türkiye', unlock_lv:3850, hammers:127, pieces:[18,26,41,22,48,15,37,29,11,44,26,33]},
-  {id:'france', name:'France', unlock_lv:4260, hammers:131, pieces:[26,41,22,48,15,37,29,11,44,26,33,18]},
-  {id:'morocco', name:'Morocco', unlock_lv:4670, hammers:134, pieces:[41,22,48,15,37,29,11,44,26,33,18,26]},
-  {id:'cuba', name:'Cuba', unlock_lv:5085, hammers:141, pieces:[22,48,15,37,29,11,44,26,33,18,26,41]},
-  {id:'iceland', name:'Iceland', unlock_lv:5495, hammers:145, pieces:[48,15,37,29,11,44,26,33,18,26,41,22]},
-  {id:'china', name:'China', unlock_lv:5905, hammers:148, pieces:[15,37,29,11,44,26,33,18,26,41,22,48]},
-  {id:'southafrica', name:'South Africa', unlock_lv:6315, hammers:152, pieces:[37,29,11,44,26,33,18,26,41,22,48,15]},
-  {id:'jordan', name:'Jordan', unlock_lv:6725, hammers:155, pieces:[29,11,44,26,33,18,26,41,22,48,15,37]},
+  {id:'czechia', name:'Czechia', unlock_lv:185, hammers:99, pieces:[38,4,12,9,25,19,32,16,35,23,7,28]},
+  {id:'thailand', name:'Thailand', unlock_lv:235, hammers:117, pieces:[30,11,22,34,26,41,37,19,15,5,7,45]},
+  {id:'uae', name:'UAE', unlock_lv:340, hammers:131, pieces:[29,17,21,4,42,35,8,39,48,14,25,46]},
+  {id:'uk', name:'UK', unlock_lv:670, hammers:89, pieces:[29,11,44,26,33,18,26,41,22,48,15,37]},
+  {id:'brazil', name:'Brazil', unlock_lv:400, hammers:103, pieces:[11,44,26,33,18,26,41,22,48,15,37,29]},
+  {id:'greece', name:'Greece', unlock_lv:815, hammers:110, pieces:[44,26,33,18,26,41,22,48,15,37,29,11]},
+  {id:'australia', name:'Australia', unlock_lv:965, hammers:117, pieces:[26,33,18,26,41,22,48,15,37,29,11,44]},
+  {id:'spain', name:'Spain', unlock_lv:1045, hammers:96, pieces:[33,18,26,41,22,48,15,37,29,11,44,26]},
+  {id:'turkiye', name:'Türkiye', unlock_lv:1195, hammers:127, pieces:[18,26,41,22,48,15,37,29,11,44,26,33]},
+  {id:'france', name:'France', unlock_lv:1285, hammers:131, pieces:[26,41,22,48,15,37,29,11,44,26,33,18]},
+  {id:'morocco', name:'Morocco', unlock_lv:1375, hammers:134, pieces:[41,22,48,15,37,29,11,44,26,33,18,26]},
+  {id:'cuba', name:'Cuba', unlock_lv:1560, hammers:141, pieces:[22,48,15,37,29,11,44,26,33,18,26,41]},
+  {id:'iceland', name:'Iceland', unlock_lv:1655, hammers:145, pieces:[48,15,37,29,11,44,26,33,18,26,41,22]},
+  {id:'china', name:'China', unlock_lv:1755, hammers:148, pieces:[15,37,29,11,44,26,33,18,26,41,22,48]},
+  {id:'southafrica', name:'South Africa', unlock_lv:1855, hammers:152, pieces:[37,29,11,44,26,33,18,26,41,22,48,15]},
+  {id:'jordan', name:'Jordan', unlock_lv:1960, hammers:155, pieces:[29,11,44,26,33,18,26,41,22,48,15,37]},
 ];
 
 const PUZZLE_ORDER_KEY     = 'pst-puzzle-order-v1';
@@ -1700,6 +1701,15 @@ const PUZZLE_BM_KEY        = 'pst-puzzle-bm-v1';
 const PUZZLE_ACTIVE_BM_KEY = 'pst-puzzle-active-bm';
 const PUZZLE_CFG_KEY       = 'pst-puzzle-cfg-v1';
 const AVG_LV_PER_DAY       = 13.7; // 19판/일 × 72%
+// 앨범 배포 예정일 폴백 (SSOT = Supabase puzzle_config publish_at · 시트 collection_album_puzzle_list M열)
+const ALBUM_PUBLISH_AT = {
+  usa:'2026-07-10', italy:'2026-07-10', japan:'2026-07-10', egypt:'2026-07-10',
+  czechia:'2026-09-04', thailand:'2026-09-24', uae:'2026-10-19', brazil:'2026-11-18',
+  uk:'2026-12-18', greece:'2027-01-17', australia:'2027-02-16', spain:'2027-03-18',
+  turkiye:'2027-04-17', france:'2027-05-17', morocco:'2027-06-16', cuba:'2027-07-16',
+  iceland:'2027-08-15', china:'2027-09-14', southafrica:'2027-10-14', jordan:'2027-11-13',
+  korea:'2027-12-13'
+};
 const PUZZLE_WEIGHTED_HPW  = 1.20;
 
 let puzzleOrder = ALBUMS_BASE.map(a => a.id);
@@ -1715,7 +1725,7 @@ let _isSavingPuzzleOrder     = false;
 let _isSavingPuzzleBookmarks = false;
 
 function _applyPuzzleAlbums(albums) {
-  ALBUMS_BASE = albums.map(a => ({ id: a.id, name: a.name, unlock_lv: a.unlock_lv || 1, hammers: a.hammers || 0, pieces: a.pieces || Array(12).fill(0) }));
+  ALBUMS_BASE = albums.map(a => ({ id: a.id, name: a.name, unlock_lv: a.unlock_lv || 1, hammers: a.hammers || 0, pieces: a.pieces || Array(12).fill(0), publish_at: a.publish_at }));
 }
 
 async function loadPuzzleCfg() {
@@ -2016,11 +2026,15 @@ function computePuzzle() {
     const ratio = city_wins > 0 ? (total / city_wins).toFixed(2) : '—';
     const unlock_days = Math.round(unlock_lv / AVG_LV_PER_DAY);
     const arrival = addDate(LAUNCH, unlock_days); // Avg 유저 해금 레벨 도달일 (참고)
+    // 배포 예정일 = publish_at (시트 M열·Supabase). 해금 레벨은 레벨 분포 기준으로 별도 — 일정 게이트 아님
+    const pubStr = a.publish_at || ALBUM_PUBLISH_AT[id];
+    const deploy = pubStr ? (() => { const p = pubStr.slice(0,10).split('-'); return new Date(+p[0], +p[1]-1, +p[2]); })() : arrival;
+    const deploy_days = Math.round((deploy - LAUNCH) / 86400000);
     const done = !!puzzleArtDone[id];
     // 납기 = 배포 예정일 30일 전 (2026-08-20 확정)
-    const art_date = done ? arrival : addDate(arrival, -30);
-    const lateVsUser = !done && art_date > arrival;
-    return { ...a, id, n: i + 1, total, x1_lv, x2_lv, x4_lv, city_wins, ratio, unlock_days, arrival, art_date, lateVsUser };
+    const art_date = done ? deploy : addDate(deploy, -30);
+    const lateVsUser = !done && art_date > deploy;
+    return { ...a, id, n: i + 1, total, x1_lv, x2_lv, x4_lv, city_wins, ratio, unlock_days, arrival, deploy, deploy_days, art_date, lateVsUser };
   });
 }
 
@@ -2083,11 +2097,11 @@ function renderPuzzleTable(data) {
         : `<strong>${yy}${fmtDate(a.art_date)}</strong>`;
     html += `<td style="color:var(--yellow)">${dateLabel}</td>`;
     html += `<td style="text-align:center">${artBtn}</td>`;
-    // 배포 예정일 = Avg 유저 해금 레벨 도달일 (과거 = 오픈됨)
-    const yyA = a.arrival.getFullYear() !== 2026 ? (a.arrival.getFullYear()%100) + "'" : '';
-    const openCell = a.arrival <= nowDate
-      ? `<strong style="color:var(--green)">오픈됨</strong><div style="font-size:.75em;color:var(--muted)">${fmtDate(a.arrival)}</div>`
-      : `<strong>${yyA}${fmtDate(a.arrival)}</strong><div style="font-size:.75em;color:${a.lateVsUser ? 'var(--red)' : 'var(--muted)'}">D+${a.unlock_days}${a.lateVsUser ? ' · 아트 미납 위험' : ''}</div>`;
+    // 배포 예정일 = publish_at (과거 = 오픈됨)
+    const yyA = a.deploy.getFullYear() !== 2026 ? (a.deploy.getFullYear()%100) + "'" : '';
+    const openCell = a.deploy <= nowDate
+      ? `<strong style="color:var(--green)">오픈됨</strong><div style="font-size:.75em;color:var(--muted)">${fmtDate(a.deploy)}</div>`
+      : `<strong>${yyA}${fmtDate(a.deploy)}</strong><div style="font-size:.75em;color:${a.lateVsUser ? 'var(--red)' : 'var(--muted)'}">D+${a.deploy_days}${a.lateVsUser ? ' · 아트 미납 위험' : ''}</div>`;
     html += `<td style="color:var(--blue);text-align:center">${openCell}</td></tr>`;
   });
   const totalPieces = data.reduce((s, a) => s + a.total, 0);
