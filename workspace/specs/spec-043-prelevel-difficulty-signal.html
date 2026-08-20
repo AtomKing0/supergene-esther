@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-043 · 프리레벨 난이도 신호 · 부스터 슬롯 2칸</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #a78bfa;
+  --accent2: #c4b5fd;
+  --green: #34d399;   --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;     --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;    --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;  --purple-bg: rgba(167,139,250,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #1e1a35 45%, #1a1d27 100%);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #7c3aed; --accent2: #6d28d9;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626;   --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb;  --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --hero-bg: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 45%, #e0e7ff 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { display:none; }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200; }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;margin-left:260px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.1) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--accent),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-yellow { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+.kpi-trend { font-size:0.72rem;font-weight:700;margin-top:6px; }
+.trend-up   { color:var(--green); }
+.trend-down { color:var(--red); }
+
+.container { max-width:1100px;margin:0 0 0 260px;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-num-3 { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--blue-bg);color:var(--blue); }
+.aud-dev { background:var(--green-bg);color:var(--green); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+h4 { font-size:0.95rem;font-weight:700;margin:24px 0 10px;color:var(--accent); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+td.r, th.r { text-align:right; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-purple { background:var(--purple-bg);border-left:3px solid var(--purple); }
+.callout-red    { background:var(--red-bg);border-left:3px solid var(--red); }
+.todo-row td { background:var(--yellow-bg); }
+.todo-row td:first-child { color:var(--yellow); }
+.todo-chip{display:inline-block;background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,.4);font-size:.66rem;font-weight:800;border-radius:5px;padding:2px 8px;letter-spacing:.04em;margin-left:6px}
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.86rem; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var     { font-family:monospace;color:var(--blue);font-weight:600;min-width:300px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:72px; }
+.sheet-row-unit    { font-size:0.75rem;color:var(--text2);min-width:100px; }
+.sheet-row-desc    { color:var(--text2);font-size:0.82rem;flex:1; }
+
+.flow-step { display:flex;gap:14px;margin-bottom:14px;align-items:flex-start; }
+.flow-dot  { width:28px;height:28px;border-radius:50%;background:var(--purple-bg);border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--purple);flex-shrink:0;margin-top:2px; }
+.flow-body { flex:1; }
+.flow-body strong { color:var(--text);font-size:0.9rem; }
+.flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+
+.step-label{display:inline-block;font-size:.66rem;font-weight:800;letter-spacing:.12em;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,.3);padding:3px 10px;border-radius:6px;margin-top:34px}
+.step-label+h3{margin-top:8px;color:var(--text);font-size:1.15rem}
+.d-up{color:var(--green);font-weight:700}
+.d-down{color:var(--red);font-weight:700}
+.seq-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin:16px 0}
+.seq-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.seq-label{min-width:118px;font-size:.8rem;font-weight:700;color:var(--text)}
+.seq-label span{display:block;font-weight:500;font-size:.72rem;color:var(--text2)}
+.seq{display:flex;gap:3px;flex-wrap:wrap}
+.seq i,.seq-legend i{display:inline-block;width:15px;height:19px;border-radius:3px;vertical-align:-4px}
+.seq i.n,.seq-legend i.n{background:#3a4056}
+.seq i.h,.seq-legend i.h{background:var(--yellow)}
+.seq i.s,.seq-legend i.s{background:var(--red)}
+[data-theme="light"] .seq i.n,[data-theme="light"] .seq-legend i.n{background:#c8cbd6}
+.seq-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.75rem;color:var(--text2);border-top:1px solid var(--border);padding-top:12px}
+.seq-legend span{display:flex;align-items:center;gap:6px}
+.seq-note{margin-left:auto;color:var(--text2)}
+
+.keyrow td{background:var(--purple-bg);border-top:2px solid var(--accent);border-bottom:2px solid var(--accent)}
+.keyrow td:first-child{color:var(--accent);font-weight:800}
+.keychip{display:inline-block;background:var(--accent);color:#160c2b;font-size:.62rem;font-weight:900;border-radius:5px;padding:2px 7px;margin-left:7px;letter-spacing:.04em;vertical-align:1px}
+.warn td{background:var(--red-bg)}
+.warn td:first-child{color:var(--red)}
+.pick td{background:var(--green-bg)}
+.pick td:first-child{color:var(--green)}
+
+/* ══ 아트 칩 ══ */
+.art-chip{display:inline-block;background:#ff8a3d;color:#2a1200;font-size:11px;font-weight:900;border-radius:6px;padding:3px 10px;margin-left:10px;letter-spacing:.05em;box-shadow:0 0 0 2px rgba(255,138,61,.25)}
+.art-chip-mini{flex:none;display:inline-block;background:#ff8a3d;color:#2a1200;font-size:9px;font-weight:900;line-height:1;border-radius:4px;padding:3px 5px;letter-spacing:.04em;margin-left:6px}
+
+/* ══ 게임풍 HTML 목업 — 색·치수는 클라 실측값(스프라이트 PNG 추출 + 프리팹 좌표). 테마 무관 고정. ══ */
+.mk{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin:20px 0}
+.mk-cap{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:12px}
+.mk-stage{background:linear-gradient(180deg,#0d1a2b,#0a1420);border-radius:16px;padding:26px 14px;display:flex;justify-content:center}
+.mk-row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.mk-row2{grid-template-columns:1fr}}
+.mk-note{font-size:.78rem;color:var(--text2);margin-top:12px;line-height:1.6}
+.mk-note b{color:var(--text)}
+
+/* 팝업 프레임 */
+.gm{width:100%;max-width:420px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+.gm-frame{position:relative;background:#2fa4f0;border-radius:30px;padding:52px 13px 13px;box-shadow:0 10px 26px rgba(0,0,0,.45),inset 0 -4px 0 rgba(0,0,0,.12)}
+.gm-head{position:absolute;top:11px;left:0;right:0;text-align:center;font-size:1.42rem;font-weight:900;color:#fff;letter-spacing:-.02em;
+  text-shadow:-2px -2px 0 #225796,2px -2px 0 #225796,-2px 2px 0 #225796,2px 2px 0 #225796,0 3px 0 #225796}
+.gm-x{position:absolute;top:-14px;right:-10px;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#ff6b5e,#d81f1f);border:3px solid #fff;box-shadow:0 3px 6px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.05rem;font-weight:900}
+.gm-body{background:#fff8ec;border-radius:22px;padding:18px 16px 20px;text-align:center}
+.gm-desc{font-size:1rem;font-weight:800;color:#7a4034;margin-bottom:12px;line-height:1.35}
+.gm-ribbon{display:inline-block;background:linear-gradient(180deg,#f465c8,#e0359f);color:#fff;font-size:.78rem;font-weight:900;padding:4px 20px;border-radius:5px;box-shadow:0 2px 0 rgba(0,0,0,.18);position:relative;top:9px;z-index:2}
+.gm-ribbon b{color:#ffe93d}
+.gm-rewardbox{background:linear-gradient(180deg,#1f6fd8,#1558bd);border-radius:16px;padding:20px 12px 16px;display:flex;align-items:center;justify-content:center;gap:26px;box-shadow:inset 0 3px 8px rgba(0,0,0,.28)}
+.gm-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+.gm-icon{font-size:1.9rem;line-height:1;filter:drop-shadow(0 0 8px rgba(255,220,120,.6))}
+.gm-coin{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 36% 30%,#ffe98a,#f5b800 62%,#d98f00);border:2px solid #c47a00;display:flex;align-items:center;justify-content:center;color:#c88400;font-size:1.15rem;font-weight:900;box-shadow:0 0 10px rgba(255,220,120,.65),inset 0 -2px 3px rgba(0,0,0,.18)}
+.gm-amt{font-size:.85rem;font-weight:900;color:#fff;text-shadow:-1.5px -1.5px 0 #3548b8,1.5px -1.5px 0 #3548b8,-1.5px 1.5px 0 #3548b8,1.5px 1.5px 0 #3548b8}
+
+/* 버튼 행 */
+.gm-btns{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:16px}
+.gm-btn{border-radius:999px;height:46px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:.98rem;flex:none;box-shadow:0 4px 0 rgba(0,0,0,.22);position:relative}
+.gm-green {background:linear-gradient(180deg,#5be03a,#00c400);text-shadow:-1.5px -1.5px 0 #358008,1.5px -1.5px 0 #358008,-1.5px 1.5px 0 #358008,1.5px 1.5px 0 #358008}
+.gm-orange{background:linear-gradient(180deg,#ffbe25,#ff7a00);text-shadow:-1.5px -1.5px 0 #a9341d,1.5px -1.5px 0 #a9341d,-1.5px 1.5px 0 #a9341d,1.5px 1.5px 0 #a9341d}
+.gm-red   {background:linear-gradient(180deg,#ff8a2b,#ec2020);text-shadow:-1.5px -1.5px 0 #a9341d,1.5px -1.5px 0 #a9341d,-1.5px 1.5px 0 #a9341d,1.5px 1.5px 0 #a9341d}
+.gm-blue  {background:linear-gradient(180deg,#6fd0ff,#0092ff);border-radius:16px;font-size:1.3rem}
+.gm-w200{width:132px}.gm-w240{width:158px}.gm-w260{width:172px}.gm-sq{width:66px;height:66px}
+
+/* 실제 화면 플로우 */
+.vf{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin:20px 0}
+.vf-cap{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:14px}
+.vf-track{display:flex;align-items:flex-start;gap:10px;overflow-x:auto;padding-bottom:8px}
+.vf-step{flex:none;width:186px;display:flex;flex-direction:column}
+.vf-shot{width:186px;height:104px;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:#0a1420;display:flex;align-items:center;justify-content:center}
+.vf-shot img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.vf-step.on .vf-shot{border:2px solid var(--accent);box-shadow:0 0 0 3px var(--purple-bg)}
+.vf-step.keep .vf-shot,.vf-step.drop .vf-shot{font-size:.86rem;font-weight:900;flex-direction:column;gap:3px;text-align:center;line-height:1.3;padding:0 8px}
+.vf-step.keep .vf-shot{border:2px dashed var(--yellow);color:#ffd98a;
+  background:repeating-linear-gradient(135deg,rgba(251,191,36,.20) 0 10px,rgba(251,191,36,.08) 10px 20px),#151a26}
+.vf-step.drop .vf-shot{border:2px dashed var(--red);color:#ffc2c2;
+  background:repeating-linear-gradient(135deg,rgba(248,113,113,.20) 0 10px,rgba(248,113,113,.08) 10px 20px),#151a26}
+[data-theme="light"] .vf-step.keep .vf-shot{color:#6b3f00;
+  background:repeating-linear-gradient(135deg,rgba(251,191,36,.45) 0 10px,rgba(251,191,36,.22) 10px 20px),#fff}
+[data-theme="light"] .vf-step.drop .vf-shot{color:#7d1d1d;
+  background:repeating-linear-gradient(135deg,rgba(248,113,113,.40) 0 10px,rgba(248,113,113,.18) 10px 20px),#fff}
+.vf-lbl{font-size:.79rem;font-weight:800;color:var(--text);margin-top:7px;line-height:1.35}
+.vf-sub{font-size:.7rem;color:var(--text2);margin-top:2px;line-height:1.4}
+.vf-arw{flex:none;align-self:center;margin-top:-24px;color:var(--text-dim);font-weight:900;font-size:1.1rem}
+.vf-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.74rem;color:var(--text2);border-top:1px solid var(--border);margin-top:14px;padding-top:11px}
+.vf-legend span{display:flex;align-items:center;gap:6px}
+.vf-shot{position:relative}
+.tipwrap{position:relative;max-width:420px;margin:0 auto}
+.tipwrap img{width:100%;border-radius:10px;display:block}
+.tip{position:absolute;left:50%;transform:translateX(-50%);bottom:23%;background:#fffbe8;color:#6b3f00;border:2px solid var(--yellow);border-radius:10px;padding:5px 12px;font-size:.82rem;font-weight:900;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.5);z-index:2}
+.tip::after{content:'';position:absolute;left:50%;transform:translateX(-50%);bottom:-9px;border:8px solid transparent;border-top-color:var(--yellow)}
+.vf-step.gold .vf-shot{border:2px solid var(--yellow);background:linear-gradient(180deg,#3a2f10,#241c08);color:#ffd98a;font-size:.86rem;font-weight:900;flex-direction:column;gap:3px;text-align:center;line-height:1.3;padding:0 8px}
+[data-theme="light"] .vf-step.gold .vf-shot{background:linear-gradient(180deg,#fff3cf,#ffe9a8);color:#6b3f00}
+.vf-key{width:13px;height:13px;border-radius:3px;flex:none}
+
+/* 흐름 다이어그램 */
+.fl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+.fl-box{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:8px 13px;font-size:.8rem;font-weight:700;color:var(--text)}
+.fl-box.hot{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.fl-box.cold{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.fl-box small{display:block;font-weight:500;font-size:.68rem;color:var(--text2)}
+.fl-arw{color:var(--text-dim);font-weight:800;font-size:.9rem}
+.fl-tag{font-size:.66rem;font-weight:800;letter-spacing:.06em;color:var(--text-dim);min-width:56px}
+
+/* 확정 문안 블록 */
+.txtsample{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 14px;margin:10px 0 4px;font-size:12.5px}
+.txtsample .h{font-size:11px;font-weight:900;letter-spacing:.05em;color:var(--text2);margin-bottom:6px}
+.txtsample table{width:100%;margin:0;font-size:12.5px}
+.txtsample td{padding:4px 8px 4px 0;border-bottom:1px dashed var(--border);vertical-align:top;color:var(--text2)}
+.txtsample tr:last-child td{border-bottom:0}
+.txtsample td:first-child{white-space:nowrap;width:1%;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--text2);font-weight:400}
+.txtsample .en{font-weight:700;color:var(--text)}
+
+/* 레퍼런스 이미지 */
+.seq-imgs{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin:16px 0}
+.seq-imgs.single{grid-template-columns:minmax(0,620px)}
+@media(max-width:820px){.seq-imgs{grid-template-columns:1fr}}
+.seq-imgs figure{margin:0;min-width:0}
+.seq-imgs img{width:100%;border-radius:10px;display:block;border:1px solid var(--border)}
+.imgrole{display:inline-block;font-size:11px;font-weight:800;border-radius:5px;padding:2px 9px;margin-bottom:6px;background:var(--purple-bg);color:var(--accent)}
+.imgcap{font-size:.76rem;color:var(--text2);margin-top:6px}
+.imgph{border:1px dashed var(--border);border-radius:10px;background:var(--surface2);color:var(--text-dim);font-size:.78rem;font-weight:600;display:flex;align-items:center;justify-content:center;height:170px}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">&larr; 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">&#9776;</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-043</div>
+  <a href="#s1">&#9312; 문제 &amp; 확정 설계</a>
+  <a href="#s2">&#9313; 개발 스펙</a>
+  <a href="#s3">&#9314; 검증 · 롤백</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-043</span>
+      <span class="badge badge-blue">&#127912; UX</span>
+      <span class="badge badge-red">&#128308; 높은 우선순위</span>
+      <span class="badge badge-blue">&#128309; 검토중</span>
+      <span class="badge badge-green">2026. 8. 20.</span>
+    </div>
+    <h1>프리레벨 난이도 인지 개선<br><span>Pre-Level Difficulty Signal</span></h1>
+    <p class="hero-sub">슈퍼하드 실패의 <strong>88%가 부스터를 쓸 줄 알고 재고도 있는 유저의 미사용 판</strong>임. 프리레벨 화면에 <strong>난이도를 알 수 있는 요소가 없어</strong> 부스터를 쓸 타이밍을 놓침. 부스터를 늘리는 대신 있는 신호를 읽히게 만듦.</p>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">슈퍼하드 실패 구조</div>
+        <div class="kpi-value" style="color:var(--red)">88%</div>
+        <div class="kpi-sub">쓸 줄 아는 유저의 미사용 판</div>
+        <div class="kpi-trend">&#9660; 1,109건 / 18일</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">부스터 사용 시 실패율</div>
+        <div class="kpi-value" style="color:var(--green)">2.5%</div>
+        <div class="kpi-sub">미사용 <b>11.6%</b></div>
+        <div class="kpi-trend trend-up">&#9650; 효과는 확인됨</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">슈퍼하드 부착률</div>
+        <div class="kpi-value" style="color:var(--yellow)">19.9%</div>
+        <div class="kpi-sub">15,027판 중 2,985판</div>
+        <div class="kpi-trend">목표 30%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">죽은 자물쇠 노출</div>
+        <div class="kpi-value">11,960</div>
+        <div class="kpi-sub">회 / 일</div>
+        <div class="kpi-trend">&#9660; 영원히 안 열림</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">&#9312;</div>
+    <div class="section-meta"><div class="section-title">문제 &amp; 확정 설계</div></div>
+  </div>
+
+  <h3>문제 &mdash; 어려운 판인지 모른 채 부스터를 지나침</h3>
+  <p>부스터는 효과가 확실함. 슈퍼하드에서 부스터를 쓴 판은 실패율 <strong>2.5%</strong>, 안 쓴 판은 <strong>11.6%</strong>임. 그런데 정작 실패의 대부분이 <strong>부스터를 쓸 줄 알고 재고도 가진 유저</strong>에게서 나옴.</p>
+  <table>
+    <thead><tr><th>슈퍼하드 판 구분</th><th class="r">판수</th><th class="r">실패</th><th class="r">실패율</th></tr></thead>
+    <tbody>
+      <tr class="warn"><td><b>미사용판 · 부스터 쓰는 유저</b></td><td class="r">9,589</td><td class="r"><b>1,109</b></td><td class="r">11.6%</td></tr>
+      <tr><td>미사용판 · 한 번도 안 쓴 유저</td><td class="r">1,659</td><td class="r">155</td><td class="r">9.3%</td></tr>
+      <tr class="pick"><td>부스터 사용판</td><td class="r">2,946</td><td class="r">75</td><td class="r"><b>2.5%</b></td></tr>
+    </tbody>
+  </table>
+  <p class="note">2026-08-01~18 실측. 해금 유저의 <b>80.9~84.4%</b>가 부스터를 최소 1회 써봄 &mdash; 기능을 모르는 게 아님. 부스터 선택의 <b>70% 이상이 보유 1개인 상태</b>에서 이뤄져 재고 부족도 아님. <b>쓸 타이밍을 못 잡는 것</b>이 문제임.</p>
+
+  <h3>원인 &mdash; 난이도 신호가 Play 버튼 색 하나뿐임</h3>
+  <p>프리레벨 팝업에 난이도를 알 수 있는 요소가 없음. 유일한 신호는 Play 버튼 스킨 3종인데 <strong>세 스킨의 문구가 전부 <code>Play</code>로 동일</strong>하고 배경 이미지만 다름. 색 하나로만 전달됨.</p>
+  <table>
+    <thead><tr><th>티어</th><th>스킨 에셋</th><th>문구</th><th>색</th></tr></thead>
+    <tbody>
+      <tr><td>1~2 노멀</td><td><code>UI_btn_main_green.png</code></td><td><code>Play</code></td><td><code>#6AE900</code> &rarr; <code>#00DF00</code> &rarr; <code>#00D800</code></td></tr>
+      <tr><td>3 Hard</td><td><code>UI_btn_main_red.png</code></td><td><code>Play</code></td><td><code>#FF6D00</code> &rarr; <code>#FF3A00</code> &rarr; <code>#FF0000</code></td></tr>
+      <tr><td>4 슈퍼하드</td><td><code>UI_btn_main_violet.png</code></td><td><code>Play</code></td><td><code>#C400EF</code> &rarr; <code>#A300E5</code> &rarr; <code>#8600DC</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-red">
+    <p><b>&#9888; 골드가 부족하면 그 신호마저 사라짐.</b> 입장비가 모자라면 Play가 회색 비활성 스킨으로 덮여 난이도 색이 완전히 없어짐. 어려운 판일수록 입장비가 비싸므로 <b>가장 필요한 순간에 신호가 꺼지는 구조</b>임.</p>
+  </div>
+
+  <h3>고칠 부분 &mdash; 두 가지</h3>
+  <table>
+    <thead><tr><th class="r">#</th><th>변경</th><th>의도</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td class="r">1</td><td><b>부스터 슬롯 3칸 &rarr; 2칸</b>. 잠긴 세 번째 슬롯 제거, 남은 두 칸 확대</td><td>죽은 자물쇠 제거 + 남은 부스터의 시각 비중 확대</td></tr>
+      <tr class="pick"><td class="r">2</td><td><b>하드 이상에서 <code>부스터 선택:</code> 라벨을 부스터 유도 문구로 교체</b></td><td>버튼 색과 무관하게 <b>글자로</b> 난이도를 알리고, 그 자리에서 부스터 선택으로 동선을 연결</td></tr>
+    </tbody>
+  </table>
+  <p class="note"><b>세 번째 슬롯은 시트를 고쳐도 안 열림.</b> <code>onClickGoldRushBooster()</code>가 <code>unlock</code>을 조회하지 않고 항상 <code>T_COMING_SOON</code> 토스트만 띄우며, <code>BOOSTER_TYPES</code>의 <code>extra_deck</code> 항목과 락 노드 표시 코드가 모두 주석 상태임 &mdash; <b>시트 1셀로 되돌릴 수 있는 구조가 아님</b>. 시트 쪽도 <code>unlock</code> 50030이 <code>level_clear 99999</code>로 막혀 있음. <code>pre_unlock_visibility</code>가 <code>TRUE</code>라 모든 유저에게 항상 노출되며, 프리레벨 팝업이 하루 <b>11,960회</b> 뜨므로 같은 횟수만큼 열리지 않을 자물쇠를 보여주고 있음.</p>
+
+  <h3>화면 As-Is / To-Be</h3>
+  <div class="mk-wrap">
+<style>
+.mk-wrap{--pop:#f4ead6;--popline:#2f7fd4;--blue:#2f7fd4;--blue2:#1e5fa8;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;}
+.mk-row{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin:0 0 8px}
+.mk-col{flex:1 1 300px;min-width:290px}
+.mk-h{font-size:.82rem;font-weight:800;letter-spacing:.02em;margin:0 0 9px;color:var(--text2,#9ea3b5)}
+.mk-h b{color:var(--red,#f87171)}
+.mk-h i{font-style:normal;color:var(--green,#34d399)}
+.pop{background:var(--pop);border:5px solid var(--popline);border-radius:22px;padding:14px 16px 16px;position:relative}
+.pop-top{background:var(--blue);margin:-14px -16px 12px;padding:9px 0 11px;border-radius:14px 14px 0 0;text-align:center;
+  color:#fff;font-size:1.25rem;font-weight:900;text-shadow:0 2px 0 var(--blue2)}
+.rw{background:var(--blue);border-radius:12px;padding:8px 10px;margin-bottom:9px}
+.rw-t{display:block;text-align:center;background:#4caf28;color:#fff;font-size:.72rem;font-weight:800;
+  border-radius:9px;padding:2px 0;margin:0 auto 7px;width:118px}
+.rw-i{display:flex;justify-content:space-between;gap:3px}
+.rw-i span{flex:1;text-align:center;font-size:.62rem;color:#fff;background:rgba(255,255,255,.16);
+  border-radius:7px;padding:7px 1px;font-weight:700}
+.mul{background:var(--blue);border-radius:12px;padding:7px;display:flex;align-items:center;
+  justify-content:center;gap:9px;margin-bottom:11px}
+.mul b{background:#1b4f8f;color:#fff;border-radius:16px;padding:3px 26px;font-size:.9rem;font-weight:900}
+.mul i{font-style:normal;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  font-size:.85rem;font-weight:900;color:#fff}
+.mul .mn{background:#9aa0a6}.mul .pl{background:#4caf28}
+.sel{text-align:center;font-size:.78rem;font-weight:800;color:#3b6ea8;margin:0 0 7px}
+.bst{display:flex;justify-content:center;gap:11px;margin-bottom:12px}
+.bst div{width:52px;height:52px;border-radius:50%;background:#2f7fd4;border:3px solid #fff;
+  position:relative;box-shadow:0 2px 0 rgba(0,0,0,.18);display:grid;place-items:center;font-size:1.15rem}
+.bst div.lk{background:#b9b9b9;filter:grayscale(1)}
+.bst.big{gap:20px}
+.bst.big div{width:70px;height:70px;font-size:1.6rem}
+.bst.big em{width:21px;height:21px;font-size:.68rem;top:-6px;right:-6px}
+.bst em{position:absolute;top:-5px;right:-5px;background:#e33;color:#fff;font-size:.6rem;font-weight:900;
+  border-radius:50%;width:17px;height:17px;display:grid;place-items:center;font-style:normal;border:2px solid #fff}
+.play{display:block;width:80%;margin:0 auto;text-align:center;color:#fff;font-size:1.15rem;font-weight:900;
+  padding:11px 0;border-radius:26px;text-shadow:0 2px 0 rgba(0,0,0,.28)}
+.p-dis{background:#b6b6b6;box-shadow:0 4px 0 #8d8d8d}
+.p-nor{background:linear-gradient(#6AE900,#00DF00 55%,#00D800);box-shadow:0 4px 0 #006A00}
+.p-hard{background:linear-gradient(#FF6D00,#FF3A00 55%,#FF0000);box-shadow:0 4px 0 #780C03}
+.p-vh{background:linear-gradient(#C400EF,#A300E5 55%,#8600DC);box-shadow:0 4px 0 #45066C}
+.cost{text-align:center;font-size:.8rem;font-weight:800;color:#6b4a20;margin-top:9px}
+.cost b{color:#d33}
+/* 신규 요소 */
+.dbadge{display:flex;align-items:center;justify-content:center;gap:7px;margin:-4px 0 10px}
+.dbadge span{font-size:.78rem;font-weight:900;color:#fff;padding:3px 14px;border-radius:14px;
+  text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.d-nor{background:linear-gradient(#6AE900,#00DF00);box-shadow:0 2px 0 #006A00}
+.d-hard{background:linear-gradient(#FF6D00,#FF3A00);box-shadow:0 2px 0 #780C03}
+.d-vh{background:linear-gradient(#C400EF,#A300E5);box-shadow:0 2px 0 #45066C}
+.dhint{text-align:center;font-size:.68rem;font-weight:700;color:#8a6a3a;margin:-6px 0 8px}
+.mk-cap{font-size:.74rem;color:var(--text2,#9ea3b5);text-align:center;margin-top:9px;line-height:1.55}
+.mk-arrow{text-align:center;font-size:1.1rem;color:var(--accent,#a78bfa);margin:4px 0 2px;font-weight:900}
+</style>
+
+<div class="mk-row">
+  <div class="mk-col">
+    <div class="mk-h">As-Is &mdash; <b>죽은 자물쇠 + 무미건조한 라벨</b></div>
+    <img src="ref-043-asis.png" alt="As-Is 프리레벨 팝업" style="width:100%;border-radius:12px;display:block">
+    <div class="mk-cap">실제 게임 화면(레벨 11 &middot; 하드 판). 3번 슬롯은 <b>영원히 안 열리는 자물쇠</b>(<code>level_clear 99999</code>)로 하루 11,960회 노출됨. 2번 슬롯은 레벨 25 해금(<code>level_clear 24</code>)이라 이 시점엔 정상적인 잠금 &mdash; 결과적으로 <b>세 칸 중 두 칸이 자물쇠</b>. 라벨은 어떤 판이든 <code>부스터 선택:</code> 한 문장이라 이 판이 어렵다는 정보가 없음</div>
+  </div>
+  <div class="mk-col">
+    <div class="mk-h">To-Be &mdash; <i>슬롯 2칸 + 라벨 문구 교체</i></div>
+    <img src="ref-043-tobe.png" alt="To-Be 프리레벨 팝업" style="width:100%;border-radius:12px;display:block">
+    <div class="mk-cap">같은 화면에 변경 2건을 합성한 것. 영구 잠금 슬롯을 <b>제거해 2칸으로</b> 하고 남은 두 칸을 1.2배로 키움. <code>부스터 선택:</code> 라벨은 <b>하드 이상에서만 유도 문구로 문자열 교체</b> &mdash; <b>신규 UI 요소가 하나도 없음</b></div>
+  </div>
+</div>
+</div>
+
+</section>
+
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">&#9313;</div>
+    <div class="section-meta"><div class="section-title">개발 스펙</div></div>
+  </div>
+
+  <div class="callout callout-blue">
+    <p><b>순수 클라이언트 스펙임.</b> 서버 저장 상태 · 프로토콜 · 시트 변경이 <b>전부 없음</b>. 난이도 티어는 이미 <code>getEntryDifficultyTier()</code>로 클라가 판정해 <code>updateDifficultyButtons()</code>에서 쓰고 있으므로, 그 값으로 라벨 문자열만 갈라 주면 됨. <b>신규 UI 노드도 신규 아트도 없음.</b> 기간 · 쿨다운 · 리셋이 없어 타임존 의존 요소도 없음 &mdash; 페이스북 · 토스 동일 동작.</p>
+  </div>
+
+  <h3>변경 목록</h3>
+  <table>
+    <thead><tr><th>대상</th><th>변경</th><th>규모</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><code>PopupGameEntry.prefab</code></td><td><b><code>BOOSTER3</code> 노드 제거</b> + 남은 2칸 크기 · 간격 재배치. <code>BOOSTER_TYPES</code>와 <code>boosterItems</code> 배열은 <b>이미 2개</b>라 손댈 것 없음</td><td>소</td></tr>
+      <tr class="pick"><td><code>PopupGameEntry.ts</code> · <code>PopupGameEntry.prefab</code></td><td><b>부스터 라벨을 코드 전담으로 전환</b> &mdash; <code>selectBooster</code> 노드에서 <code>Localization</code> 컴포넌트를 떼고, <code>levelLabel</code>과 같은 방식(<code>label.string = Localization.getString(...)</code> + <code>Localization.setFont(label)</code>)으로 티어별 문자열을 넣음. 기존 Play 버튼 스킨 토글은 <b>유지</b></td><td><b>중</b></td></tr>
+      <tr><td><code>PopupGameEntry.ts</code></td><td>3칸 전제 잔존물 정리 &mdash; <code>boosterSelected</code> 3원소 배열 · <code>boosterKeyNumbers</code> · <code>onClickBoosterSlot</code>의 <code>slotIndex &gt; 2</code> 가드</td><td>소</td></tr>
+      <tr><td><code>PopupGameEntry.ts</code></td><td><code>onClickGoldRushBooster()</code> · <code>goldRushLockerNode</code> 삭제 &mdash; 이미 미사용 상태이며 <code>BOOSTER3</code> 노드 제거와 함께 정리됨</td><td>소</td></tr>
+      <tr><td><code>string_code</code></td><td>유도 문구 <b>신규 1건</b> &mdash; 전 언어</td><td>소</td></tr>
+    </tbody>
+  </table>
+  <p class="note">난이도 뱃지는 <b>달지 않음.</b> Play 버튼이 이미 티어별로 초록 · 빨강 · 보라 3색을 쓰고 있어 색 신호는 있음. 부족한 것은 <b>글자로 된 신호</b>뿐이므로 라벨 문자열 교체 하나로 해결함 &mdash; 아트 발주 · 프리팹 구조 변경이 모두 빠짐.</p>
+
+  <h3>표시 규칙</h3>
+  <table>
+    <thead><tr><th>난이도 티어</th><th>부스터 라벨</th><th>Play 버튼</th></tr></thead>
+    <tbody>
+      <tr><td>1~2 노멀</td><td><code>부스터 선택:</code> &mdash; <b>현행 유지</b></td><td>초록(현행 유지)</td></tr>
+      <tr class="pick"><td>3 하드</td><td><b>유도 문구로 교체</b></td><td>빨강(현행 유지)</td></tr>
+      <tr class="pick"><td>4 슈퍼하드</td><td><b>유도 문구로 교체</b></td><td>보라(현행 유지)</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Normal에 문구를 띄우지 않는 이유 &mdash; 전 판에 뜨면 무시됨. 문구는 <b>하드 이상에서만</b> 나와야 신호로 작동함. 평소 <code>부스터 선택:</code>을 보던 유저에게 문장이 바뀌는 것 자체가 신호가 됨.</p>
+
+  <h3>문구</h3>
+  <table>
+    <thead><tr><th>키</th><th>한국어</th><th>영어</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><code>T_PRELEVEL_BOOSTER_HINT</code></td><td>어려운 판이에요 &middot; 부스터를 쓰세요</td><td>Tough level &mdash; use a booster</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <p><b>경고가 아니라 권유 톤으로 확정.</b> 입장비를 내고 들어가는 구조라 &ldquo;이 판은 어렵다&rdquo;는 경고형 문구는 진입 자체를 망설이게 함. 난이도를 알리는 것이 목적이 아니라 <b>부스터로 시선을 보내는 것</b>이 목적이므로 권유형으로 씀.</p>
+  </div>
+  <p class="note">Normal 티어에서는 기존 <code>부스터 선택:</code>(<code>T_SELECT_BOOSTER</code>) 값을 그대로 쓰고, 하드 이상에서만 이 키로 바꿔 넣음. 문구 길이는 프랑스어가 가장 길어짐(한국어 대비 +38~57%). 같은 한 줄 자리를 그대로 쓰므로 번역 시 폭 확인 필요.</p>
+
+  <h3>계측</h3>
+  <table>
+    <thead><tr><th>로그</th><th>필드</th><th>값 출처</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><code>2090_PRE_LEVEL_SHOW</code></td><td><b><code>difficulty_tier</code> 신규</b></td><td><b>클라 자체 신규</b> &mdash; 현행 페이로드는 <code>position</code> · <code>level</code> · <code>gold_balance</code>뿐이라 <b>티어가 없음</b>. 가드레일 분모</td></tr>
+      <tr class="pick"><td><code>2094_PRE_LEVEL_PLAY</code></td><td><b><code>difficulty_tier</code> 신규</b></td><td><b>클라 자체 신규</b> &mdash; 가드레일 분자. <code>position</code>(<code>lobby</code>/<code>retry</code>)은 이미 있음</td></tr>
+      <tr><td><code>2091_PRE_LEVEL_BOOSTER_SELECT</code></td><td><code>booster_type</code> · <code>owned_count</code></td><td>클라 자체. 변경 없음 &mdash; 부착률 산출</td></tr>
+      <tr class="pick"><td><code>2100_GAMEPLAY_START</code></td><td><code>boosters</code> · <code>difficulty_tier</code></td><td><b>클라 자체. 변경 없음</b> &mdash; 난이도별 부착률을 판 단위로 직접 산출 가능</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-red">
+    <p><b>&#9888; <code>difficulty_tier</code> 추가는 선택이 아니라 필수임.</b> 문구는 하드 이상에서만 뜨는데 현행 <code>2090</code> · <code>2094</code>에는 티어가 없어 진입률이 <b>전 티어 합산으로만</b> 나옴. 하드 이상이 판의 약 20%이므로 그 구간 진입률이 5%p 떨어져도 전체로는 1%p &mdash; <b>가드레일 91% 컷에 걸리지 않아 역효과를 놓침</b>. <code>2100</code>으로 대체할 수도 없음(2100은 진입한 판이라 분자임).</p>
+  </div>
+  <p class="note">부착률 쪽은 신규 로그가 필요 없음 &mdash; <code>2100</code>에 난이도와 부스터 선택이 같은 페이로드로 들어가 있어 조인 없이 산출됨.</p>
+
+  <h3>예외 처리</h3>
+  <table>
+    <thead><tr><th>상황</th><th>동작</th></tr></thead>
+    <tbody>
+      <tr><td>골드 부족으로 Play 비활성</td><td><b>문구는 그대로 노출.</b> 이 스펙의 핵심 &mdash; 현행은 이 상태에서 버튼 색이 회색으로 덮여 난이도 신호가 완전히 사라짐</td></tr>
+      <tr><td>튜토리얼 판</td><td>문구 비노출 &mdash; <code>부스터 선택:</code> 현행 유지. 기존 <code>isTutorialStage()</code> 분기를 따름</td></tr>
+      <tr class="warn"><td><b>부스터 전 슬롯 잠김</b></td><td>유도 문구 <b>비노출</b> &mdash; <code>T_SELECT_BOOSTER</code> 유지. <b>&ldquo;부스터 줄이 사라진다&rdquo;는 전제로 구현하지 말 것</b> &mdash; 잠긴 슬롯은 <code>pre_unlock_visibility TRUE</code>라 자물쇠를 단 채 그대로 노출되고, <code>allBoostedLocked</code>가 참이면 라벨은 오히려 <b>켜짐</b>. 그대로 두면 잠긴 슬롯 위에 &ldquo;부스터를 쓰세요&rdquo;가 뜸</td></tr>
+      <tr class="warn"><td><b>재도전 팝업(SPEC-036)</b></td><td>같은 프리팹을 재사용하므로 슬롯 2칸 · 유도 문구가 <b>재도전 화면에도 그대로 적용됨</b>. 의도된 동작이며 별도 분기 없음. 단 로그는 <code>position=retry</code>로 갈리므로 KPI 산출 시 분리할 것</td></tr>
+      <tr><td>부스터 재고 0</td><td>문구는 표시. 골드로 살 수 있으므로 유도는 유효함</td></tr>
+      <tr class="warn"><td><b>긴급 정지가 필요하면</b></td><td>클라 빌드 롤백만 가능함. <b>시트 킬스위치가 없음</b> &mdash; 시트 변경이 없는 스펙이라 원격 차단 수단이 없음. 아래 롤백 항목 참조</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">&#9314;</div>
+    <div class="section-meta"><div class="section-title">검증 · 롤백</div></div>
+  </div>
+
+  <h3>KPI As-Is / To-Be</h3>
+  <table>
+    <thead><tr><th>지표</th><th class="r">As-Is</th><th class="r">To-Be</th><th>측정</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><b>슈퍼하드 부스터 부착률</b></td><td class="r">19.9%</td><td class="r"><b>유의한 증가</b></td><td><code>2100</code> 티어 20004 중 <code>boosters</code> 비어있지 않은 판</td></tr>
+      <tr class="pick"><td><b>하드 부스터 부착률</b></td><td class="r">배포 전 실측</td><td class="r"><b>유의한 증가</b></td><td><code>2100</code> 티어 20003</td></tr>
+      <tr><td>전체 부스터 부착률</td><td class="r">10.8%</td><td class="r">참고값 &mdash; 판정에 쓰지 않음</td><td><code>2100</code> 전체. 티어 믹스가 섞여 단독 판정 불가</td></tr>
+      <tr><td>하드 이상 클리어율</td><td class="r">슈퍼하드 90.3%</td><td class="r">상승 방향</td><td><code>2300</code> <code>result=clear</code>, 티어별</td></tr>
+      <tr class="warn"><td><b>가드레일 &mdash; 하드 이상 프리레벨 진입률</b></td><td class="r"><b>전체 92.7%</b></td><td class="r"><b>티어별로 하락 없음</b></td><td><code>2094</code> &divide; <code>2090</code>, <code>difficulty_tier</code>별 · <code>position=lobby</code>와 <code>retry</code> 분리</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-red">
+    <p><b>&#9888; 가드레일이 이 스펙의 핵심 리스크임.</b> 난이도를 명시하면 <b>겁먹고 안 들어가는</b> 역효과가 날 수 있음. 입장비를 내는 구조라 특히 그러함. 반드시 <b>문구가 실제로 뜨는 하드 이상 구간에서</b> 봐야 함 &mdash; 전체 합산으로는 희석돼 잡히지 않음.</p>
+  </div>
+  <div class="callout callout-blue">
+    <p><b>목표치를 숫자로 박지 않는 이유.</b> 이 변경의 효과 크기를 추정할 선례가 없음. 임의의 목표치는 판정 기준이 아니라 장식이 되므로, <b>전후 z검정으로 유의성만</b> 봄. &ldquo;효과 없음&rdquo;과 &ldquo;검출력 부족&rdquo;은 반드시 분리해 기록함. 하드 부착률 As-Is는 <b>배포 전에 실측해 이 표를 채운 뒤</b> 배포함.</p>
+  </div>
+
+  <h3>판정 기준</h3>
+  <table>
+    <thead><tr><th>결과</th><th>판정</th><th>조치</th></tr></thead>
+    <tbody>
+      <tr><td>하드 이상 부착률 유의하게 상승 + 티어별 진입률 유지</td><td>성공</td><td>유지</td></tr>
+      <tr><td>부착률 무유의 + 진입률 유지</td><td>신호가 약함 &mdash; <b>검출력 부족과 구분해 기록</b></td><td>문구 문안 · 색 강조 조정 후 재측정</td></tr>
+      <tr class="warn"><td><b>하드 이상 진입률이 유의하게 하락</b></td><td><b>역효과</b></td><td>유도 문구를 <code>부스터 선택:</code>으로 되돌림 &mdash; 문자열 배포만으로 즉시 원복됨</td></tr>
+      <tr class="warn"><td><b>슈퍼하드 클리어율이 목표 밴드를 넘김</b></td><td><b>과보정</b></td><td>난이도 밸런스 재검토 &mdash; 부스터 부착이 늘어 난이도 곡선이 평탄해진 것</td></tr>
+    </tbody>
+  </table>
+  <p class="note">관측 기간 2주. 부착률은 배포 직후 신선도 효과로 튈 수 있으므로 첫 3일은 판정에서 제외함.</p>
+
+  <h3>롤백</h3>
+  <p>시트 변경이 없어 <strong>원격 킬스위치가 없음</strong>. 되돌리려면 클라 빌드가 필요함. 다만 리스크의 대부분은 유도 문구 쪽에 있고, 그것은 <strong>별도 문자열 키</strong>라 값만 기존 <code>부스터 선택:</code> 문안으로 되돌리면 됨 &mdash; <b>슬롯 배치를 건드리지 않는 최소 배포</b>로 끝남. 다만 현지화 JSON이 클라 번들 자산(<code>assets/bundles/localization/*.json</code>)이라 <b>클라 빌드 없이 되는지는 클라 담당 확인이 필요함</b>.</p>
+  <table>
+    <thead><tr><th>단계</th><th>수단</th><th>소요</th></tr></thead>
+    <tbody>
+      <tr><td>1단계 &mdash; 문구만 원복</td><td><code>T_PRELEVEL_BOOSTER_HINT</code>를 <code>부스터 선택:</code> 문안으로</td><td>문자열만 교체하는 최소 배포(빌드 범위는 클라 확인 필요)</td></tr>
+      <tr><td>2단계 &mdash; 슬롯 배치까지 되돌림</td><td>클라 빌드 롤백</td><td>빌드 1회</td></tr>
+    </tbody>
+  </table>
+  <p class="note">슬롯 2칸 축소는 되돌릴 필요가 없음 &mdash; 제거한 슬롯은 어차피 열리지 않던 자물쇠라 진입률 · 부착률에 부정적으로 작용할 수 없음.</p>
+
+  <h3>연관</h3>
+  <p><b>SPEC-042(프리레벨 세 번째 부스터 슬롯) 기각.</b> 세 번째 슬롯을 채우는 대신 제거하는 것으로 방향이 바뀜. 기각 근거는 위 &sect;1의 실패 구조 &mdash; 슈퍼하드 실패의 88%가 <b>부스터를 쓸 줄 알고 재고도 있는 유저의 미사용 판</b>이므로 선택지를 하나 더 만들어도 같은 이유로 지나침. 부스터 선택의 70% 이상이 보유 1개 상태에서 이뤄져 재고 부족도 아니며, 골드 지불은 35,872건 중 2건으로 가격 설계가 작동하지 않음.</p>
+</section>
+
+</div>
+</body>
+</html>

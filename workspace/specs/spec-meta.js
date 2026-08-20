@@ -207,9 +207,14 @@ const SPECS = [
     tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
   },
   {
+    id: 'spec-043', file: 'spec-043-prelevel-difficulty-signal.html',
+    title: '[UX-밸런스] 프리레벨 부스터 슬롯 2칸 + 난이도 유도 문구',
+    tags: ['ux', 'balance'], priority: 'high', status: 'open', date: '2026. 8. 20.', dueDate: null, relatedTo: ['spec-042', 'spec-029', 'spec-031'],
+  },
+  {
     id: 'spec-042', file: 'spec-042-prelevel-booster-slot3.html',
-    title: '[밸런스] 프리레벨 세 번째 부스터 슬롯 — 덱 보충',
-    tags: ['balance', 'feature'], priority: 'high', status: 'open', date: '2026. 8. 19.', dueDate: null, relatedTo: ['spec-029', 'spec-031', 'spec-034'],
+    title: '[밸런스] 프리레벨 세 번째 부스터 슬롯 — 덱 보충 (기각, SPEC-043으로 대체)',
+    tags: ['balance', 'feature'], priority: 'low', status: 'archive', date: '2026. 8. 19.', dueDate: null, relatedTo: ['spec-043'],
   },
   {
     id: 'spec-040', file: 'spec-040-retry-entry-recovery.html',
