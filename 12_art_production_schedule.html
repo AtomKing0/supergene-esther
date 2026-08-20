@@ -199,8 +199,8 @@ document.getElementById('themeToggle').addEventListener('click',function(){
   <div class="ctrl-group">
     <div class="ctrl-group-label">📅 출시 일정</div>
     <div class="row">
-      <label>예상 출시일 <input type="date" id="launchDateInput" value="2026-06-01" onchange="setLaunchDate(this.value)"></label>
-      <span class="order-badge" id="launchDateBadge">7/1 런칭</span>
+      <span class="order-badge" style="background:rgba(80,184,72,.15);color:var(--green)">출시일 확정 2026-07-10</span>
+      <span class="order-badge" id="launchDateBadge">7/10 런칭</span>
     </div>
   </div>
   <!-- 그룹 B: 아트 제작 조건 -->
@@ -297,7 +297,8 @@ document.getElementById('themeToggle').addEventListener('click',function(){
 
 <div class="callout">
   <strong>퍼즐 피스 드랍 기준 (CONST)</strong>: 베팅 x1 클리어 → <strong>1피스</strong> · 베팅 x2 → <strong>2피스</strong> · 베팅 x4 → <strong>4피스</strong> (레벨당).<br>
-  <span style="color:var(--muted)">"완성 레벨" = 앨범 해금 레벨부터 피스를 모두 모으는 데 필요한 레벨 수 누적 기준. 납기 기준 = Average 유저(19판/일·72% 클리어 ≈ 13.7레벨/일) 기준 해금 레벨 도달 시점.</span>
+  <span style="color:var(--muted)">"완성 레벨" = 앨범 해금 레벨부터 피스를 모두 모으는 데 필요한 레벨 수 누적 기준.</span><br>
+  <strong>납기 확정 (2026-08-20·런칭일 7/10 고정)</strong>: 미완료 앨범 납기 = <strong>도시 개방일 사이 중간일 슬롯</strong>에 순서대로 배정 — 03 도시 아트 일정과 겹치지 않게 인터리브 (도시 30일 케이던스 구간에서 서로 15일 간격, 12~14번 20일 예약 구간에서 10일 간격). Avg 유저(19판/일·72% ≈ 13.7레벨/일) 도달일은 참고 표기 — 납기가 도달보다 늦는 앨범은 인게임 해금 레벨을 슬롯에 맞춰 상향 필요.
 </div>
 
 <div id="puzzle-kpi-area"></div>
@@ -401,8 +402,8 @@ const UPDATE_SPLIT_DAY = 40;    // 주기 전환 기준일 (D+40)
 const PUBLISHED = 4;
 let LAUNCH_CITIES = 10;
 const TODAY = new Date(2026, 2, 26);
-let LAUNCH = new Date(2026, 5, 1);
-let REVIEW = new Date(2026, 4, 18); // LAUNCH - 14일
+const LAUNCH = new Date(2026, 6, 10); // 2026-07-10 런칭 확정 (2026-08-20 고정)
+const REVIEW = new Date(2026, 5, 26); // LAUNCH - 14일
 const LAUNCH_OFFSET = Math.round((LAUNCH - TODAY) / 86400000);
 
 function setArtDays(val) {
@@ -441,16 +442,7 @@ function setUpdateIntervalLate(val) {
   renderAll();
 }
 
-function setLaunchDate(val) {
-  const p = val.split('-');
-  if (p.length !== 3) return;
-  LAUNCH = new Date(+p[0], +p[1]-1, +p[2]);
-  REVIEW = addDate(LAUNCH, -14);
-  const badge = document.getElementById('launchDateBadge');
-  if (badge) badge.textContent = fmtDate(LAUNCH) + ' 런칭 기준';
-  renderAll();
-  if (typeof renderPuzzleAll === 'function') renderPuzzleAll();
-}
+function setLaunchDate() { /* 출시일 2026-07-10 확정 — 변경 불가 */ }
 const ACTIVE_BM_KEY = 'pst-city-active-bm';
 const BM_STORAGE = 'pst-city-bookmarks-v3';
 
@@ -1950,7 +1942,24 @@ function renderPuzzleBookmarks() {
 }
 
 // --- Compute ---
+// 퍼즐 납기 슬롯 (2026-08-20 확정): 도시 개방일 사이 중간일 — 03 도시 아트 일정과 인터리브
+// (30일 구간에선 서로 15일 간격, 12~14번 20일 예약 구간에선 10일 간격)
+function puzzleDueSlots(minCount) {
+  const opens = [...new Set(CITY_OPEN_CONFIRMED)].map(s => {
+    const p = s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]);
+  });
+  while (opens.length < minCount + 24) opens.push(addDate(opens[opens.length-1], CITY_OPEN_INTERVAL));
+  const slots = [];
+  for (let i = 0; i < opens.length - 1; i++) {
+    slots.push(new Date((opens[i].getTime() + opens[i+1].getTime()) / 2));
+  }
+  return slots;
+}
+
 function computePuzzle() {
+  const now = new Date(); now.setHours(0,0,0,0);
+  const futureSlots = puzzleDueSlots(puzzleOrder.length).filter(d => d > now);
+  let si = 0;
   return puzzleOrder.map((id, i) => {
     const a = ALBUMS_BASE.find(x => x.id === id) || ALBUMS_BASE[i];
     const total = a.pieces.reduce((s, p) => s + p, 0);
@@ -1961,8 +1970,12 @@ function computePuzzle() {
     const city_wins = Math.round((a.hammers || 0) / PUZZLE_WEIGHTED_HPW);
     const ratio = city_wins > 0 ? (total / city_wins).toFixed(2) : '—';
     const unlock_days = Math.round(unlock_lv / AVG_LV_PER_DAY);
-    const art_date = addDate(LAUNCH, unlock_days);
-    return { ...a, id, n: i + 1, total, x1_lv, x2_lv, x4_lv, city_wins, ratio, unlock_days, art_date };
+    const arrival = addDate(LAUNCH, unlock_days); // Avg 유저 해금 레벨 도달일 (참고)
+    const done = !!puzzleArtDone[id];
+    // 납기: 완료분은 도달일 표기 유지, 미완료분은 인터리브 슬롯에 순서대로 배정
+    const art_date = done ? arrival : futureSlots[si++];
+    const lateVsUser = !done && art_date > arrival;
+    return { ...a, id, n: i + 1, total, x1_lv, x2_lv, x4_lv, city_wins, ratio, unlock_days, arrival, art_date, lateVsUser };
   });
 }
 
@@ -1993,7 +2006,7 @@ function renderPuzzleTable(data) {
   html += '<th>x1 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">1피스/판</span></th>';
   html += '<th>x2 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">2피스/판</span></th>';
   html += '<th>x4 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">4피스/판</span></th>';
-  html += '<th>아트 납기 기준<br><span style="font-weight:400;color:var(--muted);font-size:.85em">Avg 유저 해금일</span></th><th>아트 완료</th>';
+  html += '<th title="도시 개방일 사이 중간일 슬롯 — 03 도시 아트 일정과 인터리브 (30일 구간 서로 15일 간격)">아트 납기<br><span style="font-weight:400;color:var(--muted);font-size:.85em">인터리브 슬롯 확정</span></th><th>아트 완료</th>';
   html += '</tr></thead><tbody>';
   data.forEach((a, i) => {
     const done = puzzleArtDone[a.id];
@@ -2012,9 +2025,13 @@ function renderPuzzleTable(data) {
     html += `<td style="color:var(--accent)">L${a.x1_lv}</td>`;
     html += `<td style="color:var(--blue)">L${a.x2_lv}</td>`;
     html += `<td style="color:var(--yellow)">L${a.x4_lv}</td>`;
+    const yy = a.art_date.getFullYear() !== 2026 ? (a.art_date.getFullYear()%100) + "'" : '';
+    const arrivalNote = done
+      ? `<div style="font-size:.75em;color:var(--muted);margin-top:1px">완료 (Avg 도달 D+${a.unlock_days})</div>`
+      : `<div style="font-size:.75em;color:${a.lateVsUser ? 'var(--red)' : 'var(--muted)'};margin-top:1px">Avg 도달 ${fmtDate(a.arrival)}${a.lateVsUser ? ' — 납기가 도달보다 늦음·해금 레벨 상향 필요' : ''}</div>`;
     const dateLabel = isOverdue
-      ? `<strong style="color:var(--red)">${fmtDate(a.art_date)}</strong><div style="font-size:.75em;color:var(--red);margin-top:1px">(D+${overdueDays} 초과)</div>`
-      : `<strong>${fmtDate(a.art_date)}</strong><div style="font-size:.75em;color:var(--muted);margin-top:1px">D+${a.unlock_days}</div>`;
+      ? `<strong style="color:var(--red)">${yy}${fmtDate(a.art_date)}</strong><div style="font-size:.75em;color:var(--red);margin-top:1px">(D+${overdueDays} 초과)</div>`
+      : `<strong>${yy}${fmtDate(a.art_date)}</strong>${arrivalNote}`;
     html += `<td style="color:var(--yellow)">${dateLabel}</td>`;
     html += `<td style="text-align:center">${artBtn}</td></tr>`;
   });
