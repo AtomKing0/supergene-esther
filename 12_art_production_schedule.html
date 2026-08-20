@@ -1191,7 +1191,7 @@ function renderSchedule(data) {
   // 컬럼 헤더
   html += '<tr>';
   html += '<th></th><th>#</th><th>도시</th>';
-  html += '<th title="도시 확정 여부 (체크 시 확정 완료)">확정</th>';
+  html += '<th title="도시 순서 확정 여부 (체크 시 확정)">순서 확정</th>';
   html += '<th title="제작 마일스톤 (Published / Pre-Launch / Update N)">마일스톤</th>';
   html += '<th title="해당 도시 완성에 필요한 총 해머 수&#10;순서 변경 시 슬롯 기반으로 재배정됨">해머</th>';
   html += '<th title="해당 도시 해머를 채우기 위해 필요한 판수&#10;승률 80% × 가중 해머 1.20 기준" style="color:#4A90D9">CL판</th>';
@@ -1777,6 +1777,44 @@ async function loadPuzzleArtDone() {
     try { puzzleArtDone = JSON.parse(localStorage.getItem(PUZZLE_ART_KEY)) || {}; } catch { puzzleArtDone = {}; }
   }
 }
+// --- 앨범 순서 확정 (Supabase puzzle_confirmed) ---
+let puzzleConfirmedCache = {};
+async function loadPuzzleConfirmed() {
+  try {
+    const { data, error } = await _sb.from('puzzle_confirmed').select('album_id, confirmed_at');
+    if (error) throw error;
+    puzzleConfirmedCache = {};
+    data.forEach(r => { puzzleConfirmedCache[r.album_id] = r.confirmed_at; });
+  } catch (e) {
+    console.warn('puzzle_confirmed 로드 실패, localStorage 사용', e);
+    try { puzzleConfirmedCache = JSON.parse(localStorage.getItem('pst-puzzle-confirmed')) || {}; }
+    catch { puzzleConfirmedCache = {}; }
+  }
+}
+async function togglePuzzleConfirmed(id) {
+  const wasChecked = !!puzzleConfirmedCache[id];
+  try {
+    if (wasChecked) {
+      const { error } = await _sb.from('puzzle_confirmed').delete().eq('album_id', id);
+      if (error) throw error;
+      delete puzzleConfirmedCache[id];
+    } else {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const ts = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      const { error } = await _sb.from('puzzle_confirmed').upsert({ album_id: id, confirmed_at: ts });
+      if (error) throw error;
+      puzzleConfirmedCache[id] = ts;
+    }
+    localStorage.setItem('pst-puzzle-confirmed', JSON.stringify(puzzleConfirmedCache));
+    renderPuzzleAll();
+    showToast(!wasChecked ? '✅ 순서 확정' : '⬜ 확정 취소됨', !wasChecked ? 'var(--green)' : 'var(--yellow)');
+  } catch (e) {
+    console.error('puzzle_confirmed 저장 실패', e);
+    showToast('⚠️ 저장 실패: ' + e.message, 'var(--red)');
+  }
+}
+
 async function togglePuzzleArtDone(id) {
   const wasChecked = !!puzzleArtDone[id];
   try {
@@ -1992,7 +2030,9 @@ function renderPuzzleTable(data) {
   const wrap = document.getElementById('puzzle-table-wrap');
   if (!wrap) return;
   let html = '<table><thead><tr>';
-  html += '<th></th><th>#</th><th>앨범</th><th>해금 레벨</th>';
+  html += '<th></th><th>#</th><th>앨범</th>';
+  html += '<th title="앨범 순서 확정 여부 (체크 시 확정)">순서 확정</th>';
+  html += '<th>해금 레벨</th>';
   html += '<th>피스 수<br>(사진 장수)</th><th>총 소모 피스</th>';
   html += '<th>x1 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">1피스/판</span></th>';
   html += '<th>x2 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">2피스/판</span></th>';
@@ -2013,6 +2053,8 @@ function renderPuzzleTable(data) {
     html += `<td class="drag-handle">&#9776;</td>`;
     html += `<td>${a.n}</td>`;
     html += `<td style="text-align:left"><strong>${esc(a.name)}</strong><button class="edit-btn" onclick="event.stopPropagation();startAlbumRename(${i})" title="이름 변경">✎</button><button class="edit-btn" onclick="event.stopPropagation();deleteAlbum(${i})" title="앨범 삭제" style="color:var(--red)">✕</button></td>`;
+    const pzConfirmed = puzzleConfirmedCache[a.id];
+    html += `<td style="text-align:center"><button class="art-done-btn" onclick="event.stopPropagation();togglePuzzleConfirmed('${a.id}')" title="${pzConfirmed ? '확정 취소' : '순서 확정'}">${pzConfirmed ? '✅' : '⬜'}</button></td>`;
     html += `<td>L${a.unlock_lv}</td><td>12장</td><td><strong>${a.total}</strong></td>`;
     html += `<td style="color:var(--accent)">L${a.x1_lv}</td>`;
     html += `<td style="color:var(--blue)">L${a.x2_lv}</td>`;
@@ -2033,7 +2075,7 @@ function renderPuzzleTable(data) {
     html += `<td style="color:var(--blue);text-align:center">${openCell}</td></tr>`;
   });
   const totalPieces = data.reduce((s, a) => s + a.total, 0);
-  html += `<tr class="total-row"><td colspan="5">합계</td><td><strong>${totalPieces.toLocaleString()}</strong></td><td colspan="6"></td></tr>`;
+  html += `<tr class="total-row"><td colspan="6">합계</td><td><strong>${totalPieces.toLocaleString()}</strong></td><td colspan="6"></td></tr>`;
   html += '</tbody></table>';
   wrap.innerHTML = html;
   setupPuzzleDragDrop();
@@ -2276,7 +2318,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // Puzzle section init
   await loadPuzzleCfg();
-  await Promise.all([loadPuzzleOrder(), loadPuzzleArtDone(), loadPuzzleBookmarks()]);
+  await Promise.all([loadPuzzleOrder(), loadPuzzleArtDone(), loadPuzzleConfirmed(), loadPuzzleBookmarks()]);
   renderPuzzleAll();
 
   // 실시간 채널 정리 (페이지 언로드 시)
