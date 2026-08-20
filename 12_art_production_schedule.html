@@ -2014,7 +2014,8 @@ function renderPuzzleTable(data) {
   html += '<th>x1 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">1피스/판</span></th>';
   html += '<th>x2 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">2피스/판</span></th>';
   html += '<th>x4 완성 레벨<br><span style="font-weight:400;color:var(--muted);font-size:.85em">4피스/판</span></th>';
-  html += '<th title="도시 개방일 사이 중간일 슬롯 — 03 도시 아트 일정과 인터리브 (30일 구간 서로 15일 간격)">아트 납기<br><span style="font-weight:400;color:var(--muted);font-size:.85em">인터리브 슬롯 확정</span></th><th>아트 완료</th>';
+  html += '<th title="미제작 앨범만 — 도시 개방일 사이 중간일 슬롯, 03 도시 아트 일정과 인터리브 (30일 구간 서로 15일 간격)">아트 납기<br><span style="font-weight:400;color:var(--muted);font-size:.85em">미제작분·인터리브 슬롯</span></th><th>아트 완료</th>';
+  html += '<th title="유저 오픈 예정일 = Avg 유저(13.7레벨/일) 해금 레벨 도달일" style="color:var(--blue)">배포 예정<br>일정</th>';
   html += '</tr></thead><tbody>';
   data.forEach((a, i) => {
     const done = puzzleArtDone[a.id];
@@ -2033,18 +2034,23 @@ function renderPuzzleTable(data) {
     html += `<td style="color:var(--accent)">L${a.x1_lv}</td>`;
     html += `<td style="color:var(--blue)">L${a.x2_lv}</td>`;
     html += `<td style="color:var(--yellow)">L${a.x4_lv}</td>`;
-    const yy = a.art_date.getFullYear() !== 2026 ? (a.art_date.getFullYear()%100) + "'" : '';
-    const arrivalNote = done
-      ? `<div style="font-size:.75em;color:var(--muted);margin-top:1px">완료 (Avg 도달 D+${a.unlock_days})</div>`
-      : `<div style="font-size:.75em;color:${a.lateVsUser ? 'var(--red)' : 'var(--muted)'};margin-top:1px">Avg 도달 ${fmtDate(a.arrival)}${a.lateVsUser ? ' — 납기가 도달보다 늦음·해금 레벨 상향 필요' : ''}</div>`;
-    const dateLabel = isOverdue
-      ? `<strong style="color:var(--red)">${yy}${fmtDate(a.art_date)}</strong><div style="font-size:.75em;color:var(--red);margin-top:1px">(D+${overdueDays} 초과)</div>`
-      : `<strong>${yy}${fmtDate(a.art_date)}</strong>${arrivalNote}`;
+    const yy = a.art_date && a.art_date.getFullYear() !== 2026 ? (a.art_date.getFullYear()%100) + "'" : '';
+    const dateLabel = done
+      ? `<span style="color:var(--muted)">—</span>`
+      : isOverdue
+        ? `<strong style="color:var(--red)">${yy}${fmtDate(a.art_date)}</strong><div style="font-size:.75em;color:var(--red);margin-top:1px">(D+${overdueDays} 초과)</div>`
+        : `<strong>${yy}${fmtDate(a.art_date)}</strong>`;
     html += `<td style="color:var(--yellow)">${dateLabel}</td>`;
-    html += `<td style="text-align:center">${artBtn}</td></tr>`;
+    html += `<td style="text-align:center">${artBtn}</td>`;
+    // 배포 예정일 = Avg 유저 해금 레벨 도달일 (과거 = 오픈됨)
+    const yyA = a.arrival.getFullYear() !== 2026 ? (a.arrival.getFullYear()%100) + "'" : '';
+    const openCell = a.arrival <= nowDate
+      ? `<strong style="color:var(--green)">오픈됨</strong><div style="font-size:.75em;color:var(--muted)">${fmtDate(a.arrival)}</div>`
+      : `<strong>${yyA}${fmtDate(a.arrival)}</strong><div style="font-size:.75em;color:${a.lateVsUser ? 'var(--red)' : 'var(--muted)'}">D+${a.unlock_days}${a.lateVsUser ? ' · 아트 미납 위험' : ''}</div>`;
+    html += `<td style="color:var(--blue);text-align:center">${openCell}</td></tr>`;
   });
   const totalPieces = data.reduce((s, a) => s + a.total, 0);
-  html += `<tr class="total-row"><td colspan="5">합계</td><td><strong>${totalPieces.toLocaleString()}</strong></td><td colspan="5"></td></tr>`;
+  html += `<tr class="total-row"><td colspan="5">합계</td><td><strong>${totalPieces.toLocaleString()}</strong></td><td colspan="6"></td></tr>`;
   html += '</tbody></table>';
   wrap.innerHTML = html;
   setupPuzzleDragDrop();
