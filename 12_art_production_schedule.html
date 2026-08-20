@@ -563,18 +563,18 @@ function compute(cities) {
   return cities.map((c, i) => {
     cumH += c.h;
     const n = i + 1;
-    // Art completion date
+    // 납기 = 확정 개방 일정 역산 (2026-08-20 확정 · 구 런칭 시뮬레이션 폐기)
+    // 개방됨/예약(1~14) = 아트 완료분 · 15+ = 개방 30일 전 납기(퍼즐 중간일 슬롯과 15일 인터리브)
+    const realNow = new Date(); realNow.setHours(0,0,0,0);
     let artDate, phase;
     if (c.locked) {
-      artDate = c.artDone; phase = c.pending ? 'Pre-Launch' : 'Published';
-    } else if (i < LAUNCH_CITIES) {
-      const prodNum = i - PUBLISHED;
-      artDate = preLaunchDates[prodNum];
-      phase = 'Pre-Launch';
+      artDate = c.artDone; phase = 'Published';
+    } else if (i < CITY_OPEN_CONFIRMED.length) {
+      artDate = updateDates[i];
+      phase = updateDates[i] <= realNow ? 'Published' : '예약';
     } else {
-      const updateNum = i - LAUNCH_CITIES;
-      artDate = postDates[updateNum];
-      phase = 'Update ' + (updateNum + 1);
+      artDate = addDate(updateDates[i], -CITY_OPEN_INTERVAL);
+      phase = 'Update ' + (i - CITY_OPEN_CONFIRMED.length + 1);
     }
     // Player days: hpd = hammers per day = gpd × win_rate × WEIGHTED_HPW
     const pd = {};
@@ -1211,14 +1211,15 @@ function renderSchedule(data) {
     // Phase header rows
     if (c.phase !== lastPhase) {
       lastPhase = c.phase;
-      if ((c.phase === 'Published' || c.phase === 'Pre-Launch') && !launchSectionShown) {
+      if (c.phase === 'Published' && !launchSectionShown) {
         launchSectionShown = true;
         const pubCnt = data.filter(d => d.phase === 'Published').length;
-        const preCnt = LAUNCH_CITIES - pubCnt;
-        html += `<tr style="background:rgba(100,255,218,.06)"><td colspan="14" style="text-align:left;font-weight:700;color:var(--accent)">런칭 준비 — <span style="color:var(--green)">완료 ${pubCnt}개</span> · <span style="color:var(--yellow)">제작 ${preCnt}개</span> · 납기 마감 ${fmtDate(data[LAUNCH_CITIES-1].artDate)}</td></tr>`;
+        html += `<tr style="background:rgba(100,255,218,.06)"><td colspan="14" style="text-align:left;font-weight:700;color:var(--accent)">개방됨 (라이브) — <span style="color:var(--green)">${pubCnt}개</span> · 7/10 런칭 · 아트 완료</td></tr>`;
+      } else if (c.phase === '예약') {
+        const rsvCnt = data.filter(d => d.phase === '예약').length;
+        html += `<tr style="background:rgba(87,182,255,.06)"><td colspan="14" style="text-align:left;font-weight:700;color:var(--blue)">개방 예약 — ${rsvCnt}개 · 아트 완료 · 20일 간격 예약분</td></tr>`;
       } else if (c.phase === 'Update 1') {
-        html += `<tr style="background:rgba(87,182,255,.06)"><td colspan="14" style="text-align:left;font-weight:700;color:var(--blue)">QA &amp; Polish · <span class="milestone-badge milestone-review">${fmtDate(REVIEW)} 리뷰서밋</span> · <span class="milestone-badge milestone-launch">${fmtDate(LAUNCH)} 런칭</span></td></tr>`;
-        html += `<tr style="background:rgba(199,125,255,.06)"><td colspan="14" style="text-align:left;font-weight:700;color:var(--purple)">Post-Launch Update (${fmtDate(LAUNCH)} ~ ${fmtDate(data[data.length-1].artDate)}) — ${TOTAL_CITIES-LAUNCH_CITIES}개 도시</td></tr>`;
+        html += `<tr style="background:rgba(199,125,255,.06)"><td colspan="14" style="text-align:left;font-weight:700;color:var(--purple)">제작 필요 — ${TOTAL_CITIES - CITY_OPEN_CONFIRMED.length}개 · 30일 케이던스 · 납기 = 개방 30일 전 (퍼즐사진 납기와 15일 인터리브)</td></tr>`;
       }
     }
 
@@ -1227,26 +1228,30 @@ function renderSchedule(data) {
     const cls = locked ? 'locked' : '';
     const artDone = getArtDone();
     const doneTs = artDone[c.id];
-    const artCheckHtml = (locked && !c.pending)
+    const artReady = c.phase === 'Published' || c.phase === '예약'; // 개방/예약분 = 아트 완료
+    const artCheckHtml = artReady
       ? `<span style="font-size:1.1em">✅</span><div class="art-done-ts">${fmtDate(c.artDate)}</div>`
       : doneTs
         ? `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="완료 취소">✅</button><div class="art-done-ts">${doneTs}</div>`
         : `<button class="art-done-btn" onclick="toggleArtDone('${c.id}')" title="아트 완료 체크">⬜</button>`;
     const nowDate = new Date(); nowDate.setHours(0,0,0,0);
     const artDeadline = new Date(c.artDate); artDeadline.setHours(0,0,0,0);
-    const isOverdue = !(locked && !c.pending) && artDeadline < nowDate;
+    const isOverdue = !artReady && !doneTs && artDeadline < nowDate;
     const overdueDays = isOverdue ? Math.round((nowDate - artDeadline) / 86400000) : 0;
+    const yyArt = c.artDate.getFullYear() > 2026 ? (c.artDate.getFullYear()%100) + "'" : '';
     const bufStr = isOverdue
-      ? `<strong style="color:var(--red)">${fmtDate(c.artDate)}</strong><div style="font-size:.75em;color:var(--red);margin-top:1px">(D+${overdueDays})</div>`
-      : `<strong>${fmtDate(c.artDate)}</strong>`;
+      ? `<strong style="color:var(--red)">${yyArt}${fmtDate(c.artDate)}</strong><div style="font-size:.75em;color:var(--red);margin-top:1px">(D+${overdueDays})</div>`
+      : artReady
+        ? `<span style="color:var(--muted)">완료</span>`
+        : `<strong>${yyArt}${fmtDate(c.artDate)}</strong>`;
     const bufColor = '';
     const hcDStr = 'D' + Math.round(c.hcD);
     const avgDStr = 'D' + Math.round(c.pd['Average']);
     const clDStr = 'D' + Math.round(c.pd['Casual Light']);
 
     let statusHtml;
-    if (locked && !c.pending) statusHtml = '<span style="color:var(--green)">Published</span>';
-    else if (c.phase === 'Pre-Launch') statusHtml = `<span style="color:var(--accent)">${c.phase}</span>`;
+    if (c.phase === 'Published') statusHtml = '<span style="color:var(--green)">Published</span>';
+    else if (c.phase === '예약') statusHtml = `<span style="color:var(--blue)">예약</span>`;
     else statusHtml = `<span style="color:var(--purple)">${c.phase}</span>`;
 
     // Mark last pre-launch and last city
@@ -1279,7 +1284,7 @@ function renderSchedule(data) {
   });
 
   html += `<tr class="total-row"><td colspan="4">합계</td><td>${data[data.length-1].cumH}</td>`;
-  html += `<td colspan="10">런칭 ${LAUNCH_CITIES}도시 · 업데이트 ${TOTAL_CITIES-LAUNCH_CITIES}도시 (${fmtDate(data[data.length-1].artDate)} 완료) · HC 전체 소진: D${Math.round(data[data.length-1].hcD)}</td></tr>`;
+  html += `<td colspan="10">개방·예약 ${CITY_OPEN_CONFIRMED.length}도시 · 제작 필요 ${TOTAL_CITIES-CITY_OPEN_CONFIRMED.length}도시 (마지막 납기 ${(data[data.length-1].artDate.getFullYear()%100)}'${fmtDate(data[data.length-1].artDate)}) · HC 전체 소진: D${Math.round(data[data.length-1].hcD)}</td></tr>`;
   html += '</tbody></table>';
 
   document.getElementById('schedule-table-wrap').innerHTML = html;
