@@ -208,7 +208,7 @@ const SPECS = [
   },
   {
     id: 'spec-043', file: 'spec-043-prelevel-difficulty-signal.html',
-    title: '[UX-밸런스] 프리레벨 부스터 슬롯 2칸 + 난이도 유도 문구',
+    title: '[UX] 프리레벨 부스터 UI 변경 — 슬롯 2칸 + 하드 이상 유도 문구',
     tags: ['ux', 'balance'], priority: 'high', status: 'open', date: '2026. 8. 20.', dueDate: null, relatedTo: ['spec-042', 'spec-029', 'spec-031'],
   },
   {
