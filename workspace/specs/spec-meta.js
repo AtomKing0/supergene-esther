@@ -207,6 +207,11 @@ const SPECS = [
     tags: ['monetize', 'balance'], priority: 'high', status: 'monitor', date: '2026. 8. 4.', dueDate: null, relatedTo: ['spec-036'],
   },
   {
+    id: 'spec-044', file: 'spec-044-gold-shortage-offer.html',
+    title: '[수익화-IAP] 골드 부족 지면 스페셜 오퍼 연결',
+    tags: ['monetize'], priority: 'high', status: 'open', date: '2026. 8. 21.', dueDate: null, relatedTo: ['spec-036'],
+  },
+  {
     id: 'spec-043', file: 'spec-043-prelevel-difficulty-signal.html',
     title: '[UX] 프리레벨 부스터 UI 변경 — 슬롯 2칸 + 하드 이상 유도 문구',
     tags: ['ux', 'balance'], priority: 'high', status: 'open', date: '2026. 8. 20.', dueDate: null, relatedTo: ['spec-042', 'spec-029', 'spec-031'],
