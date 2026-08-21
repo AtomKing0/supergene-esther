@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script id="theme-init">(function(){var t=localStorage.getItem("spec-theme");if(t==="light")document.documentElement.setAttribute("data-theme","light");document.addEventListener("DOMContentLoaded",function(){var g=document.createElement("button");g.className="theme-toggle";g.title="라이트/다크 모드 전환";g.textContent=t==="light"?"☀️":"🌙";document.body.prepend(g);g.addEventListener("click",function(){var l=document.documentElement.getAttribute("data-theme")==="light";document.documentElement[l?"removeAttribute":"setAttribute"]("data-theme","light");g.textContent=l?"🌙":"☀️";localStorage.setItem("spec-theme",l?"dark":"light");});});})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SPEC-045 · 프리레벨 골드 부족 지면 시인성</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #222635;
+  --surface3: #2a2e3f;
+  --border: #2e3348;
+  --text: #e4e6f0;
+  --text2: #9ea3b5;
+  --text-dim: #9ea3b5;
+  --accent: #a78bfa;
+  --accent2: #c4b5fd;
+  --green: #34d399;   --green-bg: rgba(52,211,153,0.12);
+  --yellow: #fbbf24;  --yellow-bg: rgba(251,191,36,0.12);
+  --red: #f87171;     --red-bg: rgba(248,113,113,0.12);
+  --blue: #60a5fa;    --blue-bg: rgba(96,165,250,0.12);
+  --purple: #a78bfa;  --purple-bg: rgba(167,139,250,0.12);
+  --hero-bg: linear-gradient(135deg, #1a1d27 0%, #1e1a35 45%, #1a1d27 100%);
+  --radius: 12px;
+}
+[data-theme="light"] {
+  --bg: #f5f6f8; --surface: #ffffff; --surface2: #f0f1f4; --surface3: #e8e9ee;
+  --border: #dfe1e6; --text: #1a1d27; --text2: #5e6278; --text-dim: #5e6278;
+  --accent: #7c3aed; --accent2: #6d28d9;
+  --green: #059669; --green-bg: rgba(5,150,105,0.1);
+  --yellow: #d97706; --yellow-bg: rgba(217,119,6,0.1);
+  --red: #dc2626;   --red-bg: rgba(220,38,38,0.1);
+  --blue: #2563eb;  --blue-bg: rgba(37,99,235,0.1);
+  --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.1);
+  --hero-bg: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 45%, #e0e7ff 100%);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; }
+
+.theme-toggle { position:fixed;top:16px;right:16px;z-index:300;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.theme-toggle:hover { transform:scale(1.1); }
+.back-btn { position:fixed;top:16px;right:68px;z-index:300;height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-decoration:none; }
+.back-btn:hover { color:var(--text);transform:translateY(-1px);text-decoration:none; }
+
+.nav-toggle { display:none; }
+.nav-sidebar { position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px 0;z-index:200; }
+.nav-title { padding:14px 20px 6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:1.5px; }
+.nav-sidebar a { display:block;padding:7px 20px;color:var(--text2);text-decoration:none;font-size:0.82rem;border-left:3px solid transparent;transition:all 0.2s; }
+.nav-sidebar a:hover,.nav-sidebar a.active { color:var(--text);background:var(--surface2);border-left-color:var(--accent);text-decoration:none; }
+
+.hero { background:var(--hero-bg);border-bottom:1px solid var(--border);padding:64px 40px 44px;margin-left:260px;position:relative;overflow:hidden; }
+.hero::before { content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.1) 0%,transparent 60%); }
+.hero-inner { max-width:1100px;margin:0 auto;position:relative; }
+.hero-eyebrow { display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap; }
+.spec-id-badge { font-family:monospace;font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,0.3);padding:3px 10px;border-radius:6px; }
+.hero h1 { font-size:2.2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:10px;line-height:1.2; }
+.hero h1 span { background:linear-gradient(135deg,var(--accent),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.hero-sub { color:var(--text2);font-size:1rem;margin-bottom:20px;max-width:640px; }
+.badge { display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+.badge-yellow { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.badge-blue   { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.badge-yellow { background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,0.3); }
+.badge-green  { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.badge-red    { background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.3); }
+
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px; }
+.kpi-card { background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px; }
+[data-theme="light"] .kpi-card { background:rgba(0,0,0,0.03); }
+.kpi-label { font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px; }
+.kpi-value { font-size:1.7rem;font-weight:800;line-height:1; }
+.kpi-sub   { font-size:0.75rem;color:var(--text2);margin-top:4px; }
+.kpi-trend { font-size:0.72rem;font-weight:700;margin-top:6px; }
+.trend-up   { color:var(--green); }
+.trend-down { color:var(--red); }
+
+.container { max-width:1100px;margin:0 0 0 260px;padding:0 32px; }
+section { padding:52px 0;border-bottom:1px solid var(--border); }
+section:last-child { border-bottom:none; }
+
+.section-header { display:flex;align-items:center;gap:12px;margin-bottom:28px; }
+.section-num { width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0; }
+.section-num-1 { background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.3); }
+.section-num-2 { background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.3); }
+.section-num-3 { background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.3); }
+.section-meta { display:flex;flex-direction:column;gap:2px; }
+.section-title { font-size:1.45rem;font-weight:700;line-height:1.2; }
+.section-audience { display:inline-flex;align-items:center;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px; }
+.aud-all { background:var(--purple-bg);color:var(--purple); }
+.aud-art { background:var(--blue-bg);color:var(--blue); }
+.aud-dev { background:var(--green-bg);color:var(--green); }
+
+h3 { font-size:1.05rem;font-weight:700;margin:28px 0 12px;color:var(--text2); }
+h4 { font-size:0.95rem;font-weight:700;margin:24px 0 10px;color:var(--accent); }
+p  { margin-bottom:14px;color:var(--text2);font-size:0.93rem; }
+p strong { color:var(--text); }
+
+table { width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem; }
+td.r, th.r { text-align:right; }
+thead th { background:var(--surface2);color:var(--text);font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--border); }
+tbody td { padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top; }
+tbody tr:hover td { background:var(--surface2); }
+tbody td:first-child { color:var(--text);font-weight:600; }
+
+.sheet-var { font-family:monospace;font-size:0.82rem;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:6px;padding:2px 7px;color:var(--blue); }
+
+.callout { border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:0.88rem; }
+.callout-blue   { background:var(--blue-bg);border-left:3px solid var(--blue); }
+.callout-yellow { background:var(--yellow-bg);border-left:3px solid var(--yellow); }
+.callout-purple { background:var(--purple-bg);border-left:3px solid var(--purple); }
+.callout-red    { background:var(--red-bg);border-left:3px solid var(--red); }
+.todo-row td { background:var(--yellow-bg); }
+.todo-row td:first-child { color:var(--yellow); }
+.todo-chip{display:inline-block;background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(251,191,36,.4);font-size:.66rem;font-weight:800;border-radius:5px;padding:2px 8px;letter-spacing:.04em;margin-left:6px}
+.callout strong { color:var(--text); }
+.callout p { margin:0;color:var(--text2); }
+
+ul,ol { padding-left:1.4em;color:var(--text2);font-size:0.92rem; }
+ul li,ol li { margin-bottom:6px; }
+ul li strong,ol li strong { color:var(--text); }
+
+.sheet-block { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:20px 0; }
+.sheet-block-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:14px; }
+.sheet-row { display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.86rem; }
+.sheet-row:last-child { border-bottom:none; }
+.sheet-row-var     { font-family:monospace;color:var(--blue);font-weight:600;min-width:300px; }
+.sheet-row-default { font-family:monospace;color:var(--green);font-size:0.8rem;min-width:72px; }
+.sheet-row-unit    { font-size:0.75rem;color:var(--text2);min-width:100px; }
+.sheet-row-desc    { color:var(--text2);font-size:0.82rem;flex:1; }
+
+.flow-step { display:flex;gap:14px;margin-bottom:14px;align-items:flex-start; }
+.flow-dot  { width:28px;height:28px;border-radius:50%;background:var(--purple-bg);border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--purple);flex-shrink:0;margin-top:2px; }
+.flow-body { flex:1; }
+.flow-body strong { color:var(--text);font-size:0.9rem; }
+.flow-body p { margin:2px 0 0;font-size:0.84rem;color:var(--text2); }
+
+.step-label{display:inline-block;font-size:.66rem;font-weight:800;letter-spacing:.12em;color:var(--accent);background:var(--purple-bg);border:1px solid rgba(167,139,250,.3);padding:3px 10px;border-radius:6px;margin-top:34px}
+.step-label+h3{margin-top:8px;color:var(--text);font-size:1.15rem}
+.d-up{color:var(--green);font-weight:700}
+.d-down{color:var(--red);font-weight:700}
+.seq-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin:16px 0}
+.seq-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.seq-label{min-width:118px;font-size:.8rem;font-weight:700;color:var(--text)}
+.seq-label span{display:block;font-weight:500;font-size:.72rem;color:var(--text2)}
+.seq{display:flex;gap:3px;flex-wrap:wrap}
+.seq i,.seq-legend i{display:inline-block;width:15px;height:19px;border-radius:3px;vertical-align:-4px}
+.seq i.n,.seq-legend i.n{background:#3a4056}
+.seq i.h,.seq-legend i.h{background:var(--yellow)}
+.seq i.s,.seq-legend i.s{background:var(--red)}
+[data-theme="light"] .seq i.n,[data-theme="light"] .seq-legend i.n{background:#c8cbd6}
+.seq-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.75rem;color:var(--text2);border-top:1px solid var(--border);padding-top:12px}
+.seq-legend span{display:flex;align-items:center;gap:6px}
+.seq-note{margin-left:auto;color:var(--text2)}
+
+.keyrow td{background:var(--purple-bg);border-top:2px solid var(--accent);border-bottom:2px solid var(--accent)}
+.keyrow td:first-child{color:var(--accent);font-weight:800}
+.keychip{display:inline-block;background:var(--accent);color:#160c2b;font-size:.62rem;font-weight:900;border-radius:5px;padding:2px 7px;margin-left:7px;letter-spacing:.04em;vertical-align:1px}
+.warn td{background:var(--red-bg)}
+.warn td:first-child{color:var(--red)}
+.pick td{background:var(--green-bg)}
+.pick td:first-child{color:var(--green)}
+
+/* ══ 아트 칩 ══ */
+.art-chip{display:inline-block;background:#ff8a3d;color:#2a1200;font-size:11px;font-weight:900;border-radius:6px;padding:3px 10px;margin-left:10px;letter-spacing:.05em;box-shadow:0 0 0 2px rgba(255,138,61,.25)}
+.art-chip-mini{flex:none;display:inline-block;background:#ff8a3d;color:#2a1200;font-size:9px;font-weight:900;line-height:1;border-radius:4px;padding:3px 5px;letter-spacing:.04em;margin-left:6px}
+
+/* ══ 게임풍 HTML 목업 — 색·치수는 클라 실측값(스프라이트 PNG 추출 + 프리팹 좌표). 테마 무관 고정. ══ */
+.mk{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin:20px 0}
+.mk-cap{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:12px}
+.mk-stage{background:linear-gradient(180deg,#0d1a2b,#0a1420);border-radius:16px;padding:26px 14px;display:flex;justify-content:center}
+.mk-row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.mk-row2{grid-template-columns:1fr}}
+.mk-note{font-size:.78rem;color:var(--text2);margin-top:12px;line-height:1.6}
+.mk-note b{color:var(--text)}
+
+/* 팝업 프레임 */
+.gm{width:100%;max-width:420px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+.gm-frame{position:relative;background:#2fa4f0;border-radius:30px;padding:52px 13px 13px;box-shadow:0 10px 26px rgba(0,0,0,.45),inset 0 -4px 0 rgba(0,0,0,.12)}
+.gm-head{position:absolute;top:11px;left:0;right:0;text-align:center;font-size:1.42rem;font-weight:900;color:#fff;letter-spacing:-.02em;
+  text-shadow:-2px -2px 0 #225796,2px -2px 0 #225796,-2px 2px 0 #225796,2px 2px 0 #225796,0 3px 0 #225796}
+.gm-x{position:absolute;top:-14px;right:-10px;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#ff6b5e,#d81f1f);border:3px solid #fff;box-shadow:0 3px 6px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.05rem;font-weight:900}
+.gm-body{background:#fff8ec;border-radius:22px;padding:18px 16px 20px;text-align:center}
+.gm-desc{font-size:1rem;font-weight:800;color:#7a4034;margin-bottom:12px;line-height:1.35}
+.gm-ribbon{display:inline-block;background:linear-gradient(180deg,#f465c8,#e0359f);color:#fff;font-size:.78rem;font-weight:900;padding:4px 20px;border-radius:5px;box-shadow:0 2px 0 rgba(0,0,0,.18);position:relative;top:9px;z-index:2}
+.gm-ribbon b{color:#ffe93d}
+.gm-rewardbox{background:linear-gradient(180deg,#1f6fd8,#1558bd);border-radius:16px;padding:20px 12px 16px;display:flex;align-items:center;justify-content:center;gap:26px;box-shadow:inset 0 3px 8px rgba(0,0,0,.28)}
+.gm-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+.gm-icon{font-size:1.9rem;line-height:1;filter:drop-shadow(0 0 8px rgba(255,220,120,.6))}
+.gm-coin{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 36% 30%,#ffe98a,#f5b800 62%,#d98f00);border:2px solid #c47a00;display:flex;align-items:center;justify-content:center;color:#c88400;font-size:1.15rem;font-weight:900;box-shadow:0 0 10px rgba(255,220,120,.65),inset 0 -2px 3px rgba(0,0,0,.18)}
+.gm-amt{font-size:.85rem;font-weight:900;color:#fff;text-shadow:-1.5px -1.5px 0 #3548b8,1.5px -1.5px 0 #3548b8,-1.5px 1.5px 0 #3548b8,1.5px 1.5px 0 #3548b8}
+
+/* 버튼 행 */
+.gm-btns{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:16px}
+.gm-btn{border-radius:999px;height:46px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:.98rem;flex:none;box-shadow:0 4px 0 rgba(0,0,0,.22);position:relative}
+.gm-green {background:linear-gradient(180deg,#5be03a,#00c400);text-shadow:-1.5px -1.5px 0 #358008,1.5px -1.5px 0 #358008,-1.5px 1.5px 0 #358008,1.5px 1.5px 0 #358008}
+.gm-orange{background:linear-gradient(180deg,#ffbe25,#ff7a00);text-shadow:-1.5px -1.5px 0 #a9341d,1.5px -1.5px 0 #a9341d,-1.5px 1.5px 0 #a9341d,1.5px 1.5px 0 #a9341d}
+.gm-red   {background:linear-gradient(180deg,#ff8a2b,#ec2020);text-shadow:-1.5px -1.5px 0 #a9341d,1.5px -1.5px 0 #a9341d,-1.5px 1.5px 0 #a9341d,1.5px 1.5px 0 #a9341d}
+.gm-blue  {background:linear-gradient(180deg,#6fd0ff,#0092ff);border-radius:16px;font-size:1.3rem}
+.gm-w200{width:132px}.gm-w240{width:158px}.gm-w260{width:172px}.gm-sq{width:66px;height:66px}
+
+/* 실제 화면 플로우 */
+.vf{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin:20px 0}
+.vf-cap{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:14px}
+.vf-track{display:flex;align-items:flex-start;gap:10px;overflow-x:auto;padding-bottom:8px}
+.vf-step{flex:none;width:186px;display:flex;flex-direction:column}
+.vf-shot{width:186px;height:104px;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:#0a1420;display:flex;align-items:center;justify-content:center}
+.vf-shot img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.vf-step.on .vf-shot{border:2px solid var(--accent);box-shadow:0 0 0 3px var(--purple-bg)}
+.vf-step.keep .vf-shot,.vf-step.drop .vf-shot{font-size:.86rem;font-weight:900;flex-direction:column;gap:3px;text-align:center;line-height:1.3;padding:0 8px}
+.vf-step.keep .vf-shot{border:2px dashed var(--yellow);color:#ffd98a;
+  background:repeating-linear-gradient(135deg,rgba(251,191,36,.20) 0 10px,rgba(251,191,36,.08) 10px 20px),#151a26}
+.vf-step.drop .vf-shot{border:2px dashed var(--red);color:#ffc2c2;
+  background:repeating-linear-gradient(135deg,rgba(248,113,113,.20) 0 10px,rgba(248,113,113,.08) 10px 20px),#151a26}
+[data-theme="light"] .vf-step.keep .vf-shot{color:#6b3f00;
+  background:repeating-linear-gradient(135deg,rgba(251,191,36,.45) 0 10px,rgba(251,191,36,.22) 10px 20px),#fff}
+[data-theme="light"] .vf-step.drop .vf-shot{color:#7d1d1d;
+  background:repeating-linear-gradient(135deg,rgba(248,113,113,.40) 0 10px,rgba(248,113,113,.18) 10px 20px),#fff}
+.vf-lbl{font-size:.79rem;font-weight:800;color:var(--text);margin-top:7px;line-height:1.35}
+.vf-sub{font-size:.7rem;color:var(--text2);margin-top:2px;line-height:1.4}
+.vf-arw{flex:none;align-self:center;margin-top:-24px;color:var(--text-dim);font-weight:900;font-size:1.1rem}
+.vf-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.74rem;color:var(--text2);border-top:1px solid var(--border);margin-top:14px;padding-top:11px}
+.vf-legend span{display:flex;align-items:center;gap:6px}
+.vf-shot{position:relative}
+.tipwrap{position:relative;max-width:420px;margin:0 auto}
+.tipwrap img{width:100%;border-radius:10px;display:block}
+.tip{position:absolute;left:50%;transform:translateX(-50%);bottom:23%;background:#fffbe8;color:#6b3f00;border:2px solid var(--yellow);border-radius:10px;padding:5px 12px;font-size:.82rem;font-weight:900;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.5);z-index:2}
+.tip::after{content:'';position:absolute;left:50%;transform:translateX(-50%);bottom:-9px;border:8px solid transparent;border-top-color:var(--yellow)}
+.vf-step.gold .vf-shot{border:2px solid var(--yellow);background:linear-gradient(180deg,#3a2f10,#241c08);color:#ffd98a;font-size:.86rem;font-weight:900;flex-direction:column;gap:3px;text-align:center;line-height:1.3;padding:0 8px}
+[data-theme="light"] .vf-step.gold .vf-shot{background:linear-gradient(180deg,#fff3cf,#ffe9a8);color:#6b3f00}
+.vf-key{width:13px;height:13px;border-radius:3px;flex:none}
+
+/* 흐름 다이어그램 */
+.fl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+.fl-box{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:8px 13px;font-size:.8rem;font-weight:700;color:var(--text)}
+.fl-box.hot{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.fl-box.cold{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.fl-box small{display:block;font-weight:500;font-size:.68rem;color:var(--text2)}
+.fl-arw{color:var(--text-dim);font-weight:800;font-size:.9rem}
+.fl-tag{font-size:.66rem;font-weight:800;letter-spacing:.06em;color:var(--text-dim);min-width:56px}
+
+/* 확정 문안 블록 */
+.txtsample{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 14px;margin:10px 0 4px;font-size:12.5px}
+.txtsample .h{font-size:11px;font-weight:900;letter-spacing:.05em;color:var(--text2);margin-bottom:6px}
+.txtsample table{width:100%;margin:0;font-size:12.5px}
+.txtsample td{padding:4px 8px 4px 0;border-bottom:1px dashed var(--border);vertical-align:top;color:var(--text2)}
+.txtsample tr:last-child td{border-bottom:0}
+.txtsample td:first-child{white-space:nowrap;width:1%;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--text2);font-weight:400}
+.txtsample .en{font-weight:700;color:var(--text)}
+
+/* 레퍼런스 이미지 */
+.seq-imgs{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin:16px 0}
+.seq-imgs.single{grid-template-columns:minmax(0,620px)}
+@media(max-width:820px){.seq-imgs{grid-template-columns:1fr}}
+.seq-imgs figure{margin:0;min-width:0}
+.seq-imgs img{width:100%;border-radius:10px;display:block;border:1px solid var(--border)}
+.imgrole{display:inline-block;font-size:11px;font-weight:800;border-radius:5px;padding:2px 9px;margin-bottom:6px;background:var(--purple-bg);color:var(--accent)}
+.imgcap{font-size:.76rem;color:var(--text2);margin-top:6px}
+.imgph{border:1px dashed var(--border);border-radius:10px;background:var(--surface2);color:var(--text-dim);font-size:.78rem;font-weight:600;display:flex;align-items:center;justify-content:center;height:170px}
+.note{font-size:.82rem;color:var(--text-dim);line-height:1.65}
+.note b{color:var(--text)}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">&larr; 목록</a>
+<button class="nav-toggle" onclick="document.querySelector('.nav-sidebar').classList.toggle('open')">&#9776;</button>
+<nav class="nav-sidebar">
+  <div class="nav-title">SPEC-045</div>
+  <a href="#s1">&#9312; 문제 &amp; 확정 설계</a>
+  <a href="#s2">&#9313; 개발 스펙</a>
+  <a href="#s3">&#9314; 검증 · 롤백</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="spec-id-badge">SPEC-045</span>
+      <span class="badge badge-purple">&#127912; UX</span>
+      <span class="badge badge-red">&#128308; 높은 우선순위</span>
+      <span class="badge badge-blue">&#128309; 검토중</span>
+      <span class="badge badge-green">2026. 8. 21.</span>
+    </div>
+    <h1>프리레벨 골드 부족 지면 시인성<br><span>잠김으로 읽히는 버튼 옆에 광고 말풍선</span></h1>
+    <p class="hero-sub">광고로 골드를 채우는 경로는 이미 있지만, 버튼이 잠김으로 보여서 유저가 시도조차 하지 않음.</p>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">골드 부족 상태 노출</div>
+        <div class="kpi-value">7,239</div>
+        <div class="kpi-sub">건 / 14일 · 786명</div>
+        <div class="kpi-trend">전체 프리레벨 노출의 4.5%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">이 상태의 무반응 이탈</div>
+        <div class="kpi-value" style="color:var(--red)">61.1%</div>
+        <div class="kpi-sub">골드 충분일 때는 3.1%</div>
+        <div class="kpi-trend trend-down">&#9660; 20배</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">광고 시청 완주</div>
+        <div class="kpi-value" style="color:var(--yellow)">39.1%</div>
+        <div class="kpi-sub">시도 2,665 &rarr; 완주 1,041</div>
+        <div class="kpi-trend">이 스펙 범위 밖 &mdash; 별건</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">부족 발생 후 입장 도달</div>
+        <div class="kpi-value">31.0%</div>
+        <div class="kpi-sub">4,212건 중 1,304건</div>
+        <div class="kpi-trend trend-up">&#9650; 45% 목표</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════ ① 문제 & 확정 설계 ════════════════════════════════════ -->
+<section id="s1">
+  <div class="section-header">
+    <div class="section-num section-num-1">&#9312;</div>
+    <div class="section-meta">
+      <div class="section-title">문제 &amp; 확정 설계</div>
+      <span class="section-audience aud-all">전체 공유</span>
+    </div>
+  </div>
+
+  <h3>문제 &mdash; 지면은 있는데 보이지 않음</h3>
+  <p>프리레벨 팝업에는 광고로 골드를 받는 지면이 이미 있음. 무료 골드 지면 네 곳(상점 · 우편함 · 프리레벨 · 로비) 가운데 프리레벨이 한도가 가장 크고(<span class="sheet-var">popup_free_gold_limit</span> 10회 &times; <span class="sheet-var">popup_free_gold_amount</span> 2,000골드), 골드가 모자란 상태로 Play를 누르면 로비나 상점을 거치지 않고 그 자리에서 충전 팝업이 열림.</p>
+  <p>문제는 <b>그 앞단</b>임. 골드가 모자라면 Play 버튼이 활성 스프라이트에서 회색 <code>offbtn</code>으로 교체됨(<code>PopupGameEntry.ts</code> <code>refreshPlayCost</code>). 클릭 핸들러는 살아 있어서 누르면 충전 팝업이 열리지만, 회색은 우리 화면 규칙에서 잠김을 뜻하므로 유저는 <b>지금은 할 수 없는 상태</b>로 읽고 시선을 거둠.</p>
+
+  <h4>노출 시점 잔액으로 가른 다음 행동</h4>
+  <table>
+    <thead><tr><th>프리레벨 노출 시점 상태</th><th>노출</th><th>Play 시도</th><th>무반응 이탈</th></tr></thead>
+    <tbody>
+      <tr><td>골드 충분</td><td>152,378</td><td>96.6%</td><td>3.1%</td></tr>
+      <tr class="warn"><td><b>골드 부족(회색)</b></td><td>7,239</td><td>35.7%</td><td><b>61.1%</b></td></tr>
+    </tbody>
+  </table>
+  <p class="note">2026-08-07~08-20 · <code>NOT is_dev</code> · <code>2090_PRE_LEVEL_SHOW</code>의 <code>gold_balance</code>를 해당 레벨 티어 <code>entry_cost</code>와 대조해 분류함. 무반응 = 같은 유저의 다음 프리레벨 이벤트가 Play도 부족도 아닌 경우. <b>같은 화면에서 이탈률이 20배로 벌어짐.</b></p>
+
+  <h4>Play를 누른 뒤의 흐름</h4>
+  <table>
+    <thead><tr><th>단계</th><th>로그</th><th>건수</th><th>전환</th></tr></thead>
+    <tbody>
+      <tr><td>골드 부족 발생</td><td><code>2095</code></td><td>4,212</td><td>&mdash;</td></tr>
+      <tr><td>충전 팝업 노출</td><td><code>2270</code></td><td>3,800</td><td>90.2%</td></tr>
+      <tr><td>광고 시청 시도</td><td><code>2271</code></td><td>2,665</td><td>70.1%</td></tr>
+      <tr class="warn"><td>광고 완주</td><td><code>4210</code> <code>free_coin</code></td><td>1,041</td><td><b>39.1%</b></td></tr>
+      <tr><td>2회 이상 완주</td><td>&mdash;</td><td>530</td><td>완주자의 50.9%</td></tr>
+      <tr class="keyrow"><td>입장 도달</td><td><code>2094</code></td><td>1,304</td><td><b>31.0%</b></td></tr>
+    </tbody>
+  </table>
+  <p class="note"><code>2270</code>·<code>2271</code>은 인게임 아이템 구매 경로와 코드를 공유하므로, 위 값은 <code>2095</code> 이후 시간순 시퀀스로만 잘라낸 것임(전체 <code>2270</code> 12,336건 중 프리레벨발 3,800건). <b><code>2095</code>는 입장료 부족과 부스터 구매 부족 두 맥락의 합계</b>이며 현재 둘을 가르는 필드가 없음 &mdash; SPEC-044와 같은 조건임. <b>완주율 39.1%는 광고 자체의 문제로 이 스펙의 범위 밖임.</b></p>
+
+  <h4>광고 1회로 입장이 되는 구간과 안 되는 구간</h4>
+  <p>지급량은 2,000골드 정액인데 입장료는 레벨 티어로 올라감. 잔액 0 · 배수 x1 · 부스터 없음 기준임.</p>
+  <table>
+    <thead><tr><th>레벨</th><th>입장료</th><th>필요 시청</th><th>실측 &mdash; 2회 이상 필요 비율</th></tr></thead>
+    <tbody>
+      <tr><td>3~9</td><td>1,000</td><td>1회</td><td>0.0%</td></tr>
+      <tr><td>10~24</td><td>1,500</td><td>1회</td><td>4.1%</td></tr>
+      <tr><td>25~49</td><td>1,800</td><td>1회</td><td>9.3%</td></tr>
+      <tr><td>50~99</td><td>2,000</td><td>1회</td><td>24.9%</td></tr>
+      <tr class="warn"><td><b>100~199</b></td><td>2,200</td><td><b>2회</b></td><td>26.0%</td></tr>
+      <tr class="warn"><td>200~349</td><td>2,500</td><td>2회</td><td>40.6%</td></tr>
+      <tr class="warn"><td>350~549</td><td>2,900</td><td>2회</td><td>50.0%</td></tr>
+      <tr class="warn"><td>550~1,099</td><td>3,400~3,900</td><td>2회</td><td>60.0~66.7%</td></tr>
+      <tr class="warn"><td>1,100 이상</td><td>4,500~5,000</td><td>3회</td><td>66.7%</td></tr>
+    </tbody>
+  </table>
+  <p class="note">실측 비율이 표의 계산값보다 높은 이유는 배수(x2~x4)와 부스터가 요구액을 키우기 때문임 &mdash; Lv50~99 구간의 평균 요구액은 입장료 2,000이 아니라 2,702임. <b>이 때문에 말풍선 문구를 입장이 아니라 지급량으로 잡음</b>(&sect;문구 참조).</p>
+
+  <h3>고칠 부분 &mdash; 한 가지</h3>
+  <table>
+    <thead><tr><th>#</th><th>변경</th><th>의도</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td>1</td><td>골드가 모자라 Play가 잠긴 동안, 버튼 오른쪽에 <b>광고 말풍선</b>을 상시 노출함. 탭하면 지금 회색 버튼을 눌렀을 때와 같은 충전 팝업으로 이어짐</td><td>이미 있는 경로를 <b>보이게</b> 만듦. 새 지면도 새 보상도 만들지 않음</td></tr>
+    </tbody>
+  </table>
+
+  <h3>흐름 As-Is / To-Be</h3>
+  <table>
+    <thead><tr><th>&nbsp;</th><th>As-Is</th><th>To-Be</th></tr></thead>
+    <tbody>
+      <tr><td>골드 부족 상태</td><td>Play가 회색으로 교체됨. 화면에 행동 단서 없음</td><td>Play는 회색 그대로. <b>옆에 말풍선이 나타남</b></td></tr>
+      <tr><td>유저가 할 수 있는 것</td><td>회색 버튼을 눌러 봐야 알 수 있음</td><td>말풍선이 지급량을 미리 보여줌</td></tr>
+      <tr><td>탭 이후</td><td colspan="2">동일 &mdash; <code>showGoldShortagePopup()</code> 호출, 충전 팝업 노출</td></tr>
+      <tr><td>골드가 채워지면</td><td>Play 활성으로 전환</td><td>Play 활성으로 전환 + <b>말풍선 숨김</b></td></tr>
+    </tbody>
+  </table>
+
+  <div class="mk">
+    <div class="mk-cap">화면 &mdash; 실제 빌드 캡처에 확정 배치를 얹은 것</div>
+    <img src="ref-045-prelevel-shortage.png" alt="프리레벨 골드 부족 지면 As-Is / To-Be" style="width:100%;border-radius:12px;display:block">
+    <p class="mk-note">잔액 1,200 · 입장료 3,000 상태임. 입장료 숫자가 빨간색인 것은 현재 클라 동작 그대로임(<code>refreshPlayCost</code>). <b>부족하다는 신호는 이미 있고, 없는 것은 다음에 무엇을 하면 되는지임.</b></p>
+  </div>
+
+  <div class="callout callout-yellow">
+    <p><b>제약 &mdash; 버튼 색은 난이도 전용 채널임.</b> 프리레벨 Play 버튼에는 난이도별 스프라이트가 세 벌 붙어 있음(Normal 초록 · Hard 빨강 · Super Hard 보라). 상태 표현에 네 번째 색을 넣으면 SPEC-043의 난이도 신호와 같은 채널을 다투게 되므로, <b>버튼 자체는 건드리지 않고 말풍선으로만 처리함.</b></p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════ ② 개발 스펙 ════════════════════════════════════ -->
+<section id="s2">
+  <div class="section-header">
+    <div class="section-num section-num-2">&#9313;</div>
+    <div class="section-meta">
+      <div class="section-title">개발 스펙</div>
+      <span class="section-audience aud-dev">개발팀</span>
+    </div>
+  </div>
+
+  <h3>노출 상태</h3>
+  <p>클라 안에서만 결정됨. 서버에 새로 저장할 상태 없음.</p>
+  <table>
+    <thead><tr><th>상태</th><th>조건</th><th>화면</th></tr></thead>
+    <tbody>
+      <tr><td>미노출 &mdash; 정상</td><td>보유 골드 &ge; 요구액</td><td>Play 활성. 말풍선 없음</td></tr>
+      <tr class="pick"><td><b>노출</b></td><td>보유 골드 &lt; 요구액 <b>AND</b> 당일 팝업 광고 잔여 &gt; 0 <b>AND</b> 신설 상수 = 1</td><td>Play 회색 + <b>말풍선 노출</b></td></tr>
+      <tr><td>미노출 &mdash; 소진</td><td>보유 골드 &lt; 요구액 <b>AND</b> 당일 팝업 광고 잔여 = 0</td><td>Play 회색. 말풍선 없음 &mdash; 기존 상점·오퍼 경로로 이어짐</td></tr>
+      <tr><td>미노출 &mdash; 차단</td><td>신설 상수 = 0</td><td>현재와 완전히 동일</td></tr>
+    </tbody>
+  </table>
+  <p class="note">요구액 = <code>getGoldCostForMultiple(multipleValue) + getBoosterGoldCost()</code>. 잔여 횟수 = <code>popup_free_gold_limit &minus; claimedRvGoldCountInfos.popup</code>. <b>세 조건은 <code>refreshPlayCost()</code>가 도는 모든 시점에 함께 재평가함</b> &mdash; 배수 변경 · 부스터 선택 · 광고 시청 완료 · 골드 갱신이 전부 여기를 지나므로 별도 훅이 필요 없음.</p>
+
+  <h4>시간 기준</h4>
+  <table>
+    <thead><tr><th>용어</th><th>뜻</th><th>기준</th></tr></thead>
+    <tbody>
+      <tr><td>당일</td><td>광고 잔여 횟수를 세는 단위. 이 스펙이 쓰는 유일한 시간 개념임</td><td><b>서버 시각 기준 UTC 0시</b>에 리셋(<code>getDailyResetRemainMs</code>). 기기 로컬 자정이 아님</td></tr>
+      <tr><td>회차 · 쿨다운</td><td>없음</td><td>말풍선은 조건이 참인 동안 계속 떠 있고 표시 횟수 제한도 재등장 대기도 두지 않음</td></tr>
+    </tbody>
+  </table>
+  <p class="note">플랫폼별 타임존 정책상 페이스북은 UTC, 토스는 KST가 원칙이나 <b>이 값은 이미 구현된 공용 일일 리셋을 그대로 따르므로 이 스펙에서 새로 정하지 않음</b>. 상점 · 우편함 무료 골드와 같은 축임.</p>
+
+  <h3>배치</h3>
+  <table>
+    <thead><tr><th>항목</th><th>값</th></tr></thead>
+    <tbody>
+      <tr><td>부모 계층</td><td><code>Contents &gt; pop &gt; PLAYBUTTON</code>과 같은 층 &mdash; 팝업 패널 안쪽</td></tr>
+      <tr><td>기준 위치</td><td>Play 버튼 오른쪽, 세로 중앙 정렬. 꼬리가 버튼을 향함</td></tr>
+      <tr><td>확보 영역</td><td>가로 171 &times; 세로 100 (2배 해상도 캡처 실측)</td></tr>
+      <tr><td>선행 조건</td><td><b>SPEC-043의 부스터 2칸 적용이 전제임.</b> 3칸 시절에는 이 자리가 세 번째 부스터였음</td></tr>
+      <tr><td>다른 요소와의 간섭</td><td>없음. 그림자 냥이 이벤트 태그는 팝업 <b>바깥</b> 오른쪽에 붙음(월드 x&asymp;1052, 말풍선은 x&asymp;865)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>에셋 &mdash; 신규 제작 없음</h3>
+  <table>
+    <thead><tr><th>부품</th><th>기존 위치</th></tr></thead>
+    <tbody>
+      <tr><td>말풍선 본체</td><td><code>PopupGameEntry.prefab</code> &gt; <code>EventShadowChaseTag &gt; bubble</code> 구조. 스프라이트 · 애니메이션 · 버튼이 한 세트로 이미 붙어 있음</td></tr>
+      <tr><td>등장 · 퇴장 연출</td><td>같은 노드의 <code>bubble_show</code> / <code>bubble_hide</code></td></tr>
+      <tr><td>아이콘</td><td><code>UI_Icon_ads.png</code></td></tr>
+      <tr><td>골드 아이콘</td><td><code>UI_Icon_coin01.png</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>문구</h3>
+  <table>
+    <thead><tr><th>표기</th><th>규칙</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td>골드 아이콘 + <b>+2,000</b></td><td>숫자는 <span class="sheet-var">popup_free_gold_amount</span>를 읽어 표기함. <b>하드코딩 금지</b> &mdash; 시트에서 지급량을 바꾸면 문구가 따라가야 함</td></tr>
+      <tr class="warn"><td>입장 · 플레이 표현 금지</td><td>지급량이 정액 2,000이라 Lv100부터는 1회로 입장이 안 됨. 입장을 약속하면 광고를 보고도 못 들어가는 경험이 생김</td></tr>
+    </tbody>
+  </table>
+  <p class="note">신규 문구 키 1건. 숫자만 노출하므로 번역 물량은 없으나, 아이콘과 숫자 조합이라 <b>가로폭이 가장 긴 언어에서도 171px 안에 들어가는지 확인 필요함</b>.</p>
+
+  <h3>시트 변수</h3>
+  <div class="sheet-block">
+    <div class="sheet-block-title">const &mdash; 신설 1건</div>
+    <div class="sheet-row">
+      <span class="sheet-row-var">is_prelevel_gold_bubble_on</span>
+      <span class="sheet-row-default">0</span>
+      <span class="sheet-row-unit">0 또는 1</span>
+      <span class="sheet-row-desc">프리레벨 골드 부족 말풍선 노출 여부. <b>0으로 넣어 배포한 뒤 시트로 켬</b></span>
+    </div>
+  </div>
+  <div class="callout callout-yellow">
+    <p><b>키 번호는 시트 tool 탭에서 최종 확인 필요함.</b> 레퍼런스 스냅샷이 10064까지만 담고 있어 10065 이후 대역의 사용 여부를 문서에서 확정할 수 없음. SPEC-044가 10109 · 10110을 요청 중이므로 그 뒤 번호로 잡되, <b>입력 직전에 tool 탭 대역 인덱스로 대조할 것.</b></p>
+  </div>
+
+  <h3>계측</h3>
+  <h4>신규 로그 2건</h4>
+  <table>
+    <thead><tr><th>코드</th><th>시점</th><th>필드</th><th>출처</th></tr></thead>
+    <tbody>
+      <tr><td><code>2098_PRE_LEVEL_BUBBLE_SHOW</code></td><td>말풍선이 화면에 나타난 순간(중복 노출은 팝업 1회당 1건)</td><td><code>level</code> · <code>gold_balance</code> · <code>required</code> · <code>rv_left</code></td><td>전부 클라 보유값. <code>rv_left</code>는 로그인 응답의 <code>claimedRvGoldCountInfos.popup</code>에서 계산</td></tr>
+      <tr><td><code>2099_PRE_LEVEL_BUBBLE_CLICK</code></td><td>말풍선 탭</td><td>동일</td><td>동일</td></tr>
+    </tbody>
+  </table>
+  <p class="note"><code>2090</code>~<code>2097</code>이 이미 사용 중이라 <code>2098</code>·<code>2099</code>가 다음 빈 번호임. 이 두 건이 있어야 <b>말풍선 노출 대비 탭률</b>이라는 이 스펙 고유의 판정 지표가 생김.</p>
+
+  <h4>기존 계측 결함 2건 &mdash; 같이 고쳐야 판정이 가능함</h4>
+  <table>
+    <thead><tr><th>대상</th><th>현재 상태</th><th>필요 조치</th></tr></thead>
+    <tbody>
+      <tr class="todo-row"><td><code>2096_PRE_LEVEL_CLOSE</code><span class="todo-chip">미발화</span></td><td>호출부는 있으나(<code>PopupGameEntry.ts:1075</code>) 14일간 <b>0건</b>. 프리레벨 이탈을 직접 볼 수 없어 이번 실측도 "다음 이벤트 없음"으로 우회했음</td><td>발화 경로 점검 후 정상화. <b>이 스펙의 핵심 지표인 무반응 이탈률을 정확히 재려면 필수임</b></td></tr>
+      <tr class="todo-row"><td><code>2270</code> / <code>2271</code><span class="todo-chip">지면 미분리</span></td><td>프리레벨과 인게임 아이템 구매가 같은 코드를 공유함. 전체 <code>2270</code> 12,336건 중 프리레벨발이 3,800건</td><td><code>position</code> 필드 추가(<code>prelevel</code> / <code>ingame_item</code>). 시퀀스 추정 없이 지면별로 바로 집계 가능해짐</td></tr>
+    </tbody>
+  </table>
+
+  <h3>예외 &mdash; 그럼 이때는</h3>
+  <table>
+    <thead><tr><th>상황</th><th>동작</th></tr></thead>
+    <tbody>
+      <tr><td>당일 광고 10회를 모두 소진했을 때</td><td>말풍선을 숨김. 회색 버튼은 그대로고 기존 상점 경로가 유지됨. <b>SPEC-044의 오퍼가 붙는 지점이 여기임</b></td></tr>
+      <tr><td>입장권을 보유해 입장료가 0일 때</td><td>부족 상태 자체가 성립하지 않으므로 미노출</td></tr>
+      <tr><td>입장은 가능한데 부스터 살 골드만 모자랄 때</td><td>미노출. Play가 활성이므로 잠김 오독이 일어나지 않음. 부스터 슬롯 탭의 기존 충전 팝업 경로는 그대로 둠</td></tr>
+      <tr><td>배수나 부스터 때문에 부족분이 2,000을 넘을 때</td><td>말풍선은 지급량만 표기함. 광고를 봐도 여전히 모자라면 <b>충전 팝업이 닫히지 않고 남아 연속 시청이 가능함</b>(현 동작 유지, <code>PopupGameEntry.ts:1264</code>)</td></tr>
+      <tr><td>튜토리얼 구간(Lv1~2, 입장료 0)</td><td>미노출</td></tr>
+      <tr><td>재도전으로 프리레벨에 들어왔을 때(<code>position=retry</code>)</td><td>동일하게 적용함. 조건이 잔액과 광고 잔여뿐이라 진입 경로를 가리지 않음</td></tr>
+      <tr><td>광고 로드에 실패하거나 유저가 광고를 닫았을 때</td><td>말풍선 유지. 잔여 횟수가 차감되지 않으므로 곧바로 재시도 가능함</td></tr>
+      <tr><td>광고를 봐서 골드가 채워졌을 때</td><td><code>refreshPlayCost()</code>가 도는 같은 시점에 Play 활성 전환과 말풍선 숨김이 함께 일어남</td></tr>
+      <tr><td>결제가 불가한 플랫폼일 때</td><td>영향 없음. 말풍선은 광고 잔여가 있을 때만 뜨고, 소진 이후 분기는 기존 로직 그대로임</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════════════════════════════════════ ③ 검증 · 롤백 ════════════════════════════════════ -->
+<section id="s3">
+  <div class="section-header">
+    <div class="section-num section-num-3">&#9314;</div>
+    <div class="section-meta">
+      <div class="section-title">검증 · 롤백</div>
+      <span class="section-audience aud-dev">개발팀</span>
+    </div>
+  </div>
+
+  <h3>KPI As-Is / To-Be</h3>
+  <table>
+    <thead><tr><th>지표</th><th>As-Is</th><th>To-Be</th><th>산출</th></tr></thead>
+    <tbody>
+      <tr class="keyrow"><td>골드 부족 상태 노출의 무반응 이탈</td><td>61.1%</td><td><b>40% 이하</b></td><td><code>2090</code>(부족 상태) 중 후속 행동 없음</td></tr>
+      <tr><td>부족 발생 후 입장 도달</td><td>31.0%</td><td>45% 이상</td><td><code>2095</code> &rarr; 300초 내 <code>2094</code></td></tr>
+      <tr><td>광고 시청 시도</td><td>2,665건 / 14일</td><td>4,000건 이상</td><td><code>2271</code> (<code>position</code> 분리 후 프리레벨만)</td></tr>
+      <tr><td>말풍선 노출 대비 탭</td><td>&mdash; 신규</td><td>기준선 확보</td><td><code>2099</code> &divide; <code>2098</code></td></tr>
+    </tbody>
+  </table>
+  <p class="note">회복 여지의 상한은 <b>하루 316건</b>임(무반응 4,422건 &divide; 14일). 여기에 현재 광고 완주율 39.1%가 곱해지므로 판수 기여는 하루 수십 판 규모임. <b>이 스펙의 목적은 판수 증대가 아니라 막힌 유저에게 경로를 보이게 하는 것</b>이고, 완주율 39.1%는 별도 건으로 다룸.</p>
+
+  <h3>판정</h3>
+  <table>
+    <thead><tr><th>결과</th><th>판정</th><th>조치</th></tr></thead>
+    <tbody>
+      <tr><td>무반응 이탈 하락 + 입장 도달 상승</td><td>성공</td><td>유지</td></tr>
+      <tr><td>말풍선 탭률은 붙었으나 입장 도달 무변화</td><td>병목이 광고 완주로 이동</td><td>완주율 건으로 이월. 말풍선은 유지</td></tr>
+      <tr><td>전 지표 무유의</td><td>신호 없음 &mdash; <b>검출력 부족과 구분해 기록</b></td><td>말풍선 크기 · 위치를 키워 재측정</td></tr>
+      <tr class="warn"><td><b>골드 충분 유저의 판수 하락</b></td><td><b>오노출</b></td><td>노출 조건 점검. 골드 충분 상태에 뜨고 있다는 뜻임</td></tr>
+      <tr class="warn"><td><b>입장료 소각 감소</b></td><td><b>경제 영향</b></td><td>상수 0으로 원복. 입장료는 현재 유일한 골드 소각처임</td></tr>
+    </tbody>
+  </table>
+  <p class="note">관측 기간 2주. 골드 부족 지면은 하루 500건대라 <b>2주면 무반응 이탈률에는 검출력이 나오지만 판수에는 부족함</b>. 배포 직후 신선도 효과를 감안해 첫 3일은 판정에서 제외함. 판정 전 <code>2096</code> 정상화가 선행되어야 함.</p>
+
+  <h3>롤백</h3>
+  <table>
+    <thead><tr><th>단계</th><th>수단</th><th>소요</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td>1단계 &mdash; 말풍선 차단</td><td><code>is_prelevel_gold_bubble_on</code>을 0으로</td><td><b>시트 1셀 · 즉시</b></td></tr>
+    </tbody>
+  </table>
+  <p class="note">Play 버튼과 충전 팝업 로직을 건드리지 않으므로 <b>상수 하나로 배포 전 상태로 완전히 돌아감</b>. 상수를 0으로 넣고 배포한 뒤 시트로 켜는 순서라, 클라 배포 시점과 기능 활성 시점을 분리해 전후 비교 창을 깨끗하게 잡을 수 있음.</p>
+
+  <h3>연관</h3>
+  <table>
+    <thead><tr><th>스펙</th><th>관계</th></tr></thead>
+    <tbody>
+      <tr><td>SPEC-043 &mdash; 프리레벨 부스터 2칸</td><td><b>선행</b>. 말풍선 자리가 이 변경으로 생김</td></tr>
+      <tr><td>SPEC-044 &mdash; 골드 부족 지면 오퍼 연결</td><td>같은 지면의 뒷단. <b>광고 잔여가 0일 때 오퍼가 붙고, 남아 있을 때 말풍선이 뜸</b> &mdash; 서로 자리를 다투지 않음</td></tr>
+      <tr><td>SPEC-035 &mdash; 전면 광고 빈도</td><td>지면이 다름(전면 광고 대 보상형). 노출 예산이 겹치지 않음</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</div>
+</body>
+</html>
