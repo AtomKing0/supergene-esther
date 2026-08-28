@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CP 운영 개편 보고 — 2026년 9월</title>
+<style>
+:root{--navy:#13335c;--blue:#2E75B6;--sky:#EAF2FB;--grey:#5a5a5a;--red:#C0392B;--green:#1E8449;--amber:#E67E22;--line:#dcdcdc;}
+*{box-sizing:border-box;}
+body{font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",-apple-system,sans-serif;color:#222;line-height:1.6;max-width:1040px;margin:0 auto;padding:36px 34px 70px;font-size:15px;background:#fff;}
+h1{font-size:21px;color:var(--navy);margin:0 0 4px;}
+.sub{font-size:12.5px;color:#666;margin:0 0 24px;}
+.verdict{background:#0f2a4a;color:#fff;border-radius:14px;padding:20px 24px;margin:0 0 26px;}
+.verdict .vt{font-size:11px;font-weight:800;letter-spacing:1px;opacity:.65;margin-bottom:10px;}
+.verdict ol{margin:0;padding-left:20px;font-size:14.5px;line-height:1.85;}
+.verdict li{margin:6px 0;}
+.verdict b{color:#ffd97a;}
+.sec{font-size:16px;color:var(--navy);font-weight:800;border-left:5px solid var(--navy);padding-left:12px;margin:34px 0 12px;}
+.sec .s-desc{display:block;font-size:12px;color:#777;font-weight:500;margin-top:3px;}
+table.grid{border-collapse:collapse;width:100%;margin:8px 0;font-size:13.5px;}
+.grid{border:1px solid #e2e8f0;}
+.grid th,.grid td{border-bottom:1px solid var(--line);padding:10px 11px;text-align:left;vertical-align:top;word-break:keep-all;border-left:1px solid #eef1f5;}
+.grid th:first-child,.grid td:first-child{border-left:none;}
+.grid th{color:#4a5a6e;font-weight:700;font-size:11.5px;background:#f4f6f9;border-bottom:2px solid var(--navy);}
+.grid td.num,.grid th.num{text-align:right;font-variant-numeric:tabular-nums;}
+.grid tr.hi td{background:#EAF6EE;}
+.grid tr.warn td{background:#FFF8EC;}
+.grid.sm{font-size:12.5px;}
+.grid.sm th,.grid.sm td{padding:8px 9px;}
+.grid td.lbl{font-weight:700;color:#444;}
+.asis{color:#8a8a8a;}
+.tobe{color:#13335c;font-weight:700;}
+.hl{color:var(--red);font-weight:800;}
+.note{font-size:11.5px;color:#888;line-height:1.8;margin:8px 0 0;}
+.tag{display:inline-block;font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;vertical-align:middle;}
+.t-keep{background:#EAF2FB;color:#1c5a8f;border:1px solid #a8c8e4;}
+.t-new{background:#EAF6EE;color:#1E8449;border:1px solid #9ed4b4;}
+.t-drop{background:#FEF0EF;color:#a93226;border:1px solid #f0a89e;}
+.g-chip{display:inline-block;border-radius:5px;padding:1px 8px;font-size:11.5px;font-weight:700;line-height:1.7;vertical-align:middle;white-space:nowrap;}
+.g-coin{background:#fff0e6;color:#c94b00;border:1px solid #f4b68a;}
+.g-cozy{background:#e6f5f2;color:#0a6b5e;border:1px solid #8ecdc5;}
+.g-mahjong{background:#fdecea;color:#a93226;border:1px solid #f0a89e;}
+.g-puzzle{background:#f3ecfb;color:#5b2c8d;border:1px solid #c9a6e8;}
+.g-pbm{background:#e8f1f8;color:#154360;border:1px solid #8cb4d4;}
+.g-sol{background:#fef8e7;color:#9a6900;border:1px solid #f0d080;}
+.arw{color:#999;font-weight:700;padding:0 4px;}
+.ord{display:inline-block;width:18px;height:18px;border-radius:5px;background:var(--navy);color:#fff;font-size:11px;font-weight:800;text-align:center;line-height:18px;margin-right:5px;}
+.box{border-radius:10px;padding:13px 17px;margin:10px 0;font-size:13px;line-height:1.7;word-break:keep-all;}
+.box.blue{background:#F4F7FB;border-left:4px solid var(--navy);}
+.box.amber{background:#FFF8EC;border-left:4px solid var(--amber);}
+.box.green{background:#F2FAF5;border-left:4px solid var(--green);}
+.box .bl{font-size:11.5px;font-weight:800;margin-bottom:5px;}
+.box.amber .bl{color:#b9770e;} .box.green .bl{color:var(--green);} .box.blue .bl{color:var(--navy);}
+.qa{border:1px solid #c5d3e8;border-radius:10px;padding:14px 18px;margin:12px 0;background:#fbfcfe;}
+.qa .q{font-weight:800;color:var(--navy);font-size:13.5px;margin-bottom:8px;}
+.qa .a{font-size:13px;line-height:1.75;word-break:keep-all;}
+.cmp{border-collapse:collapse;width:100%;margin:10px 0 0;font-size:13px;table-layout:fixed;border:1px solid #e2e8f0;}
+.cmp th{color:#4a5a6e;font-weight:700;font-size:11.5px;background:#f4f6f9;padding:9px 12px;text-align:left;
+        word-break:keep-all;border-bottom:2px solid var(--navy);border-left:1px solid #e2e8f0;}
+.cmp th:first-child{border-left:none;}
+.cmp td{padding:12px;vertical-align:top;word-break:keep-all;overflow-wrap:break-word;line-height:1.6;
+        border-left:1px solid #eef1f5;}
+.cmp td:first-child{border-left:none;}
+.cmp tr.item td{border-top:1px solid #e2e8f0;}
+.cmp tr.item:first-child td{border-top:none;}
+.cmp td.k{font-weight:800;color:var(--navy);background:#fbfcfd;}
+.cmp td.z{color:#9aa4b0;font-size:12px;}
+.cmp td.a{color:#6f7a86;font-size:12px;}
+.cmp td.b{color:#13335c;font-weight:700;}
+.cmp tr.why td{padding:0 0 12px;border:none;border-left:none;background:#fbfcfd;}
+.cmp tr.why .w{background:#f2f6fb;border-left:3px solid #9fb8d4;margin:0 12px;border-radius:0 6px 6px 0;
+        padding:9px 14px;font-size:12px;line-height:1.75;color:#3f4a57;font-weight:400;
+        word-break:keep-all;overflow-wrap:break-word;}
+.cmp tr.why .w b{color:#1a1a2e;}
+.wlbl{display:inline-block;font-size:10px;font-weight:800;color:#7089a8;letter-spacing:.5px;margin-right:7px;vertical-align:1px;}
+.fstrip{display:flex;align-items:stretch;gap:0;margin:14px 0 6px;flex-wrap:wrap;}
+.fcard{flex:1 1 240px;background:#F4F7FB;border:1px solid #dbe4f0;border-radius:12px;padding:14px 16px;}
+.fcard .ft{font-size:11px;font-weight:800;color:#7089a8;letter-spacing:.4px;margin-bottom:2px;}
+.fcard .fq{font-size:14.5px;font-weight:800;color:var(--navy);margin-bottom:2px;word-break:keep-all;}
+.fcard .fd{font-size:11.5px;color:#777;margin-bottom:9px;}
+.fcard .fr{font-size:12.5px;line-height:1.75;}
+.fcard .fgap{margin-top:9px;padding-top:8px;border-top:1px dashed #cdd9e8;font-size:11.5px;font-weight:800;color:#b9770e;}
+.fop{display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#9fb0c4;padding:0 12px;}
+.fcard.res{background:#EAF6EE;border-color:#a9d6bd;}
+.fcard.res .fgap{color:var(--green);}
+.cap{font-size:12px;color:#666;margin:4px 0 0;word-break:keep-all;}
+.grid td.dim,.grid th.dim{background:#fafafa;}
+.grid td.dim .g-chip{opacity:.72;}
+.hsub{display:block;font-weight:500;font-size:10.5px;color:#8d97a3;margin-top:2px;letter-spacing:0;}
+.sv{font-size:11px;color:#8a94a3;font-weight:700;margin-left:4px;font-variant-numeric:tabular-nums;}
+@media(max-width:640px){body{padding:20px 14px 50px;font-size:14px;}.fop{padding:6px 0;}}
+</style>
+</head>
+<body>
+
+<h1>크로스 프로모션 운영 개편 보고 — 2026년 9월</h1>
+<p class="sub">6월 CP 운영 계획 대비 변경 사항 · 적용 2026-09-01 (미션 CP 종료는 8/24 완료 — 구현 4종) · 실측 2026-08-04~08-18 · CP 유입 유저 · T1 6개국</p>
+
+<div class="verdict">
+<div class="vt">요약</div>
+<ol>
+<li><b>미션 CP는 8/24(월) 종료 완료</b> — 미션이 구현돼 있던 4종(<span class="g-chip g-mahjong">마종</span>·<span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-pbm">퍼블마</span>·<span class="g-chip g-puzzle">더퍼즐</span>). <span class="g-chip g-cozy">코지타일즈</span>는 원래 미구현임. 6월 '미션 우선' 결론을 뒤집는 건이라 §5에 종료 비용과 감시 항목을 남김. <b>9/1 배정 변경과 8일 떨어져 있어 두 변화의 효과를 분리해 볼 수 있음</b>(8/24~8/31 = 미션 종료 단독 구간).</li>
+<li><b>승인이 필요한 것은 한 건임 — <span class="g-chip g-mahjong">마종</span> 수신 경로를 1곳에서 2곳으로 늘릴지</b>(§5). 미승인 시 현행 배정표 그대로 진행함.</li>
+<li><b>솔리테어 1순위 고정을 없애고, from 게임마다 순번을 따로 매김.</b> to 게임을 2종에서 3종으로 늘려 6개 게임 전부 최소 한 경로를 확보함.</li>
+<li><b>판정 기준을 활동성에서 슬롯 가치(전환 × 유저당 매출)로 바꿈.</b> 유저당 1위인 <span class="g-chip g-mahjong">마종</span>은 전환이 최저(노출 1,000당 2.0명)라 하위로, 유저당 5위인 <span class="g-chip g-sol">솔리테어</span>는 전환이 차순위 게임 대비 2~13배(최저 마종 대비 21배) 앞서 <b>전 게임에서 상위 3종</b>이 됨.</li>
+<li><b>물량은 늘지 않음.</b> CP는 광고가 실패한 자리에서만 나오고 그 공급이 상한임. 미션 종료분을 메울 수단이 없어 <b>북미 일간 유저가 408에서 331로 줄어들 것으로 봄(−77.5명).</b></li>
+</ol>
+</div>
+
+<div class="sec">1 · 변경 요약</div>
+<table class="cmp">
+<thead><tr><th style="width:12%;">항목</th><th style="width:27%;">개편 전 · 6월 이전</th><th style="width:27%;">AS-IS · 6월 계획</th><th style="width:34%;">TO-BE · 9월 개편</th></tr></thead>
+<tbody>
+
+<tr class="item">
+  <td class="k">채널</td>
+  <td class="z">팝업·미션 모두 운영. 단 <b>게임마다 구성이 제각각</b></td>
+  <td class="a">미션(품질) + 팝업(볼륨) 병행</td>
+  <td class="b">팝업 단독 <span class="tag t-drop">미션 종료</span></td>
+</tr>
+<tr class="why"><td colspan="4"><div class="w"><span class="wlbl">근거</span>
+운영 단순화 결정임. <b>단순화로 아끼는 값은 정량화하지 못했음</b> — 6게임 × 2채널 매트릭스 관리와 이미지·검수 유지 공수가 줄지만 시간·비용으로 환산한 수치가 없음.
+반면 <b>끄는 비용은 정량화됨</b> — 북미 일간 유저 77.5명, 유저당 매출 팝업의 9.7배, 완주율 88.4% vs 26.5%. 6월 승인 결론이 "미션 우선"이었으므로 <b>이 항목은 승인이 필요한 결정</b>으로 §5에 올림.<br>
+완화책 — <b>미션 코드를 제거하지 않고 노출만 끔.</b> 배정·순번과 달리 되돌리는 데 빌드가 필요 없어 <b>즉시 복구 가능</b>함.
+</div></td></tr>
+
+<tr class="item">
+  <td class="k">노출 구조</td>
+  <td class="z">게임별로 전부 다름 — <span class="g-chip g-mahjong">마종</span>은 한 게임 <b>3회 도배</b></td>
+  <td class="a"><span class="g-chip g-sol">솔리테어</span> 1순위 고정, 기존 1종과 번갈아 반복 (to 2종)</td>
+  <td class="b">고정 순위 없이 <b>3종 평면 순환</b></td>
+</tr>
+<tr class="why"><td colspan="4"><div class="w"><span class="wlbl">근거</span>1순위 고정은 런칭 물량 확보용 조치였음. 8/12 신작 노출 종료 후에도 북미 일간 유저가 <b>408</b>(8/12~8/17 실측)로 기준선 300을 넘겨 <b>고정할 근거가 소멸</b>했음.</div></td></tr>
+
+<tr class="item">
+  <td class="k">순번 기준</td>
+  <td class="z"><b>기준 없음</b> — 게임별 임의 설정</td>
+  <td class="a">활동성 지표 — D7 리텐션 · 인당 광고 · 소셜 발행</td>
+  <td class="b"><b>슬롯 가치</b> = 노출당 신규 전환 × 유저당 광고 매출</td>
+</tr>
+<tr class="why"><td colspan="4"><div class="w"><span class="wlbl">근거</span>활동성만 보면 <b>"가면 남는가"</b>에만 답하고 <b>"몇 명이 가는가"</b>가 빠짐. 슬롯은 노출 자원이므로 <b>전환 × 유저당 매출</b>로 봐야 값이 나옴. 두 값의 순위가 크게 갈림 — 상세는 §2.</div></td></tr>
+
+<tr class="item">
+  <td class="k">빈도</td>
+  <td class="z">게임별 상이 — 세션 3회 유무가 섞여 있었음</td>
+  <td class="a">세션 3회 · 전체 합산 상한</td>
+  <td class="b"><b>to 게임당 3회</b> · 세션 최대 9회</td>
+</tr>
+<tr class="why"><td colspan="4"><div class="w"><span class="wlbl">근거</span>전체 합산 상한이면 3종 순환에서 <b>한 바퀴만 돌고 끝남</b>. 게임 단위로 풀어야 순환 구조가 성립함.</div></td></tr>
+
+<tr class="item">
+  <td class="k">페어 선정</td>
+  <td class="z"><b>기준 없음</b></td>
+  <td class="a">장르 적합도 우선 — 솔로 메타끼리 · 경쟁형끼리</td>
+  <td class="b">슬롯 가치로 결정 · <b>동점 시 장르 적합도 우선</b></td>
+</tr>
+<tr class="why"><td colspan="4"><div class="w"><span class="wlbl">근거</span>6월 결론을 <b>기각할 근거는 없음.</b> 6월 이후 기존 게임끼리의 페어가 대부분 중단되고 <span class="g-chip g-sol">솔리테어</span>로 집중돼 <b>장르 가설을 검증할 실측이 쌓이지 않았음.</b> 순번은 실측이 있는 슬롯 가치로 정하되, <b>값이 비슷한 자리에서는 6월 기준대로 장르가 맞는 페어를 우선</b>함. 상세는 §4.</div></td></tr>
+
+<tr class="item">
+  <td class="k">국가</td>
+  <td class="z"><b>필터 미운영</b> (전 게임)</td>
+  <td class="a">US 우선, 필요 시 T1 확장</td>
+  <td class="b">T1 전체 유지 <span class="tag t-keep">변경 없음</span></td>
+</tr>
+<tr class="why"><td colspan="4"><div class="w"><span class="wlbl">근거</span>7/20 지오 누수 수정 이후 비T1 유입이 <b>78%에서 7%</b>로 떨어져 현 설정이 정상 작동 중임.</div></td></tr>
+
+<tr class="item">
+  <td class="k"><span class="g-chip g-pbm">퍼블마</span> 수신</td>
+  <td class="z"><span class="g-chip g-cozy">코지</span>·<span class="g-chip g-mahjong">마종</span>에서 수신 중</td>
+  <td class="a">수신량 부족, 노출 확대 필요</td>
+  <td class="b"><b>2개 경로 확보</b> (<span class="g-chip g-puzzle">더퍼즐</span>·<span class="g-chip g-mahjong">마종</span> 3순위)</td>
+</tr>
+<tr class="why"><td colspan="4"><div class="w"><span class="wlbl">근거</span>6월 진단 그대로임. <b>팝업 수신 경로가 0</b>이라 미션을 끄면 수신이 완전히 사라지므로 3순위로 구제함.</div></td></tr>
+
+</tbody>
+</table>
+
+<div class="sec">2 · 순번은 어떻게 정했나
+<span class="s-desc">슬롯 가치 = 몇 명이 넘어가나 × 1명이 얼마 버나</span></div>
+
+<div class="fstrip">
+  <div class="fcard">
+    <div class="ft">전환</div>
+    <div class="fq">몇 명이 넘어가나</div>
+    <div class="fd">노출 1,000회당 신규 전환</div>
+    <div class="fr">
+      1위 <span class="g-chip g-sol">솔리테어</span> <b>16~43명</b><br>
+      최저 <span class="g-chip g-mahjong">마종</span> <b>2.0명</b>
+    </div>
+    <div class="fgap">격차 최대 21배</div>
+  </div>
+  <div class="fop">×</div>
+  <div class="fcard">
+    <div class="ft">유저당 매출</div>
+    <div class="fq">1명이 얼마 버나</div>
+    <div class="fd">유저-일당 광고 매출</div>
+    <div class="fr">
+      1위 <span class="g-chip g-mahjong">마종</span> <b>$0.1418</b><br>
+      5위 <span class="g-chip g-sol">솔리테어</span> <b>$0.0709</b>
+    </div>
+    <div class="fgap">격차 최대 2.3배</div>
+  </div>
+  <div class="fop">=</div>
+  <div class="fcard res">
+    <div class="ft">슬롯 가치</div>
+    <div class="fq">노출 1,000회의 값</div>
+    <div class="fd">두 값을 곱한 결과</div>
+    <div class="fr">
+      1위 <span class="g-chip g-sol">솔리테어</span> <b>$2.25~5.91</b><br>
+      하위 <span class="g-chip g-mahjong">마종</span> <b>$1.20</b>
+    </div>
+    <div class="fgap">전환 격차가 순위를 가름</div>
+  </div>
+</div>
+<p class="cap">전환은 게임 간 차이가 <b>최대 21배</b>인데 유저당 매출은 <b>2.3배</b>뿐임. 그래서 순위를 가르는 것은 전환 쪽이고, 유저당 1위인 <span class="g-chip g-mahjong">마종</span>이 하위로, 유저당 5위인 <span class="g-chip g-sol">솔리테어</span>가 1위로 뒤집힘.</p>
+
+<table class="grid" style="margin-top:16px;table-layout:fixed;">
+<thead>
+<tr>
+  <th style="width:6%;">순위</th><th style="width:13%;">to 게임</th>
+  <th class="num" style="width:14%;">전환<span class="hsub">노출 1,000당 신규</span></th>
+  <th class="num" style="width:14%;">유저당 매출<span class="hsub">유저-일당</span></th>
+  <th class="num" style="width:15%;">슬롯 가치<span class="hsub">전환 × 매출</span></th>
+  <th style="width:38%;">비고</th>
+</tr>
+</thead>
+<tbody>
+<tr class="hi">
+  <td><b>1</b></td><td><span class="g-chip g-sol">솔리테어</span></td>
+  <td class="num"><b>16~43명</b> <span class="note" style="display:inline;">1위</span></td>
+  <td class="num">$0.0709 <span class="note" style="display:inline;">5위</span></td>
+  <td class="num"><b>$2.25~5.91</b></td>
+  <td>유저당은 낮으나 전환이 압도적임 — 신작이라 아직 안 해본 유저가 남아 있음</td>
+</tr>
+<tr class="hi">
+  <td><b>2</b></td><td><span class="g-chip g-cozy">코지타일즈</span></td>
+  <td class="num">3.0~7.6명</td>
+  <td class="num">$0.1244 <span class="note" style="display:inline;">2위</span></td>
+  <td class="num"><b>$4.35</b></td>
+  <td>전환과 매출이 모두 상위라 <b>4개 from 게임에서 1순위</b></td>
+</tr>
+<tr>
+  <td>3</td><td><span class="g-chip g-coin">코인매치</span></td>
+  <td class="num">3.0~6.7명</td>
+  <td class="num">$0.1061</td>
+  <td class="num">$2.17</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td>4</td><td><span class="g-chip g-puzzle">더퍼즐</span></td>
+  <td class="num">3.0~8.9명</td>
+  <td class="num">$0.0623</td>
+  <td class="num">$1.35</td>
+  <td>—</td>
+</tr>
+<tr class="warn">
+  <td>5</td><td><span class="g-chip g-mahjong">마종</span></td>
+  <td class="num"><span class="hl">2.0명 · 최저</span></td>
+  <td class="num"><b>$0.1418</b> <span class="note" style="display:inline;"><b>1위</b></span></td>
+  <td class="num">$1.20</td>
+  <td><b>유저당 1위지만 넘어가는 유저가 없음.</b> 이미 우리 유저를 다 흡수한 성숙 게임임</td>
+</tr>
+<tr class="warn">
+  <td>6</td><td><span class="g-chip g-pbm">퍼블마</span></td>
+  <td class="num">약 2.1명</td>
+  <td class="num">$0.0908</td>
+  <td class="num">$0.70</td>
+  <td>전환과 매출이 모두 하위</td>
+</tr>
+</tbody>
+</table>
+<p class="cap">
+<b>슬롯 가치 = 전환 × 유저당 창내 매출</b>(유저-일당 매출 × 활동일)(<span class="g-chip g-sol">솔리테어</span> 1.96일 · <span class="g-chip g-cozy">코지타일즈</span> 4.61일 · <span class="g-chip g-mahjong">마종</span> 4.23일).<br>
+따라서 이 값은 <b>관측창 15일 안에서 발생한 누적 가치</b>이며 장기 가치가 아님. <b>관측 기간을 늘리면 리텐션이 좋은 게임이 유리해짐</b> — 특히 <span class="g-chip g-mahjong">마종</span>의 하위 판정은 창 길이에 영향받는 값임. 6월 문서가 쓰던 14일·90일 누적 기준으로 재산출하려면 코호트 리텐션 곡선이 필요한데 이번 관측창에서는 확보되지 않아 <b>미산출</b>임.<br>
+전환은 from 게임별로 값이 달라 범위로 표기했고, <b>실제 순번은 from 게임별로 각 항을 곱해 산출</b>함 — from별 값은 §3 배정표에 병기함. 유저당 매출의 유저 수·판수·광고 분해는 <b>부록</b> 참조. 단, <b>3순위는 이 순위를 따르지 않음</b> — 사유는 §3.
+</p>
+
+<div class="box amber">
+<div class="bl">추정치 하한으로 재산출해도 1·2순위 조합은 바뀌지 않음</div>
+미운영 페어의 전환은 추정 범위(3.0~7.6)를 썼고 위 표는 <b>상한</b> 기준임. 하한으로 바꾸면 값이 이렇게 됨.
+<table class="grid sm" style="margin:9px 0 0;background:#fff;">
+<thead><tr><th style="width:22%;">to 게임</th><th class="num">상한 기준</th><th class="num">하한 기준</th><th>순위 변화</th></tr></thead>
+<tbody>
+<tr class="hi"><td><span class="g-chip g-sol">솔리테어</span></td><td class="num">$5.91</td><td class="num">$2.23</td><td><b>1위 유지</b> (전환이 실측이라 범위가 좁음)</td></tr>
+<tr class="hi"><td><span class="g-chip g-cozy">코지타일즈</span></td><td class="num">$4.35</td><td class="num">$1.72</td><td><b>2위 유지</b></td></tr>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td class="num">$2.17</td><td class="num">$0.97</td><td>3위 → 4위</td></tr>
+<tr><td><span class="g-chip g-mahjong">마종</span></td><td class="num">$1.20</td><td class="num">$1.20</td><td>5위 → 3위 <span class="note" style="display:inline;">전환 실측이라 불변</span></td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span></td><td class="num">$1.35</td><td class="num">$0.46</td><td>4위 → 6위</td></tr>
+<tr><td><span class="g-chip g-pbm">퍼블마</span></td><td class="num">$0.70</td><td class="num">$0.70</td><td>6위 → 5위 <span class="note" style="display:inline;">전환 실측이라 불변</span></td></tr>
+</tbody>
+</table>
+<b>1·2위는 두 시나리오 모두 <span class="g-chip g-sol">솔리테어</span>·<span class="g-chip g-cozy">코지타일즈</span>로 동일</b>하므로 배정에 들어가는 게임은 바뀌지 않음.
+3위 이하는 흔들리지만 그 자리는 매출이 아니라 단절 방지 기준으로 채우므로 영향 없음.<br>
+다만 <b><span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-pbm">퍼블마</span> from에서는 1·2순위 순서가 추정치에 좌우됨</b>(상한이면 <span class="g-chip g-cozy">코지타일즈</span> 1위, 하한이면 <span class="g-chip g-sol">솔리테어</span> 1위). 들어가는 두 게임은 같으므로 <b>동점 처리</b>하고, 적용 후 실측으로 순서를 확정할 것.
+</div>
+
+
+<div class="box green">
+<div class="bl">잃는 쪽은 왜 안 세는가 — 검증했음</div>
+슬롯 가치는 <b>to 게임에서 얻는 값</b>만 셈. 유저가 from 게임을 떠나며 생기는 손실이 식에 없으므로, 그 손실이 실제로 0인지 확인했음.<br>
+같은 CP 노출을 받은 유저를 <b>클릭군과 비클릭군</b>으로 갈라 from 게임에서의 이후 활동을 비교함(8/04~8/18 · T1).<br><br>
+
+<b>① 클릭군은 원래 덜 붙어 있던 유저였음.</b> 노출 <b>이전부터</b> 활동일수가 비클릭군의 42~64%, 판수는 71~90% 수준임 —
+CP는 잘 붙어 있는 유저를 빼가는 게 아니라 <b>이탈 중인 유저를 잡아 재활용</b>하고 있음. 사후 격차를 그대로 손실로 읽으면 실제보다 크게 잡는 셈임.<br><br>
+
+<b>② 사전 활동량으로 보정하면 손실이 사라짐.</b>
+<span class="g-chip g-cozy">코지타일즈</span> −$0.011 · <span class="g-chip g-mahjong">마종</span> −$0.002 · <span class="g-chip g-coin">코인매치</span> +$0.004 —
+<b>사후 격차가 사전 격차로 전량 설명됨.</b> 6월 미션 채널에서 확인했던 결론이 팝업 채널·현재 기간에서 재현됨.<br><br>
+
+<b>③ 구조적 이유도 확인됨 — 클릭군은 판당 광고가 안 붙음.</b>
+판당 전면광고 완료가 <span class="g-chip g-cozy">코지타일즈</span> 0.330 vs 0.473 · <span class="g-chip g-mahjong">마종</span> 0.337 vs 0.509 · <span class="g-chip g-coin">코인매치</span> 0.264 vs 0.432로 <b>24~39% 낮음</b>.
+세 게임 모두 클릭군이 사후 <b>판수는 오히려 더 많은데</b> 광고는 덜 봄.
+<b>CP는 광고 요청이 실패해야 뜨므로, CP를 자주 보고 누르는 유저는 애초에 광고가 잘 붙지 않는 유저</b>임 — from 게임에 남아 있어도 광고 매출을 만들지 못하는 세그먼트라 옮겨도 잃을 것이 없음.<br><br>
+
+<b>결론 — 손실 항을 더해도 배정이 바뀌지 않음.</b> 손실은 to 게임과 무관하므로(어디로 보내든 from에서 빠지는 것은 같음) 페어 순번 자체를 움직이지 않음.
+<span class="g-chip g-cozy">코지타일즈</span>→<span class="g-chip g-sol">솔리테어</span> 순가치 <b>+$1.35</b>/1,000 노출로 유효함.
+단 <span class="g-chip g-pbm">퍼블마</span>·<span class="g-chip g-puzzle">더퍼즐</span>은 보정 후에도 손실이 남아 <b>미확정</b>으로 둠 — §5 참조.
+</div>
+
+<div class="box blue">
+<div class="bl">이 순위는 고정값이 아님 — 월 1회 재산출</div>
+<span class="g-chip g-sol">솔리테어</span>의 전환 우위는 <b>미포화</b>에서 나오므로 영구적이지 않음. 전환이 줄면 순위가 내려감 — 코인매치급($2.17)이 되는 지점이 전환 <b>약 15.6명</b>, 최하위로 떨어지는 지점이 <b>약 9.8명</b>임(현재 16~43명).
+반대로 유저당 매출은 런칭 7주차라 성숙 유저 풀이 없어 낮게 나오는 것이라, 유입이 이어지면 올라감.
+</div>
+
+<div class="sec">3 · 최종 배정
+<span class="s-desc">1·2순위 = from 게임별 슬롯 가치 상위 2종 · 값이 비슷하면 장르 적합도 우선</span></div>
+<table class="grid">
+<thead>
+<tr><th style="width:16%;">from 게임</th><th style="width:19%;"><span class="ord">1</span>순위</th><th style="width:19%;"><span class="ord">2</span>순위</th><th class="dim" style="width:19%;"><span class="ord">3</span>순위 <span class="note" style="display:inline;">클릭 3%</span> <span class="tag t-keep">단절 방지</span></th><th class="num">일 노출</th></tr>
+</thead>
+<tbody>
+<tr><td><span class="g-chip g-coin">코인매치</span></td><td><span class="g-chip g-cozy">코지타일즈</span><span class="sv">$4.35</span></td><td><span class="g-chip g-sol">솔리테어</span><span class="sv">$2.75</span></td><td class="dim"><span class="g-chip g-mahjong">마종</span></td><td class="num">2,506</td></tr>
+<tr><td><span class="g-chip g-puzzle">더퍼즐</span></td><td><span class="g-chip g-sol">솔리테어</span><span class="sv">$5.91</span></td><td><span class="g-chip g-cozy">코지타일즈</span><span class="sv">$4.35</span></td><td class="dim"><span class="g-chip g-pbm">퍼블마</span></td><td class="num">459</td></tr>
+<tr><td><span class="g-chip g-mahjong">마종</span></td><td><span class="g-chip g-cozy">코지타일즈</span><span class="sv">$4.35</span></td><td><span class="g-chip g-sol">솔리테어</span><span class="sv">$3.38</span></td><td class="dim"><span class="g-chip g-pbm">퍼블마</span></td><td class="num">1,596</td></tr>
+<tr><td><span class="g-chip g-cozy">코지타일즈</span></td><td><span class="g-chip g-sol">솔리테어</span><span class="sv">$2.25</span></td><td><span class="g-chip g-coin">코인매치</span><span class="sv">$2.17</span></td><td class="dim"><span class="g-chip g-puzzle">더퍼즐</span></td><td class="num">1,124</td></tr>
+<tr><td><span class="g-chip g-pbm">퍼블마</span></td><td><span class="g-chip g-cozy">코지타일즈</span><span class="sv">$4.35</span></td><td><span class="g-chip g-sol">솔리테어</span><span class="sv">$2.65</span></td><td class="dim"><span class="g-chip g-coin">코인매치</span></td><td class="num">649</td></tr>
+</tbody>
+</table>
+<p class="note">
+칩 옆 회색 숫자 = 그 from 게임 기준 <b>노출 1,000회당 슬롯 가치</b>(추정 셀은 상한). 1·2순위는 이 값 순서대로이며, <span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-pbm">퍼블마</span>는 <b>1·2순위 순서가 추정에 좌우돼 동점 처리</b>함.<br>
+수신 경로 — <span class="g-chip g-sol">솔리테어</span> 5곳 · <span class="g-chip g-cozy">코지타일즈</span> 4곳 · <span class="g-chip g-coin">코인매치</span> 2곳 · <span class="g-chip g-pbm">퍼블마</span> 2곳 · <span class="g-chip g-mahjong">마종</span> 1곳 · <span class="g-chip g-puzzle">더퍼즐</span> 1곳.<br>
+공통 조건 — to 게임당 세션 3회 · 튜토리얼 중 미노출 · 5레벨 클리어 후(<span class="g-chip g-pbm">퍼블마</span> 제외) · non-iOS · T1 6개국 · 확률대체 0 유지.
+</p>
+
+<div class="box green">
+<div class="bl">3순위 = 단절 방지 자리</div>
+3순위는 순번별 클릭 비중이 <b>1순위 62% · 2순위 35% · 3순위 약 3%</b>로, 매출 기여가 거의 없는 자리임.
+그래서 매출 순위를 따르지 않고 <b>어느 from 게임에서도 유입을 못 받는 게임이 생기지 않도록</b> 배정함.<br><br>
+① 비용이 <b>몇 % 수준</b>이라 매출에 거의 영향이 없음.
+② 이 자리를 매출 순위대로 채우면 <span class="g-chip g-mahjong">마종</span>·<span class="g-chip g-pbm">퍼블마</span>·<span class="g-chip g-puzzle">더퍼즐</span>의 <b>수신이 0</b>이 됨.
+③ 수신이 0이면 그 게임의 CP 코호트가 끊겨 <b>나중에 비교하거나 순번을 다시 산출할 수 없음.</b>
+④ 순번 산출은 <b>신규 유입만</b> 세는데 기존 게임 슬롯은 이미 재방문 유도 채널로 성격이 바뀌었음 — 0으로 만들면 측정되지 않은 값을 버리게 됨.
+</div>
+
+<div class="sec">4 · 6월 판단에서 바뀐 것</div>
+
+<table class="grid sm">
+<thead><tr><th style="width:22%;">6월 판단</th><th style="width:14%;">현재</th><th>실측</th></tr></thead>
+<tbody>
+<tr class="warn">
+  <td class="lbl">장르 적합도로 페어를 묶는 것이 효율적</td>
+  <td><b>검증 불가</b></td>
+  <td>수치상으로는 같은 장르군 중앙값 <b>$0.191</b>이 다른 장르군 <b>$0.240</b>보다 낮게 나왔으나 <b>이 비교는 성립하지 않음</b> — 다른 장르군 상위값(코인매치→코지타일즈 $0.284 · 더퍼즐→코지타일즈 $0.282 · 코지타일즈→코인매치 $0.253 등)이 <b>전부 현재 운영하지 않는 페어</b>이고, 과거 유입 유저가 아직 활동 중이라 값이 잡힌 것임. <b>성숙한 과거 코호트와 최근 유입 코호트를 비교한 셈</b>임.<br>또한 6월 결론은 <b>D7 리텐션 기반 소스 고정 비교</b>에서 나왔는데 이번 지표는 <b>유저-일당 광고 매출</b>이라 기준이 다름. 실제로 같은 장르군인 <b>코지타일즈→마종은 17개 페어 중 여전히 1위($0.336)</b>임.<br><b>6월 이후 기존 게임끼리의 페어가 중단되고 <span class="g-chip g-sol">솔리테어</span>로 집중돼 검증할 실측 자체가 쌓이지 않았음</b> — 9월 적용 후 페어가 다시 돌면 재검증할 것</td>
+</tr>
+<tr class="warn">
+  <td class="lbl"><span class="g-chip g-cozy">코지타일즈</span> ↔ <span class="g-chip g-mahjong">마종</span> 양방향 핵심 페어</td>
+  <td><b>한 방향 소멸</b></td>
+  <td><span class="g-chip g-cozy">코지</span>→<span class="g-chip g-mahjong">마종</span>은 전체 17개 페어 중 <b>1위</b>로 재확인됐으나 <b>이번 배정에서 3순위에도 들어가지 않아 완전히 끊김</b> — <span class="g-chip g-mahjong">마종</span>의 신규 전환이 노출 1,000당 2.0명이라 슬롯 가치로는 하위이기 때문임.
+역방향 <span class="g-chip g-mahjong">마종</span>→<span class="g-chip g-cozy">코지</span>는 코지로 오는 세 소스 중 최하위인데 <b>1순위로 남음.</b><br>
+<b>남은 결정</b> — <span class="g-chip g-mahjong">마종</span>의 단절 방지 슬롯이 현재 <span class="g-chip g-coin">코인매치</span> 3순위 <b>1곳뿐</b>임. 품질이 가장 좋은 <span class="g-chip g-cozy">코지타일즈</span> 3순위에 <b>추가</b>하는 안(3순위 2종 순환)만 검토함. <b>옮기는 안은 제외</b> — 코지타일즈 3순위는 <span class="g-chip g-puzzle">더퍼즐</span>의 유일한 수신 경로라 옮기면 더퍼즐 수신이 0이 됨. <b>승인 필요 항목임(§5)</b></td>
+</tr>
+<tr>
+  <td class="lbl">미션이 팝업보다 품질 우수</td>
+  <td><b>재확인</b></td>
+  <td><span class="g-chip g-sol">솔리테어</span> 기준 미션 유입 유저-일당 매출이 팝업의 <b>9.7배</b>, 광고 완주율 <b>88.4% vs 26.5%</b>. 유저가 직접 눌러 들어오는 구조라 의향이 다름</td>
+</tr>
+<tr>
+  <td class="lbl"><span class="g-chip g-sol">솔리테어</span> 1순위 고정</td>
+  <td><b>해제</b></td>
+  <td>런칭 확보용 조치였음. 8/12 신작 노출 종료 후에도 북미 일간 유저가 <b>408</b>(8/12~8/17 실측)로 기준선 300을 넘겨 고정 근거가 소멸함. 다만 슬롯 가치로 재도 5개 from 게임 전부 상위 3종이라 <b>실질 배치는 유지됨</b></td>
+</tr>
+<tr>
+  <td class="lbl"><span class="g-chip g-coin">코인매치</span>·<span class="g-chip g-puzzle">더퍼즐</span> 수익성 낮음</td>
+  <td><b>폐기</b></td>
+  <td>T1 지오 필터 적용 후 신규 1명당 소진 노출수가 <span class="g-chip g-coin">코인매치</span> 1,533→<b>50.5</b>, <span class="g-chip g-puzzle">더퍼즐</span> 538→<b>23.5</b>로 붕괴. 확률대체가 0이라 기회비용도 없어 <b>전 소스 흑자</b>로 재판정됨</td>
+</tr>
+</tbody>
+</table>
+
+<div class="sec">5 · 감수하는 사항</div>
+
+<table class="grid sm">
+<tbody>
+<tr class="warn">
+  <td class="lbl" style="width:22%;">물량 감소</td>
+  <td>미션 CP는 북미 일간 유저 <b>77.5명</b>을 만들고 있음. 종료 시 <b>408 → 331</b>이 되고 기준선 300까지 완충이 <b>31</b>로 얇아짐. CP는 광고가 실패한 자리에서만 나오고 그 공급이 상한이라 <b>메울 레버가 없음</b></td>
+</tr>
+<tr class="warn">
+  <td class="lbl">승인 대기 — <span class="g-chip g-mahjong">마종</span> 3순위 추가</td>
+  <td><span class="g-chip g-mahjong">마종</span>은 수신 경로가 <span class="g-chip g-coin">코인매치</span> 3순위 <b>1곳뿐</b>임. <span class="g-chip g-cozy">코지타일즈</span> 3순위를 <b>2종 순환(더퍼즐 + 마종)</b>으로 바꿔 한 곳 늘릴지 결정 필요. <b>이번 보고에서 유일한 승인 항목임</b> — 미승인 시 현행 배정표 그대로 감</td>
+</tr>
+<tr class="warn">
+  <td class="lbl">미션 종료 <span class="tag t-new">8/24 완료</span></td>
+  <td>6월 승인 결론("미션 우선·팝업 병행")을 뒤집는 항목이며 <b>8/24(월) 적용 완료</b>임(미션 구현 4종 · 코지타일즈는 원래 미구현). <b>단순화 편익은 미산출</b>이고 종료 비용만 정량화돼 있음. <b>코드는 남아 있어 노출만 다시 켜면 즉시 복구됨</b> — 아래 중단 조건에 걸리면 <b>미션 재개가 1순위 복구 수단</b>임</td>
+</tr>
+<tr>
+  <td class="lbl">미션 품질 손실</td>
+  <td>미션 유입은 팝업 대비 유저-일당 매출 <b>9.7배</b>·완주율 <b>3.4배</b>임. 볼륨은 작으나(신규 14일 339명 vs 팝업 1,827명) 질에서 가장 좋은 채널을 끄는 결정임</td>
+</tr>
+<tr class="warn">
+  <td class="lbl"><span class="g-chip g-pbm">퍼블마</span>·<span class="g-chip g-puzzle">더퍼즐</span> 손실 미확정</td>
+  <td>이 두 게임만 클릭군의 from 게임 손실이 보정 후에도 남아(클릭당 $0.31~0.55) 순가치가 음수로 나옴. 다만 통제 변수가 사전 판수 하나뿐이고 <span class="g-chip g-puzzle">더퍼즐</span> 클릭군은 사전 활동일이 0.27일로 이미 이탈 직전 세그먼트라 <b>보정이 과소일 가능성이 큼</b>. <b>이 결과로 두 게임의 CP를 끄지 않음</b> — 활동량 구간을 나눠 다시 비교해 검증할 항목임</td>
+</tr>
+<tr>
+  <td class="lbl">더퍼즐 미확인</td>
+  <td><span class="g-chip g-puzzle">더퍼즐</span>은 <b>CP 조건 코드 미확인 · 운영 시트 미편입</b> 상태임(저장소 접근 불가). 9/1 전 개발 확인이 안 되면 <b>더퍼즐 from만 기존 설정 유지로 후퇴</b>함</td>
+</tr>
+<tr>
+  <td class="lbl">되돌리기 비용</td>
+  <td>9/1에 <b>원격 설정화를 함께 적용</b>하므로, 배정·순번·캡·국가는 <b>시트 수정 + JSON 재배포로 즉시 롤백</b>됨(빌드 불요). 부분 롤백도 가능함.<br>단 <b>노출 조건·팝업 구조 자체를 되돌리는 것은 빌드가 필요함</b>(최소 2주)</td>
+</tr>
+</tbody>
+</table>
+
+<div class="box amber">
+<div class="bl">중단 조건 — 계획된 감소를 반영한 값임</div>
+기준 숫자는 <b>북미 일간 유저 408</b>(8/12~8/17 실측)로 통일함. 미션 종료로 <b>331까지는 계획된 감소</b>이므로 임계를 408 기준으로 잡으면 적용 첫 주에 조건에 걸림 — 아래는 <b>331을 새 기준선으로 놓고</b> 설정한 값임.<br><br>
+① 북미 일간 유저 7일 이동평균 <b>310 미만</b> — 기준선 331에서 임계까지 여유 21명, 임계와 메타 기준선 300 사이 완충은 10명<br>
+② <span class="g-chip g-sol">솔리테어</span> 크로스 신규 7일 이동평균이 <b>기대치(미션 종료분 −16% 반영) 대비 추가 −15%</b><br>
+③ from 게임 유저-일당 판수 <b>−10%</b> (<span class="g-chip g-mahjong">마종</span>·<span class="g-chip g-cozy">코지타일즈</span>)<br>
+④ 메타 배포 등급 북미 Standard 이탈<br><br>
+<b>완충이 10명뿐이라 ①은 사실상 여유가 없음.</b> 미션은 <b>8/24 동시 종료</b>됐으므로(구현 4종) <b>8/24~8/31 감소폭이 실측으로 먼저 나옴</b> — <b>9/1 적용 전에 이 값으로 331 추정을 검증할 것.</b> 추정보다 크게 빠지면 9/1 적용 전에 미션을 되켜 완충을 확보함.<br>
+변경 전 <b>2주치 지표 스냅샷을 고정 저장</b>함 — 되돌릴 때 비교 대상이 없으면 판단 자체가 불가함.
+</div>
+
+<div class="sec">6 · 6월 확인 요청 사항 회신</div>
+
+<div class="qa">
+<div class="q">Q. 팝업 노출 조건이 광고가 노출되지 않는 유저 한정이었던 것 같은데, 모든 게임이 동일한 조건인가?</div>
+<div class="a">
+<b>동일함.</b> 클라이언트 코드로 확인한 결과 전 게임이 같은 체인으로 동작함 —
+<b>보상형 광고 실패 <span class="arw">→</span> 전면광고로 대체 시도 <span class="arw">→</span> 그것도 실패 <span class="arw">→</span> CP 노출.</b>
+유저가 광고창을 직접 닫은 경우는 실패로 보지 않고 CP로 넘어가지 않음.<br><br>
+<span class="g-chip g-pbm">퍼블마</span>·<span class="g-chip g-cozy">코지타일즈</span>·<span class="g-chip g-mahjong">마종</span>은 동일한 조건문으로,
+<span class="g-chip g-coin">코인매치</span>는 파라미터 방식으로 구현돼 있으나 <b>호출부가 모두 같은 값을 넘기고 있어 동작은 동일함.</b>
+<span class="g-chip g-puzzle">더퍼즐</span>은 저장소 접근이 되지 않아 미확인이며 개발 확인 요청 예정임.<br><br>
+아울러 <b>보상형과 무관하게 뜨는 순수 전면광고 지면</b>에서는 실패해도 CP를 띄우지 않음. 여기에 CP를 붙이는 안을 검토했으나
+<b>전면광고는 유저가 원하지 않을 때 뜨는 지면이라 CP까지 얹으면 경험을 해친다</b>고 판단해 <b>적용하지 않기로 함.</b>
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q. 솔리테어는 볼륨도 중요하지만 퀄리티도 챙겨야 하니 조건 조정이 필요하면 고려 바람</div>
+<div class="a">
+<b>실측 결과 지적하신 방향이 맞음.</b> <span class="g-chip g-sol">솔리테어</span>는 유저당 광고 매출이 <b>6게임 중 5위</b>이고 CP 팝업으로 들어온 유저의 활동성이 게임 평균보다 낮음
+(판수 8.63 vs 전체 평균 약 11 · 유저당 활동일 1.77일 vs 타 게임 2.3~5.1일).<br><br>
+다만 원인이 <b>세 가지로 분해되며 대부분 시간이 해결하는 항목</b>임 —
+① 구버전 빌드 희석(유저-일의 30.6%가 전면광고 꺼진 구버전, 9월 중 자연 소멸)
+② 저레벨 구간 노출 곡선(1~5레벨 0회 설계라 신규 유입 유저는 광고 구간 도달 전 이탈)
+③ 런칭 7주차라 성숙 유저 풀 부재.<br><br>
+<b>조건 조정 대신 국가 필터와 순번을 유지하는 쪽으로 진행함.</b> 여기서 유입을 줄이면 성숙 유저 풀이 생기지 않아 품질 지표가 영구히 낮게 고정되는 구조임.
+대신 <b>월 1회 순번을 재산출</b>해 품질이 올라오면 배치에 반영함.
+</div>
+</div>
+
+<div class="sec">7 · 일정</div>
+<table class="grid sm">
+<thead><tr><th style="width:15%;">시점</th><th style="width:26%;">작업</th><th>내용</th><th style="width:17%;">담당</th></tr></thead>
+<tbody>
+<tr><td>~8/20</td><td>이미지 대조 · 기준선 저장</td><td>보유 이미지와 배정표 대조해 없는 조합만 발주 · 변경 전 2주치 지표 스냅샷 고정</td><td>에스더</td></tr>
+<tr><td rowspan="2">8/21~8/28</td><td>세션 캡 게임별 분리</td><td>단일 카운터를 to 게임별 카운터로 변경</td><td rowspan="3">코지·마종 @Teo<br>퍼블마·코인매치 @Levine<br>더퍼즐 @Parker</td></tr>
+<tr><td>평면 로테이션</td><td>순번 배열 + 순환 인덱스로 교체. 캡에 걸린 게임은 건너뜀. 캡 변경과 한 세트</td></tr>
+<tr><td><b>원격 설정화</b></td><td>to 게임·순서·캡·이미지를 <b>시트 → CDN JSON</b>에서 읽도록 변경. 캡·로테이션과 같은 코드라 <b>한 세트로 진행</b>. 상세 = 개발 요청서</td></tr>
+<tr><td>8/28~8/31</td><td>검수</td><td>배정 순번 · 게임별 캡 · 이미지 노출 · 게임별 CP 조건 동일 여부</td><td>@Raynor / @Hobby</td></tr>
+<tr class="hi"><td><b>9/1(화)</b></td><td><b>전 게임 동시 적용</b></td><td>평면 로테이션 · <b>원격 설정화</b> 동시 적용</td><td>—</td></tr>
+<tr><td>9/1~9/15</td><td>관측</td><td>중단 조건 4종 · 게임별 수신 · 네트워크 광고 매출</td><td>에스더</td></tr>
+</tbody>
+</table>
+
+<div class="sec">부록 · 유저당 매출 상세 — to 게임별 유저-일당 광고 매출
+<span class="s-desc">8/04~8/18 · CP 유입 유저 · T1 6개국 · 유저-일당 · 상위 1% 절사평균</span></div>
+
+<table class="grid sm">
+<thead>
+<tr><th style="width:8%;">순위</th><th style="width:18%;">to 게임</th><th class="num">유저</th><th class="num">유저-일</th><th class="num">판수</th><th class="num">전면광고</th><th class="num">보상형광고</th><th class="num">유저-일당 매출</th></tr>
+</thead>
+<tbody>
+<tr class="hi"><td>1</td><td><span class="g-chip g-mahjong">마종</span></td><td class="num">890</td><td class="num">3,768</td><td class="num">13.39</td><td class="num">5.57</td><td class="num">1.81</td><td class="num"><b>$0.1418</b></td></tr>
+<tr class="hi"><td>2</td><td><span class="g-chip g-cozy">코지타일즈</span></td><td class="num">1,515</td><td class="num">6,983</td><td class="num">24.33</td><td class="num">7.36</td><td class="num">3.22</td><td class="num"><b>$0.1244</b></td></tr>
+<tr><td>3</td><td><span class="g-chip g-coin">코인매치</span></td><td class="num">1,363</td><td class="num">4,154</td><td class="num">11.64</td><td class="num">3.88</td><td class="num">7.75</td><td class="num">$0.1061</td></tr>
+<tr><td>4</td><td><span class="g-chip g-pbm">퍼블마</span></td><td class="num">432</td><td class="num">1,584</td><td class="num">14.14</td><td class="num">4.01</td><td class="num">3.12</td><td class="num">$0.0908</td></tr>
+<tr><td>5</td><td><span class="g-chip g-sol">솔리테어</span></td><td class="num">3,081</td><td class="num">6,046</td><td class="num">8.63</td><td class="num">2.22</td><td class="num">2.96</td><td class="num">$0.0709</td></tr>
+<tr><td>6</td><td><span class="g-chip g-puzzle">더퍼즐</span></td><td class="num">467</td><td class="num">1,139</td><td class="num">6.76</td><td class="num">1.99</td><td class="num">4.06</td><td class="num">$0.0623</td></tr>
+</tbody>
+</table>
+
+
+
+<p class="note">
+※ 측정 시 주의 — ① <span class="g-chip g-sol">솔리테어</span>는 T1 유저-일의 <b>59.9%가 CP 유입</b>이고 <span class="g-chip g-cozy">코지타일즈</span>는 <b>3.8%</b>라, 전체 유저 기준 대시보드와 이 문서의 CP 유입 기준 값을 나란히 비교하면 안 됨.
+② <b>T1 6개국은 서구권과 다름</b>(서구권은 북미·유럽 52개국, T1에는 호주 포함).
+③ 전면광고는 <b>완료 기준</b>으로 볼 것 — 시작 이벤트는 요청이라 실패분이 섞이고, CP 팝업은 전면광고 요청이 실패해야 뜨는 구조라 CP 유입 세그먼트가 특히 부풀려짐.
+④ 광고 단가는 <span class="g-chip g-cozy">코지타일즈</span>·<span class="g-chip g-mahjong">마종</span>·<span class="g-chip g-puzzle">더퍼즐</span>·<span class="g-chip g-coin">코인매치</span> 전면광고 4종만 실측이고 나머지는 인접 값 대입임.
+</p>
+
+</body>
+</html>
