@@ -1,0 +1,273 @@
+<title>로즈우드 이벤트 스펙</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600&display=swap">
+<style>
+:root{
+  --rose:#a8425c; --rose-w:#f3dfe4; --ruin:#8d8a86;
+  --ink:#241f22; --ink-2:#4e4549; --ink-3:#7c7175;
+  --bg:#faf7f5; --card:#ffffff; --line:#e6ded9; --line-2:#d3c7c1;
+  --ok:#3f6b52; --ok-w:#dfeee6; --warn:#9a6b34; --warn-w:#f6ecdc;
+  --mono:"IBM Plex Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --rose:#e0899e; --rose-w:#3a2229; --ruin:#7e7a76;
+  --ink:#f2eae9; --ink-2:#c3b6ba; --ink-3:#8f8388;
+  --bg:#171315; --card:#201a1d; --line:#332a2e; --line-2:#453a3f;
+  --ok:#8fc4a6; --ok-w:#1e3229; --warn:#d3a86a; --warn-w:#332816;
+}}
+:root[data-theme="dark"]{
+  --rose:#e0899e; --rose-w:#3a2229; --ruin:#7e7a76;
+  --ink:#f2eae9; --ink-2:#c3b6ba; --ink-3:#8f8388;
+  --bg:#171315; --card:#201a1d; --line:#332a2e; --line-2:#453a3f;
+  --ok:#8fc4a6; --ok-w:#1e3229; --warn:#d3a86a; --warn-w:#332816;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--mono);
+  font-weight:300;line-height:1.72;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:60px 26px 96px;
+  display:flex;flex-direction:column;gap:52px}
+h1,h2{font-family:"Gowun Batang",serif;font-weight:700;margin:0;
+  text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(29px,5vw,44px);line-height:1.25}
+h2{font-size:22px;line-height:1.4}
+h3{font-family:var(--mono);font-size:15px;font-weight:600;margin:0 0 6px}
+p{margin:0;max-width:620px}
+.lede{font-size:16px;color:var(--ink-2);max-width:600px}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500}
+section{display:flex;flex-direction:column;gap:16px}
+.head{display:flex;flex-direction:column;gap:6px;
+  border-bottom:1px solid var(--line);padding-bottom:13px}
+.note{font-size:13.5px;color:var(--ink-3);max-width:600px}
+b{font-weight:600;color:var(--ink)}
+.scroll{overflow-x:auto}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+code{font-size:.92em;background:var(--rose-w);color:var(--rose);padding:1px 5px;border-radius:2px}
+
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th{text-align:left;font-weight:600;font-size:10.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3);padding:0 12px 8px 0;
+  border-bottom:1px solid var(--line-2);white-space:nowrap}
+td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);
+  vertical-align:top;color:var(--ink-2)}
+td:first-child,th:first-child{padding-left:0}
+td b{color:var(--ink)}
+tfoot td{border-bottom:0;border-top:1px solid var(--line-2);font-weight:600;color:var(--ink)}
+
+.box{background:var(--card);border:1px solid var(--line);border-radius:3px;
+  padding:16px 18px;display:flex;flex-direction:column;gap:7px}
+.box.warn{border-left:3px solid var(--warn);background:var(--warn-w)}
+.box.ok{border-left:3px solid var(--ok);background:var(--ok-w)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}}
+.grid .v{font-family:"Gowun Batang",serif;font-size:25px;font-weight:700;
+  color:var(--rose);line-height:1;font-variant-numeric:tabular-nums}
+.grid .u{font-size:12px;color:var(--ink-3)}
+
+.tag{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:2px;font-weight:500;white-space:nowrap}
+.t-pst{background:var(--rose-w);color:var(--rose)}
+.t-gh{background:var(--ok-w);color:var(--ok)}
+.t-own{background:transparent;color:var(--ink-3);border:1px solid var(--line-2)}
+
+/* 주간 배치 */
+.week{border:1px solid var(--line);border-radius:3px;background:var(--card);padding:20px;overflow-x:auto}
+.wk{min-width:640px}
+.wkrow{display:grid;grid-template-columns:120px repeat(7,1fr);gap:4px;align-items:center;margin-bottom:5px}
+.wkrow .lb{font-size:12.5px;font-weight:600;color:var(--ink)}
+.wkrow .hd{font-size:11px;color:var(--ink-3);text-align:center}
+.cell{height:26px;border-radius:2px;background:var(--bg);border:1px solid var(--line)}
+.cell.on{background:var(--rose);border-color:var(--rose)}
+.cell.on2{background:var(--ruin);border-color:var(--ruin)}
+.cell.on3{background:var(--ok);border-color:var(--ok)}
+</style>
+
+<div class="wrap">
+
+<header style="display:flex;flex-direction:column;gap:13px">
+  <p class="eyebrow">Rosewood · Merge &amp; Story · 라이브옵스</p>
+  <h1>이벤트 스펙</h1>
+  <p class="lede">런칭에 넣을 이벤트 4종. Gossip Harbor의 활동 104종을 필요 자산으로 분류해 <strong>코어 루프만 쓰는 것</strong>에서 골랐다.</p>
+  <p class="note"><span class="tag t-gh">GH</span> Gossip Harbor 실측 &nbsp; <span class="tag t-own">설계</span> 우리가 정한 값</p>
+</header>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">00 — 고르는 기준</p>
+    <h2>104종을 필요 자산으로 갈랐다</h2>
+  </div>
+  <div class="scroll"><table>
+    <tr><th style="width:22%">분류</th><th class="num" style="width:10%">종수</th><th>런칭 가능한가</th></tr>
+    <tr><td><b>별도 보드·씬 필요</b></td><td class="num">51</td><td>전용 보드와 아이템 체인을 새로 판다 — <code>BakeOut</code> · <code>FloatRace</code> · <code>Puzzle</code> · <code>Bingo</code> · <code>FarmboardActivity</code> · <code>Beat</code> · <code>Break</code> · <code>AdventureActivity</code> 등. <b>런칭 불가</b></td></tr>
+    <tr><td><b>수익화</b></td><td class="num">17</td><td><code>PassActivity</code> · <code>AccumPay</code> · <code>ProgressPack</code> · <code>Wheel</code> 등. 별도 판단이 필요해 이 스펙에서 뺀다</td></tr>
+    <tr><td><b>코어 루프 재사용</b></td><td class="num">36</td><td><code>CheckIn</code> · <code>TaskExtraReward</code> · <code>OrderBoost</code> · <code>ScoreRace</code> · <code>MissionActivity</code> · <code>WeeklyActiveQuest</code> 등. <b>여기서 고른다</b></td></tr>
+  </table></div>
+  <div class="box ok">
+    <h3>이게 이 스펙의 전부다</h3>
+    <p class="note">GH 활동 104종은 3년 누적이고 <b>절반이 전용 보드를 요구한다.</b> 런칭에 그걸 만들 여력은 없다.</p>
+    <p class="note">반면 <b>코어 루프만 쓰는 36종</b>은 이미 있는 병합·오더·태스크를 <b>세거나 증폭할 뿐</b>이라 신규 보드도 신규 아이템 체인도 없다. 필요한 것은 UI와 보상표뿐이다.</p>
+    <p class="note">그중 <b>서로 다른 행동을 세는 4종</b>을 골랐다 — 접속 · 태스크 · 오더 · 병합.</p>
+  </div>
+  <div class="grid">
+    <div class="box"><span class="v">4</span><span class="u">이벤트 종수</span></div>
+    <div class="box"><span class="v">0</span><span class="u">신규 보드</span></div>
+    <div class="box"><span class="v">0</span><span class="u">신규 아이템 체인</span></div>
+    <div class="box"><span class="v">18</span><span class="u">신규 아트 컷</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">01 — 구성</p>
+    <h2>접속 · 태스크 · 오더 · 병합을 하나씩</h2>
+    <p class="note">넷이 서로 다른 행동을 세므로 겹치지 않는다. 전부 GH 원형을 그대로 옮긴다.</p>
+  </div>
+  <div class="scroll"><table>
+    <tr><th style="width:16%">우리 이름</th><th style="width:15%">GH 원형</th><th style="width:14%">세는 것</th><th>GH 구조</th></tr>
+    <tr><td><b>출석</b></td><td><code>CheckIn</code></td><td>접속</td><td><code>ContinuousNum</code>(연속) + <code>AddUpNum</code>(누적)을 따로 센다. 연속이 끊겨도 누적은 남는다 <span class="tag t-gh">GH</span></td></tr>
+    <tr><td><b>오늘의 의뢰</b></td><td><code>TaskExtraReward</code></td><td>chore 완료</td><td><code>trigger_limit</code>(발동 확률) · <code>cold_day</code>(쿨다운) · <code>CurTriggerDay</code>. 특정 chore에 추가 보상을 붙인다 — <b>본편 진행과 직결된다</b> <span class="tag t-gh">GH</span></td></tr>
+    <tr><td><b>주문 폭주</b></td><td><code>OrderBoost</code></td><td>오더 완료</td><td>오더를 완료할 때마다 <code>GetAddOrderBoostScoreByOrder</code>로 게이지가 차고, 다 차면 보상이 날아온다. <code>CurLevelRewardConfig</code>로 레벨이 오를수록 보상이 커진다 <span class="tag t-gh">GH</span></td></tr>
+    <tr><td><b>공방 경합</b></td><td><code>ScoreRace</code></td><td>병합 + 오더</td><td><code>EScoreRaceAddScoreScene = {Merge, Order}</code>. 병합은 아이템별 <code>merge_score_race</code>, 오더는 <code>gold_min</code> 구간별 점수다. <code>scoreGroupId</code>로 <b>리그를 나눠</b> 랭킹을 매긴다 <span class="tag t-gh">GH</span></td></tr>
+  </table></div>
+  <div class="box warn">
+    <h3>GH가 리그를 이미 쓰고 있다</h3>
+    <p class="note"><code>ScoreRaceModel</code>에 <code>scoreGroupId</code> · <code>IsInGroup()</code> · <code>GetScoreRaceRank</code>가 있다. 전체 서버 한 줄이 아니라 <b>그룹으로 묶어</b> 랭킹을 매기므로 어느 그룹에서든 상위권이 나온다. 우리도 그대로 쓴다 — 그룹 크기만 운영 파라미터로 뺀다.</p>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">02 — 배치</p>
+    <h2>상시 둘 · 주간 둘</h2>
+    <p class="note">GH는 활동마다 서버가 기간을 여닫는다. 우리는 런칭 규모에 맞춰 <b>상시 2종 + 주간 2종</b>으로 단순화한다.</p>
+  </div>
+  <div class="week"><div class="wk">
+    <div class="wkrow"><span class="lb"></span>
+      <span class="hd">월</span><span class="hd">화</span><span class="hd">수</span><span class="hd">목</span><span class="hd">금</span><span class="hd">토</span><span class="hd">일</span></div>
+    <div class="wkrow"><span class="lb">출석</span>
+      <span class="cell on3"></span><span class="cell on3"></span><span class="cell on3"></span><span class="cell on3"></span><span class="cell on3"></span><span class="cell on3"></span><span class="cell on3"></span></div>
+    <div class="wkrow"><span class="lb">오늘의 의뢰</span>
+      <span class="cell on3"></span><span class="cell on3"></span><span class="cell on3"></span><span class="cell on3"></span><span class="cell on3"></span><span class="cell on3"></span><span class="cell on3"></span></div>
+    <div class="wkrow"><span class="lb">주문 폭주</span>
+      <span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell on"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span></div>
+    <div class="wkrow"><span class="lb">공방 경합</span>
+      <span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell on2"></span><span class="cell on2"></span><span class="cell on2"></span></div>
+  </div></div>
+  <p class="note"><b>출석과 오늘의 의뢰는 매일</b> 돈다. 에너지가 <b>3시간 20분이면 만충</b>이라 하루 3~4회 복귀를 유도하는 구조인데, 그 복귀에 목적이 없으면 안 온다.</p>
+  <p class="note"><b>주문 폭주는 월~목, 공방 경합은 금~일</b>이다. 겹치지 않게 둔 이유는 둘 다 "많이 돌리기"를 요구해서 동시에 켜면 어느 쪽도 못 끝내기 때문이다. 평일은 혼자 채우는 게이지, 주말은 경쟁으로 나눈다.</p>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">03 — 목표 수치</p>
+    <h2>가벼운 유저도 끝까지 닿게</h2>
+    <p class="note">코인 수급 시뮬레이션에서 나온 하루 처리량을 기준으로 역산했다.</p>
+  </div>
+  <div class="scroll"><table>
+    <tr><th>하루 30분을</th><th class="num">에너지/일</th><th class="num">코인/일</th><th class="num">오더/일</th><th class="num">병합/일</th></tr>
+    <tr><td>1회 × 30분</td><td class="num">115</td><td class="num">172</td><td class="num">3.9</td><td class="num">~100</td></tr>
+    <tr><td>3회 × 10분</td><td class="num">315</td><td class="num">472</td><td class="num">10.8</td><td class="num">~280</td></tr>
+    <tr><td>5회 × 6분</td><td class="num">515</td><td class="num">772</td><td class="num">17.6</td><td class="num">~460</td></tr>
+  </table></div>
+
+  <h3 style="margin-top:10px">주문 폭주 — 게이지 레벨</h3>
+  <div class="scroll"><table>
+    <tr><th style="width:10%">레벨</th><th class="num" style="width:18%">필요 오더</th><th class="num" style="width:14%">누적</th><th>보상</th></tr>
+    <tr><td class="num">1</td><td class="num">4</td><td class="num">4</td><td>코인 300</td></tr>
+    <tr><td class="num">2</td><td class="num">6</td><td class="num">10</td><td>에너지 40</td></tr>
+    <tr><td class="num">3</td><td class="num">8</td><td class="num">18</td><td>코인 800 · 젬 10</td></tr>
+    <tr><td class="num">4</td><td class="num">10</td><td class="num">28</td><td>젬 25</td></tr>
+    <tr><td class="num">5</td><td class="num">14</td><td class="num">42</td><td><b>이벤트 데코 1종</b></td></tr>
+  </table></div>
+  <p class="note">월~목 4일 기준 — <b>1회 유저는 3레벨</b>(누적 16), <b>3회 유저는 5레벨 직전</b>(43), <b>5회 유저는 완주</b>(70)다. GH도 <code>CurLevelRewardConfig</code>로 레벨이 오를수록 보상을 키운다.</p>
+
+  <h3 style="margin-top:10px">공방 경합 — 점수</h3>
+  <div class="scroll"><table>
+    <tr><th style="width:22%">행동</th><th class="num" style="width:18%">점수</th><th>근거</th></tr>
+    <tr><td><b>병합</b></td><td class="num">단계 × 1</td><td>GH <code>merge_score_race</code>가 아이템별로 점수를 둔다. 단계가 높을수록 크다 — <b>깊게 병합해야 유리하다</b></td></tr>
+    <tr><td><b>오더 완료</b></td><td class="num">코인 ÷ 4</td><td>GH는 <code>gold_min</code> 구간으로 나눈다. 우리는 오더의 코인 가치에 비례시킨다</td></tr>
+  </table></div>
+  <div class="scroll"><table>
+    <tr><th style="width:14%">순위</th><th style="width:24%">보상</th><th>비고</th></tr>
+    <tr><td class="num"><b>1위</b></td><td>젬 100 · 이벤트 데코 1종</td><td>주문 폭주와 다른 종</td></tr>
+    <tr><td class="num">2~3위</td><td>젬 60 · 에너지 100</td><td></td></tr>
+    <tr><td class="num">4~10위</td><td>젬 30 · 코인 1,500</td><td></td></tr>
+    <tr><td class="num">11~50위</td><td>코인 800 · 에너지 50</td><td></td></tr>
+    <tr><td class="num">참가</td><td>코인 200</td><td>1점이라도 얻으면 지급</td></tr>
+  </table></div>
+  <p class="note">금~일 3일 누적 점수는 <b>1회 유저 720점 · 5회 유저 3,300점</b> 안팎이다. 리그를 나누므로 절대 점수보다 <b>같은 리그 안의 상대 순위</b>가 중요하다.</p>
+
+  <h3 style="margin-top:10px">출석 · 오늘의 의뢰</h3>
+  <div class="scroll"><table>
+    <tr><th style="width:20%">항목</th><th style="width:20%">값</th><th>비고</th></tr>
+    <tr><td><b>출석 · 연속</b></td><td class="num">7일 주기</td><td>7일차에 <b>이벤트 데코 1종</b>. 끊기면 연속만 초기화되고 누적은 남는다 <span class="tag t-gh">GH</span></td></tr>
+    <tr><td><b>출석 · 누적</b></td><td class="num">30일</td><td>10 · 20 · 30일에 젬. 연속을 놓친 유저에게도 목표가 남는다</td></tr>
+    <tr><td><b>오늘의 의뢰</b></td><td class="num">하루 1건</td><td>그날 chore 하나에 추가 보상이 붙는다. <b>본편을 진행하는 것 자체가 이벤트가 된다</b></td></tr>
+    <tr><td><b>추가 보상</b></td><td>코인 2배 또는 에너지 30</td><td>GH는 <code>trigger_limit</code> 확률로 발동하고 <code>cold_day</code>로 쿨다운을 둔다. 우리는 <b>하루 1건 확정</b>으로 단순화한다 <span class="tag t-own">설계</span></td></tr>
+  </table></div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">04 — 제작 물량</p>
+    <h2>신규 아트 18컷</h2>
+  </div>
+  <div class="scroll"><table>
+    <tr><th>항목</th><th class="num">수량</th><th>비고</th></tr>
+    <tr><td><b>이벤트 데코</b></td><td class="num">3컷</td><td>주문 폭주 5레벨 · 공방 경합 1위 · 출석 7일. <b>기존 자리에 얹는 1디자인</b>이라 새 슬롯이 필요 없다</td></tr>
+    <tr><td><b>이벤트 UI</b></td><td class="num">4세트</td><td>게이지 · 랭킹 리스트 · 출석 달력 · chore 배지</td></tr>
+    <tr><td><b>배너 · 아이콘</b></td><td class="num">12컷</td><td>4종 × (배너 · 아이콘 · 진입 버튼)</td></tr>
+    <tr><td><b>연출</b></td><td class="num">3컷</td><td>GH <code>OrderBoostAnimationManager</code>의 상자 날아오기에 해당. 보상 획득 연출</td></tr>
+    <tr><td><b>신규 보드</b></td><td class="num">0</td><td>전부 코어 보드에서 돈다</td></tr>
+    <tr><td><b>신규 아이템 체인</b></td><td class="num">0</td><td>세거나 증폭할 뿐이라 전용 아이템이 없다</td></tr>
+    <tfoot><tr><td>합계</td><td class="num">18컷 + UI 4세트</td><td>본편 꾸미기 316컷의 <b>6%</b></td></tr></tfoot>
+  </table></div>
+  <p class="note">읍내 구역1을 빼면 <b>아트 68컷</b>이 나오므로 이벤트 4종(18컷)을 만들고도 50컷이 남는다. 다만 코인 시뮬레이션에서 20일치가 <b>실제 22~100일치</b>로 나왔으므로, <b>읍내를 빼지 않고도 이벤트를 만들 수 있다면 그쪽이 낫다</b> — 판단은 팀 여력에 달렸다.</p>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">05 — 데이터 규격</p>
+    <h2>GH 필드명을 그대로 쓴다</h2>
+  </div>
+  <div class="scroll"><table>
+    <tr><th style="width:24%">테이블</th><th>필드</th></tr>
+    <tr><td><b>checkin</b></td><td><code>continuous_num · addup_num · reward_item_key · reward_amount</code></td></tr>
+    <tr><td><b>task_extra_reward</b></td><td><code>trigger_limit · cold_day · cur_trigger_day · reward_item_key · reward_amount</code></td></tr>
+    <tr><td><b>order_boost</b></td><td><code>level · need_order · reward_item_key · reward_amount</code> — GH <code>CurLevelRewardConfig</code>에 대응</td></tr>
+    <tr><td><b>score_race</b></td><td><code>group_size · merge_score_race · order_gold_min · order_score · rank_start · rank_end · reward_item_key_1~3</code></td></tr>
+    <tr><td><b>merge_item_score</b></td><td><code>item_id · merge_score_race</code> — GH <code>MergeItemScoreConfig</code>와 같은 형식. <b>FloatRace · Avenue · Road · TeamActivity가 이 표를 공유</b>하므로 나중에 이벤트를 늘려도 점수표는 하나다</td></tr>
+  </table></div>
+  <p class="note">GH가 점수표를 <b>이벤트마다 따로 두지 않고 하나로 공유</b>하는 것이 중요하다. 지금 <code>merge_item_score</code>를 제대로 만들어 두면 D+1개월에 별도 보드 이벤트를 붙일 때 점수 설계를 다시 하지 않아도 된다.</p>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">06 — 이후</p>
+    <h2>D+1개월에 붙일 것</h2>
+  </div>
+  <div class="scroll"><table>
+    <tr><th style="width:22%">GH 원형</th><th style="width:18%">필요한 것</th><th>왜 나중인가</th></tr>
+    <tr><td><code>PassActivity</code></td><td>UI · 보상표</td><td>수익화 레인. 이벤트 구조가 안정된 뒤 얹는다</td></tr>
+    <tr><td><code>Puzzle</code> · <code>AlbumActivity</code></td><td>수집 아트</td><td>모으는 재미. 꾸미기와 축이 겹치지 않아 좋은 짝이지만 아트가 든다</td></tr>
+    <tr><td><code>FloatRace</code> · <code>BakeOut</code></td><td>전용 보드 + 체인</td><td>가장 무겁다. <code>merge_item_score</code>를 공유하므로 점수 설계는 재사용된다</td></tr>
+    <tr><td><code>ChestCustomer</code> · <code>TimedOrder</code></td><td>오더 변형</td><td>코어 루프 변주. 오더 경제가 검증된 뒤가 안전하다</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">07 — 결정 필요</p>
+    <h2>남은 것</h2>
+  </div>
+  <div class="scroll"><table>
+    <tr><th style="width:24%">항목</th><th>내용</th></tr>
+    <tr><td><b>리그 크기</b></td><td>GH는 <code>scoreGroupId</code>로 묶지만 그룹 크기는 서버 값이라 언팩에 없다. 런칭 유저 수를 모르므로 운영 파라미터로 빼고 초기 지표를 보고 정한다</td></tr>
+    <tr><td><b>이벤트 데코 3종</b></td><td>어느 자리에 얹을지 미정. 기존 자리 재활용이므로 <b>눈에 잘 띄는 히어로 자리</b>(분수 · 시계탑 · 조명 아치 · 연못)가 후보다</td></tr>
+    <tr><td><b>merge_score_race 값</b></td><td>GH 서버 config라 언팩에 없다. 단계 × 1로 잡았으나 실제 곡선은 오더 경제와 함께 튜닝해야 한다</td></tr>
+    <tr><td><b>수익화 레인</b></td><td>이 스펙에 넣지 않았다. 이벤트 4종만으로 리텐션 구조는 성립하되 <b>수익화는 별도 판단이 필요하다</b></td></tr>
+    <tr><td><b>목표 수치 검증</b></td><td>레벨·점수는 코인 시뮬레이션(가정 기반)에서 역산했다. 실기 지표가 나오면 재조정한다</td></tr>
+  </table></div>
+</section>
+
+</div>
