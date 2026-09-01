@@ -220,7 +220,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
       <tr><td><code>continue_fail</code> 이어하기 실패</td><td class="r mono">768</td><td class="r mono">367</td><td class="r mono">47.8%</td><td>변경 없음</td></tr>
       <tr class="dead"><td><code>stage_exit</code> 인게임 나가기</td><td class="r mono">70</td><td class="r mono">32</td><td class="r mono">45.7%</td><td>죽은 구좌. 유저가 판을 중간에 안 나감 &mdash; 손대지 않음</td></tr>
       <tr class="pick"><td><code>result_lobby</code> 결과창&rarr;로비</td><td class="r mono">59</td><td class="r mono">39</td><td class="r mono">66.1%</td><td>사실상 미사용. <strong>판 종료 구좌로 정식 편입</strong></td></tr>
-      <tr><td rowspan="4">퍼블마</td><td><code>game_play</code> 판 진입</td><td class="r mono">8,820</td><td class="r mono">5,594</td><td class="r mono">63.4%</td><td>주력. 로비 홈과 더보기 팝업도 이 라벨을 씀</td></tr>
+      <tr><td rowspan="4">퍼블마</td><td><code>game_play</code> 판 진입</td><td class="r mono">8,820</td><td class="r mono">5,594</td><td class="r mono">63.4%</td><td>주력. 로비 홈과 더보기 팝업도 이 라벨을 씀. 토너먼트 대전 진입 경로는 <span class="sheet-var">new_opponent_ad_gap</span>=2에 걸려 <strong>2판에 한 번</strong>만 발화함</td></tr>
       <tr class="pick"><td><code>game_over</code> 판 종료</td><td class="r mono">5,050</td><td class="r mono">2,901</td><td class="r mono">57.4%</td><td><strong>이미 있음</strong>. 이 건의 변경은 신설이 아니라 발화 시점을 앞당기는 것 &mdash; <a href="#s5" style="color:var(--accent)">5장</a></td></tr>
       <tr class="dead"><td><code>game_quit</code> 인게임 나가기</td><td class="r mono">73</td><td class="r mono">46</td><td class="r mono">63.0%</td><td>죽은 구좌. 손대지 않음</td></tr>
       <tr class="dead"><td><code>gameover_resultLeague</code> 리그 결과</td><td class="r mono">23</td><td class="r mono">10</td><td class="r mono">43.5%</td><td>죽은 구좌. 손대지 않음</td></tr>
@@ -294,7 +294,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
     <tbody>
       <tr><td>첫 판을 끝내기 전</td><td>광고 없음</td><td>광고 없음 &mdash; 변경 없음</td></tr>
       <tr class="pick"><td>첫 판 종료 직후</td><td>광고 없음 (코지 3판·퍼블마 4승까지 계속 없음)</td><td><strong>결과창 진입 시 노출</strong></td></tr>
-      <tr class="pick"><td>다음 판 진입</td><td>배려 구간이 끝난 유저만 노출</td><td>전원 노출. 직전 노출로부터 5초가 안 지났으면 건너뜀</td></tr>
+      <tr class="pick"><td>다음 판 진입</td><td>배려 구간이 끝난 유저만 노출. 퍼블마는 여기에 더해 <strong>2판에 한 번</strong>만 노출(<span class="sheet-var">new_opponent_ad_gap</span>=2)</td><td>전원 노출. 직전 노출로부터 5초가 안 지났으면 건너뜀. 퍼블마의 <strong>2판에 한 번은 그대로 유지</strong></td></tr>
       <tr><td>판 실패 후 재도전</td><td>노출 (코지 <code>stage_retry</code>, fill 37.7%)</td><td>구좌 유지. 다만 <strong>앞에 판 종료 광고가 붙으므로</strong> 간격에 걸려 건너뛰는 비율이 늘어남 &mdash; 의도된 동작</td></tr>
       <tr><td>인게임 도중 나가기</td><td>노출 (두 달 70건 / 73건)</td><td>변경 없음. 죽은 구좌라 손대지 않음</td></tr>
       <tr><td>로비 · 상점 · 컬렉션 등 메타 화면</td><td>구좌 없음</td><td>변경 없음 &mdash; 이 건의 범위 밖</td></tr>
@@ -473,6 +473,13 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
     <li><strong><code>lastImpressionAt</code>은 메모리에만 둠.</strong> 부팅하면 리셋됨 &mdash; 영속 저장하지 않음. 첫 판 진입 전에는 어차피 구좌가 없어서 부작용이 없고, 저장하면 기기 시간 조작이 변수로 들어옴</li>
   </ul>
 
+  <h4>이미 있는 레버 &mdash; 퍼블마 <code>new_opponent_ad_gap</code></h4>
+  <p>퍼블마 <code>const_TT</code>에 <span class="sheet-var">new_opponent_ad_gap</span>(현행 <strong>2</strong>)이 이미 있음. 판 진입 광고를 <strong>매 판이 아니라 2판에 한 번</strong>으로 묶는 <strong>횟수 기반</strong> 게이트임 &mdash; 시간 기반인 <span class="sheet-var">it_min_interval_sec</span>과는 다른 축이라 겹치지 않고 같이 걸림.</p>
+  <ul>
+    <li><strong>이번엔 2를 그대로 둠.</strong> 이 문서의 실측·예측이 전부 "2인 상태"의 로그에서 나온 값이라, 같이 바꾸면 예측의 근거가 무너짐</li>
+    <li>확대 후에도 노출이 틱톡 캡에 안 닿으면 <strong>그때 1로 내리는 걸 다음 카드로 씀</strong>. 지금 같이 내리면 어느 쪽이 효과인지 안 갈림</li>
+  </ul>
+
   <h4>구좌별 파라미터를 따로 두지 않는 이유</h4>
   <p>구좌는 아홉인데 파라미터는 넷임. 이 건이 <strong>새로 만드는 노출은 판 종료 구좌 하나뿐</strong>이고, 나머지 구좌는 노출이 새로 생기는 게 아니라 <strong>대상 유저가 늘어나는 것</strong>이라 유예 값 하나가 그대로 레버가 됨.</p>
   <div class="tw"><table>
@@ -510,9 +517,10 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <div class="tw"><table>
     <thead><tr><th>게임</th><th>대상</th><th>변경</th></tr></thead>
     <tbody>
-      <tr><td rowspan="4">퍼블마</td><td><code>ADPlayer.tryShowInterstitialAD</code></td><td>하드코딩된 <code>totalPlayWinCount &lt; 4</code>를 <span class="sheet-var">it_ftue_free_count</span>로 치환. <code>loginNRU</code>(그 세션이 가입 당일인지) 조건은 그대로 둠 &mdash; <strong>가입 다음 날 이후 접속에는 유예가 걸리지 않음</strong>. 코지엔 이 조건이 없어 게임 간 동작이 다르나, 유예 대상이 어차피 첫날 유저라 실효 차이가 없어 맞추지 않음</td></tr>
+      <tr><td rowspan="5">퍼블마</td><td><code>ADPlayer.tryShowInterstitialAD</code></td><td>하드코딩된 <code>totalPlayWinCount &lt; 4</code>를 <span class="sheet-var">it_ftue_free_count</span>로 치환. <code>loginNRU</code>(그 세션이 가입 당일인지) 조건은 그대로 둠 &mdash; <strong>가입 다음 날 이후 접속에는 유예가 걸리지 않음</strong>. 코지엔 이 조건이 없어 게임 간 동작이 다르나, 유예 대상이 어차피 첫날 유저라 실효 차이가 없어 맞추지 않음</td></tr>
       <tr><td><code>TikTokPlatform.tryShowInterstitialAD</code></td><td><code>if (!this.enableAD) return</code>을 <span class="sheet-var">it_min_interval_sec</span> 기준으로. 값이 0이면 검사 자체를 건너뜀</td></tr>
       <tr><td><code>refreshTimerInterstitialAD</code> / <code>Fbi.init</code></td><td><code>AD_INTERVAL_DEFAULT</code>를 <span class="sheet-var">it_min_interval_sec</span>로 대체. RV 후 10초 호출과 세션 시작 호출은 삭제</td></tr>
+      <tr class="warn"><td><code>TournamentBattleView.onClickPlay</code></td><td><strong>여기에 같은 FTUE 조건이 한 번 더 하드코딩돼 있음</strong> &mdash; <code>(totalPlayWinCount &gt;= 4 || !loginNRU)</code>. <code>ADPlayer</code>만 고치면 <strong>퍼블마 주력 구좌(판 진입, 시도의 63.6%)가 안 풀림</strong>. 이 조건도 <span class="sheet-var">it_ftue_free_count</span> 비교로 같이 치환할 것</td></tr>
       <tr><td><code>PopupGameOver</code> · <code>SceneManager.showViewGameWithSolo</code></td><td><span class="sheet-var">it_slot_stage_end</span>=1이면 판 종료 구좌를 <strong>결과창 진입 시점</strong>에 발화. 지금은 결과창 버튼을 눌러야 발화해서 경로 커버리지가 68%임</td></tr>
       <tr><td rowspan="5">코지</td><td><code>tiktok_ad_config.json</code> 로더</td><td>신규 추가. <code>stage-list</code> 로딩과 같은 패턴</td></tr>
       <tr><td><code>ViewCozyTileResult</code></td><td><code>isTutorialPlayer</code>(<code>totalClearCount &lt; 3</code>) 분기를 <span class="sheet-var">it_ftue_free_count</span> 비교로 치환</td></tr>
