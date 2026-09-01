@@ -397,7 +397,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <h3>코지 중앙 래퍼 신설</h3>
   <p>퍼블마는 <code>ADPlayer.tryShowInterstitialAD</code>가 모든 호출을 한 번 받아서 FTUE 가드를 거기서 걺. <strong>코지에는 이 래퍼가 없어서</strong> 화면마다 <code>BasePlatform.instance.tryShowInterstitialAD</code>를 직접 부름 &mdash; <code>stage_start</code> 하나만 호출지점이 <strong>17곳</strong>임(<code>DataManager</code> 13 · 친구/리더보드/토너먼트/프로필 4). 호출지점마다 조건을 넣으면 반드시 빠짐.</p>
   <ul>
-    <li><strong>코지에 <code>ADPlayer</code> 상당물을 신설</strong>하고, 네 파라미터 판정을 전부 거기 한 곳에 둠. 각 화면은 구좌 이름만 넘김. <span class="sheet-var">it_enabled</span>=0 검사는 이 래퍼 <strong>맨 앞</strong>에 두어 로그도 남기지 않고 즉시 반환함</li>
+    <li><strong>코지에 <code>ADPlayer</code> 상당물을 신설</strong>하고, 네 파라미터 판정을 전부 거기 한 곳에 둠. 각 화면은 구좌 이름만 넘김. <span class="sheet-var">it_enabled</span>=0이면 나머지 세 값을 무시하고 <strong>클라 기본값(현행)</strong>으로 읽음 &mdash; 광고 호출을 막는 게 아니라 값을 현행으로 되돌리는 분기임</li>
     <li>17곳 중 다수는 <strong>틱톡에서 이미 죽어 있음</strong> &mdash; <code>getRecommendedMatchInfo()</code>가 페이스북이 아니면 <code>null</code>을 반환해서 친구·토너먼트 분기가 통째로 안 탐. 래퍼로 모으면 이런 판별이 필요 없어짐</li>
     <li>기존 <code>Fbi.tryShowInterstitialAD</code> 직접 호출은 래퍼로 옮길 것. <strong>단 <code>PopupShowCheck</code>의 키보드 치트 1곳은 의도적 예외로 그대로 둠</strong> &mdash; 개발용이라 파라미터를 안 타는 게 맞음. 대신 이걸로 확대 동작을 검증하면 안 된다는 걸 <a href="#s6" style="color:var(--accent)">QA 주의사항</a>에 적어 둠</li>
   </ul>
@@ -450,7 +450,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <div class="tw"><table>
     <thead><tr><th>변수</th><th>타입</th><th class="r">기본</th><th class="r">적용값</th><th>허용 범위</th><th>동작</th></tr></thead>
     <tbody>
-      <tr class="pick"><td><span class="sheet-var">it_enabled</span></td><td>bool</td><td class="r mono">1</td><td class="r mono">1</td><td class="mono">0 · 1</td><td><strong>전면광고 전체 스위치.</strong> 0이면 구좌·다른 값과 무관하게 전면광고를 아예 호출하지 않음. 평시엔 항상 1이고, 사고 때만 0으로 내림</td></tr>
+      <tr class="pick"><td><span class="sheet-var">it_enabled</span></td><td>bool</td><td class="r mono">1</td><td class="r mono">1</td><td class="mono">0 · 1</td><td><strong>이 건으로 늘린 노출만 끄는 스위치.</strong> 0이면 나머지 세 값을 무시하고 <strong>전부 현행값으로 취급</strong>함 &mdash; 유예는 코지 3·퍼블마 4로, 판 종료 구좌는 off로, 간격은 현행으로 돌아감. <strong>기존 구좌(판 진입·재도전·이어하기 실패)의 광고는 계속 나감</strong> &mdash; 전면광고를 통째로 끄는 값이 아님. 평시 1, 되돌릴 때만 0</td></tr>
       <tr><td><span class="sheet-var">it_ftue_free_count</span></td><td>int</td><td class="r mono">코지 3<br>퍼블마 4</td><td class="r mono">1</td><td class="mono">0~50 정수</td><td>광고 없이 보장하는 <strong>클리어 판 수</strong>. 코지는 <code>totalClearCount</code>, 퍼블마는 <code>totalPlayWinCount</code>를 그대로 씀 &mdash; <strong>실패 판은 안 세짐</strong>. 즉 1이면 "첫 클리어 전까지 광고 없음"이고, 첫 판을 실패한 유저는 클리어할 때까지 계속 광고가 없음. 기본값은 각 게임 현행 조건과 같음. <strong>0이면 유예 없음</strong> &mdash; 그때의 실질 최초 노출 시점은 아래 예외 표를 볼 것</td></tr>
       <tr><td><span class="sheet-var">it_slot_stage_end</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>판 종료 구좌. 1이면 결과창 진입 시점에 광고를 붙이고 <code>result_lobby</code>를 정식 구좌로 편입함. 0이면 판 진입 구좌만 씀 &mdash; 현행</td></tr>
       <tr><td><span class="sheet-var">it_min_interval_sec</span></td><td>int</td><td class="r mono">코지 0<br>퍼블마 30</td><td class="r mono">5</td><td class="mono">0~600 정수</td><td>직전 <strong>노출 성공</strong>으로부터 이 시간이 안 지났으면 건너뜀. 0이면 검사 안 함. <strong>기본값이 게임마다 다른 이유</strong> &mdash; 코지는 지금 쿨다운이 무효라 0이 현행 동작이고, 30을 넣으면 배선만 했는데 노출이 줄어 배선 검증이 오판됨</td></tr>
@@ -461,7 +461,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <div class="tw"><table>
     <thead><tr><th>상태</th><th>빠져나가는 조건</th><th>그때 저장·갱신하는 값</th></tr></thead>
     <tbody>
-      <tr class="warn"><td>전체 정지</td><td><span class="sheet-var">it_enabled</span>=1로 바뀜 (다음 부팅부터)</td><td>없음 &mdash; 광고 호출 자체를 안 함</td></tr>
+      <tr class="warn"><td>확대 꺼짐</td><td><span class="sheet-var">it_enabled</span>=1로 바뀜 (다음 부팅부터)</td><td>없음 &mdash; 세 값을 현행값으로 읽음. 기존 구좌는 그대로 발화</td></tr>
       <tr><td>유예 중</td><td>클리어 카운터 &ge; <span class="sheet-var">it_ftue_free_count</span></td><td>없음 &mdash; 기존 카운터를 읽기만 함</td></tr>
       <tr class="pick"><td>노출 가능</td><td>구좌 발화 &rarr; <code>4010</code> 성공</td><td><code>lastImpressionAt</code> = 성공 시각</td></tr>
       <tr><td>간격 대기 중</td><td><code>lastImpressionAt</code> + <span class="sheet-var">it_min_interval_sec</span> 경과</td><td>없음</td></tr>
@@ -491,15 +491,15 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
       <tr><td>이어하기 실패 &mdash; 코지 <code>continue_fail</code></td><td>대상 유저 증가</td><td><span class="sheet-var">it_ftue_free_count</span></td></tr>
       <tr class="dead"><td>인게임 나가기 2종 · 리그 결과</td><td>대상은 늘지만 경로를 거의 안 타 규모가 없음</td><td>없음 &mdash; 손대지 않음</td></tr>
       <tr><td>전 구좌 공통 &mdash; 밀도</td><td>광고끼리 붙기 시작함</td><td><span class="sheet-var">it_min_interval_sec</span></td></tr>
-      <tr><td>전 구좌 공통 &mdash; 긴급 정지</td><td>&mdash;</td><td><span class="sheet-var">it_enabled</span></td></tr>
+      <tr><td>이 건의 변경분 전체 &mdash; 되돌리기</td><td>&mdash;</td><td><span class="sheet-var">it_enabled</span></td></tr>
     </tbody>
   </table></div>
   <p>재도전 구좌를 따로 끄는 값은 두지 않음. 이 건이 재도전 노출을 새로 만든 게 아니라서, 되돌릴 일이 생기면 유예 값을 올리는 것으로 같은 유저층이 그대로 빠짐. 그래도 부족하면 그때 <span class="sheet-var">it_slot_retry</span>를 추가하면 되고, 지금 미리 만들면 QA 조합만 늘어남.</p>
 
   <p><strong>세션 시작 블록과 RV 시청 후 블록은 파라미터를 주지 않고 제거함.</strong> 실측에서 이 둘의 노출 기여가 0%p였고(시도만 2.86&rarr;3.37로 늘고 노출은 1.78 그대로), 코지는 이미 코드상 무효라 게임 간 동작도 이걸로 통일됨. 조이는 수단은 <span class="sheet-var">it_min_interval_sec</span> 하나로 충분함.</p>
   <div class="callout callout-purple">
-    <p><strong><span class="sheet-var">it_enabled</span>는 되돌리기용이 아니라 끄기용임.</strong> 세 축을 현행값으로 되돌리는 것과 전면광고를 통째로 내리는 것은 다른 상태인데, 지금까지 스펙엔 후자가 없었음. 틱톡 쪽 정책 이슈·광고 SDK 장애·예상 밖 이탈처럼 <strong>원인을 파악하기 전에 일단 멈춰야 하는 상황</strong>에서 값 하나만 내리면 되게 둠. 세 값을 동시에 정확히 되돌리는 것보다 사고 시 실수가 적음.</p>
-    <p><strong>퍼블마도 같이 넣음.</strong> 퍼블마는 전면광고를 끌 수단이 클라 상수뿐이라 지금은 빌드를 다시 올려야 함. 두 게임이 같은 이름·같은 동작으로 갖고 있어야 사고 때 한 사람이 둘 다 내릴 수 있음.</p>
+    <p><strong><span class="sheet-var">it_enabled</span>는 이 건의 되돌리기 버튼임 &mdash; 광고 끄는 버튼이 아님.</strong> 0으로 내리면 <strong>이 기획으로 늘어난 노출만</strong> 사라지고, 지금도 나가고 있는 기존 구좌 광고는 그대로 나감. 예상 밖 이탈이 났을 때 세 값을 각각 정확히 되돌리는 것보다 값 하나 내리는 게 사고 시 실수가 적어서 둠.</p>
+    <p><strong>전면광고를 통째로 끄는 수단은 이 건에 없음.</strong> 그건 이 기획의 범위가 아니고, 필요해지면 별도로 잡을 것.</p>
   </div>
 
   <p><strong>범위 밖은 클램프하지 않고 기본값으로 떨어뜨림.</strong> 형변환이 안 되는 값(문자열·null·소수)도 같음. 잘못 넣은 값이 조용히 옆 값으로 바뀌면 시트를 봐도 실제 동작을 알 수 없음.</p>
@@ -536,7 +536,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
     <li>기존 <code>4000</code> / <code>4010</code> / <code>4020</code> 그대로 씀. 판 종료 구좌는 <code>type</code>에 <strong>코지 <code>stage_end</code></strong>, <strong>퍼블마 <code>game_over_enter</code></strong>로 신규 값을 넣어 기존 <code>game_over</code>(버튼 클릭)와 구분함</li>
     <li><strong><code>type</code>은 <code>4000</code>·<code>4010</code>·<code>4020</code> 셋 모두에 같은 값으로 실을 것.</strong> 구좌별 fill = 같은 <code>type</code>의 <code>4010</code> &divide; <code>4000</code>인데, <code>4020</code>에 <code>type</code>이 없으면 어느 구좌가 거절당했는지를 못 봄 &mdash; 판정 기준이 구좌별 fill이라 이게 빠지면 판정 자체가 안 됨. 조회할 땐 구버전 호환으로 <code>coalesce(data.type, data.position)</code>을 쓸 것</li>
     <li><strong><code>4000</code>의 <code>data</code>에 그 시점 적용값을 같이 실을 것</strong> &mdash; 네 값을 이어붙인 짧은 문자열 하나면 됨(예: <code>1-1-1-5</code>). 반영이 다음 세션부터라 롤아웃 이행 구간에는 한 시각에 신·구 유저가 섞이는데, 시트 변경이력은 창 경계만 줄 뿐 <strong>유저를 신/구로 가르지 못함</strong>. 클라가 이미 들고 있는 값이라 서버 왕복이 필요 없음</li>
-    <li><span class="sheet-var">it_enabled</span>=0이면 광고 이벤트가 아예 안 찍혀서 <strong>정책상 끈 것과 광고 SDK 장애가 로그에서 구분되지 않음</strong>. 세션당 1회 설정 상태 로그를 광고 이벤트와 별개로 남길 것</li>
+    <li>세션당 1회 <strong>설정 상태 로그</strong>를 광고 이벤트와 별개로 남길 것. <span class="sheet-var">it_enabled</span>=0으로 내린 구간과 그냥 fill이 나쁜 구간을 로그만으로 갈라야 함</li>
     <li><strong>코지 <code>4020</code>의 <code>error_message</code>가 지금 <code>[object Object]</code>로 올라감</strong> &mdash; 8월 실패 2,406건의 95.3%임. 퍼블마처럼 문자열로 직렬화할 것. 이걸 고쳐야 확대 후 fill이 떨어졌을 때 틱톡 빈도 제한인지 인벤토리 부족인지 구분됨</li>
     <li>파라미터 변경일은 시트 변경이력에 남김. 전후 비교의 창 경계가 이 기록에서 나옴</li>
   </ul>
@@ -547,7 +547,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
     <thead><tr><th>상황</th><th>동작</th></tr></thead>
     <tbody>
       <tr><td>파라미터 로드 실패 · 값 없음 · 범위 밖</td><td>클라 기본값(<span class="sheet-var">it_ftue_free_count</span> 코지 3·퍼블마 4, <span class="sheet-var">it_slot_stage_end</span>=0, <span class="sheet-var">it_min_interval_sec</span>=30). 즉 현행 동작</td></tr>
-      <tr><td><span class="sheet-var">it_enabled</span>=0일 때</td><td>전면광고 시도 자체를 안 함 &mdash; <code>4000</code>도 안 찍힘. 보상형 광고와 크로스프로모는 영향 없음</td></tr>
+      <tr><td><span class="sheet-var">it_enabled</span>=0일 때</td><td>나머지 세 값을 <strong>읽지 않고</strong> 현행값으로 동작함. 기존 구좌 광고는 계속 나가고 <code>4000</code>도 정상으로 찍힘. 판 종료 구좌만 발화하지 않음</td></tr>
       <tr><td>값을 바꾼 뒤 언제부터 먹나</td><td><strong>다음 부팅부터</strong>임 &mdash; 코지는 부팅 때 JSON을 1회 읽고 퍼블마는 로그인 때 <code>const</code>를 받음. 이미 앱을 켜 둔 유저에겐 반영되지 않음. 코지는 여기에 CDN 캐시 지연이 더 붙음</td></tr>
       <tr><td><span class="sheet-var">it_ftue_free_count</span>=0으로 두면</td><td>첫 판 <em>진입</em> 시점엔 여전히 노출 없음 &mdash; 판 진입 구좌는 직전 판이 있어야 발화함. 실질 최초 노출은 <span class="sheet-var">it_slot_stage_end</span>=1일 때 첫 판 종료 결과창임</td></tr>
       <tr><td>판 종료 광고와 다음 판 시작 광고가 겹칠 때</td><td>먼저 도달한 판 종료 쪽이 나가고, 시작 쪽은 <span class="sheet-var">it_min_interval_sec</span>에 걸려 건너뜀</td></tr>
@@ -578,7 +578,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
       <tr><td>유예만 해제</td><td class="r mono">1</td><td class="r mono">0</td><td class="r mono">30</td><td>판 진입 구좌만 뜨고 결과창에선 안 뜸. 두 번째 판 진입부터 노출</td></tr>
       <tr><td>구좌만 신설</td><td class="r mono">코지 3 / 퍼블마 4</td><td class="r mono">1</td><td class="r mono">5</td><td>유예를 채운 유저만 결과창에서 노출. 신규는 여전히 광고 없음</td></tr>
       <tr><td>조임</td><td class="r mono">1</td><td class="r mono">1</td><td class="r mono">40</td><td>구좌는 그대로인데 40초 안에는 안 뜸</td></tr>
-      <tr class="warn"><td>전체 끄기 (<span class="sheet-var">it_enabled</span>=0)</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td>다른 값이 뭐든 전면광고가 한 번도 안 뜸. <code>4000</code> 로그도 없음. 보상형 광고는 정상 동작</td></tr>
+      <tr class="warn"><td>확대 끄기 (<span class="sheet-var">it_enabled</span>=0)</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td>다른 세 값을 아무렇게나 넣어도 <strong>현행과 똑같이</strong> 동작해야 함 &mdash; 판 진입·재도전 광고는 그대로 나오고 결과창에선 안 뜸</td></tr>
     </tbody>
   </table></div>
   <p>추가로 확인할 것 둘. <strong>파라미터를 못 받았을 때</strong>(JSON 삭제·네트워크 차단)는 현행 동작으로 떨어져야 함. <strong>정해진 값 밖의 수를 넣었을 때</strong>(예: 간격 999)는 기본값으로 떨어지고 크래시가 없어야 함.</p>
@@ -607,11 +607,11 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <div class="tw"><table>
     <thead><tr><th>단계</th><th>조치</th><th>기대</th></tr></thead>
     <tbody>
-      <tr class="warn"><td>0단 (긴급)</td><td><span class="sheet-var">it_enabled</span> 1 &rarr; 0</td><td>전면광고 전체 정지. 원인을 모를 때 먼저 밟는 단계 &mdash; 반영은 다음 부팅부터고, 코지는 CDN 캐시를 비워야 그 시점이 옴</td></tr>
+      <tr class="warn"><td>0단 (일괄)</td><td><span class="sheet-var">it_enabled</span> 1 &rarr; 0</td><td>이 건의 변경분을 한 번에 되돌림 &mdash; 3단과 결과가 같고 값을 하나만 만짐. 반영은 다음 부팅부터고, 코지는 CDN 캐시를 비워야 그 시점이 옴</td></tr>
       <tr><td>1단</td><td><span class="sheet-var">it_min_interval_sec</span> 5 &rarr; 40</td><td>코지 시도 7.07&rarr;3.65. 노출은 유지될 가능성이 큼 &mdash; 줄어드는 몫이 틱톡이 거절하던 분량이라서</td></tr>
       <tr><td>2단</td><td><span class="sheet-var">it_ftue_free_count</span> 1 &rarr; 3</td><td>신규 유예만 되돌림. 이탈이 <strong>가입 첫 판 부근</strong>에서 났을 때 씀. 구좌는 유지되므로 기존 유저 노출은 안 줄어듦</td></tr>
       <tr><td>2단(대안)</td><td><span class="sheet-var">it_slot_stage_end</span> 1 &rarr; 0</td><td>판 종료 구좌만 되돌림. 이탈이 <strong>판 수 전반</strong>에서 났을 때 씀. 코지는 이 축이 주력이라 노출이 크게 빠짐</td></tr>
-      <tr><td>3단</td><td>세 축 모두 현행값으로 (<span class="sheet-var">it_enabled</span>는 1 유지)</td><td>확대 전 상태로 복귀. 광고는 계속 돌되 지금 수준으로</td></tr>
+      <tr><td>3단</td><td>세 축을 각각 현행값으로 (<span class="sheet-var">it_enabled</span>는 1 유지)</td><td>0단과 결과는 같음. 어느 축을 어떻게 되돌렸는지 시트에 남기고 싶을 때 씀</td></tr>
     </tbody>
   </table></div>
   <div class="callout callout-blue">
