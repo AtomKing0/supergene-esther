@@ -306,7 +306,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   </table></div>
 
   <div class="callout callout-purple">
-    <p><strong>확정값</strong> &mdash; 두 게임 모두 <span class="sheet-var">tiktok_it_ftue_free_count</span> = 1, <span class="sheet-var">tiktok_it_slot_stage_end</span> = 1, <span class="sheet-var">tiktok_it_min_interval_sec</span> = 5. 유예 1판은 첫 판을 끝낼 때까지는 광고를 안 보여 준다는 뜻이고, 간격 5초는 판 종료 광고와 다음 판 시작 광고가 3~5초 간격으로 연달아 터지는 것만 막는 값임. 세 값 모두 게임별로 따로 조정 가능함.</p>
+    <p><strong>확정값</strong> &mdash; 두 게임 모두 <span class="sheet-var">it_ftue_free_count</span> = 1, <span class="sheet-var">it_slot_stage_end</span> = 1, <span class="sheet-var">it_min_interval_sec</span> = 5. 유예 1판은 첫 판을 끝낼 때까지는 광고를 안 보여 준다는 뜻이고, 간격 5초는 판 종료 광고와 다음 판 시작 광고가 3~5초 간격으로 연달아 터지는 것만 막는 값임. 세 값 모두 게임별로 따로 조정 가능함.</p>
   </div>
 </section>
 
@@ -397,7 +397,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <h3>코지 중앙 래퍼 신설</h3>
   <p>퍼블마는 <code>ADPlayer.tryShowInterstitialAD</code>가 모든 호출을 한 번 받아서 FTUE 가드를 거기서 걺. <strong>코지에는 이 래퍼가 없어서</strong> 화면마다 <code>BasePlatform.instance.tryShowInterstitialAD</code>를 직접 부름 &mdash; <code>stage_start</code> 하나만 호출지점이 <strong>17곳</strong>임(<code>DataManager</code> 13 · 친구/리더보드/토너먼트/프로필 4). 호출지점마다 조건을 넣으면 반드시 빠짐.</p>
   <ul>
-    <li><strong>코지에 <code>ADPlayer</code> 상당물을 신설</strong>하고, 네 파라미터 판정을 전부 거기 한 곳에 둠. 각 화면은 구좌 이름만 넘김. <span class="sheet-var">tiktok_it_enabled</span>=0 검사는 이 래퍼 <strong>맨 앞</strong>에 두어 로그도 남기지 않고 즉시 반환함</li>
+    <li><strong>코지에 <code>ADPlayer</code> 상당물을 신설</strong>하고, 네 파라미터 판정을 전부 거기 한 곳에 둠. 각 화면은 구좌 이름만 넘김. <span class="sheet-var">it_enabled</span>=0 검사는 이 래퍼 <strong>맨 앞</strong>에 두어 로그도 남기지 않고 즉시 반환함</li>
     <li>17곳 중 다수는 <strong>틱톡에서 이미 죽어 있음</strong> &mdash; <code>getRecommendedMatchInfo()</code>가 페이스북이 아니면 <code>null</code>을 반환해서 친구·토너먼트 분기가 통째로 안 탐. 래퍼로 모으면 이런 판별이 필요 없어짐</li>
     <li>기존 <code>Fbi.tryShowInterstitialAD</code> 직접 호출은 래퍼로 옮길 것. <strong>단 <code>PopupShowCheck</code>의 키보드 치트 1곳은 의도적 예외로 그대로 둠</strong> &mdash; 개발용이라 파라미터를 안 타는 게 맞음. 대신 이걸로 확대 동작을 검증하면 안 된다는 걸 <a href="#s6" style="color:var(--accent)">QA 주의사항</a>에 적어 둠</li>
   </ul>
@@ -406,21 +406,21 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <div class="tw"><table>
     <thead><tr><th>게임</th><th>저장소</th><th>비고</th></tr></thead>
     <tbody>
-      <tr><td>퍼즐블록마스터</td><td>밸런스시트 <code>const</code> 탭에 행 추가</td><td><code>new_opponent_ad_gap</code>과 같은 자리. <code>key_number</code>는 <code>tool</code> 탭 대역 인덱스를 따름 &mdash; <strong>채번은 기획이 하고 배포 전에 이 문서에 적음</strong>. 개발·시트 담당이 임의 부여하지 않음</td></tr>
-      <tr><td>코지타일</td><td><code>cozy-tiles/data/tiktok_ad_config.json</code> 신설</td><td><strong>업로드 후 CDN 무효화 필수</strong> &mdash; 로드 URL에 <code>?v=</code> 타임스탬프를 붙이거나 캐시를 비울 것. 안 하면 TTL만큼 옛 값이 내려오고, 그 지연이 곧 긴급 롤백에 걸리는 실제 시간이 됨. 코지는 서버 상수 테이블이 없고 <code>stage-list</code>·<code>stage-stat</code>처럼 CDN JSON 파일이 테이블 역할을 함. 국가 축 테이블인 <code>country_data.json</code>에는 넣지 않음</td></tr>
+      <tr><td>퍼즐블록마스터</td><td><a href="https://docs.google.com/spreadsheets/d/1lQEjhBLvXxFUAFkZbAq6Ph4xS4e3eeMSV-dd0isBhOQ/edit" style="color:var(--accent)">[PBB] 밸런스시트_TT</a>의 <code>const_TT</code> 탭</td><td>밸런스시트가 플랫폼별로 갈려 있음(<code>_TT</code>·<code>_Toss</code>·<code>_CG</code>). 공용 <code>[PBB] 밸런스시트</code>가 아니라 <strong>틱톡 시트에 넣어야</strong> 틱톡에만 먹음. <code>key_number</code>는 이 탭의 마지막 번호 다음으로 이어감</td></tr>
+      <tr><td>코지타일</td><td><code>cozy-tiles/data/tiktok_ad_config.json</code> 신설<br><a href="https://docs.google.com/spreadsheets/d/1Ky1IfuxWUjgAlFGSnVivy_M3fQYTuUmK1seqteu9m3M/edit" style="color:var(--accent)">[CozyTiles] TikTok_AD_Config</a> 시트에서 값 관리</td><td><strong>업로드 후 CDN 무효화 필수</strong> &mdash; 로드 URL에 <code>?v=</code> 타임스탬프를 붙이거나 캐시를 비울 것. 안 하면 TTL만큼 옛 값이 내려오고, 그 지연이 곧 긴급 롤백에 걸리는 실제 시간이 됨. 코지는 서버 상수 테이블이 없고 <code>stage-list</code>·<code>stage-stat</code>처럼 CDN JSON 파일이 테이블 역할을 함. 국가 축 테이블인 <code>country_data.json</code>에는 넣지 않음</td></tr>
     </tbody>
   </table></div>
   <div class="callout callout-yellow">
-    <p><strong>네 값 모두 틱톡 경로에서만 읽음.</strong> 코지 CDN 폴더와 퍼블마 <code>const</code> 탭은 페이스북·토스 빌드도 같이 보는 자리임. 코지는 파일명에 <code>tiktok_</code>을 붙여 분리하고 로드를 <code>TikTokPlatform</code>에서만 하며, 퍼블마는 <code>const</code> 행을 읽는 판정을 <code>TikTokPlatform</code> 안에 둘 것 &mdash; 다른 플랫폼 동작이 같이 바뀌면 안 됨.</p>
+    <p><strong>네 값 모두 틱톡 경로에서만 읽음.</strong> 퍼블마는 시트가 이미 플랫폼별로 갈려 있어 <code>const_TT</code>에 넣는 것으로 분리가 끝남. 코지는 CDN 폴더가 공용이라 파일명에 <code>tiktok_</code>을 붙이고 <strong>로드를 <code>TikTokPlatform</code>에서만</strong> 할 것 &mdash; 다른 플랫폼 동작이 같이 바뀌면 안 됨.</p>
   </div>
 
   <h4>코지 <code>tiktok_ad_config.json</code> 형태</h4>
   <p>구조를 두지 않고 세 값만 평평하게 둠. 지금 국가 차등이 필요 없고, 필요해지면 그때 키를 더함.</p>
   <pre class="codeblock">{
-  "tiktok_it_enabled": 1,
-  "tiktok_it_ftue_free_count": 1,
-  "tiktok_it_slot_stage_end": 1,
-  "tiktok_it_min_interval_sec": 5
+  "it_enabled": 1,
+  "it_ftue_free_count": 1,
+  "it_slot_stage_end": 1,
+  "it_min_interval_sec": 5
 }</pre>
   <p>로드는 <code>CCres.loadJsonAssetRemote</code>로 부팅 때 1회. 실패하거나 키가 없으면 클라 기본값(현행 동작)으로 폴백함.</p>
 
@@ -450,10 +450,10 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <div class="tw"><table>
     <thead><tr><th>변수</th><th>타입</th><th class="r">기본</th><th class="r">적용값</th><th>허용 범위</th><th>동작</th></tr></thead>
     <tbody>
-      <tr class="pick"><td><span class="sheet-var">tiktok_it_enabled</span></td><td>bool</td><td class="r mono">1</td><td class="r mono">1</td><td class="mono">0 · 1</td><td><strong>전면광고 전체 스위치.</strong> 0이면 구좌·다른 값과 무관하게 전면광고를 아예 호출하지 않음. 평시엔 항상 1이고, 사고 때만 0으로 내림</td></tr>
-      <tr><td><span class="sheet-var">tiktok_it_ftue_free_count</span></td><td>int</td><td class="r mono">코지 3<br>퍼블마 4</td><td class="r mono">1</td><td class="mono">0~50 정수</td><td>광고 없이 보장하는 <strong>클리어 판 수</strong>. 코지는 <code>totalClearCount</code>, 퍼블마는 <code>totalPlayWinCount</code>를 그대로 씀 &mdash; <strong>실패 판은 안 세짐</strong>. 즉 1이면 "첫 클리어 전까지 광고 없음"이고, 첫 판을 실패한 유저는 클리어할 때까지 계속 광고가 없음. 기본값은 각 게임 현행 조건과 같음. <strong>0이면 유예 없음</strong> &mdash; 그때의 실질 최초 노출 시점은 아래 예외 표를 볼 것</td></tr>
-      <tr><td><span class="sheet-var">tiktok_it_slot_stage_end</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>판 종료 구좌. 1이면 결과창 진입 시점에 광고를 붙이고 <code>result_lobby</code>를 정식 구좌로 편입함. 0이면 판 진입 구좌만 씀 &mdash; 현행</td></tr>
-      <tr><td><span class="sheet-var">tiktok_it_min_interval_sec</span></td><td>int</td><td class="r mono">코지 0<br>퍼블마 30</td><td class="r mono">5</td><td class="mono">0~600 정수</td><td>직전 <strong>노출 성공</strong>으로부터 이 시간이 안 지났으면 건너뜀. 0이면 검사 안 함. <strong>기본값이 게임마다 다른 이유</strong> &mdash; 코지는 지금 쿨다운이 무효라 0이 현행 동작이고, 30을 넣으면 배선만 했는데 노출이 줄어 배선 검증이 오판됨</td></tr>
+      <tr class="pick"><td><span class="sheet-var">it_enabled</span></td><td>bool</td><td class="r mono">1</td><td class="r mono">1</td><td class="mono">0 · 1</td><td><strong>전면광고 전체 스위치.</strong> 0이면 구좌·다른 값과 무관하게 전면광고를 아예 호출하지 않음. 평시엔 항상 1이고, 사고 때만 0으로 내림</td></tr>
+      <tr><td><span class="sheet-var">it_ftue_free_count</span></td><td>int</td><td class="r mono">코지 3<br>퍼블마 4</td><td class="r mono">1</td><td class="mono">0~50 정수</td><td>광고 없이 보장하는 <strong>클리어 판 수</strong>. 코지는 <code>totalClearCount</code>, 퍼블마는 <code>totalPlayWinCount</code>를 그대로 씀 &mdash; <strong>실패 판은 안 세짐</strong>. 즉 1이면 "첫 클리어 전까지 광고 없음"이고, 첫 판을 실패한 유저는 클리어할 때까지 계속 광고가 없음. 기본값은 각 게임 현행 조건과 같음. <strong>0이면 유예 없음</strong> &mdash; 그때의 실질 최초 노출 시점은 아래 예외 표를 볼 것</td></tr>
+      <tr><td><span class="sheet-var">it_slot_stage_end</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>판 종료 구좌. 1이면 결과창 진입 시점에 광고를 붙이고 <code>result_lobby</code>를 정식 구좌로 편입함. 0이면 판 진입 구좌만 씀 &mdash; 현행</td></tr>
+      <tr><td><span class="sheet-var">it_min_interval_sec</span></td><td>int</td><td class="r mono">코지 0<br>퍼블마 30</td><td class="r mono">5</td><td class="mono">0~600 정수</td><td>직전 <strong>노출 성공</strong>으로부터 이 시간이 안 지났으면 건너뜀. 0이면 검사 안 함. <strong>기본값이 게임마다 다른 이유</strong> &mdash; 코지는 지금 쿨다운이 무효라 0이 현행 동작이고, 30을 넣으면 배선만 했는데 노출이 줄어 배선 검증이 오판됨</td></tr>
     </tbody>
   </table></div>
   <h4>클라 상태 모델</h4>
@@ -461,10 +461,10 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <div class="tw"><table>
     <thead><tr><th>상태</th><th>빠져나가는 조건</th><th>그때 저장·갱신하는 값</th></tr></thead>
     <tbody>
-      <tr class="warn"><td>전체 정지</td><td><span class="sheet-var">tiktok_it_enabled</span>=1로 바뀜 (다음 부팅부터)</td><td>없음 &mdash; 광고 호출 자체를 안 함</td></tr>
-      <tr><td>유예 중</td><td>클리어 카운터 &ge; <span class="sheet-var">tiktok_it_ftue_free_count</span></td><td>없음 &mdash; 기존 카운터를 읽기만 함</td></tr>
+      <tr class="warn"><td>전체 정지</td><td><span class="sheet-var">it_enabled</span>=1로 바뀜 (다음 부팅부터)</td><td>없음 &mdash; 광고 호출 자체를 안 함</td></tr>
+      <tr><td>유예 중</td><td>클리어 카운터 &ge; <span class="sheet-var">it_ftue_free_count</span></td><td>없음 &mdash; 기존 카운터를 읽기만 함</td></tr>
       <tr class="pick"><td>노출 가능</td><td>구좌 발화 &rarr; <code>4010</code> 성공</td><td><code>lastImpressionAt</code> = 성공 시각</td></tr>
-      <tr><td>간격 대기 중</td><td><code>lastImpressionAt</code> + <span class="sheet-var">tiktok_it_min_interval_sec</span> 경과</td><td>없음</td></tr>
+      <tr><td>간격 대기 중</td><td><code>lastImpressionAt</code> + <span class="sheet-var">it_min_interval_sec</span> 경과</td><td>없음</td></tr>
     </tbody>
   </table></div>
   <ul>
@@ -478,31 +478,31 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <div class="tw"><table>
     <thead><tr><th>구좌</th><th>이 건의 변경</th><th>통제 레버</th></tr></thead>
     <tbody>
-      <tr><td>판 진입 &mdash; 코지 <code>stage_start</code> · 퍼블마 <code>game_play</code></td><td>대상 유저 증가</td><td><span class="sheet-var">tiktok_it_ftue_free_count</span></td></tr>
-      <tr class="pick"><td>판 종료 &mdash; 코지 <code>result_lobby</code> · 퍼블마 <code>game_over</code></td><td><strong>신설 · 발화 시점 앞당김</strong></td><td><span class="sheet-var">tiktok_it_slot_stage_end</span></td></tr>
-      <tr class="warn"><td>재도전 &mdash; 코지 <code>stage_retry</code></td><td>대상 유저 증가</td><td><span class="sheet-var">tiktok_it_ftue_free_count</span> · fill이 최저라 <a href="#s6" style="color:var(--accent)">판정</a>에서 따로 봄</td></tr>
-      <tr><td>이어하기 실패 &mdash; 코지 <code>continue_fail</code></td><td>대상 유저 증가</td><td><span class="sheet-var">tiktok_it_ftue_free_count</span></td></tr>
+      <tr><td>판 진입 &mdash; 코지 <code>stage_start</code> · 퍼블마 <code>game_play</code></td><td>대상 유저 증가</td><td><span class="sheet-var">it_ftue_free_count</span></td></tr>
+      <tr class="pick"><td>판 종료 &mdash; 코지 <code>result_lobby</code> · 퍼블마 <code>game_over</code></td><td><strong>신설 · 발화 시점 앞당김</strong></td><td><span class="sheet-var">it_slot_stage_end</span></td></tr>
+      <tr class="warn"><td>재도전 &mdash; 코지 <code>stage_retry</code></td><td>대상 유저 증가</td><td><span class="sheet-var">it_ftue_free_count</span> · fill이 최저라 <a href="#s6" style="color:var(--accent)">판정</a>에서 따로 봄</td></tr>
+      <tr><td>이어하기 실패 &mdash; 코지 <code>continue_fail</code></td><td>대상 유저 증가</td><td><span class="sheet-var">it_ftue_free_count</span></td></tr>
       <tr class="dead"><td>인게임 나가기 2종 · 리그 결과</td><td>대상은 늘지만 경로를 거의 안 타 규모가 없음</td><td>없음 &mdash; 손대지 않음</td></tr>
-      <tr><td>전 구좌 공통 &mdash; 밀도</td><td>광고끼리 붙기 시작함</td><td><span class="sheet-var">tiktok_it_min_interval_sec</span></td></tr>
-      <tr><td>전 구좌 공통 &mdash; 긴급 정지</td><td>&mdash;</td><td><span class="sheet-var">tiktok_it_enabled</span></td></tr>
+      <tr><td>전 구좌 공통 &mdash; 밀도</td><td>광고끼리 붙기 시작함</td><td><span class="sheet-var">it_min_interval_sec</span></td></tr>
+      <tr><td>전 구좌 공통 &mdash; 긴급 정지</td><td>&mdash;</td><td><span class="sheet-var">it_enabled</span></td></tr>
     </tbody>
   </table></div>
-  <p>재도전 구좌를 따로 끄는 값은 두지 않음. 이 건이 재도전 노출을 새로 만든 게 아니라서, 되돌릴 일이 생기면 유예 값을 올리는 것으로 같은 유저층이 그대로 빠짐. 그래도 부족하면 그때 <span class="sheet-var">tiktok_it_slot_retry</span>를 추가하면 되고, 지금 미리 만들면 QA 조합만 늘어남.</p>
+  <p>재도전 구좌를 따로 끄는 값은 두지 않음. 이 건이 재도전 노출을 새로 만든 게 아니라서, 되돌릴 일이 생기면 유예 값을 올리는 것으로 같은 유저층이 그대로 빠짐. 그래도 부족하면 그때 <span class="sheet-var">it_slot_retry</span>를 추가하면 되고, 지금 미리 만들면 QA 조합만 늘어남.</p>
 
-  <p><strong>세션 시작 블록과 RV 시청 후 블록은 파라미터를 주지 않고 제거함.</strong> 실측에서 이 둘의 노출 기여가 0%p였고(시도만 2.86&rarr;3.37로 늘고 노출은 1.78 그대로), 코지는 이미 코드상 무효라 게임 간 동작도 이걸로 통일됨. 조이는 수단은 <span class="sheet-var">tiktok_it_min_interval_sec</span> 하나로 충분함.</p>
+  <p><strong>세션 시작 블록과 RV 시청 후 블록은 파라미터를 주지 않고 제거함.</strong> 실측에서 이 둘의 노출 기여가 0%p였고(시도만 2.86&rarr;3.37로 늘고 노출은 1.78 그대로), 코지는 이미 코드상 무효라 게임 간 동작도 이걸로 통일됨. 조이는 수단은 <span class="sheet-var">it_min_interval_sec</span> 하나로 충분함.</p>
   <div class="callout callout-purple">
-    <p><strong><span class="sheet-var">tiktok_it_enabled</span>는 되돌리기용이 아니라 끄기용임.</strong> 세 축을 현행값으로 되돌리는 것과 전면광고를 통째로 내리는 것은 다른 상태인데, 지금까지 스펙엔 후자가 없었음. 틱톡 쪽 정책 이슈·광고 SDK 장애·예상 밖 이탈처럼 <strong>원인을 파악하기 전에 일단 멈춰야 하는 상황</strong>에서 값 하나만 내리면 되게 둠. 세 값을 동시에 정확히 되돌리는 것보다 사고 시 실수가 적음.</p>
+    <p><strong><span class="sheet-var">it_enabled</span>는 되돌리기용이 아니라 끄기용임.</strong> 세 축을 현행값으로 되돌리는 것과 전면광고를 통째로 내리는 것은 다른 상태인데, 지금까지 스펙엔 후자가 없었음. 틱톡 쪽 정책 이슈·광고 SDK 장애·예상 밖 이탈처럼 <strong>원인을 파악하기 전에 일단 멈춰야 하는 상황</strong>에서 값 하나만 내리면 되게 둠. 세 값을 동시에 정확히 되돌리는 것보다 사고 시 실수가 적음.</p>
     <p><strong>퍼블마도 같이 넣음.</strong> 퍼블마는 전면광고를 끌 수단이 클라 상수뿐이라 지금은 빌드를 다시 올려야 함. 두 게임이 같은 이름·같은 동작으로 갖고 있어야 사고 때 한 사람이 둘 다 내릴 수 있음.</p>
   </div>
 
   <p><strong>범위 밖은 클램프하지 않고 기본값으로 떨어뜨림.</strong> 형변환이 안 되는 값(문자열·null·소수)도 같음. 잘못 넣은 값이 조용히 옆 값으로 바뀌면 시트를 봐도 실제 동작을 알 수 없음.</p>
 
-  <p>네 값 모두 <code>tiktok_</code> 접두사를 붙임 &mdash; 퍼블마 <code>const</code> 탭과 코지 CDN 폴더는 다른 플랫폼 빌드도 같이 보는 자리라, 이름만 보고 <strong>이 값이 틱톡에만 먹는다</strong>는 걸 알 수 있어야 함.</p>
+  <p><strong>이름에 플랫폼을 붙이지 않음. 자리로 가름.</strong> 퍼블마는 밸런스시트가 플랫폼별로 갈려 있어 <code>[PBB] 밸런스시트_TT</code>의 <code>const_TT</code> 탭에 들어가는 것 자체가 틱톡 한정이고, 코지는 CDN 폴더가 공용이라 <strong>파일명</strong>에 <code>tiktok_</code>을 붙여 가름. 시트 이름에 <code>tiktok_</code>을 덧붙이면 업로드 툴이 플랫폼 접두사로 오인해 <code>const_TT.json</code> 산출이 깨짐.</p>
 
-  <p><span class="sheet-var">tiktok_it_min_interval_sec</span>은 <strong>0 · 5 · 30 · 40</strong> 네 값만, <span class="sheet-var">tiktok_it_ftue_free_count</span>는 <strong>0 · 1 · 3 · 4</strong>만 씀. 임의값을 넣지 않기로 하면 QA가 확인할 조합이 고정됨.</p>
+  <p><span class="sheet-var">it_min_interval_sec</span>은 <strong>0 · 5 · 30 · 40</strong> 네 값만, <span class="sheet-var">it_ftue_free_count</span>는 <strong>0 · 1 · 3 · 4</strong>만 씀. 임의값을 넣지 않기로 하면 QA가 확인할 조합이 고정됨.</p>
 
   <div class="callout callout-blue">
-    <p><strong>일일 상한은 넣지 않음.</strong> 날짜 기준이 두 게임이 다르고(퍼블마는 UTC, 코지 <code>checkDateChanged</code>는 기기 로컬 자정) 리셋·시간 조작까지 QA 범위가 커짐. 조이는 건 <span class="sheet-var">tiktok_it_min_interval_sec</span>을 40으로 올리는 것으로 충분함.</p>
+    <p><strong>일일 상한은 넣지 않음.</strong> 날짜 기준이 두 게임이 다르고(퍼블마는 UTC, 코지 <code>checkDateChanged</code>는 기기 로컬 자정) 리셋·시간 조작까지 QA 범위가 커짐. 조이는 건 <span class="sheet-var">it_min_interval_sec</span>을 40으로 올리는 것으로 충분함.</p>
   </div>
 
 
@@ -510,15 +510,15 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <div class="tw"><table>
     <thead><tr><th>게임</th><th>대상</th><th>변경</th></tr></thead>
     <tbody>
-      <tr><td rowspan="4">퍼블마</td><td><code>ADPlayer.tryShowInterstitialAD</code></td><td>하드코딩된 <code>totalPlayWinCount &lt; 4</code>를 <span class="sheet-var">tiktok_it_ftue_free_count</span>로 치환. <code>loginNRU</code>(그 세션이 가입 당일인지) 조건은 그대로 둠 &mdash; <strong>가입 다음 날 이후 접속에는 유예가 걸리지 않음</strong>. 코지엔 이 조건이 없어 게임 간 동작이 다르나, 유예 대상이 어차피 첫날 유저라 실효 차이가 없어 맞추지 않음</td></tr>
-      <tr><td><code>TikTokPlatform.tryShowInterstitialAD</code></td><td><code>if (!this.enableAD) return</code>을 <span class="sheet-var">tiktok_it_min_interval_sec</span> 기준으로. 값이 0이면 검사 자체를 건너뜀</td></tr>
-      <tr><td><code>refreshTimerInterstitialAD</code> / <code>Fbi.init</code></td><td><code>AD_INTERVAL_DEFAULT</code>를 <span class="sheet-var">tiktok_it_min_interval_sec</span>로 대체. RV 후 10초 호출과 세션 시작 호출은 삭제</td></tr>
-      <tr><td><code>PopupGameOver</code> · <code>SceneManager.showViewGameWithSolo</code></td><td><span class="sheet-var">tiktok_it_slot_stage_end</span>=1이면 판 종료 구좌를 <strong>결과창 진입 시점</strong>에 발화. 지금은 결과창 버튼을 눌러야 발화해서 경로 커버리지가 68%임</td></tr>
+      <tr><td rowspan="4">퍼블마</td><td><code>ADPlayer.tryShowInterstitialAD</code></td><td>하드코딩된 <code>totalPlayWinCount &lt; 4</code>를 <span class="sheet-var">it_ftue_free_count</span>로 치환. <code>loginNRU</code>(그 세션이 가입 당일인지) 조건은 그대로 둠 &mdash; <strong>가입 다음 날 이후 접속에는 유예가 걸리지 않음</strong>. 코지엔 이 조건이 없어 게임 간 동작이 다르나, 유예 대상이 어차피 첫날 유저라 실효 차이가 없어 맞추지 않음</td></tr>
+      <tr><td><code>TikTokPlatform.tryShowInterstitialAD</code></td><td><code>if (!this.enableAD) return</code>을 <span class="sheet-var">it_min_interval_sec</span> 기준으로. 값이 0이면 검사 자체를 건너뜀</td></tr>
+      <tr><td><code>refreshTimerInterstitialAD</code> / <code>Fbi.init</code></td><td><code>AD_INTERVAL_DEFAULT</code>를 <span class="sheet-var">it_min_interval_sec</span>로 대체. RV 후 10초 호출과 세션 시작 호출은 삭제</td></tr>
+      <tr><td><code>PopupGameOver</code> · <code>SceneManager.showViewGameWithSolo</code></td><td><span class="sheet-var">it_slot_stage_end</span>=1이면 판 종료 구좌를 <strong>결과창 진입 시점</strong>에 발화. 지금은 결과창 버튼을 눌러야 발화해서 경로 커버리지가 68%임</td></tr>
       <tr><td rowspan="5">코지</td><td><code>tiktok_ad_config.json</code> 로더</td><td>신규 추가. <code>stage-list</code> 로딩과 같은 패턴</td></tr>
-      <tr><td><code>ViewCozyTileResult</code></td><td><code>isTutorialPlayer</code>(<code>totalClearCount &lt; 3</code>) 분기를 <span class="sheet-var">tiktok_it_ftue_free_count</span> 비교로 치환</td></tr>
+      <tr><td><code>ViewCozyTileResult</code></td><td><code>isTutorialPlayer</code>(<code>totalClearCount &lt; 3</code>) 분기를 <span class="sheet-var">it_ftue_free_count</span> 비교로 치환</td></tr>
       <tr><td><code>ViewCozyTile</code></td><td>튜토 스테이지 재도전 제외를 같은 비교로 치환. <strong>차단 지점이 두 클래스에 하나씩이라 둘 다 바꿔야 함</strong></td></tr>
       <tr><td><code>TikTokPlatform.tryShowInterstitialAD</code></td><td>간격 검사 추가. 지금은 쿨다운 타이머를 세팅만 하고 읽는 곳이 없어 사실상 미적용 상태임</td></tr>
-      <tr><td>판 종료 구좌 (신규)</td><td><code>ViewCozyTileResult</code> <strong>진입 시점에 1회</strong> 발화. <code>type</code>=<code>stage_end</code>. 기존 <code>result_lobby</code>(결과창&rarr;로비 버튼) 구좌는 <span class="sheet-var">tiktok_it_slot_stage_end</span>=1이면 <strong>발화하지 않음</strong> &mdash; 한 판 종료에 광고가 두 번 붙는 걸 막음. 0이면 현행대로 <code>result_lobby</code>만 발화</td></tr>
+      <tr><td>판 종료 구좌 (신규)</td><td><code>ViewCozyTileResult</code> <strong>진입 시점에 1회</strong> 발화. <code>type</code>=<code>stage_end</code>. 기존 <code>result_lobby</code>(결과창&rarr;로비 버튼) 구좌는 <span class="sheet-var">it_slot_stage_end</span>=1이면 <strong>발화하지 않음</strong> &mdash; 한 판 종료에 광고가 두 번 붙는 걸 막음. 0이면 현행대로 <code>result_lobby</code>만 발화</td></tr>
     </tbody>
   </table></div>
 
@@ -528,7 +528,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
     <li>기존 <code>4000</code> / <code>4010</code> / <code>4020</code> 그대로 씀. 판 종료 구좌는 <code>type</code>에 <strong>코지 <code>stage_end</code></strong>, <strong>퍼블마 <code>game_over_enter</code></strong>로 신규 값을 넣어 기존 <code>game_over</code>(버튼 클릭)와 구분함</li>
     <li><strong><code>type</code>은 <code>4000</code>·<code>4010</code>·<code>4020</code> 셋 모두에 같은 값으로 실을 것.</strong> 구좌별 fill = 같은 <code>type</code>의 <code>4010</code> &divide; <code>4000</code>인데, <code>4020</code>에 <code>type</code>이 없으면 어느 구좌가 거절당했는지를 못 봄 &mdash; 판정 기준이 구좌별 fill이라 이게 빠지면 판정 자체가 안 됨. 조회할 땐 구버전 호환으로 <code>coalesce(data.type, data.position)</code>을 쓸 것</li>
     <li><strong><code>4000</code>의 <code>data</code>에 그 시점 적용값을 같이 실을 것</strong> &mdash; 네 값을 이어붙인 짧은 문자열 하나면 됨(예: <code>1-1-1-5</code>). 반영이 다음 세션부터라 롤아웃 이행 구간에는 한 시각에 신·구 유저가 섞이는데, 시트 변경이력은 창 경계만 줄 뿐 <strong>유저를 신/구로 가르지 못함</strong>. 클라가 이미 들고 있는 값이라 서버 왕복이 필요 없음</li>
-    <li><span class="sheet-var">tiktok_it_enabled</span>=0이면 광고 이벤트가 아예 안 찍혀서 <strong>정책상 끈 것과 광고 SDK 장애가 로그에서 구분되지 않음</strong>. 세션당 1회 설정 상태 로그를 광고 이벤트와 별개로 남길 것</li>
+    <li><span class="sheet-var">it_enabled</span>=0이면 광고 이벤트가 아예 안 찍혀서 <strong>정책상 끈 것과 광고 SDK 장애가 로그에서 구분되지 않음</strong>. 세션당 1회 설정 상태 로그를 광고 이벤트와 별개로 남길 것</li>
     <li><strong>코지 <code>4020</code>의 <code>error_message</code>가 지금 <code>[object Object]</code>로 올라감</strong> &mdash; 8월 실패 2,406건의 95.3%임. 퍼블마처럼 문자열로 직렬화할 것. 이걸 고쳐야 확대 후 fill이 떨어졌을 때 틱톡 빈도 제한인지 인벤토리 부족인지 구분됨</li>
     <li>파라미터 변경일은 시트 변경이력에 남김. 전후 비교의 창 경계가 이 기록에서 나옴</li>
   </ul>
@@ -538,11 +538,11 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <div class="tw"><table>
     <thead><tr><th>상황</th><th>동작</th></tr></thead>
     <tbody>
-      <tr><td>파라미터 로드 실패 · 값 없음 · 범위 밖</td><td>클라 기본값(<span class="sheet-var">tiktok_it_ftue_free_count</span> 코지 3·퍼블마 4, <span class="sheet-var">tiktok_it_slot_stage_end</span>=0, <span class="sheet-var">tiktok_it_min_interval_sec</span>=30). 즉 현행 동작</td></tr>
-      <tr><td><span class="sheet-var">tiktok_it_enabled</span>=0일 때</td><td>전면광고 시도 자체를 안 함 &mdash; <code>4000</code>도 안 찍힘. 보상형 광고와 크로스프로모는 영향 없음</td></tr>
+      <tr><td>파라미터 로드 실패 · 값 없음 · 범위 밖</td><td>클라 기본값(<span class="sheet-var">it_ftue_free_count</span> 코지 3·퍼블마 4, <span class="sheet-var">it_slot_stage_end</span>=0, <span class="sheet-var">it_min_interval_sec</span>=30). 즉 현행 동작</td></tr>
+      <tr><td><span class="sheet-var">it_enabled</span>=0일 때</td><td>전면광고 시도 자체를 안 함 &mdash; <code>4000</code>도 안 찍힘. 보상형 광고와 크로스프로모는 영향 없음</td></tr>
       <tr><td>값을 바꾼 뒤 언제부터 먹나</td><td><strong>다음 부팅부터</strong>임 &mdash; 코지는 부팅 때 JSON을 1회 읽고 퍼블마는 로그인 때 <code>const</code>를 받음. 이미 앱을 켜 둔 유저에겐 반영되지 않음. 코지는 여기에 CDN 캐시 지연이 더 붙음</td></tr>
-      <tr><td><span class="sheet-var">tiktok_it_ftue_free_count</span>=0으로 두면</td><td>첫 판 <em>진입</em> 시점엔 여전히 노출 없음 &mdash; 판 진입 구좌는 직전 판이 있어야 발화함. 실질 최초 노출은 <span class="sheet-var">tiktok_it_slot_stage_end</span>=1일 때 첫 판 종료 결과창임</td></tr>
-      <tr><td>판 종료 광고와 다음 판 시작 광고가 겹칠 때</td><td>먼저 도달한 판 종료 쪽이 나가고, 시작 쪽은 <span class="sheet-var">tiktok_it_min_interval_sec</span>에 걸려 건너뜀</td></tr>
+      <tr><td><span class="sheet-var">it_ftue_free_count</span>=0으로 두면</td><td>첫 판 <em>진입</em> 시점엔 여전히 노출 없음 &mdash; 판 진입 구좌는 직전 판이 있어야 발화함. 실질 최초 노출은 <span class="sheet-var">it_slot_stage_end</span>=1일 때 첫 판 종료 결과창임</td></tr>
+      <tr><td>판 종료 광고와 다음 판 시작 광고가 겹칠 때</td><td>먼저 도달한 판 종료 쪽이 나가고, 시작 쪽은 <span class="sheet-var">it_min_interval_sec</span>에 걸려 건너뜀</td></tr>
       <tr><td>광고 제거 아이템 보유자(코지 <code>AD_FREE_FOREVER</code>)</td><td>확대 대상 아님. 기존대로 미노출</td></tr>
       <tr><td>퍼블마 광고 제거 티켓 보유자</td><td>티켓은 보상형 광고만 대체함. 전면광고 동작은 변경 없음</td></tr>
       <tr><td>틱톡이 빈도 제한으로 거절</td><td><code>4020</code>만 남기고 게임은 그대로 진행. 재시도하지 않음</td></tr>
@@ -563,14 +563,14 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <h3>QA 체크</h3>
   <p>축이 셋이지만 <strong>쓰는 값을 정해 뒀으므로 확인할 상태는 다섯임</strong>. 전수 조합을 돌리지 않음.</p>
   <div class="tw"><table>
-    <thead><tr><th>상태</th><th class="r"><span class="sheet-var">tiktok_it_ftue_free_count</span></th><th class="r"><span class="sheet-var">tiktok_it_slot_stage_end</span></th><th class="r"><span class="sheet-var">tiktok_it_min_interval_sec</span></th><th>확인할 것</th></tr></thead>
+    <thead><tr><th>상태</th><th class="r"><span class="sheet-var">it_ftue_free_count</span></th><th class="r"><span class="sheet-var">it_slot_stage_end</span></th><th class="r"><span class="sheet-var">it_min_interval_sec</span></th><th>확인할 것</th></tr></thead>
     <tbody>
       <tr><td>현행</td><td class="r mono">코지 3 / 퍼블마 4</td><td class="r mono">0</td><td class="r mono">30</td><td>지금과 동일. 첫 판 클리어 전 광고 없고 판 종료에도 안 뜸</td></tr>
       <tr class="pick"><td>확대 (적용값)</td><td class="r mono">1</td><td class="r mono">1</td><td class="r mono">5</td><td>첫 판 종료 결과창에서 노출 · 판 종료와 판 시작 양쪽에서 노출 · 5초 안에 두 번 연속으로 안 뜸 · <code>stage_end</code>/<code>game_over_enter</code> 로그가 찍힘</td></tr>
       <tr><td>유예만 해제</td><td class="r mono">1</td><td class="r mono">0</td><td class="r mono">30</td><td>판 진입 구좌만 뜨고 결과창에선 안 뜸. 두 번째 판 진입부터 노출</td></tr>
       <tr><td>구좌만 신설</td><td class="r mono">코지 3 / 퍼블마 4</td><td class="r mono">1</td><td class="r mono">5</td><td>유예를 채운 유저만 결과창에서 노출. 신규는 여전히 광고 없음</td></tr>
       <tr><td>조임</td><td class="r mono">1</td><td class="r mono">1</td><td class="r mono">40</td><td>구좌는 그대로인데 40초 안에는 안 뜸</td></tr>
-      <tr class="warn"><td>전체 끄기 (<span class="sheet-var">tiktok_it_enabled</span>=0)</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td>다른 값이 뭐든 전면광고가 한 번도 안 뜸. <code>4000</code> 로그도 없음. 보상형 광고는 정상 동작</td></tr>
+      <tr class="warn"><td>전체 끄기 (<span class="sheet-var">it_enabled</span>=0)</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td>다른 값이 뭐든 전면광고가 한 번도 안 뜸. <code>4000</code> 로그도 없음. 보상형 광고는 정상 동작</td></tr>
     </tbody>
   </table></div>
   <p>추가로 확인할 것 둘. <strong>파라미터를 못 받았을 때</strong>(JSON 삭제·네트워크 차단)는 현행 동작으로 떨어져야 함. <strong>정해진 값 밖의 수를 넣었을 때</strong>(예: 간격 999)는 기본값으로 떨어지고 크래시가 없어야 함.</p>
@@ -599,11 +599,11 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   <div class="tw"><table>
     <thead><tr><th>단계</th><th>조치</th><th>기대</th></tr></thead>
     <tbody>
-      <tr class="warn"><td>0단 (긴급)</td><td><span class="sheet-var">tiktok_it_enabled</span> 1 &rarr; 0</td><td>전면광고 전체 정지. 원인을 모를 때 먼저 밟는 단계 &mdash; 반영은 다음 부팅부터고, 코지는 CDN 캐시를 비워야 그 시점이 옴</td></tr>
-      <tr><td>1단</td><td><span class="sheet-var">tiktok_it_min_interval_sec</span> 5 &rarr; 40</td><td>코지 시도 7.07&rarr;3.65. 노출은 유지될 가능성이 큼 &mdash; 줄어드는 몫이 틱톡이 거절하던 분량이라서</td></tr>
-      <tr><td>2단</td><td><span class="sheet-var">tiktok_it_ftue_free_count</span> 1 &rarr; 3</td><td>신규 유예만 되돌림. 이탈이 <strong>가입 첫 판 부근</strong>에서 났을 때 씀. 구좌는 유지되므로 기존 유저 노출은 안 줄어듦</td></tr>
-      <tr><td>2단(대안)</td><td><span class="sheet-var">tiktok_it_slot_stage_end</span> 1 &rarr; 0</td><td>판 종료 구좌만 되돌림. 이탈이 <strong>판 수 전반</strong>에서 났을 때 씀. 코지는 이 축이 주력이라 노출이 크게 빠짐</td></tr>
-      <tr><td>3단</td><td>세 축 모두 현행값으로 (<span class="sheet-var">tiktok_it_enabled</span>는 1 유지)</td><td>확대 전 상태로 복귀. 광고는 계속 돌되 지금 수준으로</td></tr>
+      <tr class="warn"><td>0단 (긴급)</td><td><span class="sheet-var">it_enabled</span> 1 &rarr; 0</td><td>전면광고 전체 정지. 원인을 모를 때 먼저 밟는 단계 &mdash; 반영은 다음 부팅부터고, 코지는 CDN 캐시를 비워야 그 시점이 옴</td></tr>
+      <tr><td>1단</td><td><span class="sheet-var">it_min_interval_sec</span> 5 &rarr; 40</td><td>코지 시도 7.07&rarr;3.65. 노출은 유지될 가능성이 큼 &mdash; 줄어드는 몫이 틱톡이 거절하던 분량이라서</td></tr>
+      <tr><td>2단</td><td><span class="sheet-var">it_ftue_free_count</span> 1 &rarr; 3</td><td>신규 유예만 되돌림. 이탈이 <strong>가입 첫 판 부근</strong>에서 났을 때 씀. 구좌는 유지되므로 기존 유저 노출은 안 줄어듦</td></tr>
+      <tr><td>2단(대안)</td><td><span class="sheet-var">it_slot_stage_end</span> 1 &rarr; 0</td><td>판 종료 구좌만 되돌림. 이탈이 <strong>판 수 전반</strong>에서 났을 때 씀. 코지는 이 축이 주력이라 노출이 크게 빠짐</td></tr>
+      <tr><td>3단</td><td>세 축 모두 현행값으로 (<span class="sheet-var">it_enabled</span>는 1 유지)</td><td>확대 전 상태로 복귀. 광고는 계속 돌되 지금 수준으로</td></tr>
     </tbody>
   </table></div>
   <div class="callout callout-blue">
@@ -625,38 +625,38 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
     <thead><tr><th>게임</th><th>시트</th><th>내용</th></tr></thead>
     <tbody>
       <tr><td>코지타일</td><td><a href="https://docs.google.com/spreadsheets/d/1Ky1IfuxWUjgAlFGSnVivy_M3fQYTuUmK1seqteu9m3M/edit" style="color:var(--accent)">[CozyTiles] TikTok_AD_Config</a></td><td><code>tiktok_ad_config</code> 탭이 값의 단일 소스. <code>변경이력</code> 탭에 바꿀 때마다 한 줄 추가 &mdash; 전후 비교의 창 경계가 이 기록에서 나옴</td></tr>
-      <tr><td>퍼즐블록마스터</td><td><a href="https://docs.google.com/spreadsheets/d/1ulRaeH081PNAlrtu2VyzPYtIOsK6wnVAK6quQ1kDGwU/edit" style="color:var(--accent)">[PBB] 밸런스시트</a></td><td><code>const</code> 탭에 <strong>10088~10091</strong> 4행. <code>description</code>에 <code>[틱톡 전용]</code> 표기 &mdash; <strong>넣는 자리는 아래 확인 후 확정</strong></td></tr>
+      <tr><td>퍼즐블록마스터</td><td><a href="https://docs.google.com/spreadsheets/d/1lQEjhBLvXxFUAFkZbAq6Ph4xS4e3eeMSV-dd0isBhOQ/edit" style="color:var(--accent)">[PBB] 밸런스시트_TT</a></td><td><code>const_TT</code> 탭 <strong>10091~10094</strong> 4행 추가 완료</td></tr>
     </tbody>
   </table></div>
-  <div class="callout callout-red">
-    <p><strong>퍼블마는 넣을 자리를 먼저 확인해야 함.</strong> <code>const</code> 탭에 <code>tiktok_</code> 접두사 4행을 넣고 시트 업로드 툴을 돌리면 <strong><code>[TikTok] const_TT.json</code>에서 기존 87행이 전부 빠지고 이 4행만 남는다</strong>는 경고가 뜸(<code>const_value</code> 타입도 <code>boolean | number</code>에서 <code>number</code>로 바뀜). 툴이 이름으로 플랫폼을 갈라 <code>const_TT.json</code>을 만드는 것으로 보이는데, 그렇다면 이 파일이 <strong>전체 사본인지 덮어쓰기용 override인지</strong>에 따라 넣는 자리가 달라짐. 4행은 일단 <strong>빼 뒀음</strong> &mdash; 툴 담당에게 확인하고 다시 넣을 것.</p>
+  <div class="callout callout-yellow">
+    <p><strong>공용 <code>[PBB] 밸런스시트</code>가 아님.</strong> 퍼블마 밸런스시트는 플랫폼별로 갈려 있고(<code>_TT</code>·<code>_Toss</code>·<code>_CG</code>), 틱톡 빌드가 받는 <code>const_TT.json</code>은 <code>[PBB] 밸런스시트_TT</code>의 <code>const_TT</code> 탭에서 나옴. 공용 시트에 넣으면 틱톡에 안 먹고, 이름에 <code>tiktok_</code>을 붙이면 업로드 툴이 플랫폼 접두사로 읽어 <code>const_TT.json</code>이 그 행들만 남은 파일로 만들어짐.</p>
   </div>
 
   <h3>코지 CDN 업로드 파일</h3>
   <p><code>cozy-tiles/data/tiktok_ad_config.json</code> &mdash; 확대 적용값. 올린 뒤 <strong>CDN 무효화</strong>를 반드시 할 것.</p>
   <pre class="codeblock">{
-  "tiktok_it_enabled": 1,
-  "tiktok_it_ftue_free_count": 1,
-  "tiktok_it_slot_stage_end": 1,
-  "tiktok_it_min_interval_sec": 5
+  "it_enabled": 1,
+  "it_ftue_free_count": 1,
+  "it_slot_stage_end": 1,
+  "it_min_interval_sec": 5
 }</pre>
   <p>배선 빌드 검증용 &mdash; 현행과 똑같이 도는 값. 이걸 올린 상태에서 노출이 안 변해야 배선이 맞은 것임.</p>
   <pre class="codeblock">{
-  "tiktok_it_enabled": 1,
-  "tiktok_it_ftue_free_count": 3,
-  "tiktok_it_slot_stage_end": 0,
-  "tiktok_it_min_interval_sec": 0
+  "it_enabled": 1,
+  "it_ftue_free_count": 3,
+  "it_slot_stage_end": 0,
+  "it_min_interval_sec": 0
 }</pre>
 
   <h3>퍼블마 <code>const</code> 추가분</h3>
-  <p>넣을 자리 확정 후 반영. 값과 채번은 아래대로 씀.</p>
+  <p>시트에 이미 들어가 있음. 클라 참조용 형태는 아래와 같음.</p>
   <pre class="codeblock">[
-  { "key_number": 10088, "const_name": "tiktok_it_enabled",           "const_value": 1 },
-  { "key_number": 10089, "const_name": "tiktok_it_ftue_free_count",   "const_value": 1 },
-  { "key_number": 10090, "const_name": "tiktok_it_slot_stage_end",    "const_value": 1 },
-  { "key_number": 10091, "const_name": "tiktok_it_min_interval_sec",  "const_value": 5 }
+  { "key_number": 10091, "const_name": "it_enabled",           "const_value": 1 },
+  { "key_number": 10092, "const_name": "it_ftue_free_count",   "const_value": 1 },
+  { "key_number": 10093, "const_name": "it_slot_stage_end",    "const_value": 1 },
+  { "key_number": 10094, "const_name": "it_min_interval_sec",  "const_value": 5 }
 ]</pre>
-  <p>퍼블마 기본값(폴백)은 코지와 다름 &mdash; <span class="sheet-var">tiktok_it_ftue_free_count</span> 4 · <span class="sheet-var">tiktok_it_min_interval_sec</span> 30. 각 게임의 현행 동작에 맞춘 값임.</p>
+  <p>퍼블마 기본값(폴백)은 코지와 다름 &mdash; <span class="sheet-var">it_ftue_free_count</span> 4 · <span class="sheet-var">it_min_interval_sec</span> 30. 각 게임의 현행 동작에 맞춘 값임.</p>
 </section>
 
 </div>
