@@ -108,13 +108,13 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 <tr>
   <td><span class="ord">2</span></td>
   <td class="lbl">앱ID를 JSON에서 조회</td>
-  <td><code>targetGames</code> Map 제거 → <code>cp_games.json</code>에서 <code>key_number → app_id</code> 조회.<br>
+  <td><code>targetGames</code> Map 제거 → <code>cp_{게임명}.json</code>의 <code>games</code>에서 <code>이름 → key_number</code> 조회.<br>
   <code>onClickPlay()</code>는 <code>Fbi.switchApp(cfg.app_id, {social, player_id}, cfg.log_name)</code>로 그대로 호출.</td>
 </tr>
 <tr>
   <td><span class="ord">3</span></td>
   <td class="lbl">이미지 원격 로드</td>
-  <td><code>randomCPFrame</code> 배열 제거 → <code>cp_images.json</code>의 버전으로 만든 URL을 <code>cc.assetManager.loadRemote</code>로 받아 <code>changeSprite</code>에 세팅.
+  <td><code>randomCPFrame</code> 배열 제거 → <code>routes</code>의 버전으로 만든 URL을 <code>cc.assetManager.loadRemote</code>로 받아 <code>changeSprite</code>에 세팅.
   기존 <code>changePromotionImage()</code>의 인덱스 순환 로직은 <b>불필요해지므로 삭제</b>(이미지가 게임별 1장으로 고정됨).</td>
 </tr>
 <tr>
@@ -138,48 +138,43 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 </div>
 
 <div class="sec">3. JSON 스키마
-  <span class="s-desc">파일 3개 — 게임 마스터 · 배너 목록(전역 각 1개) + 국가별 설정(게임별 기존 파일 확장)</span></div>
+  <span class="s-desc">파일 2종 — from 게임별 CP 파일(신규) + 국가별 설정(기존 파일 확장)</span></div>
 
-<p style="font-size:13.5px;margin:14px 0 4px;"><b>① <code>cp_games.json</code></b> <span class="tag t-new">신규</span> — to 게임 정보. 전 게임 공용 1개 파일.<br>
-<span class="note" style="display:block;margin-top:2px">위치 제안: <code>https://d26ml67612e64s.cloudfront.net/common/data/cp_games.json</code></span></p>
+<p style="font-size:13.5px;margin:14px 0 4px;"><b>① <code>cp_&#123;게임명&#125;.json</code></b> <span class="tag t-new">신규</span> — from 게임마다 1개. 그 게임에 필요한 것만 들어갑니다.<br>
+<span class="note" style="display:block;margin-top:2px">위치 제안: <code>{CDN}/cp/cp_&#123;게임명&#125;.json</code> — 예: <code>/cp/cp_coin_match.json</code></span></p>
 
-<pre><span class="c">// 시트 cp_game_master 탭에서 생성 · 키 = key_number(문자열화)</span>
+<pre><span class="c">// cp_coin_match.json — 시트 cp_game_master + cp_image 에서 생성</span>
 {
-  <span class="s">"1"</span>: { <span class="k">"log_name"</span>: <span class="s">"Mahjong"</span>,              <span class="k">"app_id"</span>: <span class="s">"1978451022643895"</span>, <span class="k">"in_use"</span>: 1 },
-  <span class="s">"2"</span>: { <span class="k">"log_name"</span>: <span class="s">"CozyTiles"</span>,            <span class="k">"app_id"</span>: <span class="s">"840535418537645"</span>,  <span class="k">"in_use"</span>: 1 },
-  <span class="s">"3"</span>: { <span class="k">"log_name"</span>: <span class="s">"CoinMatch"</span>,            <span class="k">"app_id"</span>: <span class="s">"514353923664448"</span>,  <span class="k">"in_use"</span>: 1 },
-  <span class="s">"4"</span>: { <span class="k">"log_name"</span>: <span class="s">"PuzzleBlockMaster"</span>,    <span class="k">"app_id"</span>: <span class="s">"722155533513017"</span>,  <span class="k">"in_use"</span>: 1 },
-  <span class="s">"5"</span>: { <span class="k">"log_name"</span>: <span class="s">"SolitaireCityJourney"</span>, <span class="k">"app_id"</span>: <span class="s">"739489598842669"</span>,  <span class="k">"in_use"</span>: 1 },
-  <span class="s">"6"</span>: { <span class="k">"log_name"</span>: <span class="s">"ThePuzzle"</span>,            <span class="k">"app_id"</span>: <span class="s">"253130686313001"</span>,  <span class="k">"in_use"</span>: 1 },
-  <span class="s">"10"</span>: { <span class="k">"log_name"</span>: <span class="s">"MahjongSlide"</span>,        <span class="k">"app_id"</span>: <span class="s">""</span>,                 <span class="k">"in_use"</span>: 0 },  <span class="c">// 앱ID 확보 후 in_use=1</span>
-  <span class="s">"11"</span>: { <span class="k">"log_name"</span>: <span class="s">"MergeStory"</span>,          <span class="k">"app_id"</span>: <span class="s">""</span>,                 <span class="k">"in_use"</span>: 0 }
+  <span class="k">"games"</span>:  { <span class="s">"Mahjong"</span>: 1, <span class="s">"CozyTiles"</span>: 2, <span class="s">"CoinMatch"</span>: 3,
+              <span class="s">"PuzzleBlockMaster"</span>: 4, <span class="s">"SolitaireCityJourney"</span>: 5, <span class="s">"ThePuzzle"</span>: 6 },
+  <span class="k">"routes"</span>: { <span class="s">"2"</span>: 1, <span class="s">"5"</span>: 1, <span class="s">"1"</span>: 1 }     <span class="c">// 키 = to 게임의 key_number · 값 = 배너 버전</span>
 }
-<span class="c">// game_name(한글)·note는 시트 운영용이라 내보내지 않습니다.</span></pre>
 
-<p style="font-size:13.5px;margin:18px 0 4px;"><b>② <code>cp_images.json</code></b> <span class="tag t-new">신규</span> — 배너 이미지 버전. 전 게임 공용 1개 파일.<br>
-<span class="note" style="display:block;margin-top:2px">위치 제안: <code>https://d26ml67612e64s.cloudfront.net/common/data/cp_images.json</code></span></p>
-
-<pre><span class="c">// 시트 cp_image 탭에서 생성 · from(보여주는 게임) → to(보내는 게임) → 버전</span>
+<span class="c">// cp_the_puzzle.json — 같은 games, routes만 다름</span>
 {
-  <span class="s">"1"</span>: { <span class="s">"2"</span>: 1, <span class="s">"5"</span>: 1, <span class="s">"4"</span>: 1 },   <span class="c">// 마종에서 쓰는 배너 3장</span>
-  <span class="s">"2"</span>: { <span class="s">"5"</span>: 1, <span class="s">"3"</span>: 1, <span class="s">"6"</span>: 1 },
-  <span class="s">"3"</span>: { <span class="s">"2"</span>: 1, <span class="s">"5"</span>: 1, <span class="s">"1"</span>: 1 },
-  <span class="s">"4"</span>: { <span class="s">"2"</span>: 1, <span class="s">"5"</span>: 1, <span class="s">"3"</span>: 1 }
+  <span class="k">"games"</span>:  { ... },
+  <span class="k">"routes"</span>: { <span class="s">"5"</span>: 1, <span class="s">"2"</span>: 1, <span class="s">"4"</span>: 1 }
 }</pre>
 
-<div class="box amber">
-  <div class="bl">배너는 from × to 조합별로 다릅니다 — URL은 클라에서 조합해 주세요</div>
-  같은 코지타일즈 배너라도 <b>마종에서 보여줄 때와 코인매치에서 보여줄 때 다른 그림</b>을 걸 수 있어야 해서,
-  조합별로 관리합니다. JSON에는 <b>URL이 아니라 버전 숫자만</b> 나갑니다.
-  <div style="margin-top:8px"><code>{CDN}/cp/{from의 log_name}_{to의 log_name}_v{version}.png</code></div>
-  <div style="margin-top:6px">예 — 마종에서 보여주는 코지타일즈 배너 = <code>/cp/Mahjong_CozyTiles_v1.png</code></div>
-  <div style="margin-top:8px"><b>version이 캐시 대응입니다.</b> 배너를 갈아끼울 때 시트에서 숫자를 +1 하면
-  파일명이 바뀌어 <b>CDN 무효화 없이도</b> 새 그림이 내려갑니다. 경로 규칙만 확정해 주시면 그대로 맞추겠습니다.</div>
-  <div style="margin-top:8px"><code>cp_images.json</code>에 <b>없는 조합이면 그 순번을 건너뛰어</b> 주세요(§7).</div>
-</div>
+<div class="box green">
+  <div class="bl">게임별로 자기 파일만 받으면 됩니다</div>
+  <code>games</code>는 <b>이름 ↔ 번호 대응표</b>라 전 게임 공통이고, <code>routes</code>에는 <b>그 게임이 쓰는 조합만</b> 들어갑니다.
+  앱ID는 <code>games</code>의 번호로 <code>country_data</code> 쪽과 맞춰 읽습니다.
 </div>
 
-<p style="font-size:13.5px;margin:18px 0 4px;"><b>③ <code>country_data.json</code></b> <span class="tag t-keep">기존 확장</span> — 국가별 순서·캡. 게임마다 기존 파일에 <b>4개 필드만 추가</b>.<br>
+<div class="box amber">
+  <div class="bl">노출 순서는 routes가 아니라 country_data가 정합니다</div>
+  <code>routes</code>는 <b>버전표</b>지 순서가 아닙니다(JSON 객체라 순서 보장이 없습니다).
+  <b>어느 게임을 몇 번째로 보여줄지는 <code>country_data</code>의 <code>cp_order</code> 배열</b>이고,
+  <code>routes</code>는 그 조합의 <b>배너가 몇 번째 버전인지</b>만 알려 줍니다.
+  <div style="margin-top:8px"><b>배너 파일명</b> — <code>{CDN}/cp/image/&#123;from 게임명&#125;_&#123;to 게임명&#125;_&#123;version&#125;.png</code></div>
+  <div style="margin-top:6px">예 — 마종에서 보여주는 코지타일즈 배너 = <code>/cp/image/Mahjong_CozyTiles_1.png</code></div>
+  <div style="margin-top:8px"><b>version이 캐시 대응입니다.</b> 배너를 갈아끼울 때 시트에서 숫자를 +1 하면
+  파일명이 바뀌어 <b>CDN 무효화 없이도</b> 새 그림이 내려갑니다.</div>
+  <div style="margin-top:8px"><code>routes</code>에 <b>없는 조합이면 그 순번을 건너뛰어</b> 주세요(§7).</div>
+</div>
+
+<p style="font-size:13.5px;margin:18px 0 4px;"><b>② <code>country_data/&#123;게임명&#125;.json</code></b> <span class="tag t-keep">기존 확장</span> — 국가별 순서·캡. 게임마다 기존 파일에 <b>4개 필드만 추가</b>.<br>
 <span class="note" style="display:block;margin-top:2px">예: <code>https://d26ml67612e64s.cloudfront.net/block_blast/data/country_data.json</code></span></p>
 
 <pre>{
@@ -211,10 +206,10 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 <table class="grid sm">
 <tr><th style="width:170px">탭</th><th>내용</th></tr>
 <tr><td class="lbl">cp_game_master <span class="tag t-new">신규</span></td>
-    <td><code>key_number · log_name · game_name · app_id · in_use · note</code> — <code>cp_games.json</code>의 소스.
+    <td><code>key_number · log_name · game_name · app_id · in_use · note</code> — <code>cp_{게임명}.json</code>의 <code>games</code> 소스.
     <b>여기에 행을 추가하면 전 국가 탭 드롭다운에 자동 반영</b>됩니다. 옆의 <code>order_choices</code>는 드롭다운 선택지(0 + key_number)를 만드는 수식 열입니다</td></tr>
 <tr><td class="lbl">cp_image <span class="tag t-new">신규</span></td>
-    <td><code>from · to · version · in_use · note</code> — <code>cp_images.json</code>의 소스. <b>한 행 = 배너 한 장</b>.
+    <td><code>from · to · version · in_use · note</code> — <code>cp_{게임명}.json</code>의 <code>routes</code> 소스. <b>한 행 = 배너 한 장</b>.
     <b>행은 손으로 만들지 않습니다</b> — 국가 탭에서 순서를 정하고 메뉴에서 <b>순서 → 배너 목록 동기화</b>를 누르면
     필요한 조합이 자동으로 생기고, 순서에서 빠진 조합은 <code>status</code>가 <b>'순서에 없음'</b>으로 바뀝니다(지우지는 않음).
     <code>image_preview</code>는 만들어질 파일명을 보여주는 수식 열입니다</td></tr>
@@ -270,7 +265,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 
 <div class="box blue">
   <div class="bl">먼저 — 5개 게임 공통 (§2)</div>
-  ① 공용 프리팹 1개로 통합 · ② 앱ID를 <code>cp_games.json</code>에서 조회 · ③ 배너 이미지 원격 로드 ·
+  ① 공용 프리팹 1개로 통합 · ② 앱ID를 <code>cp_&#123;게임명&#125;.json</code>에서 조회 · ③ 배너 이미지 원격 로드 ·
   ④ enum → <code>key_number</code>(number) · ⑤ 세션 캡을 게임별 카운터로 분리.
   <b>아래는 그 위에 게임별로 추가되는 것만</b> 적었습니다.
 </div>
@@ -374,7 +369,7 @@ pick(<span class="s">'IapPopup'</span>)  <span class="c">// → iap_popup</span>
 
 <table class="grid">
 <tr><th style="width:190px">상황</th><th>동작</th><th style="width:230px">이유</th></tr>
-<tr><td class="lbl"><code>cp_images.json</code>에 그 조합이 없음</td><td>해당 순번을 <b>건너뛰고</b> 다음 게임으로</td><td>배너를 아직 안 만든 조합이 있을 수 있음. 순서에는 있는데 그림이 없는 상태</td></tr>
+<tr><td class="lbl"><code>routes</code>에 그 조합이 없음</td><td>해당 순번을 <b>건너뛰고</b> 다음 게임으로</td><td>배너를 아직 안 만든 조합이 있을 수 있음. 순서에는 있는데 그림이 없는 상태</td></tr>
 <tr><td class="lbl">이미지 로드 실패</td><td><b>팝업을 띄우지 않고</b> 그대로 종료 (<code>onComplete</code> 호출)</td>
     <td>지금은 번들이라 100% 뜨지만 CDN이면 실패할 수 있음. 빈 팝업이 뜨면 유저 이탈</td></tr>
 <tr><td class="lbl">마스터에 없는 key_number</td><td>해당 순번을 <b>건너뛰고</b> 다음 게임으로</td><td>시트 오타·마스터 행 삭제 시 팝업 자체가 죽는 것 방지</td></tr>
@@ -418,9 +413,10 @@ pick(<span class="s">'IapPopup'</span>)  <span class="c">// → iap_popup</span>
     (<code>Intro.ts:421</code> → <code>CCres.loadJsonAssetRemote</code>).
     시트를 고치고 JSON을 올려도 <b>CloudFront·브라우저 캐시가 남아 있으면 반영이 안 됩니다.</b>
     배포 시 <b>invalidation을 걸거나</b> TTL을 짧게 잡아 주세요. 지금도 같은 제약이지만, 앞으로 운영 빈도가 올라가므로 정책을 정해야 합니다</td></tr>
-<tr><td class="lbl">cp_games.json · cp_images.json 배포 경로</td>
-    <td>신규 파일 2개입니다. 게임별이 아니라 <b>공용</b>이라 5개 게임이 전부 같은 URL을 읽습니다.
-    경로 확정 + Drive → CDN 업로드 파이프라인에 추가 필요</td></tr>
+<tr><td class="lbl">CDN 폴더 구조</td>
+    <td>from 게임마다 CP 파일이 1개씩 생깁니다. 아래 구조로 잡으면 됩니다 —<br>
+    <code>cp/cp_{게임명}.json</code> · <code>cp/image/{from}_{to}_{version}.png</code> · <code>country_data/{게임명}.json</code><br>
+    Drive → CDN 업로드 파이프라인에 <code>cp/</code> 경로 추가 필요</td></tr>
 <tr><td class="lbl">CP 배너 이미지 호스팅</td>
     <td>원격 로드로 바뀌므로 <b>CORS 허용 + Content-Type</b> 확인.
     <b>같은 파일명으로 이미지를 교체하면 캐시 때문에 안 바뀝니다</b> — 교체 시 invalidation 또는 파일명 버전 규칙 필요</td></tr>
