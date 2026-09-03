@@ -55,7 +55,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
   <div class="vt">REQUEST</div>
   <ol>
     <li>CP 팝업이 <b>어느 게임으로 보내는지를 원격 JSON에서 읽도록</b> 바꿔 주세요. 지금은 앱 ID가 클라에 하드코딩돼 있어 게임 하나 추가에 전 게임 빌드가 필요합니다.</li>
-    <li>바꿀 곳은 <b>5군데</b>입니다 — ① 게임별 프리팹 → 공용 프리팹 1개 ② 앱ID Map → JSON 조회 ③ 번들 이미지 → CDN 원격 로드 ④ enum → <code>Key_Number</code> ⑤ 세션 캡·로테이션을 게임별 설정으로. <b>다섯이 한 세트입니다.</b></li>
+    <li>바꿀 곳은 <b>5군데</b>입니다 — ① 게임별 프리팹 → 공용 프리팹 1개 ② 앱ID Map → JSON 조회 ③ 번들 이미지 → CDN 원격 로드 ④ enum → <code>key_number</code> ⑤ 세션 캡·로테이션을 게임별 설정으로. <b>다섯이 한 세트입니다.</b></li>
     <li>이 작업 뒤부터 <b>게임 추가·순서 변경·국가 변경은 전부 시트만으로</b> 됩니다. 빌드 없음. <b>9/1 CP 개편에 함께 적용합니다</b>(개발 8/21~8/28 · 검수 ~8/31).</li>
     <li>시트 쪽은 <b>이미 적용해 뒀습니다.</b> 다만 §6의 <b>필드명 5건이 시트에 이미 반영돼 있어, JSON 재배포는 클라의 신·구 이름 겸용 처리 뒤에</b> 해야 합니다.</li>
   </ol>
@@ -82,7 +82,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
   <td>배너 교체 = 빌드. <b>이미지를 CDN에 올려도 이것 때문에 빌드가 남습니다</b></td>
 </tr>
 <tr>
-  <td class="lbl">④ enum → Key_Number</td>
+  <td class="lbl">④ enum → key_number</td>
   <td><code>@property({type: cc.Enum(CrossPromotionType)}) target</code></td>
   <td>enum에 없는 게임은 지정 자체가 불가. 게임별로 enum도 제각각 (<code>PuzzleMaster</code> vs <code>PuzzleBlockMaster</code>, 코인매치엔 <code>CoinMatch</code> 자체가 없음)</td>
 </tr>
@@ -103,32 +103,32 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
   <td><span class="ord">1</span></td>
   <td class="lbl">공용 프리팹 1개로 통합</td>
   <td>게임별 프리팹(<code>PopupSolitaireCityJourney</code>·<code>PopupMahjong</code>…) → <b><code>PopupCrossPromotion</code> 1개</b>.
-  <code>ViewCreator.showPopupCrossPromotion()</code>은 프리팹 이름을 고르는 대신 <b>이번 회차에 노출할 <code>Key_Number</code></b>를 골라 팝업에 넘깁니다.</td>
+  <code>ViewCreator.showPopupCrossPromotion()</code>은 프리팹 이름을 고르는 대신 <b>이번 회차에 노출할 <code>key_number</code></b>를 골라 팝업에 넘깁니다.</td>
 </tr>
 <tr>
   <td><span class="ord">2</span></td>
   <td class="lbl">앱ID를 JSON에서 조회</td>
-  <td><code>targetGames</code> Map 제거 → <code>cp_games.json</code>에서 <code>Key_Number → appId</code> 조회.<br>
-  <code>onClickPlay()</code>는 <code>Fbi.switchApp(cfg.appId, {social, player_id}, cfg.logName)</code>로 그대로 호출.</td>
+  <td><code>targetGames</code> Map 제거 → <code>cp_games.json</code>에서 <code>key_number → app_id</code> 조회.<br>
+  <code>onClickPlay()</code>는 <code>Fbi.switchApp(cfg.app_id, {social, player_id}, cfg.log_name)</code>로 그대로 호출.</td>
 </tr>
 <tr>
   <td><span class="ord">3</span></td>
   <td class="lbl">이미지 원격 로드</td>
-  <td><code>randomCPFrame</code> 배열 제거 → <code>cfg.image</code> URL을 <code>cc.assetManager.loadRemote</code>로 받아 <code>changeSprite</code>에 세팅.
+  <td><code>randomCPFrame</code> 배열 제거 → <code>cfg.image_url</code> URL을 <code>cc.assetManager.loadRemote</code>로 받아 <code>changeSprite</code>에 세팅.
   기존 <code>changePromotionImage()</code>의 인덱스 순환 로직은 <b>불필요해지므로 삭제</b>(이미지가 게임별 1장으로 고정됨).</td>
 </tr>
 <tr>
   <td><span class="ord">4</span></td>
   <td class="lbl">enum → 문자열 키</td>
-  <td><code>@property target: CrossPromotionType</code> → <code>target: number</code>(Key_Number).
-  <code>CrossPromotionType</code> enum과 게임별 이름 불일치는 이 시점에 전부 사라집니다. <b>정본은 아래 §4 마스터 탭의 <code>Key_Number</code></b>.</td>
+  <td><code>@property target: CrossPromotionType</code> → <code>target: number</code>(key_number).
+  <code>CrossPromotionType</code> enum과 게임별 이름 불일치는 이 시점에 전부 사라집니다. <b>정본은 아래 §4 마스터 탭의 <code>key_number</code></b>.</td>
 </tr>
 <tr>
   <td><span class="ord">5</span></td>
   <td class="lbl">세션 캡을 게임별로</td>
   <td>현재 <code>DataManager._showCPCount</code> 단일 카운터가 <b>캡 판정과 로테이션을 겸하고</b> 있습니다(<code>Fbi.ts:694</code> 캡 3 / <code>ViewCreator.ts:447</code> <code>%2</code>).
-  <b>게임별 카운터 <code>Map&lt;gameKey, count&gt;</code>로 분리</b>하고, 캡 상수 3 → <code>country_data.CP_Cap_Per_Game</code>를 읽게 해 주세요.
-  로테이션은 <code>%2</code> 고정 대신 <b><code>CP_Order</code> 배열 길이로 순환</b>합니다(<code>idx % order.length</code>) — 1종·2종·3종이 분기 없이 처리됩니다.</td>
+  <b>게임별 카운터 <code>Map&lt;gameKey, count&gt;</code>로 분리</b>하고, 캡 상수 3 → <code>country_data.cp_cap_per_game</code>를 읽게 해 주세요.
+  로테이션은 <code>%2</code> 고정 대신 <b><code>cp_order</code> 배열 길이로 순환</b>합니다(<code>idx % order.length</code>) — 1종·2종·3종이 분기 없이 처리됩니다.</td>
 </tr>
 </table>
 
@@ -143,35 +143,35 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 <p style="font-size:13.5px;margin:14px 0 4px;"><b>① <code>cp_games.json</code></b> <span class="tag t-new">신규</span> — to 게임 정보. 전 게임 공용 1개 파일.<br>
 <span class="note" style="display:block;margin-top:2px">위치 제안: <code>https://d26ml67612e64s.cloudfront.net/common/data/cp_games.json</code></span></p>
 
-<pre><span class="c">// 시트 [CP_게임마스터] 탭에서 생성 · 키 = Key_Number(문자열화)</span>
+<pre><span class="c">// 시트 CP_Game_Master 탭에서 생성 · 키 = key_number(문자열화)</span>
 {
-  <span class="s">"1"</span>: { <span class="k">"logName"</span>: <span class="s">"Mahjong"</span>,              <span class="k">"appId"</span>: <span class="s">"1978451022643895"</span>, <span class="k">"image"</span>: <span class="s">"https://.../cp/Mahjong.png"</span>, <span class="k">"use"</span>: 1 },
-  <span class="s">"2"</span>: { <span class="k">"logName"</span>: <span class="s">"CozyTiles"</span>,            <span class="k">"appId"</span>: <span class="s">"840535418537645"</span>,  <span class="k">"image"</span>: <span class="s">"https://.../cp/CozyTiles.png"</span>, <span class="k">"use"</span>: 1 },
-  <span class="s">"3"</span>: { <span class="k">"logName"</span>: <span class="s">"CoinMatch"</span>,            <span class="k">"appId"</span>: <span class="s">"514353923664448"</span>,  ... },
-  <span class="s">"4"</span>: { <span class="k">"logName"</span>: <span class="s">"PuzzleBlockMaster"</span>,    <span class="k">"appId"</span>: <span class="s">"722155533513017"</span>,  ... },
-  <span class="s">"5"</span>: { <span class="k">"logName"</span>: <span class="s">"SolitaireCityJourney"</span>, <span class="k">"appId"</span>: <span class="s">"739489598842669"</span>,  ... },
-  <span class="s">"6"</span>: { <span class="k">"logName"</span>: <span class="s">"ThePuzzle"</span>,            <span class="k">"appId"</span>: <span class="s">"253130686313001"</span>,  ... },
-  <span class="s">"10"</span>: { <span class="k">"logName"</span>: <span class="s">"MahjongSlide"</span>,        <span class="k">"appId"</span>: <span class="s">""</span>, ..., <span class="k">"use"</span>: 0 },   <span class="c">// 앱ID 확보 후 use=1</span>
-  <span class="s">"11"</span>: { <span class="k">"logName"</span>: <span class="s">"MergeStory"</span>,          <span class="k">"appId"</span>: <span class="s">""</span>, ..., <span class="k">"use"</span>: 0 }
+  <span class="s">"1"</span>: { <span class="k">"log_name"</span>: <span class="s">"Mahjong"</span>,              <span class="k">"app_id"</span>: <span class="s">"1978451022643895"</span>, <span class="k">"image_url"</span>: <span class="s">"https://.../cp/Mahjong.png"</span>, <span class="k">"in_use"</span>: 1 },
+  <span class="s">"2"</span>: { <span class="k">"log_name"</span>: <span class="s">"CozyTiles"</span>,            <span class="k">"app_id"</span>: <span class="s">"840535418537645"</span>,  <span class="k">"image_url"</span>: <span class="s">"https://.../cp/CozyTiles.png"</span>, <span class="k">"in_use"</span>: 1 },
+  <span class="s">"3"</span>: { <span class="k">"log_name"</span>: <span class="s">"CoinMatch"</span>,            <span class="k">"app_id"</span>: <span class="s">"514353923664448"</span>,  ... },
+  <span class="s">"4"</span>: { <span class="k">"log_name"</span>: <span class="s">"PuzzleBlockMaster"</span>,    <span class="k">"app_id"</span>: <span class="s">"722155533513017"</span>,  ... },
+  <span class="s">"5"</span>: { <span class="k">"log_name"</span>: <span class="s">"SolitaireCityJourney"</span>, <span class="k">"app_id"</span>: <span class="s">"739489598842669"</span>,  ... },
+  <span class="s">"6"</span>: { <span class="k">"log_name"</span>: <span class="s">"ThePuzzle"</span>,            <span class="k">"app_id"</span>: <span class="s">"253130686313001"</span>,  ... },
+  <span class="s">"10"</span>: { <span class="k">"log_name"</span>: <span class="s">"MahjongSlide"</span>,        <span class="k">"app_id"</span>: <span class="s">""</span>, ..., <span class="k">"in_use"</span>: 0 },   <span class="c">// 앱ID 확보 후 in_use=1</span>
+  <span class="s">"11"</span>: { <span class="k">"log_name"</span>: <span class="s">"MergeStory"</span>,          <span class="k">"app_id"</span>: <span class="s">""</span>, ..., <span class="k">"in_use"</span>: 0 }
 }
-<span class="c">// Game_Name(한글)은 시트 운영용이라 JSON에 내보내지 않습니다.</span></pre>
+<span class="c">// game_name(한글)은 시트 운영용이라 JSON에 내보내지 않습니다.</span></pre>
 
 <p style="font-size:13.5px;margin:18px 0 4px;"><b>② <code>country_data.json</code></b> <span class="tag t-keep">기존 확장</span> — 국가별 순서·캡. 게임마다 기존 파일에 <b>4개 필드만 추가</b>.<br>
 <span class="note" style="display:block;margin-top:2px">예: <code>https://d26ml67612e64s.cloudfront.net/block_blast/data/country_data.json</code></span></p>
 
 <pre>{
   <span class="s">"US"</span>: {
-    <span class="c">"Cross_IT": 0, "Cross_IT_Limit": 0, "Show_Cross": 1, ...  // 기존 필드 그대로</span>
-    <span class="k">"CP_Order"</span>: [2, 5, 1],       <span class="c">// Key_Number 배열 · 순환 순서</span>
+    <span class="c">"cross_it": 0, "cross_it_limit": 0, "show_cross": 1, ...  // 기존 필드 그대로</span>
+    <span class="k">"cp_order"</span>: [2, 5, 1],       <span class="c">// key_number 배열 · 순환 순서</span>
                               <span class="c">// [2, 5] → 2종 교대 / [2] → 1종 고정 / [] 또는 없음 → CP 미노출</span>
-    <span class="k">"CP_Cap_Per_Game"</span>: 3          <span class="c">// 게임 1종당 세션 최대 노출</span>
+    <span class="k">"cp_cap_per_game"</span>: 3          <span class="c">// 게임 1종당 세션 최대 노출</span>
   }
 }</pre>
 
 <div class="box green">
   <div class="bl">CP 신규 필드는 지금 배포해도 안전합니다</div>
   <code>DataManager.updateCountryData()</code>가 <code>{...defaultCountryData, ...countryData}</code>로 병합하므로,
-  <b>현재 클라는 모르는 키를 그냥 무시</b>합니다. CP 신규 필드(<code>CP_Order</code>·<code>CP_Cap_Per_Game</code>)만 보면 시트를 먼저 내보내도 됩니다. <b>단 §6 필드명 변경은 별개이니 그쪽 조건을 먼저 확인해 주세요.</b>
+  <b>현재 클라는 모르는 키를 그냥 무시</b>합니다. CP 신규 필드(<code>cp_order</code>·<code>cp_cap_per_game</code>)만 보면 시트를 먼저 내보내도 됩니다. <b>단 §6 필드명 변경은 별개이니 그쪽 조건을 먼저 확인해 주세요.</b>
   <span class="note">단 <code>CountryData</code> 인터페이스에는 4개 필드를 <b>optional로 추가</b>해 주세요.</span>
 </div>
 
@@ -181,12 +181,12 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 <table class="grid sm">
 <tr><th style="width:170px">탭</th><th>내용</th></tr>
 <tr><td class="lbl">CP_Game_Master <span class="tag t-new">신규</span></td>
-    <td><code>Key_Number · Log_Name · Game_Name · App_ID · Image_URL · In_Use · Note</code> — <code>cp_games.json</code>의 소스.
-    <b>여기에 행을 추가하면 전 국가 탭 드롭다운에 자동 반영</b>됩니다. 옆의 <code>Order_Choices</code>는 드롭다운 선택지(0 + Key_Number)를 만드는 수식 열입니다</td></tr>
+    <td><code>key_number · log_name · game_name · app_id · image_url · in_use · Note</code> — <code>cp_games.json</code>의 소스.
+    <b>여기에 행을 추가하면 전 국가 탭 드롭다운에 자동 반영</b>됩니다. 옆의 <code>order_choices</code>는 드롭다운 선택지(0 + key_number)를 만드는 수식 열입니다</td></tr>
 <tr><td class="lbl">Mahjong · CozyTiles · CoinMatch · PuzzleBlockMaster · SolitaireCityJourney
     <span class="tag t-new">이름 변경</span></td>
-    <td>한글 탭명을 <b><code>Log_Name</code>과 같은 영문</b>으로 변경. <b>탭명 = 출력 JSON 파일명 = 스크립트 <code>FROM_KEY_BY_SHEET</code> 키</b>이므로 셋은 항상 같이 바꿉니다.
-    <b>스키마는 공통 10개 + 게임 고유 + CP 4개</b>로 맞췄습니다 — 고유 필드가 달라 <b>탭마다 컬럼 수가 다릅니다</b>(12~17열).<br><b>국가는 19개국으로 통일</b>했고, 실제 사용 여부는 <code>In_Use</code> 열로 켜고 끕니다</td></tr>
+    <td>한글 탭명을 <b><code>log_name</code>과 같은 영문</b>으로 변경. <b>탭명 = 출력 JSON 파일명 = 스크립트 <code>FROM_KEY_BY_SHEET</code> 키</b>이므로 셋은 항상 같이 바꿉니다.
+    <b>스키마는 공통 10개 + 게임 고유 + CP 4개</b>로 맞췄습니다 — 고유 필드가 달라 <b>탭마다 컬럼 수가 다릅니다</b>(12~17열).<br><b>국가는 19개국으로 통일</b>했고, 실제 사용 여부는 <code>in_use</code> 열로 켜고 끕니다</td></tr>
 <tr><td class="lbl">README</td><td>기존 사용설명서 탭. 생성 로그가 남는 곳이라 JSON으로 만들지 않습니다</td></tr>
 </table>
 
@@ -194,13 +194,13 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
   <div class="bl">식별자는 3층으로 나눠 씁니다 — 이름이 바뀌어도 아무것도 안 깨지게</div>
   <table class="grid sm" style="margin:8px 0 0;">
   <tr><th style="width:110px">칸</th><th style="width:210px">쓰이는 곳</th><th>변경 가능성</th></tr>
-  <tr><td class="lbl">Key_Number</td><td>시트 <code>CP_Order_1~3</code> · JSON <code>CP_Order</code> · 클라 조회</td><td><b>불변</b> · 번호 재사용 금지(지운 게임 번호를 다른 게임에 다시 쓰지 않음)</td></tr>
-  <tr><td class="lbl">Log_Name</td><td>BQ 로그값(<code>logCrossPromotionPopup</code>·<code>logBtnCrossPromotionPlay</code>) · 이미지 파일명</td><td><b>사용=1 이후 불변</b> · 바꾸면 그 시점 앞뒤 로그가 다른 게임처럼 쪼개짐</td></tr>
-  <tr><td class="lbl">Game_Name</td><td>시트 가독용(한글). JSON에 안 나감</td><td><b>자유</b> — 게임 이름이 바뀌면 여기만 고칩니다</td></tr>
+  <tr><td class="lbl">key_number</td><td>시트 <code>cp_order_1~3</code> · JSON <code>cp_order</code> · 클라 조회</td><td><b>불변</b> · 번호 재사용 금지(지운 게임 번호를 다른 게임에 다시 쓰지 않음)</td></tr>
+  <tr><td class="lbl">log_name</td><td>BQ 로그값(<code>logCrossPromotionPopup</code>·<code>logBtnCrossPromotionPlay</code>) · 이미지 파일명</td><td><b>사용=1 이후 불변</b> · 바꾸면 그 시점 앞뒤 로그가 다른 게임처럼 쪼개짐</td></tr>
+  <tr><td class="lbl">game_name</td><td>시트 가독용(한글). JSON에 안 나감</td><td><b>자유</b> — 게임 이름이 바뀌면 여기만 고칩니다</td></tr>
   </table>
   <span class="note" style="display:block;margin-top:8px">
-  게임 리브랜딩이 나면 <b>Game_Name만</b> 바뀝니다. Key_Number·Log_Name은 그대로라 클라·국가 탭·기존 BQ 쿼리가 전부 무사합니다.
-  미출시 2종(마종슬라이드·머지스토리)은 <code>In_Use=0</code>이라 로그가 아직 없으므로 <b>켜기 전까진 Log_Name도 자유롭게 바꿔도 됩니다.</b>
+  게임 리브랜딩이 나면 <b>game_name만</b> 바뀝니다. key_number·log_name은 그대로라 클라·국가 탭·기존 BQ 쿼리가 전부 무사합니다.
+  미출시 2종(마종슬라이드·머지스토리)은 <code>in_use=0</code>이라 로그가 아직 없으므로 <b>켜기 전까진 log_name도 자유롭게 바꿔도 됩니다.</b>
   </span>
 </div>
 
@@ -212,19 +212,19 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
   <table class="grid sm" style="margin:8px 0 0;">
   <tr><th style="width:120px">구분</th><th>필드</th></tr>
   <tr><td class="lbl">공통 10 + CP 4</td>
-      <td><code>Cross_IT</code> <code>Cross_IT_Limit</code> <code>Cross_RV</code> <code>Cross_Key</code>
-      <code>RV_Fail_Cross</code> <code>Show_Cross</code> <code>Show_IT</code>
-      <code>Context_Type</code> <code>Context_Type_NRU</code> <code>Context_Type_RU</code>
-      + <code>CP_Order_1~3</code> <code>CP_Cap_Per_Game</code></td></tr>
-  <tr><td class="lbl">CoinMatch 고유</td><td><code>Show_RV</code> <code>Show_BA</code> <code>Result_Claim_IT</code> <code>Show_Battle</code></td></tr>
-  <tr><td class="lbl">PBM 고유</td><td><code>Show_Ad_Break</code></td></tr>
-  <tr><td class="lbl">Mahjong · CozyTiles 고유</td><td><code>Iap_Popup</code></td></tr>
+      <td><code>cross_it</code> <code>cross_it_limit</code> <code>cross_rv</code> <code>cross_key</code>
+      <code>rv_fail_cross</code> <code>show_cross</code> <code>show_it</code>
+      <code>context_type</code> <code>context_type_nru</code> <code>context_type_ru</code>
+      + <code>cp_order_1~3</code> <code>cp_cap_per_game</code></td></tr>
+  <tr><td class="lbl">CoinMatch 고유</td><td><code>show_rv</code> <code>show_ba</code> <code>result_claim_it</code> <code>show_battle</code></td></tr>
+  <tr><td class="lbl">PBM 고유</td><td><code>show_ad_break</code></td></tr>
+  <tr><td class="lbl">Mahjong · CozyTiles 고유</td><td><code>iap_popup</code></td></tr>
   </table>
   <span class="note" style="display:block;margin-top:8px">
   <b>전 게임에서 읽는 코드가 없던 5개는 제거했습니다</b> —
-  <code>Show_IT_Type</code>·<code>Show_IT_On_P2P</code>·<code>feed_Share</code>·<code>Show_Invite_Play</code>·<code>Show_Context_Cancel</code>.
+  <code>show_it_type</code>·<code>show_it_on_p2p</code>·<code>feed_share</code>·<code>show_invite_play</code>·<code>show_context_cancel</code>.
   <b>클라 <code>CountryData</code> 인터페이스에서도 같이 정리해 주세요.</b>
-  <code>Show_BA</code>는 CoinMatch에만 분기가 살아 있고 나머지 3종은 호출부가 주석 상태입니다.
+  <code>show_ba</code>는 CoinMatch에만 분기가 살아 있고 나머지 3종은 호출부가 주석 상태입니다.
   </span>
 </div>
 
@@ -236,7 +236,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 <div class="box blue">
   <div class="bl">먼저 — 5개 게임 공통 (§2)</div>
   ① 공용 프리팹 1개로 통합 · ② 앱ID를 <code>cp_games.json</code>에서 조회 · ③ 배너 이미지 원격 로드 ·
-  ④ enum → <code>Key_Number</code>(number) · ⑤ 세션 캡을 게임별 카운터로 분리.
+  ④ enum → <code>key_number</code>(number) · ⑤ 세션 캡을 게임별 카운터로 분리.
   <b>아래는 그 위에 게임별로 추가되는 것만</b> 적었습니다.
 </div>
 
@@ -244,24 +244,24 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 <tr><th style="width:190px">게임</th><th style="width:60px">작업</th><th>내용</th></tr>
 
 <tr><td class="lbl" rowspan="3"><span class="g-chip g-mahjong">Mahjong</span><br><span class="note">mahjong-client</span></td>
-    <td class="num">M-1</td><td><code>Show_IT</code> 반영 — <b>호출부가 이미 있고 주석 상태라 해제만</b> 하면 됩니다</td></tr>
-<tr><td class="num">M-2</td><td><code>Cross_IT_Limit</code> · <code>Cross_Key</code> 신규 — 지금 확률 대체에 <b>상한 가드가 없습니다</b></td></tr>
-<tr><td class="num">M-3</td><td>필드명 변경 반영 — <code>IapPopup</code>→<code>Iap_Popup</code>, <code>ContextType(NRU/RU)</code>→<code>Context_Type(_NRU/_RU)</code> (§6)</td></tr>
+    <td class="num">M-1</td><td><code>show_it</code> 반영 — <b>호출부가 이미 있고 주석 상태라 해제만</b> 하면 됩니다</td></tr>
+<tr><td class="num">M-2</td><td><code>cross_it_limit</code> · <code>cross_key</code> 신규 — 지금 확률 대체에 <b>상한 가드가 없습니다</b></td></tr>
+<tr><td class="num">M-3</td><td>필드명 변경 반영 — <code>IapPopup</code>→<code>iap_popup</code>, <code>ContextType(NRU/RU)</code>→<code>context_type(_NRU/_RU)</code> (§6)</td></tr>
 
 <tr><td class="lbl" rowspan="3"><span class="g-chip g-cozy">CozyTiles</span><br><span class="note">cozytiles-client</span></td>
-    <td class="num">C-1</td><td><code>Show_IT</code> 주석 해제 (Mahjong M-1과 동일)</td></tr>
-<tr><td class="num">C-2</td><td><code>Cross_IT_Limit</code> · <code>Cross_Key</code> 신규 (Mahjong M-2와 동일)</td></tr>
+    <td class="num">C-1</td><td><code>show_it</code> 주석 해제 (Mahjong M-1과 동일)</td></tr>
+<tr><td class="num">C-2</td><td><code>cross_it_limit</code> · <code>cross_key</code> 신규 (Mahjong M-2와 동일)</td></tr>
 <tr><td class="num">C-3</td><td>필드명 변경 반영 — Mahjong M-3과 동일 4개</td></tr>
 
 <tr><td class="lbl" rowspan="3"><span class="g-chip g-coin">CoinMatch</span><br><span class="note">coin-match-client</span></td>
-    <td class="num">CM-1</td><td><span class="hl">CP 로테이션을 <code>RV_Fail_Cross</code>(A/B 토글)에서 <code>CP_Order</code>로 교체</span> —
+    <td class="num">CM-1</td><td><span class="hl">CP 로테이션을 <code>rv_fail_cross</code>(A/B 토글)에서 <code>cp_order</code>로 교체</span> —
     <code>ViewCreator.ts</code>에서 <code>promotionType === "A" ? … : …</code> 분기 제거.
-    <b><code>RV_Fail_Cross</code>는 프로모션 상품 용도로만 남깁니다</b></td></tr>
-<tr><td class="num">CM-2</td><td><code>Context_Type_NRU</code> · <code>Context_Type_RU</code> 신규 — 지금은 <code>Context_Type</code> 단일이라 신규/기존 분리 필요</td></tr>
-<tr><td class="num">CM-3</td><td>필드명 변경 반영 — <code>ContextType</code>→<code>Context_Type</code>, <code>ResultClaim_IT</code>→<code>Result_Claim_IT</code></td></tr>
+    <b><code>rv_fail_cross</code>는 프로모션 상품 용도로만 남깁니다</b></td></tr>
+<tr><td class="num">CM-2</td><td><code>context_type_nru</code> · <code>context_type_ru</code> 신규 — 지금은 <code>context_type</code> 단일이라 신규/기존 분리 필요</td></tr>
+<tr><td class="num">CM-3</td><td>필드명 변경 반영 — <code>ContextType</code>→<code>context_type</code>, <code>ResultClaim_IT</code>→<code>result_claim_it</code></td></tr>
 
 <tr><td class="lbl" rowspan="2"><span class="g-chip g-pbm">PuzzleBlockMaster</span><br><span class="note">block-blast-client</span></td>
-    <td class="num">P-1</td><td><code>Context_Type</code> · <code>Context_Type_NRU</code> · <code>Context_Type_RU</code> 신규</td></tr>
+    <td class="num">P-1</td><td><code>context_type</code> · <code>context_type_nru</code> · <code>context_type_ru</code> 신규</td></tr>
 <tr><td class="num">P-2</td><td><b>필드명 변경 없음</b> — 이 게임은 §6 대상 필드를 쓰지 않습니다</td></tr>
 
 <tr class="warn"><td class="lbl" rowspan="4"><span class="g-chip g-sol">SolitaireCityJourney</span><br><span class="note">solitaire-tripeaks-client</span></td>
@@ -271,62 +271,68 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
     구조도 달라서(다른 게임 <code>{"US":{…}}</code> 객체 vs SCJ <code>key_number</code>·<code>country</code> 배열)
     <b>CP 설정만 이쪽 JSON에서 가져오면</b> 됩니다</td></tr>
 <tr class="warn"><td class="num">S-2</td><td><span class="hl">CP 노출 조건 자체가 없습니다.</span>
-    다른 4개 게임의 <code>canShowCrossPromotion()</code>에 해당하는 것(non-iOS · <code>Show_Cross</code> · 게임별 캡)을 신규 구현</td></tr>
-<tr class="warn"><td class="num">S-3</td><td><code>Cross_IT</code> · <code>Cross_IT_Limit</code> · <code>Cross_RV</code> · <code>Cross_Key</code> · <code>Show_IT</code> · <code>Context_Type</code> 신규</td></tr>
-<tr class="warn"><td class="num">S-4</td><td>필드명 변경 반영 — <code>ContextTypeNRU/RU</code>→<code>Context_Type_NRU/_RU</code></td></tr>
+    다른 4개 게임의 <code>canShowCrossPromotion()</code>에 해당하는 것(non-iOS · <code>show_cross</code> · 게임별 캡)을 신규 구현</td></tr>
+<tr class="warn"><td class="num">S-3</td><td><code>cross_it</code> · <code>cross_it_limit</code> · <code>cross_rv</code> · <code>cross_key</code> · <code>show_it</code> · <code>context_type</code> 신규</td></tr>
+<tr class="warn"><td class="num">S-4</td><td>필드명 변경 반영 — <code>ContextTypeNRU/RU</code>→<code>context_type_nru/_RU</code></td></tr>
 </table>
 
 <div class="box amber">
   <div class="bl">전 게임 공통 정리 항목</div>
   <b><code>CountryData</code> 인터페이스에서 아래 5개를 지워 주세요</b> —
-  <code>Show_IT_Type</code> · <code>Show_IT_On_P2P</code> · <code>feed_Share</code> · <code>Show_Invite_Play</code> · <code>Show_Context_Cancel</code>.
+  <code>show_it_type</code> · <code>show_it_on_p2p</code> · <code>feed_share</code> · <code>show_invite_play</code> · <code>show_context_cancel</code>.
   5개 클라 전부 <b>선언과 기본값만 있고 읽는 코드가 없습니다.</b> 시트에서는 이미 제거했습니다.
 </div>
 
-<div class="sec">6. 변수명 표기 통일 <span class="tag t-new" style="vertical-align:middle">시트 반영 완료</span>
-  <span class="s-desc">★신·구 이름 겸용 한 줄(권장)을 넣으면 배포 순서 제약이 없습니다 — 안 넣을 경우에만 같은 날 배포 필수</span></div>
+<div class="sec">6. 필드 이름 전부 소문자로 통일 <span class="tag t-new" style="vertical-align:middle">시트 반영 완료</span>
+  <span class="s-desc">★아래 정규화 함수 하나만 넣으면 클라 참조부는 한 글자도 안 고쳐도 됩니다</span></div>
 
-<table class="grid">
-<tr><th style="width:180px">구 이름 (클라 현재)</th><th style="width:180px">새 이름 (시트 현재)</th><th style="width:170px">읽는 게임</th><th>JSON을 먼저 올리면</th></tr>
-<tr><td><code>IapPopup</code></td><td><code>Iap_Popup</code></td><td>Mahjong · CozyTiles</td>
-    <td><span class="hl">강제 IAP 팝업이 꺼짐</span></td></tr>
-<tr><td><code>ContextType</code></td><td><code>Context_Type</code></td><td>Mahjong · CozyTiles · CoinMatch</td>
-    <td>CoinMatch 상대 추천이 기본값으로 회귀</td></tr>
-<tr><td><code>ContextTypeNRU</code></td><td><code>Context_Type_NRU</code></td><td>Mahjong · CozyTiles · SCJ</td>
-    <td>신규 유저 추천이 기본값 <code>A</code>로 고정</td></tr>
-<tr><td><code>ContextTypeRU</code></td><td><code>Context_Type_RU</code></td><td>Mahjong · CozyTiles · SCJ</td>
-    <td><span class="hl">CozyTiles의 <code>B</code>가 기본값 <code>D</code>로 바뀜</span></td></tr>
-<tr><td><code>ResultClaim_IT</code></td><td><code>Result_Claim_IT</code></td><td>CoinMatch</td>
-    <td>보상 수령 시 전면광고 미노출</td></tr>
+<p style="font-size:13.5px;margin:10px 0 6px;">시트의 컬럼명을 <b>전부 소문자 snake_case로 바꿨습니다.</b> 컬럼명이 곧 JSON 키라, 클라가 읽는 이름도 같이 바뀝니다.</p>
+
+<table class="grid sm">
+<tr><th style="width:210px">구 이름 (클라 현재)</th><th style="width:210px">새 이름 (시트 · JSON)</th><th>비고</th></tr>
+<tr><td><code>Cross_IT</code> <code>Show_Cross</code> <code>RV_Fail_Cross</code> …</td><td><code>cross_it</code> <code>show_cross</code> <code>rv_fail_cross</code> …</td><td>대소문자만 바뀜 — 전 게임 공통 필드</td></tr>
+<tr><td><code>IapPopup</code></td><td><code>iap_popup</code></td><td rowspan="4">구분자도 같이 들어감 — Mahjong · CozyTiles · CoinMatch · SCJ</td></tr>
+<tr><td><code>ContextType</code></td><td><code>context_type</code></td></tr>
+<tr><td><code>ContextTypeNRU</code> / <code>ContextTypeRU</code></td><td><code>context_type_nru</code> / <code>context_type_ru</code></td></tr>
+<tr><td><code>ResultClaim_IT</code></td><td><code>result_claim_it</code></td></tr>
+<tr><td><code>Key_Number</code> <code>App_ID</code> <code>In_Use</code> <code>CP_Order</code></td><td><code>key_number</code> <code>app_id</code> <code>in_use</code> <code>cp_order</code></td><td>마스터 탭 · CP 신규 필드</td></tr>
 </table>
 
-<div class="box amber">
-  <div class="bl">조용히 틀립니다 — 그래서 순서가 중요합니다</div>
-  JSON 키 이름이 곧 클라가 읽는 이름입니다. 어긋나면 <b>에러 없이 <code>undefined</code></b>가 되어 클라 하드코딩 기본값으로 떨어집니다.
-  <b>로그에도 안 남고 화면도 멀쩡해서, 지표가 변한 뒤에야 알게 됩니다.</b>
+<div class="box green">
+  <div class="bl">권장 — 필드를 하나씩 고치지 마시고 받을 때 한 번 정규화해 주세요</div>
+  JSON을 받는 지점에서 <b>키의 대소문자와 언더바를 지운 형태로 한 번 색인</b>해 두면,
+  클라의 <code>CountryData</code> 인터페이스도 참조부도 <b>지금 이름 그대로 두면 됩니다.</b>
+  <code>IapPopup</code> → <code>iap_popup</code> 처럼 구분자가 달라진 것까지 한 번에 흡수됩니다.
 </div>
 
-<div class="box green">
-  <div class="bl">배포 순서 — 겸용 처리를 안 넣을 경우</div>
-  <table class="grid sm" style="margin:8px 0 0;">
-  <tr><td style="width:36px"><span class="ord">1</span></td><td>클라에서 <code>CountryData</code> 인터페이스·참조부의 <b>필드명을 새 이름으로 교체</b> (위 5개)</td></tr>
-  <tr><td><span class="ord">2</span></td><td>해당 빌드 <b>배포 완료</b> — 9/1 개편 빌드에 포함됩니다</td></tr>
-  <tr><td><span class="ord">3</span></td><td>시트에서 JSON 생성 → <b>CDN 업로드 + 캐시 무효화</b> (§9)</td></tr>
-  </table>
-  <span class="note" style="display:block;margin-top:8px">
-  ★2번과 3번 사이에는 <b>새 클라가 옛 이름 JSON을 읽는 구간</b>이라 위 표의 증상이 잠깐 생깁니다.
-  <b>클라가 신·구 이름을 모두 읽게</b> 한 줄만 넣어 두면(<code>data.Iap_Popup ?? data.IapPopup</code>)
-  순서에 상관없이 안전하고, 다음 빌드에서 구 이름을 지우면 됩니다. <b>이 방식을 권장합니다.</b>
-  </span>
+<pre><span class="c">// updateCountryData() 등 JSON을 받는 지점에서 한 번만</span>
+<span class="k">const</span> norm = {};
+<span class="k">for</span> (<span class="k">const</span> k <span class="k">in</span> json) norm[k.toLowerCase().replace(<span class="s">/_/g</span>, <span class="s">''</span>)] = json[k];
+
+<span class="c">// 읽을 때 — 기존 이름을 그대로 넘겨도 찾아집니다</span>
+<span class="k">const</span> pick = (name) =&gt; norm[name.toLowerCase().replace(<span class="s">/_/g</span>, <span class="s">''</span>)];
+pick(<span class="s">'Cross_IT'</span>)  <span class="c">// → cross_it</span>
+pick(<span class="s">'IapPopup'</span>)  <span class="c">// → iap_popup</span>
+</pre>
+
+<div class="box amber">
+  <div class="bl">이 방식이면 배포 순서 제약이 없습니다</div>
+  옛 이름 JSON과 새 이름 JSON을 <b>둘 다 읽게 되므로</b>, 클라 빌드와 JSON 배포 중 어느 쪽이 먼저 나가도 안전합니다.<br>
+  <span class="hl">정규화를 안 넣으실 경우에만</span> 아래 순서를 지켜야 합니다 — ① 클라에서 필드명을 새 이름으로 교체 → ② 빌드 배포 → ③ JSON 생성·업로드.
+  ②와 ③ 사이에는 새 클라가 옛 이름 JSON을 읽는 구간이 생깁니다.
 </div>
 
 <div class="box blue">
-  <div class="bl">통일 규칙</div>
-  전부 <b><code>Word_Word</code></b> 한 가지. 약어(<b>IT · RV · BA · NRU · RU · CP</b>)는 대문자 유지.
-  나머지 필드(<code>Cross_IT</code>·<code>Show_Cross</code>·<code>RV_Fail_Cross</code>·<code>CP_Order_1</code>)와
-  마스터 탭(<code>Key_Number</code>·<code>App_ID</code>·<code>In_Use</code>)이 이미 이 형식이라
-  <b>위 5개만 바꾸면 시트 전체가 한 표기로 통일됩니다.</b>
+  <div class="bl">어긋나면 조용히 틀립니다</div>
+  JSON 키 이름이 곧 클라가 읽는 이름입니다. 어긋나면 에러 없이 <code>undefined</code>가 되어 클라 하드코딩 기본값으로 떨어집니다.
+  로그에도 안 남고 화면도 멀쩡해서, <b>지표가 변한 뒤에야</b> 알게 됩니다.
 </div>
+
+<p class="note">
+<b>통일 규칙</b> — 전부 소문자 <code>snake_case</code> 한 가지. 약어도 소문자로 내립니다(<code>cross_it</code> · <code>rv_fail_cross</code> · <code>context_type_nru</code> · <code>cp_order_1</code>).
+밸런스 시트(<code>key_number</code> · <code>in_use</code>)와 같은 표기라, 앞으로 시트가 달라도 규칙은 하나입니다.
+<b>탭 이름은 바꾸지 않았습니다</b> — 탭명 = 출력 파일명 = 로그값이라 <code>Mahjong</code>·<code>CozyTiles</code> 그대로입니다.
+</p>
 
 <div class="sec">7. 안전장치 — 반드시 넣어 주세요
   <span class="s-desc">설정이 코드 밖으로 나가면서 새로 생기는 실패 지점</span></div>
@@ -335,13 +341,13 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 <tr><th style="width:190px">상황</th><th>동작</th><th style="width:230px">이유</th></tr>
 <tr><td class="lbl">이미지 로드 실패</td><td><b>팝업을 띄우지 않고</b> 그대로 종료 (<code>onComplete</code> 호출)</td>
     <td>지금은 번들이라 100% 뜨지만 CDN이면 실패할 수 있음. 빈 팝업이 뜨면 유저 이탈</td></tr>
-<tr><td class="lbl">마스터에 없는 Key_Number</td><td>해당 순번을 <b>건너뛰고</b> 다음 게임으로</td><td>시트 오타·마스터 행 삭제 시 팝업 자체가 죽는 것 방지</td></tr>
-<tr><td class="lbl"><code>In_Use = 0</code> 또는 App_ID 공백</td><td>노출 대상에서 제외</td><td>미출시 게임(마종슬라이드·머지스토리) 미리 등록해 두기 위함</td></tr>
+<tr><td class="lbl">마스터에 없는 key_number</td><td>해당 순번을 <b>건너뛰고</b> 다음 게임으로</td><td>시트 오타·마스터 행 삭제 시 팝업 자체가 죽는 것 방지</td></tr>
+<tr><td class="lbl"><code>in_use = 0</code> 또는 app_id 공백</td><td>노출 대상에서 제외</td><td>미출시 게임(마종슬라이드·머지스토리) 미리 등록해 두기 위함</td></tr>
 <tr><td class="lbl">자기 게임이 지정됨</td><td>제외</td><td>드롭다운이 마스터 전체를 참조하므로 자기 자신도 고를 수 있음. <b>클라에서 방어</b></td></tr>
-<tr><td class="lbl">국가 행 <code>In_Use = 0</code></td><td>그 국가를 <b>JSON에서 제외</b> — 클라는 <code>DEFAULT</code>로 폴백</td><td>19개국을 나열해 두되 실제 적용 여부를 시트에서 켜고 끄기 위함. <b><code>DEFAULT</code> 행은 <code>In_Use</code>와 무관하게 항상 포함</b></td></tr>
+<tr><td class="lbl">국가 행 <code>in_use = 0</code></td><td>그 국가를 <b>JSON에서 제외</b> — 클라는 <code>DEFAULT</code>로 폴백</td><td>19개국을 나열해 두되 실제 적용 여부를 시트에서 켜고 끄기 위함. <b><code>DEFAULT</code> 행은 <code>in_use</code>와 무관하게 항상 포함</b></td></tr>
 <tr><td class="lbl">순서 칸이 <code>0</code> / <code>none</code></td><td>'없음'으로 읽고 건너뜀</td>
     <td>시트에 빈칸을 남기지 않기 위한 표기 규칙. <b>빈 셀도 같게 처리</b>합니다</td></tr>
-<tr><td class="lbl"><b>순서가 1종만 채워졌을 때</b></td><td><b>그 게임만 계속 노출</b>(<code>CP_Cap_Per_Game</code>까지)</td>
+<tr><td class="lbl"><b>순서가 1종만 채워졌을 때</b></td><td><b>그 게임만 계속 노출</b>(<code>cp_cap_per_game</code>까지)</td>
     <td>국가별로 1종 몰아주기를 쓸 수 있어야 함. <b>배열 길이대로 순환</b>하면 1·2·3종이 자동으로 다 처리됩니다</td></tr>
 <tr><td class="lbl">순서가 전부 비었을 때</td><td>CP 미노출</td><td>기존 광고 흐름(<code>onComplete(false)</code>)에 영향 없어야 함</td></tr>
 </table>
@@ -363,7 +369,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 <tr><td class="lbl">배너 이미지 교체</td><td class="hl">빌드</td><td class="ok">CDN 파일 교체</td></tr>
 <tr><td class="lbl">신규 게임 추가 <span class="note">(마종슬라이드·머지스토리)</span></td><td class="hl">enum + 프리팹 + 빌드</td><td class="ok">마스터 탭에 1행 추가</td></tr>
 <tr><td class="lbl">세션 캡 조정</td><td class="hl">상수 수정 + 빌드</td><td class="ok">시트 수정</td></tr>
-<tr><td class="lbl">국가 on/off (<code>Show_Cross</code>)</td><td class="ok">이미 시트</td><td class="ok">동일</td></tr>
+<tr><td class="lbl">국가 on/off (<code>show_cross</code>)</td><td class="ok">이미 시트</td><td class="ok">동일</td></tr>
 </table>
 
 <div class="sec">9. 서버 · 인프라 쪽 할 일
@@ -384,7 +390,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
     <b>같은 파일명으로 이미지를 교체하면 캐시 때문에 안 바뀝니다</b> — 교체 시 invalidation 또는 파일명 버전 규칙 필요</td></tr>
 <tr><td class="lbl">출력 파일명 변경</td><td>탭명을 영문화해 <code>마종.json</code> → <code>Mahjong.json</code>으로 바뀝니다. <b>CDN 업로드 경로 매핑을 같이 고쳐야 합니다</b></td></tr>
 <tr><td class="lbl">BQ 로그 정의서</td>
-    <td>CP 로그값에 새 게임명(Log_Name)이 추가됩니다. 정의서·enum 문서 갱신 — <b>코드 변경은 아님</b></td></tr>
+    <td>CP 로그값에 새 게임명(log_name)이 추가됩니다. 정의서·enum 문서 갱신 — <b>코드 변경은 아님</b></td></tr>
 <tr><td class="lbl">Meta 앱 설정 <span class="tag t-drop">확인 필요</span></td>
     <td>신규 게임 앱ID가 <code>switchGameAsync</code> 대상이 되는지(같은 비즈니스·앱 그룹 조건) 확인.
     <b>기존 9개는 이미 동작하지만 신규 2종은 미확인</b> — Alex 확인 항목</td></tr>
@@ -400,7 +406,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 <table class="grid sm">
 <tr><th style="width:200px">항목</th><th>상태</th></tr>
 <tr><td class="lbl">마종 슬라이드 · 머지 스토리 앱ID</td><td>미확보 — 마스터에 <code>use=0</code>으로 행만 만들어 둠. 확보되면 기획이 채웁니다</td></tr>
-<tr><td class="lbl">CP 배너 이미지 CDN 경로</td><td><code>/cp/{Log_Name}.png</code>로 가정해 마스터에 기입. <b>실제 경로 확정되면 알려 주세요</b>(마스터 URL만 고치면 됨)</td></tr>
+<tr><td class="lbl">CP 배너 이미지 CDN 경로</td><td><code>/cp/{log_name}.png</code>로 가정해 마스터에 기입. <b>실제 경로 확정되면 알려 주세요</b>(마스터 URL만 고치면 됨)</td></tr>
 <tr><td class="lbl">더퍼즐 country_data 관리 위치</td><td>이 시트에 탭이 없음 — 어디서 관리하는지 확인 필요</td></tr>
 
 <tr><td class="lbl">적용 목표</td><td><b>9/1 개편에 함께 적용</b>합니다(보고서 §7 일정). 캡·로테이션 변경과 <b>같은 코드라 분리 개발이 안 되므로 한 세트</b>입니다. 개발 8/21~8/28 · 검수 8/28~8/31 · 적용 9/1</td></tr>
