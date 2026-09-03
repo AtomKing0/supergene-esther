@@ -49,7 +49,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 <body>
 
 <h1>CP to 게임 원격 설정화 — 개발 요청서</h1>
-<p class="sub">크로스프로모션 팝업의 to 게임·순서·이미지를 클라 빌드 없이 시트에서 바꾸기 · 2026-08-25 · 대상 = 마종 / 코지타일즈 / 코인매치 / 퍼즐블록마스터 / 솔시티저니(신규 구현)</p>
+<p class="sub">크로스프로모션 팝업의 to 게임·순서·이미지를 클라 빌드 없이 시트에서 바꾸기 · 2026-08-25 · 대상 = 마종 / 코지타일즈 / 코인매치 / 퍼즐블록마스터 / 더퍼즐 / 솔시티저니(신규 구현)</p>
 
 <div class="verdict">
   <div class="vt">REQUEST</div>
@@ -213,7 +213,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
     <b>행은 손으로 만들지 않습니다</b> — 국가 탭에서 순서를 정하고 메뉴에서 <b>순서 → 배너 목록 동기화</b>를 누르면
     필요한 조합이 자동으로 생기고, 순서에서 빠진 조합은 <code>status</code>가 <b>'순서에 없음'</b>으로 바뀝니다(지우지는 않음).
     <code>image_preview</code>는 만들어질 파일명을 보여주는 수식 열입니다</td></tr>
-<tr><td class="lbl">country_data_mahjong · country_data_cozy_tiles · country_data_coin_match · country_data_puzzle_block_master · country_data_solitaire_city_journey
+<tr><td class="lbl">country_data_mahjong · country_data_cozy_tiles · country_data_coin_match · country_data_puzzle_block_master · country_data_the_puzzle · country_data_solitaire_city_journey
     <span class="tag t-new">이름 변경</span></td>
     <td>한글 탭명을 <b><code>country_data_</code> + 소문자 게임명</b>으로 변경. <b>탭명 = 출력 JSON 파일명 = 스크립트 <code>FROM_KEY_BY_SHEET</code> 키</b>이므로 셋은 항상 같이 바꿉니다.
     <b>스키마는 공통 10개 + 게임 고유 + CP 4개</b>로 맞췄습니다 — 고유 필드가 달라 <b>탭마다 컬럼 수가 다릅니다</b>(12~17열).<br><b>국가는 19개국으로 통일</b>했고, 실제 사용 여부는 <code>in_use</code> 열로 켜고 끕니다</td></tr>
@@ -234,7 +234,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
   </span>
 </div>
 
-<p class="note">1행 = 컬럼 설명 / 2행 = 헤더 / 3행부터 데이터 · 기존 규칙 그대로. 현재 등록값: 마종 = 코지타일즈·솔시티저니·퍼즐블록마스터 / 코지타일즈 = 솔시티저니·코인매치·더퍼즐 / 코인매치·퍼즐블록마스터 = 코지타일즈·솔시티저니·마종.</p>
+<p class="note">1행 = 컬럼 설명 / 2행 = 헤더 / 3행부터 데이터 · 기존 규칙 그대로. 현재 등록값: 마종 = 코지타일즈·솔시티저니·퍼즐블록마스터 / 코지타일즈 = 솔시티저니·코인매치·더퍼즐 / 코인매치 = 코지타일즈·솔시티저니·마종 / 퍼즐블록마스터 = 코지타일즈·솔시티저니·코인매치 / 더퍼즐 = 솔시티저니·코지타일즈·퍼즐블록마스터.</p>
 
 <div class="box blue">
   <div class="bl">탭별 스키마 — 다수결로 통일, 단독 사용은 고유 유지</div>
@@ -264,7 +264,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
   <span class="s-desc">담당자별로 나눠 보실 수 있게 게임 단위로 정리했습니다 · ①~⑤는 §2 공통 항목</span></div>
 
 <div class="box blue">
-  <div class="bl">먼저 — 5개 게임 공통 (§2)</div>
+  <div class="bl">먼저 — 6개 게임 공통 (§2)</div>
   ① 공용 프리팹 1개로 통합 · ② 앱ID를 <code>cp_&#123;게임명&#125;.json</code>에서 조회 · ③ 배너 이미지 원격 로드 ·
   ④ enum → <code>key_number</code>(number) · ⑤ 세션 캡을 게임별 카운터로 분리.
   <b>아래는 그 위에 게임별로 추가되는 것만</b> 적었습니다.
@@ -294,6 +294,16 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
     <td class="num">P-1</td><td><code>context_type</code> · <code>context_type_nru</code> · <code>context_type_ru</code> 신규</td></tr>
 <tr><td class="num">P-2</td><td><b>필드명 변경 없음</b> — 이 게임은 §6 대상 필드를 쓰지 않습니다</td></tr>
 
+<tr><td class="lbl" rowspan="3"><span class="g-chip g-puzzle">ThePuzzle</span><br><span class="note">더퍼즐</span></td>
+    <td class="num">T-1</td><td><span class="hl">country_data를 이 시트에서 읽도록 이관.</span>
+    지금은 admin의 <code>countryData</code>에 JSON을 붙여넣는 방식이고, 국가 코드가 소문자에 클라 버전별로 행이 나뉘어 있습니다(802 / 1964).
+    다른 게임과 같은 <b>대문자 국가 코드 · 단일 행</b> 규격으로 맞췄습니다</td></tr>
+<tr><td class="num">T-2</td><td><code>show_cross</code> 신규 — 지금은 CP 노출 조건이 <code>cross_it_limit</code>에만 묶여 있습니다.
+    현행 그대로 <b>T1 6개국만 1</b>로 넣었습니다(한국은 0 — 다른 4개 게임과 달리 더퍼즐만 꺼져 있습니다)</td></tr>
+<tr><td class="num">T-3</td><td>필드명 변경 반영 — <code>resultClaimIT</code>→<code>result_claim_it</code>,
+    <code>resultShareButtonType</code>→<code>result_share_button_type</code>, <code>AutoSkipType</code>→<code>auto_skip_type</code>,
+    <code>playCountPopupPremium</code>→<code>play_count_popup_premium</code>, <code>firstSessionIT</code>→<code>first_session_it</code>.
+    <b>이 게임은 5개 전부 바뀝니다</b> — §6의 정규화 한 줄이 특히 유효합니다</td></tr>
 <tr class="warn"><td class="lbl" rowspan="4"><span class="g-chip g-sol">SolitaireCityJourney</span><br><span class="note">solitaire-tripeaks-client</span></td>
     <td class="num">S-1</td><td><span class="hl">이 시트 JSON을 읽는 경로 추가.</span>
     현재 SCJ의 <code>country_data</code>는 <code>BaseNetworkManager.ts:990</code>에서
@@ -439,7 +449,7 @@ pick(<span class="s">'IapPopup'</span>)  <span class="c">// → iap_popup</span>
 <tr><th style="width:200px">항목</th><th>상태</th></tr>
 <tr><td class="lbl">마종 슬라이드 · 머지 스토리 앱ID</td><td>미확보 — 마스터에 <code>use=0</code>으로 행만 만들어 둠. 확보되면 기획이 채웁니다</td></tr>
 <tr><td class="lbl">CP 배너 이미지 파일명 규칙</td><td><code>/cp/{from log_name}_{to log_name}_v{version}.png</code>로 가정함. <b>실제 규칙 확정되면 알려 주세요</b> — 시트는 버전 숫자만 관리합니다</td></tr>
-<tr><td class="lbl">더퍼즐 country_data 관리 위치</td><td>이 시트에 탭이 없음 — 어디서 관리하는지 확인 필요</td></tr>
+<tr><td class="lbl">더퍼즐 country_data 관리 위치</td><td>탭을 만들어 두었습니다(<code>country_data_the_puzzle</code>). <code>show_it</code>·<code>context_type</code> 계열은 이 게임에 없어 <code>none</code>으로 뒀는데, <b>실제로 안 쓰는 게 맞는지 확인 필요</b></td></tr>
 
 <tr><td class="lbl">적용 목표</td><td><b>9/1 개편에 함께 적용</b>합니다(보고서 §7 일정). 캡·로테이션 변경과 <b>같은 코드라 분리 개발이 안 되므로 한 세트</b>입니다. 개발 8/21~8/28 · 검수 8/28~8/31 · 적용 9/1</td></tr>
 </table>
