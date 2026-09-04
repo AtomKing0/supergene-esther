@@ -108,7 +108,7 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 <tr>
   <td><span class="ord">2</span></td>
   <td class="lbl">앱ID를 JSON에서 조회</td>
-  <td><code>targetGames</code> Map 제거 → <code>cp_{게임명}.json</code>의 <code>games</code>에서 <code>이름 → key_number</code> 조회.<br>
+  <td><code>targetGames</code> Map 제거 → <code>cp_{게임명}.json</code>의 <code>games</code>에서 <code>key_number → app_id</code> 조회.<br>
   <code>onClickPlay()</code>는 <code>Fbi.switchApp(cfg.app_id, {social, player_id}, cfg.log_name)</code>로 그대로 호출.</td>
 </tr>
 <tr>
@@ -145,21 +145,28 @@ pre .k{color:#9ecbff;} pre .s{color:#ffd97a;} pre .c{color:#7c96b5;}
 
 <pre><span class="c">// cp_coin_match.json — 시트 cp_game_master + cp_image 에서 생성</span>
 {
-  <span class="k">"games"</span>:  { <span class="s">"Mahjong"</span>: 1, <span class="s">"CozyTiles"</span>: 2, <span class="s">"CoinMatch"</span>: 3,
-              <span class="s">"PuzzleBlockMaster"</span>: 4, <span class="s">"SolitaireCityJourney"</span>: 5, <span class="s">"ThePuzzle"</span>: 6 },
+  <span class="k">"games"</span>: {                            <span class="c">// 키 = log_name(BQ 로그값)</span>
+    <span class="s">"Mahjong"</span>:              { <span class="k">"key_number"</span>: 1, <span class="k">"app_id"</span>: <span class="s">"1978451022643895"</span> },
+    <span class="s">"CozyTiles"</span>:            { <span class="k">"key_number"</span>: 2, <span class="k">"app_id"</span>: <span class="s">"840535418537645"</span> },
+    <span class="s">"CoinMatch"</span>:            { <span class="k">"key_number"</span>: 3, <span class="k">"app_id"</span>: <span class="s">"514353923664448"</span> },
+    <span class="s">"PuzzleBlockMaster"</span>:    { <span class="k">"key_number"</span>: 4, <span class="k">"app_id"</span>: <span class="s">"722155533513017"</span> },
+    <span class="s">"SolitaireCityJourney"</span>: { <span class="k">"key_number"</span>: 5, <span class="k">"app_id"</span>: <span class="s">"739489598842669"</span> },
+    <span class="s">"ThePuzzle"</span>:            { <span class="k">"key_number"</span>: 6, <span class="k">"app_id"</span>: <span class="s">"253130686313001"</span> }
+  },
   <span class="k">"routes"</span>: { <span class="s">"2"</span>: 1, <span class="s">"5"</span>: 1, <span class="s">"1"</span>: 1 }     <span class="c">// 키 = to 게임의 key_number · 값 = 배너 버전</span>
-}
-
-<span class="c">// cp_the_puzzle.json — 같은 games, routes만 다름</span>
-{
-  <span class="k">"games"</span>:  { ... },
-  <span class="k">"routes"</span>: { <span class="s">"5"</span>: 1, <span class="s">"2"</span>: 1, <span class="s">"4"</span>: 1 }
 }</pre>
 
 <div class="box green">
+  <div class="bl">app_id가 여기 들어갑니다 — 이게 빌드를 없애는 핵심입니다</div>
+  <code>games</code>에 <b>번호와 앱ID가 같이</b> 들어가므로, 게임이 늘어도 클라에 상수를 추가할 일이 없습니다.
+  <code>in_use=0</code>이거나 앱ID가 비어 있는 게임(마종슬라이드·머지스토리)은 <b>아예 내려가지 않습니다.</b>
+  <div style="margin-top:8px">키를 <code>log_name</code>으로 둔 이유 — <b>BQ 로그값이자 클라 enum 문자열</b>이라 바꾸면 그 시점 앞뒤로 CP 로그가 쪼개집니다.</div>
+</div>
+
+<div class="box green">
   <div class="bl">게임별로 자기 파일만 받으면 됩니다</div>
-  <code>games</code>는 <b>이름 ↔ 번호 대응표</b>라 전 게임 공통이고, <code>routes</code>에는 <b>그 게임이 쓰는 조합만</b> 들어갑니다.
-  앱ID는 <code>games</code>의 번호로 <code>country_data</code> 쪽과 맞춰 읽습니다.
+  <code>games</code>는 <b>이름 · 번호 · 앱ID 표</b>라 전 게임 공통이고, <code>routes</code>에는 <b>그 게임이 쓰는 조합만</b> 들어갑니다.
+  <code>country_data</code>의 <code>cp_order</code>가 번호로 이 표를 찾아 앱ID를 꺼냅니다.
 </div>
 
 <div class="box amber">
