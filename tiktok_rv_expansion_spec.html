@@ -224,6 +224,24 @@ if (!isTutorialPlayer) {
   </table></div>
   <p>코지 미국 · 8/1~9/8. <strong>유저의 40.1%(897명)는 4판을 못 넘겨서 x2 버튼을 평생 한 번도 못 봄.</strong></p>
 
+  <h3>보상형이 아예 없는 지면</h3>
+  <p>게임 안에서 유저가 실제로 겪는 순간을 로그로 세고, 거기에 보상형이 붙어 있는지 대조함. 같은 기간 · 코지 미국.</p>
+  <div class="tw"><table>
+    <thead><tr><th>순간</th><th>로그</th><th class="r">발생</th><th class="r">유저</th><th>보상형 구좌</th></tr></thead>
+    <tbody>
+      <tr><td>판 클리어 &mdash; 보상 상자</td><td><code>2500_FINISH_REWARD_BOX</code></td><td class="r mono">13,480</td><td class="r mono">2,082</td><td>있음 &mdash; <strong>클리어 판의 5.9%만 x2를 누름</strong></td></tr>
+      <tr class="warn"><td><strong>꾸미기 완료</strong></td><td><code>5370_LOBBY_DECO_COMPLETE</code></td><td class="r mono">2,946</td><td class="r mono">1,633</td><td><strong>없음</strong> &mdash; 유저의 73%가 겪는데 구좌가 0개</td></tr>
+      <tr class="warn"><td><strong>럭키 클로버 팝업</strong></td><td><code>8152_LUCKY_CLOVERS_TOAST_POPUP</code></td><td class="r mono">6,663</td><td class="r mono">532</td><td><strong>없음</strong> &mdash; 코드가 통째로 주석 처리됨</td></tr>
+      <tr class="warn"><td><strong>판 이어하기 상황</strong></td><td><code>2200_GAMEPLAY_CONTINUE</code></td><td class="r mono">2,721</td><td class="r mono">481</td><td>있음 &mdash; <strong>상황의 15.8%만 광고로 감</strong> (시도 431)</td></tr>
+      <tr><td>판 시작</td><td><code>2100_GAMEPLAY_START</code></td><td class="r mono">17,991</td><td class="r mono">3,153</td><td><strong>없음</strong> &mdash; 판 시작 전 부스터 지면이 없음</td></tr>
+      <tr><td>참 획득</td><td><code>2310_GAMEPLAY_FINISH_CHARM_GET</code></td><td class="r mono">1,979</td><td class="r mono">180</td><td>없음 &mdash; 유저가 적어 후순위</td></tr>
+      <tr><td>판 실패</td><td><code>2300</code> <code>fail</code></td><td class="r mono">2,209</td><td class="r mono">319</td><td>이어하기로 커버됨</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout callout-red">
+    <p><strong>꾸미기와 럭키 클로버가 가장 큰 공백임.</strong> 꾸미기는 코지의 메타 진행 축인데 <code>tryShowRewardAD</code> 호출이 <strong>데코 관련 파일 어디에도 없음</strong>. 럭키 클로버는 골드 타일 2배 로직이 <code>ViewCozyTile.ts:2884</code>에 <strong>주석으로 통째로 남아 있고 <code>TODO: 골드 타일 2배 보상 처리</code>까지 달려 있음</strong> &mdash; 폐기한 게 아니라 만들다 만 상태임.</p>
+  </div>
+
   <h3>완주율이 낮은 이유 &mdash; 기술 문제가 아님</h3>
   <div class="tw"><table>
     <thead><tr><th>에러</th><th>메시지</th><th class="r">건수</th><th class="r">비중</th></tr></thead>
@@ -254,12 +272,24 @@ if (!isTutorialPlayer) {
   <p>틱톡이 권하는 수익 축은 보상형인데, 코지는 주력 구좌를 <strong>신규 유저 구간에서 통째로 가려 두고</strong> 있음. 게다가 어렵게 누른 유저의 <strong>59%가 끝까지 못 봄</strong>. 새 자리를 만들기 전에 이미 있는 자리부터 여는 게 순서임.</p>
 
   <h3>고칠 부분 &mdash; 네 가지</h3>
-  <ul>
-    <li><strong>결과창 x2 튜토 개방</strong> &mdash; 첫 판 결과창부터 버튼을 보여 줌</li>
-    <li><strong>데일리 퍼즐 x2 신설</strong> &mdash; 이름만 있고 구현이 없는 구좌를 채움</li>
-    <li><strong>로비 무료코인 동선 개선</strong> &mdash; 하루 10회가 이미 열려 있는데 안 쓰임</li>
-    <li><strong>완주율 진단 계측</strong> &mdash; <code>4220</code> 실패 사유를 문자열로 남김</li>
-  </ul>
+  <p>여는 것 셋, 새로 만드는 것 넷임.</p>
+  <div class="tw"><table>
+    <thead><tr><th>구분</th><th>구좌</th><th class="r">현재 시도</th><th class="r">예상 시도</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td>연다</td><td>결과창 x2 &mdash; 튜토 개방</td><td class="r mono">791</td><td class="r mono">1,240</td><td>튜토 구간 판 종료 5,824건 &times; 현행 시도율 7.7%</td></tr>
+      <tr class="pick"><td>연다</td><td>이어하기 &mdash; 팝업에서 광고를 기본·강조로</td><td class="r mono">431</td><td class="r mono">820</td><td>상황 2,721건 중 진입률 15.8% &rarr; 30%</td></tr>
+      <tr><td>연다</td><td>로비 무료코인 &mdash; 레드닷·배치</td><td class="r mono">94</td><td class="r mono">200</td><td>상한 10회는 이미 열려 있음</td></tr>
+      <tr class="pick"><td><strong>만든다</strong></td><td><strong>꾸미기 완료 보상 x2</strong></td><td class="r mono">0</td><td class="r mono">295</td><td>2,946건 &times; 10% &mdash; 유저 73%가 겪는 지면</td></tr>
+      <tr class="pick"><td><strong>만든다</strong></td><td><strong>럭키 클로버 골드타일 x2</strong></td><td class="r mono">0</td><td class="r mono">400</td><td>팝업 6,663건 &times; 6% &mdash; 주석 코드 복구</td></tr>
+      <tr><td><strong>만든다</strong></td><td>데일리 퍼즐 x2</td><td class="r mono">0</td><td class="r mono">150</td><td>enum만 있고 호출부 없음</td></tr>
+      <tr><td><strong>만든다</strong></td><td>판 시작 전 부스터 1회 무료</td><td class="r mono">0</td><td class="r mono">180</td><td>판 시작 17,991건 &times; 1% &mdash; 보수적</td></tr>
+      <tr><td>고친다</td><td><code>4220</code> 실패 사유 직렬화</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td>완주율 개선의 선결 조건</td></tr>
+      <tr><td><strong>합계</strong></td><td></td><td class="r mono"><strong>1,883</strong></td><td class="r mono"><strong>3,545</strong></td><td>시도 <strong>1.9배</strong></td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout callout-blue">
+    <p><strong>클릭률은 전부 보수적으로 잡음.</strong> 신규 구좌는 결과창 x2의 현행 시도율(7.7%)보다 낮거나 비슷하게 뒀음 &mdash; 꾸미기 10%, 럭키 클로버 6%, 판 시작 1%. 실제로는 꾸미기·럭키 클로버가 <strong>즉시 보상</strong>이라 더 높게 나올 수 있으나, 예측을 부풀리지 않기 위해 낮은 쪽으로 씀.</p>
+  </div>
 
   <h3>동작 As-Is / To-Be</h3>
   <div class="tw"><table>
@@ -269,14 +299,18 @@ if (!isTutorialPlayer) {
       <tr><td>4판 이후 결과창</td><td>x2 버튼 노출</td><td>변경 없음</td></tr>
       <tr class="pick"><td>데일리 퍼즐 완료</td><td>보상 x2 없음</td><td><strong>x2 버튼 신설</strong> (<code>daily_puzzle_reward_double</code>)</td></tr>
       <tr class="pick"><td>로비 무료코인</td><td>하루 10회 가능하나 진입 동선이 약함</td><td>레드닷·배치 정리 &mdash; 상한은 그대로 10회</td></tr>
-      <tr><td>이어하기 · 아이템 · 추가 슬롯</td><td>현행</td><td>변경 없음 &mdash; 계측만 붙임</td></tr>
+      <tr class="pick"><td>꾸미기 1단계 완료</td><td>보상만 지급</td><td><strong>보상 x2 버튼 신설</strong> (<code>deco_reward_double</code>)</td></tr>
+      <tr class="pick"><td>럭키 클로버 골드타일 획득</td><td>x2 없음 (코드가 주석 상태)</td><td><strong>주석 복구 + 골드타일 x2</strong> (<code>lucky_clovers_double</code>)</td></tr>
+      <tr class="pick"><td>판 이어하기 팝업</td><td>광고가 여러 선택지 중 하나</td><td>광고를 <strong>기본 버튼으로 앞에 두고 강조</strong>. 골드 선택지는 유지</td></tr>
+      <tr class="pick"><td>판 시작 직전</td><td>부스터 지면 없음</td><td><strong>아이템 1개 무료 받기 버튼 신설</strong> (<code>prelevel_booster</code>) &mdash; 하루 상한 있음</td></tr>
+      <tr><td>아이템 · 추가 슬롯</td><td>현행</td><td>변경 없음 &mdash; 계측만 붙임</td></tr>
       <tr><td>광고 제거 아이템 보유자</td><td>보상형은 계속 노출</td><td>변경 없음 &mdash; 티켓은 보상형만 대체</td></tr>
       <tr><td>인벤토리 없음 · 틱톡 거절</td><td><code>4220</code>만 남기고 진행</td><td>변경 없음. <strong>실패 사유를 문자열로 남김</strong></td></tr>
     </tbody>
   </table></div>
 
   <div class="callout callout-purple">
-    <p><strong>확정값</strong> &mdash; <span class="sheet-var">rv_ftue_free_count</span> = 0 (첫 판 결과창부터 노출), <span class="sheet-var">rv_slot_daily_puzzle_double</span> = 1. 전면광고와 달리 보상형은 유저가 <strong>선택해서</strong> 보는 것이라 유예를 둘 이유가 약함 &mdash; 다만 값으로 두어 0/1/3 중에 라이브에서 고를 수 있게 함.</p>
+    <p><strong>확정값</strong> &mdash; <span class="sheet-var">rv_ftue_free_count</span> = 0 (첫 판 결과창부터), 신규 구좌 스위치 넷 모두 1. 전면광고와 달리 보상형은 유저가 <strong>선택해서</strong> 보는 것이라 유예를 둘 이유가 약함 &mdash; 다만 값으로 두어 0/1/3 중에 라이브에서 고를 수 있게 함.</p>
   </div>
 </section>
 
@@ -293,11 +327,11 @@ if (!isTutorialPlayer) {
   <div class="tw"><table>
     <thead><tr><th>지표</th><th class="r">As-Is</th><th class="r">To-Be</th><th>근거</th></tr></thead>
     <tbody>
-      <tr><td>RV 시도 / 판</td><td class="r mono">0.078</td><td class="r mono">0.105</td><td>튜토 구간 판 종료 5,824건에 현행 시도율 7.7% 적용</td></tr>
-      <tr class="pick"><td>RV 완주 / 판</td><td class="r mono">0.032</td><td class="r mono">0.045 (+40%)</td><td>x2 개방 +23%p · 데일리 퍼즐 +8%p · 무료코인 동선 +9%p</td></tr>
-      <tr><td>RV 완주 / 유저-일</td><td class="r mono">0.152</td><td class="r mono">0.21</td><td>판수 변화 없다고 봄</td></tr>
+      <tr><td>RV 시도 / 판</td><td class="r mono">0.105</td><td class="r mono">0.197</td><td>구좌별 합산 1,883 &rarr; 3,545</td></tr>
+      <tr class="pick"><td>RV 완주 / 판</td><td class="r mono">0.043</td><td class="r mono">0.076 (+76%)</td><td>완주율 41.2%를 그대로 적용. 여는 것 +51%p · 만드는 것 +25%p</td></tr>
+      <tr><td>RV 완주 / 유저-일</td><td class="r mono">0.152</td><td class="r mono">0.27</td><td>판수 변화 없다고 봄</td></tr>
       <tr class="warn"><td>완주율</td><td class="r mono">41.2%</td><td class="r mono">38~41%</td><td>신규 유저가 들어와 <strong>소폭 하락</strong>할 수 있음 &mdash; 정상</td></tr>
-      <tr><td>RV 한 번도 못 본 유저</td><td class="r mono">89.5%</td><td class="r mono">~82%</td><td>x2 개방분</td></tr>
+      <tr><td>RV 한 번도 못 본 유저</td><td class="r mono">89.5%</td><td class="r mono">~72%</td><td>x2 개방 + 꾸미기 구좌(유저 73% 도달)</td></tr>
     </tbody>
   </table></div>
 
@@ -323,10 +357,11 @@ if (!isTutorialPlayer) {
     <thead><tr><th>순서</th><th>할 일</th><th>산출물</th></tr></thead>
     <tbody>
       <tr><td>1</td><td>파라미터 3개 배선 + <code>4220</code> 실패 사유 직렬화 수정</td><td>배선 빌드(값은 현행과 동일)</td></tr>
-      <tr class="pick"><td>2</td><td>결과창 x2 튜토 개방 &mdash; <span class="sheet-var">rv_ftue_free_count</span> 0</td><td>RV 완주 +23%</td></tr>
-      <tr><td>3</td><td>데일리 퍼즐 x2 신설 · 로비 무료코인 동선</td><td>RV 완주 +17%</td></tr>
-      <tr><td>4</td><td>판수 · D1과 같이 2주 관측</td><td>보상형이 판수를 깎지 않는지 확인</td></tr>
-      <tr><td>5</td><td><code>4220</code> 사유 분해 &rarr; 완주율 개선 기획</td><td>다음 건</td></tr>
+      <tr class="pick"><td>2</td><td>결과창 x2 튜토 개방 · 이어하기 팝업 강조</td><td>RV 완주 +51%</td></tr>
+      <tr class="pick"><td>3</td><td><strong>꾸미기 x2 · 럭키 클로버 x2 신설</strong> — 신규 지면 두 개</td><td>RV 완주 +25%</td></tr>
+      <tr><td>4</td><td>데일리 퍼즐 x2 · 판 시작 부스터 · 이어하기 팝업 · 무료코인 동선</td><td>RV 완주 +28%</td></tr>
+      <tr><td>5</td><td>판수 · D1과 같이 2주 관측</td><td>보상형이 판수를 깎지 않는지 확인</td></tr>
+      <tr><td>6</td><td><code>4220</code> 사유 분해 &rarr; 완주율 개선 기획</td><td>다음 건</td></tr>
     </tbody>
   </table></div>
 
@@ -357,17 +392,25 @@ if (!isTutorialPlayer) {
 
   "rv_enabled": 1,
   "rv_ftue_free_count": 0,
-  "rv_slot_daily_puzzle_double": 1
+  "rv_slot_daily_puzzle_double": 1,
+  "rv_slot_deco_double": 1,
+  "rv_slot_lucky_clovers": 1,
+  "rv_slot_prelevel_booster": 1,
+  "rv_prelevel_daily_cap": 3
 }</pre>
   <p>시트는 <a href="https://docs.google.com/spreadsheets/d/1Ky1IfuxWUjgAlFGSnVivy_M3fQYTuUmK1seqteu9m3M/edit" style="color:var(--accent)">[CozyTiles] TikTok_AD_Config</a>의 <code>tiktok_ad_config</code> 탭에 행을 추가함. <code>A</code>열이 키, <code>B</code>열이 값이라 그대로 JSON으로 뽑힘.</p>
 
-  <h3>파라미터 &mdash; 3개</h3>
+  <h3>파라미터 &mdash; 7개</h3>
   <div class="tw"><table>
     <thead><tr><th>변수</th><th>타입</th><th class="r">기본</th><th class="r">적용값</th><th>허용 범위</th><th>동작</th></tr></thead>
     <tbody>
       <tr class="pick"><td><span class="sheet-var">rv_enabled</span></td><td>bool</td><td class="r mono">1</td><td class="r mono">1</td><td class="mono">0 · 1</td><td><strong>이 건으로 늘린 노출만 끄는 스위치.</strong> 0이면 나머지 두 값을 무시하고 현행값으로 취급함. 기존 보상형 구좌는 계속 나감 &mdash; 보상형 전체를 끄는 값이 아님</td></tr>
       <tr><td><span class="sheet-var">rv_ftue_free_count</span></td><td>int</td><td class="r mono">3</td><td class="r mono">0</td><td class="mono">0~50 정수</td><td>결과창 x2 버튼을 숨기는 <strong>클리어 판 수</strong>. <code>totalClearCount</code> 기준이라 실패 판은 안 세짐. 기본 3 = 현행. <strong>0이면 첫 판 결과창부터 노출</strong></td></tr>
-      <tr><td><span class="sheet-var">rv_slot_daily_puzzle_double</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>데일리 퍼즐 결과에 x2 버튼을 붙임. 0이면 현행(버튼 없음)</td></tr>
+      <tr><td><span class="sheet-var">rv_slot_daily_puzzle_double</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>데일리 퍼즐 결과에 x2 버튼</td></tr>
+      <tr class="pick"><td><span class="sheet-var">rv_slot_deco_double</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>꾸미기 완료 보상 x2 버튼</td></tr>
+      <tr class="pick"><td><span class="sheet-var">rv_slot_lucky_clovers</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>럭키 클로버 골드타일 x2. 주석 코드 복구분</td></tr>
+      <tr><td><span class="sheet-var">rv_slot_prelevel_booster</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>판 시작 전 아이템 1개 무료 받기</td></tr>
+      <tr><td><span class="sheet-var">rv_prelevel_daily_cap</span></td><td>int</td><td class="r mono">3</td><td class="r mono">3</td><td class="mono">0~20 정수</td><td>판 시작 전 부스터의 하루 상한. 0이면 무제한</td></tr>
     </tbody>
   </table></div>
   <p><strong>범위 밖은 클램프하지 않고 기본값으로 떨어뜨림.</strong> 형변환이 안 되는 값도 같음.</p>
@@ -380,6 +423,10 @@ if (!isTutorialPlayer) {
       <tr class="warn"><td><code>ViewCozyTileResult.ts:1572</code></td><td><code>if(!isTutorialPlayer) adButtonLoopingAnimation.play()</code>도 같은 비교로 치환. <strong>여기를 빼먹으면 버튼은 보이는데 강조가 안 되어 클릭률이 안 나옴</strong></td></tr>
       <tr><td>데일리 퍼즐 결과 화면</td><td><span class="sheet-var">rv_slot_daily_puzzle_double</span>=1이면 x2 버튼 노출. RV 호출 시 <code>type</code>=<code>daily_puzzle_reward_double</code> &mdash; enum에 이미 있음, 호출부만 신설</td></tr>
       <tr><td><code>TabHome.ts:1633</code> 로비 무료코인</td><td>상한(<code>idx &gt;= 9</code>)은 그대로. 레드닷 조건과 버튼 배치만 조정</td></tr>
+      <tr class="pick"><td>꾸미기 완료 화면</td><td><span class="sheet-var">rv_slot_deco_double</span>=1이면 보상 x2 버튼 노출. <code>LogRVPosition</code>에 <code>deco_reward_double</code> <strong>신규 추가 필요</strong>(enum에 없음)</td></tr>
+      <tr class="pick"><td><code>ViewCozyTile.ts:2884</code> 럭키 클로버</td><td><strong>주석 처리된 블록을 복구</strong>하고 <code>TODO: 골드 타일 2배 보상 처리</code>를 구현. enum <code>lucky_clovers_double</code>은 이미 있음</td></tr>
+      <tr><td>판 시작 전 부스터</td><td>지면 신설. <code>LogRVPosition</code>에 <code>prelevel_booster</code> 신규 추가. <span class="sheet-var">rv_prelevel_daily_cap</span>로 하루 상한</td></tr>
+      <tr class="pick"><td>이어하기 팝업</td><td>광고 버튼을 <strong>첫 번째 위치로 옮기고 강조</strong>. 골드 선택지는 그대로 둠 &mdash; 파라미터 없이 UI 변경</td></tr>
       <tr class="warn"><td><code>4220_RV_ERROR</code> 로깅</td><td><code>error_message</code>가 <code>[object Object]</code>로 올라감(실패의 13.5%). 퍼블마처럼 문자열로 직렬화할 것</td></tr>
     </tbody>
   </table></div>
@@ -444,7 +491,7 @@ if (!isTutorialPlayer) {
     <tbody>
       <tr class="warn"><td>0단 (일괄)</td><td><span class="sheet-var">rv_enabled</span> 1 &rarr; 0</td><td>이 건의 변경분을 한 번에 되돌림. 값을 하나만 만짐</td></tr>
       <tr><td>1단</td><td><span class="sheet-var">rv_ftue_free_count</span> 0 &rarr; 1 또는 3</td><td>첫 판만 보호하거나 현행으로. 데일리 퍼즐은 유지</td></tr>
-      <tr><td>2단</td><td><span class="sheet-var">rv_slot_daily_puzzle_double</span> 1 &rarr; 0</td><td>데일리 퍼즐 구좌만 되돌림</td></tr>
+      <tr><td>2단</td><td>신규 구좌 스위치를 하나씩 0으로</td><td>구좌별로 되돌림. 어느 지면이 문제인지 갈림</td></tr>
     </tbody>
   </table></div>
 </section>
