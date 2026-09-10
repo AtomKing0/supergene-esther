@@ -171,8 +171,8 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
       </div>
       <div class="kpi-card">
         <div class="kpi-label">RV 완주 / 판</div>
-        <div class="kpi-value">0.043 &rarr; <span class="trend-up">0.076</span></div>
-        <div class="kpi-sub">+76% 목표</div>
+        <div class="kpi-value">0.043 &rarr; <span class="trend-up">0.081</span></div>
+        <div class="kpi-sub">+88% 목표</div>
       </div>
     </div>
   </div>
@@ -238,7 +238,7 @@ if (!isTutorialPlayer) {
   <div class="tw"><table>
     <thead><tr><th>표준 구좌</th><th>레퍼런스</th><th>코지 상태</th></tr></thead>
     <tbody>
-      <tr class="warn"><td><strong>부활 · 이어하기</strong> (가장 보편)</td><td>Zen Match(시간 소진 시), Match Triple 3D(라이프 소진 시 · 코인 100 대안)</td><td>있음 &mdash; 그런데 <strong>상황의 15.8%만 광고로 감</strong></td></tr>
+      <tr class="warn"><td><strong>부활 · 판 막힘 구제</strong> (가장 보편)</td><td>Zen Match(시간 소진 시), Match Triple 3D(라이프 소진 시 · 코인 100 대안)</td><td>있음 &mdash; 슬롯 풀 팝업. 그런데 <strong>상황의 15.8%만 광고로 감</strong></td></tr>
       <tr class="warn"><td><strong>클리어 보상 2배</strong></td><td>Tile Busters(현금 아이템 2배 클레임)</td><td>있음 &mdash; <strong>튜토 구간에 버튼이 숨겨져 있음</strong></td></tr>
       <tr class="warn"><td><strong>홈 · 상점 무료 재화</strong> (일 상한 + 쿨다운)</td><td>Match Triple 3D(10코인 · 일 1~2회), Tile Family(코인 · 일 상한)</td><td>있음 &mdash; 하루 10회가 열려 있는데 <strong>두 달 94건</strong></td></tr>
       <tr class="dead"><td><strong>라이프 · 하트 충전</strong></td><td>Zen Match, Triple Match 3D</td><td><strong>붙일 수 없음</strong> &mdash; 코지에 라이프 시스템 자체가 없음</td></tr>
@@ -304,6 +304,7 @@ if (!isTutorialPlayer) {
     <thead><tr><th>화면</th><th>로그</th><th class="r">진입</th><th class="r">유저</th></tr></thead>
     <tbody>
       <tr class="pick"><td><strong>튜토 완료 보상</strong></td><td><code>8000_FINISH_REWARD_TUTO_POPUP</code></td><td class="r mono">1,431</td><td class="r mono">1,430</td></tr>
+      <tr class="pick"><td><strong>꾸미기 진행</strong> (결과창에서 강제 이동)</td><td><code>5370_LOBBY_DECO_COMPLETE</code></td><td class="r mono">2,946</td><td class="r mono">1,633</td></tr>
       <tr class="dead"><td>데일리 퍼즐</td><td><code>8070_DAILY_PUZZLE_POPUP</code></td><td class="r mono">180</td><td class="r mono">68</td></tr>
       <tr class="dead"><td>일일 목표</td><td><code>8140_DAILY_GOALS_POPUP</code></td><td class="r mono">82</td><td class="r mono">47</td></tr>
       <tr class="dead"><td>출석 보상</td><td><code>8110_DAILY_REWARD_POPUP</code></td><td class="r mono">74</td><td class="r mono">67</td></tr>
@@ -311,18 +312,38 @@ if (!isTutorialPlayer) {
       <tr class="dead"><td>바로가기 추가 &#183; 재방문 선물</td><td><code>8280</code> &#183; <code>5250</code></td><td class="r mono">61 &#183; 62</td><td class="r mono">55 &#183; 53</td></tr>
     </tbody>
   </table></div>
-  <p><strong>튜토 완료 보상을 빼면 메타 화면 진입이 전부 두 달에 200건 미만임.</strong> 여기에 구좌를 새로 만들어도 물량이 안 나옴 &mdash; 일일 목표 · 앨범 · 토너먼트를 이 건에서 제외하는 이유임. 보상형 물량은 <strong>인게임 루프(판 시작 · 결과창 · 이어하기)와 튜토 완료</strong>에서만 나옴.</p>
+    <p><strong>튜토 완료와 꾸미기를 빼면 메타 화면 진입이 전부 두 달에 200건 미만임.</strong> 여기에 구좌를 새로 만들어도 물량이 안 나옴 &mdash; 일일 목표 · 앨범 · 토너먼트를 이 건에서 제외하는 이유임.</p>
+  <div class="callout callout-blue">
+    <p><strong>꾸미기는 예외임 &mdash; 유저가 찾아가는 게 아니라 끌려감.</strong> <code>5370</code>의 <strong>99.7%(2,938건)가 <code>2401_FINISH_RESULT_PLAY_NEXT</code> 직후 평균 2.1초 뒤</strong>에 찍힘. 결과창 버튼을 누르면 곧바로 꾸미기 연출로 넘어가는 강제 흐름임. 꾸미기 화면을 직접 여는 버튼(<code>5600_BTN_DECORATION</code>)이 104건뿐인 것과 별개로, <strong>판을 끝낸 유저의 73%가 이 순간을 겪고 1인당 1.8회 반복함.</strong></p>
+  </div>
 
-  <h3>이어하기 &mdash; 유저의 3분의 2가 광고 대신 재시작을 누름</h3>
+  <h3>결과창 버튼 분해</h3>
+  <div class="tw"><table>
+    <thead><tr><th>버튼</th><th>로그</th><th class="r">건수</th><th class="r">유저</th></tr></thead>
+    <tbody>
+      <tr><td>다음 레벨 · Continue</td><td><code>2401_FINISH_RESULT_PLAY_NEXT</code></td><td class="r mono">12,900</td><td class="r mono">1,978</td></tr>
+      <tr><td>보상 받기</td><td><code>2410_FINISH_RESULT_CLAIM</code></td><td class="r mono">9,831</td><td class="r mono">1,952</td></tr>
+      <tr class="pick"><td><strong>x2 클레임 시도</strong></td><td><code>2420_FINISH_RESULT_DOUBLE_CLAIM_TRY</code></td><td class="r mono">739</td><td class="r mono">347</td></tr>
+      <tr><td>&#8985; 성공</td><td><code>2421</code></td><td class="r mono">282</td><td class="r mono">114</td></tr>
+      <tr><td>&#8985; 실패</td><td><code>2422</code></td><td class="r mono">314</td><td class="r mono">137</td></tr>
+      <tr class="dead"><td>로비로 나가기</td><td><code>2430_FINISH_RESULT_LOBBY</code></td><td class="r mono">34</td><td class="r mono">19</td></tr>
+    </tbody>
+  </table></div>
+  <p>x2 클레임 성공률 <strong>38.2%</strong>가 RV 완주율 40.2%와 거의 같음 &mdash; <strong>광고를 끝까지 본 유저는 대부분 보상을 받음</strong>. 병목이 지급이 아니라 시청이라는 게 여기서도 확인됨.</p>
+
+  <h3>슬롯 풀 &mdash; 유저의 3분의 2가 광고 대신 재시작을 누름</h3>
   <div class="tw"><table>
     <thead><tr><th>이어하기 상황에서의 선택</th><th class="r">건수</th><th class="r">비중</th></tr></thead>
     <tbody>
-      <tr><td><code>2200_GAMEPLAY_CONTINUE</code> 상황 발생</td><td class="r mono">2,721</td><td class="r mono">100%</td></tr>
-      <tr class="warn"><td><code>2213_GAMEPLAY_CONTINUE_RESTART</code> &mdash; <strong>재시작 선택</strong></td><td class="r mono">1,793</td><td class="r mono">65.9%</td></tr>
-      <tr class="pick"><td>RV <code>continue</code> 시도</td><td class="r mono">431</td><td class="r mono">15.8%</td></tr>
+      <tr><td><code>2200_GAMEPLAY_CONTINUE</code> &mdash; 슬롯 7칸이 다 차서 판이 막힘</td><td class="r mono">2,721</td><td class="r mono">100%</td></tr>
+      <tr class="warn"><td><code>2213_GAMEPLAY_CONTINUE_RESTART</code> &mdash; <strong>재시작 선택</strong>(<code>onClickRetry</code>)</td><td class="r mono">1,793</td><td class="r mono">65.9%</td></tr>
+      <tr class="pick"><td>RV <code>continue</code> 시도 &mdash; 광고 보고 <code>lift 3</code> 받기</td><td class="r mono">431</td><td class="r mono">15.8%</td></tr>
     </tbody>
   </table></div>
-  <p>코지 미국 · 8/1~9/8. 판을 계속할 의사가 있는 유저 2,721명분의 상황에서 <strong>3분의 2가 광고를 안 보고 판을 버림</strong>. 표준 구좌 중 가장 보편적인 자리인데 진입률이 이 정도면 <strong>팝업에서 광고가 기본 선택지가 아니라는 뜻</strong>임.</p>
+    <p>코지 미국 · 8/1~9/8. 셋 다 <code>PopupSlotFull.ts</code> 한 팝업에서 나옴 &mdash; 슬롯이 가득 차 더 못 두는 순간에 <code>onClickShowFreeLift3ADs</code>(광고)와 <code>onClickRetry</code>(재시작)를 나란히 주는 화면임. 판을 계속할 의사가 있는 상황 2,721건에서 <strong>3분의 2가 광고를 안 보고 판을 버림</strong>. 표준 구좌 중 가장 보편적인 자리인데 진입률이 이 정도면 <strong>팝업에서 광고가 기본 선택지로 안 보인다는 뜻</strong>임.</p>
+  <div class="callout callout-yellow">
+    <p><strong>결과창의 &quot;Continue&quot; 버튼과 혼동하지 말 것.</strong> 결과창 하단에도 <code>continueBtnNode</code>가 있는데 그건 <strong>꾸미기로 넘어가는 진행 버튼</strong>이고(<code>ViewCozyTileResult.onClickContinue</code>, 주석에 <code>여기서 deco 나오기</code>) 광고와 무관함. 이름만 같고 다른 것임.</p>
+  </div>
 
   <h3>완주율이 낮은 이유 &mdash; 기술 문제가 아님</h3>
   <div class="tw"><table>
@@ -358,21 +379,22 @@ if (!isTutorialPlayer) {
   <div class="tw"><table>
     <thead><tr><th>구분</th><th>구좌</th><th class="r">현재</th><th class="r">예상</th><th>레퍼런스 · 근거</th></tr></thead>
     <tbody>
-      <tr class="pick"><td>연다</td><td><strong>이어하기 &mdash; 팝업에서 광고를 기본·강조로</strong></td><td class="r mono">431</td><td class="r mono">820</td><td>표준 1위 구좌. 재시작 선택 65.9%를 진입률 30%로 흡수</td></tr>
+      <tr class="pick"><td>연다</td><td><strong>슬롯 풀 &mdash; <code>Free lift 3</code>를 재시작보다 앞·강조로</strong></td><td class="r mono">431</td><td class="r mono">820</td><td>표준 1위 구좌. 재시작 선택 65.9%를 진입률 30%로 흡수</td></tr>
       <tr class="pick"><td>연다</td><td><strong>결과창 x2 &mdash; 튜토 개방</strong></td><td class="r mono">791</td><td class="r mono">1,240</td><td>표준 2위. 튜토 판 종료 5,824건 &times; 현행 시도율 7.7%</td></tr>
       <tr><td>연다</td><td>로비 무료코인 &mdash; 레드닷 · 배치</td><td class="r mono">94</td><td class="r mono">200</td><td>표준 3위. 상한 10회는 이미 열려 있음</td></tr>
       <tr class="pick"><td><strong>만든다</strong></td><td><strong>판 시작 전 부스터 1개 무료</strong></td><td class="r mono">0</td><td class="r mono">180</td><td>Unity가 메타 매치3 권장 구좌로 명시(Property Brothers · Two Dots). 판 시작 17,991건 &times; 1%</td></tr>
       <tr class="pick"><td><strong>만든다</strong></td><td><strong>럭키 클로버 골드타일 x2</strong></td><td class="r mono">0</td><td class="r mono">400</td><td>Tile Busters의 2배 클레임과 같은 계열. 팝업 6,663건 &times; 6% · <strong>주석 코드 복구</strong></td></tr>
       <tr class="pick"><td><strong>만든다</strong></td><td><strong>튜토리얼 완료 보상 x2</strong></td><td class="r mono">0</td><td class="r mono">215</td><td>1,431건 &times; 15% &mdash; 이탈률 최저 화면, Claim 98%</td></tr>
+      <tr class="pick"><td><strong>만든다</strong></td><td><strong>꾸미기 진행 스텝 1회 추가</strong></td><td class="r mono">0</td><td class="r mono">235</td><td>2,938건 &times; 8% &mdash; June&#39;s Journey 등대 리노베이션과 같은 형태</td></tr>
       <tr><td>고친다</td><td>데일리 퍼즐 x2 &mdash; 로그 라벨 분리</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td>구좌는 이미 있음. <code>stage_reward_double</code>과 섞여 찍힘</td></tr>
       <tr><td>고친다</td><td><code>4220</code> 실패 사유 직렬화</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td>완주율 개선의 선결 조건</td></tr>
-      <tr><td><strong>합계</strong></td><td></td><td class="r mono"><strong>1,883</strong></td><td class="r mono"><strong>3,315</strong></td><td>시도 <strong>1.8배</strong></td></tr>
+      <tr><td><strong>합계</strong></td><td></td><td class="r mono"><strong>1,883</strong></td><td class="r mono"><strong>3,550</strong></td><td>시도 <strong>1.9배</strong></td></tr>
     </tbody>
   </table></div>
 
   <div class="callout callout-red">
-    <p><strong>꾸미기 완료 2배는 뺐음.</strong> 타일매치·매치3·머지 어디에서도 <em>데코 완료 보상을 2배로 주는</em> 사례가 확인되지 않음. 업계 관행은 <strong>꾸미기 결과물을 2배로 주는 게 아니라, 꾸미기로 가는 재화와 진행 스텝을 광고로 파는 것</strong>임 &mdash; 메타 재화를 홈에서 지급(Property Brothers 10젬)하거나, 진행 스텝을 하루 1회 광고로 추가(June&#39;s Journey 등대 리노베이션, 20시간 쿨다운)하는 형태임. 코지는 앞의 형태를 <strong>로비 무료코인으로 이미 갖고 있어서</strong>, 데코에 새 구좌를 만드는 것보다 그 동선을 고치는 게 맞음.</p>
-    <p>로그로도 근거가 약했음 &mdash; <code>5370_LOBBY_DECO_COMPLETE</code>가 2,946건인데 <code>5600_BTN_DECORATION</code>(꾸미기 버튼)은 104건뿐임. 5370은 유저의 개별 보상 순간이 아니라 로비 상태 로그로 보임.</p>
+    <p><strong>꾸미기는 &quot;완료 보상 2배&quot;가 아니라 &quot;진행 스텝 1회 추가&quot;로 붙임.</strong> 타일매치·매치3·머지 어디에서도 <em>데코 완료 보상을 2배로 주는</em> 사례가 확인되지 않음. 업계 관행은 <strong>꾸미기 결과물을 2배로 주는 게 아니라, 꾸미기로 가는 재화와 진행 스텝을 광고로 파는 것</strong>임 &mdash; 메타 재화를 홈에서 지급(Property Brothers 10젬)하거나, 진행 스텝을 하루 1회 광고로 추가(June&#39;s Journey 등대 리노베이션, 20시간 쿨다운)하는 형태임.</p>
+    <p>코지는 앞의 형태를 로비 무료코인으로 이미 갖고 있으므로 <strong>뒤의 형태를 씀</strong> &mdash; 꾸미기 연출이 끝난 자리에 <strong>&quot;광고 보고 한 칸 더&quot;</strong>를 붙임. 별을 추가로 주지 않고 메타 진도만 앞당기는 형태라 <strong>보상 경제를 건드리지 않음.</strong> 하루 상한을 둠.</p>
   </div>
 
   <div class="callout callout-blue">
@@ -389,7 +411,8 @@ if (!isTutorialPlayer) {
       <tr><td>데일리 퍼즐 완료</td><td>x2 버튼은 있으나 로그가 <code>stage_reward_double</code>로 섞임</td><td>구좌 그대로. <strong>로그 라벨만 분리</strong></td></tr>
       <tr class="pick"><td>로비 무료코인</td><td>하루 10회 가능하나 진입 동선이 약함</td><td>레드닷·배치 정리 &mdash; 상한은 그대로 10회</td></tr>
       <tr class="pick"><td>럭키 클로버 골드타일 획득</td><td>x2 없음 (코드가 주석 상태)</td><td><strong>주석 복구 + 골드타일 x2</strong> (<code>lucky_clovers_double</code>)</td></tr>
-      <tr class="pick"><td>판 이어하기 팝업</td><td>광고가 여러 선택지 중 하나 &mdash; <strong>65.9%가 재시작을 누름</strong></td><td>광고를 <strong>기본 버튼으로 앞에 두고 강조</strong>. 재시작·골드 선택지는 유지</td></tr>
+      <tr class="pick"><td>슬롯 풀 팝업</td><td><code>Free lift 3</code>가 재시작과 나란히 &mdash; <strong>65.9%가 재시작을 누름</strong></td><td>광고를 <strong>앞에 두고 강조</strong>. 재시작 선택지는 유지</td></tr>
+      <tr class="pick"><td>꾸미기 연출 종료 직후</td><td>바로 로비로 복귀</td><td><strong>&quot;광고 보고 한 칸 더&quot; 버튼 신설</strong> (<code>deco_step_extra</code>) &mdash; 하루 상한</td></tr>
       <tr class="pick"><td>판 시작 직전</td><td>부스터 지면 없음</td><td><strong>아이템 1개 무료 받기 버튼 신설</strong> (<code>prelevel_booster</code>) &mdash; 하루 상한 있음</td></tr>
       <tr><td>아이템 · 추가 슬롯</td><td>현행</td><td>변경 없음 &mdash; 계측만 붙임</td></tr>
       <tr><td>광고 제거 아이템 보유자</td><td>보상형은 계속 노출</td><td>변경 없음 &mdash; 티켓은 보상형만 대체</td></tr>
@@ -415,8 +438,8 @@ if (!isTutorialPlayer) {
   <div class="tw"><table>
     <thead><tr><th>지표</th><th class="r">As-Is</th><th class="r">To-Be</th><th>근거</th></tr></thead>
     <tbody>
-      <tr><td>RV 시도 / 판</td><td class="r mono">0.105</td><td class="r mono">0.184</td><td>구좌별 합산 1,883 &rarr; 3,315</td></tr>
-      <tr class="pick"><td>RV 완주 / 판</td><td class="r mono">0.043</td><td class="r mono">0.076 (+76%)</td><td>완주율 41.2%를 그대로 적용. 여는 것 +50%p · 만드는 것 +26%p</td></tr>
+      <tr><td>RV 시도 / 판</td><td class="r mono">0.105</td><td class="r mono">0.197</td><td>구좌별 합산 1,883 &rarr; 3,550</td></tr>
+      <tr class="pick"><td>RV 완주 / 판</td><td class="r mono">0.043</td><td class="r mono">0.081 (+88%)</td><td>완주율 41.2%를 그대로 적용. 여는 것 +50%p · 만드는 것 +38%p</td></tr>
       <tr><td>RV 완주 / 유저-일</td><td class="r mono">0.152</td><td class="r mono">0.26</td><td>판수 변화 없다고 봄</td></tr>
       <tr class="warn"><td>완주율</td><td class="r mono">41.2%</td><td class="r mono">38~41%</td><td>신규 유저가 들어와 <strong>소폭 하락</strong>할 수 있음 &mdash; 정상</td></tr>
       <tr><td>RV 한 번도 못 본 유저</td><td class="r mono">89.5%</td><td class="r mono">~74%</td><td>x2 개방 + 이어하기 + <strong>튜토 완료(유저 1,430명 도달)</strong></td></tr>
@@ -446,7 +469,7 @@ if (!isTutorialPlayer) {
     <tbody>
       <tr><td>1</td><td>파라미터 3개 배선 + <code>4220</code> 실패 사유 직렬화 수정</td><td>배선 빌드(값은 현행과 동일)</td></tr>
       <tr class="pick"><td>2</td><td>결과창 x2 튜토 개방 · 이어하기 팝업에서 광고를 기본으로</td><td>RV 완주 +50%</td></tr>
-      <tr class="pick"><td>3</td><td><strong>튜토 완료 보상 x2 · 럭키 클로버 x2 복구 · 판 시작 전 부스터</strong></td><td>RV 완주 +26%</td></tr>
+      <tr class="pick"><td>3</td><td><strong>튜토 완료 x2 · 꾸미기 스텝 추가 · 럭키 클로버 복구 · 판 시작 전 부스터</strong></td><td>RV 완주 +38%</td></tr>
       <tr><td>4</td><td>로비 무료코인 동선 · 데일리 퍼즐 로그 라벨 분리</td><td>RV 완주 +6%</td></tr>
       <tr><td>5</td><td>판수 · D1과 같이 2주 관측</td><td>보상형이 판수를 깎지 않는지 확인</td></tr>
       <tr><td>6</td><td><code>4220</code> 사유 분해 &rarr; 완주율 개선 기획</td><td>다음 건</td></tr>
@@ -481,18 +504,22 @@ if (!isTutorialPlayer) {
   "rv_enabled": 1,
   "rv_ftue_free_count": 0,
   "rv_slot_tutorial_double": 1,
+  "rv_slot_deco_step": 1,
+  "rv_deco_step_daily_cap": 1,
   "rv_slot_lucky_clovers": 1,
   "rv_slot_prelevel_booster": 1,
   "rv_prelevel_daily_cap": 3
 }</pre>
   <p>시트는 <a href="https://docs.google.com/spreadsheets/d/1Ky1IfuxWUjgAlFGSnVivy_M3fQYTuUmK1seqteu9m3M/edit" style="color:var(--accent)">[CozyTiles] TikTok_AD_Config</a>의 <code>tiktok_ad_config</code> 탭에 행을 추가함. <code>A</code>열이 키, <code>B</code>열이 값이라 그대로 JSON으로 뽑힘.</p>
 
-  <h3>파라미터 &mdash; 6개</h3>
+  <h3>파라미터 &mdash; 8개</h3>
   <div class="tw"><table>
     <thead><tr><th>변수</th><th>타입</th><th class="r">기본</th><th class="r">적용값</th><th>허용 범위</th><th>동작</th></tr></thead>
     <tbody>
       <tr class="pick"><td><span class="sheet-var">rv_enabled</span></td><td>bool</td><td class="r mono">1</td><td class="r mono">1</td><td class="mono">0 · 1</td><td><strong>이 건으로 늘린 노출만 끄는 스위치.</strong> 0이면 나머지 두 값을 무시하고 현행값으로 취급함. 기존 보상형 구좌는 계속 나감 &mdash; 보상형 전체를 끄는 값이 아님</td></tr>
       <tr><td><span class="sheet-var">rv_ftue_free_count</span></td><td>int</td><td class="r mono">3</td><td class="r mono">0</td><td class="mono">0~50 정수</td><td>결과창 x2 버튼을 숨기는 <strong>클리어 판 수</strong>. <code>totalClearCount</code> 기준이라 실패 판은 안 세짐. 기본 3 = 현행. <strong>0이면 첫 판 결과창부터 노출</strong></td></tr>
+      <tr class="pick"><td><span class="sheet-var">rv_slot_deco_step</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>꾸미기 진행 스텝 1회 추가 버튼</td></tr>
+      <tr><td><span class="sheet-var">rv_deco_step_daily_cap</span></td><td>int</td><td class="r mono">1</td><td class="r mono">1</td><td class="mono">0~10 정수</td><td>꾸미기 스텝 추가의 하루 상한. 0이면 무제한</td></tr>
       <tr class="pick"><td><span class="sheet-var">rv_slot_tutorial_double</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>튜토리얼 완료 보상에 x2 버튼</td></tr>
       <tr class="pick"><td><span class="sheet-var">rv_slot_lucky_clovers</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>럭키 클로버 골드타일 x2. 주석 코드 복구분</td></tr>
       <tr><td><span class="sheet-var">rv_slot_prelevel_booster</span></td><td>bool</td><td class="r mono">0</td><td class="r mono">1</td><td class="mono">0 · 1</td><td>판 시작 전 아이템 1개 무료 받기</td></tr>
@@ -507,6 +534,7 @@ if (!isTutorialPlayer) {
     <tbody>
       <tr class="warn"><td><code>ViewCozyTileResult.ts:817</code></td><td><code>if(isTutorialPlayer) adButtonNode.active = false</code>를 <span class="sheet-var">rv_ftue_free_count</span> 비교로 치환</td></tr>
       <tr class="warn"><td><code>ViewCozyTileResult.ts:1572</code></td><td><code>if(!isTutorialPlayer) adButtonLoopingAnimation.play()</code>도 같은 비교로 치환. <strong>여기를 빼먹으면 버튼은 보이는데 강조가 안 되어 클릭률이 안 나옴</strong></td></tr>
+      <tr class="pick"><td>꾸미기 연출 종료 (<code>5370</code> 직후)</td><td><span class="sheet-var">rv_slot_deco_step</span>=1이면 &quot;한 칸 더&quot; 버튼 노출. <code>LogRVPosition</code>에 <code>deco_step_extra</code> <strong>신규 추가 필요</strong>. <span class="sheet-var">rv_deco_step_daily_cap</span>로 하루 상한</td></tr>
       <tr class="pick"><td>튜토리얼 완료 보상 팝업 (<code>8000</code>)</td><td><span class="sheet-var">rv_slot_tutorial_double</span>=1이면 Claim 옆에 x2 버튼 노출. <code>LogRVPosition</code>에 <code>tutorial_reward_double</code> <strong>신규 추가 필요</strong></td></tr>
       <tr><td>데일리 퍼즐 결과 화면</td><td>구좌는 그대로. RV 호출 시 <code>type</code>을 <code>daily_puzzle_reward_double</code>로 분리해 찍을 것</td></tr>
       <tr><td><code>TabHome.ts:1633</code> 로비 무료코인</td><td>상한(<code>idx &gt;= 9</code>)은 그대로. 레드닷 조건과 버튼 배치만 조정</td></tr>
