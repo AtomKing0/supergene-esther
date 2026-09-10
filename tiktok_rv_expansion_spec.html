@@ -239,6 +239,44 @@ if (!isTutorialPlayer) {
     <p><strong>표준 구좌는 이미 깔려 있음. 문제는 셋 다 막혀 있거나 안 쓰인다는 것임.</strong> 그리고 장르 RV 물량의 큰 축인 <strong>라이프 충전은 코지에 아예 못 붙음</strong>(<code>heart</code>·<code>life</code>·<code>energy</code> 어느 것도 코드에 없음). 그래서 신규 지면을 만들기 전에 <strong>이미 있는 셋을 여는 게 우선</strong>이고, 신규는 준표준에서 고름.</p>
   </div>
 
+  <h3>FTUE 실기 관측 &mdash; 4분 20초</h3>
+  <p>2026-09-10 라이브 빌드 화면 녹화를 프레임 단위로 훑음. 코드에서 읽은 것과 어긋나는 부분이 둘 있었음.</p>
+  <div class="tw"><table>
+    <thead><tr><th>화면</th><th>관측</th><th>보상형</th></tr></thead>
+    <tbody>
+      <tr><td>Level 1~3 결과창</td><td>&#9733;1 &#183; 코인 15 &#183; <strong>다음 레벨 버튼만</strong></td><td class="mono">없음 &mdash; 코드와 일치</td></tr>
+      <tr class="warn"><td><strong>튜토리얼 완료 보상</strong></td><td>&quot;You finished the tutorial. Here&#39;s your reward!&quot; 코인 20 + 아이템 x1 &#183; <strong>Claim 버튼 하나</strong></td><td class="mono"><strong>없음 &mdash; 신규 구좌 자리</strong></td></tr>
+      <tr class="pick"><td>Level 4 결과창</td><td>&#9733;1 &#183; 코인 15 &#183; <strong>x2 Coins 버튼 등장</strong></td><td class="mono">여기서부터 있음</td></tr>
+      <tr class="warn"><td><strong>데일리 퍼즐 완료</strong></td><td>&quot;Cleared! &#9989;1 &#127775;15&quot; &#183; <strong>x2 Coins 버튼이 이미 있음</strong></td><td class="mono"><strong>있음</strong> &mdash; 로그만 안 찍힘</td></tr>
+      <tr><td>아이템 팝업(Extra Slot &#183; Undo)</td><td>&quot;450 코인&quot; 옆에 <strong>Free x1</strong> 버튼</td><td class="mono">있음</td></tr>
+      <tr><td>인박스</td><td>&quot;Earn more Coins! Watch a quick video&quot; 코인 +15</td><td class="mono">있음</td></tr>
+      <tr><td>로비 무료코인</td><td><strong>우측 세로 아이콘 스택에 &quot;15 Coins&quot;</strong> &mdash; 오퍼 &#183; 재방문선물 &#183; 바로가기와 함께 작게 쌓여 있음</td><td class="mono">있음 &mdash; 동선이 약함</td></tr>
+      <tr><td>일일 목표 &#183; 앨범 &#183; 토너먼트</td><td>메타 화면 &mdash; 보상형 없음</td><td class="mono">없음 &mdash; 아래 사유로 제외</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout callout-red">
+    <p><strong>튜토리얼 완료 보상 화면이 비어 있음.</strong> <code>8000_FINISH_REWARD_TUTO_POPUP</code>이 <strong>1,431건 &#183; 유저 1,430명</strong>이고 그중 <strong>98%(1,403건)가 Claim을 누름</strong>. 게임에서 이탈률이 가장 낮은 화면인데 보상형이 없음. 튜토를 끝낸 직후라 몰입도 최고 시점이고, 보상이 코인 20 + 아이템 1개로 <strong>2배로 줘도 경제에 부담이 없는 크기</strong>임.</p>
+  </div>
+
+  <div class="callout callout-yellow">
+    <p><strong>데일리 퍼즐 x2는 이미 구현돼 있음 &mdash; 제 앞선 판단이 틀렸음.</strong> <code>LogRVPosition</code>에 <code>daily_puzzle_reward_double</code>이 있는데 로그가 0건이라 &quot;호출부 없음&quot;으로 봤으나, 화면에는 <strong>x2 Coins 버튼이 실제로 있음</strong>. 결과창과 코드를 공유해서 <code>stage_reward_double</code>로 찍히는 것으로 보임. <strong>신설이 아니라 로그 라벨을 분리하는 작업</strong>임.</p>
+  </div>
+
+  <h3>메타 화면은 진입 자체가 없음</h3>
+  <div class="tw"><table>
+    <thead><tr><th>화면</th><th>로그</th><th class="r">진입</th><th class="r">유저</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>튜토 완료 보상</strong></td><td><code>8000_FINISH_REWARD_TUTO_POPUP</code></td><td class="r mono">1,431</td><td class="r mono">1,430</td></tr>
+      <tr class="dead"><td>데일리 퍼즐</td><td><code>8070_DAILY_PUZZLE_POPUP</code></td><td class="r mono">180</td><td class="r mono">68</td></tr>
+      <tr class="dead"><td>일일 목표</td><td><code>8140_DAILY_GOALS_POPUP</code></td><td class="r mono">82</td><td class="r mono">47</td></tr>
+      <tr class="dead"><td>출석 보상</td><td><code>8110_DAILY_REWARD_POPUP</code></td><td class="r mono">74</td><td class="r mono">67</td></tr>
+      <tr class="dead"><td>인박스 무료코인 버튼</td><td><code>8022_BTN_INBOX_FREE_COIN</code></td><td class="r mono">71</td><td class="r mono">57</td></tr>
+      <tr class="dead"><td>바로가기 추가 &#183; 재방문 선물</td><td><code>8280</code> &#183; <code>5250</code></td><td class="r mono">61 &#183; 62</td><td class="r mono">55 &#183; 53</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>튜토 완료 보상을 빼면 메타 화면 진입이 전부 두 달에 200건 미만임.</strong> 여기에 구좌를 새로 만들어도 물량이 안 나옴 &mdash; 일일 목표 · 앨범 · 토너먼트를 이 건에서 제외하는 이유임. 보상형 물량은 <strong>인게임 루프(판 시작 · 결과창 · 이어하기)와 튜토 완료</strong>에서만 나옴.</p>
+
   <h3>이어하기 &mdash; 유저의 3분의 2가 광고 대신 재시작을 누름</h3>
   <div class="tw"><table>
     <thead><tr><th>이어하기 상황에서의 선택</th><th class="r">건수</th><th class="r">비중</th></tr></thead>
