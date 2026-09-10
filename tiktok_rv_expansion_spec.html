@@ -208,13 +208,34 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
   </div>
   <p>이 둘이 <strong>전체 판 종료의 36%와 유저의 40%</strong>를 덮음. 4판을 못 넘기는 유저 897명은 x2 버튼을 평생 한 번도 못 봄. 튜토 완료 보상 화면은 <strong>유저 1,430명이 보고 98%가 Claim을 누르는</strong> 게임 내 이탈률 최저 화면임.</p>
 
+  <h3>2순위 &mdash; 코인이 있으면 광고 버튼이 사라짐</h3>
+  <div class="shots">
+    <figure class="shot bad">
+      <img src="tiktok_rv_shots/slots_full.jpg" alt="Slots Full 팝업">
+      <figcaption><b>슬롯 풀 &mdash; 광고 버튼 없음</b>코인 270 &gt; 가격 240이라 <code>Play On</code>만 뜸. <strong>광고로 이어갈 수 있다는 걸 유저가 모름</strong></figcaption>
+    </figure>
+    <figure class="shot good">
+      <img src="tiktok_rv_shots/undo_popup.jpg" alt="Undo 팝업">
+      <figcaption><b>같은 게임의 다른 팝업</b>Undo·Extra Slot은 코인과 <code>Free x1</code>을 <strong>나란히</strong> 보여줌. 팝업끼리 패턴이 어긋나 있음</figcaption>
+    </figure>
+  </div>
+  <pre class="codeblock">// PopupSlotFull.ts:124
+if (DataManager.getPlayer().getCoin() &lt; this.ITEM_PRICE) {
+    coinNode.active = false;
+    freeAdButtonNode.active = true;    // 코인 부족 → 광고 버튼
+} else {
+    coinNode.active = true;
+    freeAdButtonNode.active = false;   // 코인 충분 → 광고 버튼을 숨김
+}</pre>
+  <p><strong>코인과 광고가 배타 구조임.</strong> 그래서 광고 진입률 15.8%는 &quot;광고가 눈에 안 띈다&quot;가 아니라 <strong>코인이 있는 유저에겐 선택지가 아예 없다</strong>는 뜻임. 판을 이어갈 의사가 있는 2,721건 중 1,793건(65.9%)이 재시작으로 새는 이유.</p>
+
   <h3>고칠 구좌 6개</h3>
   <div class="tw"><table>
     <thead><tr><th>구분</th><th>구좌</th><th class="r">현재</th><th class="r">예상</th><th>고르는 근거</th></tr></thead>
     <tbody>
       <tr class="pick"><td>연다</td><td><strong>결과창 x2 &mdash; 튜토 개방</strong></td><td class="r mono">791</td><td class="r mono">1,240</td><td>장르 표준 2위 구좌. 튜토 판 종료 5,824건 &times; 현행 시도율 7.7%</td></tr>
       <tr class="pick"><td>만든다</td><td><strong>튜토 완료 보상 x2</strong></td><td class="r mono">0</td><td class="r mono">215</td><td>이탈률 최저 화면. 1,431건 &times; 15%</td></tr>
-      <tr class="pick"><td>연다</td><td><strong>슬롯 풀 &mdash; <code>Free lift 3</code> 강조</strong></td><td class="r mono">431</td><td class="r mono">820</td><td>장르 표준 1위 구좌인데 <strong>65.9%가 광고 대신 재시작</strong>을 누름</td></tr>
+      <tr class="pick"><td>연다</td><td><strong>슬롯 풀 &mdash; 광고 버튼 상시 노출</strong></td><td class="r mono">431</td><td class="r mono">820</td><td>장르 표준 1위 구좌인데 <strong>코인이 있으면 광고 버튼이 숨겨짐</strong>. 65.9%가 재시작을 누름</td></tr>
       <tr><td>만든다</td><td>꾸미기 진행 스텝 1회 추가</td><td class="r mono">0</td><td class="r mono">235</td><td>결과창에서 강제 진입 2,938건. June&#39;s Journey 등대와 같은 형태</td></tr>
       <tr><td>만든다</td><td>판 시작 전 부스터 1개 무료</td><td class="r mono">0</td><td class="r mono">180</td><td>Unity 권장 구좌(Property Brothers &#183; Two Dots). 판 시작 17,991건 &times; 1%</td></tr>
       <tr><td>연다</td><td>로비 무료코인 &mdash; 레드닷 &#183; 배치</td><td class="r mono">94</td><td class="r mono">200</td><td>장르 표준 3위. 하루 10회가 이미 열려 있는데 두 달 94건</td></tr>
@@ -244,7 +265,8 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
       <tr class="warn"><td rowspan="2">결과창 x2 튜토 개방</td><td><code>ViewCozyTileResult.ts:817</code></td><td><code>if(isTutorialPlayer) adButtonNode.active = false</code>를 <span class="sheet-var">rv_ftue_free_count</span> 비교로 치환</td></tr>
       <tr class="warn"><td><code>ViewCozyTileResult.ts:1572</code></td><td><code>if(!isTutorialPlayer) adButtonLoopingAnimation.play()</code>도 같은 비교로 치환. <strong>여기를 빼먹으면 버튼은 뜨는데 강조가 안 되어 클릭이 안 남</strong></td></tr>
       <tr class="pick"><td>튜토 완료 보상 x2</td><td>튜토 완료 팝업 (<code>8000</code>)</td><td>Claim 옆에 x2 버튼 신설. <code>LogRVPosition</code>에 <code>tutorial_reward_double</code> <strong>신규 추가</strong>. <span class="sheet-var">rv_slot_tutorial_double</span>로 온오프</td></tr>
-      <tr class="pick"><td>슬롯 풀 강조</td><td><code>PopupSlotFull.ts</code></td><td><code>Free lift 3</code> 버튼을 <strong>재시작보다 앞에 두고 강조</strong>. 재시작 선택지는 유지. 파라미터 없이 UI 변경</td></tr>
+      <tr class="pick"><td rowspan="2">슬롯 풀 &mdash; 광고 버튼 상시 노출</td><td><code>PopupSlotFull.ts:124</code> &#183; <code>:172</code></td><td><strong>코인/광고 배타 분기를 제거</strong>하고 두 버튼을 항상 같이 띄움. 두 곳 모두 고칠 것(<code>setData</code>와 <code>onHideStarted</code>)</td></tr>
+      <tr class="pick"><td>팝업 레이아웃</td><td>버튼을 3단으로 재배치 &mdash; ① <code>Play On</code> 코인(초록, 현행) ② <strong>광고 보고 이어하기(오렌지 + 비디오 아이콘) 신설</strong> ③ <code>Try Again</code>은 <strong>패널을 없애고 하단 흰색 텍스트</strong>로 내림. 오렌지 버튼 스타일은 Undo 팝업의 <code>Free x1</code>과 동일하게</td></tr>
       <tr><td>꾸미기 스텝 추가</td><td>꾸미기 연출 종료 (<code>5370</code> 직후)</td><td>&quot;광고 보고 한 칸 더&quot; 버튼 신설. <code>LogRVPosition</code>에 <code>deco_step_extra</code> <strong>신규 추가</strong>. <strong>별을 추가 지급하지 않고 진도만 앞당김</strong>. <span class="sheet-var">rv_deco_step_daily_cap</span>로 하루 상한</td></tr>
       <tr><td>판 시작 전 부스터</td><td>판 시작 직전</td><td>아이템 1개 무료 받기 버튼 신설. <code>LogRVPosition</code>에 <code>prelevel_booster</code> <strong>신규 추가</strong>. <span class="sheet-var">rv_prelevel_daily_cap</span>로 하루 상한</td></tr>
       <tr><td>로비 무료코인 동선</td><td><code>TabHome.ts:1633</code></td><td>상한(<code>idx &gt;= 9</code>)은 그대로. <strong>레드닷 조건과 버튼 배치만 조정</strong></td></tr>
@@ -319,7 +341,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
     <thead><tr><th>상태</th><th class="r"><span class="sheet-var">rv_ftue_free_count</span></th><th class="r">신규 구좌 스위치</th><th>확인할 것</th></tr></thead>
     <tbody>
       <tr><td>현행</td><td class="r mono">3</td><td class="r mono">전부 0</td><td>1~3판 결과창에 x2 없음 &#183; 튜토 보상에 Claim만</td></tr>
-      <tr class="pick"><td>개방 (적용값)</td><td class="r mono">0</td><td class="r mono">전부 1</td><td><strong>첫 판 결과창에 x2 버튼 + 강조 애니메이션</strong> &#183; 튜토 보상에 x2 &#183; 꾸미기 연출 뒤 &quot;한 칸 더&quot; &#183; 판 시작 전 부스터 &#183; <code>type</code>이 신규 값으로 찍힘</td></tr>
+      <tr class="pick"><td>개방 (적용값)</td><td class="r mono">0</td><td class="r mono">전부 1</td><td><strong>첫 판 결과창에 x2 버튼 + 강조 애니메이션</strong> &#183; 튜토 보상에 x2 &#183; <strong>슬롯 풀에서 코인이 넉넉해도 광고 버튼이 보임</strong> &#183; 꾸미기 연출 뒤 &quot;한 칸 더&quot; &#183; 판 시작 전 부스터 &#183; <code>type</code>이 신규 값으로 찍힘</td></tr>
       <tr><td>x2만 개방</td><td class="r mono">0</td><td class="r mono">전부 0</td><td>결과창만 열리고 신규 구좌는 안 뜸</td></tr>
       <tr class="warn"><td>확대 끄기 (<span class="sheet-var">rv_enabled</span>=0)</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td>다른 값이 뭐든 <strong>현행과 똑같이</strong> 동작 &mdash; 기존 구좌 보상형은 그대로 나옴</td></tr>
       <tr><td>하루 상한</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td><td>꾸미기 1회 &#183; 부스터 3회를 넘기면 버튼이 사라지고, 날짜가 바뀌면 복구됨</td></tr>
@@ -383,6 +405,7 @@ tbody tr.pick:hover td,tbody tr.warn:hover td { box-shadow:inset 0 0 0 999px rgb
       <tr><td>&#8985; 그중 Claim</td><td><code>8001</code></td><td class="r mono">1,403 (98%)</td><td class="r mono">1,403</td></tr>
       <tr><td>슬롯 풀 &mdash; 상황 발생</td><td><code>2200_GAMEPLAY_CONTINUE</code></td><td class="r mono">2,721</td><td class="r mono">481</td></tr>
       <tr class="warn"><td>&#8985; 그중 <strong>재시작 선택</strong></td><td><code>2213_GAMEPLAY_CONTINUE_RESTART</code></td><td class="r mono">1,793 (65.9%)</td><td class="r mono">&mdash;</td></tr>
+      <tr><td>&#8985; 광고 버튼이 보이는 조건</td><td><code>coin &lt; ITEM_PRICE</code>일 때만</td><td class="r mono">&mdash;</td><td class="r mono">&mdash;</td></tr>
       <tr><td>&#8985; 그중 광고 시도</td><td>RV <code>continue</code></td><td class="r mono">431 (15.8%)</td><td class="r mono">&mdash;</td></tr>
       <tr><td>꾸미기 진행</td><td><code>5370_LOBBY_DECO_COMPLETE</code></td><td class="r mono">2,946</td><td class="r mono">1,633</td></tr>
       <tr><td>&#8985; 그중 결과창에서 강제 진입</td><td><code>2401</code> 직후 평균 2.1초</td><td class="r mono">2,938 (99.7%)</td><td class="r mono">&mdash;</td></tr>
