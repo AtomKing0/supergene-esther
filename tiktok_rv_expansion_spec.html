@@ -299,10 +299,28 @@ if (DataManager.getPlayer().getCoin() &lt; this.ITEM_PRICE) {
     </tbody>
   </table></div>
 
+  <h3>로그 정의</h3>
+  <div class="tw"><table>
+    <thead><tr><th>구좌</th><th>로그</th><th>시점 · 값</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="2">결과창 x2<br>튜토 개방</td><td><code>2420_FINISH_RESULT_DOUBLE_CLAIM_TRY</code><br><code>2421_..._SUCCESS</code> · <code>2422_..._FAIL</code></td><td>기존 그대로 &mdash; <strong>신규 없음</strong></td></tr>
+      <tr><td><code>4200_RV_START</code> ~ <code>4220_RV_ERROR</code></td><td><code>type</code> = <code>stage_reward_double</code> (기존)</td></tr>
+      <tr class="pick"><td rowspan="2">튜토 완료<br>보상 x2</td><td><strong><code>8002_BTN_FINISH_REWARD_TUTO_DOUBLE</code></strong></td><td><strong>신규</strong> &mdash; 튜토 완료 보상 2배 광고 버튼 클릭 시. <code>8000</code>(팝업) · <code>8001</code>(Claim) 계열</td></tr>
+      <tr class="pick"><td><code>4200_RV_START</code> ~ <code>4220_RV_ERROR</code></td><td><code>type</code>값 추가 &mdash; <strong><code>tutorial_reward_double</code></strong></td></tr>
+      <tr class="warn"><td rowspan="3">슬롯 풀<br>광고 버튼</td><td><code>2200_GAMEPLAY_CONTINUE</code></td><td><strong><code>type</code>을 실제로 실을 것</strong> &mdash; 코드에 <code>type: userType</code>이 있는데 <strong>로그에 안 올라옴</strong>(2,721건 전부 빈 값). 값은 <strong>노출된 버튼</strong>: <code>coin</code> · <code>rv</code> · <strong><code>both</code>(신규)</strong></td></tr>
+      <tr class="warn"><td><code>2210_..._TRY</code> · <code>2211_..._SUCCESS</code> · <code>2212_..._FAIL</code></td><td><code>type</code>은 <strong>유저가 고른 것</strong>: <code>coin</code> · <code>rv</code>. 역시 지금 안 실림</td></tr>
+      <tr><td><code>4200_RV_START</code> ~ <code>4220_RV_ERROR</code></td><td><code>type</code> = <code>continue</code> (기존)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout callout-red">
+    <p><strong><code>2200</code>의 <code>type</code>이 이 건의 핵심 계측임.</strong> 개선 전에는 &quot;코인 버튼만 떴다(<code>coin</code>)&quot;가 대부분일 것이고, 개선 후에는 전부 <code>both</code>가 되어야 함. 이 값이 안 실리면 <strong>버튼을 같이 띄운 게 실제로 먹었는지 확인할 방법이 없음.</strong></p>
+  </div>
+
   <h3>계측 작업</h3>
   <ul>
     <li><strong><code>4220_RV_ERROR</code>의 <code>error_message</code>를 문자열로 직렬화할 것.</strong> 지금 <code>[object Object]</code>로 올라와서 실패 사유를 못 가름(실패의 13.5%). <strong>완주율 개선 기획의 선결 조건임</strong></li>
     <li><strong>데일리 퍼즐 x2의 <code>type</code>을 <code>daily_puzzle_reward_double</code>로 분리할 것.</strong> 구좌는 이미 있는데 결과창과 코드를 공유해 <code>stage_reward_double</code>로 섞여 찍힘</li>
+    <li><strong>결과창 x2를 튜토 구간과 그 이후로 가를 수 있게 <code>2420</code>에 <code>clear_count</code>를 실을 것.</strong> 지금은 <code>totalClearCount</code>가 로그에 없어 튜토 개방분만 따로 못 봄</li>
     <li><code>type</code>은 <code>4200</code>&#183;<code>4210</code>&#183;<code>4220</code> 셋 모두에 같은 값으로 실을 것. 구좌별 완주율이 판정 기준임</li>
     <li><code>4200</code>의 <code>data</code>에 그 시점 적용값을 이어붙인 문자열로 실을 것(예: <code>1-0-1-1</code>). 반영이 다음 부팅부터라 롤아웃 구간에 신&#183;구가 섞임</li>
   </ul>
