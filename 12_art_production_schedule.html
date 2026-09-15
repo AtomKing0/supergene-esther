@@ -2020,10 +2020,22 @@ function renderPuzzleBookmarks() {
 // 따라서 순서를 바꾸면 앨범이 그 자리의 배포일·해금 레벨을 따라가야 한다.
 // (오름차순 정렬로 자리 값을 복원 — 앨범에 저장된 값 자체는 건드리지 않는다)
 function puzzleSlots() {
-  const lv = ALBUMS_BASE.map(a => a.unlock_lv || 1).sort((x, y) => x - y);
-  const pub = ALBUMS_BASE
-    .map(a => String(a.publish_at || ALBUM_PUBLISH_AT[a.id] || '').slice(0, 10))
-    .filter(Boolean).sort();
+  const _d  = (s) => { const p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); };
+  const _s  = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const _at = (a) => String(a.publish_at || ALBUM_PUBLISH_AT[a.id] || '').slice(0, 10);
+  // 배포일이 아직 없는 앨범(+ 앨범 추가로 새로 만든 것)은 자리 계산에서 제외한다.
+  // 넣어두면 unlock_lv 1 이 정렬 맨 앞으로 가 사다리 전체가 한 칸씩 밀린다.
+  const known = ALBUMS_BASE.filter(a => _at(a).length === 10);
+  const lv  = known.map(a => a.unlock_lv || 1).sort((x, y) => x - y);
+  const pub = known.map(_at).sort();
+  // 신규분은 마지막 자리의 간격을 그대로 이어 붙여 뒤에 배치 (사다리를 밀지 않음)
+  const lvGap  = lv.length  >= 2 ? Math.max(lv[lv.length - 1] - lv[lv.length - 2], 1) : 100;
+  const dayGap = pub.length >= 2
+    ? Math.max(Math.round((_d(pub[pub.length - 1]) - _d(pub[pub.length - 2])) / 86400000), 1) : 30;
+  for (let i = known.length; i < ALBUMS_BASE.length; i++) {
+    if (lv.length)  lv.push(lv[lv.length - 1] + lvGap);
+    if (pub.length) { const d = _d(pub[pub.length - 1]); d.setDate(d.getDate() + dayGap); pub.push(_s(d)); }
+  }
   return { lv, pub };
 }
 function computePuzzle() {
