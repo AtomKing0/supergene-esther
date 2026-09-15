@@ -2014,11 +2014,24 @@ function renderPuzzleBookmarks() {
 }
 
 // --- Compute ---
+// 배포 캘린더와 해금 사다리는 앨범이 아니라 '자리'의 속성이다.
+//   · 배포 예정일 = 도시 개방일 사이 중간(도시와 15일 간격 교대) — 순서와 무관하게 고정된 캘린더
+//   · 해금 레벨   = 유저 레벨 분포 기준 사다리 — 일정 게이트가 아님
+// 따라서 순서를 바꾸면 앨범이 그 자리의 배포일·해금 레벨을 따라가야 한다.
+// (오름차순 정렬로 자리 값을 복원 — 앨범에 저장된 값 자체는 건드리지 않는다)
+function puzzleSlots() {
+  const lv = ALBUMS_BASE.map(a => a.unlock_lv || 1).sort((x, y) => x - y);
+  const pub = ALBUMS_BASE
+    .map(a => String(a.publish_at || ALBUM_PUBLISH_AT[a.id] || '').slice(0, 10))
+    .filter(Boolean).sort();
+  return { lv, pub };
+}
 function computePuzzle() {
+  const slots = puzzleSlots();
   return puzzleOrder.map((id, i) => {
     const a = ALBUMS_BASE.find(x => x.id === id) || ALBUMS_BASE[i];
     const total = a.pieces.reduce((s, p) => s + p, 0);
-    const unlock_lv = a.unlock_lv || 1;
+    const unlock_lv = slots.lv[i] ?? (a.unlock_lv || 1);
     const x1_lv = unlock_lv + total;
     const x2_lv = unlock_lv + Math.ceil(total / 2);
     const x4_lv = unlock_lv + Math.ceil(total / 4);
@@ -2027,14 +2040,14 @@ function computePuzzle() {
     const unlock_days = Math.round(unlock_lv / AVG_LV_PER_DAY);
     const arrival = addDate(LAUNCH, unlock_days); // Avg 유저 해금 레벨 도달일 (참고)
     // 배포 예정일 = publish_at (시트 M열·Supabase). 해금 레벨은 레벨 분포 기준으로 별도 — 일정 게이트 아님
-    const pubStr = a.publish_at || ALBUM_PUBLISH_AT[id];
+    const pubStr = slots.pub[i] || a.publish_at || ALBUM_PUBLISH_AT[id];
     const deploy = pubStr ? (() => { const p = pubStr.slice(0,10).split('-'); return new Date(+p[0], +p[1]-1, +p[2]); })() : arrival;
     const deploy_days = Math.round((deploy - LAUNCH) / 86400000);
     const done = !!puzzleArtDone[id];
     // 납기 = 배포 예정일 30일 전 (2026-08-20 확정)
     const art_date = done ? deploy : addDate(deploy, -30);
     const lateVsUser = !done && art_date > deploy;
-    return { ...a, id, n: i + 1, total, x1_lv, x2_lv, x4_lv, city_wins, ratio, unlock_days, arrival, deploy, deploy_days, art_date, lateVsUser };
+    return { ...a, unlock_lv, id, n: i + 1, total, x1_lv, x2_lv, x4_lv, city_wins, ratio, unlock_days, arrival, deploy, deploy_days, art_date, lateVsUser };
   });
 }
 
