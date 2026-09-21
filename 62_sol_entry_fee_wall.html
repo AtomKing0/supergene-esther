@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>입장료 벽 검토</title>
+<style>
+:root{
+ --pg:#eceef2;--bg:#fff;--sub:#f5f6f9;--line:#e5e8ee;--line2:#d2d7df;
+ --tx:#1b1f27;--dim:#69707c;--mute:#99a0ac;
+ --red:#c5221f;--grn:#137333;--amb:#a35c00;--blu:#1558d6;
+ --redbg:#fdf1f0;--grnbg:#eef7f0;--ambbg:#fdf6e9;--blubg:#eef3fd;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--pg);color:var(--tx);
+ font:13px/1.5 -apple-system,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif;
+ padding:26px;display:flex;flex-direction:column;align-items:center;gap:26px;-webkit-font-smoothing:antialiased}
+.slide{width:1280px;min-height:720px;height:auto;background:var(--bg);border:1px solid var(--line2);
+ border-radius:6px;padding:26px 34px 22px;display:flex;flex-direction:column;
+ box-shadow:0 1px 3px rgba(0,0,0,.06)}
+
+.head{display:flex;justify-content:space-between;align-items:baseline;
+ border-bottom:2px solid var(--tx);padding-bottom:9px;margin-bottom:14px;flex:none}
+h1{font-size:21px;font-weight:700;letter-spacing:-.5px}
+.head .meta{font-size:11px;color:var(--dim);text-align:right;line-height:1.55}
+
+.lead{font-size:13.5px;line-height:1.7;margin-bottom:14px;flex:none}
+.lead b{background:linear-gradient(transparent 62%,#ffe6a0 62%);font-weight:700}
+
+.cols{display:flex;gap:16px;flex:1;min-height:0}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0}
+
+.box{border:1px solid var(--line);border-radius:5px;display:flex;flex-direction:column;
+ min-height:0;background:var(--bg)}
+.box>h2{border-radius:5px 5px 0 0}
+.box>h2{font-size:11.5px;font-weight:700;color:var(--tx);background:var(--sub);
+ border-bottom:1px solid var(--line);padding:7px 12px;flex:none;
+ display:flex;justify-content:space-between;align-items:center;gap:8px}
+.box>h2 em{font-style:normal;font-weight:400;font-size:10.5px;color:var(--dim);white-space:nowrap}
+.box .body{min-height:0}
+.box .foot{padding:7px 12px;border-top:1px solid var(--line);font-size:11.5px;
+ line-height:1.6;color:var(--dim);flex:none}
+.box.do>h2{background:var(--grnbg);color:var(--grn);border-bottom-color:#cfe5d6}
+.box.no>h2{background:var(--redbg);color:var(--red);border-bottom-color:#f2d6d4}
+.box.ab>h2{background:var(--blubg);color:var(--blu);border-bottom-color:#d3e0f8}
+
+table{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #f1f3f6;
+ vertical-align:top;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
+th{color:var(--dim);font-weight:600;font-size:10.5px;background:#fafbfc}
+tbody tr:last-child td{border-bottom:none}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.k{color:var(--dim);font-weight:600;white-space:nowrap}
+td.step{font-weight:700}
+td.res{color:var(--tx)}
+td.act{background:#fbfcfd}
+.A{background:#fafbfc}.B{background:var(--grnbg)}
+
+.r{color:var(--red);font-weight:700}.g{color:var(--grn);font-weight:700}
+.a{color:var(--amb);font-weight:700}.dim{color:var(--dim)}
+.mark{background:#ffe6a0;padding:0 2px;border-radius:2px}
+code{font:10.5px ui-monospace,Menlo,monospace;color:var(--blu);background:#f0f3f9;padding:1px 3px;border-radius:3px}
+.pill{display:inline-block;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;
+ border:1px solid var(--line2);color:var(--mute);white-space:nowrap}
+.pill.on{color:var(--grn);border-color:#cfe5d6;background:var(--grnbg)}
+.pill.art{color:var(--amb);border-color:#f0dcae;background:var(--ambbg)}
+.pill.off{color:var(--red);border-color:#f2d6d4;background:var(--redbg)}
+.num{display:inline-block;width:16px;height:16px;line-height:16px;text-align:center;
+ background:var(--tx);color:#fff;border-radius:3px;font-size:10px;font-weight:700}
+
+ul{list-style:none}
+li{padding:7px 12px;border-bottom:1px solid #f1f3f6;font-size:11.5px;line-height:1.55}
+li:last-child{border-bottom:none}
+li .t{font-weight:700;display:block;margin-bottom:1px}
+li .d{color:var(--dim);display:block}
+
+.note{margin-top:11px;padding:8px 12px;background:var(--ambbg);border-left:3px solid var(--amb);
+ border-radius:0 4px 4px 0;font-size:11.5px;line-height:1.6;color:#513f10;flex:none}
+@media print{body{background:#fff;padding:0;gap:0}.slide{border:none;border-radius:0;box-shadow:none;page-break-after:always}}
+</style></head><body>
+
+<!-- ========== SLIDE 1 ========== -->
+<section class="slide">
+ <div class="head">
+  <h1>입장료 벽 — 현황</h1>
+  <div class="meta">PST 솔리테어 시티 저니<br>2026-09-21 · 피터 분석 검토</div>
+ </div>
+
+ <p class="lead">
+  광고 1회 시청으로는 <b>Lv3 이상 전 구간에서 입장이 안 됨</b>. 런칭 때 정한 값이고 <b>지금까지 검증된 적이 없음</b>.<br>
+  이 벽에 대해 6건을 했고, <b>그중 3건이 기획서만 쓴 채 미배포</b>임.
+ </p>
+
+ <div class="cols">
+
+  <div class="col" style="flex:.82">
+   <div class="box">
+    <h2>현재 설계 <em>03-31 확정 · 이후 무변경</em></h2>
+    <div class="body">
+     <table>
+      <colgroup><col style="width:22%"><col><col><col style="width:17%"><col style="width:20%"></colgroup>
+      <thead><tr><th>레벨</th><th class="n">입장료</th><th class="n">광고 1회</th><th class="n">비율</th><th class="n">필요 시청</th></tr></thead>
+      <tbody>
+       <tr><td>10~24</td><td class="n">1,800</td><td class="n">990</td><td class="n r">55%</td><td class="n r">2회</td></tr>
+       <tr><td>50~99</td><td class="n">2,400</td><td class="n">1,152</td><td class="n r">48%</td><td class="n r">2회</td></tr>
+       <tr><td>200~349</td><td class="n">3,000</td><td class="n">1,260</td><td class="n r">42%</td><td class="n r">3회</td></tr>
+       <tr><td>1450+</td><td class="n">6,000</td><td class="n">1,800</td><td class="n r">30%</td><td class="n r">4회</td></tr>
+      </tbody>
+     </table>
+    </div>
+    <div class="foot"><code>entry_cost × rv_gold_ratio</code> · 비율이 <b class="mark">6500 → 3000 단조 하강</b>.<br>
+     레벨이 오를수록 광고로 입장료를 회피하기 어렵게 만든 곡선임.</div>
+   </div>
+
+   <div class="box" style="flex:1">
+    <h2>실측 <em>US 재방문 유저 · 7/27~9/14</em></h2>
+    <div class="body">
+     <table>
+      <colgroup><col><col style="width:32%"></colgroup>
+      <tbody>
+       <tr><td>벽 만나면 그 판 포기</td><td class="n r">71.3%</td></tr>
+       <tr><td>광고 2회 이상 시청 필요</td><td class="n r">55.1%</td></tr>
+       <tr><td>2회 필요해지면 성공률</td><td class="n">37.0 → <span class="r">21.3%</span></td></tr>
+       <tr><td>가입 2일차 그날 접음</td><td class="n r">54%</td></tr>
+       <tr><td>가입 14일차 그날 접음</td><td class="n g">6%</td></tr>
+      </tbody>
+     </table>
+    </div>
+    <div class="foot">곡선이 겨냥한 <b class="mark">헤비 유저는 벽에 거의 안 걸림</b>.<br>
+     걸리는 층은 습관이 안 잡힌 <b class="mark">가입 2~5일차</b>임.</div>
+   </div>
+  </div>
+
+  <div class="col" style="flex:1.75">
+   <div class="box" style="flex:1">
+    <h2>이 벽에 대해 한 일 <em>무엇을 했고 → 무엇이 나왔고 → 그래서 어떻게</em></h2>
+    <div class="body">
+     <table>
+      <colgroup><col style="width:25%"><col style="width:37%"><col style="width:38%"></colgroup>
+      <thead><tr><th>한 일</th><th>나온 결과</th><th>그래서</th></tr></thead>
+      <tbody>
+       <tr>
+        <td class="step">토스 빌드 220<br>입장료 전면 폐지 A/B</td>
+        <td class="res">인당 판수 <b class="r">−46%</b>.<br>골드를 벌 목표가 사라지니 판을 안 침</td>
+        <td class="act">판수가 골드 수요에서 나온다는 게 확인됨.<br><b>입장료를 크게 깎는 방향은 제외함.</b></td>
+       </tr>
+       <tr>
+        <td class="step">SPEC-032 <span class="pill on">배포</span><br>하루 첫 판 무료 입장 <span class="dim">7/29</span></td>
+        <td class="res">판수 <b class="g">+0.93판</b> (p=.047) · 리텐션 확증 실패<br>비용은 주간 골드 소비 0.92%</td>
+        <td class="act"><b>현행 유지함.</b> 다만 하루 1회를 그날 첫 진입에서 쓰므로 벽 앞에는 남지 않음.<br>벽 지면은 <b>따로 처리함.</b></td>
+       </tr>
+       <tr>
+        <td class="step">SPEC-036 <span class="pill on">배포</span><br>실패 후 재도전 <span class="dim">8/5</span></td>
+        <td class="res">재진입 <b class="g">+11.3%p</b>.<br>단 Retry 시점에 정산돼, 골드가 모자라면 <b class="r">판만 잃음</b></td>
+        <td class="act"><b>현행 유지함.</b><br>정산 시점 문제는 <b>SPEC-040으로 분리해 기획함.</b></td>
+       </tr>
+       <tr>
+        <td class="step">SPEC-040 <span class="pill off">미배포</span><br>재도전 진입 실패 해소 <span class="dim">8/18</span></td>
+        <td class="res">재도전 <b class="r">28%</b>가 판에 못 들어감 (하루 51명).<br>골드로 막히면 30분 내 복귀 <b class="r">5.2%</b></td>
+        <td class="act">수급 팝업을 신규로 만들어야 함(아이들 골드는 지금 로비에서 바로 받는 구조라 전용 팝업이 없음).<br><b>아트 일정 잡히면 배포함.</b></td>
+       </tr>
+       <tr>
+        <td class="step">SPEC-045 <span class="pill off">미배포</span><br>프리레벨 시인성 <span class="dim">8/21</span></td>
+        <td class="res">골드가 모자라면 Play가 회색이라 잠김으로 읽힘.<br>무반응 이탈 <b class="r">61.1%</b> 대 충분 시 3.1%</td>
+        <td class="act">말풍선 신규 제작이 필요하고 지급액 표도 현행 시트와 맞지 않음.<br><b>아트 일정 잡히면 표 재작성과 함께 배포함.</b></td>
+       </tr>
+       <tr>
+        <td class="step">SPEC-044 <span class="pill off">미배포</span><br>골드 부족 지면 오퍼 <span class="dim">8/21</span></td>
+        <td class="res">벽 겪은 유저 결제율 <b class="a">29배</b> (0.56 대 0.019%).<br>스타터 팩이 로비에서만 열리고 이 지면엔 연결 없음</td>
+        <td class="act">매출 지표라 이번 판정 기준과 섞임.<br><b>이번 A/B에는 넣지 않고, 끝난 뒤 단독 배포함.</b></td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ========== SLIDE 2 ========== -->
+<section class="slide">
+ <div class="head">
+  <h1>다음 A/B 설계</h1>
+  <div class="meta">질문 — 누적 판수가 적은 유저의 입장료 벽을 완화할 수 있나<br>B = 완화 패키지 전체 · 부품별 기여도는 다음 회차에 분해</div>
+ </div>
+
+ <p class="lead">
+  같은 화면인데 <b>골드가 충분하면 입장 도달 98.6%, 부족하면 35.8%</b>임.<br>
+  <b>레벨 조건은 걸지 않음</b> — 안 걸어도 보충 골드의 80.2%가 누적 100판 미만으로 감(오른쪽 실측).
+ </p>
+
+ <div class="cols">
+
+  <div class="col" style="flex:1.25">
+   <div class="box ab">
+    <h2>B 빌드 — 입장료 벽 완화 패키지 <em>동시 롤아웃 50:50</em></h2>
+    <div class="body">
+     <table>
+      <colgroup><col style="width:24%"><col style="width:38%"><col style="width:38%"></colgroup>
+      <thead><tr><th></th><th class="A">A · 대조군 (현행)</th><th class="B">B · 실험군</th></tr></thead>
+      <tbody>
+       <tr><td class="k">지급식</td>
+        <td class="A"><code>entry_cost × rv_gold_ratio</code></td>
+        <td class="B"><code>max(티어 보상, min(요구액, entry_cost) − 보유골드)</code></td></tr>
+       <tr><td class="k">1회로 입장</td>
+        <td class="A"><b class="r">Lv3 이상 전 구간 불가</b></td>
+        <td class="B"><b class="g">항상 가능</b> <span class="dim">(x1 기준 · 배수·부스터는 본인 부담)</span></td></tr>
+       <tr><td class="k">충전 팝업</td>
+        <td class="A">Play를 눌러야 열림</td>
+        <td class="B"><b>골드 부족이면 자동 노출</b> <span class="dim">(세션당 1회)</span></td></tr>
+       <tr><td class="k">광고 시청 후</td>
+        <td class="A">팝업만 닫힘 — Play를 다시 눌러야 함</td>
+        <td class="B"><b>충족되면 바로 게임 시작</b></td></tr>
+       <tr><td class="k">팝업 닫기</td>
+        <td class="A">상점으로 직행</td>
+        <td class="B">팝업만 닫힘</td></tr>
+       <tr><td class="k">일 상한 · 시트</td>
+        <td class="A">팝업 10회</td>
+        <td class="B">팝업 10회 <span class="dim">— 동일. 시트 변경 없음</span></td></tr>
+      </tbody>
+     </table>
+    </div>
+    <div class="foot"><b>보충은 <code>entry_cost × 1</code>까지만</b> — 배수·부스터까지 채워주면 광고 1회로 4배판이 공짜가 됨. 하루 최대 발행은 <code>entry_cost × 10</code>.<br>
+     부족분만 주고 바로 소비되므로 <b>계정에 잉여 골드가 안 쌓임</b>(현행은 입장에 못 미치는 990이 남아 누적됨).<br>
+     상수 <code>10112</code>·<code>10114</code>로 부품별 토글이 되므로 <b>다음 회차에 하나씩 꺼서 기여도를 분해함.</b></div>
+   </div>
+
+   <div class="box do">
+    <h2>양군 공통 — 계측만 <em>측정 도구라 A·B 양쪽에 동일하게</em></h2>
+    <div class="body">
+     <table>
+      <colgroup><col style="width:30%"><col></colgroup>
+      <tbody>
+       <tr><td class="step"><code>2095</code>의 <code>context</code></td><td><code>entry</code>(입장료 부족) / <code>booster</code>(부스터 구매 부족). 지금은 두 맥락이 한 값이라 분해가 안 됨</td></tr>
+       <tr><td class="step"><code>2095</code>·<code>2270</code>의 <code>trigger</code></td><td><code>auto</code> / <code>manual</code>. B의 자동 노출이 기존 지표와 섞이지 않게 함</td></tr>
+       <tr><td class="step"><code>claimRvGold</code> 응답</td><td>실제 지급액 로깅</td></tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+
+   <div class="box" style="flex:1;border-color:#f0dcae">
+    <h2 style="background:var(--ambbg);color:var(--amb);border-bottom-color:#f0dcae">아트 대기 — 이번 회차 제외</h2>
+    <div class="body">
+     <table>
+      <colgroup><col style="width:22%"><col style="width:38%"><col style="width:40%"></colgroup>
+      <tbody>
+       <tr><td class="step">SPEC-040</td><td><b>골드 수급 팝업 신규 제작</b><br><span class="dim">아이들 골드는 로비에서 바로 받는 구조라 전용 팝업이 없음</span></td>
+        <td>재도전 진입 실패 28%가 A·B에 똑같이 남음. <b>편향 아니고 효과 크기만 깎임</b></td></tr>
+       <tr><td class="step">SPEC-045</td><td>회색 Play 옆 <b>말풍선 신규 제작</b></td>
+        <td><b>B의 자동 노출이 같은 목적을 아트 없이 대신함</b></td></tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+
+  <div class="col" style="flex:1">
+   <div class="box">
+    <h2>KPI <em>분모 = 골드 부족 상태 프리레벨 노출</em></h2>
+    <div class="body">
+     <table>
+      <colgroup><col style="width:30%"><col><col><col style="width:22%"></colgroup>
+      <thead><tr><th>상태</th><th class="n">건수</th><th class="n">입장 도달</th><th class="n">그날 접음</th></tr></thead>
+      <tbody>
+       <tr><td>골드 부족 · lv&lt;100</td><td class="n">15,297</td><td class="n r">33.5%</td><td class="n r">44.2%</td></tr>
+       <tr><td>골드 부족 · lv100+</td><td class="n">6,760</td><td class="n r">41.0%</td><td class="n r">26.2%</td></tr>
+       <tr style="background:#fdf1f0"><td><b>골드 부족 전체</b></td><td class="n">22,057</td><td class="n r">35.8%</td><td class="n r">38.7%</td></tr>
+       <tr style="background:var(--grnbg)"><td class="dim">골드 충분 (대조)</td><td class="n dim">673,298</td><td class="n g">98.6%</td><td class="n g">0.9%</td></tr>
+      </tbody>
+     </table>
+     <table style="border-top:1px solid var(--line)">
+      <colgroup><col style="width:36%"><col><col><col style="width:22%"></colgroup>
+      <thead><tr><th>KPI</th><th class="n">지금 A</th><th class="n">기대 B</th><th class="n">7일 검출</th></tr></thead>
+      <tbody>
+       <tr style="background:var(--grnbg)"><td><b>입장 도달률</b></td><td class="n r">35.8%</td><td class="n g">40~48%</td><td class="n dim">3.4σ</td></tr>
+       <tr style="background:var(--grnbg)"><td><b>그날 접음률</b></td><td class="n r">38.7%</td><td class="n g">35% 이하</td><td class="n dim">2.5σ</td></tr>
+       <tr><td>충전 팝업 도달률</td><td class="n">51.7%</td><td class="n">~100%</td><td class="n dim">설계 확정</td></tr>
+       <tr><td>2회 이상 시청 필요</td><td class="n">50.6%</td><td class="n">0%</td><td class="n dim">설계 확정</td></tr>
+       <tr><td class="dim">가드 — 유저-일당 판수</td><td class="n dim" colspan="2">하락 없음</td><td class="n dim">빠지면 끔</td></tr>
+      </tbody>
+     </table>
+    </div>
+    <div class="foot">기대 하한은 <b>현재 팝업 도달자(51.7%)만 개선</b>될 때임 — 광고 1회로 해결되는 에피소드의 입장 성공률이 48.0%로 전체 평균 39.0%보다 9.0%p 높음. 상한은 자동 노출로 새로 들어온 층까지 같은 수준일 때.<br>
+     <b>"그날 접음률"이 코어 분포의 대리 지표임</b> — 누적 100판 돌파율(8.0%)은 예상 상승폭이 +0.3%p라 7일로 검출 안 됨.<br>
+     하루 약 712건 → 7일에 군당 약 2,492건. <b><code>2095</code>를 분모로 쓰면 안 됨</b> — B는 자동 노출로 발생 자체가 늘어 분모 착시에 걸림.</div>
+   </div>
+
+   <div class="box no" style="flex:1">
+    <h2>이번 A/B에 넣지 않을 것</h2>
+    <div class="body">
+     <ul>
+      <li><span class="t">누적 판수로 완화 대상 자르기</span>
+       <span class="d">100판 미만만 완화하면 L99는 1회, L100은 2회라 <b>경계에서 체감이 끊김</b>. 안 잘라도 80.2%가 저레벨로 감</span></li>
+      <li><span class="t">SPEC-044 골드 부족 지면 오퍼 <span class="pill">다음 회차</span></span>
+       <span class="d">결제율 29배라 값은 큼. 매출 지표라 이번 판정 기준과 섞임 → <b>A/B 끝난 뒤 단독 배포함</b></span></li>
+      <li><span class="t"><code>rv_gold_ratio</code>를 10~99만 10000</span>
+       <span class="d">L99 2,400(100%) → L100 1,170(45%)로 <b>반토막</b>. 전 구간은 L1450+가 하루 60,000골드로 상한의 2배. <b>제외함</b></span></li>
+      <li><span class="t">일 상한 조정</span>
+       <span class="d">팝업 상한은 <b>3이 아니라 10</b>(3은 로비 한도). 하루 천장도 <b>5.5판</b>이라 거의 안 걸림. <b>현행 유지함</b></span></li>
+      <li><span class="t">무료 입장 횟수 확대</span>
+       <span class="d">크게 여는 쪽은 토스 220에서 판수 <b class="r">−46%</b>, 작게 여는 쪽은 SPEC-032에서 +0.93판으로 이미 측정됨. <b>상수화만 하고 값은 유지함</b></span></li>
+     </ul>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ========== SLIDE 3 ========== -->
+<section class="slide">
+ <div class="head">
+  <h1>개발 요청</h1>
+  <div class="meta">빌드 2개 동시 롤아웃 50:50 · 시트 변경 없음 · 아트 신규 제작 없음<br>SPEC-030(#415/#416) · SPEC-035(#431/#432)와 같은 방식</div>
+ </div>
+
+ <div class="box ab" style="margin-bottom:12px">
+  <h2>① B 빌드에만 적용 — 입장료 벽 완화 패키지</h2>
+  <div class="body">
+   <table>
+    <colgroup><col style="width:5%"><col style="width:26%"><col></colgroup>
+    <tbody>
+     <tr><td><span class="num">1</span></td><td><code>claimRvGold(type)</code></td>
+      <td>인자에 <code>required</code>를 추가함. 지금은 서버가 티어만 보고 지급액을 정하는데, <b>배수·부스터가 붙은 요구액은 클라만 알고 있음</b></td></tr>
+     <tr><td><span class="num">2</span></td><td>서버 — RV 골드 지급</td>
+      <td>지급액 = <code>max(티어 보상, min(required, entry_cost) − 보유골드)</code></td></tr>
+     <tr><td><span class="num">3</span></td><td>서버 — <b>보충 상한</b></td>
+      <td><b>보충은 <code>entry_cost × 1</code>까지만.</b> 배수·부스터 몫은 보충하지 않음(광고 1회로 4배판이 열리면 안 됨). 하루 최대 발행 <code>entry_cost × 10</code>. 잔액이 <code>gold_max_limit</code> 30,000을 넘지 않게 함</td></tr>
+     <tr><td><span class="num">4</span></td><td><code>onClickEnterStage()</code> <span class="dim">:1318</span></td>
+      <td><code>getGoldCostForMultiple(multipleValue) + getBoosterGoldCost()</code>를 <code>required</code>로 전달. 서버가 <code>entry_cost</code>로 캡함</td></tr>
+     <tr><td><span class="num">5</span></td><td><code>PopupChargeGold.getRvGoldAmount()</code> <span class="dim">:64</span></td>
+      <td>팝업 표시 금액을 위 식과 같게 맞춤. 지금은 티어 보상만 표시해 <b>화면 숫자와 실제 지급액이 달라짐</b></td></tr>
+     <tr><td><span class="num">6</span></td><td><code>PopupGameEntry</code> 진입 시점</td>
+      <td>골드가 모자란 채로 프리레벨이 열리면 <b>충전 팝업 자동 노출</b>(세션당 1회). 기존 <code>showGoldShortagePopup()</code> 재사용</td></tr>
+     <tr><td><span class="num">7</span></td><td><code>PopupChargeGold.onClickClose()</code> <span class="dim">:174</span></td>
+      <td>닫기의 상점 직행을 끊음. <b>6번과 한 세트</b> — 자동으로 띄워 놓고 닫으면 상점이면 더 나빠짐</td></tr>
+     <tr><td><span class="num">8</span></td><td><code>showGoldShortagePopup()</code> <span class="dim">:1265</span></td>
+      <td>광고 후 골드가 충족되면 <b>팝업 닫고 바로 게임 시작</b>. <code>onClickEnterStage()</code>와 같은 동작이라 <b>두 경로를 합침</b>(신규 로직 없음). <code>context=entry</code>면 시작, <code>booster</code>면 선택만 반영하고 프리레벨에 머무름</td></tr>
+     <tr><td><span class="num">9</span></td><td>시트</td><td><b>변경 없음.</b> <code>rv_gold_ratio</code>·<code>popup_free_gold_limit</code> 현행 유지</td></tr>
+    </tbody>
+   </table>
+  </div>
+ </div>
+
+ <div class="cols" style="flex:none">
+  <div class="col" style="flex:1.2">
+   <div class="box do">
+    <h2>② 양군 공통 — 계측만</h2>
+    <div class="body">
+     <table>
+      <colgroup><col style="width:32%"><col></colgroup>
+      <tbody>
+       <tr><td><code>2095</code>의 <code>context</code></td><td><code>entry</code>(:1321) / <code>booster</code>(:1267)</td></tr>
+       <tr><td><code>2095</code>·<code>2270</code>의 <code>trigger</code></td><td><code>auto</code> / <code>manual</code></td></tr>
+       <tr><td><code>claimRvGold</code> 응답</td><td>실제 지급액</td></tr>
+       <tr><td>군 구분</td><td><b><code>client_version</code> 최상위 컬럼</b> (JSON은 40% 결측)</td></tr>
+      </tbody>
+     </table>
+    </div>
+   </div>
+
+   <div class="box">
+    <h2>③ 신규 상수 <em>시트 max 10110 → 10111부터</em></h2>
+    <div class="body">
+     <table>
+      <colgroup><col style="width:8%"><col style="width:34%"><col style="width:10%"><col></colgroup>
+      <tbody>
+       <tr><td class="k">10111</td><td><code>daily_free_entry_count</code></td><td class="n">1</td><td>−1 무제한 / 0 미사용 / N회. 실패 시 1 폴백. 하루 기준</td></tr>
+       <tr><td class="k">10112</td><td><code>auto_gold_charge_popup_in_use</code></td><td class="n">1</td><td>0 끔(현행) / 1 켬. 실패 시 0 폴백</td></tr>
+       <tr><td class="k">10113</td><td><code>auto_gold_charge_popup_session_limit</code></td><td class="n">1</td><td>세션당 최대 횟수. 0 무제한</td></tr>
+       <tr><td class="k">10114</td><td><code>gold_shortage_close_to_shop</code></td><td class="n">0</td><td>0 안 감 / 1 현행 직행. 실패 시 1 폴백</td></tr>
+       <tr><td class="k">10115</td><td><code>rv_gold_fill_shortage</code></td><td class="n">1</td><td>0 현행 / 1 부족분 보충. 실패 시 0 폴백. <b>킬스위치</b></td></tr>
+      </tbody>
+     </table>
+    </div>
+    <div class="foot"><code>-1</code>은 분기만 두고 값으로 쓰지 않음 — 토스 빌드 220에서 입장료 폐지 시 인당 판수 <b class="r">−46%</b>.</div>
+   </div>
+  </div>
+
+  <div class="col" style="flex:1">
+   <div class="box">
+    <h2>④ QA 확인</h2>
+    <div class="body">
+     <ul>
+      <li><span class="d">부족액이 티어 보상보다 <b>작을 때</b> 티어 보상만큼 지급되는지</span></li>
+      <li><span class="d"><b>x4 + 부스터에 골드 0일 때 보충이 <code>entry_cost × 1</code>에서 멈추는지</b></span></li>
+      <li><span class="d">자동 팝업이 <b>세션당 1회만</b> 뜨는지</span></li>
+      <li><span class="d"><code>context=entry</code>는 광고 후 <b>바로 시작</b>, <code>booster</code>는 프리레벨에 머무는지</span></li>
+      <li><span class="d">x2·x4로 요구액을 못 채우면 시작되지 않고 프리레벨에 남는지</span></li>
+      <li><span class="d">티켓 보유로 <code>required</code>가 0이 되는 경로에서 지급이 안 되는지</span></li>
+      <li><span class="d">일 상한 10회 소진 시 기존대로 상점이 뜨는지 · 잔액이 30,000을 안 넘는지</span></li>
+      <li><span class="d">토스 빌드에 영향이 없는지</span></li>
+     </ul>
+    </div>
+   </div>
+
+   <div class="box no">
+    <h2>⑤ 롤백</h2>
+    <div class="body">
+     <ul>
+      <li><span class="d"><code>10115</code> → 0 : 지급식만 현행 복귀</span></li>
+      <li><span class="d"><code>10112</code> → 0 : 자동 노출만 끔</span></li>
+      <li><span class="d"><code>10114</code> → 1 : 닫기 동선만 현행 복귀</span></li>
+      <li><span class="d">셋 다 시트 값이라 <b>빌드 롤백 없이 개별로 끌 수 있음</b></span></li>
+      <li><span class="d">유저-일당 완료 판수가 빠지면 즉시 끔</span></li>
+     </ul>
+    </div>
+   </div>
+  </div>
+ </div>
+
+ <p class="note"><b>선행 확인</b> &nbsp;·&nbsp; <b>서버 지급 로직 변경 가능 여부</b>(<code>claimRvGold</code> 프로토콜 인자 추가) — 이게 안 되면 A/B가 성립 안 함 &nbsp;·&nbsp; 현재 A/B 종료 시점 &nbsp;·&nbsp; ①9건 + ②3건 + ③상수 5종 개발 소요 &nbsp;·&nbsp; SPEC-045·040 아트 일정</p>
+</section>
+
+<!-- ========== SLIDE 4 ========== -->
+<section class="slide">
+ <div class="head">
+  <h1>개발팀 제안 검토</h1>
+  <div class="meta">받은 3건에 대한 판단<br>2번은 채택해 양군 공통에 넣음</div>
+ </div>
+
+ <p class="lead">
+  <b>2번(자동 RV 팝업)이 가장 큼</b> — 아트 대기로 뺐던 SPEC-045의 목적을 <b>아트 없이 달성함</b>.<br>
+  지급식과 함께 <b>B 빌드 패키지로 묶음</b>. 1번은 값 확대만 보류하고 <b>상수화(3번)와 함께 채택함</b>.
+ </p>
+
+ <div class="box" style="flex:none">
+  <div class="body">
+   <table>
+    <colgroup><col style="width:24%"><col style="width:14%"><col></colgroup>
+    <thead><tr><th>받은 제안</th><th>판단</th><th>근거 · 조건</th></tr></thead>
+    <tbody>
+     <tr>
+      <td class="step">① 무료 입장을 세션 기준 1~2회로<br><span class="dim">지금은 최초 접속 세션만 무료라 횟수만 늘리면 됨</span></td>
+      <td><span class="pill art">값 확대 보류</span></td>
+      <td>SPEC-032에서 이미 계산해 하루 1회로 확정한 건임. <b>2회차 이후 무료 판은 건수의 21%인데 골드의 44%를 씀</b> — 평균 단가 2,728골드로 1회차(948)의 2.9배고, 69.1%가 Lv50 이상임.
+       그런데 <b>2회차의 진입 시 골드 부족 비율은 16.0%로 1회차 23.9%보다 낮음</b>. 비싼데 덜 막히는 층으로 감.<br>
+       <b>세션 기준으로 바꾸면 방향이 더 어긋남</b> — 세션 수가 많은 쪽이 헤비 유저임(하루 판수 L200+ 39.1판 대 L11~30 9.5판). 이번 목표는 누적 판수가 적은 층임.
+       <b>확대한다면 세션이 아니라 누적 판수 100판 미만 한정</b>이 목표에 맞음. 값은 상수로 빼둔 뒤 별도 회차에서 검증함</td>
+     </tr>
+     <tr style="background:var(--grnbg)">
+      <td class="step">② 프리레벨 진입 시 골드가 부족하면 <b>자동으로 RV 유도 팝업</b><br><span class="dim">지금은 Play를 눌러야만 뜸</span></td>
+      <td><span class="pill on">채택</span><br><span class="dim">B 패키지</span></td>
+      <td><b>아트 신규 제작 0.</b> <code>showGoldShortagePopup()</code>이 이미 있어 호출 시점만 앞당기면 됨.<br>
+       회색 Play를 아예 안 눌러 생기는 <b>무반응 이탈 61.1%</b>를 말풍선 없이 해소함 — 벽에 걸린 사람 중 팝업까지 오는 게 지금 35.7%뿐임. <b>SPEC-045를 이번 회차에서 대체함.</b> B 빌드에만 넣어 패키지 총효과로 판정함<br>
+       <b>조건 2가지</b> — ⑴ <code>onClickClose()</code>가 상점 직행이라 <b>닫기 동선 정리와 한 세트</b>여야 함(자동으로 띄워 놓고 닫으면 상점이면 더 나빠짐). ⑵ 반복 노출을 막게 <b>세션당 1회</b>로 제한하고 <code>2095</code>·<code>2270</code>에 <code>trigger</code>(auto/manual)를 넣어 기존 지표와 정의가 섞이지 않게 함</td>
+     </tr>
+     <tr>
+      <td class="step">③ 밸런스시트 값으로 제어<br><span class="dim">−1 무제한 · 0 프리레벨 노출 · 1 이상 그 수만큼 무료</span></td>
+      <td><span class="pill on">채택</span></td>
+      <td>지금은 하루 1회가 코드에 박혀 있어 값을 바꾸려면 빌드를 내야 함. 시트로 빼면 <b>다음 회차 실험이 값 변경 하나로 끝남</b>.<br>
+       <b>초기값은 1(현행)로 두고 시작함</b> — 상수화와 값 변경을 같이 하면 어느 쪽 효과인지 안 갈림.<br>
+       <b>−1(무제한)은 쓰지 않음</b>. 토스 빌드 220에서 입장료를 없앴을 때 인당 판수가 −46%였음. 분기만 남겨두고 값은 안 씀</td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+ </div>
+
+ <p class="note"><b>바뀌는 것</b> &nbsp;·&nbsp; B가 지급식 단독에서 <b>완화 패키지 전체</b>로 커져 총효과로 판정함 &nbsp;·&nbsp; 부품별 기여도는 상수 <code>10112</code>·<code>10114</code>로 다음 회차에 분해 &nbsp;·&nbsp; SPEC-040은 아트 대기 그대로임</p>
+</section>
+
+</body></html>
