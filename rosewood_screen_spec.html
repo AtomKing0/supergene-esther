@@ -1010,8 +1010,7 @@ const rosewoodArtNotes=(()=>{
   const expand=open=>{form.hidden=!open;summary.setAttribute('aria-expanded',String(open))};summary.setAttribute('aria-expanded',String(expanded));summary.onclick=()=>expand(form.hidden);
   function display(r){record=r;requestLabel.hidden=false;request.checked=r.requested;done.checked=Boolean(r.story_applied);doneLabel.hidden=!rosewoodReviewThreads.isAdmin();done.disabled=!r.requested;revise.hidden=!r.story_applied;status.textContent=r.updated_at?new Date(r.updated_at).toLocaleString('ko-KR')+' 상태 저장':'댓글을 등록하면 수정 요청으로 표시됩니다.'}
   async function markRequested(){
-   let next;if(record.story_applied)return;
-   else if(!record.requested)next=await rpc('rosewood_art_note_save',{p_key:noteKey,p_requested:true,p_memo:record.memo||'댓글로 관리',p_author:'공유 메모',p_revision:record.revision});
+   let next;if(!record.requested||record.story_applied)next=await rpc('rosewood_art_note_comment_requested',{p_key:noteKey,p_revision:record.revision});
    if(next){display(next);publish(next)}
   }
   async function clearRequested(){
