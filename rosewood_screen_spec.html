@@ -950,7 +950,7 @@ const rosewoodReviewThreads=(()=>{
  const validateAdmin=()=>adminCheck||(adminCheck=(adminPassword()?rpc('rosewood_review_admin_check',{p_password:adminPassword()}):Promise.resolve(false)).then(value=>admin=Boolean(value)).catch(()=>admin=false).finally(()=>adminCheck=null));
  const unlockAdmin=async()=>{const password=prompt('관리자 비밀번호');if(password===null)return false;const ok=Boolean(await rpc('rosewood_review_admin_check',{p_password:password}));if(!ok)throw Error('관리자 비밀번호가 맞지 않습니다.');sessionStorage.setItem('rosewood-review-admin',password);admin=true;document.dispatchEvent(new Event('rosewood-review-admin-change'));return true};
  const read=()=>cache||(cache=rpc('rosewood_review_read',{p_document:documentName,p_author_key:authorKey()}).catch(()=>rpc('rosewood_review_read',{p_document:documentName})).finally(()=>cache=null));
- function mount({scope,heading,onPost,onCount}){
+ function mount({scope,heading,onPost,onDelete,onCount}){
   const box=make('section','review-thread-box'),compose=make('div','review-thread-compose'),input=make('textarea'),add=make('button','','등록'),list=make('div','review-thread-list'),status=make('small','review-thread-status');
   input.placeholder='새 댓글을 남겨주세요';input.maxLength=4000;add.type='button';compose.append(input,add);box.append(compose,status,list);
   async function post(body,thread,field=input,button=add){
@@ -961,12 +961,12 @@ const rosewoodReviewThreads=(()=>{
   async function remove(thread,message){
    if(!confirm('이 댓글과 대댓글을 삭제할까요?'))return;
    status.textContent='삭제 중…';
-   try{if(admin)await rpc('rosewood_review_admin_delete_message',{p_message_id:message.id,p_password:adminPassword()});else await rpc('rosewood_review_delete_thread',{p_thread_id:thread.id,p_author_key:authorKey()});await paint();document.dispatchEvent(new CustomEvent('rosewood-review-change',{detail:{scope}}))}
+   try{if(admin)await rpc('rosewood_review_admin_delete_message',{p_message_id:message.id,p_password:adminPassword()});else await rpc('rosewood_review_delete_thread',{p_thread_id:thread.id,p_author_key:authorKey()});if(onDelete)await onDelete();await paint();document.dispatchEvent(new CustomEvent('rosewood-review-change',{detail:{scope}}))}
    catch(e){status.textContent=e.message}
   }
   async function removeReply(message){
    if(!confirm('이 대댓글을 삭제할까요?'))return;status.textContent='삭제 중…';
-   try{if(admin)await rpc('rosewood_review_admin_delete_message',{p_message_id:message.id,p_password:adminPassword()});else await rpc('rosewood_review_delete_message',{p_message_id:message.id,p_author_key:authorKey()});await paint();document.dispatchEvent(new CustomEvent('rosewood-review-change',{detail:{scope}}))}
+   try{if(admin)await rpc('rosewood_review_admin_delete_message',{p_message_id:message.id,p_password:adminPassword()});else await rpc('rosewood_review_delete_message',{p_message_id:message.id,p_author_key:authorKey()});if(onDelete)await onDelete();await paint();document.dispatchEvent(new CustomEvent('rosewood-review-change',{detail:{scope}}))}
    catch(e){status.textContent=e.message}
   }
   async function setThreadStatus(thread,next){
@@ -1009,18 +1009,11 @@ const rosewoodArtNotes=(()=>{
   let record,busy=false;
   const expand=open=>{form.hidden=!open;summary.setAttribute('aria-expanded',String(open))};summary.setAttribute('aria-expanded',String(expanded));summary.onclick=()=>expand(form.hidden);
   function display(r){record=r;requestLabel.hidden=false;request.checked=r.requested;done.checked=Boolean(r.story_applied);doneLabel.hidden=!rosewoodReviewThreads.isAdmin();done.disabled=!r.requested;revise.hidden=!r.story_applied;status.textContent=r.updated_at?new Date(r.updated_at).toLocaleString('ko-KR')+' 상태 저장':'댓글을 등록하면 수정 요청으로 표시됩니다.'}
-  async function markRequested(){
-   let next;if(!record.requested||record.story_applied)next=await rpc('rosewood_art_note_comment_requested',{p_key:noteKey,p_revision:record.revision});
-   if(next){display(next);publish(next)}
-  }
-  async function clearRequested(){
-   if(busy||!record?.requested)return;busy=true;
-   try{const next=await rpc('rosewood_art_note_save',{p_key:noteKey,p_requested:false,p_memo:'',p_author:'공유 메모',p_revision:record.revision});display(next);publish(next)}catch(e){status.textContent=e.message}finally{busy=false}
-  }
+  async function refresh(){const next=(await read()).find(row=>row.chore_key===noteKey);if(next){display(next);publish(next)}}
   async function load(){
    try{const r=(await read()).find(row=>row.chore_key===noteKey);display(r||{chore_key:noteKey,requested:false,memo:'',story_applied:false,revision:0,updated_at:null}) }
    catch(e){requestLabel.hidden=doneLabel.hidden=revise.hidden=true;status.textContent=''}
-   form.append(rosewoodReviewThreads.mount({scope:'chore:'+noteKey,heading:item.key+' · '+item.title,onPost:markRequested,onCount:count=>{summary.textContent='자리·디자인'+(count?' · 댓글 '+count+'개':' · 댓글');if(!count)clearRequested()}}))
+   form.append(rosewoodReviewThreads.mount({scope:'chore:'+noteKey,heading:item.key+' · '+item.title,onPost:refresh,onDelete:refresh,onCount:count=>{summary.textContent='자리·디자인'+(count?' · 댓글 '+count+'개':' · 댓글')}}))
   }
   const sync=e=>{if(!box.isConnected){document.removeEventListener('rosewood-art-note-change',sync);return}if(e.detail.chore_key===noteKey)display(e.detail)};document.addEventListener('rosewood-art-note-change',sync);document.addEventListener('rosewood-review-admin-change',()=>{if(record)display(record)});
   revise.onclick=()=>{expand(true);box.querySelector('.review-thread-box')?.compose('[재수정 요청] ');status.textContent='재수정 의견을 댓글로 남겨주세요.'};
