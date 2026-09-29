@@ -11,3 +11,12 @@ for(const g of ['g21','g22','g23','g24','g25']){
 }
 const main=fs.readFileSync(path.join(__dirname,'../concept-drafts-5-variants.html'),'utf8');assert.doesNotMatch(main,/inheritance-reference|viewer.js|viewer.css/);
 console.log('PASS: supplied 5 × 6 scenes, all transition targets and image assets, no discarded generated illustrations or reference essay.');
+
+const endingHtml=fs.readFileSync(path.join(__dirname,'provided/g22/mockup.html'),'utf8');
+const endingScript=[...endingHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)][1][1];
+const endingButtons=['home','travel'].map(ending=>({dataset:{ending},classList:{toggle(){}},setAttribute(){}}));
+const endingImage={},endingTitle={},endingLine={};
+require('node:vm').runInNewContext(endingScript,{document:{querySelectorAll:()=>endingButtons,querySelector:()=>endingImage,getElementById:id=>id==='ending-title'?endingTitle:endingLine}});
+endingButtons[1].onclick();assert.equal(endingTitle.textContent,'둘만의 여행');assert.equal(endingImage.src,'img/scene_beach.jpg');
+endingButtons[0].onclick();assert.equal(endingTitle.textContent,'연인으로 계속 동거');assert.equal(endingImage.src,'img/avatar.jpg');
+console.log('PASS: both ending previews switch the matching title and image.');
