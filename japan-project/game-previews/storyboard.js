@@ -52,6 +52,18 @@ const games={
  ]}
 };
 
+// Four scene illustrations per game; CSS selects a quadrant without altering the source art.
+const scenePanels={g21:[0,1,2,2,3,3],g22:[0,1,1,2,2,3],g23:[0,1,2,3,3,3],g24:[0,0,1,2,3,3],g25:[0,1,1,0,2,3]};
+const sceneLabels={
+ g21:['퍼즐 재료를 모으는 공방','마족형 파트너가 탄생하는 합성 장치','희귀 날개 특징을 보관하는 두 사람','파트너와 함께 별을 보는 밤'],
+ g22:['함께 살기 시작한 집','함께 저녁을 준비하는 부엌','취향을 기억하고 준비한 딸기 디저트','14일째 둘만의 저녁 식탁'],
+ g23:['세 마녀가 운영하는 살롱','향수를 만들고 고객을 응대하는 영업','폐점 후 사적인 이야기를 나누는 리엘','개인 예약실에서 향수를 선물하는 리엘'],
+ g24:['동료와 원정을 고르는 왕도 의뢰소','기사가 사수를 엄호하는 전투','전투 뒤 고마움을 전하는 엘프','야영지에서 다음 원정을 약속하는 두 사람'],
+ g25:['낮에는 인간 모습으로 연락하는 시즈쿠','비밀 메시지를 주고받는 휴대폰','옥상에서 요괴 본모습을 공개하는 시즈쿠','본모습으로 함께 걷는 연인의 밤']
+};
+function sceneArt(g,panel,extra=''){
+ return '<div class="scene-art panel-'+panel+' '+extra+'"><img loading="lazy" src="'+artBase+g+'-scenes.png" alt="'+sceneLabels[g][panel]+'"></div>';
+}
 const screenPlans={
  g21:[
   ['puzzle','퍼즐로 원형 획득','퍼즐 완료 → 새 원형 1종'],
@@ -113,21 +125,21 @@ function screenUI(g,c,kind){
  if(kind==='event'){
   const titles={g21:'첫 약속의 밤',g22:'둘만의 달콤한 저녁',g23:'리엘의 비밀 향수',g24:'야영지의 약속',g25:'옥상에서 드러낸 비밀'};
   const places={g21:'창가 · 별을 함께 보는 밤',g22:'우리의 식탁 · 저녁',g23:'개인 예약실 · 폐점 후',g24:'야영지 · 원정의 밤',g25:'옥상 · 달빛 아래'};
-  return '<figure class="event-photo"><img src="'+art(g)+'" alt="'+c.name+' 캐릭터 참고 이미지"><div class="event-caption"><small>'+places[g]+'</small><strong>'+titles[g]+'</strong></div></figure>'+reward('새 추억 1장 · 개인 앨범에 저장')+'<p class="screen-sub">실제 상품에서는 함께한 상황에 맞는 이미지가 남는다.</p>';
+  return '<figure class="event-photo">'+sceneArt(g,g==='g22'||g==='g25'?2:3)+'<div class="event-caption"><small>'+places[g]+'</small><strong>'+titles[g]+'</strong></div></figure>'+reward('새 추억 1장 · 개인 앨범에 저장')+'<p class="screen-sub">함께한 상황과 대화가 이 장면의 추억으로 남는다.</p>';
  }
  if(kind==='album'||kind==='ending'){
   const end=kind==='ending';
   return (end?'<div class="ending-ribbon"><small>STORY COMPLETE</small><strong>'+(g==='g22'?'우리의 식탁':'너의 모든 모습')+'</strong></div>':'<div class="album-heading">PRIVATE ALBUM <span>01 / 03</span></div>')+
-  '<figure class="story-album album-sheet"><img src="'+art(g)+'" alt="'+c.name+' 추억 앨범 참고 이미지"><figcaption>01 · '+({g21:'첫 약속의 밤',g22:'함께한 14일',g23:'둘만의 예약',g24:'함께 싸운 기억',g25:'너의 모든 모습'}[g])+'<small>함께한 사건 · 대화 · 추억 보관</small></figcaption></figure><div class="album-future"><span>02 · 다음 이야기</span><span>03 · 새로운 추억</span></div>'+reward({g21:'다음 원형 수집 → 새로운 합성',g22:'연인 후일담으로 이어지는 관계',g23:'수익으로 더 사적인 공간 개방',g24:'다음 의뢰 · 숲 조사',g25:'후일담에서 계속되는 비밀연애'}[g]);
+  '<figure class="story-album album-sheet">'+sceneArt(g,3)+'<figcaption>01 · '+({g21:'첫 약속의 밤',g22:'함께한 14일',g23:'둘만의 예약',g24:'함께 싸운 기억',g25:'너의 모든 모습'}[g])+'<small>함께한 사건 · 대화 · 추억 보관</small></figcaption></figure><div class="album-future"><span>02 · 다음 이야기</span><span>03 · 새로운 추억</span></div>'+reward({g21:'다음 원형 수집 → 새로운 합성',g22:'연인 후일담으로 이어지는 관계',g23:'수익으로 더 사적인 공간 개방',g24:'다음 의뢰 · 숲 조사',g25:'후일담에서 계속되는 비밀연애'}[g]);
  }
  return c.ui;
 }
 function drawBoard(root,id){
  const game=games[id],plans=screenPlans[id];
- root.innerHTML='<section class="storyboard-mode '+game.theme+'"><header class="storyboard-heading"><div><small>플레이 흐름 · 누르지 않고 보는 6장면</small><h1>'+game.title+'</h1></div><span>START → RELATION → REWARD</span></header><ol class="storyboard-grid">'+game.cards.map((c,i)=>{
+ root.innerHTML='<section class="storyboard-mode '+game.theme+'"><header class="storyboard-heading"><div><small>플레이 흐름 · 누르지 않고 보는 6장면</small><h1>'+game.title+'</h1></div><span>'+({g21:'퍼즐 · 합성 · 계승',g22:'14일 생활 다이어리',g23:'영업 장부 · 마녀별 예약',g24:'파티 편성 · 전투 · 야영',g25:'비밀 메시지 · 밤의 만남'}[id])+'</span></header><ol class="storyboard-grid">'+game.cards.map((c,i)=>{
  const [kind,label,result]=plans[i];
- return '<li class="story-card"><header><b>'+c.step+'</b><h2>'+label+'</h2></header><div class="screen-topline"><span>'+c.scene+'</span><span>● ● ●</span></div><div class="story-interface screen-'+kind+'">'+screenUI(id,c,kind)+'</div><div class="scene-outcome"><small>진행 결과</small>'+result+'</div></li>';
- }).join('')+'</ol><p class="storyboard-note">화면 구성 예시 · 대화와 확률은 설명용. 인물은 참고 일러스트이며 실제 상황별 이미지는 제작 대상입니다.'+(id==='g22'?' 중간 날짜를 생략해 14일 엔딩까지 연결.':id==='g25'?' 중간 날짜를 생략해 7일 엔딩까지 연결.':'')+'</p></section>';
+ return '<li class="story-card"><header><b>'+c.step+'</b><h2>'+label+'</h2></header><div class="screen-topline"><span>'+c.scene+'</span><span>● ● ●</span></div>'+(!['event','album','ending'].includes(kind)?sceneArt(id,scenePanels[id][i],'stage-illustration'):'')+'<div class="story-interface screen-'+kind+'">'+screenUI(id,c,kind)+'</div><div class="scene-outcome"><small>진행 결과</small>'+result+'</div></li>';
+ }).join('')+'</ol><p class="storyboard-note">화면 구성 예시 · 대화와 확률은 설명용. 일러스트는 제안용으로 생성한 장면 예시입니다.'+(id==='g22'?' 중간 날짜를 생략해 14일 엔딩까지 연결.':id==='g25'?' 중간 날짜를 생략해 7일 엔딩까지 연결.':'')+'</p></section>';
 }
 const inlineBoards=document.querySelectorAll('[data-storyboard-game]');
 if(inlineBoards.length){for(const root of inlineBoards)drawBoard(root,root.dataset.storyboardGame);}else drawBoard(document.getElementById('storyboard'),id);
