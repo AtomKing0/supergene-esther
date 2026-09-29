@@ -55,7 +55,7 @@ if(gameId==='g25'){
   textAt('#s4cap',route.cap);textAt('#s4more .label','기억한 선택 · '+route.name);
   imageAt('#s5 .charbox img',i===0?'fox.jpg':route.image);textAt('#s5 .h',route.ending);
   textAt('#s5 .sub','7일 동안 대화와 약속을 이어간 경로 예시. 기억한 약속 · '+route.name);
-  STEPS[3].d=route.reply;STEPS[4].t=i===2?'4. 밤의 메시지 · 회상 기록':'4. 약속한 만남 · 상황 이미지';STEPS[4].d=route.cap;
+  STEPS[3].d=route.reply;STEPS[4].t=i===2?'4. 밤의 메시지 · 회상 기록':'4. 약속한 만남 · 상황 이미지';STEPS[4].d=route.cap;textAt('#tracker span:nth-child(5)',i===2?'밤의 메시지 · 회상':'밤의 만남 · 상황 이미지');
  }
  selectMeeting(0);
 }
@@ -87,6 +87,7 @@ if(gameId==='g24'){
   document.querySelectorAll('#s2 .hp>span:first-child').forEach((el,i)=>el.textContent=names[party[i]]);
   const lines=q('#s2log').children;lines[0].textContent='턴 1 · '+names[party[0]]+'가 길을 열었다';lines[1].textContent='턴 2 · '+name+' 엄호에 성공했다';
   textAt('#s2pill',name+' 엄호 · 기억됨');textAt('#s3 .topbar b','귀환 후 · '+name+' 대화');
+  STEPS[2].d=party.map(i=>names[i]).join(' + ')+' 파티로 원정. '+name+' 엄호에 성공했다.';STEPS[3].d='함께 싸운 사건을 기억한 '+name+'의 개인 의뢰가 열린다.';
   CHATS.s3=[['','아까 나를 엄호해준 거, 기억하고 있어.'],['me','네가 무사해서 다행이야.'],['','다음 의뢰도 함께 가자.']];
   for(const selector of ['#s3 .charbox img','#s4img img','#s5 .charbox img'])imageAt(selector,files[friend]);
   textAt('#s4more .chip.on',name+' 서사 기록 1');textAt('#s4cap',name+' 야영 기록 · 함께 싸운 기억과 다음 원정의 약속.');
