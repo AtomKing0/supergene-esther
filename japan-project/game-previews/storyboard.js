@@ -51,8 +51,83 @@ const games={
   {step:'06',title:'7일째 엔딩 · 둘만의 앨범',scene:'DAY 07 · 너의 모든 모습',name:'시즈쿠',ui:image('엔딩 · 너의 모든 모습','g25')+chat('시즈쿠','이제 네 앞에서는 숨기지 않아도 되겠지.')+reward('본편 완결 · 비밀과 약속을 보관<br>DLC: 관계 기억을 이어가는 후일담')}
  ]}
 };
-function drawBoard(root,id){const game=games[id];
-root.innerHTML='<section class="storyboard-mode '+game.theme+'"><header class="storyboard-heading"><div><small>'+game.tag+'</small><h1>'+game.title+'</h1></div><span>PLAY FLOW · 6 SCENES</span></header><p class="storyboard-summary">'+game.summary+'</p><ol class="storyboard-grid">'+game.cards.map(c=>'<li class="story-card"><header><b>'+c.step+'</b><h2>'+c.title+'</h2></header><div class="story-scene"><img src="'+art(id)+'" alt="'+c.name+' 참고 일러스트"><span>'+c.scene+'</span><strong>'+c.name+'</strong></div><div class="story-interface">'+c.ui+'</div></li>').join('')+'</ol><p class="storyboard-note">한 경로를 나열한 UI 목업. 대화는 고정 예시, 이미지는 참고 일러스트입니다.'+(id==='g21'?' 확률은 설계 예시이며 출시 수치가 아닙니다.':id==='g22'?' 5~13일은 생략해 엔딩까지 연결했습니다.':id==='g25'?' 4~6일은 생략해 엔딩까지 연결했습니다.':'')+'</p></section>';
+
+const screenPlans={
+ g21:[
+  ['puzzle','퍼즐로 원형 획득','퍼즐 완료 → 새 원형 1종'],
+  ['fusion','확률 합성','두 원형 선택 → 외형·성격 추첨'],
+  ['inherit','희귀 특징 보관','은빛 날개 보관 → 다음 합성에 반영'],
+  ['message','둘만의 약속','대화 → 함께 별 보기 약속'],
+  ['event','약속한 만남','약속을 기억 → 특별한 장면 획득'],
+  ['album','수집과 관계가 남는다','장면 보관 → 다음 원형 수집']
+ ],
+ g22:[
+  ['calendar','14일의 시작','동거 시작 → 하루 일정 선택'],
+  ['schedule','오늘의 계획','요리·휴식 → 함께 보낸 하루'],
+  ['message','취향을 나누는 저녁','대화 → 달콤한 맛을 기억'],
+  ['invitation','그녀의 먼저 온 제안','어제의 취향 → 오늘의 초대'],
+  ['event','둘만의 저녁','함께한 사건 → 추억 1장'],
+  ['ending','우리의 식탁','14일 완결 → 연인 후일담']
+ ],
+ g23:[
+  ['roster','오늘 함께할 마녀','세 마녀 → 리엘 선택'],
+  ['orders','영업 중','주문 배정 → 수익 200 G'],
+  ['message','폐점 후','리엘의 꿈 → 둘만의 비밀'],
+  ['event','나만을 위한 예약','관계 진전 → 비밀 향수 장면'],
+  ['album','리엘의 추억','특별 예약 → 개인 앨범'],
+  ['upgrade','새 만남의 공간','수익 사용 → 개인 응접실']
+ ],
+ g24:[
+  ['map','오늘의 의뢰','왕도 의뢰소 → 외곽 원정'],
+  ['party','동료 편성','기사 + 사수 → 원정 출발'],
+  ['battle','합동 전투','엄호와 공격 → 승리·신뢰 획득'],
+  ['message','귀환 후 대화','보호한 사건 → 개인 의뢰'],
+  ['event','야영의 약속','함께한 원정 → 둘만의 장면'],
+  ['album','다음 원정으로','추억 보관 → 숲 조사']
+ ],
+ g25:[
+  ['chapter','비밀의 시작','7일의 이야기 → 비밀 연락'],
+  ['message','낮의 연락','내 답장 → 본모습을 받아들임'],
+  ['location','밤의 약속','옥상 선택 → 만남 약속'],
+  ['invitation','그 말을 기억해','어제의 답장 → 정체 공개 결심'],
+  ['event','나만 아는 본모습','옥상에서 만남 → 비밀 공개'],
+  ['ending','너의 모든 모습','7일 완결 → 연애 후일담']
+ ]
+};
+const emblem=(symbol,label)=>'<div class="screen-emblem"><span>'+symbol+'</span><b>'+label+'</b></div>';
+const portraitToken=(symbol,title,sub)=>'<div class="cast-token"><span>'+symbol+'</span><b>'+title+'</b><small>'+sub+'</small></div>';
+function screenUI(g,c,kind){
+ if(kind==='fusion')return '<div class="fusion-machine">'+portraitToken('♜','마족형','원형 A')+'<b>＋</b>'+portraitToken('◇','안드로이드형','원형 B')+'</div><div class="synthesis-beam">↓ 확률 조합 ↓</div><div class="synthesis-result"><small>이번 합성 결과</small><strong>마족형 · 다정함</strong><span>✧ 은빛 날개 획득</span></div><div class="probability-strip"><span>마족 50%</span><span>안드로이드 35%</span><span>여우 15%</span></div><p class="screen-sub">외형과 성격을 각각 추첨.<br>다음 합성에는 다른 파트너가 나온다.</p>';
+ if(kind==='inherit')return '<div class="inherit-tree">'+emblem('✧','은빛 날개')+'<div class="branch-label">현재 파트너의 특징 보관</div><div class="branch-pair"><div><b>60%</b><span>다음 파트너에 발현</span></div><div><b>40%</b><span>기본 확률로 재추첨</span></div></div></div>'+memory('기존 파트너와 대화·추억은 유지.');
+ if(kind==='calendar')return '<div class="day-calendar">'+Array.from({length:14},(_,i)=>'<span class="'+(i===0?'today':'')+'">'+(i+1)+'</span>').join('')+'</div><div class="screen-banner"><small>DAY 01 / 14</small><strong>오늘부터, 둘이서.</strong></div>'+chat('유나','우리, 내일은 뭘 같이 할까?')+choice('함께할 하루 고르기',true);
+ if(kind==='schedule')return '<div class="schedule-slot"><small>오전</small><strong>♧ 요리</strong><span>함께 저녁 준비</span></div><div class="schedule-slot"><small>저녁</small><strong>☾ 휴식</strong><span>집에서 둘만의 시간</span></div>'+reward('오늘의 일정 확정')+memory('함께 만든 저녁이 오늘 대화에 반영.');
+ if(kind==='roster')return '<div class="cast-roster">'+portraitToken('⚗','리엘','조향 · 까다로운 완벽주의자')+portraitToken('◈','모르나','연금술 · 무뚝뚝한 동료')+portraitToken('☾','루나','응대 · 장난스러운 파트너')+'</div>'+choice('오늘은 리엘과 영업',true);
+ if(kind==='orders')return '<div class="order-ticket"><small>주문 01 · 향수</small><strong>120 G</strong><span>담당 리엘 · 제작 완료 ✓</span></div><div class="order-ticket"><small>주문 02 · 단골 예약</small><strong>80 G</strong><span>응대 완료 ✓</span></div><div class="receipt-total"><span>영업 종료</span><b>+200 G</b></div>'+choice('문을 닫고 리엘에게',true);
+ if(kind==='upgrade')return '<div class="room-plan"><span>살롱 홀</span><span>제작실</span><strong>＋ 개인 응접실<br><small>새로운 만남 개방</small></strong></div>'+stats('보유 560 G − 확장 200 G = 360 G')+chat('리엘','이 공간에서는 우리 이야기만 하자.')+reward('다음 영업 → 새로운 특별 예약');
+ if(kind==='map')return '<div class="quest-map"><span>♜ 왕도 의뢰소</span><i>↓</i><span>⚔ 외곽 초소</span><i>↓</i><span class="locked">♧ 숲 조사 · 다음 의뢰</span></div><div class="quest-letter"><small>오늘의 의뢰</small><strong>외곽의 파수꾼</strong><p>동료 두 명과 원정을 완료하세요.</p></div>';
+ if(kind==='party')return '<div class="party-slots">'+portraitToken('♜','리아','인간 기사 · 방어')+portraitToken('➶','에린','엘프 사수 · 공격')+'</div><div class="combo-link">기사의 엄호 → 사수의 공격</div>'+choice('2인 파티로 출발',true)+reward('함께한 원정이 두 사람의 관계에 남는다.');
+ if(kind==='battle')return '<div class="battle-field"><div class="enemy">♜<small>파수꾼</small><div class="hp-bar"><i></i></div><b>HP 100 → 0</b></div><div class="battle-party"><span>♜<small>리아 · 엄호</small></span><b>↗</b><span>➶<small>에린 · 합동 공격</small></span></div></div><div class="victory">VICTORY<small>골드 +120 · 신뢰 +8</small></div>'+memory('리아의 엄호로 에린을 지켰다.');
+ if(kind==='chapter')return '<div class="chapter-clock"><span>☀</span><b>낮의 메시지</b><i>↓</i><span>☾</span><b>밤의 만남</b></div><div class="chapter-track">'+Array.from({length:7},(_,i)=>'<span class="'+(i===0?'active':'')+'">'+(i+1)+'</span>').join('')+'</div>'+chat('시즈쿠','내 비밀을 너에게만 말할게.');
+ if(kind==='location')return chat('시즈쿠','오늘 밤, 조용한 곳에서 만날래?')+'<div class="place-option chosen"><span>☾</span><div><b>조용한 옥상</b><small>우리 둘만의 밤 · 선택됨 ✓</small></div></div><div class="place-option"><span>♧</span><div><b>밤의 정원</b><small>다른 만남 장소</small></div></div>'+memory('오늘 밤 옥상에서 만나기로 약속.');
+ if(kind==='invitation')return '<div class="invitation"><small>기억에서 이어진 초대</small><span>✉</span><strong>'+(g==='g22'?'달콤한 간식, 같이 먹자.':'어떤 모습이어도 나라고 했지.')+'</strong><p>'+(g==='g22'?'어제 알려준 취향을 기억하고<br>그녀가 먼저 준비한 만남.':'어제의 답장을 믿고<br>오늘은 본모습을 보여주려 한다.')+'</p></div>'+choice(g==='g22'?'함께하는 저녁으로':'약속한 옥상으로',true);
+ if(kind==='event'){
+  const titles={g21:'첫 약속의 밤',g22:'둘만의 달콤한 저녁',g23:'리엘의 비밀 향수',g24:'야영지의 약속',g25:'옥상에서 드러낸 비밀'};
+  const places={g21:'창가 · 별을 함께 보는 밤',g22:'우리의 식탁 · 저녁',g23:'개인 예약실 · 폐점 후',g24:'야영지 · 원정의 밤',g25:'옥상 · 달빛 아래'};
+  return '<figure class="event-photo"><img src="'+art(g)+'" alt="'+c.name+' 캐릭터 참고 이미지"><div class="event-caption"><small>'+places[g]+'</small><strong>'+titles[g]+'</strong></div></figure>'+reward('새 추억 1장 · 개인 앨범에 저장')+'<p class="screen-sub">실제 상품에서는 함께한 상황에 맞는 이미지가 남는다.</p>';
+ }
+ if(kind==='album'||kind==='ending'){
+  const end=kind==='ending';
+  return (end?'<div class="ending-ribbon"><small>STORY COMPLETE</small><strong>'+(g==='g22'?'우리의 식탁':'너의 모든 모습')+'</strong></div>':'<div class="album-heading">PRIVATE ALBUM <span>01 / 03</span></div>')+
+  '<figure class="story-album album-sheet"><img src="'+art(g)+'" alt="'+c.name+' 추억 앨범 참고 이미지"><figcaption>01 · '+({g21:'첫 약속의 밤',g22:'함께한 14일',g23:'둘만의 예약',g24:'함께 싸운 기억',g25:'너의 모든 모습'}[g])+'<small>함께한 사건 · 대화 · 추억 보관</small></figcaption></figure><div class="album-future"><span>02 · 다음 이야기</span><span>03 · 새로운 추억</span></div>'+reward({g21:'다음 원형 수집 → 새로운 합성',g22:'연인 후일담으로 이어지는 관계',g23:'수익으로 더 사적인 공간 개방',g24:'다음 의뢰 · 숲 조사',g25:'후일담에서 계속되는 비밀연애'}[g]);
+ }
+ return c.ui;
+}
+function drawBoard(root,id){
+ const game=games[id],plans=screenPlans[id];
+ root.innerHTML='<section class="storyboard-mode '+game.theme+'"><header class="storyboard-heading"><div><small>플레이 흐름 · 누르지 않고 보는 6장면</small><h1>'+game.title+'</h1></div><span>START → RELATION → REWARD</span></header><ol class="storyboard-grid">'+game.cards.map((c,i)=>{
+ const [kind,label,result]=plans[i];
+ return '<li class="story-card"><header><b>'+c.step+'</b><h2>'+label+'</h2></header><div class="screen-topline"><span>'+c.scene+'</span><span>● ● ●</span></div><div class="story-interface screen-'+kind+'">'+screenUI(id,c,kind)+'</div><div class="scene-outcome"><small>진행 결과</small>'+result+'</div></li>';
+ }).join('')+'</ol><p class="storyboard-note">화면 구성 예시 · 대화와 확률은 설명용. 인물은 참고 일러스트이며 실제 상황별 이미지는 제작 대상입니다.'+(id==='g22'?' 중간 날짜를 생략해 14일 엔딩까지 연결.':id==='g25'?' 중간 날짜를 생략해 7일 엔딩까지 연결.':'')+'</p></section>';
 }
 const inlineBoards=document.querySelectorAll('[data-storyboard-game]');
 if(inlineBoards.length){for(const root of inlineBoards)drawBoard(root,root.dataset.storyboardGame);}else drawBoard(document.getElementById('storyboard'),id);
