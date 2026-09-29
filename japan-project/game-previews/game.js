@@ -4,7 +4,7 @@ const titles={g21:'계승 공방',g22:'14일의 비밀 동거',g23:'마녀의 �
 const themes={g21:'workshop',g22:'home',g23:'salon',g24:'rpg',g25:'fox'};
 const steps={g21:['원형 수집','확률 합성','결과 확인','특징 승계','대화·약속','만남','앨범'],g22:['하루 계획','저녁 대화','다음 날','관계 장면','14일 엔딩'],g23:['마녀·영업','비밀 대화','특별 예약','앨범','살롱 확장'],g24:['동료 선택','턴제 원정','귀환 대화','야영','앨범·다음 의뢰'],g25:['비밀 메시지','만남 선택','기억·약속','밤의 만남','7일 엔딩']};
 const art=g=>'../assets/game-art/'+g+'.png';
-const initial=()=>({phase:0,affinity:24,materials:18,gold:360,day:gameId==='g25'?2:3,activities:['요리','휴식'],preference:'',witch:'리엘',companion:'에린',enemy:100,hp:100,turn:1,guarded:false,combo:1,log:'공격·엄호·회복 중 행동을 선택하세요.',message:'',result:null,inherit:false,album:[],notice:'',place:'옥상',ending:'',gacha:''});
+const initial=()=>({phase:0,affinity:24,materials:18,gold:360,day:gameId==='g25'?2:3,activities:['요리','휴식'],preference:'',witch:'리엘',companion:'에린',enemy:100,hp:100,turn:1,guarded:false,combo:1,log:'공격·엄호·회복 중 행동을 선택하세요.',message:'',result:null,inherit:false,album:[],notice:'',place:'옥상',ending:'',gacha:'',parents:['0','1'],editSlot:0,savedOrigin:null,generation:1});
 let state=initial(),allowed=new Set();
 const root=document.getElementById('game');
 function button(label,action,cls='',disabled=false){if(!disabled)allowed.add(action);return '<button type="button" data-action="'+action+'" class="'+cls+'" '+(disabled?'disabled':'')+'>'+label+'</button>';}
@@ -26,12 +26,42 @@ const appearancePool=[{name:'마족형 · 은빛 헤어',chance:50,g:'g21'},{nam
 const personalityPool=[{name:'호기심',chance:50},{name:'다정함',chance:30},{name:'도도함',chance:20}];
 const traitPool=[{name:'특별 특징 없음',chance:70},{name:'은빛 날개',chance:20},{name:'별빛 눈동자',chance:10}];
 const odds=pool=>pool.map(x=>x.name+' '+x.chance+'%').join('<br>');
+const origins={
+ '0':{name:'세라 · 마족형',base:0,factors:['은빛 헤어 ★★★','다정함 ★★','은빛 날개 ★★★'],lineage:['마족형 원형','날개 인자']},
+ '1':{name:'노아 · 안드로이드형',base:1,factors:['금빛 헤어 ★★','호기심 ★★★','별빛 눈동자 ★★'],lineage:['기계형 원형','별빛 인자']},
+ '2':{name:'시즈쿠 · 여우형',base:2,factors:['밤빛 헤어 ★★★','도도함 ★★★','별빛 눈동자 ★★'],lineage:['여우형 원형','밤빛 인자']}
+};
+function originFor(key){return key==='saved'?state.savedOrigin:origins[key];}
+function combination(){
+ const key=state.parents.map(k=>originFor(k).base).sort().join('');
+ const profiles={
+  '01':{appearance:[50,35,15],personality:[50,30,20],trait:[70,20,10],affinity:'◎',rate:.6},
+  '02':{appearance:[45,10,45],personality:[20,40,40],trait:[50,30,20],affinity:'○',rate:.5},
+  '12':{appearance:[10,45,45],personality:[60,10,30],trait:[65,5,30],affinity:'○',rate:.5},
+  '00':{appearance:[75,15,10],personality:[20,60,20],trait:[50,40,10],affinity:'◎',rate:.6},
+  '11':{appearance:[10,75,15],personality:[75,10,15],trait:[60,5,35],affinity:'◎',rate:.6},
+  '22':{appearance:[10,15,75],personality:[20,15,65],trait:[55,5,40],affinity:'◎',rate:.6}
+ };
+ return profiles[key];
+}
+function pools(){const c=combination();return {appearance:appearancePool.map((x,i)=>({...x,chance:c.appearance[i]})),personality:personalityPool.map((x,i)=>({...x,chance:c.personality[i]})),trait:traitPool.map((x,i)=>({...x,chance:c.trait[i]}))};}
+function carryInfo(){
+ if(!state.savedTrait||!state.parents.includes('saved'))return '';
+ const pool=pools()[state.savedTrait.kind==='personality'?'personality':'trait'];
+ const basic=pool.find(x=>x.name===state.savedTrait.name).chance,rate=combination().rate;
+ return state.savedTrait.name+' 최종 발현 '+Math.round(rate*100+(1-rate)*basic)+'%<br><small>우선 계승 '+Math.round(rate*100)+'% + 미발현 시 기본 추첨 반영</small>';
+}
+function originPicker(){
+ const c=combination();
+ return '<div class="lineage-compatibility">조합 상성 <b>'+c.affinity+'</b><span>발현 확률은 아래에서 확인</span></div><div class="origin-slots">'+state.parents.map((key,i)=>{const o=originFor(key);return button('<small>원형 '+(i?'B':'A')+' · 변경</small><b>'+o.name+'</b><span>'+o.factors.join('<br>')+'</span><em>이전 계보 · '+o.lineage.join(' + ')+'</em>','source:'+i,state.editSlot===i?'selected':'');}).join('')+'</div><div class="origin-candidates"><small>원형 '+(state.editSlot?'B':'A')+' 선택 · ★는 인자 등급</small>'+Object.entries({...origins,...(state.savedOrigin?{saved:state.savedOrigin}:{})}).map(([key,o])=>button('<b>'+o.name+'</b><span>'+o.factors[2]+'</span>','origin:'+key,state.parents[state.editSlot]===key?'selected':'',state.parents[1-state.editSlot]===key)).join('')+'</div>';
+}
+
 function workshop(){
  let content,speech='새 원형을 모아, 어떤 모습의 파트너를 만나고 싶어?';
  if(state.phase===0){const filled=[0,1,6,7,12,13,14,19,20,25,26,27,28,29,32];content=heading('01 / 취향 원형 수집','블록을 놓고<br>합성 재료를 받으세요.','축약 의뢰 · 마지막 한 수를 체험합니다.')+box('<div class="box-title">목표 4줄 · 현재 3줄</div><div class="puzzle" aria-label="블록 퍼즐 보드">'+Array.from({length:36},(_,i)=>'<div class="cell '+(filled.includes(i)?'filled':'')+'"></div>').join('')+'</div>')+primary('블록 놓기 · 원형과 재료 받기','collect')+button('체험 가챠 1회 · 원형 뽑기','gacha')+'<p class="muted">체험 재화 사용 · 실제 결제 없음</p>';}
- if(state.phase===1){content=heading('02 / 외형·성격 합성','부모 원형은 선택,<br>결과는 확률로 결정.','원형 본체는 보관 · 합성 재료 12 소모')+box('<div class="partners"><div><span class="origin-symbol">♜</span>마족형 원형</div><div><span class="origin-symbol">◇</span>안드로이드형 원형</div></div><div class="odds"><strong>이번 조합의 결과 확률 · 목업 가정</strong><div><b>외형</b>'+odds(appearancePool)+'</div><div><b>성격</b>'+odds(personalityPool)+'</div><div><b>희귀 특징</b>'+odds(traitPool)+'</div></div>'+(state.savedTrait?'<p class="muted">보관한 '+state.savedTrait.name+' · 발현 60% / 미발현 40%<br>미발현 시 기본 확률로 추첨</p>':''))+(state.gacha?memory('체험 가챠 획득 · '+state.gacha):'')+primary('확률 합성하기 · 재료 12','combine',state.materials<12)+button('체험 가챠 · 다른 원형 뽑기','gacha');}
- if(state.phase===2){const r=state.result;speech=r.personality==='도도함'?'쉽게 마음을 주진 않아. 그래도 네 이야기는 들어볼게.':r.personality==='다정함'?'처음 만났지만, 네 하루를 함께 듣고 싶어.':'너에 대해 궁금한 게 많아. 먼저 이름을 알려줄래?';content=heading('03 / 합성 결과','새 파트너를<br>만났습니다.')+box('<div class="result reveal">'+r.appearance+'</div><div class="chips"><span class="chip">성격 · '+r.personality+'</span><span class="chip rare">'+r.trait+'</span></div><p class="muted">외형·성격·희귀 특징을 각각 추첨했습니다.'+(state.savedTrait?'<br>승계 후보 · '+(state.inherit?'발현':'미발현 · 기본 추첨 결과 적용'):'')+'</p>')+primary('희귀 특징 승계 설정','inherit-open');}
- if(state.phase===3){content=heading('04 / 다음 합성에 승계','이번 결과를<br>다음 조합에 이어갑니다.',state.result.trait==='특별 특징 없음'?'희귀 특징 미획득 · 이번 성격을 승계 후보로 보관':'희귀 특징 획득 · 다음 합성의 승계 후보로 보관')+box('<strong>승계 후보 · '+(state.result.trait==='특별 특징 없음'?state.result.personality:state.result.trait)+'</strong><p class="muted">보관은 확정, 다음 합성의 실제 발현은 확률.<br>승계 발현 60% · 미발현 40%<br>나머지 외형·성격은 기본 확률로 추첨합니다.</p>')+primary('승계 후보 보관 · 첫 대화로','inherit-save');}
+ if(state.phase===1){const ps=pools();content=heading('02 / 계승 원형 선택','두 원형을 고르고,<br>인자와 발현 확률을 비교하세요.','체험 보유 원형 3종 · 원형 본체는 소모하지 않음')+originPicker()+box('<div class="odds"><strong>기본 추첨 확률 · 목업 가정</strong><div><b>외형</b>'+odds(ps.appearance)+'</div><div><b>성격</b>'+odds(ps.personality)+'</div><div><b>희귀 특징</b>'+odds(ps.trait)+'</div></div>'+(carryInfo()?'<p class="carry-result">'+carryInfo()+'</p>':''))+(state.gacha?memory('가챠로 확보한 원형 · '+state.gacha):'')+primary('확률 합성하기 · 재료 12','combine',state.materials<12)+button('체험 가챠 · 다른 원형 뽑기','gacha');}
+ if(state.phase===2){const r=state.result;speech=r.personality==='도도함'?'쉽게 마음을 주진 않아. 그래도 네 이야기는 들어볼게.':r.personality==='다정함'?'처음 만났지만, 네 하루를 함께 듣고 싶어.':'너에 대해 궁금한 게 많아. 먼저 이름을 알려줄래?';content=heading('03 / 합성 결과','새 파트너를<br>만났습니다.')+box('<div class="source-receipt">계승 출처 · '+state.parents.map(k=>originFor(k).name).join(' + ')+'</div><div class="result reveal">'+r.appearance+'</div><div class="chips"><span class="chip">성격 · '+r.personality+'</span><span class="chip rare">'+r.trait+'</span></div><p class="muted">외형·성격·희귀 특징을 각각 추첨했습니다.'+(state.savedTrait?'<br>승계 후보 · '+(state.inherit?'발현':'미발현 · 기본 추첨 결과 적용'):'')+'</p>')+primary('희귀 특징 승계 설정','inherit-open');}
+ if(state.phase===3){content=heading('04 / 다음 합성에 승계','이번 결과를<br>다음 조합에 이어갑니다.',state.result.trait==='특별 특징 없음'?'희귀 특징 미획득 · 이번 성격을 승계 후보로 보관':'희귀 특징 획득 · 다음 합성의 승계 후보로 보관')+box('<strong>승계 후보 · '+(state.result.trait==='특별 특징 없음'?state.result.personality:state.result.trait)+'</strong><p class="muted">파트너를 다음 합성의 원형으로 다시 선택할 수 있습니다.<br>계보와 인자를 보관하며, 발현 확률은 다음 조합에서 확인합니다.</p>')+primary('승계 후보 보관 · 첫 대화로','inherit-save');}
  if(state.phase===4){speech=state.result.personality==='도도함'?'별을 보는 약속이라… 늦으면 먼저 가버릴 거야.':state.result.personality==='다정함'?'별을 좋아하는구나. 네가 좋아하는 시간을 함께하고 싶어.':'별자리도 알려줄래? 오늘 밤에 같이 찾아보고 싶어.';content=heading('05 / 대화·약속','성격이 다른 그녀와<br>첫 약속을 만듭니다.')+box('나: 오늘 밤, 같이 별을 볼까?<br>그녀: '+speech)+primary('별을 보는 약속 저장 · 만남으로','workshop-meet');}
  if(state.phase===5){speech='네가 별을 좋아한다고 했지. 오늘은 내가 먼저 기다렸어.';content=heading('06 / 약속한 만남','그녀가 기억한 약속,<br>둘만의 장면이 됩니다.')+illustration('창가에서 별을','첫 대화에서 정한 약속을 함께 지켰다.',state.result.g)+memory(state.result.appearance+' · '+state.result.personality+'<br>약속 · 오늘 밤 함께 별 보기')+primary('사진 저장 · 특별 앨범 보기','workshop-album');}
  if(state.phase===6){speech='약속했던 밤을 기억할게. 다음에는 어디로 갈까?';content=completed('첫 파트너의<br>앨범이 완성됐습니다.','외형·성격·약속이 한 파트너의 기록으로 남았습니다.','다음 합성에 보관한 특징을 승계하거나, 이 파트너와 새 약속을 만듭니다.')+primary('기억 유지 · 다음 확률 합성','workshop-again');}
@@ -86,14 +116,16 @@ function act(action){
  state.notice='';const [key,value,extra]=action.split(':');
  switch(key){
  case'reset':state=initial();break;
+ case'source':state.editSlot=Number(value);break;
+ case'origin':if(originFor(value)&&state.parents[1-state.editSlot]!==value)state.parents[state.editSlot]=value;break;
  case'gacha':{const drawn=pick(appearancePool);state.gacha=drawn.name;state.materials+=8;state.phase=1;state.notice='체험 가챠 획득 · '+drawn.name+' · 재료 +8';break;}
  case'collect':state.materials+=8;state.phase=1;break;
- case'combine':{if(state.materials<12)break;const a=pick(appearancePool),p=pick(personalityPool),t=pick(traitPool);let inherited=false;if(state.savedTrait&&Math.random()<.6){inherited=true;if(state.savedTrait.kind==='personality')p.name=state.savedTrait.name;else t.name=state.savedTrait.name;}state.result={appearance:a.name,g:a.g,personality:p.name,trait:t.name};state.inherit=inherited;state.materials-=12;state.phase=2;break;}
+ case'combine':{if(state.materials<12)break;const ps=pools(),a=pick(ps.appearance),p=pick(ps.personality),t=pick(ps.trait);let inherited=false;if(state.savedTrait&&state.parents.includes('saved')&&Math.random()<combination().rate){inherited=true;if(state.savedTrait.kind==='personality')p.name=state.savedTrait.name;else t.name=state.savedTrait.name;}state.result={appearance:a.name,g:a.g,personality:p.name,trait:t.name};state.inherit=inherited;state.materials-=12;state.phase=2;break;}
  case'inherit-open':state.phase=3;break;
- case'inherit-save':state.savedTrait=state.result.trait==='특별 특징 없음'?{kind:'personality',name:state.result.personality}:{kind:'trait',name:state.result.trait};state.phase=4;break;
+ case'inherit-save':{const ancestors=state.parents.map(k=>originFor(k).name);const nextOrigin={name:'파트너 #'+String(state.generation).padStart(2,'0'),base:appearancePool.findIndex(a=>a.g===state.result.g),factors:[state.result.appearance,state.result.personality,state.result.trait==='특별 특징 없음'?state.result.personality+' 인자':state.result.trait],lineage:ancestors};state.savedTrait=state.result.trait==='특별 특징 없음'?{kind:'personality',name:state.result.personality}:{kind:'trait',name:state.result.trait};state.savedOrigin=nextOrigin;state.phase=4;break;}
  case'workshop-meet':state.message='오늘 밤 함께 별 보기';state.affinity=Math.min(100,state.affinity+8);state.phase=5;break;
  case'workshop-album':saveScene('창가에서 별을',state.result.appearance+' · '+state.result.personality+' · '+state.message,state.result.g);state.phase=6;break;
- case'workshop-again':state.materials+=12;state.result=null;state.message='';state.phase=1;state.notice='목업 다음 회차 재료 +12 · 보관한 특징 발현 60%';break;
+ case'workshop-again':state.parents=['saved','1'];state.editSlot=1;state.generation++;state.materials+=12;state.result=null;state.message='';state.phase=1;state.notice='다음 회차 재료 +12 · 이전 파트너를 원형 A에 배치했습니다.';break;
  case'activity':state.activities[Number(value)]=extra;break;
  case'home-day':state.affinity+=5;state.phase=1;break;
  case'home-reply':state.preference=value;state.message=value==='sweet'?'나는 달콤한 맛을 좋아해.':'다음에도 함께 산책하고 싶어.';state.day=4;state.affinity+=8;state.phase=2;break;

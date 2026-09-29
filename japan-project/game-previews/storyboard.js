@@ -66,9 +66,9 @@ function sceneArt(g,panel,extra=''){
 }
 const screenPlans={
  g21:[
-  ['puzzle','퍼즐로 원형 획득','퍼즐 완료 → 새 원형 1종'],
-  ['fusion','확률 합성','두 원형 선택 → 외형·성격 추첨'],
-  ['inherit','희귀 특징 보관','은빛 날개 보관 → 다음 합성에 반영'],
+  ['puzzle','퍼즐·가챠로 수집','퍼즐 보상·가챠 → 계승 원형 확보'],
+  ['fusion','두 원형·인자 선택','계보·상성 비교 → 발현 확률 확인'],
+  ['inherit','새 파트너와 계보','합성 결과 보관 → 다음 조합의 원형'],
   ['message','둘만의 약속','대화 → 함께 별 보기 약속'],
   ['event','약속한 만남','약속을 기억 → 특별한 장면 획득'],
   ['album','수집과 관계가 남는다','장면 보관 → 다음 원형 수집']
@@ -109,8 +109,8 @@ const screenPlans={
 const emblem=(symbol,label)=>'<div class="screen-emblem"><span>'+symbol+'</span><b>'+label+'</b></div>';
 const portraitToken=(symbol,title,sub)=>'<div class="cast-token"><span>'+symbol+'</span><b>'+title+'</b><small>'+sub+'</small></div>';
 function screenUI(g,c,kind){
- if(kind==='fusion')return '<div class="fusion-machine">'+portraitToken('♜','마족형','원형 A')+'<b>＋</b>'+portraitToken('◇','안드로이드형','원형 B')+'</div><div class="synthesis-beam">↓ 확률 조합 ↓</div><div class="synthesis-result"><small>이번 합성 결과</small><strong>마족형 · 다정함</strong><span>✧ 은빛 날개 획득</span></div><div class="probability-strip"><span>마족 50%</span><span>안드로이드 35%</span><span>여우 15%</span></div><p class="screen-sub">외형과 성격을 각각 추첨.<br>다음 합성에는 다른 파트너가 나온다.</p>';
- if(kind==='inherit')return '<div class="inherit-tree">'+emblem('✧','은빛 날개')+'<div class="branch-label">현재 파트너의 특징 보관</div><div class="branch-pair"><div><b>60%</b><span>다음 파트너에 발현</span></div><div><b>40%</b><span>기본 확률로 재추첨</span></div></div></div>'+memory('기존 파트너와 대화·추억은 유지.');
+ if(kind==='fusion')return '<div class="lineage-compatibility">조합 상성 <b>◎</b><span>예상 확률을 보고 선택</span></div><div class="origin-slots"><div><small>원형 A</small><b>세라 · 마족형</b><span>은빛 헤어 ★★★<br>다정함 ★★<br>은빛 날개 ★★★</span><em>마족형 원형 + 날개 인자</em></div><div><small>원형 B</small><b>노아 · 안드로이드형</b><span>금빛 헤어 ★★<br>호기심 ★★★<br>별빛 눈동자 ★★</span><em>기계형 원형 + 별빛 인자</em></div></div><div class="probability-strip"><span>마족형 50%</span><span>안드로이드형 35%</span><span>여우형 15%</span></div>'+choice('원형 B 변경 → 확률도 변경',true)+'<p class="screen-sub">외형·성격·희귀 특징을 각각 추첨.<br>원형은 보관하고 합성 재료만 소모.</p>';
+ if(kind==='inherit')return '<div class="lineage-result"><small>두 원형에서 탄생 · 파트너 #01</small><strong>마족형 · 다정함 · 은빛 날개</strong><div class="lineage-path"><span>세라</span><b>＋</b><span>노아</span><b>→</b><span>파트너 #01</span></div></div>'+memory('새 파트너의 외형·성격·인자와 계보를 보관.')+'<div class="carry-result"><b>다음 조합에 파트너 #01 선택</b><br>은빛 날개 최종 발현 68%<small>우선 계승 60% + 미발현 시 기본 추첨 20% 반영<br>0.6 + 0.4 × 0.2 = 0.68 · 목업 확률</small></div>'+choice('기존 파트너의 대화·앨범은 유지',true);
  if(kind==='calendar')return '<div class="day-calendar">'+Array.from({length:14},(_,i)=>'<span class="'+(i===0?'today':'')+'">'+(i+1)+'</span>').join('')+'</div><div class="screen-banner"><small>DAY 01 / 14</small><strong>오늘부터, 둘이서.</strong></div>'+chat('유나','우리, 내일은 뭘 같이 할까?')+choice('함께할 하루 고르기',true);
  if(kind==='schedule')return '<div class="schedule-slot"><small>오전</small><strong>♧ 요리</strong><span>함께 저녁 준비</span></div><div class="schedule-slot"><small>저녁</small><strong>☾ 휴식</strong><span>집에서 둘만의 시간</span></div>'+reward('오늘의 일정 확정')+memory('함께 만든 저녁이 오늘 대화에 반영.');
  if(kind==='roster')return '<div class="cast-roster">'+portraitToken('⚗','리엘','조향 · 까다로운 완벽주의자')+portraitToken('◈','모르나','연금술 · 무뚝뚝한 동료')+portraitToken('☾','루나','응대 · 장난스러운 파트너')+'</div>'+choice('오늘은 리엘과 영업',true);
