@@ -1,4 +1,5 @@
-const storyboardVersion=new URL(document.currentScript.src).search;
+const storyboardPlayerRevision='e9436a0c01';
+const storyboardVersion=new URL(document.currentScript.src).search+'&player='+storyboardPlayerRevision;
 const storyboardBase=new URL('provided/',document.currentScript.src);
 const boardDialog=document.createElement('dialog');
 boardDialog.className='board-popup';
