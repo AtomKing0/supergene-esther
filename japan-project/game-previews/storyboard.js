@@ -1,4 +1,4 @@
-const storyboardPlayerRevision='e9436a0c01';
+const storyboardPlayerRevision='100bf3c86e';
 const storyboardVersion=new URL(document.currentScript.src).search+'&player='+storyboardPlayerRevision;
 const storyboardBase=new URL('provided/',document.currentScript.src);
 const boardDialog=document.createElement('dialog');
