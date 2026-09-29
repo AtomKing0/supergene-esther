@@ -1,0 +1,104 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>14일의 비밀 동거 플레이 목업</title><style>
+:root{--bg:#0b0d1c;--panel:#15183a;--panel2:#1d2150;--line:#2f3470;--fg:#f3f0ff;--muted:#b9b3d9;--dim:#8d87b3;--pink:#ff5c8a;--gold:#ffd166;--mint:#5ee6c0;--violet:#b08cff;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;overflow:hidden}
+.stage{width:1600px;height:900px;position:relative;background:radial-gradient(900px 500px at 85% -10%,#3a1d5a 0%,rgba(11,13,28,0) 60%),var(--bg);display:flex;align-items:center;gap:60px;padding:0 90px}
+.phone{width:390px;height:844px;border-radius:44px;background:#000;border:3px solid #3a3f7a;position:relative;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);flex:none}
+.screen{position:absolute;inset:0;background:var(--panel);display:none;flex-direction:column}
+.screen.on{display:flex}
+.topbar{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);background:#101334}
+.topbar b{color:var(--fg)}
+.coin{background:#0b0d1c;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--gold);font-weight:700}
+.body{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden;position:relative}
+.btn{background:var(--pink);color:#fff;border:0;border-radius:14px;padding:14px;font-size:16px;font-weight:800;text-align:center;cursor:pointer;width:100%;letter-spacing:.02em}
+.btn.ghost{background:transparent;border:1.5px solid var(--pink);color:var(--pink)}
+.btn.gold{background:var(--gold);color:#1a1a2e}
+.btn.dis{opacity:.35;pointer-events:none}
+.label{font-size:12.5px;color:var(--dim)}
+.h{font-size:19px;font-weight:800}
+.sub{font-size:13.5px;color:var(--muted);line-height:1.5}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:12px}
+.charbox{border-radius:18px;background:linear-gradient(180deg,#2a1d55,#14163a);overflow:hidden;position:relative;display:flex;align-items:flex-end;justify-content:center}
+.charbox svg{width:100%;height:100%}
+.pick{outline:3px solid var(--gold)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--mint);color:var(--mint);border-radius:999px;font-size:12px;padding:3px 9px}
+.chip.on{background:var(--mint);color:#0b0d1c;font-weight:700}
+.chip.lock{border-color:var(--gold);color:var(--gold)}
+.chip.lock.on{background:var(--gold);color:#0b0d1c}
+.bubble{background:#fff;color:#1a1a2e;border-radius:16px 16px 16px 4px;padding:10px 13px;font-size:14px;line-height:1.45;max-width:86%;align-self:flex-start;opacity:0;transform:translateY(8px);transition:.35s}
+.bubble.me{background:var(--pink);color:#fff;align-self:flex-end;border-radius:16px 16px 4px 16px}
+.bubble.show{opacity:1;transform:none}
+.bar{height:8px;border-radius:6px;background:#0b0d1c;overflow:hidden}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--gold));transition:width .8s}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tile{aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#0b0d1c;transition:.3s;cursor:pointer}
+.tile.sel{outline:3px solid #fff;transform:scale(1.06)}
+.tile.gone{opacity:0;transform:scale(.2)}
+.toast{position:absolute;left:16px;right:16px;top:40%;background:rgba(255,209,102,.96);color:#1a1a2e;border-radius:18px;padding:18px;text-align:center;font-weight:900;font-size:22px;opacity:0;transform:scale(.8);transition:.35s;pointer-events:none}
+.toast.show{opacity:1;transform:scale(1)}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:.5s}
+.flash.go{opacity:.9;transition:.08s}
+.tabs{display:flex;border-top:1px solid var(--line);background:#101334}
+.tabs div{flex:1;text-align:center;padding:10px 0 12px;font-size:11.5px;color:var(--dim)}
+.tabs div.on{color:var(--pink);font-weight:800}
+.album{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.album .charbox{aspect-ratio:3/4}
+.album .empty{aspect-ratio:3/4;border:1.5px dashed var(--line);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px}
+.star{position:absolute;top:10px;right:10px;background:var(--gold);color:#1a1a2e;font-weight:900;font-size:12px;border-radius:999px;padding:4px 9px;opacity:0;transition:.4s}
+.star.show{opacity:1}
+.energy{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+/* right panel */
+.side{flex:1;min-width:0;display:flex;flex-direction:column;gap:22px}
+.side .eyebrow{color:var(--pink);letter-spacing:.2em;font-size:15px;font-weight:700}
+.side h1{font-size:44px;line-height:1.2;font-weight:900}
+.side p{font-size:22px;color:var(--muted);line-height:1.55}
+.tracker{display:flex;gap:10px;flex-wrap:wrap}
+.tracker span{border:1.5px solid var(--line);border-radius:999px;padding:6px 16px;font-size:15px;color:var(--dim)}
+.tracker span.on{border-color:var(--gold);color:var(--gold);font-weight:800}
+.tracker span.done{border-color:var(--mint);color:var(--mint)}
+.side .note{font-size:15px;color:var(--dim)}
+.controls{display:flex;gap:10px}
+.controls button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:10px 18px;font-size:15px;cursor:pointer}
+.hidden{display:none!important}
+@media (max-width:1500px){.stage{width:100vw;height:100vh;padding:0 4vw;gap:4vw}.side h1{font-size:32px}.side p{font-size:17px}}
+@media (max-width:900px){.stage{flex-direction:column;justify-content:flex-start;padding:16px;gap:12px;height:auto;min-height:100vh}body{overflow:auto}.phone{transform:scale(.85);transform-origin:top center;margin-bottom:-120px}.side h1{font-size:22px}.side p{font-size:14px}}
+
+.opt{display:flex;gap:10px;align-items:center;background:var(--panel2);border:1.5px solid var(--line);border-radius:14px;padding:10px;cursor:pointer}
+.opt.on{border-color:var(--gold);background:#2a2650}
+.opt .ic{width:44px;height:44px;border-radius:10px;background:#0b0d1c;display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.opt b{font-size:14px;display:block}.opt span{font-size:12px;color:var(--dim)}
+.log{background:#0b0d1c;border-radius:12px;padding:10px;font-size:12.5px;line-height:1.6;color:var(--muted);min-height:96px}
+.log div{opacity:0;transform:translateX(-6px);transition:.3s}.log div.show{opacity:1;transform:none}
+.hp{display:flex;gap:6px;align-items:center;font-size:11.5px;color:var(--dim)}.hp .bar{flex:1}
+.pill{background:var(--gold);color:#1a1a2e;font-weight:800;border-radius:999px;padding:2px 10px;font-size:12px}
+.day{position:absolute;top:60px;left:16px;background:rgba(0,0,0,.55);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--gold);font-weight:800}
+.img{width:100%;height:100%;object-fit:cover;object-position:top}
+</style><link rel="stylesheet" href="../provided.css?v=8e455deb95"></head><body>
+<div class="stage"><div class="phone"><div class="flash" id="flash"></div><div class="screen on" id="s0"><div class="topbar"><b>DLsite 동인 · 시뮬레이션</b><span class="coin">본편 구매</span></div><div class="body" style="justify-content:flex-end;padding:0;background:#0b0d1c">
+ <div style="position:absolute;inset:0;opacity:.9"><img src="img/title_bg.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center"></div>
+ <div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(180deg,rgba(11,13,28,0) 0%,rgba(11,13,28,.94) 55%)"></div>
+ <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;padding:16px">
+  <div class="label" style="letter-spacing:.2em;color:var(--pink)">본편 1회 구매 + DLC</div>
+  <div style="font-size:30px;font-weight:900;line-height:1.15">14일의<br><span style="color:var(--pink)">비밀 동거</span></div>
+  <div class="sub">어제 나눈 대화가 오늘의 그녀를 바꾸는 14일의 동거.</div><div style="height:6px"></div>
+  <button class="btn" data-go="s1">시작하기</button>
+  <div class="label" style="text-align:center">18+ · 모든 캐릭터는 성인</div></div></div></div><div class="screen" id="s1"><div class="topbar"><b>3일째 · 오늘의 활동</b><span class="coin">Day 3 / 14</span></div><div class="body"><div class="charbox" style="height:160px"><img src="img/partner.jpg" style="width:100%;height:100%;object-fit:cover;object-position:top"></div>
+ <div class="h" style="font-size:17px">오늘 하루, 두 칸의 활동을 고른다</div><div style="display:flex;flex-direction:column;gap:8px"><div class="opt on"><div class="ic">🏠</div><div><b>집에서 보내기</b><span>오전</span></div></div><div class="opt on"><div class="ic">🚶</div><div><b>외출하기</b><span>오후</span></div></div><div class="opt "><div class="ic">🌙</div><div><b>함께 쉬기</b><span>밤</span></div></div></div>
+ <div class="label">생활 선택 3종 · 선택과 대화에서 쌓인 취향·약속이 다음 날 반응으로 이어진다</div><div style="flex:1"></div><button class="btn" data-go="s2">하루 시작</button></div></div><div class="screen" id="s2"><div class="topbar"><b>집에서 · AI 대화</b><span class="coin">Day 3</span></div><div class="body" style="gap:8px"><div class="charbox" style="height:190px;position:relative"><img src="img/avatar.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center"><div class="day">3일째</div></div>
+ <div id="s2chat" style="display:flex;flex-direction:column;gap:8px;flex:1"></div>
+ <div class="card" style="display:flex;gap:8px;align-items:center;padding:8px 12px"><span class="sub" style="flex:1;color:var(--dim)">메시지 입력…</span><span class="chip on">보내기</span></div>
+ <button class="btn hidden" id="s2btn" data-go="s3">다음 날로</button></div></div><div class="screen" id="s3"><div class="topbar"><b>4일째 · 아침</b><span class="coin">Day 4</span></div><div class="body" style="gap:8px"><div class="charbox" style="height:190px;position:relative"><img src="img/avatar.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center"><div class="day">4일째</div></div>
+ <div id="s3chat" style="display:flex;flex-direction:column;gap:8px;flex:1"></div>
+ <div class="card" style="display:flex;gap:8px;align-items:center;padding:8px 12px"><span class="sub" style="flex:1;color:var(--dim)">답장 입력…</span><span class="chip on">보내기</span></div>
+ <button class="btn hidden" id="s3btn" data-go="s4">함께 나가기</button></div></div><div class="screen" id="s4"><div class="topbar"><b>관계 전환점 · 상황 이미지</b><span class="coin">Day 4</span></div><div class="body" style="gap:10px"><div class="charbox" style="height:420px;background:none" id="s4img"><img src="img/scene_beach.jpg" style="width:100%;height:100%;object-fit:cover;object-position:top"></div>
+ <div class="sub" id="s4cap" style="opacity:0;transition:.6s">선택한 의상·장소·상황·감정에 맞는 이미지. 14일의 추억으로 남는다.</div>
+ <div id="s4more" class="hidden" style="display:flex;flex-direction:column;gap:8px"><div class="chips"><span class="chip on">14일의 추억 1</span><span class="chip ">관계 기록 · 취향 · 약속</span></div><div class="label">관계 단계별 상황 이미지와 엔딩을 모은다</div></div>
+ <div style="flex:1"></div><button class="btn" id="s4btn" data-go="s5">추억에 담기</button></div></div><div class="screen" id="s5"><div class="topbar"><b>14일째 · 관계 엔딩</b><span class="coin">Day 14</span></div><div class="body" style="gap:10px"><div class="charbox" style="height:230px"><img src="img/scene_night.jpg" style="width:100%;height:100%;object-fit:cover;object-position:top"></div>
+ <div class="h">14일째 관계 엔딩 (엔딩 2개)</div><div class="sub">14일의 완결된 동거 이야기와 엔딩. 본편 진행에 필요한 AI 이용 범위 포함.</div><div class="card"><div class="label">DLC</div><div class="chips" style="margin-top:6px"><span class="chip lock">연인 후일담</span><span class="chip lock">새 의상</span><span class="chip lock">새 장소 · 상황</span></div></div>
+ <div style="flex:1"></div><button class="btn ghost" data-go="s0">다른 엔딩으로</button></div></div></div>
+<div class="side"><div class="eyebrow">2-2. 14일의 비밀 동거</div><h1 id="st"></h1><p id="sd"></p><div class="tracker" id="tracker"></div><div class="note" id="sn"></div>
+<div class="controls" id="ctl"><button id="autoBtn">▶ 자동 재생</button><button id="resetBtn">처음으로</button></div></div></div>
+<script>
+const STEPS=[{"id": "s0", "t": "게임에 들어간다", "d": "성인 안드로이드 파트너와 함께할 하루를 고르고 AI로 대화한다.", "n": ""}, {"id": "s1", "t": "1. 하루 두 칸의 활동을 고른다", "d": "하루 두 칸의 활동을 선택하고, 그 상황에서 AI 파트너와 대화한다. 생활 선택 3종.", "n": ""}, {"id": "s2", "t": "2. 그 상황에서 AI 대화 · 취향을 알려준다", "d": "집에서 보내는 상황에서 대화한다. 내 취향을 알려주면 파트너가 기억한다.", "n": ""}, {"id": "s3", "t": "3. 다음 날, 그녀가 기억해 먼저 제안한다", "d": "함께한 생활과 중요한 대화를 기억한 파트너가 다음 날 먼저 약속을 꺼낸다.", "n": ""}, {"id": "s4", "t": "4. 관계의 전환점 · 상황 이미지", "d": "함께한 날의 상황 이미지가 14일의 추억으로 남는다.", "n": ""}, {"id": "s5", "t": "5. 14일째 관계 엔딩 · DLC", "d": "14일의 완결된 이야기와 엔딩. DLC는 관계 기억을 이어가는 연인 후일담·새 의상·장소·상황.", "n": ""}];const CHATS={"s2": [["", "오늘은 집에서 보내는 날이네요. 뭐 하고 싶어요?"], ["me", "난 매운 음식이 좋아. 같이 만들자."], ["", "매운 음식… 기억해 둘게요."]], "s3": [["", "좋은 아침. 어제 말한 매운 음식, 오늘 저녁에 같이 만들까요?"], ["", "그리고… 오후엔 같이 나가요. 약속."], ["me", "좋아."]]};const TYPES={"s0": "title", "s1": "choice", "s2": "chat", "s3": "chat", "s4": "scene", "s5": "ending"};const ORDER=["s0", "s1", "s2", "s3", "s4", "s5"];
+</script><script src="../controls.js?v=7e4ff87f8c"></script></body></html>

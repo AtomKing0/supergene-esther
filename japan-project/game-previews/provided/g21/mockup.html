@@ -1,0 +1,103 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>계승 공방 — 나만의 파트너 플레이 목업</title><style>
+:root{--bg:#0b0d1c;--panel:#15183a;--panel2:#1d2150;--line:#2f3470;--fg:#f3f0ff;--muted:#b9b3d9;--dim:#8d87b3;--pink:#ff5c8a;--gold:#ffd166;--mint:#5ee6c0;--violet:#b08cff;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;overflow:hidden}
+.stage{width:1600px;height:900px;position:relative;background:radial-gradient(900px 500px at 85% -10%,#3a1d5a 0%,rgba(11,13,28,0) 60%),var(--bg);display:flex;align-items:center;gap:60px;padding:0 90px}
+.phone{width:390px;height:844px;border-radius:44px;background:#000;border:3px solid #3a3f7a;position:relative;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);flex:none}
+.screen{position:absolute;inset:0;background:var(--panel);display:none;flex-direction:column}
+.screen.on{display:flex}
+.topbar{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);background:#101334}
+.topbar b{color:var(--fg)}
+.coin{background:#0b0d1c;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--gold);font-weight:700}
+.body{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden;position:relative}
+.btn{background:var(--pink);color:#fff;border:0;border-radius:14px;padding:14px;font-size:16px;font-weight:800;text-align:center;cursor:pointer;width:100%;letter-spacing:.02em}
+.btn.ghost{background:transparent;border:1.5px solid var(--pink);color:var(--pink)}
+.btn.gold{background:var(--gold);color:#1a1a2e}
+.btn.dis{opacity:.35;pointer-events:none}
+.label{font-size:12.5px;color:var(--dim)}
+.h{font-size:19px;font-weight:800}
+.sub{font-size:13.5px;color:var(--muted);line-height:1.5}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:12px}
+.charbox{border-radius:18px;background:linear-gradient(180deg,#2a1d55,#14163a);overflow:hidden;position:relative;display:flex;align-items:flex-end;justify-content:center}
+.charbox svg{width:100%;height:100%}
+.pick{outline:3px solid var(--gold)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--mint);color:var(--mint);border-radius:999px;font-size:12px;padding:3px 9px}
+.chip.on{background:var(--mint);color:#0b0d1c;font-weight:700}
+.chip.lock{border-color:var(--gold);color:var(--gold)}
+.chip.lock.on{background:var(--gold);color:#0b0d1c}
+.bubble{background:#fff;color:#1a1a2e;border-radius:16px 16px 16px 4px;padding:10px 13px;font-size:14px;line-height:1.45;max-width:86%;align-self:flex-start;opacity:0;transform:translateY(8px);transition:.35s}
+.bubble.me{background:var(--pink);color:#fff;align-self:flex-end;border-radius:16px 16px 4px 16px}
+.bubble.show{opacity:1;transform:none}
+.bar{height:8px;border-radius:6px;background:#0b0d1c;overflow:hidden}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--gold));transition:width .8s}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tile{aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#0b0d1c;transition:.3s;cursor:pointer}
+.tile.sel{outline:3px solid #fff;transform:scale(1.06)}
+.tile.gone{opacity:0;transform:scale(.2)}
+.toast{position:absolute;left:16px;right:16px;top:40%;background:rgba(255,209,102,.96);color:#1a1a2e;border-radius:18px;padding:18px;text-align:center;font-weight:900;font-size:22px;opacity:0;transform:scale(.8);transition:.35s;pointer-events:none}
+.toast.show{opacity:1;transform:scale(1)}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:.5s}
+.flash.go{opacity:.9;transition:.08s}
+.tabs{display:flex;border-top:1px solid var(--line);background:#101334}
+.tabs div{flex:1;text-align:center;padding:10px 0 12px;font-size:11.5px;color:var(--dim)}
+.tabs div.on{color:var(--pink);font-weight:800}
+.album{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.album .charbox{aspect-ratio:3/4}
+.album .empty{aspect-ratio:3/4;border:1.5px dashed var(--line);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px}
+.star{position:absolute;top:10px;right:10px;background:var(--gold);color:#1a1a2e;font-weight:900;font-size:12px;border-radius:999px;padding:4px 9px;opacity:0;transition:.4s}
+.star.show{opacity:1}
+.energy{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+/* right panel */
+.side{flex:1;min-width:0;display:flex;flex-direction:column;gap:22px}
+.side .eyebrow{color:var(--pink);letter-spacing:.2em;font-size:15px;font-weight:700}
+.side h1{font-size:44px;line-height:1.2;font-weight:900}
+.side p{font-size:22px;color:var(--muted);line-height:1.55}
+.tracker{display:flex;gap:10px;flex-wrap:wrap}
+.tracker span{border:1.5px solid var(--line);border-radius:999px;padding:6px 16px;font-size:15px;color:var(--dim)}
+.tracker span.on{border-color:var(--gold);color:var(--gold);font-weight:800}
+.tracker span.done{border-color:var(--mint);color:var(--mint)}
+.side .note{font-size:15px;color:var(--dim)}
+.controls{display:flex;gap:10px}
+.controls button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:10px 18px;font-size:15px;cursor:pointer}
+.hidden{display:none!important}
+@media (max-width:1500px){.stage{width:100vw;height:100vh;padding:0 4vw;gap:4vw}.side h1{font-size:32px}.side p{font-size:17px}}
+@media (max-width:900px){.stage{flex-direction:column;justify-content:flex-start;padding:16px;gap:12px;height:auto;min-height:100vh}body{overflow:auto}.phone{transform:scale(.85);transform-origin:top center;margin-bottom:-120px}.side h1{font-size:22px}.side p{font-size:14px}}
+
+.opt{display:flex;gap:10px;align-items:center;background:var(--panel2);border:1.5px solid var(--line);border-radius:14px;padding:10px;cursor:pointer}
+.opt.on{border-color:var(--gold);background:#2a2650}
+.opt .ic{width:44px;height:44px;border-radius:10px;background:#0b0d1c;display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.opt b{font-size:14px;display:block}.opt span{font-size:12px;color:var(--dim)}
+.log{background:#0b0d1c;border-radius:12px;padding:10px;font-size:12.5px;line-height:1.6;color:var(--muted);min-height:96px}
+.log div{opacity:0;transform:translateX(-6px);transition:.3s}.log div.show{opacity:1;transform:none}
+.hp{display:flex;gap:6px;align-items:center;font-size:11.5px;color:var(--dim)}.hp .bar{flex:1}
+.pill{background:var(--gold);color:#1a1a2e;font-weight:800;border-radius:999px;padding:2px 10px;font-size:12px}
+.day{position:absolute;top:60px;left:16px;background:rgba(0,0,0,.55);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--gold);font-weight:800}
+.img{width:100%;height:100%;object-fit:cover;object-position:top}
+</style><link rel="stylesheet" href="../provided.css?v=8e455deb95"></head><body>
+<div class="stage"><div class="phone"><div class="flash" id="flash"></div><div class="screen on" id="s0"><div class="topbar"><b>にじGAME · 온라인게임</b><span class="coin">F2P + IAP</span></div><div class="body" style="justify-content:flex-end;padding:0;background:#0b0d1c">
+ <div style="position:absolute;inset:0;opacity:.9"><img src="img/title_bg.jpg" style="width:100%;height:100%;object-fit:cover;object-position:top"></div>
+ <div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(180deg,rgba(11,13,28,0) 0%,rgba(11,13,28,.94) 55%)"></div>
+ <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;padding:16px">
+  <div class="label" style="letter-spacing:.2em;color:var(--pink)">にじGAME · R18</div>
+  <div style="font-size:30px;font-weight:900;line-height:1.15">계승 공방<br><span style="color:var(--pink)">나만의 파트너</span></div>
+  <div class="sub">내 취향으로 만든 파트너가,<br>나와 나눈 대화를 기억한다.</div><div style="height:6px"></div>
+  <button class="btn" data-go="s1">시작하기</button>
+  <div class="label" style="text-align:center">18+ · 모든 캐릭터는 성인 · 관계는 서로 동의한 설정</div></div></div></div><div class="screen" id="s1"><div class="topbar"><b>취향 원형 수집</b><span class="coin">◎ 0</span></div><div class="body"><div class="sub">짧은 퍼즐·가챠로 <b style="color:var(--gold)">원형</b>을 얻는다.</div><div class="grid" style="gap:6px"><div class="tile" style="background:#ffd166">●</div><div class="tile" style="background:#5ee6c0">▲</div><div class="tile" style="background:#b08cff">■</div><div class="tile" style="background:#ff5c8a">◆</div><div class="tile" style="background:#5ee6c0">▲</div><div class="tile" style="background:#ffd166">●</div><div class="tile" style="background:#ff5c8a">◆</div><div class="tile" style="background:#b08cff">■</div><div class="tile" style="background:#b08cff">■</div><div class="tile" style="background:#ff5c8a">◆</div><div class="tile" style="background:#ffd166">●</div><div class="tile" style="background:#5ee6c0">▲</div></div>
+ <div class="toast show" style="position:static;opacity:1;transform:none;font-size:16px;padding:10px">클리어! 원형 획득</div>
+ <div style="display:flex;gap:8px"><div style="flex:1"><div class="charbox pick" style="height:118px"><img src="img/charA.jpg" style="width:100%;height:100%;object-fit:cover;object-position:top"></div><div class="label" style="text-align:center;margin-top:4px">원형 A</div></div><div style="flex:1"><div class="charbox pick" style="height:118px"><img src="img/charB.jpg" style="width:100%;height:100%;object-fit:cover;object-position:top"></div><div class="label" style="text-align:center;margin-top:4px">원형 B</div></div><div style="flex:1"><div class="charbox" style="height:118px"><img src="img/charC.jpg" style="width:100%;height:100%;object-fit:cover;object-position:top"></div><div class="label" style="text-align:center;margin-top:4px">원형 C</div></div></div>
+ <div class="label">원형 3명 · 무료 원형 수집 · 원형 본체는 합성에 소모하지 않는다</div><div style="flex:1"></div><button class="btn" data-go="s2">두 원형으로 합성하기</button><button class="btn ghost" data-gacha>체험 가챠 1회</button></div></div><div class="screen" id="s2"><div class="topbar"><b>외형·성격 합성</b><span class="coin">◎ 0</span></div><div class="body fusion-body"><div class="fusion-hero"><img src="img/result.jpg" alt="파트너 미리 보기"><span>합성 파트너</span><b id="compatibility">상성 ◎</b></div><div class="source-pair"><button class="source-slot" data-slot="0"><small>1번째 원형</small><img src="img/charA.jpg" alt="원형 A"><b>원형 A</b><span>외형 ★★★<br>다정함 ★★</span><div class="ancestry"><img src="img/charA.jpg" alt="이전 원형"><i>┬</i><img src="img/charC.jpg" alt="계승 인자"></div></button><button class="source-slot" data-slot="1"><small>2번째 원형</small><img src="img/charB.jpg" alt="원형 B"><b>원형 B</b><span>이종족 ★★<br>호기심 ★★★</span><div class="ancestry"><img src="img/charB.jpg" alt="이전 원형"><i>┬</i><img src="img/charA.jpg" alt="계승 인자"></div></button></div><div class="source-roster"><button data-origin="0"><img src="img/charA.jpg" alt="원형 A"></button><button data-origin="1"><img src="img/charB.jpg" alt="원형 B"></button><button data-origin="2"><img src="img/charC.jpg" alt="원형 C"></button></div><div id="fusion-odds" class="label">외형 A 50% · B 35% · C 15%<br>성격·희귀 특징 별도 추첨 · 목업 확률</div><button class="btn gold" data-go="s3">확률 합성하기</button></div></div><div class="screen" id="s3"><div class="topbar"><b>파트너 완성</b><span class="coin">◎ 0</span></div><div class="body"><div class="charbox" style="height:320px;position:relative"><img src="img/result.jpg" style="width:100%;height:100%;object-fit:cover;object-position:top"><div class="star show">★ 희귀 특징</div></div>
+ <div class="h">완성한 파트너</div><div id="fusion-result" class="sub">외형 A · 다정함 · 희귀 인자</div><div class="chips"><span class="chip on">외형 · A</span><span class="chip on">이종족 특징 · B</span><span class="chip on">성격 · B</span><span class="chip on">선택한 의상</span></div>
+ <div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><div class="label">희귀 특징 승계</div><div class="sub">다음 합성의 원형으로 보관</div></div><span class="chip lock on">승계</span></div>
+ <button class="btn" data-go="s4">파트너와 대화하기</button></div></div><div class="screen" id="s4"><div class="topbar"><b>파트너 · AI 대화</b><span class="coin">◎ 0</span></div><div class="body" style="gap:8px"><div class="charbox" style="height:190px;position:relative"><img src="img/avatar.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center"></div>
+ <div id="s4chat" style="display:flex;flex-direction:column;gap:8px;flex:1"></div>
+ <div class="card" style="display:flex;gap:8px;align-items:center;padding:8px 12px"><span class="sub" style="flex:1;color:var(--dim)">메시지 입력…</span><span class="chip on">보내기</span></div>
+ <button class="btn hidden" id="s4btn" data-go="s5">약속 장소로 가기</button></div></div><div class="screen" id="s5"><div class="topbar"><b>상황 이미지 · 앨범</b><span class="coin">◎ 0</span></div><div class="body" style="gap:10px"><div class="charbox" style="height:400px;background:none" id="s5img"><img src="img/scene.jpg" style="width:100%;height:100%;object-fit:cover;object-position:top"></div>
+ <div class="sub" id="s5cap" style="opacity:0;transition:.6s">약속한 만남의 상황 이미지가 개인 앨범에 남는다.</div>
+ <div id="s5more" class="hidden" style="display:flex;flex-direction:column;gap:8px"><div class="chips"><span class="chip on">앨범 1</span><span class="chip lock">원형 가챠 ◎</span><span class="chip lock">테마 의상 ◎</span><span class="chip ">추가 대화 · 이미지 생성 ◎</span><span class="chip ">새 상황 · 이야기 팩 ◎</span></div><div class="label">무료: 원형 수집 · 기본 대화 / 유료: 원형 가챠 · 테마 의상 · 추가 대화·이미지 생성 이용량 · 새 상황·이야기 팩</div></div>
+ <div style="flex:1"></div><button class="btn" id="s5btn" data-go="s1">앨범에 저장</button></div></div></div>
+<div class="side"><div class="eyebrow">2-1. 계승 공방 — 나만의 파트너</div><h1 id="st"></h1><p id="sd"></p><div class="tracker" id="tracker"></div><div class="note" id="sn"></div>
+<div class="controls" id="ctl"><button id="autoBtn">▶ 자동 재생</button><button id="resetBtn">처음으로</button></div></div></div>
+<script>
+const STEPS=[{"id": "s0", "t": "게임에 들어간다", "d": "성인 인공생명체의 외형·성격을 합성하고 희귀 특징을 승계한다. 완성한 파트너와 AI로 대화하며 둘만의 관계와 이야기를 쌓는다.", "n": ""}, {"id": "s1", "t": "1. 취향 원형 수집", "d": "짧은 퍼즐·가챠로 원형을 얻는다. 무료로 원형을 수집하며, 원형 본체는 합성에 소모하지 않는다.", "n": ""}, {"id": "s2", "t": "2. 외형·성격 합성", "d": "두 원형 선택 → 외형·성격·희귀 인자를 확률로 합성.", "n": ""}, {"id": "s3", "t": "3. 희귀 특징 승계", "d": "파트너가 완성됐다. 희귀 특징은 다음 합성으로 이어간다.", "n": ""}, {"id": "s4", "t": "4. AI 대화 · 약속을 기억한다", "d": "합성한 외형·성격이 대화에 반영된다. 둘만의 약속을 정하면 다음 대화에서 그 약속을 기억한다.", "n": ""}, {"id": "s5", "t": "5. 상황 이미지 · 앨범 · 과금", "d": "약속한 만남의 상황 이미지가 앨범에 남는다. 무료는 원형 수집·기본 대화, 유료는 원형 가챠·테마 의상·추가 대화·이미지 생성 이용량·새 상황·이야기 팩.", "n": ""}];const CHATS={"s4": [["", "이 외형이랑 성격, 당신이 합성해 준 거죠? 마음에 들어요."], ["me", "다음엔 밤에 풀사이드에서 만나자."], ["", "약속이에요. 기억할게요."], ["day", "— 다음 대화 —"], ["me", "나 왔어."], ["", "풀사이드 약속, 기억하고 있어요. 지금 갈까요?"]]};const TYPES={"s0": "title", "s1": "custom", "s2": "custom", "s3": "custom", "s4": "chat", "s5": "scene"};const ORDER=["s0", "s1", "s2", "s3", "s4", "s5"];
+</script><script src="../controls.js?v=7e4ff87f8c"></script></body></html>
