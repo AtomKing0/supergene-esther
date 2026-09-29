@@ -1,8 +1,32 @@
 const storyboardBase=new URL('provided/',document.currentScript.src);
-const storyboardSteps={"g21": ["게임에 들어간다", "1. 취향 원형 수집", "2. 외형·성격 합성", "3. 희귀 특징 승계", "4. AI 대화 · 약속을 기억한다", "5. 상황 이미지 · 앨범 · 과금"], "g22": ["게임에 들어간다", "1. 하루 두 칸의 활동을 고른다", "2. 그 상황에서 AI 대화 · 취향을 알려준다", "3. 다음 날, 그녀가 기억해 먼저 제안한다", "4. 관계의 전환점 · 상황 이미지", "5. 14일째 관계 엔딩 · DLC"], "g23": ["게임에 들어간다", "1. 성격이 다른 세 마녀", "2. 짧은 영업을 배정한다", "3. 폐점 후 AI 대화 · 비밀이 드러난다", "4. 특별 예약 · 상황 이미지", "5. 수익으로 살롱 확장 · DLC"], "g24": ["게임에 들어간다", "1. 취향 동료 선택", "2. 짧은 턴제 원정", "3. 귀환 후 AI 대화 · 개인 의뢰", "4. 야영 · 상황 이미지", "5. 다음 의뢰 · DLC"], "g25": ["게임에 들어간다", "1. 낮의 AI 메시지 · 비밀을 나눈다", "2. 그날의 만남을 고른다", "3. 다음 대화에서 그 말을 기억한다", "4. 밤의 만남 · 정체 공개 · 상황 이미지", "5. 7일째 관계 엔딩 · DLC"]};
+const boardDialog=document.createElement('dialog');
+boardDialog.className='board-popup';
+boardDialog.setAttribute('aria-label','게임 시나리오보드와 플레이 목업');
+boardDialog.innerHTML='<header><strong></strong><div><button type="button" class="popup-board">시나리오보드</button><button type="button" class="popup-play">목업 직접 눌러보기 →</button><button type="button" class="popup-close" aria-label="팝업 닫기">✕</button></div></header><div class="popup-content"></div>';
+document.body.append(boardDialog);
+let popupBase;
+function showPopup(mode){
+ const content=boardDialog.querySelector('.popup-content');
+ boardDialog.classList.toggle('playing',mode==='play');
+ boardDialog.querySelector('.popup-board').hidden=mode!=='play';
+ boardDialog.querySelector('.popup-play').hidden=mode==='play';
+ content.replaceChildren();
+ if(mode==='play'){const frame=document.createElement('iframe');frame.src=new URL('mockup.html',popupBase);frame.title='게임 목업 직접 플레이';content.append(frame);}
+ else{const image=document.createElement('img');image.src=new URL('storyboard.png',popupBase);image.alt='전체 플레이 흐름 · 6장면';content.append(image);}
+ if(!boardDialog.open)boardDialog.showModal();
+}
+boardDialog.querySelector('.popup-close').onclick=()=>boardDialog.close();
+boardDialog.querySelector('.popup-play').onclick=()=>showPopup('play');
+boardDialog.querySelector('.popup-board').onclick=()=>showPopup('board');
+boardDialog.addEventListener('close',()=>boardDialog.querySelector('.popup-content').replaceChildren());
+boardDialog.addEventListener('click',event=>{const r=boardDialog.getBoundingClientRect();if(event.target===boardDialog&&(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom))boardDialog.close();});
 function drawBoard(root,id){
- const base=new URL(id+'/',storyboardBase),steps=storyboardSteps[id];
- root.innerHTML='<div class="zip-storyboard"><figure class="zip-overview"><img src="'+new URL('storyboard.png',base).href+'" alt="전체 플레이 흐름 · 6장면"></figure><details class="zip-scenes"><summary>장면별 크게 보기</summary><div class="zip-gallery">'+steps.map((label,i)=>'<figure><img loading="lazy" src="'+new URL('step_0'+(i+1)+'.png',base).href+'" alt="'+label+'"><figcaption>'+(i+1)+' · '+label.replace(/^\d+\.\s*/,'')+'</figcaption></figure>').join('')+'</div></details><p class="zip-play"><a href="'+new URL('mockup.html',base).href+'">목업 직접 눌러보기 →</a></p></div>';
+ if(!/^g2[1-5]$/.test(id))id='g21';
+ const base=new URL(id+'/',storyboardBase);
+ root.innerHTML='<div class="zip-storyboard"><button type="button" class="zip-overview" aria-label="전체 시나리오보드 크게 보기"><img src="'+new URL('storyboard.png',base).href+'" alt="전체 플레이 흐름 · 6장면"></button><p class="zip-play"><span>보드를 누르면 크게 볼 수 있습니다.</span><a href="'+new URL('mockup.html',base).href+'">목업 직접 눌러보기 →</a></p></div>';
+ function open(mode){popupBase=base;boardDialog.querySelector('header strong').textContent=root.getAttribute('aria-label')||'게임 시나리오보드';showPopup(mode);}
+ root.querySelector('.zip-overview').onclick=()=>open('board');
+ root.querySelector('.zip-play a').onclick=event=>{event.preventDefault();open('play');};
 }
 for(const root of document.querySelectorAll('[data-storyboard-game]'))drawBoard(root,root.dataset.storyboardGame);
 const single=document.getElementById('storyboard');if(single)drawBoard(single,new URLSearchParams(location.search).get('game')||'g21');
