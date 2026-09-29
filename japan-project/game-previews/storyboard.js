@@ -134,12 +134,16 @@ function screenUI(g,c,kind){
  }
  return c.ui;
 }
+function sceneCard(id,i){
+ const game=games[id],c=game.cards[i],[kind,label,result]=screenPlans[id][i];
+ return '<div class="detail-art">'+sceneArt(id,scenePanels[id][i])+'<p>'+result+'</p></div><div class="detail-ui"><div class="screen-topline">'+c.scene+'</div><div class="story-interface screen-'+kind+'">'+screenUI(id,c,kind)+'</div></div>';
+}
 function drawBoard(root,id){
- const game=games[id],plans=screenPlans[id];
- root.innerHTML='<section class="storyboard-mode '+game.theme+'"><header class="storyboard-heading"><div><small>플레이 흐름 · 누르지 않고 보는 6장면</small><h1>'+game.title+'</h1></div><span>'+({g21:'퍼즐 · 합성 · 계승',g22:'14일 생활 다이어리',g23:'영업 장부 · 마녀별 예약',g24:'파티 편성 · 전투 · 야영',g25:'비밀 메시지 · 밤의 만남'}[id])+'</span></header><ol class="storyboard-grid">'+game.cards.map((c,i)=>{
- const [kind,label,result]=plans[i];
- return '<li class="story-card"><header><b>'+c.step+'</b><h2>'+label+'</h2></header><div class="screen-topline"><span>'+c.scene+'</span><span>● ● ●</span></div>'+(!['event','album','ending'].includes(kind)?sceneArt(id,scenePanels[id][i],'stage-illustration'):'')+'<div class="story-interface screen-'+kind+'">'+screenUI(id,c,kind)+'</div><div class="scene-outcome"><small>진행 결과</small>'+result+'</div></li>';
- }).join('')+'</ol><p class="storyboard-note">화면 구성 예시 · 대화와 확률은 설명용. 일러스트는 제안용으로 생성한 장면 예시입니다.'+(id==='g22'?' 중간 날짜를 생략해 14일 엔딩까지 연결.':id==='g25'?' 중간 날짜를 생략해 7일 엔딩까지 연결.':'')+'</p></section>';
+ const game=games[id];
+ root.innerHTML='<section class="storyboard-mode flow-overview '+game.theme+'"><header class="storyboard-heading"><div><small>플레이 흐름 · 6장면 한눈에</small><h1>'+game.title+'</h1></div><div class="flow-actions"><button type="button" data-open-game="'+id+'" data-mode="view">크게 보기 ↗</button><button type="button" data-open-game="'+id+'" data-mode="play">직접 플레이 ▷</button></div></header><ol class="flow-grid">'+game.cards.map((c,i)=>{
+ const [kind,label,result]=screenPlans[id][i];
+ return '<li class="flow-card"><button type="button" data-open-game="'+id+'" data-scene="'+i+'" aria-label="'+c.step+' '+label+' 크게 보기"><div class="flow-art">'+sceneArt(id,scenePanels[id][i])+'<span>'+c.step+'</span></div><h2>'+label+'</h2><p>'+result+'</p><small>장면 자세히 ↗</small></button></li>';
+ }).join('')+'</ol><p class="storyboard-note">선택하지 않아도 흐름을 볼 수 있습니다. 확대하면 장면 설명·자동 재생·직접 플레이를 제공합니다.<br>제안용 일러스트와 고정 대화로 만든 목업입니다. 실제 AI 호출·결제는 없습니다.</p></section>';
 }
 const inlineBoards=document.querySelectorAll('[data-storyboard-game]');
 if(inlineBoards.length){for(const root of inlineBoards)drawBoard(root,root.dataset.storyboardGame);}else drawBoard(document.getElementById('storyboard'),id);
