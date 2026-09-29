@@ -14,9 +14,12 @@ console.log('PASS: supplied 5 × 6 scenes, all transition targets and image asse
 
 const endingHtml=fs.readFileSync(path.join(__dirname,'provided/g22/mockup.html'),'utf8');
 const endingScript=[...endingHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)][1][1];
-const endingButtons=['home','travel'].map(ending=>({dataset:{ending},classList:{toggle(){}},setAttribute(){}}));
-const endingImage={},endingTitle={},endingLine={};
-require('node:vm').runInNewContext(endingScript,{document:{querySelectorAll:()=>endingButtons,querySelector:()=>endingImage,getElementById:id=>id==='ending-title'?endingTitle:endingLine}});
-endingButtons[1].onclick();assert.equal(endingTitle.textContent,'둘만의 여행');assert.equal(endingImage.src,'img/scene_beach.jpg');
-endingButtons[0].onclick();assert.equal(endingTitle.textContent,'연인으로 계속 동거');assert.equal(endingImage.src,'img/avatar.jpg');
-console.log('PASS: both ending previews switch the matching title and image.');
+const endingFromRecords=require('node:vm').runInNewContext(endingScript+';endingFromRecords',{document:{querySelectorAll:()=>[],getElementById:()=>({})}});
+for(const last of ['home','travel']){
+ assert.equal(endingFromRecords(['home','home',last]).ending,'home','last period alone cannot undo first 10 days');
+ assert.equal(endingFromRecords(['travel','travel',last]).ending,'travel','last period alone cannot undo first 10 days');
+}
+assert.equal(endingFromRecords(['home','travel','home']).home,9);
+assert.equal(endingFromRecords(['home','travel','travel']).travel,9);
+assert.doesNotMatch(endingHtml,/data-ending=/,'no final ending selector');
+console.log('PASS: ending is calculated from all 14 days; final period alone cannot override the first 10 days.');
