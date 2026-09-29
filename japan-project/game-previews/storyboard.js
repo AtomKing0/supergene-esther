@@ -1,3 +1,4 @@
+const storyboardVersion=new URL(document.currentScript.src).search;
 const storyboardBase=new URL('provided/',document.currentScript.src);
 const boardDialog=document.createElement('dialog');
 boardDialog.className='board-popup';
@@ -11,7 +12,7 @@ function showPopup(mode){
  boardDialog.querySelector('.popup-board').hidden=mode!=='play';
  boardDialog.querySelector('.popup-play').hidden=mode==='play';
  content.replaceChildren();
- if(mode==='play'){const frame=document.createElement('iframe');frame.src=new URL('mockup.html',popupBase);frame.title='게임 목업 직접 플레이';content.append(frame);}
+ if(mode==='play'){const frame=document.createElement('iframe');frame.src=new URL('mockup.html'+storyboardVersion,popupBase);frame.title='게임 목업 직접 플레이';content.append(frame);}
  else{const image=document.createElement('img');image.src=new URL('storyboard.png',popupBase);image.alt='전체 플레이 흐름 · 6장면';content.append(image);}
  if(!boardDialog.open)boardDialog.showModal();
 }
@@ -23,7 +24,7 @@ boardDialog.addEventListener('click',event=>{const r=boardDialog.getBoundingClie
 function drawBoard(root,id){
  if(!/^g2[1-5]$/.test(id))id='g21';
  const base=new URL(id+'/',storyboardBase);
- root.innerHTML='<div class="zip-storyboard"><button type="button" class="zip-overview" aria-label="전체 시나리오보드 크게 보기"><img src="'+new URL('storyboard.png',base).href+'" alt="전체 플레이 흐름 · 6장면"></button><p class="zip-play"><span>보드를 누르면 크게 볼 수 있습니다.</span><a href="'+new URL('mockup.html',base).href+'">목업 직접 눌러보기 →</a></p></div>';
+ root.innerHTML='<div class="zip-storyboard"><button type="button" class="zip-overview" aria-label="전체 시나리오보드 크게 보기"><img src="'+new URL('storyboard.png',base).href+'" alt="전체 플레이 흐름 · 6장면"></button><p class="zip-play"><span>보드를 누르면 크게 볼 수 있습니다.</span><a href="'+new URL('mockup.html'+storyboardVersion,base).href+'">목업 직접 눌러보기 →</a></p></div>';
  function open(mode){popupBase=base;boardDialog.querySelector('header strong').textContent=root.getAttribute('aria-label')||'게임 시나리오보드';showPopup(mode);}
  root.querySelector('.zip-overview').onclick=()=>open('board');
  root.querySelector('.zip-play a').onclick=event=>{event.preventDefault();open('play');};
