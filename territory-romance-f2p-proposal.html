@@ -1,7 +1,9 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>사진을 여는 땅따먹기</title>
+<script>(function(){var t=null;try{t=new URLSearchParams(location.search).get('theme')}catch(e){}if(!t){try{t=localStorage.getItem('proposal-theme')}catch(e){}}if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)})();</script>
 <style>
-:root{--ink:#e9eef5;--muted:#8d9bb0;--bg:#0b1622;--card:#122233;--line:#1f3448;--cyan:#46c8d7;--yellow:#ffc428;--pink:#ff5c8a}
+:root{--ink:#e9eef5;--ink2:#c9d4e2;--muted:#8d9bb0;--bg:#0b1622;--card:#122233;--line:#1f3448;--cyan:#46c8d7;--yellow:#ffc428;--pink:#ff5c8a;--frame:#1c2e42;--rulebg:#1a1f33;--cutbg:#1c1733;--th:#0f1d2b;--us:#12303a;--sumbg:#1a2a1f;--x:#6d7b8f;--violet:#b89aff;--verline:#3a2f63;--shadow:#0008;--scroll:#24405a;--sr:#5cc8ff;color-scheme:dark}
+:root[data-theme="light"]{--ink:#111a26;--ink2:#334155;--muted:#5f6c7e;--bg:#f5f7fb;--card:#ffffff;--line:#dde4ee;--cyan:#0b8a9a;--yellow:#b06f00;--pink:#d6336c;--frame:#d2dbe7;--rulebg:#fff0f4;--cutbg:#f3edff;--th:#eef2f7;--us:#e3f6f8;--sumbg:#e9f6ec;--x:#8793a5;--violet:#6f42e8;--verline:#d8cbff;--shadow:#1b2a4020;--scroll:#c3cfdd;--sr:#1b86cc;color-scheme:light}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;word-break:keep-all}
 .wrap{max-width:1180px;margin:auto;padding:0 20px 64px}
@@ -12,17 +14,21 @@ h2{font-size:clamp(24px,3.2vw,34px);letter-spacing:-.03em;margin:0 0 6px}
 .sub{color:var(--muted);margin:0 0 22px;font-size:15px}
 section{margin:72px 0}
 .hero{display:grid;grid-template-columns:1.05fr 1fr;gap:28px;align-items:center;padding-top:48px}
-.hero p.lead{font-size:20px;color:#c9d4e2;margin:0 0 20px}
+.hero p.lead{font-size:20px;color:var(--ink2);margin:0 0 20px}
 .hero p.lead b{color:var(--yellow)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chips span{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700}
 .hero-shots{display:flex;gap:12px;justify-content:center}
-.hero-shots img{width:31%;max-width:190px;border-radius:18px;border:3px solid #1c2e42;box-shadow:0 18px 40px #0008}
+.hero-shots img{width:31%;max-width:190px;border-radius:18px;border:3px solid var(--frame);box-shadow:0 18px 40px var(--shadow)}
 .hero-shots img:nth-child(2){transform:translateY(-18px)}
-.rail{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 14px}
-.rail::-webkit-scrollbar{height:8px}.rail::-webkit-scrollbar-thumb{background:#24405a;border-radius:8px}
+.rail{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;padding:4px 0}
+.rail .shot{min-width:0}
+.rail .shot img{border-radius:10px;border-width:2px}
+.rail .shot b{font-size:13px}
+.rail .shot span{font-size:11.5px;line-height:1.4}
+.rail .holo{border-radius:10px}
 .shot{flex:0 0 200px;scroll-snap-align:start;margin:0}
-.shot img{width:100%;display:block;border-radius:16px;border:3px solid #1c2e42}
+.shot img{width:100%;display:block;border-radius:16px;border:3px solid var(--frame)}
 .shot figcaption{margin-top:10px}
 .shot b{display:block;font-size:15px}
 .shot b i{font-style:normal;color:var(--cyan);margin-right:6px;font-family:ui-monospace,monospace}
@@ -35,11 +41,11 @@ section{margin:72px 0}
 .num span{font-size:13px;color:var(--muted)}
 .money{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .mcard{display:flex;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;align-items:center}
-.mcard img{width:120px;border-radius:12px;border:2px solid #1c2e42;flex:none}
+.mcard img{width:120px;border-radius:12px;border:2px solid var(--frame);flex:none}
 .mcard h3{margin:0 0 6px;font-size:20px}
 .mcard .price{color:var(--yellow);font-weight:900;font-size:22px}
 .mcard p{margin:6px 0 0;color:var(--muted);font-size:14px}
-.rule{margin-top:16px;padding:14px 18px;border-left:4px solid var(--pink);background:#1a1f33;border-radius:8px;font-weight:700}
+.rule{margin-top:16px;padding:14px 18px;border-left:4px solid var(--pink);background:var(--rulebg);border-radius:8px;font-weight:700}
 .scope{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .scope div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
 .scope b{display:block;font-size:18px;margin-bottom:4px}
@@ -48,7 +54,7 @@ section{margin:72px 0}
 .duo .pair{display:flex;gap:14px}
 .duo .pair figure{margin:0;width:200px}
 .duo .pair.three figure{width:170px}
-.duo .pair img{width:100%;display:block;border-radius:16px;border:3px solid #1c2e42}
+.duo .pair img{width:100%;display:block;border-radius:16px;border:3px solid var(--frame)}
 .pts{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .pts li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px}
 .pts li b{color:var(--yellow)}
@@ -65,55 +71,57 @@ section{margin:72px 0}
 .money{grid-template-columns:1fr 1fr}
 .fixes{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .fix{display:flex;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;align-items:center}
-.fix img{width:104px;border-radius:10px;border:2px solid #1c2e42;flex:none}
+.fix img{width:104px;border-radius:10px;border:2px solid var(--frame);flex:none}
 .fix .no{font-size:13px;color:var(--muted);text-decoration:line-through;text-decoration-color:var(--pink)}
 .fix h3{margin:4px 0 6px;font-size:19px}
-.fix p{margin:0;font-size:14px;color:#c9d4e2}
+.fix p{margin:0;font-size:14px;color:var(--ink2)}
 .fix p b{color:var(--yellow)}
 .fix.noimg{padding-left:18px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .spec{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:22px}
 .spec div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
 .spec b{display:block;font-size:13px;letter-spacing:.08em;color:var(--cyan);margin-bottom:6px}
-.spec p{margin:0;font-size:14px;color:#c9d4e2;line-height:1.7}
-.cut{margin-top:14px;padding:14px 18px;border-left:4px solid #9e6bff;background:#1c1733;border-radius:8px;font-size:14px}
+.spec p{margin:0;font-size:14px;color:var(--ink2);line-height:1.7}
+.cut{margin-top:14px;padding:14px 18px;border-left:4px solid #9e6bff;background:var(--cutbg);border-radius:8px;font-size:14px}
 .cut i{font-style:normal;background:#9e6bff;color:#fff;border-radius:8px;padding:1px 8px;font-weight:900;font-size:12px;margin-right:8px}
 .road{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.ver{background:var(--card);border:1px solid #3a2f63;border-radius:16px;padding:16px}
+.ver{background:var(--card);border:1px solid var(--verline);border-radius:16px;padding:16px}
 .ver .tag{display:inline-block;background:#9e6bff;color:#fff;border-radius:999px;padding:2px 10px;font-weight:900;font-size:13px}
 .ver h3{margin:10px 0 4px;font-size:18px}
 .ver .when{font-size:12px;color:var(--muted)}
-.ver ul{margin:10px 0 0;padding-left:18px;font-size:14px;color:#c9d4e2}
+.ver ul{margin:10px 0 0;padding-left:18px;font-size:14px;color:var(--ink2)}
 .ver .trig{margin-top:10px;font-size:12px;color:var(--yellow)}
 .ver .thumbs{display:flex;gap:8px;margin-top:12px}
-.ver .thumbs img{width:31%;border-radius:8px;border:2px solid #1c2e42}
+.ver .thumbs img{width:31%;border-radius:8px;border:2px solid var(--frame)}
 .vt{display:inline-block;vertical-align:middle;margin-left:6px;background:#9e6bff;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:900}
 .shot b .vt{display:inline-block;color:#fff;font-size:11px;margin-top:0}
 .toc{display:flex;flex-wrap:wrap;gap:8px;margin:28px 0 0}
 .toc a{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:800;color:var(--ink);text-decoration:none}
 .toc a:hover{border-color:var(--cyan)}
-.cmp{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:14px;margin:6px 0 34px}
+.theme{position:fixed;top:14px;right:14px;z-index:9;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 14px;font:800 12px/1 inherit;cursor:pointer;box-shadow:0 4px 14px var(--shadow)}
+.cmpwrap{overflow-x:auto;margin:6px 0 34px;border-radius:14px}
+.cmp{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:14px;margin:0}
 .cmp th,.cmp td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
-.cmp th{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.04em;background:#0f1d2b}
+.cmp th{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.04em;background:var(--th)}
 .cmp td:first-child{font-weight:800;white-space:nowrap}
 .cmp tr:last-child td{border-bottom:0}
-.cmp tr.us td{background:#12303a}
+.cmp tr.us td{background:var(--us)}
 .cmp tr.us td:first-child{color:var(--cyan)}
-.cmp .x{color:#6d7b8f}
+.cmp .x{color:var(--x)}
 .note{font-size:12px;color:var(--muted);margin:-24px 0 30px}
 .risk{display:grid;gap:10px}
 .risk div{display:grid;grid-template-columns:200px 1fr;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px}
 .risk b{color:var(--pink)}
-.risk span{color:#c9d4e2}
+.risk span{color:var(--ink2)}
 .unit{width:100%;border-collapse:collapse;font-size:14px;margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .unit td{padding:10px 14px;border-bottom:1px solid var(--line)}
 .unit td:last-child{text-align:right;font-weight:800;color:var(--yellow);white-space:nowrap}
-.unit tr.sum td{background:#1a2a1f;color:#fff}
-@media(max-width:860px){.risk div{grid-template-columns:1fr}.cmp{font-size:12px}.cmp td:first-child{white-space:normal}}
+.unit tr.sum td{background:var(--sumbg);color:var(--ink)}
+@media(max-width:860px){.risk div{grid-template-columns:1fr}.cmp{font-size:12px;min-width:620px}.cmp td:first-child{white-space:normal}}
 footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:13px}
-@media(max-width:860px){.grid4{grid-template-columns:1fr 1fr}.spec,.road{grid-template-columns:1fr}.fixes{grid-template-columns:1fr}.duo{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.nums{grid-template-columns:repeat(2,1fr)}.money,.scope{grid-template-columns:1fr}.grid3{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}}
+@media(max-width:860px){.rail{grid-template-columns:repeat(4,minmax(0,1fr));row-gap:16px}.grid4{grid-template-columns:1fr 1fr}.spec,.road{grid-template-columns:1fr}.fixes{grid-template-columns:1fr}.duo{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.nums{grid-template-columns:repeat(2,1fr)}.money,.scope{grid-template-columns:1fr}.grid3{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}}
 @media(max-width:520px){.fix img{width:84px}.duo .pair figure,.duo .pair.three figure{width:48%}.duo .pair.three{flex-wrap:wrap}.shot{flex-basis:160px}.grid3{grid-template-columns:1fr 1fr}.mcard img{width:90px}}
-</style></head><body><div class="wrap">
+</style></head><body><button class="theme" id="themeBtn" type="button">라이트 모드</button><div class="wrap">
 
 <header class="hero">
  <div>
@@ -130,7 +138,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
 <section id="flow">
  <div class="kicker">1 · 한눈에 보는 플로우</div>
  <h2>한 판의 흐름</h2>
- <p class="sub">고르고 → 열고 → 마음 얻고 → 엔딩 뽑기. 옆으로 넘겨서 확인.</p>
+ <p class="sub">고르고 → 열고 → 마음 얻고 → 엔딩 뽑기. 8화면이 한 판 전체.</p>
  <div class="rail">
   <figure class="shot"><img src="japan-project/proposal-screens/01-lobby.webp" alt="" loading="lazy"><figcaption><b><i>01</i>로비</b><span>첫 캐릭터는 무료. GO!</span></figcaption></figure>
   <figure class="shot"><img src="japan-project/proposal-screens/02-puzzle.webp" alt="" loading="lazy"><figcaption><b><i>02</i>땅따먹기</b><span>80% 열면 사진 1장</span></figcaption></figure>
@@ -147,15 +155,15 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
  <div class="kicker">2 · 게임의 엣지</div>
  <h2>비슷한 게임과 무엇이 다른가</h2>
  <p class="sub">요소 하나하나는 이미 있음. 엣지는 '짧은 퍼즐 + 관계 게이트 + 등급 뽑기'의 조합.</p>
- <table class="cmp">
+ <div class="cmpwrap"><table class="cmp">
   <tr><th>비교 대상</th><th>핵심 재미</th><th>세션</th><th>과금</th><th>약점</th></tr>
   <tr><td>陣取り 탈의 게임<br><span class="x">(ギャルズパニック 계열, 1990~)</span></td><td>영역을 먹으면 그림 공개</td><td>짧음</td><td>단품 구매</td><td>공개 후 끝 · 관계·재방문 동기 없음</td></tr>
   <tr><td>FANZA 대형 F2P<br><span class="x">(RPG · 전략 가챠)</span></td><td>캐릭터 수집 · 전투 성장</td><td>김</td><td>캐릭터 가챠</td><td>진입 장벽 · 성장 피로</td></tr>
   <tr><td>AI 연애 챗 앱</td><td>대화 · 호감도 단계</td><td>중간</td><td>대화 횟수 · 보이스 · 이미지</td><td>게임성 약함 · 보상 체감 약함</td></tr>
   <tr class="us"><td>사진을 여는 땅따먹기</td><td>퍼즐로 사진 공개 → 대화로 다음 사진 → 엔딩 등급 뽑기</td><td>짧음 (1판 1~2분 [E])</td><td>◇ 하나 · 엔딩 뽑기 중심</td><td>콘텐츠 소진이 빠름 → 5장 참고</td></tr>
- </table>
+ </table></div>
  <p class="note">陣取り 탈의 장르의 원조는 Kaneko 'Gals Panic'(1990, Qix 방식 · 다수 클론 존재). FANZA 대형 F2P · AI 챗 앱의 과금 구조는 공개 소개 자료 기준 요약 — 경쟁작 선정과 수치는 추가 확인 필요.</p>
- <p class="sub" style="margin:0 0 18px;font-size:16px;color:#c9d4e2">① 퍼즐로 사진을 열고 ② 마음을 얻어야 다음 사진이 열리고 ③ 엔딩은 홀로그램 카드로 뽑음.</p>
+ <p class="sub" style="margin:0 0 18px;font-size:16px;color:var(--ink2)">① 퍼즐로 사진을 열고 ② 마음을 얻어야 다음 사진이 열리고 ③ 엔딩은 홀로그램 카드로 뽑음.</p>
  <h2>마음을 못 얻으면 다음 사진도 없음</h2>
  <p class="sub">사진 퍼즐 입장권 = 친밀도. 말실수는 되돌릴 수 있음.</p>
  <div class="duo">
@@ -184,7 +192,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
   <div>
    <div class="tiers">
     <div class="tier"><b>R</b><span>70% · 기본 일러</span></div>
-    <div class="tier" style="border-color:#5cc8ff"><b style="color:#5cc8ff">SR</b><span>25% · 수위↑ · 홀로 테두리</span></div>
+    <div class="tier" style="border-color:var(--sr)"><b style="color:var(--sr)">SR</b><span>25% · 수위↑ · 홀로 테두리</span></div>
     <div class="tier ur"><b>UR</b><span>5% · 최고 수위 · 전면 홀로<br>(움직임 v1.2)</span></div>
    </div>
    <ul class="pts" style="margin-top:12px">
@@ -239,7 +247,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
 <section id="launch">
  <div class="kicker">4 · 출시 스펙 — 런칭 필수 (MVP)</div>
  <h2>런칭 필수 — 이것만 있으면 출시 가능</h2>
- <p class="sub">한 판 흐름 8화면 + 해금 · 다시 뽑기 · 상점 · 앨범. 화면 속 보라색 <b style="color:#b89aff">v1.x</b> 핀은 런칭 빌드에서 숨김.</p>
+ <p class="sub">한 판 흐름 8화면 + 해금 · 다시 뽑기 · 상점 · 앨범. 화면 속 보라색 <b style="color:var(--violet)">v1.x</b> 핀은 런칭 빌드에서 숨김.</p>
  <div class="nums" style="margin-bottom:22px">
   <div class="num"><b>4명</b><span>런칭 캐릭터 · 월 +2 (6개월차 12명)</span></div>
   <div class="num"><b>5장</b><span>캐릭터당 앨범 (사진 4 + 엔딩)</span></div>
@@ -263,7 +271,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
 </section>
 
 <section id="update">
- <div class="kicker" style="color:#b89aff">4 · 출시 스펙 — 업데이트</div>
+ <div class="kicker" style="color:var(--violet)">4 · 출시 스펙 — 업데이트</div>
  <h2>업데이트 — 지표를 보고 순서대로 진행</h2>
  <p class="sub">각 버전에 '이 지표가 나쁘면 앞당김' 조건을 붙임.</p>
  <div class="road">
@@ -295,4 +303,6 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
 </section>
 
 <footer>전체 화면 · 스펙 주석은 <a href="https://www.figma.com/design/yqd3KRXA28gaCRWylWto5Z/notepad?node-id=180-2">Figma 보드</a>에서 확인. · 확률 표시: 일본 법률상 의무는 아니나 업계 가이드라인(JOGA)·플랫폼 규약 기준으로 표시 · 컴프가챠 금지(景品表示法) · 유상 ◇ 잔액 관리(資金決済法) 법무 확인 · 가격은 추정치, 플랫폼 확정 후 재산정 · 캐릭터 이미지는 내부 목업용 레퍼런스 · 경쟁 비교 출처: <a href="https://en.wikipedia.org/wiki/Gals_Panic">Gals Panic (Wikipedia)</a>, <a href="https://manamina.valuesccg.com/articles/4491">AI彼女・彼氏アプリ 동향 (マナミナ)</a> — 세부 수치 재확인 필요</footer>
-</div></body></html>
+</div>
+<script>(function(){var b=document.getElementById('themeBtn'),r=document.documentElement;function sync(){b.textContent=r.getAttribute('data-theme')==='light'?'다크 모드':'라이트 모드'}sync();b.addEventListener('click',function(){var n=r.getAttribute('data-theme')==='light'?'dark':'light';r.setAttribute('data-theme',n);try{localStorage.setItem('proposal-theme',n)}catch(e){}sync()})})();</script>
+</body></html>
