@@ -60,6 +60,9 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
 .pwrap img{width:100%;display:block}
 .veil{position:absolute;left:0;right:0;bottom:0;height:20%;background:rgba(230,240,255,.55);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);transition:height 1.1s ease}
 .chip{display:inline-block;background:var(--accent2);color:#fff;font:900 italic 18px/1 "Barlow Condensed",system-ui;padding:6px 14px;transform:skewX(-12deg);margin-bottom:8px}
+.tap{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:rgba(255,102,153,.35);border:3px solid #fff;box-shadow:0 0 0 3px rgba(255,102,153,.6);pointer-events:none;z-index:30;display:none}
+.tap.on{display:block;animation:tapk .5s ease-out}
+@keyframes tapk{0%{transform:scale(1.6);opacity:0}60%{transform:scale(.85);opacity:1}100%{transform:scale(1)}}
 .finger{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:3px solid #fff;background:rgba(255,102,153,.55);box-shadow:0 0 0 3px rgba(255,102,153,.35);pointer-events:none;z-index:4;display:none}
 </style>
 </head>
@@ -68,7 +71,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
   <div class="hud"><div class="stage"><span id="stageT">STAGE 1-1</span></div><div class="timer" id="timer">01:30</div></div>
   <div class="bar"><div class="pct" id="pct">0%</div><div class="track"><div class="fill" id="fill"></div><div class="goal"></div></div></div>
   <canvas id="board" width="296" height="380" aria-label="땅따먹기 퍼즐 보드"></canvas>
-  <div class="finger" id="finger"></div>
+  <div class="finger" id="finger"></div><div class="tap" id="tap"></div>
   <div class="chat" id="chat"><img src="avatar.webp" alt=""><div><b>리아</b><p id="chatText"></p></div></div>
   <div class="pop" id="pop"></div>
   <div class="foot"><div class="hint" id="hint">테두리에서 출발해 선을 긋고, 다시 테두리로 돌아오면 영역을 먹어요</div>
@@ -96,8 +99,8 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
     <div class="row"><button class="btn" id="toFlow" type="button">챕터 맵으로 ▶</button><button class="btn ghost" id="again" type="button">다시 하기</button></div>
   </div></div>
 
-  <div class="ov" id="flow" style="padding:0;background:#000"><img id="flowImg" alt="" style="width:100%;height:100%;object-fit:cover;object-position:top;display:block;cursor:pointer">
-    <div style="position:absolute;left:0;right:0;bottom:0;padding:10px 12px 14px;background:linear-gradient(transparent,rgba(10,18,32,.85));display:flex;align-items:center;gap:10px">
+  <div class="ov" id="flow" style="padding:0;background:var(--bg)"><img id="flowImg" alt="" style="width:100%;height:100%;object-fit:contain;object-position:center top;background:var(--bg);display:block;cursor:pointer">
+    <div style="position:absolute;left:0;right:0;top:0;padding:8px 10px;background:rgba(10,18,32,.78);display:flex;align-items:center;gap:10px">
       <div id="flowCap" style="flex:1;color:#fff;font-weight:900;font-size:14px"></div><button class="btn" id="flowNext" type="button" style="min-width:110px;padding:11px 14px">다음 ▶</button></div></div>
   <div class="ov" id="tov"><div class="card">
     <h2 style="color:var(--accent2)">TIME UP</h2><h3 id="tmsg">조금만 더 열면 사진 1!</h3>
@@ -199,9 +202,9 @@ function afterGain(){
   count();
   var hotJust=false;if(!hotDone&&hotRatio()>.55){hotDone=true;hotJust=true;grow(.05);count();popup('+5%  거, 거긴… 민감한데♡');}
   if(!events.c25&&claimed>=.25){events.c25=true;say('조금만 더… 응원할게♡');}
-  if(!events.q50&&claimed>=.5){events.q50=true;paused=true;setTimeout(askQuestion,auto?(hotJust?900:250):(hotJust?1500:500));}
+  if(!events.q50&&claimed>=.5){events.q50=true;paused=true;setTimeout(askQuestion,hotJust?1500:500);}
   if(!events.c75&&claimed>=.75){events.c75=true;say('거의 다 왔어… 끝까지 봐줘♡');}
-  if(claimed>=.8&&!over){over=true;setTimeout(win,auto?800:1400);}
+  if(claimed>=.8&&!over){over=true;setTimeout(win,1400);}
 }
 
 // ---------- dialogue ----------
@@ -210,7 +213,7 @@ function say(t,bonus){var c=document.getElementById('chat'),p=document.getElemen
 function popup(t){var p=document.getElementById('pop');p.textContent=t;p.classList.add('on');clearTimeout(popT);popT=setTimeout(function(){p.classList.remove('on');},1800);}
 function askQuestion(){paused=true;var o=document.getElementById('qov');o.classList.add('on');
   Array.prototype.forEach.call(o.querySelectorAll('.opt'),function(b){b.classList.remove('pick');});
-  if(auto){setTimeout(function(){var b=o.querySelector('.opt[data-a="like"]');b.classList.add('pick');setTimeout(function(){answer('like');},450);},800);}}
+  if(auto){setTimeout(function(){var b=o.querySelector('.opt[data-a="like"]');tapEl(b,function(){b.classList.add('pick');setTimeout(function(){answer('like');},500);});},1100);}}
 function answer(a){document.getElementById('qov').classList.remove('on');paused=false;lastT=0;
   if(a==='like'){grow(.10);dirtyAll=true;count();say('+10%  …그런 말 하면 반칙이야♡',true);}
   else if(a==='bad'){shrink(.05);count();say('−5%  흥, 몰라.');}
@@ -219,28 +222,30 @@ function answer(a){document.getElementById('qov').classList.remove('on');paused=
 document.querySelectorAll('#qov .opt').forEach(function(b){b.addEventListener('click',function(){if(!auto)answer(b.getAttribute('data-a'));});});
 function win(){paused=true;for(var i=0;i<g.length;i++)if(g[i]!==CLAIM)g[i]=CLAIM;dirtyAll=true;count();
   var t0=performance.now();(function fade(){var k=Math.min(1,(performance.now()-t0)/600);fadeK=k;if(k<1)requestAnimationFrame(fade);else setTimeout(showClear,400);})();}
-var FLOW_MAIN=[['06-map','챕터 맵 · 수위가 점점 높아지는 사진'],['07-ending','엔딩 가챠 · 사진을 다 모으면'],['08-result','결과 · 최고 등급이면 최고 수위 + 짧은 영상']];
-var FLOW_LITE=[["lt01","챕터 맵 · 다음 사진으로"],['lt00','챕터 목록 · 다음 캐릭터']];
+function tapAt(x,y,cb){var t=document.getElementById('tap');t.style.left=x+'px';t.style.top=y+'px';t.classList.remove('on');void t.offsetWidth;t.classList.add('on');setTimeout(function(){t.classList.remove('on');cb&&cb();},650);}
+function tapEl(el,cb){var a=app.getBoundingClientRect(),r=el.getBoundingClientRect(),k=a.width/360;tapAt((r.left+r.width/2-a.left)/k,(r.top+r.height/2-a.top)/k,cb);}
+var FLOW_MAIN=[['06-map','챕터 맵 · 수위가 점점 높아지는 사진',180,740],['07-ending','엔딩 가챠 · 사진을 다 모으면',235,738],['08-result','결과 · 최고 등급이면 최고 수위 + 짧은 영상',255,738]];
+var FLOW_LITE=[['lt01','챕터 맵 · 다음 사진으로',180,738],['lt00','챕터 목록 · 다음 챕터',96,400]];
 var fi=0,flowT=null;
 function flowList(){return LITE?FLOW_LITE:FLOW_MAIN;}
 function showFlow(i){var L=flowList();fi=i;var d=root.getAttribute('data-design')==='a'?'proposal-screens':'proposal-screens-b';
   document.getElementById('flowImg').src='../'+d+'/'+L[i][0]+'.webp';document.getElementById('flowCap').textContent=L[i][1];
   document.getElementById('flowNext').textContent=i<L.length-1?'다음 ▶':'처음부터 ↺';
   document.getElementById('clear').classList.remove('on');document.getElementById('flow').classList.add('on');
-  clearTimeout(flowT);if(autoFlow)flowT=setTimeout(nextFlow,1900);}
+  clearTimeout(flowT);if(autoFlow)flowT=setTimeout(function(){var it=L[i];tapAt(36+it[2]*.8,it[3]*.8,nextFlow);},2300);}
 function nextFlow(){var L=flowList();if(fi<L.length-1)showFlow(fi+1);else{autoFlow=false;document.getElementById('flow').classList.remove('on');document.getElementById('start').classList.add('on');}}
 var autoFlow=false;
 document.getElementById('flowNext').onclick=function(){autoFlow=false;clearTimeout(flowT);nextFlow();};
 document.getElementById('flowImg').onclick=document.getElementById('flowNext').onclick;
 document.getElementById('toFlow').onclick=function(){autoFlow=false;showFlow(0);};
 function showClear(){var c=document.getElementById('clear'),v=document.getElementById('veil');
-  var wasAuto=auto;if(!LITE){c.classList.add('on');stopAuto();if(wasAuto){autoFlow=true;flowT=setTimeout(function(){showFlow(0);},1600);}return;}
+  var wasAuto=auto;if(!LITE){c.classList.add('on');stopAuto();if(wasAuto){autoFlow=true;flowT=setTimeout(function(){tapEl(document.getElementById('toFlow'),function(){showFlow(0);});},2000);}return;}
   document.getElementById('clrH').textContent='CLEAR!';document.getElementById('clrChip').style.display='inline-block';
   document.getElementById('clrT').textContent='사진 2 · 80% → 100%';document.getElementById('clrP').textContent='판을 깰 때마다 사진이 조금씩 열려요';
   document.getElementById('again').style.visibility='hidden';document.getElementById('toFlow').style.visibility='hidden';v.style.transition='none';v.style.height='20%';c.classList.add('on');
   setTimeout(function(){v.style.transition='';v.style.height='0';},700);
   setTimeout(function(){document.getElementById('clrH').textContent='사진 2 완성!';document.getElementById('clrChip').style.display='none';
-    document.getElementById('clrT').textContent='리아';document.getElementById('clrP').textContent='"…다음 사진은 더 보여줄게♡"';document.getElementById('toFlow').textContent='맵으로 ▶';document.getElementById('again').style.display='none';document.getElementById('toFlow').style.visibility='';stopAuto();if(wasAuto){autoFlow=true;flowT=setTimeout(function(){showFlow(0);},1500);}},1800);}
+    document.getElementById('clrT').textContent='리아';document.getElementById('clrP').textContent='"…다음 사진은 더 보여줄게♡"';document.getElementById('toFlow').textContent='맵으로 ▶';document.getElementById('again').style.display='none';document.getElementById('toFlow').style.visibility='';stopAuto();if(wasAuto){autoFlow=true;flowT=setTimeout(function(){tapEl(document.getElementById('toFlow'),function(){showFlow(0);});},1800);}},1800);}
 var fadeK=0;
 function timeUp(){if(LITE){popup('시간 끝! 바로 다시 도전');var a=auto;setTimeout(function(){reset();if(a){auto=true;}},900);paused=true;return;}paused=true;over=true;document.getElementById('tmsg').textContent=Math.max(1,80-Math.floor(claimed*100))+'%만 더 열면 사진 1!';document.getElementById('tov').classList.add('on');stopAuto();}
 function hideAll(){var tf=document.getElementById('toFlow');if(tf){tf.textContent='챕터 맵으로 ▶';document.getElementById('again').style.display='';}clearTimeout(flowT);autoFlow=false;document.getElementById('flow').classList.remove('on');var v=document.getElementById('veil');if(v)v.style.height='0';document.getElementById('clrChip').style.display='none';document.getElementById('again').style.visibility='';document.getElementById('toFlow').style.visibility='';if(!LITE){document.getElementById('clrH').textContent='STAGE CLEAR';document.getElementById('clrT').textContent='사진 1 획득!';document.getElementById('clrP').textContent='"…다음 사진은 더 보여줄게♡"';}['qov','clear','tov'].forEach(function(id){document.getElementById(id).classList.remove('on');});fadeK=0;}
@@ -342,7 +347,7 @@ document.getElementById('again').onclick=function(){auto?startAuto():startPlay()
 document.getElementById('retry').onclick=startPlay;
 
 // ---------- loop ----------
-var STEP=0.028,ASTEP=0.016;
+var STEP=0.028,ASTEP=0.012;
 function frame(t){
   var dt=lastT?Math.min(.05,(t-lastT)/1000):0;lastT=t;
   if(!paused&&!over){
