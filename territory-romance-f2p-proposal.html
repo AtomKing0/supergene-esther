@@ -89,6 +89,8 @@ section{margin:72px 0}
 .play h3{margin:6px 0 12px;font-size:24px;line-height:1.3}
 .play ul{margin:0 0 16px;padding:0;list-style:none;display:grid;gap:8px}
 .play li{padding:8px 12px;border-left:3px solid var(--cyan);background:var(--us);border-radius:4px 8px 8px 4px;font-weight:800;font-size:14.5px;line-height:1.45}
+.ptabs{display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:var(--th);margin:10px 0 2px}.ptabs button{border:0;background:transparent;color:var(--muted);font:800 13px/1 inherit;padding:8px 14px;border-radius:999px;cursor:pointer}.ptabs button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 2px 8px var(--shadow)}
+.play ul[hidden]{display:none}
 .play .open{font-weight:800;font-size:13.5px;color:var(--cyan)}
 .phone{width:300px;justify-self:center;border-radius:26px;padding:8px;background:#0e1726;box-shadow:0 18px 40px rgba(0,0,0,.28)}
 .phone iframe{display:block;width:100%;aspect-ratio:9/16;border:0;border-radius:19px;background:#eaf3ff}
@@ -208,11 +210,18 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
   <div>
    <div class="pk">직접 해보기 · 자동 재생</div>
    <h3>30초면 핵심이 보임</h3>
-   <ul>
+   <div class="ptabs" role="group" aria-label="목업 버전"><button type="button" data-mode="main" aria-pressed="true">1안 · 정식</button><button type="button" data-mode="lite" aria-pressed="false">LITE</button></div>
+   <ul data-for="main">
     <li>테두리에서 선을 그어 땅을 먹으면 그만큼 사진이 열림</li>
     <li>진행 중 응원 대사 · 민감 부위를 먹으면 보너스 대사</li>
     <li>중간에 리아의 질문 — 답에 따라 더 열리거나 다시 가려짐</li>
     <li>목표만큼 열면 사진 획득</li>
+   </ul>
+   <ul data-for="lite" hidden>
+    <li>1분짜리 짧은 판 · 실패해도 바로 다시</li>
+    <li>응원 대사 · 민감 부위 보너스 대사 · 질문은 정식과 같음</li>
+    <li>판을 깰 때마다 사진이 조금씩 열림</li>
+    <li>마지막 판을 깨면 사진 완성</li>
    </ul>
    <a class="open" href="japan-project/jintori-mockup/index.html" target="_blank" rel="noopener">새 창에서 크게 열기 ↗</a>
   </div>
@@ -440,7 +449,7 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
 <script>(function(){var b=document.getElementById('themeBtn'),r=document.documentElement;function sync(){b.textContent=r.getAttribute('data-theme')==='dark'?'라이트 모드':'다크 모드'}sync();b.addEventListener('click',function(){var n=r.getAttribute('data-theme')==='dark'?'light':'dark';if(n==='dark')r.setAttribute('data-theme','dark');else r.removeAttribute('data-theme');try{localStorage.setItem('proposal-theme',n)}catch(e){}sync()})})();</script>
 <script>(function(){var b=document.getElementById('designBtn'),A='proposal-screens/',B='proposal-screens-b/',d='b';try{var q=new URLSearchParams(location.search).get('design');d=q||localStorage.getItem('proposal-design')||'b'}catch(e){}
 function apply(){var imgs=document.querySelectorAll('img[src*="proposal-screens"]');for(var i=0;i<imgs.length;i++){var im=imgs[i],src=im.getAttribute('src');var n=d==='a'?src.replace(B,A):src.replace(A,B).replace('proposal-screens-b-b/','proposal-screens-b/');if(n!==src)im.setAttribute('src',n);im.onerror=function(){var s=this.getAttribute('src');if(s.indexOf(B)>-1){this.onerror=null;this.setAttribute('src',s.replace(B,A))}}}
-var pf=document.getElementById('playFrame');if(pf){try{pf.contentWindow.postMessage({design:d},'*')}catch(e){}pf.onload=function(){try{pf.contentWindow.postMessage({design:d},'*')}catch(e){}}}var po=document.querySelector('#playdemo .open');if(po)po.href='japan-project/jintori-mockup/index.html?design='+d;document.documentElement.setAttribute('data-design',d);b.textContent=d==='a'?'디자인 A · 니케':'디자인 B · 블루아카';b.setAttribute('aria-pressed',d==='b')}
+var pf=document.getElementById('playFrame');if(pf){try{pf.contentWindow.postMessage({design:d},'*')}catch(e){}pf.onload=function(){try{pf.contentWindow.postMessage({design:d},'*')}catch(e){}}}document.documentElement.setAttribute('data-design',d);b.textContent=d==='a'?'디자인 A · 니케':'디자인 B · 블루아카';b.setAttribute('aria-pressed',d==='b')}
 apply();b.addEventListener('click',function(){d=d==='a'?'b':'a';try{localStorage.setItem('proposal-design',d)}catch(e){}apply()})})();</script>
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="화면 크게 보기"><button class="x" type="button" aria-label="닫기">✕</button><button class="pv" type="button" aria-label="이전">‹</button><figure><img alt=""><figcaption></figcaption></figure><button class="nx" type="button" aria-label="다음">›</button></div>
 <script>(function(){var lb=document.getElementById('lb'),im=lb.querySelector('img'),cap=lb.querySelector('figcaption'),list=[],i=0,sx=null;
@@ -457,4 +466,10 @@ lb.querySelector('.x').onclick=close;lb.querySelector('.pv').onclick=function(e)
 lb.addEventListener('click',function(e){if(e.target===lb)close()});
 document.addEventListener('keydown',function(e){if(!lb.classList.contains('on'))return;if(e.key==='Escape')close();if(e.key==='ArrowLeft')step(-1);if(e.key==='ArrowRight')step(1)});
 lb.addEventListener('touchstart',function(e){sx=e.touches[0].clientX},{passive:true});lb.addEventListener('touchend',function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)step(dx<0?1:-1);sx=null});})();</script>
+<script>(function(){var f=document.getElementById('playFrame'),o=document.querySelector('#playdemo .open'),bs=document.querySelectorAll('#playdemo .ptabs button'),m='main';
+function d(){return document.documentElement.getAttribute('data-design')==='a'?'a':'b'}
+function url(){return 'japan-project/jintori-mockup/index.html?design='+d()+(m==='lite'?'&mode=lite':'')}
+Array.prototype.forEach.call(bs,function(b){b.addEventListener('click',function(){m=b.getAttribute('data-mode');Array.prototype.forEach.call(bs,function(x){x.setAttribute('aria-pressed',x===b)});
+ Array.prototype.forEach.call(document.querySelectorAll('#playdemo ul[data-for]'),function(u){u.hidden=u.getAttribute('data-for')!==m});f.src=url();o.href=url();})});
+document.getElementById('designBtn').addEventListener('click',function(){setTimeout(function(){o.href=url()},0)});o.href=url();})();</script>
 </body></html>

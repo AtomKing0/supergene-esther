@@ -55,12 +55,17 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
 .photo{width:62%;border-radius:8px;box-shadow:0 8px 22px var(--shadow);margin:6px auto 12px;display:block}
 .auto{position:absolute;right:10px;top:600px;font:900 italic 12px/1 "Barlow Condensed",system-ui;color:var(--accent2);letter-spacing:1px;display:none}
 .auto.on{display:block}
+[data-mode="lite"] .chat{top:404px;border-left:5px solid var(--accent2)}
+.pwrap{position:relative;width:62%;margin:6px auto 12px;border-radius:8px;overflow:hidden;box-shadow:0 8px 22px var(--shadow)}
+.pwrap img{width:100%;display:block}
+.veil{position:absolute;left:0;right:0;bottom:0;height:20%;background:rgba(230,240,255,.55);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);transition:height 1.1s ease}
+.chip{display:inline-block;background:var(--accent2);color:#fff;font:900 italic 18px/1 "Barlow Condensed",system-ui;padding:6px 14px;transform:skewX(-12deg);margin-bottom:8px}
 .finger{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:3px solid #fff;background:rgba(255,102,153,.55);box-shadow:0 0 0 3px rgba(255,102,153,.35);pointer-events:none;z-index:4;display:none}
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="hud"><div class="stage"><span>STAGE 1-1</span></div><div class="timer" id="timer">01:30</div></div>
+  <div class="hud"><div class="stage"><span id="stageT">STAGE 1-1</span></div><div class="timer" id="timer">01:30</div></div>
   <div class="bar"><div class="pct" id="pct">0%</div><div class="track"><div class="fill" id="fill"></div><div class="goal"></div></div></div>
   <canvas id="board" width="296" height="380" aria-label="땅따먹기 퍼즐 보드"></canvas>
   <div class="finger" id="finger"></div>
@@ -71,8 +76,8 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
   <div class="auto" id="autoTag">AUTO PLAY</div>
 
   <div class="ov on" id="start"><div class="card">
-    <h2>陣取りカノジョ</h2><h3>땅따먹기로 사진 열기</h3>
-    <p>테두리에서 선을 그어 영역을 먹으면 그만큼 사진이 열려요.<br>선을 긋는 동안 공에 닿으면 선이 지워져요.<br>80%를 열면 클리어.</p>
+    <h2>陣取りカノジョ</h2><h3 id="stH">땅따먹기로 사진 열기</h3>
+    <p id="stP">테두리에서 선을 그어 영역을 먹으면 그만큼 사진이 열려요.<br>선을 긋는 동안 공에 닿으면 선이 지워져요.<br>80%를 열면 클리어.</p>
     <div class="row"><button class="btn" id="startAuto" type="button">▶ 자동 재생으로 보기</button><button class="btn ghost" id="startPlay" type="button">직접 해보기</button></div>
     <p style="margin:12px 0 0;font-size:11.5px">PC: 드래그 또는 방향키 · 모바일: 보드를 드래그</p>
   </div></div>
@@ -86,8 +91,8 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
   </div></div>
 
   <div class="ov" id="clear"><div class="card">
-    <h2>STAGE CLEAR</h2><img class="photo" src="photo.webp" alt="획득한 사진"><h3>사진 1 획득!</h3>
-    <p>"…다음 사진은 더 보여줄게♡"</p>
+    <h2 id="clrH">STAGE CLEAR</h2><div class="pwrap"><img src="photo.webp" alt="획득한 사진"><div class="veil" id="veil" style="height:0"></div></div><div class="chip" id="clrChip" style="display:none">+20%</div><h3 id="clrT">사진 1 획득!</h3>
+    <p id="clrP">"…다음 사진은 더 보여줄게♡"</p>
     <div class="row"><button class="btn" id="again" type="button">다시 하기</button></div>
   </div></div>
 
@@ -105,6 +110,10 @@ var root=document.documentElement,app=document.getElementById('app');
 function setDesign(d){root.setAttribute('data-design',d==='a'?'a':'b');buildCover();dirtyAll=true;}
 var q=new URLSearchParams(location.search);
 root.setAttribute('data-design',q.get('design')==='a'?'a':'b');
+var LITE=q.get('mode')==='lite';if(LITE){root.setAttribute('data-mode','lite');
+  document.getElementById('stageT').textContent='LITE · 5판째';document.getElementById('stH').textContent='LITE · 1분 퍼즐';
+  document.getElementById('stP').innerHTML='판을 깰 때마다 사진이 조금씩 열려요.<br>실패해도 바로 다시 도전.<br>이번 판을 깨면 사진 2 완성.';
+  document.getElementById('hint').textContent='테두리에서 선을 긋고 다시 테두리로 — 1분 안에 80%';}
 window.addEventListener('message',function(e){if(e.data&&e.data.design)setDesign(e.data.design);});
 function fit(){var s=Math.min(innerWidth/360,innerHeight/640);app.style.transform='scale('+s+')';app.style.marginLeft=Math.max(0,(innerWidth-360*s)/2)+'px';}
 addEventListener('resize',fit);fit();
@@ -145,7 +154,7 @@ function reset(){
   for(var y=0;y<H;y++){g[idx(0,y)]=CLAIM;g[idx(W-1,y)]=CLAIM;}
   px=0;py=H-1;drawing=false;trail=[];trailStart=null;
   enemy={x:W*.55,y:H*.7,vx:13,vy:-10};
-  events={c25:false,q50:false,c75:false};hotDone=false;paused=false;over=false;timeLeft=90;lastT=0;stepAcc=0;target=null;keyDir=null;autoQ=[];autoWait=0;flash=0;
+  events={c25:false,q50:false,c75:false};hotDone=false;paused=false;over=false;timeLeft=LITE?60:90;lastT=0;stepAcc=0;target=null;keyDir=null;autoQ=[];autoWait=0;flash=0;
   dirtyAll=true;count();hideAll();
 }
 function count(){var c=0;for(var i=0;i<g.length;i++)if(g[i]===CLAIM)c++;claimed=c/g.length;
@@ -206,10 +215,18 @@ function answer(a){document.getElementById('qov').classList.remove('on');paused=
   afterGain();}
 document.querySelectorAll('#qov .opt').forEach(function(b){b.addEventListener('click',function(){if(!auto)answer(b.getAttribute('data-a'));});});
 function win(){paused=true;for(var i=0;i<g.length;i++)if(g[i]!==CLAIM)g[i]=CLAIM;dirtyAll=true;count();
-  var t0=performance.now();(function fade(){var k=Math.min(1,(performance.now()-t0)/600);fadeK=k;if(k<1)requestAnimationFrame(fade);else setTimeout(function(){document.getElementById('clear').classList.add('on');stopAuto();},400);})();}
+  var t0=performance.now();(function fade(){var k=Math.min(1,(performance.now()-t0)/600);fadeK=k;if(k<1)requestAnimationFrame(fade);else setTimeout(showClear,400);})();}
+function showClear(){var c=document.getElementById('clear'),v=document.getElementById('veil');
+  if(!LITE){c.classList.add('on');stopAuto();return;}
+  document.getElementById('clrH').textContent='CLEAR!';document.getElementById('clrChip').style.display='inline-block';
+  document.getElementById('clrT').textContent='사진 2 · 80% → 100%';document.getElementById('clrP').textContent='판을 깰 때마다 사진이 조금씩 열려요';
+  document.getElementById('again').style.visibility='hidden';v.style.transition='none';v.style.height='20%';c.classList.add('on');
+  setTimeout(function(){v.style.transition='';v.style.height='0';},700);
+  setTimeout(function(){document.getElementById('clrH').textContent='사진 2 완성!';document.getElementById('clrChip').style.display='none';
+    document.getElementById('clrT').textContent='리아';document.getElementById('clrP').textContent='"…다음 사진은 더 보여줄게♡"';document.getElementById('again').style.visibility='';stopAuto();},2300);}
 var fadeK=0;
-function timeUp(){paused=true;over=true;document.getElementById('tmsg').textContent=Math.max(1,80-Math.floor(claimed*100))+'%만 더 열면 사진 1!';document.getElementById('tov').classList.add('on');stopAuto();}
-function hideAll(){['qov','clear','tov'].forEach(function(id){document.getElementById(id).classList.remove('on');});fadeK=0;}
+function timeUp(){if(LITE){popup('시간 끝! 바로 다시 도전');var a=auto;setTimeout(function(){reset();if(a){auto=true;}},900);paused=true;return;}paused=true;over=true;document.getElementById('tmsg').textContent=Math.max(1,80-Math.floor(claimed*100))+'%만 더 열면 사진 1!';document.getElementById('tov').classList.add('on');stopAuto();}
+function hideAll(){var v=document.getElementById('veil');if(v)v.style.height='0';document.getElementById('clrChip').style.display='none';document.getElementById('again').style.visibility='';if(!LITE){document.getElementById('clrH').textContent='STAGE CLEAR';document.getElementById('clrT').textContent='사진 1 획득!';document.getElementById('clrP').textContent='"…다음 사진은 더 보여줄게♡"';}['qov','clear','tov'].forEach(function(id){document.getElementById(id).classList.remove('on');});fadeK=0;}
 
 // ---------- movement ----------
 function tryMove(dx,dy){
