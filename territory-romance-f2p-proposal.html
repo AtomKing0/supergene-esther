@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>陣取りカノジョ (진토리 카노조 · 땅따먹기 그녀) · 기획서</title>
-<script>(function(){var t=null;try{t=new URLSearchParams(location.search).get('theme')}catch(e){}if(!t){try{t=localStorage.getItem('proposal-theme')}catch(e){}}if(t==='dark')document.documentElement.setAttribute('data-theme','dark')})();</script>
+<script>(function(){var t=null;try{t=new URLSearchParams(location.search).get('theme')}catch(e){}if(!t){try{t=localStorage.getItem('proposal-theme')}catch(e){}}if(t==='dark')document.documentElement.setAttribute('data-theme','dark');var d=null;try{d=new URLSearchParams(location.search).get('design')}catch(e){}if(!d){try{d=localStorage.getItem('proposal-design')}catch(e){}}document.documentElement.setAttribute('data-design',d==='a'?'a':'b')})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -73,6 +73,22 @@ section{margin:72px 0}
 .holo::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,#ff5c9a55 40%,#ffe06655 47%,#5cf2c955 54%,#5cc8ff55 61%,transparent 70%);background-size:250% 250%;mix-blend-mode:color-dodge;animation:foil 3.2s ease-in-out infinite alternate;pointer-events:none}
 @keyframes foil{from{background-position:100% 100%}to{background-position:0 0}}
 @media (prefers-reduced-motion:reduce){.holo::after{animation:none}}
+/* Blue Archive holo: sky · cyan · white · lavender · pink */
+:root[data-design="b"] .holo{box-shadow:0 0 0 2px #fff,0 0 0 4px #9fe6ff,0 10px 28px rgba(79,195,247,.35)}
+:root[data-design="b"] .holo::after{background:linear-gradient(115deg,transparent 26%,rgba(79,195,247,.42) 37%,rgba(159,230,255,.5) 44%,rgba(255,255,255,.75) 50%,rgba(186,168,255,.5) 56%,rgba(255,143,200,.42) 63%,transparent 74%);background-size:250% 250%;mix-blend-mode:screen}
+:root[data-design="b"] .holo::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(circle at 18% 22%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 78% 14%,#d9f4ff 0 2px,transparent 3px),radial-gradient(circle at 84% 62%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 26% 74%,#ffd6ec 0 2px,transparent 3px),radial-gradient(circle at 56% 40%,#fff 0 1px,transparent 2px);animation:twinkle 2.4s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.25}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){:root[data-design="b"] .holo::before{animation:none}}
+/* lightbox */
+.zoomable{cursor:zoom-in}
+.lb{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(8,14,24,.86);padding:16px}
+.lb.on{display:flex}
+.lb figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:100%}
+.lb img{max-height:min(86vh,1000px);max-width:min(92vw,460px);width:auto;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.5);background:#fff}
+.lb figcaption{color:#e9eef5;font-size:14px;font-weight:800;text-align:center}
+.lb button{position:absolute;border:0;background:rgba(255,255,255,.14);color:#fff;font:900 22px/1 inherit;width:44px;height:44px;border-radius:999px;cursor:pointer}
+.lb .x{top:14px;right:14px}.lb .pv{left:12px;top:50%;transform:translateY(-50%)}.lb .nx{right:12px;top:50%;transform:translateY(-50%)}
+@media(max-width:520px){.lb .pv,.lb .nx{top:auto;bottom:18px;transform:none}}
 .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
 .tier{border-radius:12px;padding:12px;text-align:center;background:var(--card);border:1px solid var(--line)}
 .tier b{display:block;font:italic 900 26px/1 "Barlow Condensed",ui-sans-serif,sans-serif}
@@ -398,6 +414,21 @@ footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font
 <script>(function(){var b=document.getElementById('themeBtn'),r=document.documentElement;function sync(){b.textContent=r.getAttribute('data-theme')==='dark'?'라이트 모드':'다크 모드'}sync();b.addEventListener('click',function(){var n=r.getAttribute('data-theme')==='dark'?'light':'dark';if(n==='dark')r.setAttribute('data-theme','dark');else r.removeAttribute('data-theme');try{localStorage.setItem('proposal-theme',n)}catch(e){}sync()})})();</script>
 <script>(function(){var b=document.getElementById('designBtn'),A='proposal-screens/',B='proposal-screens-b/',d='b';try{var q=new URLSearchParams(location.search).get('design');d=q||localStorage.getItem('proposal-design')||'b'}catch(e){}
 function apply(){var imgs=document.querySelectorAll('img[src*="proposal-screens"]');for(var i=0;i<imgs.length;i++){var im=imgs[i],src=im.getAttribute('src');var n=d==='a'?src.replace(B,A):src.replace(A,B).replace('proposal-screens-b-b/','proposal-screens-b/');if(n!==src)im.setAttribute('src',n);im.onerror=function(){var s=this.getAttribute('src');if(s.indexOf(B)>-1){this.onerror=null;this.setAttribute('src',s.replace(B,A))}}}
-b.textContent=d==='a'?'디자인 A · 니케':'디자인 B · 블루아카';b.setAttribute('aria-pressed',d==='b')}
+document.documentElement.setAttribute('data-design',d);b.textContent=d==='a'?'디자인 A · 니케':'디자인 B · 블루아카';b.setAttribute('aria-pressed',d==='b')}
 apply();b.addEventListener('click',function(){d=d==='a'?'b':'a';try{localStorage.setItem('proposal-design',d)}catch(e){}apply()})})();</script>
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="화면 크게 보기"><button class="x" type="button" aria-label="닫기">✕</button><button class="pv" type="button" aria-label="이전">‹</button><figure><img alt=""><figcaption></figcaption></figure><button class="nx" type="button" aria-label="다음">›</button></div>
+<script>(function(){var lb=document.getElementById('lb'),im=lb.querySelector('img'),cap=lb.querySelector('figcaption'),list=[],i=0,sx=null;
+function imgs(){return Array.prototype.slice.call(document.querySelectorAll('img[src*="proposal-screens"]'))}
+imgs().forEach(function(m){m.classList.add('zoomable')});
+function grp(m){var g=m.closest('.rail,.grid4,.hl,.money,.fixes,.hero-shots,.duo,.pair,section');return g?Array.prototype.slice.call(g.querySelectorAll('img[src*="proposal-screens"]')):[m]}
+function label(m){var f=m.closest('figure,.mcard,.fix');if(!f)return '';var b=f.querySelector('figcaption b,h3');if(!b)return '';return Array.prototype.map.call(b.childNodes,function(n){return n.textContent.trim()}).filter(Boolean).join(' ')}
+function show(){var m=list[i];im.src=m.getAttribute('src');cap.textContent=label(m)+(list.length>1?'  ('+(i+1)+' / '+list.length+')':'');lb.querySelector('.pv').style.display=lb.querySelector('.nx').style.display=list.length>1?'':'none'}
+function open(m){list=grp(m);i=Math.max(0,list.indexOf(m));show();lb.classList.add('on');document.body.style.overflow='hidden'}
+function close(){lb.classList.remove('on');document.body.style.overflow=''}
+function step(n){i=(i+n+list.length)%list.length;show()}
+document.addEventListener('click',function(e){var m=e.target.closest&&e.target.closest('img.zoomable');if(m&&!lb.contains(m)){e.preventDefault();open(m)}});
+lb.querySelector('.x').onclick=close;lb.querySelector('.pv').onclick=function(e){e.stopPropagation();step(-1)};lb.querySelector('.nx').onclick=function(e){e.stopPropagation();step(1)};
+lb.addEventListener('click',function(e){if(e.target===lb)close()});
+document.addEventListener('keydown',function(e){if(!lb.classList.contains('on'))return;if(e.key==='Escape')close();if(e.key==='ArrowLeft')step(-1);if(e.key==='ArrowRight')step(1)});
+lb.addEventListener('touchstart',function(e){sx=e.touches[0].clientX},{passive:true});lb.addEventListener('touchend',function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)step(dx<0?1:-1);sx=null});})();</script>
 </body></html>
